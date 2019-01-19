@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Game: {{ game.name }}</h1>
+
+<p><strong>category:</strong> {{ game.category_id }}</p>
+<p><strong>Start Time:</strong> {{ game.start_time }}</p> 
+<p><strong>End Time:</strong> {{ game.end_time }}</p>  
+<div style="margin-left:20px;margin-top:20px">
+
+<h4>Lines</h4>
+
+{% for copy in game.line_set.all %}
+
+<hr>
+<!--
+<p class="{% if copy.status == 'a' %}text-success{% elif copy.status == 'd' %}text-danger{% else %}text-warning{% endif %}">{{ copy.get_status_display }}</p>
+{% if copy.status != 'a' %}<p><strong>Due to be returned:</strong> {{copy.due_back}}</p>{% endif %}
+-->
+
+<p><strong>Name:</strong> {{copy.name}}</p>
+<p class="text-muted"><strong>Odds:</strong> {{copy.odds}}</p>
+
+{% endfor %}
+
+
+</div>
+{% endblock %}
+
