@@ -29,6 +29,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('users/', include('django.contrib.auth.urls')),
+    path('api-auth/', include('rest_framework.urls')),   # Stephen
+    path('rest-auth/', include('rest_auth.urls')),         # Stephen
+    path('rest-auth/registration/', include('rest_auth.registration.urls'))    # Stephen
 ]
 
 # Use static() to add url mapping to serve static files during development (only)

@@ -1,4 +1,3 @@
-
 from django.urls import path
 from . import views
 
@@ -49,12 +48,11 @@ urlpatterns += [
 ]
 
 
+# Added by Stephen
 
-
-
-
-
-
-
-
-
+urlpatterns += [
+    path('api/games/', views.GameAPIListView.as_view(), name='api_games'),
+    path('api/books/', views.BookAPIListView.as_view(), name='api_books'),
+    path('api/authors/', views.AuthorAPIListView.as_view(), name='api_authors'),
+    path('api/bookinstance/', views.BookInstanceAPIListView.as_view(), name='api_bookinstance')
+]
