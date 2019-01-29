@@ -216,7 +216,34 @@ class AllSearchListView(generic.ListView):
 
 
 
+#  Added by Stephen
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveAPIView,
+    CreateAPIView,
+    DestroyAPIView,
+    UpdateAPIView
+)
 
+from .serializers import GameSerializer, BookSerializer, AuthorSerializer, CategorySerializer, BookInstanceSerializer
+from .models import Category
 
+class GameAPIListView(ListAPIView):
+    serializer_class = GameSerializer
+    queryset = Game.objects.all()
 
+class BookAPIListView(ListAPIView):
+    serializer_class = BookSerializer
+    queryset = Book.objects.all()
 
+class AuthorAPIListView(ListAPIView):
+    serializer_class = AuthorSerializer
+    queryset = Author.objects.all()
+
+class CategoryAPIListView(ListAPIView):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+class BookInstanceAPIListView(ListAPIView):
+    serializer_class = BookInstanceSerializer
+    queryset = BookInstance.objects.all()
