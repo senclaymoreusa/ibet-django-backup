@@ -7,6 +7,7 @@ import Game_Type from "./components/game_type";
 import Game_List from "./components/game_list";
 import Login from './components/login';
 import Signup from './components/signup';
+import Game_Detail from './components/game_detail';
 
 const BaseRouter = () => (
   <div>
@@ -17,7 +18,7 @@ const BaseRouter = () => (
     <Route exact path="/game_list" component={Game_List} />
     <Route exact path="/login" component={Login} />
     <Route exact path="/signup" component={Signup} />
-
+    <Route exact path="/game_detail" component={Game_Detail} />
   </div>
 );
 

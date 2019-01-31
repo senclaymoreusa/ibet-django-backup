@@ -10,7 +10,8 @@ class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        fields = ('name', 'category_id', 'description')
+        #fields = ('name', 'category_id', 'description')
+        fields = '__all__'
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
