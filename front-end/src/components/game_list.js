@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import Navigation from "./navigation";
+import { game_detail } from '../actions'
 
 class Game_List extends Component {
 
@@ -31,7 +33,12 @@ class Game_List extends Component {
             {
               games.map(item => {
                 if(item.category_id.name === game_type){
-                  return <div key={item.name}> {item.name} </div>
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = '/game_detail' onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
+                      <br/>
+                    </div>
+                  )
                 }
               })
             }
@@ -47,4 +54,4 @@ const mapStateToProps = (state) => {
     }
 }
   
-export default connect(mapStateToProps)(Game_List);
+export default connect(mapStateToProps, { game_detail })(Game_List);

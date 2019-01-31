@@ -7,7 +7,6 @@ import Navigation from "./navigation";
 class Game_Type extends Component {
 
     type_change(text){
-        console.log(text)
         this.props.game_type(text);
     }
 

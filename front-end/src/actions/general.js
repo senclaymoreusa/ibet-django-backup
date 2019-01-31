@@ -4,3 +4,11 @@ export const game_type = (text) => {
       payload: text
     };
 };
+
+export const game_detail = (game) => {
+  return {
+    type: 'GAME_DETAIL',
+    payload: game
+  };
+};
+
