@@ -1,17 +1,22 @@
 from rest_framework import serializers
 from users.models import Game, Book, Author, Category, BookInstance
 
-class CategorySerializer(serializers.ModelSerializer):
+class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'notes', 'category_id', 'parent_id')
+
+class CategorySerializer(serializers.ModelSerializer):
+    parent_id = SubCategorySerializer(read_only=True)
+    class Meta:
+        model = Category
+        fields = ('parent_id', 'name', 'notes', 'category_id')
         
 class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        #fields = ('name', 'category_id', 'description')
-        fields = '__all__'
+        fields = ('category_id', 'name', 'description', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id')
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:

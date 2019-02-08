@@ -4,12 +4,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { game_detail } from '../actions'
 
-var parent_categories = ['sports', 'casino', 'poker', 'guide']
-var sub_categories = ['football','basketball', 'soccer', 'hockey', 'golf', 'tennis', 'baseball',]
-
-
 class Game_Search extends Component {
-
     constructor(props){
         super(props);
         this.state = { term: '', games: [] };
@@ -20,74 +15,22 @@ class Game_Search extends Component {
     async componentDidMount() {
         if (this.props.token){
             var temp = []
-            await axios.get('http://127.0.0.1:8000/users/api/games/')
+            var URL = 'http://127.0.0.1:8000/users/api/games/'
+            var API_URL = URL + '?term=' + this.props.token
+            await axios.get(API_URL)
             .then(res => {
                   temp = res.data
             })
-
-            var result = []
-            if (parent_categories.includes(this.props.token.toLowerCase())){
-                temp.map(item => {
-                    if (item.category_id.name.toLowerCase() === this.props.token.toLowerCase() ){
-                        result.push(item);
-                    }
-                })
-            }else if(sub_categories.includes(this.props.token.toLowerCase())){
-                temp.map(item => {
-                    if (item.category.toLowerCase() === this.props.token.toLowerCase() ){
-                        result.push(item);
-                    }
-                })
-            }
-            else{
-                temp.map(item => {
-                    if ( item.name.toLowerCase().includes(this.props.token.toLowerCase())){
-                        result.push(item);
-                    }
-                })
-            }
-            
-          this.setState({games: result})
+          this.setState({games: temp})
         }
     }
 
     fetch_game = async (text) => {
-        try{
-          var data = (await axios.get('http://127.0.0.1:8000/users/api/games/')).data
-          var result = []
-
-          if (parent_categories.includes(text.toLowerCase())){
-            data.map(item => {
-                if (item.category_id.name.toLowerCase() === text.toLowerCase() ){
-                    result.push(item);
-                }
-            })
-          }else if(sub_categories.includes(text.toLowerCase())){
-            data.map(item => {
-                if (item.category.toLowerCase() === text.toLowerCase() ){
-                    result.push(item);
-                }
-            })
-        }else{
-            data.map(item => {
-                if ( item.name.toLowerCase().includes(text.toLowerCase())){
-                    result.push(item);
-                }
-              })
-          }
-          
-          if (text){
+        var URL = 'http://127.0.0.1:8000/users/api/games/'
+        var API_URL = URL + '?term=' + text
+        var result = (await axios.get(API_URL)).data
+        if (text){
             this.setState({games: result})
-          }
-          {/*
-          else{
-              this.setState({games: [{name: "No result available"}]})
-          }
-          */}
-          
-          return result
-        } catch(err){
-          console.log(err)
         }
     }
 
@@ -101,22 +44,21 @@ class Game_Search extends Component {
     }
 
     render() {
-      
       var games = this.state.games
       return (
         <div className="rows" >
             <div style={{marginTop: 30, marginRight: 50}}>
                 <div>
-                    <NavLink to='/'> Home </NavLink>
+                    <NavLink to='/' style={{ textDecoration: 'none' }}> Home </NavLink>
                 </div>
                 <div>
-                    <NavLink to='/books/'> All books </NavLink>
+                    <NavLink to='/books/' style={{ textDecoration: 'none' }}> All books </NavLink>
                 </div>
                 <div>
-                    <NavLink to='/authors/'> All authors </NavLink>
+                    <NavLink to='/authors/' style={{ textDecoration: 'none' }}> All authors </NavLink>
                 </div>
                 <div>
-                    <NavLink to='/game_type/'> All Games </NavLink>
+                    <NavLink to='/game_type/' style={{ textDecoration: 'none' }}> All Games </NavLink>
                 </div>
                 <form onSubmit={this.onFormSubmit} className="input-group">
                     <input
@@ -133,13 +75,12 @@ class Game_Search extends Component {
                 </form>
                 {
                     this.props.isAuthenticated ?
-                    
                     <div>
-                        <NavLink to = '/' onClick={()=>{this.props.logout()}}> Logout </NavLink>
+                        <NavLink to = '/' style={{ textDecoration: 'none' }} onClick={()=>{this.props.logout()}}> Logout </NavLink>
                     </div>
                     :
                     <div> 
-                        <NavLink to='/login/'> Login </NavLink> 
+                        <NavLink to='/login/' style={{ textDecoration: 'none' }}> Login </NavLink> 
                     </div>
                 }
             </div>
@@ -150,21 +91,17 @@ class Game_Search extends Component {
                 games.map(item => {
                     return (
                         <div key={item.name}>
-                          <NavLink to = '/game_detail' onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
+                          <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
                           <br/>
                         </div>
                       )
                 })
               }
               {
-                  games.length == 0 ?
-                  <div>
-                    No games matching your search
-                  </div>
+                  games.length === 0 ?
+                  <div> No games matching your search </div>
                   :
-                  <div> 
-                      
-                  </div>
+                  <div> </div>
               }
             </div>
         </div>

@@ -18,13 +18,13 @@ class Game_Type extends Component {
           </div>
           <div>
             <h1> Game Type </h1>
-            <NavLink to='/game_list' onClick={()=>{this.type_change('Sports')}}> Sports </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Sports')}}> Sports </NavLink>
             <br/>
-            <NavLink to='/game_list' onClick={()=>{this.type_change('Casino')}}> Casino </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Casino')}}> Casino </NavLink>
             <br/>
-            <NavLink to='/game_list' onClick={()=>{this.type_change('Poker')}}> Poker </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Poker')}}> Poker </NavLink>
             <br/>
-            <NavLink to='/game_list' onClick={()=>{this.type_change('Guide')}}> GUIDES </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Guide')}}> Guide </NavLink>
           </div>
         </div>
       );

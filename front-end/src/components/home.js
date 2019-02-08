@@ -8,7 +8,6 @@ class Home extends Component {
   state = {
     books: [],
     authors: [],
-    games: [],
     bookinstance: []
   }  
   componentDidMount() {
@@ -19,13 +18,6 @@ class Home extends Component {
         .then(res => {
             this.setState({
                 books: res.data
-            });
-        })
-
-    axios.get('http://127.0.0.1:8000/users/api/games/')
-        .then(res => {
-            this.setState({
-                games: res.data
             });
         })
 

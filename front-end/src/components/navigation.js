@@ -26,16 +26,16 @@ class Navigation extends Component {
         <div className="Home" style={{marginTop: 30, marginRight: 50}}>
           <div className="category">
             <div>
-                <NavLink to='/'> Home </NavLink>
+                <NavLink to='/' style={{ textDecoration: 'none' }}> Home </NavLink>
             </div>
             <div>
-                <NavLink to='/books/'> All books </NavLink>
+                <NavLink to='/books/' style={{ textDecoration: 'none' }}> All books </NavLink>
             </div>
             <div>
-                <NavLink to='/authors/'> All authors </NavLink>
+                <NavLink to='/authors/' style={{ textDecoration: 'none' }}> All authors </NavLink>
             </div>
             <div>
-                <NavLink to='/game_type/'> All Games </NavLink>
+                <NavLink to='/game_type/' style={{ textDecoration: 'none' }}> All Games </NavLink>
             </div>
 
             <form onSubmit={this.onFormSubmit} className="input-group">
@@ -56,11 +56,11 @@ class Navigation extends Component {
               this.props.isAuthenticated ?
               
               <div>
-                <NavLink to = '/' onClick={()=>{this.props.logout()}}> Logout </NavLink>
+                <NavLink to = '/' style={{ textDecoration: 'none' }} onClick={()=>{this.props.logout()}}> Logout </NavLink>
               </div>
               :
               <div> 
-                  <NavLink to='/login/'> Login </NavLink> 
+                  <NavLink to='/login/' style={{ textDecoration: 'none' }}> Login </NavLink> 
               </div>
             }
           </div>
