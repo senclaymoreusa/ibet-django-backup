@@ -1,5 +1,10 @@
 from django.shortcuts import render
 
+# Added by Stephen
+import logging
+logger = logging.getLogger(__name__)
+##################
+
 # Create your views here.
 
 from .models import Book, Author, BookInstance, Genre, Game, CustomUser
@@ -230,7 +235,18 @@ from .models import Category
 
 class GameAPIListView(ListAPIView):
     serializer_class = GameSerializer
-    queryset = Game.objects.all()
+    def get_queryset(self):
+        term = self.request.GET['term']
+        data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+        if not data:
+            data = Game.objects.filter(category_id__name__icontains=term)
+            if not data:
+                data = Game.objects.filter(name__icontains=term)
+                if not data:
+                    logger.error('Search term is not valid')
+                return data
+            return data
+        return data
 
 class BookAPIListView(ListAPIView):
     serializer_class = BookSerializer

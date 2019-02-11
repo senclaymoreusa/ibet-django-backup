@@ -12,3 +12,10 @@ export const game_detail = (game) => {
   };
 };
 
+export const handle_search =(term) => {
+  return {
+    type: 'TERM_CHANGED',
+    payload: term
+  }
+}
+
