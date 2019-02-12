@@ -1,5 +1,10 @@
 from django.shortcuts import render
 
+# Added by Stephen
+import logging
+logger = logging.getLogger(__name__)
+##################
+
 # Create your views here.
 
 from .models import Book, Author, BookInstance, Genre, Game, CustomUser
@@ -216,7 +221,45 @@ class AllSearchListView(generic.ListView):
 
 
 
+#  Added by Stephen
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveAPIView,
+    CreateAPIView,
+    DestroyAPIView,
+    UpdateAPIView
+)
 
+from .serializers import GameSerializer, BookSerializer, AuthorSerializer, CategorySerializer, BookInstanceSerializer
+from .models import Category
 
+class GameAPIListView(ListAPIView):
+    serializer_class = GameSerializer
+    def get_queryset(self):
+        term = self.request.GET['term']
+        data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+        if not data:
+            data = Game.objects.filter(category_id__name__icontains=term)
+            if not data:
+                data = Game.objects.filter(name__icontains=term)
+                if not data:
+                    logger.error('Search term is not valid')
+                return data
+            return data
+        return data
 
+class BookAPIListView(ListAPIView):
+    serializer_class = BookSerializer
+    queryset = Book.objects.all()
 
+class AuthorAPIListView(ListAPIView):
+    serializer_class = AuthorSerializer
+    queryset = Author.objects.all()
+
+class CategoryAPIListView(ListAPIView):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+class BookInstanceAPIListView(ListAPIView):
+    serializer_class = BookInstanceSerializer
+    queryset = BookInstance.objects.all()

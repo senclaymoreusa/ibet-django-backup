@@ -28,6 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+CORS_ORIGIN_ALLOW_ALL=True     # Stephen
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,20 +40,41 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
+
+    'rest_framework',              # Stephen
+    'corsheaders',                 # Stephen
+    'rest_auth',                   # Stephen
+    'rest_framework.authtoken',    # Stephen
+    'django.contrib.sites',        # Stephen
+    'allauth',                     # Stephen
+    'allauth.account',             # Stephen
+    'rest_auth.registration',      # Stephen
+    'allauth.socialaccount'        # Stephen
 ]
+
+SITE_ID = 1                        # Stephen
+
+ACCOUNT_EMAIL_REQUIRED = False                # Stephen
+ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
+ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
 AUTH_USER_MODEL = 'users.CustomUser' # new
 
 
+
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',      # Stephen
+    'django.middleware.common.CommonMiddleware',  # Stephen
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
+
 ]
 
 ROOT_URLCONF = 'djauth.urls'
@@ -104,6 +127,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Rest Framework default settings (Stephen)
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -139,24 +171,22 @@ STATIC_URL = '/static/'
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Logging setup added by Stephen
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
