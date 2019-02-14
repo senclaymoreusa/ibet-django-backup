@@ -47,7 +47,7 @@ class Navigation extends Component {
                 />
                 <span className="input-group-btn">
                     <button type="submit" className="btn btn-secondary"> 
-                      <NavLink to='/game_search'> Search </NavLink>
+                      <NavLink to='/game_search' style={{ textDecoration: 'none' }}> Search </NavLink>
                     </button>
                 </span>
             </form>
