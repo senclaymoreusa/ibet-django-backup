@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logout, handle_search } from '../actions'
 
@@ -17,6 +17,7 @@ class Navigation extends Component {
         this.props.handle_search(event.target.value)
     }
     onFormSubmit(event){
+        this.props.history.push("/game_search")
         event.preventDefault();
         this.setState({ term: '' });
     }
@@ -47,7 +48,7 @@ class Navigation extends Component {
                 />
                 <span className="input-group-btn">
                     <button type="submit" className="btn btn-secondary"> 
-                      <NavLink to='/game_search'> Search </NavLink>
+                      <NavLink to='/game_search' style={{ textDecoration: 'none' }}> Search </NavLink>
                     </button>
                 </span>
             </form>
@@ -75,4 +76,4 @@ const mapStateToProps = (state) => {
     }
 }
   
-export default connect(mapStateToProps, {logout, handle_search})(Navigation);
+export default withRouter(connect(mapStateToProps, {logout, handle_search})(Navigation));

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import Navigation from "./navigation";
 
+const API_URL = process.env.REACT_APP_REST_API
+
 class Authors extends Component {
 
     state = {
@@ -9,7 +11,7 @@ class Authors extends Component {
     }
 
     componentDidMount() {
-        axios.get('http://127.0.0.1:8000/users/api/authors/')
+        axios.get(API_URL + 'users/api/authors/')
             .then(res => {
                 this.setState({
                     authors: res.data

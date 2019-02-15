@@ -4,6 +4,8 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { authCheckState } from '../actions';
 
+const API_URL = process.env.REACT_APP_REST_API
+
 class Home extends Component {
   state = {
     books: [],
@@ -14,21 +16,21 @@ class Home extends Component {
 
     this.props.authCheckState();
 
-    axios.get('http://127.0.0.1:8000/users/api/books/')
+    axios.get(API_URL + 'users/api/books/')
         .then(res => {
             this.setState({
                 books: res.data
             });
         })
 
-    axios.get('http://127.0.0.1:8000/users/api/authors/')
+    axios.get(API_URL + 'users/api/authors/')
         .then(res => {
             this.setState({
               authors: res.data
             });
         })
 
-    axios.get('http://127.0.0.1:8000/users/api/bookinstance/')
+    axios.get(API_URL + 'users/api/bookinstance/')
         .then(res => {
             this.setState({
               bookinstance: res.data

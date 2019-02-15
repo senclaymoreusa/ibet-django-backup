@@ -5,6 +5,8 @@ import { NavLink } from 'react-router-dom';
 import Navigation from "./navigation";
 import { game_detail } from '../actions'
 
+const API_URL = process.env.REACT_APP_REST_API
+
 class Game_List extends Component {
 
     state = {
@@ -12,7 +14,7 @@ class Game_List extends Component {
     }
 
     componentDidMount() {
-        var URL = 'http://127.0.0.1:8000/users/api/games/' + '?term=' + this.props.game_type
+        var URL = API_URL + 'users/api/games/' + '?term=' + this.props.game_type
         axios.get(URL)
             .then(res => {
                 this.setState({
@@ -22,7 +24,6 @@ class Game_List extends Component {
     }
 
     render() {
-      const game_type = this.props.game_type
       const games = this.state.games
       return (
         <div className="rows">
@@ -35,7 +36,7 @@ class Game_List extends Component {
               games.map(item => {
                   return (
                     <div key={item.name}>
-                      <NavLink to = '/game_detail' onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
+                      <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
                       <br/>
                     </div>
                   )
