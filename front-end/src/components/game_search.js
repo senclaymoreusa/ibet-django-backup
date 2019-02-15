@@ -41,6 +41,7 @@ class Game_Search extends Component {
     onFormSubmit(event){
         event.preventDefault();
         this.fetch_game(this.state.term);
+        this.setState({ term: '' });
     }
 
     render() {
@@ -62,7 +63,7 @@ class Game_Search extends Component {
                 </div>
                 <form onSubmit={this.onFormSubmit} className="input-group">
                     <input
-                        placeholder="Search...."
+                        placeholder="Search games..."
                         className="form-control"
                         value={this.state.term}
                         onChange={this.onInputChange}
