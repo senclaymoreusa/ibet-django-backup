@@ -9,6 +9,7 @@ import Login from './components/login';
 import Signup from './components/signup';
 import Game_Detail from './components/game_detail';
 import Game_Search from './components/game_search';
+import Profile from './components/profile';
 
 const BaseRouter = () => (
   <div>
@@ -21,6 +22,7 @@ const BaseRouter = () => (
     <Route exact path="/signup" component={Signup} />
     <Route exact path="/game_detail" component={Game_Detail} />
     <Route exact path="/game_search" component={Game_Search} />
+    <Route exact path="/profile" component={Profile} />
   </div>
 );
 

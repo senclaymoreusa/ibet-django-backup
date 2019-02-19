@@ -230,7 +230,7 @@ from rest_framework.generics import (
     UpdateAPIView
 )
 
-from .serializers import GameSerializer, BookSerializer, AuthorSerializer, CategorySerializer, BookInstanceSerializer
+from .serializers import GameSerializer, BookSerializer, AuthorSerializer, CategorySerializer, BookInstanceSerializer, UserDetailsSerializer, RegisterSerializer
 from .models import Category
 
 class GameAPIListView(ListAPIView):
@@ -263,3 +263,75 @@ class CategoryAPIListView(ListAPIView):
 class BookInstanceAPIListView(ListAPIView):
     serializer_class = BookInstanceSerializer
     queryset = BookInstance.objects.all()
+
+from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+class UserDetailsView(RetrieveUpdateAPIView):
+
+    serializer_class = UserDetailsSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+    def get_queryset(self):
+        return get_user_model().objects.none()
+
+
+from rest_auth.models import TokenModel
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
+sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
+from rest_auth.app_settings import (TokenSerializer, JWTSerializer, create_token)
+from django.conf import settings
+from allauth.account.utils import complete_signup
+from allauth.account import app_settings as allauth_settings
+from rest_framework.response import Response
+from rest_framework import status
+
+class RegisterView(CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny, ]
+    token_model = TokenModel
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(RegisterView, self).dispatch(*args, **kwargs)
+
+    def get_response_data(self, user):
+        if allauth_settings.EMAIL_VERIFICATION == \
+                allauth_settings.EmailVerificationMethod.MANDATORY:
+            return {"detail": _("Verification e-mail sent.")}
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            data = {
+                'user': user,
+                'token': self.token
+            }
+            return JWTSerializer(data).data
+        else:
+            return TokenSerializer(user.auth_token).data
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(self.get_response_data(user),
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+    def perform_create(self, serializer):
+        user = serializer.save(self.request)
+        if getattr(settings, 'REST_USE_JWT', False):
+            self.token = jwt_encode(user)
+        else:
+            create_token(self.token_model, user, serializer)
+
+        complete_signup(self.request._request, user,
+                        allauth_settings.EMAIL_VERIFICATION,
+                        None)
+        return user

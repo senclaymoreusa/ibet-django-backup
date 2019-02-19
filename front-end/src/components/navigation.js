@@ -52,6 +52,12 @@ class Navigation extends Component {
                     </button>
                 </span>
             </form>
+            {
+              this.props.isAuthenticated ?
+              <NavLink to = '/profile/' style={{ textDecoration: 'none' }}> Profile </NavLink>
+              :
+              <div> </div>
+            }
 
             {
               this.props.isAuthenticated ?
