@@ -7,6 +7,33 @@ from .models import CustomUser
 
 from .models import Author, Genre, Book, BookInstance, Language, Country, Category, Status, TransactionType, Game, Line
 
+from django.contrib import admin
+
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+from .forms import UserCreationForm
+
+class UserAdmin(BaseUserAdmin):
+	add_form = UserCreationForm
+
+	list_display = ('username','email','is_admin', 'first_name', 'last_name')
+	list_filter = ('is_admin',)
+
+	fieldsets = (
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode')}),
+			('Permissions', {'fields': ('is_admin',)})
+		)
+	search_fields = ('username','email')
+	ordering = ('username','email')
+
+	filter_horizontal = ()
+
+
+admin.site.register(CustomUser, UserAdmin)
+
+
+admin.site.unregister(Group)
 
 admin.site.register(Genre)
 admin.site.register(Language)
@@ -24,7 +51,7 @@ class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ['email', 'username',]
 
-admin.site.register(CustomUser, CustomUserAdmin)
+#admin.site.register(CustomUser, CustomUserAdmin)
 
 class BooksInline(admin.TabularInline):
     """
