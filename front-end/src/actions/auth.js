@@ -43,15 +43,19 @@ export const authStart = () => {
     }
   }
 
-  export const authSignup = (username, email, password1, password2) => {
+  export const authSignup = (username, email, password1, password2, first_name, last_name, phone, date_of_birth, street_address_1, street_address_2, country, city, zipcode, state) => {
     return dispatch => {
         dispatch(authStart());
-        axios.post(API_URL + 'rest-auth/registration/', {
-            username: username,
-            email: email,
-            password1: password1,
-            password2: password2
-        })
+        const config = {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        };
+        const body = JSON.stringify({ username, email, password1, password2, first_name, last_name, phone, date_of_birth,
+          street_address_1, street_address_2, country, city, zipcode, state
+        });
+
+        axios.post(API_URL + 'users/api/signup/', body, config)
         .then(res => {
             const token = res.data.key;
             const expirationDate = new Date(new Date().getTime() + 3600 * 1000);

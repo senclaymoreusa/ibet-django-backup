@@ -19,7 +19,17 @@ class RegistrationForm extends React.Component {
             values.userName,
             values.email,
             values.password,
-            values.confirm
+            values.confirm,
+            values.first_name,
+            values.last_name,
+            values.phone,
+            values.date_of_birth,
+            values.street_address_1,
+            values.street_address_2,
+            values.country,
+            values.city,
+            values.zipcode,
+            values.state
         );
         this.props.history.push('/');
       }
@@ -99,13 +109,105 @@ class RegistrationForm extends React.Component {
         </FormItem>
 
         <FormItem>
+          {getFieldDecorator('first_name', {
+            rules: [{
+              required: true, message: 'First name is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="smile" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="First name" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('last_name', {
+            rules: [{
+              required: true, message: 'Last name is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="smile" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="last name" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('phone', {
+            rules: [ {
+              required: true, message: 'Phone number is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="phone" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Phone" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('date_of_birth', {
+            rules: [{
+              required: true, message: 'Date of birth is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="calendar" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Date of birth" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('street_address_1')(
+            <Input prefix={<Icon type="home" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Street address 1" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('street_address_2')(
+            <Input prefix={<Icon type="home" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Street address 2" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('city', {
+            rules: [{
+              required: true, message: 'City is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="city" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('state', {
+            rules: [{
+              required: true, message: 'State is requiredl!',
+            }],
+          })(
+            <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="state" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('country', {
+            rules: [{
+              required: true, message: 'Country is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="country" />
+          )}
+        </FormItem>
+
+        <FormItem>
+          {getFieldDecorator('zipcode', {
+            rules: [{
+              required: true, message: 'Zipcode is required!',
+            }],
+          })(
+            <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="zipcode" />
+          )}
+        </FormItem>
+
+        <FormItem>
         <Button type="primary" htmlType="submit" style={{marginRight: '10px'}}>
             Signup
         </Button>
         Or 
         <NavLink 
-            style={{marginRight: '10px'}} 
-            to='/login/'> login
+            style={{marginRight: '10px', textDecoration: 'none'}} 
+            to='/login/'> Login
         </NavLink>
         </FormItem>
 
