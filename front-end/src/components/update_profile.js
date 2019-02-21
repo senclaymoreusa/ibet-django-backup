@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { withRouter } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -180,7 +180,12 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <div> <b>Email</b>: {this.state.email} </div>
+                        <b>Email</b>: {this.state.email}
+                        <button> 
+                            <NavLink to='/change_email/' style={{ textDecoration: 'none' }}>
+                                Update Email
+                            </NavLink>
+                        </button>
                     </div>
 
                     <div>

@@ -56,5 +56,6 @@ urlpatterns += [
     path('api/authors/', views.AuthorAPIListView.as_view(), name='api_authors'),
     path('api/bookinstance/', views.BookInstanceAPIListView.as_view(), name='api_bookinstance'),
     path('api/user/', views.UserDetailsView.as_view(), name='rest_user_details'),
-    path('api/signup/', views.RegisterView.as_view(), name='rest_register')
+    path('api/signup/', views.RegisterView.as_view(), name='rest_register'),
+    path('api/sendemail/', views.SendEmail.as_view(), name='sendemail')
 ]
