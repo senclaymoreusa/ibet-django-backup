@@ -74,8 +74,7 @@ class RegisterSerializer(serializers.Serializer):
         email = get_adapter().clean_email(email)
         if allauth_settings.UNIQUE_EMAIL:
             if email and email_address_exists(email):
-                raise serializers.ValidationError(
-                    _("A user is already registered with this e-mail address."))
+                raise serializers.ValidationError(("A user is already registered with this e-mail address."))
         return email
 
     def validate_password1(self, password):
@@ -83,7 +82,7 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data['password1'] != data['password2']:
-            raise serializers.ValidationError(_("The two password fields didn't match."))
+            raise serializers.ValidationError(("The two password fields didn't match."))
         return data
 
     def custom_signup(self, request, user):

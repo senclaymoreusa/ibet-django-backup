@@ -3,12 +3,17 @@ import { Form, Input, Icon, Button } from 'antd';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { authSignup } from '../actions'
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_REST_API
 
 const FormItem = Form.Item;
 
 class RegistrationForm extends React.Component {
   state = {
     confirmDirty: false,
+    email_error: '',
+    username_error: ''
   };
 
   handleSubmit = (e) => {
@@ -30,8 +35,23 @@ class RegistrationForm extends React.Component {
             values.city,
             values.zipcode,
             values.state
-        );
-        this.props.history.push('/');
+        ).then(() => {
+          this.props.history.push('/');
+          axios.get(API_URL + `users/api/sendemail/?from_email_address=claymore@claymoreusa.com&to_email_address=${values.email}&email_subject=Welcome to Claymore, ${values.userName}&email_content=You have successfully set up your new email account: ${values.email}`)
+        }).catch(err => {
+
+          if ('username' in err.response.data){
+            this.setState({username_error: err.response.data.username[0]})
+          }else{
+            this.setState({username_error: ''})
+          }
+
+          if('email' in err.response.data){
+            this.setState({email_error: err.response.data.email[0]})
+          }else{
+            this.setState({email_error: ''})
+          }
+        })
       }
     });
   }
@@ -61,7 +81,16 @@ class RegistrationForm extends React.Component {
   render() {
     const { getFieldDecorator } = this.props.form;
 
+    var username_error_message =()=>{
+      return <div style={{color: 'red'}}> Username already exists </div>
+    }
+
+    var email_error_message =()=>{
+      return <div style={{color: 'red'}}> Email already exists </div>
+    }
+
     return (
+      <div> 
       <Form onSubmit={this.handleSubmit}>
         
         <FormItem>
@@ -212,6 +241,21 @@ class RegistrationForm extends React.Component {
         </FormItem>
 
       </Form>
+
+      {
+        this.state.username_error ?
+            username_error_message()
+            :
+            <div> </div>
+      }
+
+      {
+        this.state.email_error ?
+          email_error_message() 
+          :
+          <div> </div>
+      }
+      </div>
     );
   }
 }
