@@ -337,10 +337,6 @@ class RegisterView(CreateAPIView):
         return user
 
 
-
-
-
-
 from django.contrib.auth.forms import AuthenticationForm
 from .serializers import LoginSerializer
 from django.conf import settings
@@ -423,3 +419,30 @@ class LoginView(GenericAPIView):
 
         return self.login()
         
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
+from django.conf import settings
+from django.views import View
+from django.http import HttpResponse
+
+class SendEmail(View):
+    def get(self, request, *args, **kwargs):
+        from_email_address = self.request.GET['from_email_address']
+        to_email_address = self.request.GET['to_email_address']
+        email_subject = self.request.GET['email_subject']
+        email_content = self.request.GET['email_content']
+
+        print(from_email_address, to_email_address, email_subject, email_content)
+
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email(from_email_address)
+        to_email = Email(to_email_address)
+        subject = email_subject
+        content = Content("text/plain", email_content)
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        print(response.status_code)
+        #print(response.body)
+        #print(response.headers)
+        return HttpResponse('Hello, World!')

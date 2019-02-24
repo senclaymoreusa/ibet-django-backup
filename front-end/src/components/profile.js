@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { authCheckState, AUTH_RESULT_FAIL } from '../actions';
 import { connect } from 'react-redux';
 import axios from 'axios';
+import { NavLink} from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -56,6 +57,12 @@ class Profile extends Component {
             <div> <b>City: </b>  {this.state.data.city}  </div>
             <div> <b>Zipcode: </b>  {this.state.data.zipcode}  </div>
             <div> <b>State: </b>  {this.state.data.state}  </div>
+            <button className="btn btn-secondary"> 
+                <NavLink to='/update_profile' style={{ textDecoration: 'none' }}> Update </NavLink> 
+            </button>
+            <button className="btn btn-secondary"> 
+                <NavLink to='/' style={{ textDecoration: 'none' }}> Back </NavLink> 
+            </button>
           </div>
         } 
         </div>
