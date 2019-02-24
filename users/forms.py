@@ -89,3 +89,14 @@ class RenewBookForm(forms.Form):
 
 
 
+
+
+from django.contrib.auth.forms import AuthenticationForm
+
+class AuthenticationFormWithChekUsersStatus(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        if not user.status == 'enabled':
+            raise forms.ValidationError(
+                ("Your account has disabled."),
+                code='inactive',
+            )

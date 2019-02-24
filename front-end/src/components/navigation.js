@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { NavLink, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { logout, handle_search } from '../actions'
+import { logout, handle_search } from '../actions';
 
 class Navigation extends Component {
 
@@ -11,6 +11,8 @@ class Navigation extends Component {
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
     }
+
+    componentDidMount() {}
 
     onInputChange(event){
         this.setState({term: event.target.value});
@@ -77,8 +79,11 @@ class Navigation extends Component {
   }
 
 const mapStateToProps = (state) => {
+    const { token } = state.auth;
     return {
-        isAuthenticated: state.auth.token !== null
+        isAuthenticated: token !== null && token !== undefined, 
+        block: state.auth.block,
+        error:state.auth.error
     }
 }
   

@@ -13,8 +13,8 @@ class Home extends Component {
     bookinstance: []
   }  
   componentDidMount() {
-
-    this.props.authCheckState();
+    
+    this.props.authCheckState()
 
     axios.get(API_URL + 'users/api/books/')
         .then(res => {
