@@ -135,7 +135,7 @@ class RegisterSerializer(serializers.Serializer):
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
-from django.utils.translation import gettext as _
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers, exceptions
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
