@@ -38,7 +38,6 @@ class RegistrationForm extends React.Component {
             values.state
         ).then(() => {
           this.props.history.push('/');
-          console.log(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${values.email}&${messages.signup_email_subject}, ${values.userName}&${messages.signup_email_content} ${values.email}`)
           axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${values.email}&${messages.signup_email_subject}, ${values.userName}&${messages.signup_email_content} ${values.email}`)
         }).catch(err => {
 
