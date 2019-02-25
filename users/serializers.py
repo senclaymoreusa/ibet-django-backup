@@ -47,6 +47,7 @@ from allauth.account.utils import setup_user_email
 from allauth.socialaccount.helpers import complete_social_login
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.base import AuthProcess
+from django.utils.translation import ugettext_lazy as _
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
@@ -74,7 +75,8 @@ class RegisterSerializer(serializers.Serializer):
         email = get_adapter().clean_email(email)
         if allauth_settings.UNIQUE_EMAIL:
             if email and email_address_exists(email):
-                raise serializers.ValidationError(("A user is already registered with this e-mail address."))
+                raise serializers.ValidationError(
+                    _("A user is already registered with this e-mail address."))
         return email
 
     def validate_password1(self, password):
@@ -82,7 +84,7 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data['password1'] != data['password2']:
-            raise serializers.ValidationError(("The two password fields didn't match."))
+            raise serializers.ValidationError(_("The two password fields didn't match."))
         return data
 
     def custom_signup(self, request, user):
