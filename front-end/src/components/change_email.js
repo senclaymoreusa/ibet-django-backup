@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { withRouter } from 'react-router-dom';
+import { messages } from './messages';
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -76,11 +77,11 @@ class Change_Email extends Component {
             })
              
             axios.put(API_URL + 'users/api/user/', body, config)
-            axios.get(API_URL + `users/api/sendemail/?from_email_address=claymore@claymoreusa.com&to_email_address=${this.state.fetched_data.email}&email_subject=Request of changing email address&email_content=Your new Email Address is${this.state.new_email}`)
-            .then(res => {
-                axios.get(API_URL + `users/api/sendemail/?from_email_address=claymore@claymoreusa.com&to_email_address=${this.state.new_email}&email_subject=Request of changing email address&email_content=Your new Email Address is${this.state.new_email}`)
-            })
             
+            axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${this.state.fetched_data.email}&${messages.change_email_subject}&${messages.change_email_content}${this.state.new_email}`)
+            .then(res => {
+                axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${this.state.new_email}&${messages.change_email_subject}&${messages.change_email_content}${this.state.new_email}`)
+            })
             
             
             this.props.history.push("/profile")

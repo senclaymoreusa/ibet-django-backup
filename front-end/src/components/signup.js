@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { authSignup } from '../actions'
 import axios from 'axios';
+import { messages } from './messages';
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -37,7 +38,8 @@ class RegistrationForm extends React.Component {
             values.state
         ).then(() => {
           this.props.history.push('/');
-          axios.get(API_URL + `users/api/sendemail/?from_email_address=claymore@claymoreusa.com&to_email_address=${values.email}&email_subject=Welcome to Claymore, ${values.userName}&email_content=You have successfully set up your new email account: ${values.email}`)
+          console.log(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${values.email}&${messages.signup_email_subject}, ${values.userName}&${messages.signup_email_content} ${values.email}`)
+          axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${values.email}&${messages.signup_email_subject}, ${values.userName}&${messages.signup_email_content} ${values.email}`)
         }).catch(err => {
 
           if ('username' in err.response.data){
@@ -82,11 +84,11 @@ class RegistrationForm extends React.Component {
     const { getFieldDecorator } = this.props.form;
 
     var username_error_message =()=>{
-      return <div style={{color: 'red'}}> Username already exists </div>
+      return <div style={{color: 'red'}}> {messages.username_error_message} </div>
     }
 
     var email_error_message =()=>{
-      return <div style={{color: 'red'}}> Email already exists </div>
+      return <div style={{color: 'red'}}> {messages.email_error_message} </div>
     }
 
     return (
