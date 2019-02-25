@@ -82,14 +82,6 @@ class RegistrationForm extends React.Component {
   render() {
     const { getFieldDecorator } = this.props.form;
 
-    var username_error_message =()=>{
-      return <div style={{color: 'red'}}> {messages.username_error_message} </div>
-    }
-
-    var email_error_message =()=>{
-      return <div style={{color: 'red'}}> {messages.email_error_message} </div>
-    }
-
     return (
       <div> 
       <Form onSubmit={this.handleSubmit}>
@@ -245,14 +237,14 @@ class RegistrationForm extends React.Component {
 
       {
         this.state.username_error ?
-            username_error_message()
+            <div style={{color: 'red'}}> {messages.username_error_message} </div>
             :
             <div> </div>
       }
 
       {
         this.state.email_error ?
-          email_error_message() 
+          <div style={{color: 'red'}}> {messages.email_error_message} </div>
           :
           <div> </div>
       }
