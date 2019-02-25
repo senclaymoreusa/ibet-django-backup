@@ -38,7 +38,7 @@ class RegistrationForm extends React.Component {
             values.state
         ).then(() => {
           this.props.history.push('/');
-          axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${values.email}&${messages.signup_email_subject}, ${values.userName}&${messages.signup_email_content} ${values.email}`)
+          axios.get(API_URL + `users/api/sendemail/?${messages.FROM_EMAIL}&${messages.TO_EMAIL}${values.email}&${messages.SIGNUP_EMAIL_SUBJECT}, ${values.userName}&${messages.SIGNUP_EMAIL_CONTENT} ${values.email}`)
         }).catch(err => {
 
           if ('username' in err.response.data){
@@ -237,14 +237,14 @@ class RegistrationForm extends React.Component {
 
       {
         this.state.username_error ?
-            <div style={{color: 'red'}}> {messages.username_error_message} </div>
+            <div style={{color: 'red'}}> {messages.USERNAME_ERROR_MESSAGE} </div>
             :
             <div> </div>
       }
 
       {
         this.state.email_error ?
-          <div style={{color: 'red'}}> {messages.email_error_message} </div>
+          <div style={{color: 'red'}}> {messages.EMAIL_ERROR_MESSAGE} </div>
           :
           <div> </div>
       }
