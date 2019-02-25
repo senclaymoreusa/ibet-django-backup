@@ -78,9 +78,9 @@ class Change_Email extends Component {
              
             axios.put(API_URL + 'users/api/user/', body, config)
             
-            axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${this.state.fetched_data.email}&${messages.change_email_subject}&${messages.change_email_content}${this.state.new_email}`)
+            axios.get(API_URL + `users/api/sendemail/?${messages.FROM_EMAIL}&${messages.TO_EMAIL}${this.state.fetched_data.email}&${messages.CHANGE_EMAIL_SUBJECT}&${messages.CHANGE_EMAIL_CONTENT}${this.state.new_email}`)
             .then(res => {
-                axios.get(API_URL + `users/api/sendemail/?${messages.from_email}&${messages.to_email}${this.state.new_email}&${messages.change_email_subject}&${messages.change_email_content}${this.state.new_email}`)
+                axios.get(API_URL + `users/api/sendemail/?${messages.FROM_EMAIL}&${messages.TO_EMAIL}${this.state.new_email}&${messages.CHANGE_EMAIL_SUBJECT}&${messages.CHANGE_EMAIL_CONTENT}${this.state.new_email}`)
             })
             
             
