@@ -55,7 +55,7 @@ export const authStart = () => {
           street_address_1, street_address_2, country, city, zipcode, state
         });
 
-        axios.post(API_URL + 'users/api/signup/', body, config)
+        return axios.post(API_URL + 'users/api/signup/', body, config)
         .then(res => {
             const token = res.data.key;
             const expirationDate = new Date(new Date().getTime() + 3600 * 1000);
@@ -63,9 +63,11 @@ export const authStart = () => {
             localStorage.setItem('expirationDate', expirationDate);
             dispatch(authSuccess(token));
             dispatch(checkAuthTimeout(3600));
+            return Promise.resolve()
         })
         .catch(err => {
             dispatch(authFail(err))
+            return Promise.reject(err)
         })
     }
 }
