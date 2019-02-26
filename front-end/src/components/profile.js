@@ -15,7 +15,7 @@ class Profile extends Component {
     componentDidMount() {
       this.props.authCheckState()
       .then(res => {
-        if (res == AUTH_RESULT_FAIL) {
+        if (res === AUTH_RESULT_FAIL) {
           this.props.history.push('/'); 
         } else {
           const token = localStorage.getItem('token');

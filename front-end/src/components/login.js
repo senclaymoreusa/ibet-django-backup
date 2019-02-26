@@ -27,7 +27,7 @@ class NormalLoginForm extends React.Component {
   componentDidMount() {
     this.props.authCheckState()
     .then(res => {
-      if (res == AUTH_RESULT_SUCCESS) {
+      if (res === AUTH_RESULT_SUCCESS) {
         this.props.history.push('/'); 
       } 
     });
