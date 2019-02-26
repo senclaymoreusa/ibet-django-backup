@@ -1,5 +1,4 @@
 .vscode/
 debug.log
-migrations/
 __pycache__/
 db.sqlite3
