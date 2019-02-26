@@ -301,9 +301,8 @@ class RegisterView(CreateAPIView):
         return super(RegisterView, self).dispatch(*args, **kwargs)
 
     def get_response_data(self, user):
-        if allauth_settings.EMAIL_VERIFICATION == \
-                allauth_settings.EmailVerificationMethod.MANDATORY:
-            return {"detail": _("Verification e-mail sent.")}
+        if allauth_settings.EMAIL_VERIFICATION == allauth_settings.EmailVerificationMethod.MANDATORY:
+            return {"detail": ("Verification e-mail sent.")}
 
         if getattr(settings, 'REST_USE_JWT', False):
             data = {
@@ -433,7 +432,7 @@ class SendEmail(View):
         email_subject = self.request.GET['email_subject']
         email_content = self.request.GET['email_content']
 
-        print(from_email_address, to_email_address, email_subject, email_content)
+        #print(from_email_address, to_email_address, email_subject, email_content)
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -445,4 +444,4 @@ class SendEmail(View):
         print(response.status_code)
         #print(response.body)
         #print(response.headers)
-        return HttpResponse('Hello, World!')
+        return HttpResponse('Email has been sent!')

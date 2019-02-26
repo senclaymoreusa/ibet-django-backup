@@ -48,7 +48,7 @@ from allauth.socialaccount.helpers import complete_social_login
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.base import AuthProcess
 from rest_framework import serializers, exceptions
-
+from django.utils.translation import ugettext_lazy as _
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
@@ -129,8 +129,6 @@ class RegisterSerializer(serializers.Serializer):
 
         user.save()
         return user
-
-
 
 
 from django.conf import settings
