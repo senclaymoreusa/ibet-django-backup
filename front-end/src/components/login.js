@@ -98,7 +98,6 @@ const mapStateToProps = (state) => {
     return {
         loading: state.auth.loading,
         error: state.auth.error,
-        block: state.auth.block
     }
 }
 

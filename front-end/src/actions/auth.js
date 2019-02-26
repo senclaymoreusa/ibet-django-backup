@@ -98,12 +98,6 @@ export const authStart = () => {
     };
   }
 
-  export const isBlock = () => {
-      return {
-        type: 'AUTH_BLOCK'
-      }
-  }
-
   export const authCheckState = () => {
     return dispatch => {
         const token = localStorage.getItem('token');

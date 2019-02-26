@@ -82,7 +82,6 @@ const mapStateToProps = (state) => {
     const { token } = state.auth;
     return {
         isAuthenticated: token !== null && token !== undefined, 
-        block: state.auth.block,
         error:state.auth.error
     }
 }
