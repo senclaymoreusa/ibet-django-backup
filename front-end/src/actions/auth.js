@@ -34,7 +34,7 @@ export const authStart = () => {
         })
         .then(res => {
             const token = res.data.key;
-            if (!token || token === "undefined") {
+            if (!token || token === undefined) {
                 dispatch(logout());
             }
             const expirationDate = new Date(new Date().getTime() + 3600 * 1000);
@@ -101,7 +101,7 @@ export const authStart = () => {
   export const authCheckState = () => {
     return dispatch => {
         const token = localStorage.getItem('token');
-        if (!token || token === "undefined") {
+        if (!token || token === undefined) {
             // check token first
             dispatch(logout());
             return Promise.resolve(AUTH_RESULT_FAIL);
