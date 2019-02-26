@@ -17,7 +17,7 @@ from .forms import UserCreationForm
 class UserAdmin(BaseUserAdmin):
 	add_form = UserCreationForm
 
-	list_display = ('username','email','is_admin', 'first_name', 'last_name')
+	list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block')
 	list_filter = ('is_admin',)
 
 	fieldsets = (
