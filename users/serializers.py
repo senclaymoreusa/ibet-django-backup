@@ -230,3 +230,11 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
+
+class CustomTokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
+

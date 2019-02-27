@@ -81,7 +81,11 @@ class NormalLoginForm extends React.Component {
                         to='/signup/'> Signup
                     </NavLink>
                     </FormItem>
+                    <NavLink style={{textDecoration: 'none', color: 'blue'}} to = '/forget_password/'>
+                        Forget password
+                    </NavLink>
                 </Form>
+                
             }
             {   
                 showErrors()
