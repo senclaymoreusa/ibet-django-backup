@@ -344,11 +344,13 @@ from django.contrib.auth import (
 )
 from django.http import HttpResponse
 from rest_framework.exceptions import APIException
+from django.utils.translation import ugettext_lazy as _
+
 
 
 class BlockedUserException(APIException):
     status_code = 403
-    default_detail = 'Current user is blocked!'
+    default_detail = _('Current user is blocked!')
     default_code = 'block'
 
 class LoginView(GenericAPIView):
@@ -468,7 +470,8 @@ class CustomPasswordResetView:
         content = Content("text/plain", 'Click the link to reset your email password: ' + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-            
+
+
 class CustomPasswordTokenVerificationView(APIView):
     """
       An Api View which provides a method to verifiy that a given pw-reset token is valid before actually confirming the
@@ -508,3 +511,34 @@ class CustomPasswordTokenVerificationView(APIView):
 
         return Response({'status': 'OK'})
 
+from .serializers import LanguageCodeSerializer
+from django.utils.translation import LANGUAGE_SESSION_KEY
+from django.utils import translation
+
+class LanguageView(APIView):
+
+    # throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = LanguageCodeSerializer
+    
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        languageCode = serializer.validated_data['languageCode']
+        request.session[LANGUAGE_SESSION_KEY] = languageCode
+        # Make current response also shows translated result
+        translation.activate(languageCode)
+
+        return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+    def get(self, request, *args, **kwargs):
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in request.session:
+            languageCode = request.session[LANGUAGE_SESSION_KEY]
+        
+        return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+        

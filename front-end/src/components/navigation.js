@@ -1,25 +1,44 @@
 import React, { Component } from 'react';
+import Select from 'react-select';
 import { NavLink, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logout, handle_search } from '../actions';
+
+const languages = [
+  { value: 'en', label: 'English' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'fr', label: 'French' }
+];
 
 class Navigation extends Component {
 
     constructor(props){
         super(props);
-        this.state = { term: '' };
+        this.state = { term: '' , languageOption: { value: 'zh', label: 'Chinese' }};
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
+        // this.getInitialState = this.getInitialState.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {}
 
+    // getInitialState() {
+    //   return {languageOption: 'zh' };
+    // }
+
+    handleChange = (languageOption) => {
+      this.setState({ languageOption });
+      console.log(`option: `, languageOption);
+      console.log(`current state`, this.state);
+    }
+
     onInputChange(event){
         this.setState({term: event.target.value});
-        this.props.handle_search(event.target.value)
+        this.props.handle_search(event.target.value);
     }
     onFormSubmit(event){
-        this.props.history.push("/game_search")
+        this.props.history.push("/game_search");
         event.preventDefault();
         this.setState({ term: '' });
     }
@@ -73,6 +92,19 @@ class Navigation extends Component {
               </div>
             }
           </div>
+          {/* <select 
+            value={this.state.languageCode} 
+            onChange={this.handleChange} 
+          >
+            <option value="en">English</option>
+            <option value="zh">Chinese</option>
+            <option value="fr">French</option>
+          </select> */}
+          <Select
+            value={this.state.languageOption}
+            onChange={this.handleChange}
+            options={languages}
+          />
         </div>
       );
     }

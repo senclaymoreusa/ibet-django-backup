@@ -66,16 +66,15 @@ SENDGRID_API_KEY = 'SG.a6zOC2LkS6my270bBrJvAQ.M4gcWNk1PWYVNbIcHAluKmVyDAXvE8b4dO
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',      # Stephen
-    'django.middleware.common.CommonMiddleware',  # Stephen
-
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',  # Stephen
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware'
-
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'djauth.urls'
@@ -145,6 +144,7 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'zh-hans'
 
 TIME_ZONE = 'UTC'
 
@@ -153,6 +153,10 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
 
 
 # Static files (CSS, JavaScript, Images)

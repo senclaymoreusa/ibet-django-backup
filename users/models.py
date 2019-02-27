@@ -123,6 +123,8 @@ class Category(models.Model):
 
     category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
+    name_zh = models.CharField(max_length=50, null=True, blank=True)
+    name_fr = models.CharField(max_length=50, null=True, blank=True)
     parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.CharField(max_length=200)
     def __str__(self):
@@ -133,6 +135,8 @@ class Game(models.Model):
 
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
+    name_zh = models.CharField(max_length=50, null=True, blank=True)
+    name_fr = models.CharField(max_length=50, null=True, blank=True)
     #category = models.CharField(max_length=20)
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     start_time = models.DateTimeField('Start Time', null=True, blank=True)
@@ -140,6 +144,8 @@ class Game(models.Model):
     opponent1 = models.CharField(max_length=200, null=True, blank=True)
     opponent2 = models.CharField(max_length=200, null=True, blank=True)
     description = models.CharField(max_length=200)
+    description_zh = models.CharField(max_length=200, null=True, blank=True)
+    description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
 
     def __str__(self):

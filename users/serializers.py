@@ -49,6 +49,7 @@ from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.base import AuthProcess
 from rest_framework import serializers, exceptions
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import get_user_model
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
@@ -69,8 +70,12 @@ class RegisterSerializer(serializers.Serializer):
     
     
     def validate_username(self, username):
-        username = get_adapter().clean_username(username)
-        return username
+        user_model = get_user_model()
+        try:
+            user_model.objects.get(username__iexact=username)
+        except user_model.DoesNotExist:
+            return username
+        raise serializers.ValidationError(_("This username has already existed."))
 
     def validate_email(self, email):
         email = get_adapter().clean_email(email)
@@ -238,4 +243,8 @@ from django.core.exceptions import ValidationError
 
 class CustomTokenSerializer(serializers.Serializer):
     token = serializers.CharField()
+
+
+class LanguageCodeSerializer(serializers.Serializer):
+    languageCode = serializers.CharField()
 
