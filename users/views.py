@@ -168,7 +168,6 @@ def renew_book_librarian(request, pk):
     return render(request, 'users/book_renew_librarian.html', {'form': form, 'bookinst':book_inst})
     
     
-    
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .models import Author
@@ -432,8 +431,6 @@ class SendEmail(View):
         email_subject = self.request.GET['email_subject']
         email_content = self.request.GET['email_content']
 
-        #print(from_email_address, to_email_address, email_subject, email_content)
-
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
         to_email = Email(to_email_address)
@@ -442,6 +439,72 @@ class SendEmail(View):
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         print(response.status_code)
-        #print(response.body)
-        #print(response.headers)
+
         return HttpResponse('Email has been sent!')
+
+
+from django.dispatch import receiver
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from rest_framework.views import APIView
+from rest_framework import parsers, renderers, status
+from rest_framework.response import Response
+from .serializers import CustomTokenSerializer
+from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.views import get_password_reset_token_expiry_time
+from django.utils import timezone
+from datetime import timedelta
+
+
+class CustomPasswordResetView:
+    @receiver(reset_password_token_created)
+    def password_reset_token_created(sender, reset_password_token, *args, **kwargs):
+        
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email('claymore@claymoreusa.com')
+        to_email = Email(reset_password_token.user.email)
+        subject = 'Hi ' + reset_password_token.user.username + ', You have requested to reset your password'
+        content = Content("text/plain", 'Click the link to reset your email password: ' + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+            
+class CustomPasswordTokenVerificationView(APIView):
+    """
+      An Api View which provides a method to verifiy that a given pw-reset token is valid before actually confirming the
+      reset.
+    """
+    throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = CustomTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data['token']
+
+        # get token validation time
+        password_reset_token_validation_time = get_password_reset_token_expiry_time()
+
+        # find token
+        reset_password_token = ResetPasswordToken.objects.filter(key=token).first()
+
+        if reset_password_token is None:
+            return Response({'status': 'invalid'}, status=status.HTTP_404_NOT_FOUND)
+
+        # check expiry date
+        expiry_date = reset_password_token.created_at + timedelta(hours=password_reset_token_validation_time)
+
+        if timezone.now() > expiry_date:
+            # delete expired token
+            reset_password_token.delete()
+            return Response({'status': 'expired'}, status=status.HTTP_404_NOT_FOUND)
+
+        # check if user has password to change
+        if not reset_password_token.user.has_usable_password():
+            return Response({'status': 'irrelevant'})
+
+        return Response({'status': 'OK'})
+

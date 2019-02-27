@@ -135,6 +135,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers, exceptions
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)
@@ -230,3 +231,11 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
+
+class CustomTokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
+

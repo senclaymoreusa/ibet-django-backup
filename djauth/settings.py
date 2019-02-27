@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'allauth',                     # Stephen
     'allauth.account',             # Stephen
     'rest_auth.registration',      # Stephen
-    'allauth.socialaccount'        # Stephen
+    'allauth.socialaccount',       # Stephen
+    'django_rest_passwordreset'
 ]
 
 SITE_ID = 1                        # Stephen
