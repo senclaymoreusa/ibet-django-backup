@@ -17,11 +17,11 @@ from .forms import UserCreationForm
 class UserAdmin(BaseUserAdmin):
 	add_form = UserCreationForm
 
-	list_display = ('username','email','is_admin', 'first_name', 'last_name')
+	list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block')
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block')}),
 			('Permissions', {'fields': ('is_admin',)})
 		)
 	search_fields = ('username','email')

@@ -335,6 +335,89 @@ class RegisterView(CreateAPIView):
                         None)
         return user
 
+
+from django.contrib.auth.forms import AuthenticationForm
+from .serializers import LoginSerializer
+from django.conf import settings
+from django.contrib.auth import (
+    login as django_login,
+    logout as django_logout
+)
+from django.http import HttpResponse
+from rest_framework.exceptions import APIException
+
+
+class BlockedUserException(APIException):
+    status_code = 403
+    default_detail = 'Current user is blocked!'
+    default_code = 'block'
+
+class LoginView(GenericAPIView):
+    """
+    Check the credentials and return the REST Token
+    if the credentials are valid and authenticated.
+    Calls Django Auth login method to register User ID
+    in Django session framework
+    Accept the following POST parameters: username, password
+    Return the REST Framework Token Object's key.
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = LoginSerializer
+    token_model = TokenModel
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(LoginView, self).dispatch(*args, **kwargs)
+
+    def process_login(self):
+        django_login(self.request, self.user)
+
+    def get_response_serializer(self):
+        if getattr(settings, 'REST_USE_JWT', False):
+            response_serializer = JWTSerializer
+        else:
+            response_serializer = TokenSerializer
+        return response_serializer
+
+    def login(self):
+        self.user = self.serializer.validated_data['user']
+        if self.user.block is True:
+            # print("user block")
+            raise BlockedUserException
+        if getattr(settings, 'REST_USE_JWT', False):
+            self.token = jwt_encode(self.user)
+        else:
+            self.token = create_token(self.token_model, self.user,
+                                      self.serializer)
+
+        if getattr(settings, 'REST_SESSION_LOGIN', True):
+            self.process_login()
+        return self.get_response()
+
+    def get_response(self):
+        serializer_class = self.get_response_serializer()
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            data = {
+                'user': self.user,
+                'token': self.token
+            }
+            serializer = serializer_class(instance=data,
+                                          context={'request': self.request})
+        else:
+            serializer = serializer_class(instance=self.token,
+                                          context={'request': self.request})
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):        
+        self.request = request
+        self.serializer = self.get_serializer(data=self.request.data,
+                                              context={'request': request})
+        self.serializer.is_valid(raise_exception=True)
+
+        return self.login()
+        
 import sendgrid
 import os
 from sendgrid.helpers.mail import *
@@ -362,5 +445,3 @@ class SendEmail(View):
         #print(response.body)
         #print(response.headers)
         return HttpResponse('Email has been sent!')
-
-

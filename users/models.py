@@ -57,6 +57,8 @@ class CustomUser(AbstractBaseUser):
     
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    block = models.BooleanField(default=False)
+
 
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)

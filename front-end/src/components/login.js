@@ -2,19 +2,34 @@ import React from 'react';
 import { Form, Icon, Input, Button, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { authLogin } from '../actions'
+import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
 
 const FormItem = Form.Item;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 
 class NormalLoginForm extends React.Component {
-  handleSubmit = (e) => {
+
+    handleSubmit = (e) => {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        this.props.authLogin(values.userName, values.password);
-        this.props.history.push('/');
+        this.props.authLogin(values.userName, values.password)
+        .then(() => {
+            this.props.history.push('/');
+        })
+        .catch(err => {
+            console.log(err);
+        });
       }
+    });
+  }
+
+  componentDidMount() {
+    this.props.authCheckState()
+    .then(res => {
+      if (res === AUTH_RESULT_SUCCESS) {
+        this.props.history.push('/'); 
+      } 
     });
   }
 
@@ -27,6 +42,11 @@ class NormalLoginForm extends React.Component {
     }
 
     const { getFieldDecorator } = this.props.form;
+    let showErrors = () => {
+        if (this.props.error) {
+            return <p style={{color: 'red'}}>{this.props.error}</p>
+        }
+    }
     return (
         <div>
             {errorMessage}
@@ -63,6 +83,10 @@ class NormalLoginForm extends React.Component {
                     </FormItem>
                 </Form>
             }
+            {   
+                showErrors()
+            }
+            
       </div>
     );
   }
@@ -72,9 +96,9 @@ const Login = Form.create()(NormalLoginForm);
 
 const mapStateToProps = (state) => {
     return {
-        loading: state.loading,
-        error: state.error
+        loading: state.auth.loading,
+        error: state.auth.error,
     }
 }
 
-export default connect(mapStateToProps, {authLogin})(Login);
+export default connect(mapStateToProps, {authLogin, authCheckState})(Login);
