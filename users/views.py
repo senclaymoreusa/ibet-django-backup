@@ -51,8 +51,6 @@ def index(request):
 
 from django.views import generic
 
-
-
 class GameListView(generic.ListView):
     """
     Generic class-based view for a list of games.
@@ -96,7 +94,6 @@ class AuthorDetailView(generic.DetailView):
 
 class PlayerDetailView(generic.DetailView):
 
-    
     model = CustomUser
 
 
@@ -207,7 +204,6 @@ class BookDelete(PermissionRequiredMixin, DeleteView):
     permission_required = 'users.can_mark_returned'
 
 
-
 class AllSearchListView(generic.ListView):
     model = Game
     paginate_by = 10
@@ -217,7 +213,6 @@ class AllSearchListView(generic.ListView):
         if query == None:
             return Game.objects.none()
         return Game.objects.filter(name__contains=self.request.GET.get('q'))
-
 
 
 #  Added by Stephen
