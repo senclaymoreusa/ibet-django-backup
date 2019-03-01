@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 export const AUTH_RESULT_SUCCESS = 0;
 export const AUTH_RESULT_FAIL = 1;

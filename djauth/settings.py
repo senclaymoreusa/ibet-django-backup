@@ -25,10 +25,18 @@ SECRET_KEY = '7i^ke1w79@h(!g0)e18c8(^j=c8ewfx8=*9n4652o%0f3i^g_-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CORS_ORIGIN_WHITELIST = [
+    'localhost:3000'
+]
+CORS_ALLOW_CREDENTIALS = True
 
 
-CORS_ORIGIN_ALLOW_ALL=True     # Stephen
+# CORS_ORIGIN_ALLOW_ALL=True     # Stephen
+CORS_ORIGIN_ALLOW_ALL=True
+
+SESSION_COOKIE_SAMESITE = None
+CRSF_COOKIE_SAMESITE = None
+
 
 # Application definition
 
@@ -158,6 +166,8 @@ LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
 
+SESSION_SAVE_EVERY_REQUEST = True
+# SESSION_COOKIE_HTTPONLY = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/

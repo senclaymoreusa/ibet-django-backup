@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import {IntlProvider, FormattedMessage} from 'react-intl';
 import Navigation from "./navigation";
 import { game_detail } from '../actions'
 
@@ -31,7 +32,7 @@ class Game_List extends Component {
             <Navigation />
           </div>
           <div>
-          <h1> Game List </h1>
+          <h1><FormattedMessage id="games_list.title" defaultMessage='Game List' /></h1>
             {
               games.map(item => {
                   return (

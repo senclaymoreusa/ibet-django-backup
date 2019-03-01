@@ -3,6 +3,9 @@ import Navigation from "./navigation";
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { authCheckState } from '../actions';
+import {IntlProvider, FormattedMessage} from 'react-intl';
+
+
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -40,13 +43,13 @@ class Home extends Component {
 
     render() {
 
-      const books = this.state.books
-      const bookinstance = this.state.bookinstance
-      const authors = this.state.authors
-      var count = 0
+      const books = this.state.books;
+      const bookinstance = this.state.bookinstance;
+      const authors = this.state.authors;
+      var count = 0;
       bookinstance.map(item => {
         if (item.status === 'a'){
-          count += 1
+          count += 1;
         }
       })
       return (
@@ -56,13 +59,13 @@ class Home extends Component {
           </div>
 
           <div> 
-              <h1> Claymore </h1>
-              <h3> Local Library Home </h3>
-              <div> The library has the following record counts: </div>
-              <div> Books: {books.length} </div>
-              <div> Copies: {bookinstance.length} </div>
-              <div> Copies available: {count} </div>
-              <div> Authors: {authors.length} </div>
+              <h1> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
+              <h3> <FormattedMessage id="home.subtitle" defaultMessage='Local Library Home' /></h3>
+              <div> <FormattedMessage id="home.heading" defaultMessage='The library has the following record counts' /> :</div>
+              <div> <FormattedMessage id="home.books" defaultMessage='Books' />: {books.length} </div>
+              <div> <FormattedMessage id="home.copies" defaultMessage='Copies' />: {bookinstance.length} </div>
+              <div> <FormattedMessage id="home.copies_available" defaultMessage='Copies available' />: {count} </div>
+              <div> <FormattedMessage id="home.authors" defaultMessage='Authors' />: {authors.length} </div>
           </div>
          
         </div>

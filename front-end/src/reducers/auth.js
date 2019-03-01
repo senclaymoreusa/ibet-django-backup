@@ -1,8 +1,7 @@
 const INITIAL_STATE ={
     token: null,
     error: null, 
-    loading: false,
-    block: false
+    loading: false
 }
 
 export default (state = INITIAL_STATE, action) => {

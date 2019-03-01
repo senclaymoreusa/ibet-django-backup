@@ -2,6 +2,7 @@ import React from 'react';
 import { Form, Icon, Input, Button, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import {IntlProvider, FormattedMessage} from 'react-intl';
 import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
 
 const FormItem = Form.Item;
@@ -73,16 +74,16 @@ class NormalLoginForm extends React.Component {
 
                     <FormItem>
                     <Button type="primary" htmlType="submit" style={{marginRight: '10px'}}>
-                        Login
+                        <FormattedMessage id="auth.login" defaultMessage='Login' />
                     </Button>
-                    Or 
+                    <FormattedMessage id="auth.or" defaultMessage='Or' /> 
                     <NavLink 
                         style={{marginRight: '10px', textDecoration: 'none'}} 
-                        to='/signup/'> Signup
+                        to='/signup/'> <FormattedMessage id="auth.signup" defaultMessage='Signup' /> 
                     </NavLink>
                     </FormItem>
                     <NavLink style={{textDecoration: 'none', color: 'blue'}} to = '/forget_password/'>
-                        Forget password
+                    <FormattedMessage id="auth.forget_password" defaultMessage='Forget password' /> 
                     </NavLink>
                 </Form>
                 

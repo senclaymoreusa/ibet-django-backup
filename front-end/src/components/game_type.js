@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import { game_type } from '../actions';
 import { connect } from 'react-redux';
+import {IntlProvider, FormattedMessage} from 'react-intl';
 import Navigation from "./navigation";
 
 class Game_Type extends Component {
@@ -17,14 +18,14 @@ class Game_Type extends Component {
             <Navigation />
           </div>
           <div>
-            <h1> Game Type </h1>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Sports')}}> Sports </NavLink>
+            <h1> <FormattedMessage id="games_type.title" defaultMessage='Game Type' /></h1>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Sports')}}><FormattedMessage id="games_type.sports" defaultMessage='Sports' /></NavLink>
             <br/>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Casino')}}> Casino </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Casino')}}><FormattedMessage id="games_type.casino" defaultMessage='Casino' /></NavLink>
             <br/>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Poker')}}> Poker </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Poker')}}><FormattedMessage id="games_type.poker" defaultMessage='Poker' /></NavLink>
             <br/>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Guide')}}> Guide </NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Guide')}}><FormattedMessage id="games_type.guide" defaultMessage='Guide' /></NavLink>
           </div>
         </div>
       );

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import {IntlProvider, FormattedMessage} from 'react-intl';
 import Navigation from "./navigation";
 
 const API_URL = process.env.REACT_APP_REST_API
@@ -28,7 +29,7 @@ class Authors extends Component {
           </div>
         
           <div>
-            <h1> Author List </h1>
+            <h1> <FormattedMessage id="authors.title" defaultMessage='Author List' /> </h1>
             <div>
               {
                 authors.map(item => {

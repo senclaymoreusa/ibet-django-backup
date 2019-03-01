@@ -514,6 +514,7 @@ class CustomPasswordTokenVerificationView(APIView):
 from .serializers import LanguageCodeSerializer
 from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.utils import translation
+from django.contrib.sessions.backends.db import SessionStore
 
 class LanguageView(APIView):
 
@@ -529,16 +530,51 @@ class LanguageView(APIView):
         serializer.is_valid(raise_exception=True)
         languageCode = serializer.validated_data['languageCode']
         request.session[LANGUAGE_SESSION_KEY] = languageCode
+        request.session.modified = True
         # Make current response also shows translated result
         translation.activate(languageCode)
 
-        return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+        response = Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+        # print(request.session.keys())
+        print('post: ' + languageCode)
+
+        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+        if session_key is None:
+            request.session.create()
+            print('saved session key ' + request.session._session_key)
+            # response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key, domain='.app.localhost')
+            response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
+            pass
+        else:
+            print('existed session key ' + session_key)
+            pass
+        # print('session key: ' + session_key)
+
+        # Check that the test cookie worked (we set it below):
+        if request.session.test_cookie_worked():
+
+            # The test cookie worked, so delete it.
+            request.session.delete_test_cookie()
+
+            # In practice, we'd need some logic to check username/password
+            # here, but since this is an example...
+            print("You're logged in.")
+        request.session.set_test_cookie()
+        
+        return response
 
     def get(self, request, *args, **kwargs):
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in request.session:
             languageCode = request.session[LANGUAGE_SESSION_KEY]
         
+        # print(request.session.keys())
+        print('get: ' + languageCode)
+
+        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, 'nothing')
+        print('session key: ' + session_key)
+
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
 
         
