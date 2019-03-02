@@ -418,13 +418,20 @@ from sendgrid.helpers.mail import *
 from django.conf import settings
 from django.views import View
 from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
 
 class SendEmail(View):
     def get(self, request, *args, **kwargs):
-        from_email_address = self.request.GET['from_email_address']
-        to_email_address = self.request.GET['to_email_address']
-        email_subject = self.request.GET['email_subject']
-        email_content = self.request.GET['email_content']
+        case = self.request.GET['case']
+        from_email_address = 'claymore@claymoreusa.com'
+        if case == 'signup':
+            to_email_address = self.request.GET['to_email_address']
+            email_subject = _('Welcome to Claymore, ') + self.request.GET['username']
+            email_content = _('You have successfully set up your new email account: ') + self.request.GET['email']
+        elif case == 'change_email':
+            to_email_address = self.request.GET['to_email_address']
+            email_subject = _('Request of changing email address') + ' '
+            email_content = _('Your new Email Address is: ') + self.request.GET['email']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -434,7 +441,6 @@ class SendEmail(View):
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         print(response.status_code)
-
         return HttpResponse('Email has been sent!')
 
 
