@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Select from 'react-select';
 import { NavLink, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import {IntlProvider, FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { logout, handle_search, setLanguage } from '../actions';
 
 const languages = [
@@ -15,7 +15,8 @@ class Navigation extends Component {
 
     constructor(props){
         super(props);
-        this.state = { term: '' , languageOption: { value: 'en', label: 'English' }};
+
+        this.state = { term: '' };
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
         // this.getInitialState = this.getInitialState.bind(this);
@@ -24,15 +25,12 @@ class Navigation extends Component {
 
     componentDidMount() {}
 
-    // getInitialState() {
-    //   return {languageOption: 'zh' };
-    // }
-
     handleChange = (languageOption) => {
       this.setState({ languageOption });
       this.props.setLanguage(languageOption.value)
       .then((res) => {
         console.log(res.data);
+        // window.location.reload();
       })
       // console.log(`option: `, languageOption);
       // console.log(`current state`, this.state);
@@ -50,6 +48,16 @@ class Navigation extends Component {
 
 
     render() {
+
+      let lang = this.props.lang;
+      if (lang === 'zh') {
+        lang = 'zh-hans';
+      }
+      let arr = languages.filter(value => {
+        return value.value === lang;
+      });
+      const option = { value: lang, label: arr[0].label };
+
       return (
         <div className="Home" style={{marginTop: 30, marginRight: 50}}>
           <div className="category">
@@ -99,7 +107,7 @@ class Navigation extends Component {
             }
           </div>
           <Select
-          value={this.state.languageOption}
+          value={option}
           onChange={this.handleChange}
           options={languages}
           />
@@ -109,10 +117,12 @@ class Navigation extends Component {
   }
 
 const mapStateToProps = (state) => {
+    console.log('navigation lang: ' + state.language.lang);
     const { token } = state.auth;
     return {
         isAuthenticated: token !== null && token !== undefined, 
-        error:state.auth.error
+        error: state.auth.error,
+        lang: state.language.lang,
     }
 }
   

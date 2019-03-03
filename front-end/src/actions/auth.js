@@ -24,6 +24,13 @@ export const authStart = () => {
       error: error
     }
   }
+
+const config = {
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true,
+};
   
   export const authLogin = (username, password) => {
     return (dispatch) => {
@@ -31,7 +38,7 @@ export const authStart = () => {
         return axios.post(API_URL + 'users/api/login/', {
             username: username,
             password: password
-        })
+        }, config)
         .then(res => {
             const token = res.data.key;
             if (!token || token === undefined) {

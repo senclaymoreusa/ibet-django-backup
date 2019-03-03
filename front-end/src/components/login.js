@@ -2,13 +2,21 @@ import React from 'react';
 import { Form, Icon, Input, Button, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import {IntlProvider, FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
 
 const FormItem = Form.Item;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 
 class NormalLoginForm extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+           err: ''
+        }
+    }
 
     handleSubmit = (e) => {
     e.preventDefault();
@@ -19,6 +27,7 @@ class NormalLoginForm extends React.Component {
             this.props.history.push('/');
         })
         .catch(err => {
+            this.setState({err: err});
             console.log(err);
         });
       }
@@ -44,8 +53,8 @@ class NormalLoginForm extends React.Component {
 
     const { getFieldDecorator } = this.props.form;
     let showErrors = () => {
-        if (this.props.error) {
-            return <p style={{color: 'red'}}>{this.props.error}</p>
+        if (this.state.err) {
+            return <p style={{color: 'red'}}>{this.state.err}</p>
         }
     }
     return (

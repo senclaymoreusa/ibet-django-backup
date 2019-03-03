@@ -80,6 +80,7 @@ class BookDetailView(generic.DetailView):
     """
     model = Book
 
+
 class AuthorListView(generic.ListView):
     """
     Generic class-based list view for a list of authors.
@@ -237,14 +238,29 @@ class GameAPIListView(ListAPIView):
     def get_queryset(self):
         term = self.request.GET['term']
         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+
         if not data:
             data = Game.objects.filter(category_id__name__icontains=term)
-            if not data:
-                data = Game.objects.filter(name__icontains=term)
-                if not data:
-                    logger.error('Search term is not valid')
-                return data
-            return data
+
+        if not data:
+            data = Game.objects.filter(name__icontains=term)
+
+        if not data:
+            logger.error('Search term is not valid')
+
+        # override name/description based on language preference
+        # languageCode = 'en'
+        # if LANGUAGE_SESSION_KEY in self.request.session:
+        #     languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        
+        # print('game langugae: ' + languageCode)
+        # if languageCode != 'en':
+        #     for game in data:
+        #         if languageCode == 'zh-hans' and game.name_zh is not None:
+        #             game.name = game.name_zh
+        #         elif languageCode == 'fr' and game.name_fr is not None:
+        #             game.name = game.name_fr
+
         return data
 
 class BookAPIListView(ListAPIView):
@@ -261,6 +277,7 @@ class CategoryAPIListView(ListAPIView):
 
 class BookInstanceAPIListView(ListAPIView):
     serializer_class = BookInstanceSerializer
+    
     queryset = BookInstance.objects.all()
 
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
@@ -381,6 +398,12 @@ class LoginView(GenericAPIView):
         return response_serializer
 
     def login(self):
+
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in self.request.session:
+            languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        print('login language code: ' + languageCode)
+
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
             # print("user block")
@@ -542,12 +565,12 @@ class LanguageView(APIView):
         session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
         if session_key is None:
             request.session.create()
-            print('saved session key ' + request.session._session_key)
+            # print('saved session key ' + request.session._session_key)
             # response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key, domain='.app.localhost')
             response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
             pass
         else:
-            print('existed session key ' + session_key)
+            # print('existed session key ' + session_key)
             pass
         # print('session key: ' + session_key)
 
@@ -559,7 +582,6 @@ class LanguageView(APIView):
 
             # In practice, we'd need some logic to check username/password
             # here, but since this is an example...
-            print("You're logged in.")
         request.session.set_test_cookie()
         
         return response
@@ -573,7 +595,7 @@ class LanguageView(APIView):
         print('get: ' + languageCode)
 
         session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, 'nothing')
-        print('session key: ' + session_key)
+        # print('session key: ' + session_key)
 
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
 

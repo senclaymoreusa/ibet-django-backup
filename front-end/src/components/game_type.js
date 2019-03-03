@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import { game_type } from '../actions';
 import { connect } from 'react-redux';
-import {IntlProvider, FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Navigation from "./navigation";
 
 class Game_Type extends Component {

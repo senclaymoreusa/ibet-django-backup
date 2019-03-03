@@ -3,7 +3,7 @@ import Navigation from "./navigation";
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { authCheckState } from '../actions';
-import {IntlProvider, FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 
 

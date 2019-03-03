@@ -4,13 +4,9 @@ import { connect } from 'react-redux';
 import './App.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 import BaseRouter from './routes';
-import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
-import ReduxThunk from 'redux-thunk';
-import reducers from './reducers';
-import {IntlProvider, FormattedMessage} from 'react-intl';
+import { IntlProvider } from 'react-intl';
 import { messages } from './components/messages';
-import { setLanguage } from './actions/language';
+import { getLanguage } from './actions/language';
 
 class App extends Component {
 
@@ -22,8 +18,12 @@ class App extends Component {
     lang: 'zh',
   }
 
+  componentDidMount() {
+    console.log('App did mount');
+    this.props.getLanguage();
+  }
+
   render() {
-    const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
     const { lang } = this.props; 
     return (
       // <Provider store={this.store}>
@@ -46,4 +46,4 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps, {setLanguage})(App);
+export default connect(mapStateToProps, { getLanguage })(App);

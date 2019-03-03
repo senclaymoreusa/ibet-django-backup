@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {IntlProvider, FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import axios from 'axios';
 import Navigation from "./navigation";
 

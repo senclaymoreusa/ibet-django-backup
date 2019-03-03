@@ -8,20 +8,21 @@ const setLanguageState = (language) => {
     }
 }
 
-export const setLanguage = (language) => {
-    const config = {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-    };
+const config = {
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true,
+};
 
+export const setLanguage = (language) => {
+    
     return (dispatch) => {
         return axios.post(API_URL + 'users/api/language/', {
             languageCode: language
         }, config)
         .then(res => {
-            // let result = res;
+            let result = res;
             // return axios.get(API_URL + 'users/api/language/', config)
             // .then(res => {
             //     console.log(res);
@@ -42,12 +43,17 @@ export const setLanguage = (language) => {
 
 
 export const getLanguage = () => {
+    console.log('call getLanguage');
     return (dispatch) => {
-        return axios.get(API_URL + 'users/api/language/')
+        return axios.get(API_URL + 'users/api/language/', config)
         .then(res => {
+            let language = res.data.languageCode;
+            if (language.indexOf('zh') >= 0) {
+                language = 'zh';
+            }
             console.log(res);
-            dispatch(setLanguageState(res.data.languageCode));
-            return Promise.resolve(res.data.languageCode);
+            dispatch(setLanguageState(language));
+            return Promise.resolve(language);
         })
         .catch(err => {
             console.log(err.response);

@@ -167,7 +167,7 @@ LOCALE_PATHS = (
 )
 
 SESSION_SAVE_EVERY_REQUEST = True
-# SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_HTTPONLY = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
