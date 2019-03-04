@@ -34,7 +34,6 @@ class Login extends React.Component {
     this.setState({username: event.target.value});
   }
 
-
   onInputChange_password(event){
     this.setState({password: event.target.value});
   }
@@ -101,7 +100,7 @@ class Login extends React.Component {
 
         <button> 
             <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <FormattedMessage id="auth.back" defaultMessage='Forget password' /> 
+            <FormattedMessage id="auth.back" defaultMessage='Back' /> 
             </NavLink>
         </button>
         <br/>
