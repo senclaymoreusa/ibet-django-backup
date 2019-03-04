@@ -18,6 +18,7 @@ export const messages = {
         'auth.or': 'Or',
         'auth.login': 'Login',
         'auth.signup': 'Signup',
+        'auth.back': 'Back',
         'auth.forget_password': 'Forget password',
         'books.title': 'Book List',
         'authors.title': 'Author List',
@@ -27,9 +28,6 @@ export const messages = {
         'games_type.casino': 'Casino',
         'games_type.poker': 'Poker',
         'games_type.guide': 'Guide',
-        // 'en': 'English',
-        // 'fr': 'Franch',
-        // 'zh-hans': 'Chinese',
 
 
     },
@@ -52,6 +50,7 @@ export const messages = {
         'auth.or': '或',
         'auth.login': '登入',
         'auth.signup': '註冊',
+        'auth.back': '返回',
         'auth.forget_password': '忘記密碼',
         'books.title': '書籍列表',
         'authors.title': '作者列表',
@@ -61,9 +60,6 @@ export const messages = {
         'games_type.casino': '赌博',
         'games_type.poker': '撲克牌',
         'games_type.guide': '導覽',
-        // 'en': '英文',
-        // 'fr': '法文',
-        // 'zh-hans': '中文',
 
     }, 
     fr: {
@@ -85,6 +81,7 @@ export const messages = {
         'auth.or': 'Ou',
         'auth.login': 'S\'identifier',
         'auth.signup': 'S\'inscrire',
+        'auth.back': 'Retour',
         'auth.forget_password': 'Mot de passe oublié',
         'books.title': 'Liste de livres',
         'authors.title': 'Liste des auteurs',
@@ -95,15 +92,24 @@ export const messages = {
         'games_type.poker': 'Poker',
         'games_type.guide': 'Guide'
     }
-    // FROM_EMAIL:              'claymore@claymoreusa.com',
-    // SIGNUP_EMAIL_SUBJECT:    'Welcome to Claymore',
-    // SIGNUP_EMAIL_CONTENT:    'You have successfully set up your new email account:',
-    // CHANGE_EMAIL_SUBJECT:    'Request of changing email address',
-    // CHANGE_EMAIL_CONTENT:    'Your new Email Address is: ',
+
     // SEND_EMAIL_MESSAGE:      'An email has been sent to you email address to reset your password',
     // CHANGE_PASSOWRD_CONFIRM: 'You have successfully reset your password',
     // PAGE_NOT_VALID:          'This page no longer exists',
     // PASSWORD_NOT_MATCH:      'Two passwords you entered do not match',
-    // PASSWORD_NOT_VALID:      'Password has to be at least 8 characters'
+    // PASSWORD_NOT_VALID:      'Password has to be at least 8 characters',
+
+    // USERNAME_EMPTY_ERROR:    'Username cannot be empty',
+    // EMAIL_EMPTY_ERROR:       'Email cannot be empty',
+    // PASSWORD_EMPTY_ERROR:    'Password cannot be empty',
+    // FIRST_NAME_EMPTY_ERROR:  'First name cannot be empty',
+    // LAST_NAME_EMPTY_ERROR:   'Last name cannot be empty',
+    // PHONE_EMPTY_ERROR:       'Phone cannot be empty',
+    // DATEOFBIRTH_EMPTY_ERROR: 'Date of birth cannot be empty',
+    // STREET_EMPTY_ERROR:      'Street address cannot be empty',
+    // CITY_EMPTY_ERROR:        'City cannot be empty',
+    // STATE_EMPTY_ERROR:       'State cannot be empty',
+    // COUNTRY_EMPTY_ERROR:     'Country cannot be empty',
+    // ZIPCODE_EMPTY_ERROR:     'Zipcode cannot be empty',
 }
 

@@ -70,12 +70,17 @@ class RegisterSerializer(serializers.Serializer):
     
     
     def validate_username(self, username):
-        user_model = get_user_model()
+
+        #username = get_adapter().clean_username(username)
+        #return username
+
+        user_model = get_user_model() # your way of getting the User
         try:
-            user_model.objects.get(username__iexact=username)
+           user_model.objects.get(username__iexact=username)
         except user_model.DoesNotExist:
             return username
-        raise serializers.ValidationError(_("This username has already existed."))
+        raise serializers.ValidationError(
+                    _("A user is already registered with this username."))
 
     def validate_email(self, email):
         email = get_adapter().clean_email(email)
@@ -91,6 +96,22 @@ class RegisterSerializer(serializers.Serializer):
     def validate(self, data):
         if data['password1'] != data['password2']:
             raise serializers.ValidationError(_("The two password fields didn't match."))
+        if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
+            raise serializers.ValidationError(_("First name not valid"))
+        if not data['last_name'] or len(data['last_name']) > 20 or not data['last_name'].isalpha():
+            raise serializers.ValidationError(_("Last name not valid"))
+        if not data['date_of_birth'] or len(data['date_of_birth']) > 20 or any(char.isalpha() for char in data['date_of_birth']) :
+            raise serializers.ValidationError(_("Date of birth not valid"))
+        if not data['phone'] or not data['phone'].isdigit() or len(data['phone']) < 8 or len(data['phone']) > 20:
+            raise serializers.ValidationError(_("Phone not valid"))
+        if not data['city'] or any(char.isdigit() for char in data['city']) or len(data['city']) > 25:
+            raise serializers.ValidationError(_("City not valid"))
+        if not data['country'] or any(char.isdigit() for char in data['country']) or len(data['country']) > 25:
+            raise serializers.ValidationError(_("Country not valid"))
+        if not data['state'] or any(char.isdigit() for char in data['state']) or len(data['state']) > 25:
+            raise serializers.ValidationError(_("State not valid"))
+        if not data['zipcode'] or not len(data['zipcode']) < 20 or not data['zipcode'].isdigit() :
+            raise serializers.ValidationError(_("Zipcode not valid"))
         return data
 
     def custom_signup(self, request, user):

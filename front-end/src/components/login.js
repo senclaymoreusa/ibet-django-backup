@@ -1,38 +1,25 @@
 import React from 'react';
-import { Form, Icon, Input, Button, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
+import { messages } from './messages';
 
-const FormItem = Form.Item;
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-
-class NormalLoginForm extends React.Component {
+class Login extends React.Component {
 
     constructor(props){
         super(props);
-
+    
         this.state = {
-           err: ''
-        }
+          error: '',
+          username: '',
+          password: '',
+        };
+    
+        this.onInputChange_username         = this.onInputChange_username.bind(this);
+        this.onInputChange_password         = this.onInputChange_password.bind(this)
+        this.onFormSubmit                   = this.onFormSubmit.bind(this);
     }
-
-    handleSubmit = (e) => {
-    e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (!err) {
-        this.props.authLogin(values.userName, values.password)
-        .then(() => {
-            this.props.history.push('/');
-        })
-        .catch(err => {
-            this.setState({err: err});
-            console.log(err);
-        });
-      }
-    });
-  }
 
   componentDidMount() {
     this.props.authCheckState()
@@ -43,70 +30,88 @@ class NormalLoginForm extends React.Component {
     });
   }
 
-  render() {
-    let errorMessage = null;
-    if (this.props.error) {
-        errorMessage = (
-            <p>{this.props.error.message}</p>
-        );
-    }
+  onInputChange_username(event){
+    this.setState({username: event.target.value});
+  }
 
-    const { getFieldDecorator } = this.props.form;
-    let showErrors = () => {
-        if (this.state.err) {
-            return <p style={{color: 'red'}}>{this.state.err}</p>
-        }
+
+  onInputChange_password(event){
+    this.setState({password: event.target.value});
+  }
+
+  onFormSubmit(event){
+    event.preventDefault();
+
+    if (!this.state.username){
+        this.setState({error: messages.USERNAME_EMPTY_ERROR})
+    }else if(!this.state.password){
+        this.setState({error: messages.EMAIL_EMPTY_ERROR})
+    }else{
+        this.props.authLogin(this.state.username, this.state.password)
+        .then(() => {
+            this.props.history.push('/');
+        })
+        .catch(err => {
+            this.setState({error: err})
+        });
     }
+  }
+
+  render() {
+    
     return (
         <div>
-            {errorMessage}
-            {
-                this.props.loading ?
-                <Spin indicator={antIcon} />
-                :
-                <Form onSubmit={this.handleSubmit} className="login-form">
-                    <FormItem>
-                    {getFieldDecorator('userName', {
-                        rules: [{ required: true, message: 'Please input your username!' }],
-                    })(
-                        <Input prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Username" />
-                    )}
-                    </FormItem>
+        <form onSubmit={this.onFormSubmit} >
 
-                    <FormItem>
-                    {getFieldDecorator('password', {
-                        rules: [{ required: true, message: 'Please input your Password!' }],
-                    })(
-                        <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} type="password" placeholder="Password" />
-                    )}
-                    </FormItem>
+            <div>
+            <label><b>Username:</b></label>
+            <input
+                placeholder="claymore"
+                className="form-control"
+                value={this.state.username}
+                onChange={this.onInputChange_username}
+            />
+            </div>
 
-                    <FormItem>
-                    <Button type="primary" htmlType="submit" style={{marginRight: '10px'}}>
-                        <FormattedMessage id="auth.login" defaultMessage='Login' />
-                    </Button>
-                    <FormattedMessage id="auth.or" defaultMessage='Or' /> 
-                    <NavLink 
-                        style={{marginRight: '10px', textDecoration: 'none'}} 
-                        to='/signup/'> <FormattedMessage id="auth.signup" defaultMessage='Signup' /> 
-                    </NavLink>
-                    </FormItem>
-                    <NavLink style={{textDecoration: 'none', color: 'blue'}} to = '/forget_password/'>
-                    <FormattedMessage id="auth.forget_password" defaultMessage='Forget password' /> 
-                    </NavLink>
-                </Form>
-                
-            }
-            {   
-                showErrors()
-            }
-            
-      </div>
+            <div>
+            <label><b>Password:</b></label>
+            <input
+                type = 'password'
+                placeholder="password"
+                className="form-control"
+                value={this.state.password}
+                onChange={this.onInputChange_password}
+            />
+            </div>
+
+            <span className="input-group-btn">
+                <button type="submit" className="btn btn-secondary"> 
+                <FormattedMessage id="auth.login" defaultMessage='Login' />
+                </button>
+            </span> 
+            <FormattedMessage id="auth.or" defaultMessage='Or' />        
+            <NavLink to='/signup' style={{ textDecoration: 'none', color: 'blue' }}>
+                <FormattedMessage id="auth.signup" defaultMessage='Signup' />
+            </NavLink>
+            <br/>
+            <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
+                <FormattedMessage id="auth.forget_password" defaultMessage='Forget password' /> 
+            </NavLink>
+        </form>
+
+        <button> 
+            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+            <FormattedMessage id="auth.back" defaultMessage='Forget password' /> 
+            </NavLink>
+        </button>
+        <br/>
+        {
+            <div style={{color: 'red'}}> {this.state.error} </div>
+        }
+    </div>
     );
   }
 }
-
-const Login = Form.create()(NormalLoginForm);
 
 const mapStateToProps = (state) => {
     return {
