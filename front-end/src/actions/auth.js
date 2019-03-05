@@ -1,4 +1,5 @@
 import axios from "axios";
+import { config } from "../util_config";
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -25,12 +26,12 @@ export const authStart = () => {
     }
   }
 
-const config = {
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-};
+// const config = {
+//     headers: {
+//         'Content-Type': 'application/json',
+//     },
+//     withCredentials: true,
+// };
   
   export const authLogin = (username, password) => {
     return (dispatch) => {
@@ -63,11 +64,11 @@ const config = {
   export const authSignup = (username, email, password1, password2, first_name, last_name, phone, date_of_birth, street_address_1, street_address_2, country, city, zipcode, state) => {
     return dispatch => {
         dispatch(authStart());
-        const config = {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        };
+        // const config = {
+        //   headers: {
+        //     "Content-Type": "application/json"
+        //   }
+        // };
         const body = JSON.stringify({ username, email, password1, password2, first_name, last_name, phone, date_of_birth,
           street_address_1, street_address_2, country, city, zipcode, state
         });
@@ -120,11 +121,11 @@ const config = {
                 return Promise.resolve(AUTH_RESULT_FAIL);
             } else {
                 // check whether user is blocked
-                const config = {
-                    headers: {
-                    "Content-Type": "application/json"
-                    }
-                };
+                // const config = {
+                //     headers: {
+                //     "Content-Type": "application/json"
+                //     }
+                // };
                 config.headers["Authorization"] = `Token ${token}`;
         
                 return axios.get(API_URL + 'users/api/user/', config)

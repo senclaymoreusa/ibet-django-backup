@@ -1,4 +1,5 @@
 import axios from "axios";
+import { config } from "../util_config";
 const API_URL = process.env.REACT_APP_REST_API;
 
 const setLanguageState = (language) => {
@@ -8,12 +9,12 @@ const setLanguageState = (language) => {
     }
 }
 
-const config = {
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-};
+// const config = {
+//     headers: {
+//         'Content-Type': 'application/json',
+//     },
+//     withCredentials: true,
+// };
 
 export const setLanguage = (language) => {
     
@@ -22,12 +23,6 @@ export const setLanguage = (language) => {
             languageCode: language
         }, config)
         .then(res => {
-            let result = res;
-            // return axios.get(API_URL + 'users/api/language/', config)
-            // .then(res => {
-            //     console.log(res);
-            //     return Promise.resolve(result);
-            // })
             if (language.indexOf('zh') >= 0) {
                 language = 'zh';
             }
@@ -35,7 +30,7 @@ export const setLanguage = (language) => {
             return Promise.resolve(res);
         })
         .catch(err => {
-            console.log(err.response);
+            // console.log(err.response);
             return Promise.reject(err.response);
         })
     }
@@ -43,7 +38,6 @@ export const setLanguage = (language) => {
 
 
 export const getLanguage = () => {
-    console.log('call getLanguage');
     return (dispatch) => {
         return axios.get(API_URL + 'users/api/language/', config)
         .then(res => {
@@ -51,12 +45,12 @@ export const getLanguage = () => {
             if (language.indexOf('zh') >= 0) {
                 language = 'zh';
             }
-            console.log(res);
+            // console.log(res);
             dispatch(setLanguageState(language));
             return Promise.resolve(language);
         })
         .catch(err => {
-            console.log(err.response);
+            // console.log(err.response);
             return Promise.reject(err.response);
         })
     }

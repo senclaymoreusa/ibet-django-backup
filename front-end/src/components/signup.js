@@ -3,7 +3,10 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { authSignup, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
 import axios from 'axios';
-import { messages } from './messages';
+import { FormattedMessage } from 'react-intl';
+import { config } from '../util_config';
+import { errors } from './errors';
+
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -16,7 +19,8 @@ class Signup extends React.Component {
     this.state = {
       email_error: '',
       username_error: '',
-      error: '',
+      errorCode: '',
+      password_error: '',
   
       username: '',
       email: '',
@@ -119,57 +123,165 @@ class Signup extends React.Component {
   onFormSubmit(event){
     event.preventDefault();
 
-    if (!this.state.username){
-      this.setState({error: messages.USERNAME_EMPTY_ERROR})
-    }else if(!this.state.email){
-      this.setState({error: messages.EMAIL_EMPTY_ERROR})
-    }else if (!this.state.password1 || !this.state.password2){
-      this.setState({error: messages.PASSWORD_EMPTY_ERROR})
-    }else if(!this.state.first_name){
-      this.setState({error: messages.FIRST_NAME_EMPTY_ERROR})
-    }else if(!this.state.last_name){
-      this.setState({error: messages.LAST_NAME_EMPTY_ERROR})
-    }else if(!this.state.phone){
-      this.setState({error: messages.PHONE_EMPTY_ERROR})
-    }else if(!this.state.date_of_birth){
-      this.setState({error: messages.DATEOFBIRTH_EMPTY_ERROR})
-    }else if(!this.state.street_address_1 || !this.state.street_address_2){
-      this.setState({error: messages.STREET_EMPTY_ERROR})
-    }else if(!this.state.city){
-      this.setState({error: messages.CITY_EMPTY_ERROR})
-    }else if(!this.state.state){
-      this.setState({error: messages.STATE_EMPTY_ERROR})
-    }else if(!this.state.country){
-      this.setState({error: messages.COUNTRY_EMPTY_ERROR})
-    }else if(!this.state.zipcode){
-      this.setState({error: messages.ZIPCODE_EMPTY_ERROR})
-    }else{
+    if (!this.state.username) {
+      this.setState({ errorCode: errors.USERNAME_EMPTY_ERROR });
+    } else if (!this.state.email) {
+      // this.setState({errorCode: messages.EMAIL_EMPTY_ERROR});
+      this.setState({ errorCode: errors.EMAIL_EMPTY_ERROR });
+    } else if (!this.state.password1 || !this.state.password2) {
+      // this.setState({error: messages.PASSWORD_EMPTY_ERROR});
+      this.setState({ errorCode: errors.PASSWORD_EMPTY_ERROR });
+    } else if (!this.state.first_name) {
+      // this.setState({error: messages.FIRST_NAME_EMPTY_ERROR});
+      this.setState({ errorCode: errors.FIRST_NAME_EMPTY_ERROR });
+    } else if (!this.state.last_name) {
+      this.setState({ errorCode: errors.LAST_NAME_EMPTY_ERROR });
+      // this.setState({error: messages.LAST_NAME_EMPTY_ERROR});
+    } else if (!this.state.phone) {
+      // this.setState({error: messages.PHONE_EMPTY_ERROR});
+      this.setState({ errorCode: errors.PHONE_EMPTY_ERROR });
+    } else if (!this.state.date_of_birth) {
+      // this.setState({error: messages.DATEOFBIRTH_EMPTY_ERROR});
+      this.setState({ errorCode: errors.DATEOFBIRTH_EMPTY_ERROR });
+    } else if (!this.state.street_address_1 || !this.state.street_address_2) {
+      // this.setState({error: messages.STREET_EMPTY_ERROR});
+      this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
+    } else if (!this.state.city) {
+      // this.setState({error: messages.CITY_EMPTY_ERROR});
+      this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
+    } else if (!this.state.state) {
+      // this.setState({error: messages.STATE_EMPTY_ERROR});
+      this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
+    } else if (!this.state.country) {
+      // this.setState({error: messages.COUNTRY_EMPTY_ERROR});
+      this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
+    } else if (!this.state.zipcode){
+      // this.setState({error: messages.ZIPCODE_EMPTY_ERROR});
+      this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
+    } else {
       this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
       .then(() => {
         this.props.history.push('/');
-        axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`)
+        axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
       }).catch(err => {
-
-        if ('username' in err.response.data){
+        console.log(err.response);
+        if ('username' in err.response.data) {
           this.setState({username_error: err.response.data.username[0]})
-        }else{
+        } else {
           this.setState({username_error: ''})
         }
 
-        if('email' in err.response.data){
+        if ('email' in err.response.data) {
           this.setState({email_error: err.response.data.email[0]})
-        }else{
+        } else {
           this.setState({email_error: ''})
         }
 
-        if ('non_field_errors' in err.response.data){
+        if ('non_field_errors' in err.response.data) {
           this.setState({error: err.response.data.non_field_errors.slice(0)})
+        }
+
+        if ('password1' in err.response.data) {
+          this.setState({password_error: err.response.data.non_field_errors.slice(0)})
         }
       })
     }
   }
 
   render() {
+
+    const showErrors = () => {
+      if (this.state.errorCode === errors.USERNAME_EMPTY_ERROR) {
+          return (
+              <div style={{color: 'red'}}> 
+                  <FormattedMessage id="sign.username_empty_error" defaultMessage='Username cannot be empty' /> 
+              </div>
+          );
+      } else if (this.state.errorCode === errors.EMAIL_EMPTY_ERROR) {
+          return (
+              <div style={{color: 'red'}}> 
+                  <FormattedMessage id="sign.email_empty_error" defaultMessage='Email cannot be empty' /> 
+              </div>
+          );
+      } else if (this.state.errorCode === errors.PASSWORD_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.password_empty_error" defaultMessage='Password cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.FIRST_NAME_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.firstName_empty_error" defaultMessage='First Name cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.LAST_NAME_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.lastName_empty_error" defaultMessage='Last Name cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.PHONE_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.phone_empty_error" defaultMessage='Phone cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.DATEOFBIRTH_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.dob_empty_error" defaultMessage='Date Of Birth cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.STREET_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.street_empty_error" defaultMessage='Street cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.CITY_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.city_empty_error" defaultMessage='City cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.STATE_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.state_empty_error" defaultMessage='State cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.COUNTRY_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.country_empty_error" defaultMessage='Country cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.errorCode === errors.ZIPCODE_EMPTY_ERROR) {
+        return (
+            <div style={{color: 'red'}}> 
+                <FormattedMessage id="sign.zipcode_empty_error" defaultMessage='Zipcode cannot be empty' /> 
+            </div>
+        );
+      } else if (this.state.username_error) {
+        return (
+            <div style={{color: 'red'}}> {this.state.username_error} </div>
+        )
+      } else if (this.state.email_error) {
+        return (
+            <div style={{color: 'red'}}> {this.state.email_error} </div>
+        )
+        
+      } else if (this.state.password_error) {
+        return (
+            <div style={{color: 'red'}}> {this.state.password_error} </div>
+        )
+      } else if (!this.state.username_error && !this.state.email_error && !this.state.password_error){
+        return (
+          <div style={{color: 'red'}}> {this.state.error} </div>
+        )
+      }
+    }
     
     return (
 
@@ -177,7 +289,9 @@ class Signup extends React.Component {
         <form onSubmit={this.onFormSubmit} >
 
           <div>
-            <label><b>Username:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.username" defaultMessage='Username: ' />  
+            </b></label>
             <input
                 placeholder="Wilson"
                 className="form-control"
@@ -187,7 +301,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Email:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.email" defaultMessage='Email: ' />    
+            </b></label>
             <input
                 placeholder="example@gmail.com"
                 className="form-control"
@@ -197,7 +313,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Password:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.password" defaultMessage='Password: ' />   
+            </b></label>
             <input
                 type = 'password'
                 placeholder="password"
@@ -208,7 +326,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Confirm:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.confirm" defaultMessage='Confirm: ' />   
+            </b></label>
             <input
                 type = 'password'
                 placeholder="password"
@@ -219,7 +339,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>First Name:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.firstName" defaultMessage='First Name: ' />     
+            </b></label>
             <input
                 placeholder="Vicky"
                 className="form-control"
@@ -229,7 +351,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Last Name:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.lastName" defaultMessage='Last Name: ' />   
+            </b></label>
             <input
                 placeholder="Stephen"
                 className="form-control"
@@ -239,7 +363,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Phone:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
+            </b></label>
             <input
                 placeholder="9496541234"
                 className="form-control"
@@ -249,7 +375,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Date of birth:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.dob" defaultMessage='Date of birth: ' />  
+            </b></label>
             <input
                 placeholder="mm/dd/yyyy"
                 className="form-control"
@@ -259,7 +387,9 @@ class Signup extends React.Component {
           </div>
 
           <div>
-            <label><b>Street Address 1:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.street1" defaultMessage='Street Address 1: ' />    
+            </b></label>
             <input
                 placeholder="123 World Dr"
                 className="form-control"
@@ -269,7 +399,9 @@ class Signup extends React.Component {
           </div>     
 
           <div>
-            <label><b>Street Address 2:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.street2" defaultMessage='Street Address 2: ' />      
+            </b></label>
             <input
                 placeholder="Suite 23"
                 className="form-control"
@@ -279,7 +411,9 @@ class Signup extends React.Component {
           </div>                
 
           <div>
-            <label><b>City:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.city" defaultMessage='City: ' />  
+            </b></label>
             <input
                 placeholder="Mountain View"
                 className="form-control"
@@ -289,7 +423,9 @@ class Signup extends React.Component {
           </div> 
 
           <div>
-            <label><b>State:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.state" defaultMessage='State: ' />  
+            </b></label>
             <input
                 placeholder="CA"
                 className="form-control"
@@ -299,7 +435,9 @@ class Signup extends React.Component {
           </div>           
 
           <div>
-            <label><b>Country:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.country" defaultMessage='Country: ' />   
+            </b></label>
             <input
                 placeholder="United States"
                 className="form-control"
@@ -309,7 +447,9 @@ class Signup extends React.Component {
           </div>           
 
           <div>
-            <label><b>Zipcode:</b></label>
+            <label><b>
+            <FormattedMessage id="signup.zipcode" defaultMessage='Zipcode: ' />    
+            </b></label>
             <input
                 placeholder="92612"
                 className="form-control"
@@ -320,7 +460,7 @@ class Signup extends React.Component {
 
           <span className="input-group-btn">
               <button type="submit" className="btn btn-secondary"> 
-                  Submit 
+              <FormattedMessage id="signup.submit" defaultMessage='Submit' />    
               </button>
           </span>          
 
@@ -328,11 +468,11 @@ class Signup extends React.Component {
 
         <button> 
           <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            Cancel
+          <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
           </NavLink>
         </button>
 
-        {
+        {/* {
           <div style={{color: 'red'}}> {this.state.username_error} </div>
         }
             
@@ -345,7 +485,9 @@ class Signup extends React.Component {
           <div style={{color: 'red'}}> {this.state.error} </div>
           :
           <div> </div>
-        }
+        } */}
+
+        { showErrors() }
 
       </div>
     );

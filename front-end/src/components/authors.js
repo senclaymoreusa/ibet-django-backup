@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { FormattedMessage } from 'react-intl';
 import Navigation from "./navigation";
+import { config } from '../util_config';
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -12,7 +13,7 @@ class Authors extends Component {
     }
 
     componentDidMount() {
-        axios.get(API_URL + 'users/api/authors/')
+        axios.get(API_URL + 'users/api/authors/', config)
             .then(res => {
                 this.setState({
                     authors: res.data

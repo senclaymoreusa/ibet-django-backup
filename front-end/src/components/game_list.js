@@ -4,16 +4,17 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import Navigation from "./navigation";
-import { game_detail } from '../actions'
+import { game_detail } from '../actions';
+import { config } from '../util_config';
 
 const API_URL = process.env.REACT_APP_REST_API
 
-const config = {
-  headers: {
-      'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-};
+// const config = {
+//   headers: {
+//       'Content-Type': 'application/json',
+//   },
+//   withCredentials: true,
+// };
 
 class Game_List extends Component {
 

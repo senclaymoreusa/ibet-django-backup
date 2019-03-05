@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import axios from 'axios';
 import Navigation from "./navigation";
+import { config } from '../util_config';
 
 
 const API_URL = process.env.REACT_APP_REST_API
@@ -13,7 +14,7 @@ class Books extends Component {
     }
 
     componentDidMount() {
-        axios.get(API_URL + 'users/api/books/')
+        axios.get(API_URL + 'users/api/books/', config)
             .then(res => {
                 this.setState({
                     books: res.data

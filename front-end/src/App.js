@@ -19,7 +19,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-    console.log('App did mount');
     this.props.getLanguage();
   }
 
@@ -40,7 +39,6 @@ class App extends Component {
 // export default App;
 
 const mapStateToProps = (state) => {
-  console.log('state changed:' + state.language.lang);
   return {
       lang: state.language.lang,
   }

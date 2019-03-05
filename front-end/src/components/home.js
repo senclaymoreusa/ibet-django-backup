@@ -4,6 +4,7 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { authCheckState } from '../actions';
 import { FormattedMessage } from 'react-intl';
+import { config } from '../util_config';
 
 
 
@@ -19,21 +20,21 @@ class Home extends Component {
     
     this.props.authCheckState()
 
-    axios.get(API_URL + 'users/api/books/')
+    axios.get(API_URL + 'users/api/books/', config)
         .then(res => {
             this.setState({
                 books: res.data
             });
         })
 
-    axios.get(API_URL + 'users/api/authors/')
+    axios.get(API_URL + 'users/api/authors/', config)
         .then(res => {
             this.setState({
               authors: res.data
             });
         })
 
-    axios.get(API_URL + 'users/api/bookinstance/')
+    axios.get(API_URL + 'users/api/bookinstance/', config)
         .then(res => {
             this.setState({
               bookinstance: res.data

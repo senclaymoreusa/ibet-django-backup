@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
+import { config } from "../util_config";
 import axios from 'axios';
 import { withRouter } from 'react-router-dom';
+import { FormattedMessage } from 'react-intl';
+
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -21,11 +24,11 @@ class Change_Email extends Component {
 
     async componentDidMount() {
       const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      };
+    //   const config = {
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     }
+    //   };
       config.headers["Authorization"] = `Token ${token}`;
 
       await axios.get(API_URL + 'users/api/user/', config)
@@ -53,11 +56,11 @@ class Change_Email extends Component {
         }
         else if (this.state.new_email === this.state.confirm_email){
             const token = localStorage.getItem('token');
-            const config = {
-            headers: {
-                "Content-Type": "application/json"
-            }
-            };
+            // const config = {
+            // headers: {
+            //     "Content-Type": "application/json"
+            // }
+            // };
             config.headers["Authorization"] = `Token ${token}`;
             
             const body = JSON.stringify({
@@ -77,9 +80,9 @@ class Change_Email extends Component {
              
             axios.put(API_URL + 'users/api/user/', body, config)
             
-            axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.fetched_data.email}&email=${this.state.new_email}`)
+            axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.fetched_data.email}&email=${this.state.new_email}`, config)
             .then(res => {
-                axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.new_email}&&email=${this.state.new_email}`)
+                axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.new_email}&&email=${this.state.new_email}`, config)
             })
             
             this.props.history.push("/profile")
@@ -92,7 +95,9 @@ class Change_Email extends Component {
                 <form onSubmit={this.onFormSubmit} >
 
                     <div>
-                        <label><b>New Email address:</b></label>
+                        <label><b>
+                        <FormattedMessage id="change_email.enter_email" defaultMessage='New Email address: ' />    
+                        </b></label>
                         <input
                             placeholder="example@gmail.com"
                             className="form-control"
@@ -102,7 +107,9 @@ class Change_Email extends Component {
                     </div>
 
                     <div>
-                        <label><b>Confirm Email address:</b></label>
+                        <label><b>
+                        <FormattedMessage id="change_email.confirm_email" defaultMessage='Confirm Email address: ' />
+                        </b></label>
                         <input
                             placeholder="example@gmail.com"
                             className="form-control"
@@ -113,11 +120,11 @@ class Change_Email extends Component {
 
                     <span className="input-group-btn">
                         <button type="submit" className="btn btn-secondary"> 
-                            Submit 
+                        <FormattedMessage id="change_email.sumbit" defaultMessage='Submit' />    
                         </button>
                     </span>
                     <button style={{color: 'red'}} onClick={()=>{this.props.history.push("/update_profile")}}> 
-                        Cancel 
+                    <FormattedMessage id="change_email.cancel" defaultMessage='Cancel' />       
                     </button>
                 </form>
             </div>

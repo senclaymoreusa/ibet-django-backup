@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { messages } from './messages';
 import { withRouter } from 'react-router-dom';
+import { config } from '../util_config';
+import { FormattedMessage } from 'react-intl';
+
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -26,11 +28,11 @@ class Forget_Password extends Component {
     onFormSubmit(event){
         event.preventDefault();
         
-        const config = {
-            headers: {
-              "Content-Type": "application/json"
-            }
-        };
+        // const config = {
+        //     headers: {
+        //       "Content-Type": "application/json"
+        //     }
+        // };
       
         const body = {
             email: this.state.old_email
@@ -44,11 +46,23 @@ class Forget_Password extends Component {
     }
 
     render(){
+
+        const showErrors = () => {
+            if (this.state.success) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="email_sent.message" defaultMessage='An email has been sent to you email address to reset your password' /> 
+                    </div>
+                );
+            }
+        }
         return (
             <div> 
-                <div> Enter your email address</div>
+                <div><FormattedMessage id="forget_password.enter_email" defaultMessage='Enter your email address: ' /></div>
                 <form onSubmit={this.onFormSubmit} >
-                    <label><b>Email:</b></label>
+                    <label><b>
+                    <FormattedMessage id="forget_password.mail" defaultMessage='Email: ' />
+                    </b></label>
                     <input
                         placeholder="example@gmail.com"
                         className="form-control"
@@ -58,13 +72,14 @@ class Forget_Password extends Component {
 
                     <span className="input-group-btn">
                         <button type="submit" className="btn btn-secondary"> 
-                            Confirm
+                        <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
                         </button>
                     </span>
                 </form>
 
                 {
-                    this.state.success && messages.SEND_EMAIL_MESSAGE
+                    // this.state.success  && messages.SEND_EMAIL_MESSAGE
+                    showErrors()
                 }
                 
             </div>

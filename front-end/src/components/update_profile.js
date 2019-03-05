@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { NavLink, withRouter } from 'react-router-dom';
+import { config } from '../util_config';
+import { FormattedMessage } from 'react-intl';
+
 
 const API_URL = process.env.REACT_APP_REST_API
 
@@ -43,11 +46,11 @@ class Update extends Component {
     
     async componentDidMount() {
       const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      };
+    //   const config = {
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     }
+    //   };
       config.headers["Authorization"] = `Token ${token}`;
 
       await axios.get(API_URL + 'users/api/user/', config)
@@ -123,11 +126,11 @@ class Update extends Component {
         event.preventDefault();
 
         const token = localStorage.getItem('token');
-        const config = {
-        headers: {
-          "Content-Type": "application/json"
-          }
-        };
+        // const config = {
+        // headers: {
+        //   "Content-Type": "application/json"
+        //   }
+        // };
         config.headers["Authorization"] = `Token ${token}`;
 
         const body = JSON.stringify({ 
@@ -176,20 +179,24 @@ class Update extends Component {
                 <form onSubmit={this.onFormSubmit} >
 
                     <div>
-                        <div><b>Username</b>: {this.state.username} </div>
+                        <div><b>
+                        <FormattedMessage id="update_profile.username" defaultMessage='Username: ' />
+                        </b>: {this.state.username} </div>
                     </div>
 
                     <div>
                         <b>Email</b>: {this.state.email}
                         <button> 
                             <NavLink to='/change_email/' style={{ textDecoration: 'none' }}>
-                                Update Email
+                            <FormattedMessage id="update_profile.update_email" defaultMessage='Update Email' />    
                             </NavLink>
                         </button>
                     </div>
 
                     <div>
-                        <label><b>First Name:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.firstName" defaultMessage='First Name: ' />       
+                        </b></label>
                         <input
                             placeholder="Mike"
                             className="form-control"
@@ -199,7 +206,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Last Name:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.lastName" defaultMessage='Last Name: ' />     
+                        </b></label>
                         <input
                             placeholder="Shaw"
                             className="form-control"
@@ -209,7 +218,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Phone:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.phone" defaultMessage='Phone: ' />      
+                        </b></label>
                         <input
                             placeholder="123456789"
                             className="form-control"
@@ -219,7 +230,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Date of Birth:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.dob" defaultMessage='Date of Birth: ' />      
+                        </b></label>
                         <input
                             placeholder="mm/dd/yyyy"
                             className="form-control"
@@ -229,7 +242,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Street Address 1:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.street1" defaultMessage='Street Address 1: ' />    
+                        </b></label>
                         <input
                             placeholder="111 World Drive"
                             className="form-control"
@@ -239,7 +254,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Street Address 2:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.street2" defaultMessage='Street Address 2: ' />    
+                        </b></label>
                         <input
                             placeholder="Suite No.123"
                             className="form-control"
@@ -249,7 +266,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Country:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.country" defaultMessage='Country: ' />       
+                        </b></label>
                         <input
                             placeholder="United States"
                             className="form-control"
@@ -259,7 +278,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>City:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.city" defaultMessage='City: ' />    
+                        </b></label>
                         <input
                             placeholder="Mountain View"
                             className="form-control"
@@ -269,7 +290,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Zipcode:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.zipcode" defaultMessage='Zipcode: ' />      
+                        </b></label>
                         <input
                             placeholder="96173"
                             className="form-control"
@@ -279,7 +302,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>State:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.state" defaultMessage='State: ' />    
+                        </b></label>
                         <input
                             placeholder="CA"
                             className="form-control"
@@ -290,12 +315,12 @@ class Update extends Component {
                     
                     <span className="input-group-btn">
                         <button type="submit" className="btn btn-secondary"> 
-                            Submit 
+                        <FormattedMessage id="update_profile.submit" defaultMessage='Submit' />
                         </button>
                     </span>
                 </form>
                 <button style={{color: 'red'}} onClick={()=>{this.props.history.push("/profile")}}> 
-                    Cancel 
+                <FormattedMessage id="update_profile.cancel" defaultMessage='Cancel' /> 
                 </button>
             </div>
         )

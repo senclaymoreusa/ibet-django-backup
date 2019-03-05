@@ -30,10 +30,7 @@ class Navigation extends Component {
       this.props.setLanguage(languageOption.value)
       .then((res) => {
         console.log(res.data);
-        // window.location.reload();
-      })
-      // console.log(`option: `, languageOption);
-      // console.log(`current state`, this.state);
+      });
     }
 
     onInputChange(event){
@@ -117,7 +114,6 @@ class Navigation extends Component {
   }
 
 const mapStateToProps = (state) => {
-    console.log('navigation lang: ' + state.language.lang);
     const { token } = state.auth;
     return {
         isAuthenticated: token !== null && token !== undefined, 
