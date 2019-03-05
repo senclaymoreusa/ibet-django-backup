@@ -19,7 +19,6 @@ class Navigation extends Component {
         this.state = { term: '' };
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
-        // this.getInitialState = this.getInitialState.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
 

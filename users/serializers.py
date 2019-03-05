@@ -94,8 +94,9 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
+        print("validate!!!!!!!!!")
         if data['password1'] != data['password2']:
-            raise serializers.ValidationError(_("The two password fields didn't match."))
+            raise serializers.ValidationError(_("The two password fields didn't match"))
         if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
             raise serializers.ValidationError(_("First name not valid"))
         if not data['last_name'] or len(data['last_name']) > 20 or not data['last_name'].isalpha():

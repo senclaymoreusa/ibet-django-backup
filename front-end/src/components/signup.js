@@ -143,7 +143,7 @@ class Signup extends React.Component {
     } else if (!this.state.date_of_birth) {
       // this.setState({error: messages.DATEOFBIRTH_EMPTY_ERROR});
       this.setState({ errorCode: errors.DATEOFBIRTH_EMPTY_ERROR });
-    } else if (!this.state.street_address_1 || !this.state.street_address_2) {
+    } else if (!this.state.street_address_1) {
       // this.setState({error: messages.STREET_EMPTY_ERROR});
       this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
     } else if (!this.state.city) {
