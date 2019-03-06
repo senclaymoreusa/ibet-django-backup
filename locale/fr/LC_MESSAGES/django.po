@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-05 14:48-0800\n"
+"POT-Creation-Date: 2019-03-05 22:29-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -113,3 +113,12 @@ msgstr "Demande de changement d'adresse email"
 #: users/views.py:459
 msgid "Your new Email Address is: "
 msgstr "Votre nouvelle adresse e-mail est: "
+
+#: users/views.py:494
+#, python-format
+msgid "Hi %(username)s, You have requested to reset your password"
+msgstr "Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
+
+#: users/views.py:496
+msgid "Click the link to reset your email password: "
+msgstr "Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "

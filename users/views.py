@@ -481,6 +481,7 @@ from django_rest_passwordreset.models import ResetPasswordToken
 from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 from django.utils import timezone
 from datetime import timedelta
+from django.utils.translation import ngettext
 
 
 class CustomPasswordResetView:
@@ -490,8 +491,10 @@ class CustomPasswordResetView:
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email('claymore@claymoreusa.com')
         to_email = Email(reset_password_token.user.email)
-        subject = 'Hi ' + reset_password_token.user.username + ', You have requested to reset your password'
-        content = Content("text/plain", 'Click the link to reset your email password: ' + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
+        subject =  _('Hi %(username)s, You have requested to reset your password') % {'username': reset_password_token.user.username}
+        # subject = _('Hi ' + reset_password_token.user.username + ', You have requested to reset your password')
+        content_text = _('Click the link to reset your email password: ')
+        content = Content("text/plain", content_text + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
 
