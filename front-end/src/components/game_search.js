@@ -3,8 +3,9 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { game_detail } from '../actions'
+import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Game_Search extends Component {
     constructor(props){
@@ -28,7 +29,7 @@ class Game_Search extends Component {
 
     fetch_game = async (text) => {
         var URL = API_URL + 'users/api/games/' + '?term=' + text
-        var result = (await axios.get(URL)).data
+        var result = (await axios.get(URL, config)).data
         if (text){
             this.setState({games: result})
         }

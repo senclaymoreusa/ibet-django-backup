@@ -25,10 +25,18 @@ SECRET_KEY = '7i^ke1w79@h(!g0)e18c8(^j=c8ewfx8=*9n4652o%0f3i^g_-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CORS_ORIGIN_WHITELIST = [
+    'localhost:3000'
+]
+CORS_ALLOW_CREDENTIALS = True
 
 
-CORS_ORIGIN_ALLOW_ALL=True     # Stephen
+# CORS_ORIGIN_ALLOW_ALL=True     # Stephen
+CORS_ORIGIN_ALLOW_ALL=True
+
+SESSION_COOKIE_SAMESITE = None
+CRSF_COOKIE_SAMESITE = None
+
 
 # Application definition
 
@@ -49,7 +57,8 @@ INSTALLED_APPS = [
     'allauth',                     # Stephen
     'allauth.account',             # Stephen
     'rest_auth.registration',      # Stephen
-    'allauth.socialaccount'        # Stephen
+    'allauth.socialaccount',       # Stephen
+    'django_rest_passwordreset'
 ]
 
 SITE_ID = 1                        # Stephen
@@ -61,20 +70,19 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 AUTH_USER_MODEL = 'users.CustomUser' # new
 
 
-
+SENDGRID_API_KEY = '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'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',      # Stephen
-    'django.middleware.common.CommonMiddleware',  # Stephen
-
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',  # Stephen
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware'
-
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'djauth.urls'
@@ -144,6 +152,7 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'zh-hans'
 
 TIME_ZONE = 'UTC'
 
@@ -153,6 +162,12 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
+
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/

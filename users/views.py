@@ -51,8 +51,6 @@ def index(request):
 
 from django.views import generic
 
-
-
 class GameListView(generic.ListView):
     """
     Generic class-based view for a list of games.
@@ -80,6 +78,7 @@ class BookDetailView(generic.DetailView):
     """
     model = Book
 
+
 class AuthorListView(generic.ListView):
     """
     Generic class-based list view for a list of authors.
@@ -96,7 +95,6 @@ class AuthorDetailView(generic.DetailView):
 
 class PlayerDetailView(generic.DetailView):
 
-    
     model = CustomUser
 
 
@@ -168,7 +166,6 @@ def renew_book_librarian(request, pk):
     return render(request, 'users/book_renew_librarian.html', {'form': form, 'bookinst':book_inst})
     
     
-    
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .models import Author
@@ -208,7 +205,6 @@ class BookDelete(PermissionRequiredMixin, DeleteView):
     permission_required = 'users.can_mark_returned'
 
 
-
 class AllSearchListView(generic.ListView):
     model = Game
     paginate_by = 10
@@ -218,7 +214,6 @@ class AllSearchListView(generic.ListView):
         if query == None:
             return Game.objects.none()
         return Game.objects.filter(name__contains=self.request.GET.get('q'))
-
 
 
 #  Added by Stephen
@@ -238,14 +233,29 @@ class GameAPIListView(ListAPIView):
     def get_queryset(self):
         term = self.request.GET['term']
         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+
         if not data:
             data = Game.objects.filter(category_id__name__icontains=term)
-            if not data:
-                data = Game.objects.filter(name__icontains=term)
-                if not data:
-                    logger.error('Search term is not valid')
-                return data
-            return data
+
+        if not data:
+            data = Game.objects.filter(name__icontains=term)
+
+        if not data:
+            logger.error('Search term is not valid')
+
+        # override name/description based on language preference
+        # languageCode = 'en'
+        # if LANGUAGE_SESSION_KEY in self.request.session:
+        #     languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        
+        # print('game langugae: ' + languageCode)
+        # if languageCode != 'en':
+        #     for game in data:
+        #         if languageCode == 'zh-hans' and game.name_zh is not None:
+        #             game.name = game.name_zh
+        #         elif languageCode == 'fr' and game.name_fr is not None:
+        #             game.name = game.name_fr
+
         return data
 
 class BookAPIListView(ListAPIView):
@@ -262,6 +272,7 @@ class CategoryAPIListView(ListAPIView):
 
 class BookInstanceAPIListView(ListAPIView):
     serializer_class = BookInstanceSerializer
+    
     queryset = BookInstance.objects.all()
 
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
@@ -301,9 +312,8 @@ class RegisterView(CreateAPIView):
         return super(RegisterView, self).dispatch(*args, **kwargs)
 
     def get_response_data(self, user):
-        if allauth_settings.EMAIL_VERIFICATION == \
-                allauth_settings.EmailVerificationMethod.MANDATORY:
-            return {"detail": _("Verification e-mail sent.")}
+        if allauth_settings.EMAIL_VERIFICATION == allauth_settings.EmailVerificationMethod.MANDATORY:
+            return {"detail": ("Verification e-mail sent.")}
 
         if getattr(settings, 'REST_USE_JWT', False):
             data = {
@@ -335,3 +345,249 @@ class RegisterView(CreateAPIView):
                         allauth_settings.EMAIL_VERIFICATION,
                         None)
         return user
+
+
+from django.contrib.auth.forms import AuthenticationForm
+from .serializers import LoginSerializer
+from django.conf import settings
+from django.contrib.auth import (
+    login as django_login,
+    logout as django_logout
+)
+from django.http import HttpResponse
+from rest_framework.exceptions import APIException
+from django.utils.translation import ugettext_lazy as _
+
+
+
+class BlockedUserException(APIException):
+    status_code = 403
+    default_detail = _('Current user is blocked!')
+    default_code = 'block'
+
+class LoginView(GenericAPIView):
+    """
+    Check the credentials and return the REST Token
+    if the credentials are valid and authenticated.
+    Calls Django Auth login method to register User ID
+    in Django session framework
+    Accept the following POST parameters: username, password
+    Return the REST Framework Token Object's key.
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = LoginSerializer
+    token_model = TokenModel
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(LoginView, self).dispatch(*args, **kwargs)
+
+    def process_login(self):
+        django_login(self.request, self.user)
+
+    def get_response_serializer(self):
+        if getattr(settings, 'REST_USE_JWT', False):
+            response_serializer = JWTSerializer
+        else:
+            response_serializer = TokenSerializer
+        return response_serializer
+
+    def login(self):
+
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in self.request.session:
+            languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        print('login language code: ' + languageCode)
+
+        self.user = self.serializer.validated_data['user']
+        if self.user.block is True:
+            print("user block")
+            raise BlockedUserException
+        if getattr(settings, 'REST_USE_JWT', False):
+            self.token = jwt_encode(self.user)
+        else:
+            self.token = create_token(self.token_model, self.user,
+                                      self.serializer)
+
+        if getattr(settings, 'REST_SESSION_LOGIN', True):
+            self.process_login()
+        return self.get_response()
+
+    def get_response(self):
+        serializer_class = self.get_response_serializer()
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            data = {
+                'user': self.user,
+                'token': self.token
+            }
+            serializer = serializer_class(instance=data,
+                                          context={'request': self.request})
+        else:
+            serializer = serializer_class(instance=self.token,
+                                          context={'request': self.request})
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):        
+        self.request = request
+        self.serializer = self.get_serializer(data=self.request.data,
+                                              context={'request': request})
+        self.serializer.is_valid(raise_exception=True)
+
+        return self.login()
+        
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
+from django.conf import settings
+from django.views import View
+from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
+
+class SendEmail(View):
+    def get(self, request, *args, **kwargs):
+        case = self.request.GET['case']
+        from_email_address = 'claymore@claymoreusa.com'
+        if case == 'signup':
+            to_email_address = self.request.GET['to_email_address']
+            email_subject = _('Welcome to Claymore, ') + self.request.GET['username']
+            email_content = _('You have successfully set up your new email account: ') + self.request.GET['email']
+        elif case == 'change_email':
+            to_email_address = self.request.GET['to_email_address']
+            email_subject = _('Request of changing email address') + ' '
+            email_content = _('Your new Email Address is: ') + self.request.GET['email']
+
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email(from_email_address)
+        to_email = Email(to_email_address)
+        subject = email_subject
+        content = Content("text/plain", email_content)
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        print(response.status_code)
+        return HttpResponse('Email has been sent!')
+
+
+from django.dispatch import receiver
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from rest_framework.views import APIView
+from rest_framework import parsers, renderers, status
+from rest_framework.response import Response
+from .serializers import CustomTokenSerializer
+from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.views import get_password_reset_token_expiry_time
+from django.utils import timezone
+from datetime import timedelta
+from django.utils.translation import ngettext
+
+
+class CustomPasswordResetView:
+    @receiver(reset_password_token_created)
+    def password_reset_token_created(sender, reset_password_token, *args, **kwargs):
+        
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email('claymore@claymoreusa.com')
+        to_email = Email(reset_password_token.user.email)
+        subject =  _('Hi %(username)s, You have requested to reset your password') % {'username': reset_password_token.user.username}
+        # subject = _('Hi ' + reset_password_token.user.username + ', You have requested to reset your password')
+        content_text = _('Click the link to reset your email password: ')
+        content = Content("text/plain", content_text + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+
+
+class CustomPasswordTokenVerificationView(APIView):
+    """
+      An Api View which provides a method to verifiy that a given pw-reset token is valid before actually confirming the
+      reset.
+    """
+    throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = CustomTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data['token']
+
+        # get token validation time
+        password_reset_token_validation_time = get_password_reset_token_expiry_time()
+
+        # find token
+        reset_password_token = ResetPasswordToken.objects.filter(key=token).first()
+
+        if reset_password_token is None:
+            return Response({'status': 'invalid'}, status=status.HTTP_404_NOT_FOUND)
+
+        # check expiry date
+        expiry_date = reset_password_token.created_at + timedelta(hours=password_reset_token_validation_time)
+
+        if timezone.now() > expiry_date:
+            # delete expired token
+            reset_password_token.delete()
+            return Response({'status': 'expired'}, status=status.HTTP_404_NOT_FOUND)
+
+        # check if user has password to change
+        if not reset_password_token.user.has_usable_password():
+            return Response({'status': 'irrelevant'})
+
+        return Response({'status': 'OK'})
+
+from .serializers import LanguageCodeSerializer
+from django.utils.translation import LANGUAGE_SESSION_KEY
+from django.utils import translation
+from django.contrib.sessions.backends.db import SessionStore
+
+class LanguageView(APIView):
+
+    # throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = LanguageCodeSerializer
+    
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        languageCode = serializer.validated_data['languageCode']
+        request.session[LANGUAGE_SESSION_KEY] = languageCode
+        request.session.modified = True
+        # Make current response also shows translated result
+        translation.activate(languageCode)
+
+        response = Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+        # print('post: ' + languageCode)
+
+        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+        if session_key is None:
+            request.session.create()
+            response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
+        # Check that the test cookie worked (we set it below):
+        # if request.session.test_cookie_worked():
+
+        #     # The test cookie worked, so delete it.
+        #     request.session.delete_test_cookie()
+
+        #     # In practice, we'd need some logic to check username/password
+        #     # here, but since this is an example...
+        # request.session.set_test_cookie()
+        
+        return response
+
+    def get(self, request, *args, **kwargs):
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in request.session:
+            languageCode = request.session[LANGUAGE_SESSION_KEY]
+        
+        
+        # print('get: ' + languageCode)
+        return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+        

@@ -1,6 +1,10 @@
 import axios from "axios";
+import { config } from "../util_config";
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
+
+export const AUTH_RESULT_SUCCESS = 0;
+export const AUTH_RESULT_FAIL = 1;
 
 export const authStart = () => {
     return {
@@ -21,41 +25,55 @@ export const authStart = () => {
       error: error
     }
   }
+
+// const config = {
+//     headers: {
+//         'Content-Type': 'application/json',
+//     },
+//     withCredentials: true,
+// };
   
   export const authLogin = (username, password) => {
-    return dispatch => {
+    return (dispatch) => {
         dispatch(authStart());
-        axios.post(API_URL + 'rest-auth/login/', {
+        return axios.post(API_URL + 'users/api/login/', {
             username: username,
             password: password
-        })
+        }, config)
         .then(res => {
             const token = res.data.key;
+            if (!token || token === undefined) {
+                dispatch(logout());
+            }
             const expirationDate = new Date(new Date().getTime() + 3600 * 1000);
             localStorage.setItem('token', token);
             localStorage.setItem('expirationDate', expirationDate);
             dispatch(authSuccess(token));
             dispatch(checkAuthTimeout(3600));
+            return Promise.resolve();
         })
         .catch(err => {
-            dispatch(authFail(err))
+            dispatch(authFail(err.response.data.detail))
+            return Promise.reject(err.response.data.detail);
         })
+        
     }
   }
+
 
   export const authSignup = (username, email, password1, password2, first_name, last_name, phone, date_of_birth, street_address_1, street_address_2, country, city, zipcode, state) => {
     return dispatch => {
         dispatch(authStart());
-        const config = {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        };
+        // const config = {
+        //   headers: {
+        //     "Content-Type": "application/json"
+        //   }
+        // };
         const body = JSON.stringify({ username, email, password1, password2, first_name, last_name, phone, date_of_birth,
           street_address_1, street_address_2, country, city, zipcode, state
         });
 
-        axios.post(API_URL + 'users/api/signup/', body, config)
+        return axios.post(API_URL + 'users/api/signup/', body, config)
         .then(res => {
             const token = res.data.key;
             const expirationDate = new Date(new Date().getTime() + 3600 * 1000);
@@ -63,9 +81,11 @@ export const authStart = () => {
             localStorage.setItem('expirationDate', expirationDate);
             dispatch(authSuccess(token));
             dispatch(checkAuthTimeout(3600));
+            return Promise.resolve()
         })
         .catch(err => {
             dispatch(authFail(err))
+            return Promise.reject(err)
         })
     }
 }
@@ -89,16 +109,41 @@ export const authStart = () => {
   export const authCheckState = () => {
     return dispatch => {
         const token = localStorage.getItem('token');
-        if (token === undefined) {
+        if (!token || token === undefined) {
+            // check token first
             dispatch(logout());
+            return Promise.resolve(AUTH_RESULT_FAIL);
         } else {
+            // check token expiration time
             const expirationDate = new Date(localStorage.getItem('expirationDate'));
             if ( expirationDate <= new Date() ) {
                 dispatch(logout());
+                return Promise.resolve(AUTH_RESULT_FAIL);
             } else {
-                dispatch(authSuccess(token));
-                dispatch(checkAuthTimeout( (expirationDate.getTime() - new Date().getTime()) / 1000) );
+                // check whether user is blocked
+                // const config = {
+                //     headers: {
+                //     "Content-Type": "application/json"
+                //     }
+                // };
+                config.headers["Authorization"] = `Token ${token}`;
+        
+                return axios.get(API_URL + 'users/api/user/', config)
+                .then(res => {
+                    if (res.data.block) {
+                        dispatch(logout());
+                        return Promise.resolve(AUTH_RESULT_FAIL);
+                    } else {
+                        dispatch(authSuccess(token));
+                        dispatch(checkAuthTimeout( (expirationDate.getTime() - new Date().getTime()) / 1000) );
+                        return Promise.resolve(AUTH_RESULT_SUCCESS);
+                    }
+                })
+                .catch(err => {
+                    dispatch(authFail(err.response.data.detail))
+                    return Promise.resolve(AUTH_RESULT_FAIL);
+                });
             }
         }
     }
-}
+}  

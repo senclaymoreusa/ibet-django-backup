@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import { FormattedMessage } from 'react-intl';
 import Navigation from "./navigation";
+import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Authors extends Component {
 
@@ -11,7 +13,7 @@ class Authors extends Component {
     }
 
     componentDidMount() {
-        axios.get(API_URL + 'users/api/authors/')
+        axios.get(API_URL + 'users/api/authors/', config)
             .then(res => {
                 this.setState({
                     authors: res.data
@@ -28,7 +30,7 @@ class Authors extends Component {
           </div>
         
           <div>
-            <h1> Author List </h1>
+            <h1> <FormattedMessage id="authors.title" defaultMessage='Author List' /> </h1>
             <div>
               {
                 authors.map(item => {

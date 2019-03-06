@@ -10,6 +10,12 @@ import Signup from './components/signup';
 import Game_Detail from './components/game_detail';
 import Game_Search from './components/game_search';
 import Profile from './components/profile';
+import Update from './components/update_profile';
+import Change_Email from './components/change_email'
+import Forget_Password from './components/forget_password'
+import Reset_Password from './components/reset_password'
+import Email_Sent from './components/email_sent'
+import Reset_Password_Done from './components/reset_password_done'
 
 const BaseRouter = () => (
   <div>
@@ -23,6 +29,12 @@ const BaseRouter = () => (
     <Route exact path="/game_detail" component={Game_Detail} />
     <Route exact path="/game_search" component={Game_Search} />
     <Route exact path="/profile" component={Profile} />
+    <Route exact path="/update_profile" component={Update} />
+    <Route exact path="/change_email" component={Change_Email} />
+    <Route exact path="/forget_password" component={Forget_Password} />
+    <Route exact path="/reset_password/:filter?" component={Reset_Password} />
+    <Route exact path="/email_sent" component={Email_Sent} />
+    <Route exact path="/reset_password_done" component={Reset_Password_Done} />
   </div>
 );
 

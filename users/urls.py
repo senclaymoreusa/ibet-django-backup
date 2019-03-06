@@ -50,11 +50,19 @@ urlpatterns += [
 
 # Added by Stephen
 
+from users.forms import AuthenticationFormWithChekUsersStatus
+from django.urls import include
+
 urlpatterns += [
     path('api/games/', views.GameAPIListView.as_view(), name='api_games'),
     path('api/books/', views.BookAPIListView.as_view(), name='api_books'),
     path('api/authors/', views.AuthorAPIListView.as_view(), name='api_authors'),
     path('api/bookinstance/', views.BookInstanceAPIListView.as_view(), name='api_bookinstance'),
     path('api/user/', views.UserDetailsView.as_view(), name='rest_user_details'),
-    path('api/signup/', views.RegisterView.as_view(), name='rest_register')
+    path('api/signup/', views.RegisterView.as_view(), name='rest_register'),
+    path('api/login/', views.LoginView.as_view(), name='api_login'),
+    path('api/sendemail/', views.SendEmail.as_view(), name='sendemail'),
+    path('api/reset-password/verify-token/', views.CustomPasswordTokenVerificationView.as_view(), name='password_reset_verify_token'),
+    path('api/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('api/language/', views.LanguageView.as_view(), name='language'),
 ]
