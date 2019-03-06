@@ -5,7 +5,7 @@ import Navigation from "./navigation";
 import { config } from '../util_config';
 
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Books extends Component {
 
@@ -24,7 +24,7 @@ class Books extends Component {
 
     render() {
 
-      const books = this.state.books
+      const books = this.state.books;
       return (
         <div className="rows">
           <div>

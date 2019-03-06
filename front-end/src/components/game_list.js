@@ -7,15 +7,7 @@ import Navigation from "./navigation";
 import { game_detail } from '../actions';
 import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
-
-// const config = {
-//   headers: {
-//       'Content-Type': 'application/json',
-//   },
-//   withCredentials: true,
-// };
-
+const API_URL = process.env.REACT_APP_REST_API;
 class Game_List extends Component {
 
     state = {
@@ -23,7 +15,7 @@ class Game_List extends Component {
     }
 
     componentDidMount() {
-        var URL = API_URL + 'users/api/games/' + '?term=' + this.props.game_type
+        var URL = API_URL + 'users/api/games/' + '?term=' + this.props.game_type;
         axios.get(URL, config)
             .then(res => {
                 this.setState({
@@ -33,7 +25,7 @@ class Game_List extends Component {
     }
 
     render() {
-      const games = this.state.games
+      const games = this.state.games;
       return (
         <div className="rows">
           <div>
@@ -43,12 +35,6 @@ class Game_List extends Component {
           <h1><FormattedMessage id="games_list.title" defaultMessage='Game List' /></h1>
             {
               games.map(item => {
-                  // return (
-                  //   <div key={item.name}>
-                  //     <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
-                  //     <br/>
-                  //   </div>
-                  // )
                   if (this.props.lang === 'zh' && item.name_zh) {
                     return (
                       <div key={item.name}>

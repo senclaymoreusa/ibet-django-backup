@@ -62,7 +62,7 @@ class RegisterSerializer(serializers.Serializer):
     date_of_birth = serializers.CharField(required=True)
     phone = serializers.CharField(required=True)
     street_address_1 = serializers.CharField(required=False)
-    street_address_2 = serializers.CharField(required=False)
+    street_address_2 = serializers.CharField(required=False, allow_blank=True)
     city = serializers.CharField(required=True)
     country = serializers.CharField(required=True)
     state = serializers.CharField(required=True)
@@ -94,7 +94,7 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
-        print("validate!!!!!!!!!")
+        print("!!!!")
         if data['password1'] != data['password2']:
             raise serializers.ValidationError(_("The two password fields didn't match"))
         if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():

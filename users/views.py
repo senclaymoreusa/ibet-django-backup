@@ -560,30 +560,21 @@ class LanguageView(APIView):
 
         response = Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
 
-        # print(request.session.keys())
-        print('post: ' + languageCode)
+        # print('post: ' + languageCode)
 
         session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
         if session_key is None:
             request.session.create()
-            # print('saved session key ' + request.session._session_key)
-            # response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key, domain='.app.localhost')
             response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
-            pass
-        else:
-            # print('existed session key ' + session_key)
-            pass
-        # print('session key: ' + session_key)
-
         # Check that the test cookie worked (we set it below):
-        if request.session.test_cookie_worked():
+        # if request.session.test_cookie_worked():
 
-            # The test cookie worked, so delete it.
-            request.session.delete_test_cookie()
+        #     # The test cookie worked, so delete it.
+        #     request.session.delete_test_cookie()
 
-            # In practice, we'd need some logic to check username/password
-            # here, but since this is an example...
-        request.session.set_test_cookie()
+        #     # In practice, we'd need some logic to check username/password
+        #     # here, but since this is an example...
+        # request.session.set_test_cookie()
         
         return response
 
@@ -592,12 +583,8 @@ class LanguageView(APIView):
         if LANGUAGE_SESSION_KEY in request.session:
             languageCode = request.session[LANGUAGE_SESSION_KEY]
         
-        # print(request.session.keys())
-        print('get: ' + languageCode)
-
-        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, 'nothing')
-        # print('session key: ' + session_key)
-
+        
+        # print('get: ' + languageCode)
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
 
         

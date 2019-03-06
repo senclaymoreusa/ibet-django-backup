@@ -46,6 +46,7 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': 'An email has been sent to you email address to reset your password',
+        
 
         // handle reset_password page message
         'reset_password.page_not_valid': 'This page no longer exists',
@@ -80,6 +81,7 @@ export const messages = {
         'forget_password.enter_email': 'Enter your email address: ',
         'forget_password.mail': 'Email: ',
         'forget_password.confirm': 'Confirm',
+        'forget_password.email_not_valid': 'Email does not exsit',
 
         // handle signup page message
         'signup.username': 'Username: ',
@@ -113,7 +115,8 @@ export const messages = {
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
-        'update_profile.update_profile.update_email': 'Update Email: ',
+        'update_profile.email': 'Email:',
+        'update_profile.update_email': 'Update Email ',
         'update_profile.firstName': 'First Name: ',
         'update_profile.lastName': 'Last Name: ',
         'update_profile.phone': 'Phone: ',
@@ -132,6 +135,8 @@ export const messages = {
         'change_email.confirm_email': 'Confirm Email address: ',
         'change_email.sumbit': 'Submit',
         'change_email.cancel': 'Cancel',
+        'change_email.email_not_match': 'Email does not match',
+        'change_email.email_can_not_be_same': 'New email address has to be different from the old email address',
 
 
 
@@ -218,6 +223,7 @@ export const messages = {
         'forget_password.enter_email': '請輸入郵箱: ',
         'forget_password.mail': '郵箱: ',
         'forget_password.confirm': '確認',
+        'forget_password.email_not_valid': '郵件不存在',
 
         // handle signup page message
         'signup.username': '用戶名: ',
@@ -251,7 +257,8 @@ export const messages = {
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
-        'update_profile.update_profile.update_email': '更新郵箱: ',
+        'update_profile.email': '郵箱:',
+        'update_profile.update_email': '更新郵箱',
         'update_profile.firstName': '名: ',
         'update_profile.lastName': '姓: ',
         'update_profile.phone': '手機號: ',
@@ -271,6 +278,8 @@ export const messages = {
         'change_email.confirm_email': '確認郵件地址: ',
         'change_email.sumbit': '提交',
         'change_email.cancel': '取消',
+        'change_email.email_not_match': '兩郵箱不一致',
+        'change_email.email_can_not_be_same': '新郵箱不能跟舊郵箱一樣',
 
     }, 
     fr: {
@@ -355,6 +364,7 @@ export const messages = {
         'forget_password.enter_email': 'Entrez votre adresse email: ',
         'forget_password.mail': 'Email: ',
         'forget_password.confirm': 'Confirmer',
+        'forget_password.email_not_valid': 'Email n\'existe pas',
 
         // handle signup page message
         'signup.username': 'Nom d\'utilisateur: ',
@@ -389,7 +399,8 @@ export const messages = {
 
         // handle update_profile page message
         'update_profile.username':'Nom d\'utilisateur: ',
-        'update_profile.update_profile.update_email': 'Courriel de mise à jour: ',
+        'update_profile.email': 'Email:',
+        'update_profile.update_email': 'Courriel de mise à jour',
         'update_profile.firstName': 'Prénom: ',
         'update_profile.lastName': 'Nom de famille: ',
         'update_profile.phone': 'Téléphone: ',
@@ -408,25 +419,8 @@ export const messages = {
         'change_email.confirm_email': 'Confirmez votre adresse email: ',
         'change_email.sumbit': 'Soumettre',
         'change_email.cancel': 'Annuler',
+        'change_email.email_not_match': 'Email ne correspond pas',
+        'change_email.email_can_not_be_same': 'La nouvelle adresse électronique doit être différente de l\'ancienne',
     }
-
-    // SEND_EMAIL_MESSAGE:      'An email has been sent to you email address to reset your password',
-    // CHANGE_PASSOWRD_CONFIRM: 'You have successfully reset your password',
-    // PAGE_NOT_VALID:          'This page no longer exists',
-    // PASSWORD_NOT_MATCH:      'Two passwords you entered do not match',
-    // PASSWORD_NOT_VALID:      'Password has to be at least 8 characters',
-    // USERNAME_EMPTY_ERROR:    'Username cannot be empty',
-    // PASSWORD_EMPTY_ERROR:    'Password cannot be empty',
-
-    // EMAIL_EMPTY_ERROR:       'Email cannot be empty',
-    // FIRST_NAME_EMPTY_ERROR:  'First name cannot be empty',
-    // LAST_NAME_EMPTY_ERROR:   'Last name cannot be empty',
-    // PHONE_EMPTY_ERROR:       'Phone cannot be empty',
-    // DATEOFBIRTH_EMPTY_ERROR: 'Date of birth cannot be empty',
-    // STREET_EMPTY_ERROR:      'Street address cannot be empty',
-    // CITY_EMPTY_ERROR:        'City cannot be empty',
-    // STATE_EMPTY_ERROR:       'State cannot be empty',
-    // COUNTRY_EMPTY_ERROR:     'Country cannot be empty',
-    // ZIPCODE_EMPTY_ERROR:     'Zipcode cannot be empty',
 }
 

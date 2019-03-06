@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import Navigation from "./navigation";
 import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Authors extends Component {
 

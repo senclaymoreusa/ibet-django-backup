@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom';
 import { game_detail } from '../actions'
 import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Game_Search extends Component {
     constructor(props){

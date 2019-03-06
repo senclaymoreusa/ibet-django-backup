@@ -8,7 +8,7 @@ import { config } from '../util_config';
 import { errors } from './errors';
 
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 
 class Signup extends React.Component {
@@ -126,37 +126,26 @@ class Signup extends React.Component {
     if (!this.state.username) {
       this.setState({ errorCode: errors.USERNAME_EMPTY_ERROR });
     } else if (!this.state.email) {
-      // this.setState({errorCode: messages.EMAIL_EMPTY_ERROR});
       this.setState({ errorCode: errors.EMAIL_EMPTY_ERROR });
     } else if (!this.state.password1 || !this.state.password2) {
-      // this.setState({error: messages.PASSWORD_EMPTY_ERROR});
       this.setState({ errorCode: errors.PASSWORD_EMPTY_ERROR });
     } else if (!this.state.first_name) {
-      // this.setState({error: messages.FIRST_NAME_EMPTY_ERROR});
       this.setState({ errorCode: errors.FIRST_NAME_EMPTY_ERROR });
     } else if (!this.state.last_name) {
       this.setState({ errorCode: errors.LAST_NAME_EMPTY_ERROR });
-      // this.setState({error: messages.LAST_NAME_EMPTY_ERROR});
     } else if (!this.state.phone) {
-      // this.setState({error: messages.PHONE_EMPTY_ERROR});
       this.setState({ errorCode: errors.PHONE_EMPTY_ERROR });
     } else if (!this.state.date_of_birth) {
-      // this.setState({error: messages.DATEOFBIRTH_EMPTY_ERROR});
       this.setState({ errorCode: errors.DATEOFBIRTH_EMPTY_ERROR });
     } else if (!this.state.street_address_1) {
-      // this.setState({error: messages.STREET_EMPTY_ERROR});
       this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
     } else if (!this.state.city) {
-      // this.setState({error: messages.CITY_EMPTY_ERROR});
       this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
     } else if (!this.state.state) {
-      // this.setState({error: messages.STATE_EMPTY_ERROR});
       this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
     } else if (!this.state.country) {
-      // this.setState({error: messages.COUNTRY_EMPTY_ERROR});
       this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
     } else if (!this.state.zipcode){
-      // this.setState({error: messages.ZIPCODE_EMPTY_ERROR});
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
     } else {
       this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
@@ -164,7 +153,7 @@ class Signup extends React.Component {
         this.props.history.push('/');
         axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
       }).catch(err => {
-        console.log(err.response);
+        // console.log(err.response);
         if ('username' in err.response.data) {
           this.setState({username_error: err.response.data.username[0]})
         } else {
@@ -471,21 +460,6 @@ class Signup extends React.Component {
           <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
           </NavLink>
         </button>
-
-        {/* {
-          <div style={{color: 'red'}}> {this.state.username_error} </div>
-        }
-            
-        {
-          <div style={{color: 'red'}}> {this.state.email_error} </div>
-        }
-
-        {
-          !this.state.username_error && !this.state.email_error ?
-          <div style={{color: 'red'}}> {this.state.error} </div>
-          :
-          <div> </div>
-        } */}
 
         { showErrors() }
 

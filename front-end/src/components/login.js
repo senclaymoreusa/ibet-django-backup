@@ -42,10 +42,8 @@ class Login extends React.Component {
     event.preventDefault();
 
     if (!this.state.username){
-        // this.setState({error: messages.USERNAME_EMPTY_ERROR})
         this.setState({ errorCode: errors.USERNAME_EMPTY_ERROR });
     }else if(!this.state.password){
-        // this.setState({error: messages.PASSWORD_EMPTY_ERROR})
         this.setState({ errorCode: errors.PASSWORD_EMPTY_ERROR });
     }else{
         this.props.authLogin(this.state.username, this.state.password)
@@ -132,7 +130,6 @@ class Login extends React.Component {
         </button>
         <br/>
         {
-            // <div style={{color: 'red'}}> {this.state.error} </div>
             showErrors()
         }
     </div>

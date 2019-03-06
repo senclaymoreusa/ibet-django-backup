@@ -6,7 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import { errors } from './errors';
 
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Update extends Component {
 
@@ -128,11 +128,6 @@ class Update extends Component {
         event.preventDefault();
 
         const token = localStorage.getItem('token');
-        // const config = {
-        // headers: {
-        //   "Content-Type": "application/json"
-        //   }
-        // };
         config.headers["Authorization"] = `Token ${token}`;
 
         const body = JSON.stringify({ 
@@ -181,32 +176,6 @@ class Update extends Component {
             })
             
       }
-
-
-    //   if (!this.state.email){
-    //       alert('Email cannot be empty')
-    //   }else if (!this.state.first_name){
-    //       alert('First name cannot be empty')
-    //   }else if (!this.state.last_name){
-    //       alert('Last name cannot be empty')
-    //   }else if (!this.state.phone){
-    //       alert('Phone cannot be empty')
-    //   }else if (!this.state.date_of_birth){
-    //       alert('Date of Birth cannot be empty')
-    //   }else if(!this.state.country){
-    //       alert('Country cannoe be empty')
-    //   }else if (!this.state.zipcode){
-    //       alert('Zipcode cannot be empty')
-    //   }else if(!this.state.state){
-    //       alert('State cannot be empty')
-    //   }else if(!this.state.street_address_1){
-    //       alert("Street Address 1 cannot be empty")
-    //   }else if(!this.state.street_address_2){
-    //       alert("Street Address 2 cannot be empty")
-    //   }else{
-    //     axios.put(API_URL + 'users/api/user/', body, config)
-    //     this.props.history.push("/profile")
-    //   }
     }
 
     render() {
@@ -302,7 +271,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <b>Email</b>: {this.state.email}
+                        <b>
+                        <FormattedMessage id="update_profile.email" defaultMessage='Email: ' />    
+                        </b>: {this.state.email}
                         <button> 
                             <NavLink to='/change_email/' style={{ textDecoration: 'none' }}>
                             <FormattedMessage id="update_profile.update_email" defaultMessage='Update Email' />    

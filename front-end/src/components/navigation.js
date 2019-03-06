@@ -28,7 +28,7 @@ class Navigation extends Component {
       this.setState({ languageOption });
       this.props.setLanguage(languageOption.value)
       .then((res) => {
-        console.log(res.data);
+        // console.log("language change to:" + res.data);
       });
     }
 

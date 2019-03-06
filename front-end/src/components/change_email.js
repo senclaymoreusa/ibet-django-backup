@@ -3,9 +3,10 @@ import { config } from "../util_config";
 import axios from 'axios';
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
+import { errors } from './errors';
 
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Change_Email extends Component {
     constructor(props){
@@ -14,6 +15,7 @@ class Change_Email extends Component {
         this.state = {
             new_email: '',
             confirm_email: '',
+            errorCode: '',
             fetched_data: {}
         }
 
@@ -24,16 +26,11 @@ class Change_Email extends Component {
 
     async componentDidMount() {
       const token = localStorage.getItem('token');
-    //   const config = {
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     }
-    //   };
       config.headers["Authorization"] = `Token ${token}`;
 
       await axios.get(API_URL + 'users/api/user/', config)
         .then(res => {
-            this.setState({fetched_data: res.data})
+            this.setState({fetched_data: res.data});
         })
     }
 
@@ -48,19 +45,12 @@ class Change_Email extends Component {
     onFormSubmit(event){
         event.preventDefault();
         
-        if(this.state.new_email !== this.state.confirm_email){
-            alert('Email does not match')
-        }
-        else if(this.state.new_email === this.state.fetched_data.email){
-            alert('New email address has to be different from the old email address!')
-        }
-        else if (this.state.new_email === this.state.confirm_email){
+        if (this.state.new_email !== this.state.confirm_email) {
+            this.setState({errorCode: errors.EMAIL_NOT_MATCH});
+        } else if(this.state.new_email === this.state.fetched_data.email){
+            this.setState({errorCode: errors.EMAIL_CAN_NOT_BE_SAME});
+        } else if (this.state.new_email === this.state.confirm_email){
             const token = localStorage.getItem('token');
-            // const config = {
-            // headers: {
-            //     "Content-Type": "application/json"
-            // }
-            // };
             config.headers["Authorization"] = `Token ${token}`;
             
             const body = JSON.stringify({
@@ -85,11 +75,27 @@ class Change_Email extends Component {
                 axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.new_email}&&email=${this.state.new_email}`, config)
             })
             
-            this.props.history.push("/profile")
-            alert('You have successful updated you email address!')
+            this.props.history.push("/profile");
         }
     }
     render(){
+
+
+        const showErrors = () => {
+            if (this.state.errorCode === errors.EMAIL_NOT_MATCH) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="change_email.email_not_match" defaultMessage='Email does not match' /> 
+                    </div>
+                );
+            } else if (this.state.errorCode === errors.EMAIL_CAN_NOT_BE_SAME) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="change_email.email_can_not_be_same" defaultMessage='New email address has to be different from the old email address' /> 
+                    </div>
+                );
+            }
+        }
         return (
             <div>
                 <form onSubmit={this.onFormSubmit} >
@@ -127,6 +133,9 @@ class Change_Email extends Component {
                     <FormattedMessage id="change_email.cancel" defaultMessage='Cancel' />       
                     </button>
                 </form>
+                {
+                    showErrors()
+                }
             </div>
         )
     }

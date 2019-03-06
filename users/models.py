@@ -89,6 +89,12 @@ class CustomUser(AbstractBaseUser):
 		# Simplest possible answer: Yes, always
         return True
 
+    def has_perms(self, perm_list, obj=None):
+        for perm in perm_list:
+            if not self.has_perm(perm, obj):
+                return False
+        return True
+
     def has_module_perms(self, app_label):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always

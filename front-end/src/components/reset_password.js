@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Reset_Password extends Component {
 
@@ -26,11 +26,6 @@ class Reset_Password extends Component {
     }
 
     componentDidMount() {
-        // const config = {
-        //     headers: {
-        //       "Content-Type": "application/json"
-        //     }
-        // };
 
         const body = {
             token: this.props.location.pathname.slice(16)
@@ -54,12 +49,6 @@ class Reset_Password extends Component {
 
     onFormSubmit(event){
         event.preventDefault();
-        
-        // const config = {
-        //     headers: {
-        //       "Content-Type": "application/json"
-        //     }
-        // };
 
         const body = {
             token: this.props.location.pathname.slice(16),
@@ -67,13 +56,10 @@ class Reset_Password extends Component {
         }
         
         if (this.state.password1 !== this.state.password2) {
-            // this.setState({error_message: messages.PASSWORD_NOT_MATCH})
             this.setState({ errorCode: errors.PASSWORD_NOT_MATCH });
         } else if ( this.state.password1.length < 8){ 
-            // this.setState({error_message: messages.PASSWORD_NOT_VALID})
             this.setState({ errorCode: errors.PASSWORD_NOT_VALID });
         } else {
-            // this.setState({error_message: ''})
             this.setState({ errorCode: '' });
             axios.post(API_URL + 'users/api/reset-password/confirm/', body, config)
             .then(res => {

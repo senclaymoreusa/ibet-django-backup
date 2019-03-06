@@ -3,9 +3,10 @@ import axios from 'axios';
 import { withRouter } from 'react-router-dom';
 import { config } from '../util_config';
 import { FormattedMessage } from 'react-intl';
+import { errors } from './errors';
 
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Forget_Password extends Component {
 
@@ -14,7 +15,8 @@ class Forget_Password extends Component {
 
         this.state = {
            old_email: '',
-           success: false
+           success: false,
+           errorCode: '',
         }
 
         this.onInputChange_old_email  = this.onInputChange_old_email.bind(this);
@@ -27,12 +29,6 @@ class Forget_Password extends Component {
 
     onFormSubmit(event){
         event.preventDefault();
-        
-        // const config = {
-        //     headers: {
-        //       "Content-Type": "application/json"
-        //     }
-        // };
       
         const body = {
             email: this.state.old_email
@@ -43,6 +39,9 @@ class Forget_Password extends Component {
             this.setState({success: true})
             this.props.history.push("/email_sent")
         })
+        .catch((err) => {
+            this.setState({errorCode: errors.EMAIL_NOT_VALID});
+        });
     }
 
     render(){
@@ -52,6 +51,12 @@ class Forget_Password extends Component {
                 return (
                     <div style={{color: 'red'}}> 
                         <FormattedMessage id="email_sent.message" defaultMessage='An email has been sent to you email address to reset your password' /> 
+                    </div>
+                );
+            } else if (this.state.errorCode === errors.EMAIL_NOT_VALID) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="forget_password.email_not_valid" defaultMessage='Email is not valid' /> 
                     </div>
                 );
             }
@@ -78,7 +83,6 @@ class Forget_Password extends Component {
                 </form>
 
                 {
-                    // this.state.success  && messages.SEND_EMAIL_MESSAGE
                     showErrors()
                 }
                 

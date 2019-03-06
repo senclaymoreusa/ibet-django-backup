@@ -6,7 +6,7 @@ import { NavLink} from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Profile extends Component {
 
@@ -21,11 +21,6 @@ class Profile extends Component {
           this.props.history.push('/'); 
         } else {
           const token = localStorage.getItem('token');
-          // const config = {
-          //   headers: {
-          //     "Content-Type": "application/json"
-          //   }
-          // };
           config.headers["Authorization"] = `Token ${token}`;
 
           return axios.get(API_URL + 'users/api/user/', config)
