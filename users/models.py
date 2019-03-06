@@ -65,8 +65,8 @@ class CustomUser(AbstractBaseUser):
     phone = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
-    street_address_1 = models.CharField(max_length=100,blank=True)
-    street_address_2 = models.CharField(max_length=100,blank=True)
+    street_address_1 = models.CharField(max_length=100, blank=True)
+    street_address_2 = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=100)
@@ -87,6 +87,12 @@ class CustomUser(AbstractBaseUser):
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
 		# Simplest possible answer: Yes, always
+        return True
+
+    def has_perms(self, perm_list, obj=None):
+        for perm in perm_list:
+            if not self.has_perm(perm, obj):
+                return False
         return True
 
     def has_module_perms(self, app_label):
@@ -123,6 +129,8 @@ class Category(models.Model):
 
     category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
+    name_zh = models.CharField(max_length=50, null=True, blank=True)
+    name_fr = models.CharField(max_length=50, null=True, blank=True)
     parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.CharField(max_length=200)
     def __str__(self):
@@ -133,6 +141,8 @@ class Game(models.Model):
 
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
+    name_zh = models.CharField(max_length=50, null=True, blank=True)
+    name_fr = models.CharField(max_length=50, null=True, blank=True)
     #category = models.CharField(max_length=20)
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     start_time = models.DateTimeField('Start Time', null=True, blank=True)
@@ -140,6 +150,8 @@ class Game(models.Model):
     opponent1 = models.CharField(max_length=200, null=True, blank=True)
     opponent2 = models.CharField(max_length=200, null=True, blank=True)
     description = models.CharField(max_length=200)
+    description_zh = models.CharField(max_length=200, null=True, blank=True)
+    description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
 
     def __str__(self):

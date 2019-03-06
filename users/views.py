@@ -78,6 +78,7 @@ class BookDetailView(generic.DetailView):
     """
     model = Book
 
+
 class AuthorListView(generic.ListView):
     """
     Generic class-based list view for a list of authors.
@@ -232,14 +233,29 @@ class GameAPIListView(ListAPIView):
     def get_queryset(self):
         term = self.request.GET['term']
         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+
         if not data:
             data = Game.objects.filter(category_id__name__icontains=term)
-            if not data:
-                data = Game.objects.filter(name__icontains=term)
-                if not data:
-                    logger.error('Search term is not valid')
-                return data
-            return data
+
+        if not data:
+            data = Game.objects.filter(name__icontains=term)
+
+        if not data:
+            logger.error('Search term is not valid')
+
+        # override name/description based on language preference
+        # languageCode = 'en'
+        # if LANGUAGE_SESSION_KEY in self.request.session:
+        #     languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        
+        # print('game langugae: ' + languageCode)
+        # if languageCode != 'en':
+        #     for game in data:
+        #         if languageCode == 'zh-hans' and game.name_zh is not None:
+        #             game.name = game.name_zh
+        #         elif languageCode == 'fr' and game.name_fr is not None:
+        #             game.name = game.name_fr
+
         return data
 
 class BookAPIListView(ListAPIView):
@@ -256,6 +272,7 @@ class CategoryAPIListView(ListAPIView):
 
 class BookInstanceAPIListView(ListAPIView):
     serializer_class = BookInstanceSerializer
+    
     queryset = BookInstance.objects.all()
 
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
@@ -339,11 +356,13 @@ from django.contrib.auth import (
 )
 from django.http import HttpResponse
 from rest_framework.exceptions import APIException
+from django.utils.translation import ugettext_lazy as _
+
 
 
 class BlockedUserException(APIException):
     status_code = 403
-    default_detail = 'Current user is blocked!'
+    default_detail = _('Current user is blocked!')
     default_code = 'block'
 
 class LoginView(GenericAPIView):
@@ -374,9 +393,15 @@ class LoginView(GenericAPIView):
         return response_serializer
 
     def login(self):
+
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in self.request.session:
+            languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        print('login language code: ' + languageCode)
+
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
-            # print("user block")
+            print("user block")
             raise BlockedUserException
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(self.user)
@@ -469,7 +494,8 @@ class CustomPasswordResetView:
         content = Content("text/plain", 'Click the link to reset your email password: ' + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-            
+
+
 class CustomPasswordTokenVerificationView(APIView):
     """
       An Api View which provides a method to verifiy that a given pw-reset token is valid before actually confirming the
@@ -509,3 +535,56 @@ class CustomPasswordTokenVerificationView(APIView):
 
         return Response({'status': 'OK'})
 
+from .serializers import LanguageCodeSerializer
+from django.utils.translation import LANGUAGE_SESSION_KEY
+from django.utils import translation
+from django.contrib.sessions.backends.db import SessionStore
+
+class LanguageView(APIView):
+
+    # throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = LanguageCodeSerializer
+    
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        languageCode = serializer.validated_data['languageCode']
+        request.session[LANGUAGE_SESSION_KEY] = languageCode
+        request.session.modified = True
+        # Make current response also shows translated result
+        translation.activate(languageCode)
+
+        response = Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+        # print('post: ' + languageCode)
+
+        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+        if session_key is None:
+            request.session.create()
+            response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
+        # Check that the test cookie worked (we set it below):
+        # if request.session.test_cookie_worked():
+
+        #     # The test cookie worked, so delete it.
+        #     request.session.delete_test_cookie()
+
+        #     # In practice, we'd need some logic to check username/password
+        #     # here, but since this is an example...
+        # request.session.set_test_cookie()
+        
+        return response
+
+    def get(self, request, *args, **kwargs):
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in request.session:
+            languageCode = request.session[LANGUAGE_SESSION_KEY]
+        
+        
+        # print('get: ' + languageCode)
+        return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
+
+        

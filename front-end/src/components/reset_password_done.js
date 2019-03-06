@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
-import { messages } from './messages';
+import { FormattedMessage } from 'react-intl';
 
 class Reset_Password_Done extends Component {
     render(){
         return(
             <div> 
                 <div>
-                  {messages.CHANGE_PASSOWRD_CONFIRM} 
+                <FormattedMessage id="reset_password_done.change_confirm" defaultMessage='You have successfully reset your password' />
                 </div>
                 <div>
-                  Back to <NavLink to='/' style={{ textDecoration: 'none', color: 'blue' }}> Home page </NavLink>
+                <FormattedMessage id="reset_password_done.back" defaultMessage='Back to' /><NavLink to='/' style={{ textDecoration: 'none', color: 'blue' }}> 
+                <FormattedMessage id="reset_password_done.home" defaultMessage='Home page' /></NavLink>
                 </div>
             </div>
         ) 

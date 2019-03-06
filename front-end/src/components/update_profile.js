@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { NavLink, withRouter } from 'react-router-dom';
+import { config } from '../util_config';
+import { FormattedMessage } from 'react-intl';
+import { errors } from './errors';
 
-const API_URL = process.env.REACT_APP_REST_API
+
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Update extends Component {
 
@@ -23,7 +27,8 @@ class Update extends Component {
             zipcode: '',
             state: '',
             
-            fetched_data: {}
+            fetched_data: {},
+            errorCode: ''
         }
 
         this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -43,11 +48,11 @@ class Update extends Component {
     
     async componentDidMount() {
       const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      };
+    //   const config = {
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     }
+    //   };
       config.headers["Authorization"] = `Token ${token}`;
 
       await axios.get(API_URL + 'users/api/user/', config)
@@ -123,11 +128,6 @@ class Update extends Component {
         event.preventDefault();
 
         const token = localStorage.getItem('token');
-        const config = {
-        headers: {
-          "Content-Type": "application/json"
-          }
-        };
         config.headers["Authorization"] = `Token ${token}`;
 
         const body = JSON.stringify({ 
@@ -144,52 +144,147 @@ class Update extends Component {
             state:            this.state.state            ? this.state.state            : this.state.fetched_data.state,
             zipcode:          this.state.zipcode          ? this.state.zipcode          : this.state.fetched_data.zipcode
       });
-      if (!this.state.email){
-          alert('Email cannot be empty')
-      }else if (!this.state.first_name){
-          alert('First name cannot be empty')
-      }else if (!this.state.last_name){
-          alert('Last name cannot be empty')
-      }else if (!this.state.phone){
-          alert('Phone cannot be empty')
-      }else if (!this.state.date_of_birth){
-          alert('Date of Birth cannot be empty')
-      }else if(!this.state.country){
-          alert('Country cannoe be empty')
-      }else if (!this.state.zipcode){
-          alert('Zipcode cannot be empty')
-      }else if(!this.state.state){
-          alert('State cannot be empty')
-      }else if(!this.state.street_address_1){
-          alert("Street Address 1 cannot be empty")
-      }else if(!this.state.street_address_2){
-          alert("Street Address 2 cannot be empty")
-      }else{
-        axios.put(API_URL + 'users/api/user/', body, config)
-        this.props.history.push("/profile")
+
+
+      if (!this.state.email) {
+        this.setState({ errorCode: errors.EMAIL_EMPTY_ERROR });
+      } else if (!this.state.first_name) {
+        this.setState({ errorCode: errors.FIRST_NAME_EMPTY_ERROR });
+      } else if (!this.state.last_name) {
+        this.setState({ errorCode: errors.LAST_NAME_EMPTY_ERROR });
+      } else if (!this.state.phone) {
+        this.setState({ errorCode: errors.PHONE_EMPTY_ERROR });
+      } else if (!this.state.date_of_birth) {
+        this.setState({ errorCode: errors.DATEOFBIRTH_EMPTY_ERROR });
+      } else if (!this.state.street_address_1) {
+        this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
+      } else if (!this.state.city) {
+        this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
+      } else if (!this.state.state) {
+        this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
+      } else if (!this.state.country) {
+        this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
+      } else if (!this.state.zipcode){
+        this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
+      } else {
+            axios.put(API_URL + 'users/api/user/', body, config)
+            .then(() => {
+                this.props.history.push("/profile");
+            })
+            .catch((err) => {
+                console.log(err.response);
+            })
+            
       }
     }
 
     render() {
+
+        const showErrors = () => {
+            if (this.state.errorCode === errors.EMAIL_EMPTY_ERROR) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="sign.email_empty_error" defaultMessage='Email cannot be empty' /> 
+                    </div>
+                );
+            } else if (this.state.errorCode === errors.FIRST_NAME_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.firstName_empty_error" defaultMessage='First Name cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.LAST_NAME_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.lastName_empty_error" defaultMessage='Last Name cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.PHONE_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.phone_empty_error" defaultMessage='Phone cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.DATEOFBIRTH_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.dob_empty_error" defaultMessage='Date Of Birth cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.STREET_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.street_empty_error" defaultMessage='Street cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.CITY_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.city_empty_error" defaultMessage='City cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.STATE_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.state_empty_error" defaultMessage='State cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.COUNTRY_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.country_empty_error" defaultMessage='Country cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.errorCode === errors.ZIPCODE_EMPTY_ERROR) {
+              return (
+                  <div style={{color: 'red'}}> 
+                      <FormattedMessage id="sign.zipcode_empty_error" defaultMessage='Zipcode cannot be empty' /> 
+                  </div>
+              );
+            } else if (this.state.username_error) {
+              return (
+                  <div style={{color: 'red'}}> {this.state.username_error} </div>
+              )
+            } else if (this.state.email_error) {
+              return (
+                  <div style={{color: 'red'}}> {this.state.email_error} </div>
+              )
+              
+            } else if (this.state.password_error) {
+              return (
+                  <div style={{color: 'red'}}> {this.state.password_error} </div>
+              )
+            } else if (!this.state.username_error && !this.state.email_error && !this.state.password_error){
+              return (
+                <div style={{color: 'red'}}> {this.state.error} </div>
+              )
+            }
+          }
         return (
             <div> 
                 <form onSubmit={this.onFormSubmit} >
 
                     <div>
-                        <div><b>Username</b>: {this.state.username} </div>
+                        <div><b>
+                        <FormattedMessage id="update_profile.username" defaultMessage='Username: ' />
+                        </b>: {this.state.username} </div>
                     </div>
 
                     <div>
-                        <b>Email</b>: {this.state.email}
+                        <b>
+                        <FormattedMessage id="update_profile.email" defaultMessage='Email: ' />    
+                        </b>: {this.state.email}
                         <button> 
                             <NavLink to='/change_email/' style={{ textDecoration: 'none' }}>
-                                Update Email
+                            <FormattedMessage id="update_profile.update_email" defaultMessage='Update Email' />    
                             </NavLink>
                         </button>
                     </div>
 
                     <div>
-                        <label><b>First Name:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.firstName" defaultMessage='First Name: ' />       
+                        </b></label>
                         <input
                             placeholder="Mike"
                             className="form-control"
@@ -199,7 +294,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Last Name:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.lastName" defaultMessage='Last Name: ' />     
+                        </b></label>
                         <input
                             placeholder="Shaw"
                             className="form-control"
@@ -209,7 +306,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Phone:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.phone" defaultMessage='Phone: ' />      
+                        </b></label>
                         <input
                             placeholder="123456789"
                             className="form-control"
@@ -219,7 +318,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Date of Birth:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.dob" defaultMessage='Date of Birth: ' />      
+                        </b></label>
                         <input
                             placeholder="mm/dd/yyyy"
                             className="form-control"
@@ -229,7 +330,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Street Address 1:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.street1" defaultMessage='Street Address 1: ' />    
+                        </b></label>
                         <input
                             placeholder="111 World Drive"
                             className="form-control"
@@ -239,7 +342,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Street Address 2:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.street2" defaultMessage='Street Address 2: ' />    
+                        </b></label>
                         <input
                             placeholder="Suite No.123"
                             className="form-control"
@@ -249,7 +354,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Country:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.country" defaultMessage='Country: ' />       
+                        </b></label>
                         <input
                             placeholder="United States"
                             className="form-control"
@@ -259,7 +366,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>City:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.city" defaultMessage='City: ' />    
+                        </b></label>
                         <input
                             placeholder="Mountain View"
                             className="form-control"
@@ -269,7 +378,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>Zipcode:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.zipcode" defaultMessage='Zipcode: ' />      
+                        </b></label>
                         <input
                             placeholder="96173"
                             className="form-control"
@@ -279,7 +390,9 @@ class Update extends Component {
                     </div>
 
                     <div>
-                        <label><b>State:</b></label>
+                        <label><b>
+                        <FormattedMessage id="update_profile.state" defaultMessage='State: ' />    
+                        </b></label>
                         <input
                             placeholder="CA"
                             className="form-control"
@@ -290,13 +403,17 @@ class Update extends Component {
                     
                     <span className="input-group-btn">
                         <button type="submit" className="btn btn-secondary"> 
-                            Submit 
+                        <FormattedMessage id="update_profile.submit" defaultMessage='Submit' />
                         </button>
                     </span>
                 </form>
                 <button style={{color: 'red'}} onClick={()=>{this.props.history.push("/profile")}}> 
-                    Cancel 
+                <FormattedMessage id="update_profile.cancel" defaultMessage='Cancel' /> 
                 </button>
+
+                {
+                    showErrors()
+                }
             </div>
         )
     }

@@ -1,0 +1,115 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-05 14:48-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: users/forms.py:81
+msgid "Invalid date - renewal in past"
+msgstr ""
+
+#: users/forms.py:84
+msgid "Invalid date - renewal more than 4 weeks ahead"
+msgstr ""
+
+#: users/serializers.py:83
+msgid "A user is already registered with this username."
+msgstr ""
+
+#: users/serializers.py:90
+msgid "A user is already registered with this e-mail address."
+msgstr ""
+
+#: users/serializers.py:99
+msgid "The two password fields didn't match"
+msgstr "Les deux champs de mot de passe ne correspondent pas"
+
+#: users/serializers.py:101
+msgid "First name not valid"
+msgstr "Prénom non valide"
+
+#: users/serializers.py:103
+msgid "Last name not valid"
+msgstr "Nom non valide"
+
+#: users/serializers.py:105
+msgid "Date of birth not valid"
+msgstr "Date de naissance non valide"
+
+#: users/serializers.py:107
+msgid "Phone not valid"
+msgstr "Téléphone non valide"
+
+#: users/serializers.py:109
+msgid "City not valid"
+msgstr "Ville non valide"
+
+#: users/serializers.py:111
+msgid "Country not valid"
+msgstr "Pays non valide"
+
+#: users/serializers.py:113
+msgid "State not valid"
+msgstr "Etat non valide"
+
+#: users/serializers.py:115
+msgid "Zipcode not valid"
+msgstr "Code postal non valide"
+
+#: users/serializers.py:180
+msgid "Must include \"email\" and \"password\"."
+msgstr ""
+
+#: users/serializers.py:191
+msgid "Must include \"username\" and \"password\"."
+msgstr ""
+
+#: users/serializers.py:204
+msgid "Must include either \"username\" or \"email\" and \"password\"."
+msgstr ""
+
+#: users/serializers.py:245
+msgid "User account is disabled."
+msgstr ""
+
+#: users/serializers.py:248
+msgid "Unable to log in with provided credentials."
+msgstr ""
+
+#: users/serializers.py:257
+msgid "E-mail is not verified."
+msgstr ""
+
+#: users/views.py:365
+msgid "Current user is blocked!"
+msgstr "L'utilisateur actuel est bloqué!"
+
+#: users/views.py:454
+msgid "Welcome to Claymore, "
+msgstr "Bienvenue chez Claymore, "
+
+#: users/views.py:455
+msgid "You have successfully set up your new email account: "
+msgstr "Vous avez configuré avec succès votre nouveau compte de messagerie: "
+
+#: users/views.py:458
+msgid "Request of changing email address"
+msgstr "Demande de changement d'adresse email"
+
+#: users/views.py:459
+msgid "Your new Email Address is: "
+msgstr "Votre nouvelle adresse e-mail est: "

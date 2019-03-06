@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { messages } from './messages';
+import { errors } from './errors';
 import { withRouter } from 'react-router-dom';
+import { FormattedMessage } from 'react-intl';
+import { config } from '../util_config';
 
-const API_URL = process.env.REACT_APP_REST_API
+const API_URL = process.env.REACT_APP_REST_API;
 
 class Reset_Password extends Component {
 
@@ -14,7 +16,8 @@ class Reset_Password extends Component {
            show_page: true,
            password1: '',
            password2: '',
-           error_message: ''
+           error_message: '',
+           errorCode: '',
         }
 
         this.onInputChange_password1  = this.onInputChange_password1.bind(this);
@@ -23,11 +26,6 @@ class Reset_Password extends Component {
     }
 
     componentDidMount() {
-        const config = {
-            headers: {
-              "Content-Type": "application/json"
-            }
-        };
 
         const body = {
             token: this.props.location.pathname.slice(16)
@@ -51,24 +49,18 @@ class Reset_Password extends Component {
 
     onFormSubmit(event){
         event.preventDefault();
-        
-        const config = {
-            headers: {
-              "Content-Type": "application/json"
-            }
-        };
 
         const body = {
             token: this.props.location.pathname.slice(16),
             password: this.state.password1
         }
         
-        if (this.state.password1 !== this.state.password2){
-            this.setState({error_message: messages.PASSWORD_NOT_MATCH})
-        }else if( this.state.password1.length < 8){
-            this.setState({error_message: messages.PASSWORD_NOT_VALID})
-        }else{
-            this.setState({error_message: ''})
+        if (this.state.password1 !== this.state.password2) {
+            this.setState({ errorCode: errors.PASSWORD_NOT_MATCH });
+        } else if ( this.state.password1.length < 8){ 
+            this.setState({ errorCode: errors.PASSWORD_NOT_VALID });
+        } else {
+            this.setState({ errorCode: '' });
             axios.post(API_URL + 'users/api/reset-password/confirm/', body, config)
             .then(res => {
                 this.props.history.push("/reset_password_done")
@@ -77,16 +69,37 @@ class Reset_Password extends Component {
     }
 
     render(){
+
+        const showErrors = () => {
+            if (this.state.errorCode === errors.PASSWORD_NOT_MATCH) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="reset_password.password_not_match" defaultMessage='Password not match' /> 
+                    </div>
+                );
+            } else if (this.state.errorCode === errors.PASSWORD_NOT_VALID) {
+                return (
+                    <div style={{color: 'red'}}> 
+                        <FormattedMessage id="reset_password.password_not_valid" defaultMessage='Password not valid' /> 
+                    </div>
+                );
+            } 
+        }
+
         return (
             <div> 
                 {
                     this.state.show_page ?
                     <div>
-                        <div> Change your password </div>
+                        <div>
+                        <FormattedMessage id="reset_password.change_password" defaultMessage='Change your password' />      
+                        </div>
                         <form onSubmit={this.onFormSubmit} >
 
                         <div> 
-                            <label><b>Password:</b></label>
+                            <label><b>
+                            <FormattedMessage id="reset_password.password" defaultMessage='Password: ' /> 
+                            </b></label>
                             <input
                                 type="password"
                                 placeholder="password"
@@ -97,7 +110,9 @@ class Reset_Password extends Component {
                         </div>
 
                         <div>
-                            <label><b>Confirm Password:</b></label>
+                            <label><b>
+                            <FormattedMessage id="reset_password.confirm_password" defaultMessage='Confirm Password: ' />     
+                            </b></label>
                             <input
                                 type="password"
                                 placeholder="password"
@@ -108,17 +123,18 @@ class Reset_Password extends Component {
                         </div>
                             <span className="input-group-btn">
                                 <button type="submit" className="btn btn-secondary"> 
-                                    Confirm
+                                <FormattedMessage id="reset_password.confirm" defaultMessage='Confirm' />      
                                 </button>
                             </span>
                         </form>
                     </div>
                     : 
-                    <div> {messages.PAGE_NOT_VALID} </div>
+                    <div> <FormattedMessage id="reset_password.page_not_valid" defaultMessage='You have successfully reset your password' /> </div>
                 }
 
                 {
-                    <div style={{color: 'red'}}> {this.state.error_message} </div>
+                    // <div style={{color: 'red'}}> {this.state.error_message} </div>
+                    showErrors()
                 }
 
             </div>

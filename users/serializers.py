@@ -16,7 +16,7 @@ class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        fields = ('category_id', 'name', 'description', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id')
+        fields = ('category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id')
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,6 +49,7 @@ from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.base import AuthProcess
 from rest_framework import serializers, exceptions
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import get_user_model
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
@@ -61,7 +62,7 @@ class RegisterSerializer(serializers.Serializer):
     date_of_birth = serializers.CharField(required=True)
     phone = serializers.CharField(required=True)
     street_address_1 = serializers.CharField(required=False)
-    street_address_2 = serializers.CharField(required=False)
+    street_address_2 = serializers.CharField(required=False, allow_blank=True)
     city = serializers.CharField(required=True)
     country = serializers.CharField(required=True)
     state = serializers.CharField(required=True)
@@ -69,6 +70,7 @@ class RegisterSerializer(serializers.Serializer):
     
     
     def validate_username(self, username):
+
         #username = get_adapter().clean_username(username)
         #return username
 
@@ -92,8 +94,9 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
+        print("!!!!")
         if data['password1'] != data['password2']:
-            raise serializers.ValidationError(_("The two password fields didn't match."))
+            raise serializers.ValidationError(_("The two password fields didn't match"))
         if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
             raise serializers.ValidationError(_("First name not valid"))
         if not data['last_name'] or len(data['last_name']) > 20 or not data['last_name'].isalpha():
@@ -262,4 +265,8 @@ from django.core.exceptions import ValidationError
 
 class CustomTokenSerializer(serializers.Serializer):
     token = serializers.CharField()
+
+
+class LanguageCodeSerializer(serializers.Serializer):
+    languageCode = serializers.CharField()
 
