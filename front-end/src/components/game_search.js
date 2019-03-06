@@ -10,21 +10,23 @@ const API_URL = process.env.REACT_APP_REST_API;
 class Game_Search extends Component {
     constructor(props){
         super(props);
-        this.state = { term: '', games: [] };
+        this.state = { term: '', games: [], loading: true };
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
     }
 
     async componentDidMount() {
-        if (this.props.token){
+        const token = localStorage.getItem('search_term');
+        if (token){
             var temp = []
-            var URL = API_URL + 'users/api/games/' + '?term=' + this.props.token
+            var URL = API_URL + 'users/api/games/' + '?term=' + token
             await axios.get(URL)
             .then(res => {
                   temp = res.data
             })
           this.setState({games: temp})
         }
+        this.setState({loading: false})
     }
 
     fetch_game = async (text) => {
@@ -41,7 +43,9 @@ class Game_Search extends Component {
 
     onFormSubmit(event){
         event.preventDefault();
-        this.fetch_game(this.state.term);
+        localStorage.setItem('search_term', this.state.term);
+        const token = localStorage.getItem('search_term'); 
+        this.fetch_game(token);
         this.setState({ term: '' });
     }
 
@@ -101,14 +105,17 @@ class Game_Search extends Component {
                 games.map(item => {
                     return (
                         <div key={item.name}>
-                          <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
+                          <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                              //this.props.game_detail(item)
+                              localStorage.setItem('game_detail', JSON.stringify(item));
+                              }}> {item.name} </NavLink>
                           <br/>
                         </div>
                       )
                 })
               }
               {
-                  games.length === 0 ?
+                  games.length === 0 && this.state.loading === false?
                   <div> No games matching your search </div>
                   :
                   <div> </div>

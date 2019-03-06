@@ -5,6 +5,7 @@ import Navigation from "./navigation";
 class Game_Detail extends Component {
 
     render() {
+      const game = JSON.parse(localStorage.getItem('game_detail'));
       return(
         <div className='rows'>
           <div>
@@ -12,19 +13,19 @@ class Game_Detail extends Component {
           </div>
           <div>
             <h1> Game Details </h1>
-            <div> <b>name:</b>    {this.props.game_detail.name} </div>
+            <div> <b>name:    </b>    {game.name}        </div>
             <br/>
-            <div> <b>category:</b>    {this.props.game_detail.category_id.name} </div>
+            <div> <b>category:</b>    {game.name}        </div>
             <br/>
-            <div> <b>start_time:</b>  {this.props.game_detail.start_time} </div>
+            <div> <b>start_time:</b>  {game.start_time}  </div>
             <br/>
-            <div> <b>end_time:</b>    {this.props.game_detail.end_time} </div>
+            <div> <b>end_time:</b>    {game.end_time}    </div>
             <br/>
-            <div> <b>opponent1:</b>   {this.props.game_detail.opponent1} </div>
+            <div> <b>opponent1:</b>   {game.opponent1}   </div>
             <br/>
-            <div> <b>opponent2:</b>   {this.props.game_detail.opponent2} </div>
+            <div> <b>opponent2:</b>   {game.opponent2}   </div>
             <br/>
-            <div> <b>description:</b> {this.props.game_detail.description} </div>
+            <div> <b>description:</b> {game.description} </div>
           </div>
         </div>
       )

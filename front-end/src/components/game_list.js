@@ -38,7 +38,10 @@ class Game_List extends Component {
                   if (this.props.lang === 'zh' && item.name_zh) {
                     return (
                       <div key={item.name}>
-                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name_zh} </NavLink>
+                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                          //this.props.game_detail(item)
+                          localStorage.setItem('game_detail', JSON.stringify(item));
+                          }}> {item.name_zh} </NavLink>
                         <br/>
                       </div>
                     )
@@ -46,7 +49,10 @@ class Game_List extends Component {
                   else if (this.props.lang === 'fr' && item.name_fr) {
                     return (
                       <div key={item.name}>
-                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name_fr} </NavLink>
+                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                          //this.props.game_detail(item)
+                          localStorage.setItem('game_detail', JSON.stringify(item));
+                          }}> {item.name_fr} </NavLink>
                         <br/>
                       </div>
                     )
@@ -54,7 +60,10 @@ class Game_List extends Component {
                   else {
                     return (
                       <div key={item.name}>
-                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{this.props.game_detail(item)}}> {item.name} </NavLink>
+                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                          //this.props.game_detail(item)
+                          localStorage.setItem('game_detail', JSON.stringify(item));
+                          }}> {item.name} </NavLink>
                         <br/>
                       </div>
                     )
