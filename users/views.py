@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Added by Stephen
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 ##################
 
 # Create your views here.
@@ -241,7 +241,7 @@ class GameAPIListView(ListAPIView):
             data = Game.objects.filter(name__icontains=term)
 
         if not data:
-            logger.error('Search term is not valid')
+            logger.error('Search term did not match any categories or token')
 
         # override name/description based on language preference
         # languageCode = 'en'

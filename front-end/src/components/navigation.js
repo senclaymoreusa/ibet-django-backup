@@ -34,14 +34,15 @@ class Navigation extends Component {
 
     onInputChange(event){
         this.setState({term: event.target.value});
-        this.props.handle_search(event.target.value);
+        //this.props.handle_search(event.target.value);
     }
+
     onFormSubmit(event){
+        localStorage.setItem('search_term', this.state.term);
         this.props.history.push("/game_search");
         event.preventDefault();
         this.setState({ term: '' });
     }
-
 
     render() {
 
