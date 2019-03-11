@@ -62,12 +62,6 @@ class Navigation extends Component {
                 <NavLink to='/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.title" defaultMessage='Home' /></NavLink>
             </div>
             <div>
-                <NavLink to='/books/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.books" defaultMessage='All books' /></NavLink>
-            </div>
-            <div>
-                <NavLink to='/authors/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.authors" defaultMessage='All authors' /></NavLink>
-            </div>
-            <div>
                 <NavLink to='/game_type/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.games" defaultMessage='All Games' /></NavLink>
             </div>
 

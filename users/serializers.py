@@ -1,45 +1,5 @@
 from rest_framework import serializers
-from users.models import Game, Book, Author, Category, BookInstance, CustomUser
-
-class SubCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ('name', 'notes', 'category_id', 'parent_id')
-
-class CategorySerializer(serializers.ModelSerializer):
-    parent_id = SubCategorySerializer(read_only=True)
-    class Meta:
-        model = Category
-        fields = ('parent_id', 'name', 'notes', 'category_id')
-        
-class GameSerializer(serializers.ModelSerializer):
-    category_id = CategorySerializer(read_only=True)
-    class Meta:
-        model = Game
-        fields = ('category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id')
-
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Author
-        fields = ('first_name', 'last_name', 'date_of_birth', 'date_of_death')
-
-class BookSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(read_only=True)
-    class Meta:
-        model = Book
-        fields = ('title', 'author', 'summary')
-
-class BookInstanceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BookInstance
-        fields = '__all__'
-
-class UserDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block')
-        read_only_fields = ('username', )
-
+from users.models import Game, Category, CustomUser
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)
 from allauth.account.adapter import get_adapter
@@ -50,6 +10,39 @@ from allauth.socialaccount.providers.base import AuthProcess
 from rest_framework import serializers, exceptions
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth import get_user_model, authenticate
+from rest_framework import serializers, exceptions
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
+
+class SubCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name', 'notes', 'category_id', 'parent_id')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    parent_id = SubCategorySerializer(read_only=True)
+    class Meta:
+        model = Category
+        fields = ('parent_id', 'name', 'notes', 'category_id')
+        
+
+class GameSerializer(serializers.ModelSerializer):
+    category_id = CategorySerializer(read_only=True)
+    class Meta:
+        model = Game
+        fields = ('category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id')
+
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block')
+        read_only_fields = ('username', )
+
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
@@ -67,7 +60,6 @@ class RegisterSerializer(serializers.Serializer):
     country = serializers.CharField(required=True)
     state = serializers.CharField(required=True)
     zipcode = serializers.CharField(required=True)
-    
     
     def validate_username(self, username):
 
@@ -157,11 +149,6 @@ class RegisterSerializer(serializers.Serializer):
         user.save()
         return user
 
-
-from django.conf import settings
-from django.contrib.auth import get_user_model, authenticate
-from django.utils.translation import ugettext_lazy as _
-from rest_framework import serializers, exceptions
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
@@ -258,9 +245,6 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
-
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
 
 
 class CustomTokenSerializer(serializers.Serializer):
