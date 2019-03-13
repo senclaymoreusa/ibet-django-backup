@@ -26,6 +26,8 @@ class Game_Detail extends Component {
             <div> <b>opponent2:</b>   {game.opponent2}   </div>
             <br/>
             <div> <b>description:</b> {game.description} </div>
+            <br/>
+            <img src={game.image} height = "100" width="100" alt = 'Not available'/>
           </div>
         </div>
       )
