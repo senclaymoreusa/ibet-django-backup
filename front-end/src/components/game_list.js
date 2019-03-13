@@ -15,7 +15,8 @@ class Game_List extends Component {
     }
 
     componentDidMount() {
-        var URL = API_URL + 'users/api/games/' + '?term=' + this.props.game_type;
+        const game_type = localStorage.getItem('game_type');
+        var URL = API_URL + 'users/api/games/' + '?term=' + game_type;
         axios.get(URL, config)
             .then(res => {
                 this.setState({
@@ -43,6 +44,7 @@ class Game_List extends Component {
                           localStorage.setItem('game_detail', JSON.stringify(item));
                           }}> {item.name_zh} </NavLink>
                         <br/>
+                        <img src={item.image} height = "100" width="100" alt = 'Not available'/>
                       </div>
                     )
                   }
@@ -54,6 +56,7 @@ class Game_List extends Component {
                           localStorage.setItem('game_detail', JSON.stringify(item));
                           }}> {item.name_fr} </NavLink>
                         <br/>
+                        <img src={item.image} height = "100" width="100" alt = 'Not available'/>
                       </div>
                     )
                   }
@@ -65,6 +68,7 @@ class Game_List extends Component {
                           localStorage.setItem('game_detail', JSON.stringify(item));
                           }}> {item.name} </NavLink>
                         <br/>
+                        <img src={item.image} height = "100" width="100" alt = 'Not available'/>
                       </div>
                     )
                   }

@@ -19,13 +19,33 @@ class Game_Type extends Component {
           </div>
           <div>
             <h1> <FormattedMessage id="games_type.title" defaultMessage='Game Type' /></h1>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Sports')}}><FormattedMessage id="games_type.sports" defaultMessage='Sports' /></NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{
+              this.type_change('Sports')
+              localStorage.setItem('game_type', 'Sports');
+              }}><FormattedMessage id="games_type.sports" defaultMessage='Sports' /></NavLink>
             <br/>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Casino')}}><FormattedMessage id="games_type.casino" defaultMessage='Casino' /></NavLink>
+            <img src="http://localhost:8000/media/game_image/soccer.jpg" height = '100' width = '150' alt='Not available' ></img>
             <br/>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Poker')}}><FormattedMessage id="games_type.poker" defaultMessage='Poker' /></NavLink>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{
+              this.type_change('Casino')
+              localStorage.setItem('game_type', 'Casino');
+              }}><FormattedMessage id="games_type.casino" defaultMessage='Casino' /></NavLink>
             <br/>
-            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{this.type_change('Guide')}}><FormattedMessage id="games_type.guide" defaultMessage='Guide' /></NavLink>
+            <img src="http://localhost:8000/media/game_image/casino.jpg" height = '100' width = '150' alt='Not available' ></img>
+            <br/>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{
+              this.type_change('Poker')
+              localStorage.setItem('game_type', 'Poker');
+              }}><FormattedMessage id="games_type.poker" defaultMessage='Poker' /></NavLink>
+            <br/>
+            <img src="http://localhost:8000/media/game_image/poker.jpg" height = '100' width = '150' alt='Not available' ></img>
+            <br/>
+            <NavLink to='/game_list' style={{ textDecoration: 'none' }} onClick={()=>{
+              this.type_change('Guide')
+              localStorage.setItem('game_type', 'Guide');
+              }}><FormattedMessage id="games_type.guide" defaultMessage='Guide' /></NavLink>
+            <br/>
+            <img src="http://localhost:8000/media/game_image/guide.png" height = '100' width = '150' alt='Not available' ></img>
           </div>
         </div>
       );

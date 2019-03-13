@@ -129,7 +129,8 @@ class Game(models.Model):
     description_zh = models.CharField(max_length=200, null=True, blank=True)
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
-
+    image = models.ImageField(upload_to='game_image', blank=True)
+    
     def __str__(self):
         return '{0}: {1}'.format(self.name, self.category_id)
 
