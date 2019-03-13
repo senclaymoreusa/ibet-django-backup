@@ -104,6 +104,7 @@ class Game_Search extends Component {
                               localStorage.setItem('game_detail', JSON.stringify(item));
                               }}> {item.name} </NavLink>
                           <br/>
+                          <img src={item.image} height = "100" width="100" alt = 'Not available'/>
                         </div>
                       )
                 })
