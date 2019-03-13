@@ -58,12 +58,6 @@ class Game_Search extends Component {
                     <NavLink to='/' style={{ textDecoration: 'none' }}> Home </NavLink>
                 </div>
                 <div>
-                    <NavLink to='/books/' style={{ textDecoration: 'none' }}> All books </NavLink>
-                </div>
-                <div>
-                    <NavLink to='/authors/' style={{ textDecoration: 'none' }}> All authors </NavLink>
-                </div>
-                <div>
                     <NavLink to='/game_type/' style={{ textDecoration: 'none' }}> All Games </NavLink>
                 </div>
                 <form onSubmit={this.onFormSubmit} className="input-group">
