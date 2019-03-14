@@ -1,0 +1,22 @@
+#!/bin/bash
+pip3 install Django
+pip3 install certifi
+pip3 install chardet
+pip3 install defusedxml
+pip3 install django-allauth
+pip3 install django-cors-headers
+pip3 install django-rest-auth
+pip3 install django-rest-passwordreset
+pip3 install djangorestframework
+pip3 install idna
+pip3 install oauthlib
+pip3 install Pillow
+pip3 install python-http-client
+pip3 install python3-openid
+pip3 install pytz
+pip3 install requests
+pip3 install requests-oauthlib
+pip3 install sendgrid
+pip3 install six
+pip3 install urllib3
+pip3 install whitenoise
