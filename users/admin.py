@@ -19,7 +19,7 @@ class UserAdmin(BaseUserAdmin):
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'referral_award_points', 'referral_accept_points', 'referral_limit', 'referred_who')}),
 			('Permissions', {'fields': ('is_admin',)})
 		)
 	search_fields = ('username','email')

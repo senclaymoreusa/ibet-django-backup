@@ -7,6 +7,7 @@ from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 import uuid
 from datetime import date
 from django.contrib.auth.models import User
+import base64
 
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -65,11 +66,30 @@ class CustomUser(AbstractBaseUser):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=100)
+    referral_id = models.CharField(max_length=300, blank=True, null=True)
+    referred_by = models.CharField(max_length=30, blank=True, null=True)
+    reward_points = models.IntegerField(default=0)
+    referral_award_points = models.IntegerField(default=5)
+    referral_accept_points = models.IntegerField(default=3)
+    referral_limit = models.IntegerField(default=10)
+    referred_who = models.CharField(max_length=30, blank=True, null=True)
 
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
+
+    def get_absolute_url(self):
+        return u'/profile/show/%d' % self.id
+
+    def generate_verification_code(self):
+        return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.referral_id =  str(self.generate_verification_code())[2:-1]
+
+        return super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.email

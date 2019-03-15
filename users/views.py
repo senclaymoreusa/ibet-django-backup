@@ -44,6 +44,8 @@ import datetime
 import logging
 import os
 
+from django.contrib.auth import get_user_model
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -296,6 +298,10 @@ class SendEmail(View):
             to_email_address = self.request.GET['to_email_address']
             email_subject = _('Request of changing email address') + ' '
             email_content = _('Your new Email Address is: ') + self.request.GET['email']
+        elif case == 'referral':
+            to_email_address = self.request.GET['to_email_address']
+            email_subject = self.request.GET['username'] + ' referred you to sign up an account with Claymore' 
+            email_content = 'Please use the referral link to register your new account: ' + 'http://localhost:3000/referralsignup/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -418,3 +424,59 @@ class LanguageView(APIView):
         
         # print('get: ' + languageCode)
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)  
+
+
+class ReferralAward(View):
+    def get(self, request, *args, **kwargs):
+        referral_id = self.request.GET['referral_id']
+        current_referred = self.request.GET['referred']
+        user = get_user_model().objects.filter(referral_id=referral_id)
+        for item in user:
+            points = item.reward_points
+            to_add = item.referral_award_points
+            previous_referred = item.referred_who
+        
+        points_sum = points + to_add
+        user.update(reward_points=points_sum)
+        
+        if not previous_referred:
+            referred = current_referred
+        else:
+            referred = previous_referred + ', ' + str(current_referred)
+    
+        user.update(referred_who=referred)
+        return HttpResponse('Update successful')
+
+
+class ReferralAcceptAward(View):
+    def get(self, request, *args, **kwargs):
+        referral_id = self.request.GET['referral_id']
+        referrer_id = self.request.GET['referrer_id']
+        user = get_user_model().objects.filter(referral_id=referral_id)
+        for item in user:
+            points = item.reward_points
+            to_add = item.referral_accept_points
+        points_sum = points + to_add
+        user.update(reward_points=points_sum)
+        user2 = get_user_model().objects.filter(referral_id=referrer_id)
+        for item in user2:
+            referrer_name = item.username
+        
+        user.update(referred_by=referrer_name)
+        return HttpResponse('Update successful')
+
+
+class CheckReferral(View):
+    def get(self, request, *args, **kwargs):
+        referral_id = self.request.GET['referral_id']
+        user = get_user_model().objects.filter(referral_id=referral_id)
+        for item in user:
+            current_referral = item.referred_who
+            maximum = item.referral_limit
+        if not current_referral:
+            
+            return HttpResponse('Valid')
+
+        if len(current_referral.split(',')) >= maximum:
+            return HttpResponse('Invalid')
+        return HttpResponse('Valid')

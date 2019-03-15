@@ -80,7 +80,15 @@ class Navigation extends Component {
             </form>
             {
               this.props.isAuthenticated ?
-              <NavLink to = '/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
+              <div>
+                  <div> 
+                      <NavLink to = '/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
+                  </div>
+                  
+                  <div>
+                      <NavLink to = '/referral/' style={{ textDecoration: 'none' }}>Refer new user</NavLink>
+                  </div>
+              </div>
               :
               <div> </div>
             }
