@@ -8,6 +8,7 @@ import uuid
 from datetime import date
 from django.contrib.auth.models import User
 import base64
+from django.contrib.auth import get_user_model
 
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -69,9 +70,6 @@ class CustomUser(AbstractBaseUser):
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     referred_by = models.CharField(max_length=30, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
-    referral_award_points = models.IntegerField(default=5)
-    referral_accept_points = models.IntegerField(default=3)
-    referral_limit = models.IntegerField(default=10)
     referred_who = models.CharField(max_length=30, blank=True, null=True)
 
     objects = MyUserManager()
@@ -87,7 +85,10 @@ class CustomUser(AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.referral_id =  str(self.generate_verification_code())[2:-1]
+            temp =  str(self.generate_verification_code())[2:-1]
+            while get_user_model().objects.filter(referral_id=temp):   # make sure no duplicates
+                temp = str(self.generate_verification_code())[2:-1]
+            self.referral_id = temp
 
         return super(CustomUser, self).save(*args, **kwargs)
 
@@ -135,11 +136,9 @@ class Category(models.Model):
 
 
 class Game(models.Model):
-    #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
-    #category = models.CharField(max_length=20)
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     start_time = models.DateTimeField('Start Time', null=True, blank=True)
     end_time = models.DateTimeField('End Time', null=True, blank=True)
@@ -150,6 +149,8 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
+    #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    #category = models.CharField(max_length=20)
     
     def __str__(self):
         return '{0}: {1}'.format(self.name, self.category_id)
@@ -171,4 +172,13 @@ class Language(models.Model):
         """
         String for representing the Model object (in Admin site etc.)
         """
+        return self.name
+
+class Config(models.Model):
+    name = models.CharField(max_length=50, default='General')
+    referral_award_points = models.IntegerField(default=5)
+    referral_accept_points = models.IntegerField(default=3)
+    referral_limit = models.IntegerField(default=10)
+
+    def __str__(self):
         return self.name

@@ -18,6 +18,7 @@ export const messages = {
         'nav.profile': 'Profile',
         'nav.login': 'Login',
         'nav.logout': 'Logout',
+        'nav.referral': 'Refer new user',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -138,7 +139,8 @@ export const messages = {
         'change_email.email_not_match': 'Email does not match',
         'change_email.email_can_not_be_same': 'New email address has to be different from the old email address',
 
-
+        // handel referral page message
+        'referral.enter_email': 'Please enter the email account for your referral'
 
     },
     zh: {
@@ -161,6 +163,7 @@ export const messages = {
         'nav.profile': '個人資料',
         'nav.login': '登入',
         'nav.logout': '登出',
+        'nav.referral': '推荐新用户',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -281,6 +284,9 @@ export const messages = {
         'change_email.email_not_match': '兩郵箱不一致',
         'change_email.email_can_not_be_same': '新郵箱不能跟舊郵箱一樣',
 
+        // handel referral page message
+        'referral.enter_email': '请输入您想推荐的邮箱'
+
     }, 
     fr: {
 
@@ -302,6 +308,7 @@ export const messages = {
         'nav.profile': 'Profil',
         'nav.login': 'S\'identifier',
         'nav.logout': 'Connectez - Out',
+        'nav.referral': 'Recommander de nouveaux utilisateurs',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',
@@ -421,6 +428,9 @@ export const messages = {
         'change_email.cancel': 'Annuler',
         'change_email.email_not_match': 'Email ne correspond pas',
         'change_email.email_can_not_be_same': 'La nouvelle adresse électronique doit être différente de l\'ancienne',
+
+        // handel referral page message
+        'referral.enter_email': "Veuillez saisir l'adresse e-mail que vous souhaitez recommander"
     }
 }
 

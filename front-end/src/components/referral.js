@@ -59,7 +59,7 @@ class Referral extends React.Component {
                     <div>
                         <div>
                             <label><b>
-                                Enter the email account you want to refer
+                                <FormattedMessage id='referral.enter_email' defaultMessage='Please enter the email account for your referral' />
                             </b></label>
                         </div>
                         <input

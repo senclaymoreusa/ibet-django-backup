@@ -86,7 +86,7 @@ class Navigation extends Component {
                   </div>
                   
                   <div>
-                      <NavLink to = '/referral/' style={{ textDecoration: 'none' }}>Refer new user</NavLink>
+                      <NavLink to = '/referral/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.referral" defaultMessage='Refer new user' /></NavLink>
                   </div>
               </div>
               :

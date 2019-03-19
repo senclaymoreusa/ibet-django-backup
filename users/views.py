@@ -29,7 +29,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category
+from .models import Game, CustomUser, Category, Config
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -300,8 +300,8 @@ class SendEmail(View):
             email_content = _('Your new Email Address is: ') + self.request.GET['email']
         elif case == 'referral':
             to_email_address = self.request.GET['to_email_address']
-            email_subject = self.request.GET['username'] + ' referred you to sign up an account with Claymore' 
-            email_content = 'Please use the referral link to register your new account: ' + 'http://localhost:3000/referralsignup/' + self.request.GET['referralid']
+            email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
+            email_content = _('Please use the referral link to register your new account: ') + 'http://localhost:3000/signup/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -431,9 +431,12 @@ class ReferralAward(View):
         referral_id = self.request.GET['referral_id']
         current_referred = self.request.GET['referred']
         user = get_user_model().objects.filter(referral_id=referral_id)
+
+        data = Config.objects.all()[0]
+        to_add = data.referral_award_points
+
         for item in user:
             points = item.reward_points
-            to_add = item.referral_award_points
             previous_referred = item.referred_who
         
         points_sum = points + to_add
@@ -453,9 +456,12 @@ class ReferralAcceptAward(View):
         referral_id = self.request.GET['referral_id']
         referrer_id = self.request.GET['referrer_id']
         user = get_user_model().objects.filter(referral_id=referral_id)
+
+        data = Config.objects.all()[0]
+        to_add = data.referral_accept_points
+
         for item in user:
             points = item.reward_points
-            to_add = item.referral_accept_points
         points_sum = points + to_add
         user.update(reward_points=points_sum)
         user2 = get_user_model().objects.filter(referral_id=referrer_id)
@@ -470,13 +476,13 @@ class CheckReferral(View):
     def get(self, request, *args, **kwargs):
         referral_id = self.request.GET['referral_id']
         user = get_user_model().objects.filter(referral_id=referral_id)
+        data = Config.objects.all()[0]
+        maximum = data.referral_limit
         for item in user:
             current_referral = item.referred_who
-            maximum = item.referral_limit
         if not current_referral:
-            
             return HttpResponse('Valid')
-
         if len(current_referral.split(',')) >= maximum:
             return HttpResponse('Invalid')
         return HttpResponse('Valid')
+
