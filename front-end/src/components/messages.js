@@ -138,7 +138,15 @@ export const messages = {
         'change_email.email_not_match': 'Email does not match',
         'change_email.email_can_not_be_same': 'New email address has to be different from the old email address',
 
-
+        // handle game_detail page message
+        'game_detail.title': 'Game Details',
+        'game_detail.name': 'Name: ',
+        'game_detail.category': 'Category: ',
+        'game_detail.startTime': 'Start time: ',
+        'game_detail.endTime': 'End time: ',
+        'game_detail.opponent1': 'Opponent1: ',
+        'game_detail.opponent2': 'Opponent2: ',
+        'game_detail.description': 'Description: ',
 
     },
     zh: {
@@ -280,6 +288,16 @@ export const messages = {
         'change_email.cancel': '取消',
         'change_email.email_not_match': '兩郵箱不一致',
         'change_email.email_can_not_be_same': '新郵箱不能跟舊郵箱一樣',
+        
+        // handle game_detail page message
+        'game_detail.title': '遊戲詳情',
+        'game_detail.name': '名稱: ',
+        'game_detail.category': '種類: ',
+        'game_detail.startTime': '開始時間: ',
+        'game_detail.endTime': '結束時間: ',
+        'game_detail.opponent1': '對手1: ',
+        'game_detail.opponent2': '對手2: ',
+        'game_detail.description': '遊戲說明: ',
 
     }, 
     fr: {
@@ -421,6 +439,17 @@ export const messages = {
         'change_email.cancel': 'Annuler',
         'change_email.email_not_match': 'Email ne correspond pas',
         'change_email.email_can_not_be_same': 'La nouvelle adresse électronique doit être différente de l\'ancienne',
+
+
+         // handle game_detail page message
+         'game_detail.title': 'Détails du jeu',
+         'game_detail.name': 'Prénom: ',
+         'game_detail.category': 'Catégorie: ',
+         'game_detail.startTime': 'Heure de début: ',
+         'game_detail.endTime': 'Heure de fin: ',
+         'game_detail.opponent1': 'Adversaire1: ',
+         'game_detail.opponent2': 'Adversaire2: ',
+         'game_detail.description': 'La description: ',
     }
 }
 

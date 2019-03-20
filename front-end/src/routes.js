@@ -22,7 +22,7 @@ const BaseRouter = () => (
     <Route exact path="/game_list" component={Game_List} />
     <Route exact path="/login" component={Login} />
     <Route exact path="/signup" component={Signup} />
-    <Route exact path="/game_detail" component={Game_Detail} />
+    <Route exact path="/game_detail/:id" component={Game_Detail} />
     <Route exact path="/game_search" component={Game_Search} />
     <Route exact path="/profile" component={Profile} />
     <Route exact path="/update_profile" component={Update} />
