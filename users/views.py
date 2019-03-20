@@ -125,19 +125,14 @@ class GameAPIListView(ListAPIView):
         if not data:
             logger.error('Search term did not match any categories or token')
 
-        # override name/description based on language preference
-        # languageCode = 'en'
-        # if LANGUAGE_SESSION_KEY in self.request.session:
-        #     languageCode = self.request.session[LANGUAGE_SESSION_KEY]
-        
-        # print('game langugae: ' + languageCode)
-        # if languageCode != 'en':
-        #     for game in data:
-        #         if languageCode == 'zh-hans' and game.name_zh is not None:
-        #             game.name = game.name_zh
-        #         elif languageCode == 'fr' and game.name_fr is not None:
-        #             game.name = game.name_fr
+        return data
 
+class GameDetailAPIListView(ListAPIView):
+    
+    serializer_class = GameSerializer
+    def get_queryset(self):
+        id = self.request.GET['id']
+        data = Game.objects.filter(pk=id)
         return data
 
 
@@ -241,7 +236,7 @@ class LoginView(GenericAPIView):
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
-        print('login language code: ' + languageCode)
+        # print('login language code: ' + languageCode)
 
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
