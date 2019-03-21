@@ -430,59 +430,63 @@ class ReferralAward(View):
     def get(self, request, *args, **kwargs):
         referral_id = self.request.GET['referral_id']
         current_referred = self.request.GET['referred']
-        user = get_user_model().objects.filter(referral_id=referral_id)
-
+        user          = get_user_model().objects.filter(referral_id=referral_id)
+        referred_user = get_user_model().objects.filter(username=current_referred)
+        
         data = Config.objects.all()[0]
         to_add = data.referral_award_points
-
-        for item in user:
-            points = item.reward_points
-            previous_referred = item.referred_who
-        
-        points_sum = points + to_add
-        user.update(reward_points=points_sum)
-        
-        if not previous_referred:
-            referred = current_referred
-        else:
-            referred = previous_referred + ', ' + str(current_referred)
-    
-        user.update(referred_who=referred)
-        return HttpResponse('Update successful')
-
-
-class ReferralAcceptAward(View):
-    def get(self, request, *args, **kwargs):
-        referral_id = self.request.GET['referral_id']
-        referrer_id = self.request.GET['referrer_id']
-        user = get_user_model().objects.filter(referral_id=referral_id)
-
-        data = Config.objects.all()[0]
-        to_add = data.referral_accept_points
+        to_add_accept = data.referral_accept_points
 
         for item in user:
             points = item.reward_points
         points_sum = points + to_add
         user.update(reward_points=points_sum)
-        user2 = get_user_model().objects.filter(referral_id=referrer_id)
-        for item in user2:
-            referrer_name = item.username
+
+        for item in referred_user:
+            points_referred = item.reward_points
+        points_sum_referred = to_add_accept + points_referred
+        referred_user.update(reward_points = points_sum_referred)
+   
+        referred_user.update(referred_by=user[0])
         
-        user.update(referred_by=referrer_name)
         return HttpResponse('Update successful')
 
 
 class CheckReferral(View):
     def get(self, request, *args, **kwargs):
+        
         referral_id = self.request.GET['referral_id']
         user = get_user_model().objects.filter(referral_id=referral_id)
         data = Config.objects.all()[0]
         maximum = data.referral_limit
-        for item in user:
-            current_referral = item.referred_who
+        current_referral = len(user[0].referees.all())
         if not current_referral:
             return HttpResponse('Valid')
-        if len(current_referral.split(',')) >= maximum:
+        if current_referral >= maximum:
             return HttpResponse('Invalid')
         return HttpResponse('Valid')
 
+
+class ReferralTree(View):
+    def get(self, request, *args, **kwargs):
+        username = self.request.GET['username']
+        user = get_user_model().objects.filter(username=username)
+        result = []
+        data = Config.objects.all()[0]
+        level = data.level
+        temp = user[0].referees.all()
+        result.append(len(temp))
+        for i in range(level - 1):
+            dummy = []
+            for item in temp:
+                for person in item.referees.all():
+                    dummy.append(person)
+            result.append(len(dummy))
+            temp = dummy
+        return HttpResponse(result)
+
+class Global(View):
+    def get(self, request, *args, **kwargs):
+        data = Config.objects.all()[0]
+        return HttpResponse(data.level)
+        

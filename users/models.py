@@ -68,9 +68,8 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=100)
     referral_id = models.CharField(max_length=300, blank=True, null=True)
-    referred_by = models.CharField(max_length=30, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
-    referred_who = models.CharField(max_length=30, blank=True, null=True)
+    referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.CASCADE, related_name='referees')
 
     objects = MyUserManager()
 
@@ -93,7 +92,7 @@ class CustomUser(AbstractBaseUser):
         return super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.email
+        return self.username
 
     def get_short_name(self):
 	    # The user is identified by their email address
@@ -179,6 +178,7 @@ class Config(models.Model):
     referral_award_points = models.IntegerField(default=5)
     referral_accept_points = models.IntegerField(default=3)
     referral_limit = models.IntegerField(default=10)
+    level = models.IntegerField(default=2)
 
     def __str__(self):
         return self.name

@@ -11,7 +11,9 @@ const API_URL = process.env.REACT_APP_REST_API;
 class Profile extends Component {
 
     state = {
-        data: {}
+        data: {},
+        tree:'',
+        level: ''
     }
 
     componentDidMount() {
@@ -26,6 +28,16 @@ class Profile extends Component {
           return axios.get(API_URL + 'users/api/user/', config)
           .then(res => {
               this.setState({data: res.data});
+
+              axios.get(API_URL + 'users/api/referraltree/?username=' + this.state.data.username, config)
+              .then(res => {
+                this.setState({tree: res.data})
+              })
+
+              axios.get(API_URL + 'users/api/config/', config)
+              .then(res => {
+                this.setState({level: res.data})
+              })
           }) 
         }
       });
@@ -33,6 +45,27 @@ class Profile extends Component {
 
 
     render(){
+      var level = this.state.level
+      var layer = this.state.tree.toString()
+      var array = []
+      for (var i=0;i < 3; i++){
+          array.push(layer[i])
+      }
+
+      var referral = (array) => {
+        return (
+          <div>
+            {
+              array.map((item, index) => {
+                  if (index < level){
+                    return <div key={index}> <FormattedMessage id="profile.level" defaultMessage='Referral Level: ' /> {index + 1}: {item ? item : 0} </div>
+                  }
+              })
+            }
+          </div>
+        )
+      }
+      
       return (
         <div>
         {
@@ -81,6 +114,9 @@ class Profile extends Component {
             </button>
           </div>
         } 
+        { 
+          referral(array) 
+        }
         </div>
       )
     }

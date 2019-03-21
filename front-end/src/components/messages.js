@@ -77,6 +77,7 @@ export const messages = {
         'profile.state': 'State: ',
         'profile.update': 'Update',
         'profile.back': 'Back',
+        'profile.level': 'Referral Level',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Enter your email address: ',
@@ -221,6 +222,7 @@ export const messages = {
         'profile.state': '州: ',
         'profile.update': '更新',
         'profile.back': '返回',
+        'profile.level': '用户推荐层级',
 
         // handle forget_password page message
         'forget_password.enter_email': '請輸入郵箱: ',
@@ -366,6 +368,7 @@ export const messages = {
         'profile.state': 'Etat: ',
         'profile.update': 'Mettre à jour',
         'profile.back': 'Retour',
+        'profile.level': "Niveau de recommandation de l'utilisateur",
 
         // handle forget_password page message
         'forget_password.enter_email': 'Entrez votre adresse email: ',

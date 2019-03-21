@@ -183,13 +183,6 @@ class Signup extends React.Component {
             this.props.history.push('/');
             axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
             axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
-            const token = localStorage.getItem('token');
-            config.headers["Authorization"] = `Token ${token}`;
-    
-            axios.get(API_URL + 'users/api/user/', config)
-              .then(res => {
-                  axios.get(API_URL + `users/api/referralaccept/?referral_id=${res.data.referral_id}&referrer_id=${referrer_id}`, config)
-              }) 
         
         }).catch(err => {
             console.log(err)
