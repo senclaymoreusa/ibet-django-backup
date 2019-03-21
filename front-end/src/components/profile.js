@@ -48,7 +48,7 @@ class Profile extends Component {
       var level = this.state.level
       var layer = this.state.tree.toString()
       var array = []
-      for (var i=0;i < 3; i++){
+      for (var i = 0; i < layer.length; i++){
           array.push(layer[i])
       }
 
