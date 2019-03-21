@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Game, Category, CustomUser
+from users.models import Game, Category, CustomUser, NoticeMessage
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)
 from allauth.account.adapter import get_adapter
@@ -86,7 +86,6 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
-        print("!!!!")
         if data['password1'] != data['password2']:
             raise serializers.ValidationError(_("The two password fields didn't match"))
         if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
@@ -254,3 +253,7 @@ class CustomTokenSerializer(serializers.Serializer):
 class LanguageCodeSerializer(serializers.Serializer):
     languageCode = serializers.CharField()
 
+class NoticeMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NoticeMessage
+        fields = ('pk', 'start_time', 'end_time', 'message')

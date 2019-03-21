@@ -25,4 +25,5 @@ urlpatterns += [
     path('api/reset-password/verify-token/', views.CustomPasswordTokenVerificationView.as_view(), name='password_reset_verify_token'),
     path('api/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     path('api/language/', views.LanguageView.as_view(), name='language'),
+    path('api/notice-message', views.NoticeMessageView.as_view(), name='notice_message'),
 ]

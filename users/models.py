@@ -152,3 +152,15 @@ class Language(models.Model):
         String for representing the Model object (in Admin site etc.)
         """
         return self.name
+
+class NoticeMessage(models.Model): 
+
+    start_time = models.DateTimeField('Start Time', blank=False)
+    end_time = models.DateTimeField('End Time', blank=False)
+    message = models.CharField(max_length=200)
+
+    def __str__(self):
+        """
+        String for representing the Model object (in Admin site etc.)
+        """
+        return self.message
