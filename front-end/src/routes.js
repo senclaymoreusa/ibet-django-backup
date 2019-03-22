@@ -14,6 +14,7 @@ import Forget_Password from './components/forget_password'
 import Reset_Password from './components/reset_password'
 import Email_Sent from './components/email_sent'
 import Reset_Password_Done from './components/reset_password_done'
+import Referral from './components/referral'
 
 const BaseRouter = () => (
   <div>
@@ -21,7 +22,7 @@ const BaseRouter = () => (
     <Route exact path="/game_type" component={Game_Type} />
     <Route exact path="/game_list" component={Game_List} />
     <Route exact path="/login" component={Login} />
-    <Route exact path="/signup" component={Signup} />
+    <Route exact path="/signup/:filter?" component={Signup} />
     <Route exact path="/game_detail" component={Game_Detail} />
     <Route exact path="/game_search" component={Game_Search} />
     <Route exact path="/profile" component={Profile} />
@@ -31,6 +32,7 @@ const BaseRouter = () => (
     <Route exact path="/reset_password/:filter?" component={Reset_Password} />
     <Route exact path="/email_sent" component={Email_Sent} />
     <Route exact path="/reset_password_done" component={Reset_Password_Done} />
+    <Route exact path="/referral" component={Referral} />
   </div>
 );
 

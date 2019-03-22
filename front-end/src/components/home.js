@@ -7,7 +7,8 @@ import { FormattedMessage } from 'react-intl';
 class Home extends Component {
   
   componentDidMount() {
-    
+    //localStorage.removeItem('token');
+    //localStorage.removeItem('expirationDate');
     this.props.authCheckState()
 
   }
@@ -28,5 +29,4 @@ class Home extends Component {
     }
   }
 
-  
   export default connect(null, {authCheckState})(Home);

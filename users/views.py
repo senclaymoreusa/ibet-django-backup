@@ -29,7 +29,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category
+from .models import Game, CustomUser, Category, Config
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -43,6 +43,8 @@ from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 import datetime
 import logging
 import os
+
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger('django')
 
@@ -296,6 +298,10 @@ class SendEmail(View):
             to_email_address = self.request.GET['to_email_address']
             email_subject = _('Request of changing email address') + ' '
             email_content = _('Your new Email Address is: ') + self.request.GET['email']
+        elif case == 'referral':
+            to_email_address = self.request.GET['to_email_address']
+            email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
+            email_content = _('Please use the referral link to register your new account: ') + 'http://localhost:3000/signup/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -418,3 +424,69 @@ class LanguageView(APIView):
         
         # print('get: ' + languageCode)
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)  
+
+
+class ReferralAward(View):
+    def get(self, request, *args, **kwargs):
+        referral_id = self.request.GET['referral_id']
+        current_referred = self.request.GET['referred']
+        user          = get_user_model().objects.filter(referral_id=referral_id)
+        referred_user = get_user_model().objects.filter(username=current_referred)
+        
+        data = Config.objects.all()[0]
+        to_add = data.referral_award_points
+        to_add_accept = data.referral_accept_points
+
+        for item in user:
+            points = item.reward_points
+        points_sum = points + to_add
+        user.update(reward_points=points_sum)
+
+        for item in referred_user:
+            points_referred = item.reward_points
+        points_sum_referred = to_add_accept + points_referred
+        referred_user.update(reward_points = points_sum_referred)
+   
+        referred_user.update(referred_by=user[0])
+        
+        return HttpResponse('Update successful')
+
+
+class CheckReferral(View):
+    def get(self, request, *args, **kwargs):
+        
+        referral_id = self.request.GET['referral_id']
+        user = get_user_model().objects.filter(referral_id=referral_id)
+        data = Config.objects.all()[0]
+        maximum = data.referral_limit
+        current_referral = len(user[0].referees.all())
+        if not current_referral:
+            return HttpResponse('Valid')
+        if current_referral >= maximum:
+            return HttpResponse('Invalid')
+        return HttpResponse('Valid')
+
+
+class ReferralTree(View):
+    def get(self, request, *args, **kwargs):
+        username = self.request.GET['username']
+        user = get_user_model().objects.filter(username=username)
+        result = []
+        data = Config.objects.all()[0]
+        level = data.level
+        temp = user[0].referees.all()
+        result.append(len(temp))
+        for i in range(level - 1):
+            dummy = []
+            for item in temp:
+                for person in item.referees.all():
+                    dummy.append(person)
+            result.append(len(dummy))
+            temp = dummy
+        return HttpResponse(result)
+
+class Global(View):
+    def get(self, request, *args, **kwargs):
+        data = Config.objects.all()[0]
+        return HttpResponse(data.level)
+        
