@@ -17,6 +17,7 @@ class Home extends Component {
   }
   
   componentDidMount() {
+    
     this.props.authCheckState()
     axios.get(API_URL + 'users/api/notice-message', config)
     .then(res => {
@@ -54,5 +55,4 @@ class Home extends Component {
     }
   }
 
-  
   export default connect(null, {authCheckState})(Home);

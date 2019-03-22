@@ -8,8 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, NoticeMessage
-
+from .models import Language, Category, Status, Game, Config, NoticeMessage
 from .forms import UserCreationForm
 
 class UserAdmin(BaseUserAdmin):
@@ -19,7 +18,7 @@ class UserAdmin(BaseUserAdmin):
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points')}),
 			('Permissions', {'fields': ('is_admin',)})
 		)
 	search_fields = ('username','email')
@@ -34,6 +33,7 @@ admin.site.register(Language)
 admin.site.register(Category)
 admin.site.register(Status)
 admin.site.register(Game)
+admin.site.register(Config)
 admin.site.register(NoticeMessage)
 
 
@@ -42,5 +42,3 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     model = CustomUser
     list_display = ['email', 'username',]
-
-#admin.site.register(CustomUser, CustomUserAdmin)

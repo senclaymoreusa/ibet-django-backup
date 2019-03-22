@@ -18,6 +18,7 @@ export const messages = {
         'nav.profile': 'Profile',
         'nav.login': 'Login',
         'nav.logout': 'Logout',
+        'nav.referral': 'Refer new user',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -76,6 +77,7 @@ export const messages = {
         'profile.state': 'State: ',
         'profile.update': 'Update',
         'profile.back': 'Back',
+        'profile.level': 'Referral Level',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Enter your email address: ',
@@ -138,6 +140,8 @@ export const messages = {
         'change_email.email_not_match': 'Email does not match',
         'change_email.email_can_not_be_same': 'New email address has to be different from the old email address',
 
+        // handel referral page message
+        'referral.enter_email': 'Please enter the email account for your referral',
         // handle game_detail page message
         'game_detail.title': 'Game Details',
         'game_detail.name': 'Name: ',
@@ -169,6 +173,7 @@ export const messages = {
         'nav.profile': '個人資料',
         'nav.login': '登入',
         'nav.logout': '登出',
+        'nav.referral': '推荐新用户',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -226,6 +231,7 @@ export const messages = {
         'profile.state': '州: ',
         'profile.update': '更新',
         'profile.back': '返回',
+        'profile.level': '用户推荐层级',
 
         // handle forget_password page message
         'forget_password.enter_email': '請輸入郵箱: ',
@@ -299,6 +305,9 @@ export const messages = {
         'game_detail.opponent2': '對手2: ',
         'game_detail.description': '遊戲說明: ',
 
+        // handel referral page message
+        'referral.enter_email': '请输入您想推荐的邮箱',
+
     }, 
     fr: {
 
@@ -320,6 +329,7 @@ export const messages = {
         'nav.profile': 'Profil',
         'nav.login': 'S\'identifier',
         'nav.logout': 'Connectez - Out',
+        'nav.referral': 'Recommander de nouveaux utilisateurs',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',
@@ -377,6 +387,7 @@ export const messages = {
         'profile.state': 'Etat: ',
         'profile.update': 'Mettre à jour',
         'profile.back': 'Retour',
+        'profile.level': "Niveau de recommandation de l'utilisateur",
 
         // handle forget_password page message
         'forget_password.enter_email': 'Entrez votre adresse email: ',
@@ -440,6 +451,8 @@ export const messages = {
         'change_email.email_not_match': 'Email ne correspond pas',
         'change_email.email_can_not_be_same': 'La nouvelle adresse électronique doit être différente de l\'ancienne',
 
+        // handel referral page message
+        'referral.enter_email': "Veuillez saisir l'adresse e-mail que vous souhaitez recommander",
 
          // handle game_detail page message
          'game_detail.title': 'Détails du jeu',

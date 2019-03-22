@@ -123,6 +123,8 @@ class Signup extends React.Component {
   onFormSubmit(event){
     event.preventDefault();
 
+    const referrer_id = this.props.location.pathname.slice(8)
+
     if (!this.state.username) {
       this.setState({ errorCode: errors.USERNAME_EMPTY_ERROR });
     } else if (!this.state.email) {
@@ -148,32 +150,63 @@ class Signup extends React.Component {
     } else if (!this.state.zipcode){
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
     } else {
-      this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
-      .then(() => {
-        this.props.history.push('/');
-        axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
-      }).catch(err => {
-        console.log(err.response);
-        if ('username' in err.response.data) {
-          this.setState({username_error: err.response.data.username[0]});
-        } else {
-          this.setState({username_error: ''});
-        }
+        if (!referrer_id){
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
+        .then(() => {
+          this.props.history.push('/');
+          axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
+        }).catch(err => {
+          // console.log(err.response);
+          if ('username' in err.response.data) {
+            this.setState({username_error: err.response.data.username[0]})
+          } else {
+            this.setState({username_error: ''})
+          }
 
-        if ('email' in err.response.data) {
-          this.setState({email_error: err.response.data.email[0]})
-        } else {
-          this.setState({email_error: ''});
-        }
+          if ('email' in err.response.data) {
+            this.setState({email_error: err.response.data.email[0]})
+          } else {
+            this.setState({email_error: ''})
+          }
 
-        if ('non_field_errors' in err.response.data) {
-          this.setState({error: err.response.data.non_field_errors.slice(0)});
-        }
+          if ('non_field_errors' in err.response.data) {
+            this.setState({error: err.response.data.non_field_errors.slice(0)})
+          }
 
-        if ('password1' in err.response.data) {
-          this.setState({password_error: err.response.data.password1});
-        }
-      })
+          if ('password1' in err.response.data) {
+            this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+          }
+        })
+      }else{
+          this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
+          .then((res) => {
+            this.props.history.push('/');
+            axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
+            axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
+        
+        }).catch(err => {
+            console.log(err)
+            if (err.response &&  'username' in err.response.data) {
+              this.setState({username_error: err.response.data.username[0]})
+            } else {
+              this.setState({username_error: ''})
+            }
+    
+            if (err.response && 'email' in err.response.data) {
+              this.setState({email_error: err.response.data.email[0]})
+            } else {
+              this.setState({email_error: ''})
+            }
+    
+            if (err.response && 'non_field_errors' in err.response.data) {
+              this.setState({error: err.response.data.non_field_errors.slice(0)})
+            }
+    
+            if (err.response && 'password1' in err.response.data) {
+              this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+            }
+          })
+      }
     }
   }
 
