@@ -490,3 +490,23 @@ class Global(View):
         data = Config.objects.all()[0]
         return HttpResponse(data.level)
         
+class AddBalance(View):
+    def get(self, request, *args, **kwargs):
+        username = self.request.GET['username']
+        balance = self.request.GET['balance']
+        user = get_user_model().objects.filter(username=username)
+        currrent_balance = user[0].balance
+        if balance.isdigit() == False:
+            return HttpResponse('Failed')
+
+        new_balance = currrent_balance + int(balance)
+        user.update(balance=new_balance)
+        referrer = user[0].referred_by
+
+        if referrer:
+            referr_object = get_user_model().objects.filter(username=referrer.username)
+            data = Config.objects.all()[0]
+            reward_points = referr_object[0].reward_points
+            current_points = reward_points + data.Referee_add_balance_reward
+            referr_object.update(reward_points=current_points)
+        return HttpResponse('Success')

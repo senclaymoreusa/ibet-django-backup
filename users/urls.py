@@ -27,5 +27,6 @@ urlpatterns += [
     path('api/referral/', views.ReferralAward.as_view(), name='referral'),
     path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
     path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),
-    path('api/config/', views.Global.as_view(), name='config')
+    path('api/config/', views.Global.as_view(), name='config'),
+    path('api/addbalance/', views.AddBalance.as_view(), name='add_balance')
 ]
