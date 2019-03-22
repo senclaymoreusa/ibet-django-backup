@@ -6,6 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import Marquee from "react-smooth-marquee";
 import axios from 'axios';
 import { config } from '../util_config';
+import moment from 'moment';
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -25,10 +26,10 @@ class Home extends Component {
       let data = res.data;
       let notices = '';
       data.forEach(notice => {
-        let start_time = new Date(notice.start_time);
-        let startTime = start_time.getFullYear() + "/" + start_time.getMonth()+1 + "/" + start_time.getDate() + " " + start_time.getHours() + ":" + start_time.getMinutes();
-        let end_time = new Date(notice.end_time);
-        let endTime = end_time.getFullYear() + "/" + end_time.getMonth()+1 + "/" + end_time.getDate() + " " + end_time.getHours() + ":" + end_time.getMinutes();
+        let startTime = moment(notice.start_time);
+        startTime = startTime.format('MM/DD/YYYY h:mm a');
+        let endTime = moment(notice.end_time);
+        endTime = endTime.format('MM/DD/YYYY h:mm a');
         let message = startTime + " ~ " + endTime + " " + notice.message;
         notices += message;
         for (let i = 0; i < 20; i++) {
@@ -43,9 +44,12 @@ class Home extends Component {
   render() {
       return (
         <div >
+          { this.state.noticeMessage.length > 0 ? 
           <div>
           <Marquee>{this.state.noticeMessage}</Marquee>
           </div>
+          : ''
+          } 
           <div className="rows"> 
             <Navigation />
             <div> 
