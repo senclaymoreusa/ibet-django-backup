@@ -34,14 +34,15 @@ class Navigation extends Component {
 
     onInputChange(event){
         this.setState({term: event.target.value});
-        this.props.handle_search(event.target.value);
+        //this.props.handle_search(event.target.value);
     }
+
     onFormSubmit(event){
+        localStorage.setItem('search_term', this.state.term);
         this.props.history.push("/game_search");
         event.preventDefault();
         this.setState({ term: '' });
     }
-
 
     render() {
 
@@ -59,12 +60,6 @@ class Navigation extends Component {
           <div className="category">
             <div>
                 <NavLink to='/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.title" defaultMessage='Home' /></NavLink>
-            </div>
-            <div>
-                <NavLink to='/books/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.books" defaultMessage='All books' /></NavLink>
-            </div>
-            <div>
-                <NavLink to='/authors/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.authors" defaultMessage='All authors' /></NavLink>
             </div>
             <div>
                 <NavLink to='/game_type/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.games" defaultMessage='All Games' /></NavLink>
@@ -85,7 +80,15 @@ class Navigation extends Component {
             </form>
             {
               this.props.isAuthenticated ?
-              <NavLink to = '/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
+              <div>
+                  <div> 
+                      <NavLink to = '/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
+                  </div>
+                  
+                  <div>
+                      <NavLink to = '/referral/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.referral" defaultMessage='Refer new user' /></NavLink>
+                  </div>
+              </div>
               :
               <div> </div>
             }

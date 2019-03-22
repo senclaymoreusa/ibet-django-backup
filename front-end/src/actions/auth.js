@@ -141,6 +141,7 @@ export const authStart = () => {
                 })
                 .catch(err => {
                     dispatch(authFail(err.response.data.detail))
+                    dispatch(logout());
                     return Promise.resolve(AUTH_RESULT_FAIL);
                 });
             }
