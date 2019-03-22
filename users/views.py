@@ -29,11 +29,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-<<<<<<< HEAD
-from .models import Game, CustomUser, Category, NoticeMessage
-=======
-from .models import Game, CustomUser, Category, Config
->>>>>>> b26e98824851fbe7b4eefb9a2e5fefe164eaad77
+from .models import Game, CustomUser, Category, Config, NoticeMessage
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
