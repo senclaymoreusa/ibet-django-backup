@@ -7,6 +7,8 @@ import Navigation from "./navigation";
 import { game_detail } from '../actions';
 import { config } from '../util_config';
 
+
+
 const API_URL = process.env.REACT_APP_REST_API;
 class Game_List extends Component {
 
@@ -22,7 +24,7 @@ class Game_List extends Component {
                 this.setState({
                   games: res.data
             });
-        })
+        });
     }
 
     render() {
@@ -39,9 +41,9 @@ class Game_List extends Component {
                   if (this.props.lang === 'zh' && item.name_zh) {
                     return (
                       <div key={item.name}>
-                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                        <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                           //this.props.game_detail(item)
-                          localStorage.setItem('game_detail', JSON.stringify(item));
+                          // localStorage.setItem('game_detail', JSON.stringify(item));
                           }}> {item.name_zh} </NavLink>
                         <br/>
                         <img src={item.image} height = "100" width="100" alt = 'Not available'/>
@@ -51,9 +53,9 @@ class Game_List extends Component {
                   else if (this.props.lang === 'fr' && item.name_fr) {
                     return (
                       <div key={item.name}>
-                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                        <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                           //this.props.game_detail(item)
-                          localStorage.setItem('game_detail', JSON.stringify(item));
+                          // localStorage.setItem('game_detail', JSON.stringify(item));
                           }}> {item.name_fr} </NavLink>
                         <br/>
                         <img src={item.image} height = "100" width="100" alt = 'Not available'/>
@@ -63,9 +65,9 @@ class Game_List extends Component {
                   else {
                     return (
                       <div key={item.name}>
-                        <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                        <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                           //this.props.game_detail(item)
-                          localStorage.setItem('game_detail', JSON.stringify(item));
+                          // localStorage.setItem('game_detail', JSON.stringify(item));
                           }}> {item.name} </NavLink>
                         <br/>
                         <img src={item.image} height = "100" width="100" alt = 'Not available'/>
