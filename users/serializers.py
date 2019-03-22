@@ -256,4 +256,4 @@ class LanguageCodeSerializer(serializers.Serializer):
 class NoticeMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoticeMessage
-        fields = ('pk', 'start_time', 'end_time', 'message')
+        fields = ('pk', 'start_time', 'end_time', 'message', 'message_zh', 'message_fr')

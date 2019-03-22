@@ -14,7 +14,7 @@ const API_URL = process.env.REACT_APP_REST_API;
 class Home extends Component {
 
   state = {
-    noticeMessage: '',
+    notices: [],
   }
   
   componentDidMount() {
@@ -23,43 +23,60 @@ class Home extends Component {
     axios.get(API_URL + 'users/api/notice-message', config)
     .then(res => {
       // console.log(res);
-      let data = res.data;
-      let notices = '';
-      data.forEach(notice => {
-        let startTime = moment(notice.start_time);
-        startTime = startTime.format('MM/DD/YYYY h:mm a');
-        let endTime = moment(notice.end_time);
-        endTime = endTime.format('MM/DD/YYYY h:mm a');
-        let message = startTime + " ~ " + endTime + " " + notice.message;
-        notices += message;
-        for (let i = 0; i < 20; i++) {
-          notices += "\u00A0";
-        }
-      });
-      this.setState({noticeMessage: notices});
+      this.setState({notices: res.data});
     })
  
   }
 
   render() {
-      return (
-        <div >
-          { this.state.noticeMessage.length > 0 ? 
-          <div>
-          <Marquee>{this.state.noticeMessage}</Marquee>
-          </div>
-          : ''
-          } 
-          <div className="rows"> 
-            <Navigation />
-            <div> 
-              <h1> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
-            </div>
+
+    let notices = this.state.notices;
+
+    let noticeStr = '';
+    notices.forEach(notice => {
+      let startTime = moment(notice.start_time);
+      startTime = startTime.format('MM/DD/YYYY h:mm a');
+      let endTime = moment(notice.end_time);
+      endTime = endTime.format('MM/DD/YYYY h:mm a');
+      let i18nMessage = notice.message;
+      if (this.props.lang == 'zh') {
+        i18nMessage = notice.message_zh;
+      } else if (this.props.lang == 'fr') {
+        i18nMessage = notice.message_fr;
+      } else {
+        i18nMessage = notice.message;
+      }
+      let message = startTime + " ~ " + endTime + " " + i18nMessage;
+      noticeStr += message;
+      for (let i = 0; i < 20; i++) {
+        noticeStr += "\u00A0";
+      }
+    });   
+
+    return (
+      <div >
+        { noticeStr.length > 0 ? 
+        <div>
+        <Marquee>{noticeStr}</Marquee>
+        </div>
+        : ''
+        } 
+        <div className="rows"> 
+          <Navigation />
+          <div> 
+            <h1> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
           </div>
         </div>
-        
-      );
+      </div>
+      
+    );
+  }
+}
+
+  const mapStateToProps = (state) => {
+    return {
+        lang: state.language.lang
     }
   }
 
-  export default connect(null, {authCheckState})(Home);
+  export default connect(mapStateToProps, {authCheckState})(Home);
