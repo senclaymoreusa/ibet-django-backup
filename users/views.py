@@ -27,9 +27,9 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config
+from .models import Game, CustomUser, Category, Config, NoticeMessage
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -150,7 +150,6 @@ class UserDetailsView(RetrieveUpdateAPIView):
 
     def get_queryset(self):
         return get_user_model().objects.none()
-
 
 class RegisterView(CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -421,6 +420,10 @@ class LanguageView(APIView):
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)  
 
 
+class NoticeMessageView(ListAPIView):
+    serializer_class = NoticeMessageSerializer
+    queryset = NoticeMessage.objects.all()
+
 class ReferralAward(View):
     def get(self, request, *args, **kwargs):
         referral_id = self.request.GET['referral_id']
@@ -484,4 +487,3 @@ class Global(View):
     def get(self, request, *args, **kwargs):
         data = Config.objects.all()[0]
         return HttpResponse(data.level)
-        
