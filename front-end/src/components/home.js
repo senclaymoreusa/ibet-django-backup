@@ -17,7 +17,7 @@ class Home extends Component {
   }
   
   componentDidMount() {
-    
+
     this.props.authCheckState()
     axios.get(API_URL + 'users/api/notice-message', config)
     .then(res => {
@@ -30,7 +30,10 @@ class Home extends Component {
         let end_time = new Date(notice.end_time);
         let endTime = end_time.getFullYear() + "/" + end_time.getMonth()+1 + "/" + end_time.getDate() + " " + end_time.getHours() + ":" + end_time.getMinutes();
         let message = startTime + " ~ " + endTime + " " + notice.message;
-        notices = notices + message + "    ";
+        notices += message;
+        for (let i = 0; i < 20; i++) {
+          notices += "\u00A0";
+        }
       });
       this.setState({noticeMessage: notices});
     })
@@ -41,7 +44,7 @@ class Home extends Component {
       return (
         <div >
           <div>
-          <Marquee> {this.state.noticeMessage} </Marquee>
+          <Marquee>{this.state.noticeMessage}</Marquee>
           </div>
           <div className="rows"> 
             <Navigation />
