@@ -8,8 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, Config
-
+from .models import Language, Category, Status, Game, Config, NoticeMessage
 from .forms import UserCreationForm
 
 class UserAdmin(BaseUserAdmin):
@@ -35,3 +34,11 @@ admin.site.register(Category)
 admin.site.register(Status)
 admin.site.register(Game)
 admin.site.register(Config)
+admin.site.register(NoticeMessage)
+
+
+class CustomUserAdmin(UserAdmin):
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
+    model = CustomUser
+    list_display = ['email', 'username',]

@@ -99,9 +99,9 @@ class Game_Search extends Component {
                 games.map(item => {
                     return (
                         <div key={item.name}>
-                          <NavLink to = '/game_detail' style={{ textDecoration: 'none' }} onClick={()=>{
+                          <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                               //this.props.game_detail(item)
-                              localStorage.setItem('game_detail', JSON.stringify(item));
+                            //   localStorage.setItem('game_detail', JSON.stringify(item));
                               }}> {item.name} </NavLink>
                           <br/>
                           <img src={item.image} height = "100" width="100" alt = 'Not available'/>

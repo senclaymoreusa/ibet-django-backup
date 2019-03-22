@@ -162,6 +162,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+DATETIME_FORMAT = '%d-%m-%Y-%H-%M-%S'
+
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )

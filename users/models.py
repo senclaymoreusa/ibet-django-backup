@@ -174,6 +174,20 @@ class Language(models.Model):
         """
         return self.name
 
+class NoticeMessage(models.Model): 
+
+    start_time = models.DateTimeField('Start Time', blank=False)
+    end_time = models.DateTimeField('End Time', blank=False)
+    message = models.CharField(max_length=200, default='')
+    message_zh = models.CharField(max_length=200, default='')
+    message_fr = models.CharField(max_length=200, default='')
+
+    def __str__(self):
+        """
+        String for representing the Model object (in Admin site etc.)
+        """
+        return self.message
+
 class Config(models.Model):
     name = models.CharField(max_length=50, default='General')
     referral_award_points = models.IntegerField(default=5)

@@ -27,9 +27,9 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config
+from .models import Game, CustomUser, Category, Config, NoticeMessage
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -125,19 +125,14 @@ class GameAPIListView(ListAPIView):
         if not data:
             logger.error('Search term did not match any categories or token')
 
-        # override name/description based on language preference
-        # languageCode = 'en'
-        # if LANGUAGE_SESSION_KEY in self.request.session:
-        #     languageCode = self.request.session[LANGUAGE_SESSION_KEY]
-        
-        # print('game langugae: ' + languageCode)
-        # if languageCode != 'en':
-        #     for game in data:
-        #         if languageCode == 'zh-hans' and game.name_zh is not None:
-        #             game.name = game.name_zh
-        #         elif languageCode == 'fr' and game.name_fr is not None:
-        #             game.name = game.name_fr
+        return data
 
+class GameDetailAPIListView(ListAPIView):
+    
+    serializer_class = GameSerializer
+    def get_queryset(self):
+        id = self.request.GET['id']
+        data = Game.objects.filter(pk=id)
         return data
 
 
@@ -155,7 +150,6 @@ class UserDetailsView(RetrieveUpdateAPIView):
 
     def get_queryset(self):
         return get_user_model().objects.none()
-
 
 class RegisterView(CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -241,7 +235,7 @@ class LoginView(GenericAPIView):
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
-        print('login language code: ' + languageCode)
+        # print('login language code: ' + languageCode)
 
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
@@ -426,6 +420,10 @@ class LanguageView(APIView):
         return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)  
 
 
+class NoticeMessageView(ListAPIView):
+    serializer_class = NoticeMessageSerializer
+    queryset = NoticeMessage.objects.all()
+
 class ReferralAward(View):
     def get(self, request, *args, **kwargs):
         referral_id = self.request.GET['referral_id']
@@ -489,6 +487,7 @@ class Global(View):
     def get(self, request, *args, **kwargs):
         data = Config.objects.all()[0]
         return HttpResponse(data.level)
+
         
 class AddBalance(View):
     def get(self, request, *args, **kwargs):
@@ -510,3 +509,4 @@ class AddBalance(View):
             current_points = reward_points + data.Referee_add_balance_reward
             referr_object.update(reward_points=current_points)
         return HttpResponse('Success')
+

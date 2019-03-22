@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Game, Category, CustomUser
+from users.models import Game, Category, CustomUser, NoticeMessage
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)
 from allauth.account.adapter import get_adapter
@@ -34,7 +34,7 @@ class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        fields = ('category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image')
+        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image')
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
@@ -253,3 +253,7 @@ class CustomTokenSerializer(serializers.Serializer):
 class LanguageCodeSerializer(serializers.Serializer):
     languageCode = serializers.CharField()
 
+class NoticeMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NoticeMessage
+        fields = ('pk', 'start_time', 'end_time', 'message', 'message_zh', 'message_fr')
