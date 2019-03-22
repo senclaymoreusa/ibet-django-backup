@@ -153,25 +153,25 @@ class Signup extends React.Component {
         this.props.history.push('/');
         axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
       }).catch(err => {
-        // console.log(err.response);
+        console.log(err.response);
         if ('username' in err.response.data) {
-          this.setState({username_error: err.response.data.username[0]})
+          this.setState({username_error: err.response.data.username[0]});
         } else {
-          this.setState({username_error: ''})
+          this.setState({username_error: ''});
         }
 
         if ('email' in err.response.data) {
           this.setState({email_error: err.response.data.email[0]})
         } else {
-          this.setState({email_error: ''})
+          this.setState({email_error: ''});
         }
 
         if ('non_field_errors' in err.response.data) {
-          this.setState({error: err.response.data.non_field_errors.slice(0)})
+          this.setState({error: err.response.data.non_field_errors.slice(0)});
         }
 
         if ('password1' in err.response.data) {
-          this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+          this.setState({password_error: err.response.data.password1});
         }
       })
     }

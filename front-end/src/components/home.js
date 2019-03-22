@@ -29,7 +29,7 @@ class Home extends Component {
         let end_time = new Date(notice.end_time);
         let endTime = end_time.getFullYear() + "/" + end_time.getMonth()+1 + "/" + end_time.getDate() + " " + end_time.getHours() + ":" + end_time.getMinutes();
         let message = startTime + " ~ " + endTime + " " + notice.message;
-        notices = notices + message + "        ";
+        notices = notices + message + "    ";
       });
       this.setState({noticeMessage: notices});
     })
