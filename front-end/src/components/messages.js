@@ -306,7 +306,7 @@ export const messages = {
         'game_detail.description': '遊戲說明: ',
 
         // handel referral page message
-        'referral.enter_email': '请输入您想推荐的邮箱'
+        'referral.enter_email': '请输入您想推荐的邮箱',
 
     }, 
     fr: {
