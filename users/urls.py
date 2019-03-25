@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path('signup/', views.SignUp.as_view(), name='signup'),
@@ -30,5 +31,5 @@ urlpatterns += [
     path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
     path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),
     path('api/config/', views.Global.as_view(), name='config'),
-    path('api/addbalance/', views.AddBalance.as_view(), name='add_balance')
+    path('api/addbalance/', csrf_exempt(views.AddBalance.as_view()), name='add_balance')
 ]

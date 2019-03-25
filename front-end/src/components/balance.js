@@ -47,7 +47,7 @@ class Balance extends Component {
             message = 'Le montant que vous souhaitez rejoindre est de $'
         }
         if (window.confirm( message + this.state.balance)){
-            axios.get(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`)
+            axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`)
             .then(res => {
                 if (res.data === 'Failed'){
                     this.setState({error: true});

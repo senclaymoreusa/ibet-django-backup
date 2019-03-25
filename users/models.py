@@ -70,7 +70,7 @@ class CustomUser(AbstractBaseUser):
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.CASCADE, related_name='referees')
-    balance = models.IntegerField(default=0)
+    balance = models.FloatField(default=0)
 
     objects = MyUserManager()
 

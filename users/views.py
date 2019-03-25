@@ -490,7 +490,7 @@ class Global(View):
 
         
 class AddBalance(View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         username = self.request.GET['username']
         balance = self.request.GET['balance']
         user = get_user_model().objects.filter(username=username)
