@@ -78,6 +78,8 @@ export const messages = {
         'profile.update': 'Update',
         'profile.back': 'Back',
         'profile.level': 'Referral Level',
+        'profile.balance': 'Current balance: ',
+        'profile.add': 'Add Balance',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Enter your email address: ',
@@ -142,6 +144,14 @@ export const messages = {
 
         // handel referral page message
         'referral.enter_email': 'Please enter the email account for your referral',
+
+
+        // handle balance page
+        'balance.enter_balance': 'Please enter the amount you want to add to your account',
+        'balance.submit': 'Submit',
+        'balance.error': 'The balance you entered is not valid',
+        'balance.confirm': 'The amount you want to add to your balance is $ ',
+
         // handle game_detail page message
         'game_detail.title': 'Game Details',
         'game_detail.name': 'Name: ',
@@ -151,6 +161,7 @@ export const messages = {
         'game_detail.opponent1': 'Opponent1: ',
         'game_detail.opponent2': 'Opponent2: ',
         'game_detail.description': 'Description: ',
+
 
     },
     zh: {
@@ -232,6 +243,8 @@ export const messages = {
         'profile.update': '更新',
         'profile.back': '返回',
         'profile.level': '用户推荐层级',
+        'profile.balance': '当前账户余额: ',
+        'profile.add': '添加资金',
 
         // handle forget_password page message
         'forget_password.enter_email': '請輸入郵箱: ',
@@ -307,6 +320,13 @@ export const messages = {
 
         // handel referral page message
         'referral.enter_email': '请输入您想推荐的邮箱',
+
+        // handle balance page
+        'balance.enter_balance': '请输入您想增加的资金',
+        'balance.submit': '提交',
+        'balance.error': '您输入的资金不正确',
+        'balance.confirm': '您要加入的资金数量是 $'
+
 
     }, 
     fr: {
@@ -388,6 +408,8 @@ export const messages = {
         'profile.update': 'Mettre à jour',
         'profile.back': 'Retour',
         'profile.level': "Niveau de recommandation de l'utilisateur",
+        'profile.balance': 'Solde du compte courant: ',
+        'profile.add': 'Ajouter des fonds',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Entrez votre adresse email: ',
@@ -454,6 +476,13 @@ export const messages = {
         // handel referral page message
         'referral.enter_email': "Veuillez saisir l'adresse e-mail que vous souhaitez recommander",
 
+
+        // handle balance page
+        'balance.enter_balance': "S'il vous plaît entrer les fonds que vous souhaitez augmenter",
+        'balance.submit': 'Soumettre',
+        'balance.error': 'Les fonds que vous avez entrés sont incorrects',
+        'balance.confirm': 'Le montant que vous souhaitez rejoindre est de $',
+
          // handle game_detail page message
          'game_detail.title': 'Détails du jeu',
          'game_detail.name': 'Prénom: ',
@@ -463,6 +492,7 @@ export const messages = {
          'game_detail.opponent1': 'Adversaire1: ',
          'game_detail.opponent2': 'Adversaire2: ',
          'game_detail.description': 'La description: ',
+
     }
 }
 

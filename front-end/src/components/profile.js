@@ -106,6 +106,17 @@ class Profile extends Component {
             <div> <b>
             <FormattedMessage id="profile.state" defaultMessage='State: ' />
             </b>  {this.state.data.state}  </div>
+            <div>
+              <b>
+                <FormattedMessage id="profile.balance" defaultMessage='Current balance: ' /> 
+              </b> 
+              {this.state.data.balance} 
+              {' '}
+              <button className="btn btn-secondary"> 
+                <NavLink to='/balance' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.add" defaultMessage='Add Balance' /></NavLink> 
+              </button>
+            </div>
+            
             <button className="btn btn-secondary"> 
                 <NavLink to='/update_profile' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.update" defaultMessage='Update' /></NavLink> 
             </button>
