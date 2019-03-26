@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { NavLink} from 'react-router-dom';
 import axios from 'axios';
 import { config } from '../util_config';
@@ -36,16 +36,9 @@ class Balance extends Component {
     }
 
     onFormSubmit(event){
+        const { formatMessage } = this.props.intl;
+        const message = formatMessage({ id: "balance.confirm" });
         event.preventDefault();
-        var message;
-        // This part is not available for FormattedMessage to translate so I have to translate it manually 
-        if (this.props.language === 'en'){
-            message = 'The amount you want to add to your balance is $ ';
-        }else if(this.props.language === 'zh'){
-            message = '您要加入的资金数量是 $ ';
-        }else{
-            message = 'Le montant que vous souhaitez rejoindre est de $'
-        }
         if (window.confirm( message + this.state.balance)){
             axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`)
             .then(res => {
@@ -101,4 +94,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps)(Balance);
+export default injectIntl(connect(mapStateToProps)(Balance));

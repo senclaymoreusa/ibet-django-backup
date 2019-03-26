@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Navigation from "./navigation";
 import axios from 'axios';
 import { config } from '../util_config';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -54,8 +54,7 @@ class Game_Detail extends Component {
       game._name = game.name;
       game._description = game.description;
     }
-    // const { formatMessage } = this.props.intl;
-    // const message = formatMessage({ id: "game_detail.name" });
+   
     
     return(
       <div className='rows'>
@@ -93,4 +92,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default injectIntl(connect(mapStateToProps)(Game_Detail));
+export default connect(mapStateToProps)(Game_Detail);
