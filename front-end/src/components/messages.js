@@ -120,6 +120,7 @@ export const messages = {
         'sign.state_empty_error': 'State cannot be empty', 
         'sign.country_empty_error': 'Country cannot be empty', 
         'sign.zipcode_empty_error': 'Zipcode cannot be empty',  
+        'sign.show_date': 'Show date',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -288,7 +289,8 @@ export const messages = {
         'sign.city_empty_error': '請輸入城市地址', 
         'sign.state_empty_error': '請輸入地址州', 
         'sign.country_empty_error': '請輸入國家', 
-        'sign.zipcode_empty_error': '請輸入郵遞區號',  
+        'sign.zipcode_empty_error': '請輸入郵遞區號', 
+        'sign.show_date': '显示日期', 
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -459,6 +461,7 @@ export const messages = {
         'sign.state_empty_error': 'Etat ne peut être vide', 
         'sign.country_empty_error': 'Le pays ne peut pas être vide', 
         'sign.zipcode_empty_error': 'Le code postal ne peut pas être vide',  
+        'sign.show_date': 'Montrer la date', 
         
 
         // handle update_profile page message
