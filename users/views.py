@@ -286,8 +286,8 @@ class SendEmail(View):
         from_email_address = 'claymore@claymoreusa.com'
         if case == 'signup':
             to_email_address = self.request.GET['to_email_address']
-            email_subject = _('Welcome to Claymore, ') + self.request.GET['username']
-            email_content = _('You have successfully set up your new email account: ') + self.request.GET['email']
+            email_subject = str(_('You have registered an account at ibet.com, ')) + ' '
+            email_content = str(_('You username is ')) + self.request.GET['username'] + str(_(', and your email address is ')) + self.request.GET['email']
         elif case == 'change_email':
             to_email_address = self.request.GET['to_email_address']
             email_subject = _('Request of changing email address') + ' '

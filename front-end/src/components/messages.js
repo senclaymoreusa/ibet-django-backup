@@ -8,6 +8,9 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies available',
         'home.authors': 'Authors',
+        'home.sports': 'Most Popular Sports',
+        'home.casino': 'Most Popluar Casino',
+        'home.poker': 'Most Popluar Poker',
 
         // handle navigation page message
         'nav.title': 'Home',
@@ -117,6 +120,7 @@ export const messages = {
         'sign.state_empty_error': 'State cannot be empty', 
         'sign.country_empty_error': 'Country cannot be empty', 
         'sign.zipcode_empty_error': 'Zipcode cannot be empty',  
+        'sign.show_date': 'Show date',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -175,6 +179,9 @@ export const messages = {
         'home.copies': '副本',
         'home.copies_available': '可用副本',
         'home.authors': '作者',
+        'home.sports': '最受欢迎的体育游戏',
+        'home.casino': '最受欢迎的赌场游戏',
+        'home.poker': '最受欢迎的扑克游戏',
 
         // handle navigation page message
         'nav.title': '首頁',
@@ -282,7 +289,8 @@ export const messages = {
         'sign.city_empty_error': '請輸入城市地址', 
         'sign.state_empty_error': '請輸入地址州', 
         'sign.country_empty_error': '請輸入國家', 
-        'sign.zipcode_empty_error': '請輸入郵遞區號',  
+        'sign.zipcode_empty_error': '請輸入郵遞區號', 
+        'sign.show_date': '显示日期', 
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -327,7 +335,8 @@ export const messages = {
         'balance.enter_balance': '请输入您想增加的资金',
         'balance.submit': '提交',
         'balance.error': '您输入的资金不正确',
-        'balance.confirm': '您要加入的资金数量是 $'
+        'balance.confirm': '您要加入的资金数量是 $',
+        
 
 
     }, 
@@ -341,6 +350,9 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies disponibles',
         'home.authors': 'Auteures',
+        'home.sports': 'Les jeux de sport les plus populaires',
+        'home.casino': 'Les jeux de casino les plus populaires',
+        'home.poker': 'Jeu de poker le plus populaire',
 
         // handle navigation page message
         'nav.title': 'Accueil',
@@ -449,6 +461,7 @@ export const messages = {
         'sign.state_empty_error': 'Etat ne peut être vide', 
         'sign.country_empty_error': 'Le pays ne peut pas être vide', 
         'sign.zipcode_empty_error': 'Le code postal ne peut pas être vide',  
+        'sign.show_date': 'Montrer la date', 
         
 
         // handle update_profile page message
