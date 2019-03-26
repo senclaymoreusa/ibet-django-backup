@@ -34,21 +34,21 @@ class Home extends Component {
 
     await axios.get(URL, config)
     .then(res => {
-      this.setState({sports: res.data.slice(1, 4)})
+      this.setState({sports: res.data.slice(0, 3)})
     })
 
     var URL = API_URL + 'users/api/games/' + '?term=' + 'Casino'
 
     await axios.get(URL, config)
     .then(res => {
-      this.setState({casino: res.data.slice(1, 4)})
+      this.setState({casino: res.data.slice(0, 3)})
     })
 
     var URL = API_URL + 'users/api/games/' + '?term=' + 'Poker'
 
     await axios.get(URL, config)
     .then(res => {
-      this.setState({poker: res.data.slice(1, 4)})
+      this.setState({poker: res.data.slice(0, 3)})
     })
  
   }
@@ -88,7 +88,7 @@ class Home extends Component {
           </div>
         </div>
 
-        <h2 style={{marginLeft: '400px'}}> Most Popular Sports </h2>
+        <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' /> </h2>
         <div className="rows" >
           {
             this.state.sports.map(item => {
@@ -104,7 +104,7 @@ class Home extends Component {
           }
         </div>
 
-        <h2 style={{marginLeft: '400px'}}> Most Popluar Poker </h2>
+        <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' /> </h2>
         <div className="rows" >
           {
             this.state.poker.map(item => {
@@ -120,7 +120,7 @@ class Home extends Component {
           }
         </div>
 
-        <h2 style={{marginLeft: '400px'}}> Most Popluar Casino </h2>
+        <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' /> </h2>
         <div className="rows" >
           {
             this.state.casino.map(item => {

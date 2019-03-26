@@ -8,6 +8,9 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies available',
         'home.authors': 'Authors',
+        'home.sports': 'Most Popular Sports',
+        'home.casino': 'Most Popluar Casino',
+        'home.poker': 'Most Popluar Poker',
 
         // handle navigation page message
         'nav.title': 'Home',
@@ -174,6 +177,9 @@ export const messages = {
         'home.copies': '副本',
         'home.copies_available': '可用副本',
         'home.authors': '作者',
+        'home.sports': '最受欢迎的体育游戏',
+        'home.casino': '最受欢迎的赌场游戏',
+        'home.poker': '最受欢迎的扑克游戏',
 
         // handle navigation page message
         'nav.title': '首頁',
@@ -325,7 +331,8 @@ export const messages = {
         'balance.enter_balance': '请输入您想增加的资金',
         'balance.submit': '提交',
         'balance.error': '您输入的资金不正确',
-        'balance.confirm': '您要加入的资金数量是 $'
+        'balance.confirm': '您要加入的资金数量是 $',
+        
 
 
     }, 
@@ -339,6 +346,9 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies disponibles',
         'home.authors': 'Auteures',
+        'home.sports': 'Les jeux de sport les plus populaires',
+        'home.casino': 'Les jeux de casino les plus populaires',
+        'home.poker': 'Jeu de poker le plus populaire',
 
         // handle navigation page message
         'nav.title': 'Accueil',
