@@ -19,6 +19,7 @@ export const messages = {
         'nav.login': 'Login',
         'nav.logout': 'Logout',
         'nav.referral': 'Refer new user',
+        'nav.placeholder': 'Search game...',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -185,6 +186,7 @@ export const messages = {
         'nav.login': '登入',
         'nav.logout': '登出',
         'nav.referral': '推荐新用户',
+        'nav.placeholder': '搜尋遊戲...',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -350,6 +352,7 @@ export const messages = {
         'nav.login': 'S\'identifier',
         'nav.logout': 'Connectez - Out',
         'nav.referral': 'Recommander de nouveaux utilisateurs',
+        'nav.placeholder': 'Jeu de recherche...',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',

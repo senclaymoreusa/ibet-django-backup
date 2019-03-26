@@ -54,6 +54,7 @@ class Game_Detail extends Component {
       game._name = game.name;
       game._description = game.description;
     }
+   
     
     return(
       <div className='rows'>
