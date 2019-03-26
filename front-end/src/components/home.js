@@ -80,7 +80,7 @@ class Home extends Component {
 
     return (
       <div >
-        { noticeStr && <div><Marquee>{noticeStr}</Marquee></div>}
+        { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
         <div className="rows"> 
           <Navigation />
           <div> 
