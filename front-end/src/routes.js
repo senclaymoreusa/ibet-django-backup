@@ -19,8 +19,8 @@ import Referral from './components/referral'
 const BaseRouter = () => (
   <div>
     <Route exact path="/" component={Home} />
-    <Route exact path="/game_type" component={Game_Type} />
-    <Route exact path="/game_list" component={Game_List} />
+    <Route exact path="/game_type/" component={Game_Type} />
+    <Route exact path="/game_list/" component={Game_List} />
     <Route exact path="/login" component={Login} />
     <Route exact path="/signup/:filter?" component={Signup} />
     <Route exact path="/game_detail/:id" component={Game_Detail} />

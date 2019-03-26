@@ -39,9 +39,9 @@ class Home extends Component {
       let endTime = moment(notice.end_time);
       endTime = endTime.format('MM/DD/YYYY h:mm a');
       let i18nMessage = notice.message;
-      if (this.props.lang == 'zh') {
+      if (this.props.lang === 'zh') {
         i18nMessage = notice.message_zh;
-      } else if (this.props.lang == 'fr') {
+      } else if (this.props.lang === 'fr') {
         i18nMessage = notice.message_fr;
       } else {
         i18nMessage = notice.message;

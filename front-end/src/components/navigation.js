@@ -34,7 +34,6 @@ class Navigation extends Component {
 
     onInputChange(event){
         this.setState({term: event.target.value});
-        //this.props.handle_search(event.target.value);
     }
 
     onFormSubmit(event){
@@ -66,17 +65,14 @@ class Navigation extends Component {
             </div>
 
             <form onSubmit={this.onFormSubmit} className="input-group">
-                <input
-                    placeholder="Search games..."
-                    className="form-control"
-                    value={this.state.term}
-                    onChange={this.onInputChange}
-                />
-                <span className="input-group-btn">
-                    <button type="submit" className="btn btn-secondary"> 
-                      <NavLink to='/game_search' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.search" defaultMessage='Search' /></NavLink>
-                    </button>
-                </span>
+              <FormattedMessage id="nav.placeholder" defaultMessage="Search games...">
+              {placeholder => <input type="text" placeholder={placeholder} />}
+              </FormattedMessage>
+              <span className="input-group-btn">
+                  <button type="submit" className="btn btn-secondary"> 
+                    <NavLink to='/game_search' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.search" defaultMessage='Search' /></NavLink>
+                  </button>
+              </span>
             </form>
             {
               this.props.isAuthenticated ?

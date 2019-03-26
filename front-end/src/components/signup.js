@@ -174,7 +174,7 @@ class Signup extends React.Component {
           }
 
           if ('password1' in err.response.data) {
-            this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+            this.setState({password_error: err.response.data.password1[0]})
           }
         })
       }else{
@@ -185,7 +185,7 @@ class Signup extends React.Component {
             axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
         
         }).catch(err => {
-            console.log(err)
+            // console.log(err.response);
             if (err.response &&  'username' in err.response.data) {
               this.setState({username_error: err.response.data.username[0]})
             } else {
@@ -203,7 +203,7 @@ class Signup extends React.Component {
             }
     
             if (err.response && 'password1' in err.response.data) {
-              this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+              this.setState({password_error: err.response.data.password1[0]})
             }
           })
       }
