@@ -66,7 +66,7 @@ class Navigation extends Component {
 
             <form onSubmit={this.onFormSubmit} className="input-group">
               <FormattedMessage id="nav.placeholder" defaultMessage="Search games...">
-              {placeholder => <input type="text" placeholder={placeholder} />}
+              {placeholder => <input type="text" placeholder={placeholder} className="form-control" value={this.state.term} onChange={this.onInputChange} />}
               </FormattedMessage>
               <span className="input-group-btn">
                   <button type="submit" className="btn btn-secondary"> 
