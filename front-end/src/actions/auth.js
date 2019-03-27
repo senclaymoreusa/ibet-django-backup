@@ -53,6 +53,7 @@ export const authStart = () => {
             return Promise.resolve();
         })
         .catch(err => {
+            console.log(err.response)
             dispatch(authFail(err.response.data.detail))
             return Promise.reject(err.response.data.detail);
         })
@@ -130,7 +131,7 @@ export const authStart = () => {
         
                 return axios.get(API_URL + 'users/api/user/', config)
                 .then(res => {
-                    if (res.data.block) {
+                    if (res.data.block || ! res.data.active) {
                         dispatch(logout());
                         return Promise.resolve(AUTH_RESULT_FAIL);
                     } else {

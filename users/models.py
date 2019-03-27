@@ -32,7 +32,7 @@ class MyUserManager(BaseUserManager):
 				username, email, password=password
 			)
 		user.is_admin = True
-		user.is_staff = True
+		user.is_staff, user.active = True, True
 		user.save(using=self._db)
 		return user
 
@@ -69,8 +69,10 @@ class CustomUser(AbstractBaseUser):
     zipcode = models.CharField(max_length=100)
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
-    referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.CASCADE, related_name='referees')
+    referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
     balance = models.FloatField(default=0)
+    active = models.BooleanField(default=False)
+    activation = models.CharField(max_length=300, default='')
 
     objects = MyUserManager()
 

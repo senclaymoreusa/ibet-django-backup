@@ -46,6 +46,11 @@ import os
 
 from django.contrib.auth import get_user_model
 
+import base64
+import uuid
+
+from threading import Timer
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -202,6 +207,10 @@ class BlockedUserException(APIException):
     default_detail = _('Current user is blocked!')
     default_code = 'block'
 
+class InactiveUserException(APIException):
+    status_code = 403
+    default_detail = _('Please activate your account!')
+
 
 class LoginView(GenericAPIView):
     """
@@ -241,6 +250,10 @@ class LoginView(GenericAPIView):
         if self.user.block is True:
             print("user block")
             raise BlockedUserException
+        if self.user.active == False:
+            print('User not active')
+            raise InactiveUserException
+
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(self.user)
         else:
@@ -510,3 +523,39 @@ class AddBalance(View):
             referr_object.update(reward_points=current_points)
         return HttpResponse('Success')
 
+
+class Activation(View):
+    def get(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        user = get_user_model().objects.filter(email=email)
+        activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
+        user.update(activation=activation_code)
+        def timeout():
+            user.update(activation='')
+        thread = Timer(1800.0, timeout)
+        thread.start()
+
+        from_email_address = 'claymore@claymoreusa.com'
+        to_email_address = email
+        email_subject = str(_('Please activate you ibet account ')) + ' '
+        email_content = 'http://localhost:3000/activate/' + activation_code
+
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email(from_email_address)
+        to_email = Email(to_email_address)
+        subject = email_subject
+        content = Content("text/plain", email_content)
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        #print(response.status_code)
+        return HttpResponse('Email has been sent!')
+
+class ActivationVerify(View):
+    def get(self, request, *args, **kwargs):
+        token = self.request.GET['token']
+        user = get_user_model().objects.filter(activation=token)
+        if len(user) != 0:
+            user.update(active=True)
+            user.update(activation='')
+            return HttpResponse('Success')
+        return HttpResponse('The link has expired')
