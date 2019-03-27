@@ -177,8 +177,8 @@ SESSION_COOKIE_HTTPONLY = False
 STATIC_URL = '/static/'
 
 # djauth/settings.py
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/admin'
+# LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/admin'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/

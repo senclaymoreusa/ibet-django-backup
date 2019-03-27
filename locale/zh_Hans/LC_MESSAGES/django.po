@@ -18,48 +18,40 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: templates/admin/base.html:34
+#: templates/admin/base.html:36
 msgid "English"
 msgstr ""
 
-#: templates/admin/base.html:35
+#: templates/admin/base.html:37
 msgid "Chinese"
 msgstr "中文"
 
-#: templates/admin/base.html:36
+#: templates/admin/base.html:38
 msgid "French"
 msgstr ""
 
-#: templates/admin/base.html:42
+#: templates/admin/base.html:40
 msgid "Welcome,"
 msgstr ""
 
-#: templates/admin/base.html:47
+#: templates/admin/base.html:45
 msgid "View site"
 msgstr ""
 
-#: templates/admin/base.html:52
+#: templates/admin/base.html:50
 msgid "Documentation"
 msgstr ""
 
-#: templates/admin/base.html:56
+#: templates/admin/base.html:54
 msgid "Change password"
 msgstr ""
 
-#: templates/admin/base.html:58
+#: templates/admin/base.html:56
 msgid "Log out"
 msgstr ""
 
-#: templates/admin/base.html:68 templates/registration/logged_out.html:4
+#: templates/admin/base.html:66 templates/registration/logout.html:4
 msgid "Home"
-msgstr ""
-
-#: templates/admin/base_site.html:3
-msgid "Django site admin"
-msgstr ""
-
-#: templates/admin/base_site.html:6
-msgid "Django administration"
 msgstr ""
 
 #: templates/admin/login.html:21
@@ -219,9 +211,3 @@ msgstr "點擊連結重置密碼: "
 #: users/views.py:540
 msgid "Please activate you ibet account "
 msgstr "请激活您的ibet账户"
-
-#~ msgid "Welcome to Claymore, "
-#~ msgstr "歡迎來到克萊摩爾, "
-
-#~ msgid "You have successfully set up your new email account: "
-#~ msgstr "你已成功設定好新郵箱地址: "
