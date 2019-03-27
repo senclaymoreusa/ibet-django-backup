@@ -209,7 +209,7 @@ class BlockedUserException(APIException):
 
 class InactiveUserException(APIException):
     status_code = 403
-    default_detail = _('Please activate your account!')
+    default_detail = _('Please activate your account!')  # This back-end translate currently cannot be done on my computer due to environment issue.
 
 
 class LoginView(GenericAPIView):
