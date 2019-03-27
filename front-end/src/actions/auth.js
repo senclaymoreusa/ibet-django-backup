@@ -53,7 +53,6 @@ export const authStart = () => {
             return Promise.resolve();
         })
         .catch(err => {
-            console.log(err.response)
             dispatch(authFail(err.response.data.detail))
             return Promise.reject(err.response.data.detail);
         })
