@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-05 22:29-0800\n"
+"POT-Creation-Date: 2019-03-27 20:43-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,99 +26,130 @@ msgstr ""
 msgid "Invalid date - renewal more than 4 weeks ahead"
 msgstr ""
 
-#: users/serializers.py:83
+#: users/serializers.py:76
 msgid "A user is already registered with this username."
 msgstr ""
 
-#: users/serializers.py:90
+#: users/serializers.py:83
 msgid "A user is already registered with this e-mail address."
 msgstr ""
 
-#: users/serializers.py:99
+#: users/serializers.py:91
 msgid "The two password fields didn't match"
 msgstr "Les deux champs de mot de passe ne correspondent pas"
 
-#: users/serializers.py:101
+#: users/serializers.py:93
 msgid "First name not valid"
 msgstr "Prénom non valide"
 
-#: users/serializers.py:103
+#: users/serializers.py:95
 msgid "Last name not valid"
 msgstr "Nom non valide"
 
-#: users/serializers.py:105
+#: users/serializers.py:97 users/serializers.py:101 users/serializers.py:103
 msgid "Date of birth not valid"
 msgstr "Date de naissance non valide"
 
-#: users/serializers.py:107
+#: users/serializers.py:105
 msgid "Phone not valid"
 msgstr "Téléphone non valide"
 
-#: users/serializers.py:109
+#: users/serializers.py:107
 msgid "City not valid"
 msgstr "Ville non valide"
 
-#: users/serializers.py:111
+#: users/serializers.py:109
 msgid "Country not valid"
 msgstr "Pays non valide"
 
-#: users/serializers.py:113
+#: users/serializers.py:111
 msgid "State not valid"
 msgstr "Etat non valide"
 
-#: users/serializers.py:115
+#: users/serializers.py:113
 msgid "Zipcode not valid"
 msgstr "Code postal non valide"
 
-#: users/serializers.py:180
+#: users/serializers.py:173
 msgid "Must include \"email\" and \"password\"."
 msgstr ""
 
-#: users/serializers.py:191
+#: users/serializers.py:184
 msgid "Must include \"username\" and \"password\"."
 msgstr ""
 
-#: users/serializers.py:204
+#: users/serializers.py:197
 msgid "Must include either \"username\" or \"email\" and \"password\"."
 msgstr ""
 
-#: users/serializers.py:245
+#: users/serializers.py:238
 msgid "User account is disabled."
 msgstr ""
 
-#: users/serializers.py:248
+#: users/serializers.py:241
 msgid "Unable to log in with provided credentials."
 msgstr ""
 
-#: users/serializers.py:257
+#: users/serializers.py:250
 msgid "E-mail is not verified."
 msgstr ""
 
-#: users/views.py:365
+#: users/views.py:207
 msgid "Current user is blocked!"
 msgstr "L'utilisateur actuel est bloqué!"
 
-#: users/views.py:454
-msgid "Welcome to Claymore, "
-msgstr "Bienvenue chez Claymore, "
+#: users/views.py:212
+msgid "Please activate your account!"
+msgstr "Veuillez activer votre compte"
 
-#: users/views.py:455
-msgid "You have successfully set up your new email account: "
-msgstr "Vous avez configuré avec succès votre nouveau compte de messagerie: "
+#: users/views.py:302
+msgid "You have registered an account at ibet.com, "
+msgstr ""
 
-#: users/views.py:458
+#: users/views.py:303
+msgid "You username is "
+msgstr ""
+
+#: users/views.py:303
+#, fuzzy
+#| msgid "Your new Email Address is: "
+msgid ", and your email address is "
+msgstr "Votre nouvelle adresse e-mail est: "
+
+#: users/views.py:306
 msgid "Request of changing email address"
 msgstr "Demande de changement d'adresse email"
 
-#: users/views.py:459
+#: users/views.py:307
 msgid "Your new Email Address is: "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: users/views.py:494
+#: users/views.py:310
+msgid " referred you to sign up an account with Claymore"
+msgstr ""
+
+#: users/views.py:311
+msgid "Please use the referral link to register your new account: "
+msgstr ""
+
+#: users/views.py:331
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
-msgstr "Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
+msgstr ""
+"Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
 
-#: users/views.py:496
+#: users/views.py:333
 msgid "Click the link to reset your email password: "
-msgstr "Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "
+msgstr ""
+"Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "
+
+#: users/views.py:540
+msgid "Please activate you ibet account "
+msgstr ""
+
+#~ msgid "Welcome to Claymore, "
+#~ msgstr "Bienvenue chez Claymore, "
+
+#~ msgid "You have successfully set up your new email account: "
+#~ msgstr ""
+#~ "Vous avez configuré avec succès votre nouveau compte de messagerie: "
