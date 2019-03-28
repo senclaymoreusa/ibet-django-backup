@@ -119,6 +119,7 @@ class GameAPIListView(ListAPIView):
     serializer_class = GameSerializer
     def get_queryset(self):
         term = self.request.GET['term']
+        # print("term:" + term)
         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
 
         if not data:

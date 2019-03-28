@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-27 20:43-0700\n"
+"POT-Creation-Date: 2019-03-27 15:09-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,81 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: templates/admin/base.html:34
+msgid "English"
+msgstr ""
+
+#: templates/admin/base.html:35
+msgid "Chinese"
+msgstr "Chinese"
+
+#: templates/admin/base.html:36
+msgid "French"
+msgstr ""
+
+#: templates/admin/base.html:42
+msgid "Welcome,"
+msgstr ""
+
+#: templates/admin/base.html:47
+msgid "View site"
+msgstr ""
+
+#: templates/admin/base.html:52
+msgid "Documentation"
+msgstr ""
+
+#: templates/admin/base.html:56
+msgid "Change password"
+msgstr ""
+
+#: templates/admin/base.html:58
+msgid "Log out"
+msgstr ""
+
+#: templates/admin/base.html:68 templates/registration/logged_out.html:4
+msgid "Home"
+msgstr ""
+
+#: templates/admin/base_site.html:3
+msgid "Django site admin"
+msgstr ""
+
+#: templates/admin/base_site.html:6
+msgid "Django administration"
+msgstr ""
+
+#: templates/admin/login.html:21
+msgid "Please correct the error below."
+msgstr ""
+
+#: templates/admin/login.html:21
+msgid "Please correct the errors below."
+msgstr ""
+
+#: templates/admin/login.html:37
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+
+#: templates/admin/login.html:58
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: templates/admin/login.html:62
+msgid "Log in"
+msgstr ""
+
+#: templates/registration/logged_out.html:8
+msgid "Thanks for spending some quality time with the Web site today."
+msgstr ""
+
+#: templates/registration/logged_out.html:10
+msgid "Log in again"
+msgstr ""
 
 #: users/forms.py:81
 msgid "Invalid date - renewal in past"

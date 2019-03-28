@@ -33,17 +33,20 @@ class Navigation extends Component {
     }
 
     onInputChange(event){
+      if (event.target.value) {
         this.setState({term: event.target.value});
+      }
     }
 
     onFormSubmit(event){
-        localStorage.setItem('search_term', this.state.term);
-        if (this.state.term){
-          event.preventDefault();
-          this.props.history.push("/game_search");
-        }else{
-          this.props.history.push("/");
-        }
+        // console.log("log:" +this.state.term);
+        // localStorage.setItem('search_term', this.state.term);
+        // if (!this.state.term) {
+        //   window.location.reload();
+        // }
+        // this.props.history.push(`game_search/term=${this.state.term}`);
+        event.preventDefault();
+        this.setState({ term: '' });
     }
 
     render() {
@@ -72,9 +75,9 @@ class Navigation extends Component {
               {placeholder => <input type="text" placeholder={placeholder} className="form-control" value={this.state.term} onChange={this.onInputChange} />}
               </FormattedMessage>
               <span className="input-group-btn">
-                  <button type="submit" className="btn btn-secondary"> 
-                    <FormattedMessage id="nav.search" defaultMessage='Search' />
-                  </button>
+                <NavLink to = {`/game_search/term=${this.state.term}`}  style={{ textDecoration: 'none' }}>
+                <button type="submit" className="btn btn-secondary"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
+                </NavLink>
               </span>
             </form>
             {

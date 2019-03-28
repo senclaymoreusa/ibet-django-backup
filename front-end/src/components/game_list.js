@@ -17,13 +17,16 @@ class Game_List extends Component {
     }
 
     componentDidMount() {
-        const game_type = localStorage.getItem('game_type');
-        var URL = API_URL + 'users/api/games/' + '?term=' + game_type;
+
+        const { term } = this.props.match.params;
+        // console.log(this.props.match.params);
+        // const game_type = localStorage.getItem('game_type');
+        var URL = API_URL + 'users/api/games/?' + term;
         axios.get(URL, config)
-            .then(res => {
-                this.setState({
-                  games: res.data
-            });
+          .then(res => {
+            this.setState({
+              games: res.data
+          });
         });
     }
 
