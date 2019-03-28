@@ -16,7 +16,7 @@ export const messages = {
         'nav.title': 'Home',
         'nav.books': 'All books',
         'nav.authors': 'All authors',
-        'nav.games': 'All games',
+        'nav.games': 'All Games',
         'nav.search': 'Search',
         'nav.profile': 'Profile',
         'nav.login': 'Login',

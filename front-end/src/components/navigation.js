@@ -38,9 +38,12 @@ class Navigation extends Component {
 
     onFormSubmit(event){
         localStorage.setItem('search_term', this.state.term);
-        this.props.history.push("/game_search");
-        event.preventDefault();
-        this.setState({ term: '' });
+        if (this.state.term){
+          event.preventDefault();
+          this.props.history.push("/game_search");
+        }else{
+          this.props.history.push("/");
+        }
     }
 
     render() {
@@ -70,7 +73,7 @@ class Navigation extends Component {
               </FormattedMessage>
               <span className="input-group-btn">
                   <button type="submit" className="btn btn-secondary"> 
-                    <NavLink to='/game_search' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.search" defaultMessage='Search' /></NavLink>
+                    <FormattedMessage id="nav.search" defaultMessage='Search' />
                   </button>
               </span>
             </form>
