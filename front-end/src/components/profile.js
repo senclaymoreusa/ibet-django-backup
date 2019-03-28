@@ -32,8 +32,6 @@ class Profile extends Component {
           .then(res => {
               this.setState({data: res.data});
 
-              console.log(this.state.data)
-
               axios.get(API_URL + 'users/api/referraltree/?username=' + this.state.data.username, config)
               .then(res => {
                 this.setState({tree: res.data})
