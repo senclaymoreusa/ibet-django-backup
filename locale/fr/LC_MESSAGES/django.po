@@ -100,7 +100,7 @@ msgstr "L'utilisateur actuel est bloqué!"
 
 #: users/views.py:212
 msgid "Please activate your account!"
-msgstr "Veuillez activer votre compte"
+msgstr "Veuillez activer votre compte!"
 
 #: users/views.py:302
 msgid "You have registered an account at ibet.com, "
