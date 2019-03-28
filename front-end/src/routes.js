@@ -38,7 +38,7 @@ const BaseRouter = () => (
     <Route exact path="/referral" component={Referral} />
     <Route exact path="/balance" component={Balance} />
     <Route exact path="/activation" component={Activation} />
-    <Route exact path="/activate/:filter?" component={Activate} />
+    <Route exact path="/activate/:token?" component={Activate} />
   </div>
 );
 

@@ -69,7 +69,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
 AUTH_USER_MODEL = 'users.CustomUser' # new
 
-
+HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
 
 MIDDLEWARE = [

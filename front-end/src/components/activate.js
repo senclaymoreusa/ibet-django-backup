@@ -18,13 +18,13 @@ class Activate extends Component {
     }
   
   componentDidMount() {
-    var token = this.props.location.pathname.slice(10)
-    axios.get(API_URL + `users/api/activate-verify/?token=${token}`)
+    const { token } = this.props.match.params;
+    axios.post(API_URL + `users/api/activate-verify/?token=${token}`)
     .then(res => {
         if (res.data === 'Success'){
-            this.setState({loading: false, error: ''})
+            this.setState({loading: false, error: ''});
         }else{
-            this.setState({error: res.data})
+            this.setState({error: res.data});
         }
       })
     }
