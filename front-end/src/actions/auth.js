@@ -142,6 +142,7 @@ export const authStart = () => {
                 .catch(err => {
                     dispatch(authFail(err.response.data.detail))
                     dispatch(logout());
+                    delete config.headers["Authorization"]
                     return Promise.resolve(AUTH_RESULT_FAIL);
                 });
             }
