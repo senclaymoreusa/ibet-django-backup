@@ -72,7 +72,7 @@ class CustomUser(AbstractBaseUser):
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
     balance = models.FloatField(default=0)
     active = models.BooleanField(default=False)
-    activation = models.CharField(max_length=300, default='')
+    activation = models.CharField(max_length=300, default='', blank=True)
 
     objects = MyUserManager()
 
