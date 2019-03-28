@@ -100,7 +100,7 @@ msgstr "用户被禁用"
 
 #: users/views.py:212
 msgid "Please activate your account!"
-msgstr "请激活你的账户"
+msgstr "请激活您的账户!"
 
 #: users/views.py:302
 msgid "You have registered an account at ibet.com, "
