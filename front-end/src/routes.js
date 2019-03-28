@@ -16,6 +16,8 @@ import Email_Sent from './components/email_sent'
 import Reset_Password_Done from './components/reset_password_done'
 import Referral from './components/referral'
 import Balance from './components/balance'
+import Activation from './components/activation'
+import Activate from './components/activate'
 
 const BaseRouter = () => (
   <div>
@@ -35,6 +37,8 @@ const BaseRouter = () => (
     <Route exact path="/reset_password_done" component={Reset_Password_Done} />
     <Route exact path="/referral" component={Referral} />
     <Route exact path="/balance" component={Balance} />
+    <Route exact path="/activation" component={Activation} />
+    <Route exact path="/activate/:token?" component={Activate} />
   </div>
 );
 

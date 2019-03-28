@@ -130,7 +130,7 @@ export const authStart = () => {
         
                 return axios.get(API_URL + 'users/api/user/', config)
                 .then(res => {
-                    if (res.data.block) {
+                    if (res.data.block || ! res.data.active) {
                         dispatch(logout());
                         return Promise.resolve(AUTH_RESULT_FAIL);
                     } else {

@@ -168,8 +168,9 @@ class Signup extends React.Component {
     } else {
         if (!referrer_id){
         this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
-        .then(() => {
-          this.props.history.push('/');
+        .then((res) => {
+          this.props.history.push('/activation');
+          axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
           axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
         }).catch(err => {
           // console.log(err.response);
@@ -196,7 +197,8 @@ class Signup extends React.Component {
       }else{
           this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
           .then((res) => {
-            this.props.history.push('/');
+            this.props.history.push('/activation');
+            axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
             axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
             axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
         

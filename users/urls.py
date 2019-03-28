@@ -31,5 +31,7 @@ urlpatterns += [
     path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
     path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),
     path('api/config/', views.Global.as_view(), name='config'),
-    path('api/addbalance/', csrf_exempt(views.AddBalance.as_view()), name='add_balance')
+    path('api/addbalance/', csrf_exempt(views.AddBalance.as_view()), name='add_balance'),
+    path('api/activate/', csrf_exempt(views.Activation.as_view()), name='activate'),
+    path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify')
 ]

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-05 22:29-0800\n"
+"POT-Creation-Date: 2019-03-27 20:43-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,105 +20,133 @@ msgstr ""
 
 #: users/forms.py:81
 msgid "Invalid date - renewal in past"
-msgstr ""
+msgstr "日期错误"
 
 #: users/forms.py:84
 msgid "Invalid date - renewal more than 4 weeks ahead"
-msgstr ""
+msgstr "日期错误，至少提前4周"
+
+#: users/serializers.py:76
+msgid "A user is already registered with this username."
+msgstr "该用户名已被占用"
 
 #: users/serializers.py:83
-msgid "A user is already registered with this username."
-msgstr ""
-
-#: users/serializers.py:90
 msgid "A user is already registered with this e-mail address."
-msgstr ""
+msgstr "该邮箱已被注册"
 
-#: users/serializers.py:99
+#: users/serializers.py:91
 msgid "The two password fields didn't match"
 msgstr "密碼不相符"
 
-#: users/serializers.py:101
+#: users/serializers.py:93
 msgid "First name not valid"
 msgstr "名字不正確"
 
-#: users/serializers.py:103
+#: users/serializers.py:95
 msgid "Last name not valid"
 msgstr "姓名不正確"
 
-#: users/serializers.py:105
+#: users/serializers.py:97 users/serializers.py:101 users/serializers.py:103
 msgid "Date of birth not valid"
 msgstr "出生日不正確"
 
-#: users/serializers.py:107
+#: users/serializers.py:105
 msgid "Phone not valid"
 msgstr "手機號不正確"
 
-#: users/serializers.py:109
+#: users/serializers.py:107
 msgid "City not valid"
 msgstr "城市名不正確"
 
-#: users/serializers.py:111
+#: users/serializers.py:109
 msgid "Country not valid"
 msgstr "國家不正確"
 
-#: users/serializers.py:113
+#: users/serializers.py:111
 msgid "State not valid"
 msgstr "州不正確"
 
-#: users/serializers.py:115
+#: users/serializers.py:113
 msgid "Zipcode not valid"
 msgstr "郵遞區號不正確"
 
-#: users/serializers.py:180
+#: users/serializers.py:173
 msgid "Must include \"email\" and \"password\"."
-msgstr ""
+msgstr "必须包括 \"email\" and \"password\""
 
-#: users/serializers.py:191
+#: users/serializers.py:184
 msgid "Must include \"username\" and \"password\"."
-msgstr ""
+msgstr "必须包括 \"username\" and \"password\""
 
-#: users/serializers.py:204
+#: users/serializers.py:197
 msgid "Must include either \"username\" or \"email\" and \"password\"."
-msgstr ""
+msgstr "必须包括 \"username\" or \"email\" and \"password\"" 
 
-#: users/serializers.py:245
+#: users/serializers.py:238
 msgid "User account is disabled."
-msgstr ""
+msgstr "用户账号不可用"
 
-#: users/serializers.py:248
+#: users/serializers.py:241
 msgid "Unable to log in with provided credentials."
 msgstr "用户名或密码错误"
 
-#: users/serializers.py:257
+#: users/serializers.py:250
 msgid "E-mail is not verified."
-msgstr ""
+msgstr "邮件没有被核实"
 
-#: users/views.py:365
+#: users/views.py:207
 msgid "Current user is blocked!"
 msgstr "用户被禁用"
 
-#: users/views.py:454
-msgid "Welcome to Claymore, "
-msgstr "歡迎來到克萊摩爾, "
+#: users/views.py:212
+msgid "Please activate your account!"
+msgstr "请激活您的账户!"
 
-#: users/views.py:455
-msgid "You have successfully set up your new email account: "
-msgstr "你已成功設定好新郵箱地址: "
+#: users/views.py:302
+msgid "You have registered an account at ibet.com, "
+msgstr "您已经再ibet.com 注册了邮箱"
 
-#: users/views.py:458
+#: users/views.py:303
+msgid "You username is "
+msgstr "您的用户名是"
+
+#: users/views.py:303
+#, fuzzy
+#| msgid "Your new Email Address is: "
+msgid ", and your email address is "
+msgstr "您新郵箱地址: "
+
+#: users/views.py:306
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: users/views.py:459
+#: users/views.py:307
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: users/views.py:494
+#: users/views.py:310
+msgid " referred you to sign up an account with Claymore"
+msgstr "推荐你注册一个claymore的账号"
+
+#: users/views.py:311
+msgid "Please use the referral link to register your new account: "
+msgstr "请用推荐链接注册您的新账户"
+
+#: users/views.py:331
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: users/views.py:496
+#: users/views.py:333
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "
+
+#: users/views.py:540
+msgid "Please activate you ibet account "
+msgstr "请激活您的ibet账户"
+
+#~ msgid "Welcome to Claymore, "
+#~ msgstr "歡迎來到克萊摩爾, "
+
+#~ msgid "You have successfully set up your new email account: "
+#~ msgstr "你已成功設定好新郵箱地址: "

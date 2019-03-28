@@ -167,7 +167,11 @@ export const messages = {
         'game_detail.opponent2': 'Opponent2: ',
         'game_detail.description': 'Description: ',
 
+        // handle activation page
+        'activation.message': 'An email with an activation link has been sent to your email address',
 
+        // handle activate page
+        'activate.success': 'You have successfully activated your account'
     },
     zh: {
 
@@ -336,9 +340,12 @@ export const messages = {
         'balance.submit': '提交',
         'balance.error': '您输入的资金不正确',
         'balance.confirm': '您要加入的资金数量是 $',
-        
 
+        // handle activation page
+        'activation.message': '账户激活链接已发至您的邮箱',
 
+        // handle activate page
+        'activate.success': '您已经成功的激活了您的邮箱'
     }, 
     fr: {
 
@@ -509,6 +516,11 @@ export const messages = {
          'game_detail.opponent2': 'Adversaire2: ',
          'game_detail.description': 'La description: ',
 
+        // handle activation page
+        'activation.message': "Un lien d'activation de compte a été envoyé à votre adresse e-mail",
+
+        // handle activate page
+        'activate.success': 'Vous avez activé avec succès votre boîte aux lettres'
     }
 }
 
