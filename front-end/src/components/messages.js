@@ -84,6 +84,7 @@ export const messages = {
         'profile.level': 'Referral Level',
         'profile.balance': 'Current balance: ',
         'profile.add': 'Add Balance',
+        'profile.referral': 'Referral link: ',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Enter your email address: ',
@@ -258,6 +259,7 @@ export const messages = {
         'profile.level': '用户推荐层级',
         'profile.balance': '当前账户余额: ',
         'profile.add': '添加资金',
+        'profile.referral': '推荐链接: ',
 
         // handle forget_password page message
         'forget_password.enter_email': '請輸入郵箱: ',
@@ -432,6 +434,7 @@ export const messages = {
         'profile.level': "Niveau de recommandation de l'utilisateur",
         'profile.balance': 'Solde du compte courant: ',
         'profile.add': 'Ajouter des fonds',
+        "profile.referral": "Lien recommandé': ",
 
         // handle forget_password page message
         'forget_password.enter_email': 'Entrez votre adresse email: ',
