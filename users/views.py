@@ -525,20 +525,20 @@ class AddBalance(View):
 
 
 class Activation(View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         email = self.request.GET['email']
         user = get_user_model().objects.filter(email=email)
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
-        user.update(activation=activation_code)
+        user.update(activation_code=activation_code)
         def timeout():
-            user.update(activation='')
+            user.update(activation_code='')
         thread = Timer(1800.0, timeout)
         thread.start()
 
         from_email_address = 'claymore@claymoreusa.com'
         to_email_address = email
         email_subject = str(_('Please activate you ibet account ')) + ' '
-        email_content = 'http://localhost:3000/activate/' + activation_code
+        email_content = settings.HOST_URL + 'activate/' + activation_code
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -551,11 +551,11 @@ class Activation(View):
         return HttpResponse('Email has been sent!')
 
 class ActivationVerify(View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         token = self.request.GET['token']
-        user = get_user_model().objects.filter(activation=token)
+        user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
-            user.update(activation='')
+            user.update(activation_code='')
             return HttpResponse('Success')
         return HttpResponse('The link has expired')

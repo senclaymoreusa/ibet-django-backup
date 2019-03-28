@@ -7,7 +7,7 @@ import { authCheckState } from '../actions';
 class Activation extends Component {
 
     componentDidMount() {
-        this.props.authCheckState()
+        this.props.authCheckState();
     }
 
     render(){

@@ -20,19 +20,19 @@ msgstr ""
 
 #: users/forms.py:81
 msgid "Invalid date - renewal in past"
-msgstr ""
+msgstr "Date invalide - renouvellement dans le passé"
 
 #: users/forms.py:84
 msgid "Invalid date - renewal more than 4 weeks ahead"
-msgstr ""
+msgstr "Date invalide - renouvellement plus de 4 semaines à l'avance"
 
 #: users/serializers.py:76
 msgid "A user is already registered with this username."
-msgstr ""
+msgstr "Un utilisateur est déjà enregistré avec ce nom d'utilisateur"
 
 #: users/serializers.py:83
 msgid "A user is already registered with this e-mail address."
-msgstr ""
+msgstr "Un utilisateur est déjà enregistré avec cette adresse e-mail"
 
 #: users/serializers.py:91
 msgid "The two password fields didn't match"
@@ -72,27 +72,27 @@ msgstr "Code postal non valide"
 
 #: users/serializers.py:173
 msgid "Must include \"email\" and \"password\"."
-msgstr ""
+msgstr "Doit inclure \ "email \" et \ "password \""
 
 #: users/serializers.py:184
 msgid "Must include \"username\" and \"password\"."
-msgstr ""
+msgstr "Doit inclure \ "nom d'utilisateur \" et \ "mot de passe \"."
 
 #: users/serializers.py:197
 msgid "Must include either \"username\" or \"email\" and \"password\"."
-msgstr ""
+msgstr "Doit inclure \ "nom d'utilisateur \" ou \ "email \" et \ "mot de passe \"."
 
 #: users/serializers.py:238
 msgid "User account is disabled."
-msgstr ""
+msgstr "Le compte d'utilisateur est désactivé"
 
 #: users/serializers.py:241
 msgid "Unable to log in with provided credentials."
-msgstr ""
+msgstr "Impossible de se connecter avec les informations d'identification fournies"
 
 #: users/serializers.py:250
 msgid "E-mail is not verified."
-msgstr ""
+msgstr "L'e-mail n'est pas vérifié"
 
 #: users/views.py:207
 msgid "Current user is blocked!"
@@ -104,11 +104,11 @@ msgstr "Veuillez activer votre compte!"
 
 #: users/views.py:302
 msgid "You have registered an account at ibet.com, "
-msgstr ""
+msgstr "Vous avez enregistré un compte sur ibet.com"
 
 #: users/views.py:303
 msgid "You username is "
-msgstr ""
+msgstr "Votre nom d'utilisateur est"
 
 #: users/views.py:303
 #, fuzzy
@@ -126,11 +126,11 @@ msgstr "Votre nouvelle adresse e-mail est: "
 
 #: users/views.py:310
 msgid " referred you to sign up an account with Claymore"
-msgstr ""
+msgstr "Vous a demandé de créer un compte avec Claymore"
 
 #: users/views.py:311
 msgid "Please use the referral link to register your new account: "
-msgstr ""
+msgstr "Veuillez utiliser le lien de parrainage pour enregistrer votre nouveau compte"
 
 #: users/views.py:331
 #, python-format
@@ -145,7 +145,7 @@ msgstr ""
 
 #: users/views.py:540
 msgid "Please activate you ibet account "
-msgstr ""
+msgstr "Merci d'activer votre compte ibet"
 
 #~ msgid "Welcome to Claymore, "
 #~ msgstr "Bienvenue chez Claymore, "
