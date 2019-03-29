@@ -4,6 +4,9 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { game_detail } from '../actions'
 import { config } from '../util_config';
+import Navigation from './navigation';
+import { FormattedMessage } from 'react-intl';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -22,6 +25,7 @@ class Game_Search extends Component {
         // console.log(props.match.params);
         // const token = localStorage.getItem('search_term');
         await this.searchGame(term);
+       
 
         // if (term){
         //     var temp = [];
@@ -84,27 +88,47 @@ class Game_Search extends Component {
         <div className="rows" >
             <Navigation />
             <div style={{marginLeft: 30, marginTop: 0}}>
-              <h1> Searched games </h1>
-              {
-                games.map(item => {
-                    return (
-                        <div key={item.name}>
-                          <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
-                              //this.props.game_detail(item)
-                            //   localStorage.setItem('game_detail', JSON.stringify(item));
-                              }}> {item.name} </NavLink>
-                          <br/>
-                          <img src={item.image} height = "100" width="100" alt = 'Not available'/>
-                        </div>
-                      )
-                })
-              }
-              {
-                  games.length === 0 && this.state.loading === false?
-                  <div> No games matching your search </div>
-                  :
-                  <div> </div>
-              }
+            <h1><FormattedMessage id="games_search.title" defaultMessage='Searched games' /></h1>
+            {
+              games.map(item => {
+                if (this.props.lang === 'zh' && item.name_zh) {
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                        }}> {item.name_zh} </NavLink>
+                      <br/>
+                      <img src={item.image} height = "100" width="100" alt = 'Not available'/>
+                    </div>
+                  )
+                }
+                else if (this.props.lang === 'fr' && item.name_fr) {
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                        }}> {item.name_fr} </NavLink>
+                      <br/>
+                      <img src={item.image} height = "100" width="100" alt = 'Not available'/>
+                    </div>
+                  )
+                }
+                else {
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                        }}> {item.name} </NavLink>
+                      <br/>
+                      <img src={item.image} height = "100" width="100" alt = 'Not available'/>
+                    </div>
+                  )
+                }
+              })
+            }
+            {
+              games.length === 0 && this.state.loading === false?
+              <div><FormattedMessage id="games_search.not_found" defaultMessage='No games matching your search' /></div>
+              :
+              <div> </div>
+            }
             </div>
         </div>
       )
@@ -114,7 +138,8 @@ class Game_Search extends Component {
 const mapStateToProps = (state) => {
     return {
         token: state.general.term,
-        isAuthenticated: state.auth.token !== null
+        isAuthenticated: state.auth.token !== null,
+        lang: state.language.lang
     }
 }
   

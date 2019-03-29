@@ -22,6 +22,10 @@ class Navigation extends Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
+    componentWillReceiveProps(props) {
+      this.setState({ term: '' });
+    }
+
     componentDidMount() {}
 
     handleChange = (languageOption) => {
@@ -32,19 +36,12 @@ class Navigation extends Component {
       });
     }
 
-    onInputChange(event){
-      if (event.target.value) {
-        this.setState({term: event.target.value});
-      }
+    onInputChange(event) {
+      this.setState({ term: event.target.value });
     }
 
-    onFormSubmit(event){
-        // console.log("log:" +this.state.term);
-        // localStorage.setItem('search_term', this.state.term);
-        // if (!this.state.term) {
-        //   window.location.reload();
-        // }
-        // this.props.history.push(`game_search/term=${this.state.term}`);
+    // not used right now!
+    onFormSubmit(event) {
         event.preventDefault();
         this.setState({ term: '' });
     }

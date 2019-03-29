@@ -228,3 +228,4 @@ msgstr "Merci d'activer votre compte ibet"
 #~ msgid "You have successfully set up your new email account: "
 #~ msgstr ""
 #~ "Vous avez configuré avec succès votre nouveau compte de messagerie: "
+
