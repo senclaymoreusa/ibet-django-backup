@@ -16,7 +16,7 @@ class Game_Detail extends Component {
 
   componentDidMount() {
     const { id } = this.props.match.params;
-    axios.get(API_URL + `users/api/games-detail/?${id}`, config)
+    axios.get(API_URL + `users/api/games-detail/?id=${id}`, config)
     .then(res => {
       let data = res.data[0];
       data.categoryName = data.category_id.name;

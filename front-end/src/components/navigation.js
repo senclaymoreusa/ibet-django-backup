@@ -22,6 +22,10 @@ class Navigation extends Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
+    componentWillReceiveProps(props) {
+      this.setState({ term: '' });
+    }
+
     componentDidMount() {}
 
     handleChange = (languageOption) => {
@@ -32,18 +36,14 @@ class Navigation extends Component {
       });
     }
 
-    onInputChange(event){
-        this.setState({term: event.target.value});
+    onInputChange(event) {
+      this.setState({ term: event.target.value });
     }
 
-    onFormSubmit(event){
-        localStorage.setItem('search_term', this.state.term);
-        if (this.state.term){
-          event.preventDefault();
-          this.props.history.push("/game_search");
-        }else{
-          this.props.history.push("/");
-        }
+    // not used right now!
+    onFormSubmit(event) {
+        event.preventDefault();
+        this.setState({ term: '' });
     }
 
     render() {
@@ -72,9 +72,9 @@ class Navigation extends Component {
               {placeholder => <input type="text" placeholder={placeholder} className="form-control" value={this.state.term} onChange={this.onInputChange} />}
               </FormattedMessage>
               <span className="input-group-btn">
-                  <button type="submit" className="btn btn-secondary"> 
-                    <FormattedMessage id="nav.search" defaultMessage='Search' />
-                  </button>
+                <NavLink to = {`/game_search/${this.state.term}`}  style={{ textDecoration: 'none' }}>
+                <button type="submit" className="btn btn-secondary"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
+                </NavLink>
               </span>
             </form>
             {

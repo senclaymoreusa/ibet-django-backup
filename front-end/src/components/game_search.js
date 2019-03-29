@@ -4,117 +4,131 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { game_detail } from '../actions'
 import { config } from '../util_config';
+import Navigation from './navigation';
+import { FormattedMessage } from 'react-intl';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
 class Game_Search extends Component {
     constructor(props){
         super(props);
-        this.state = { term: '', games: [], loading: true };
-        this.onInputChange = this.onInputChange.bind(this);
-        this.onFormSubmit = this.onFormSubmit.bind(this);
+        this.state = { games: [], loading: true };
+        // this.onInputChange = this.onInputChange.bind(this);
+        // this.onFormSubmit = this.onFormSubmit.bind(this);
+    }
+
+    async componentWillReceiveProps(props) {
+        // console.log('componentWillReceiveProps');
+
+        const { term } = props.match.params;
+        // console.log(props.match.params);
+        // const token = localStorage.getItem('search_term');
+        await this.searchGame(term);
+       
+
+        // if (term){
+        //     var temp = [];
+        //     var URL = API_URL + 'users/api/games/?' + term;
+        //     await axios.get(URL, config)
+        //     .then(res => {
+        //           temp = res.data;
+        //     })
+        //   this.setState({games: temp});
+        // }
+        // this.setState({loading: false});
     }
 
     async componentDidMount() {
-        const token = localStorage.getItem('search_term');
-        if (token){
-            var temp = []
-            var URL = API_URL + 'users/api/games/' + '?term=' + token
-            await axios.get(URL)
+
+        const { term } = this.props.match.params;
+        // console.log(this.props.match.params);
+
+        await this.searchGame(term);
+        // if (term){
+        //     var temp = [];
+        //     var URL = API_URL + 'users/api/games/?' + term;
+        //     await axios.get(URL, config)
+        //     .then(res => {
+        //           temp = res.data;
+        //     })
+        //   this.setState({games: temp});
+        // }
+        // this.setState({loading: false});
+    }
+
+    searchGame = async (term) => {
+        if (term){
+            var temp = [];
+            var URL = API_URL + 'users/api/games/?term=' + term;
+            await axios.get(URL, config)
             .then(res => {
-                  temp = res.data
+                temp = res.data;
             })
-          this.setState({games: temp})
+          this.setState({games: temp});
         }
-        this.setState({loading: false})
+        this.setState({loading: false});
     }
 
-    fetch_game = async (text) => {
-        var URL = API_URL + 'users/api/games/' + '?term=' + text
-        var result = (await axios.get(URL, config)).data
-        if (text){
-            this.setState({games: result})
-        }
-    }
+    // onInputChange(event){
+    //     this.setState({term: event.target.value});
+    // }
 
-    onInputChange(event){
-        this.setState({term: event.target.value});
-    }
-
-    onFormSubmit(event){
-        event.preventDefault();
-        localStorage.setItem('search_term', this.state.term);
-        const token = localStorage.getItem('search_term'); 
-        this.fetch_game(token);
-        this.setState({ term: '' });
-    }
+    // onFormSubmit(event){
+    //     event.preventDefault();
+    //     // localStorage.setItem('search_term', this.state.term);
+    //     // const token = localStorage.getItem('search_term'); 
+    //     // this.fetch_game(this.state.term);
+    //     // this.setState({ term: '' });
+    // }
 
     render() {
-      var games = this.state.games
+      var games = this.state.games;
       return (
         <div className="rows" >
-            <div style={{marginTop: 30, marginRight: 50}}>
-                <div>
-                    <NavLink to='/' style={{ textDecoration: 'none' }}> Home </NavLink>
-                </div>
-                <div>
-                    <NavLink to='/game_type/' style={{ textDecoration: 'none' }}> All Games </NavLink>
-                </div>
-                <form onSubmit={this.onFormSubmit} className="input-group">
-                    <input
-                        placeholder="Search games..."
-                        className="form-control"
-                        value={this.state.term}
-                        onChange={this.onInputChange}
-                    />
-                    <span className="input-group-btn">
-                        <button type="submit" className="btn btn-secondary"> 
-                            Search 
-                        </button>
-                    </span>
-                </form>
-
-                {
-                    this.props.isAuthenticated ?
-                    <NavLink to = '/profile/' style={{ textDecoration: 'none' }}> Profile </NavLink>
-                    :
-                    <div> </div>
-                }
-                
-                {
-                    this.props.isAuthenticated ?
-                    <div>
-                        <NavLink to = '/' style={{ textDecoration: 'none' }} onClick={()=>{this.props.logout()}}> Logout </NavLink>
-                    </div>
-                    :
-                    <div> 
-                        <NavLink to='/login/' style={{ textDecoration: 'none' }}> Login </NavLink> 
-                    </div>
-                }
-            </div>
-            
+            <Navigation />
             <div style={{marginLeft: 30, marginTop: 0}}>
-              <h1> Searched games </h1>
-              {
-                games.map(item => {
-                    return (
-                        <div key={item.name}>
-                          <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
-                              //this.props.game_detail(item)
-                            //   localStorage.setItem('game_detail', JSON.stringify(item));
-                              }}> {item.name} </NavLink>
-                          <br/>
-                          <img src={item.image} height = "100" width="100" alt = 'Not available'/>
-                        </div>
-                      )
-                })
-              }
-              {
-                  games.length === 0 && this.state.loading === false?
-                  <div> No games matching your search </div>
-                  :
-                  <div> </div>
-              }
+            <h1><FormattedMessage id="games_search.title" defaultMessage='Searched games' /></h1>
+            {
+              games.map(item => {
+                if (this.props.lang === 'zh' && item.name_zh) {
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                        }}> {item.name_zh} </NavLink>
+                      <br/>
+                      <img src={item.image} height = "100" width="100" alt = 'Not available'/>
+                    </div>
+                  )
+                }
+                else if (this.props.lang === 'fr' && item.name_fr) {
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                        }}> {item.name_fr} </NavLink>
+                      <br/>
+                      <img src={item.image} height = "100" width="100" alt = 'Not available'/>
+                    </div>
+                  )
+                }
+                else {
+                  return (
+                    <div key={item.name}>
+                      <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                        }}> {item.name} </NavLink>
+                      <br/>
+                      <img src={item.image} height = "100" width="100" alt = 'Not available'/>
+                    </div>
+                  )
+                }
+              })
+            }
+            {
+              games.length === 0 && this.state.loading === false?
+              <div><FormattedMessage id="games_search.not_found" defaultMessage='No games matching your search' /></div>
+              :
+              <div> </div>
+            }
             </div>
         </div>
       )
@@ -124,7 +138,8 @@ class Game_Search extends Component {
 const mapStateToProps = (state) => {
     return {
         token: state.general.term,
-        isAuthenticated: state.auth.token !== null
+        isAuthenticated: state.auth.token !== null,
+        lang: state.language.lang
     }
 }
   

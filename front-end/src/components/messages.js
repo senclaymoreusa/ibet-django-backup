@@ -170,9 +170,11 @@ export const messages = {
 
         // handle activation page
         'activation.message': 'An email with an activation link has been sent to your email address',
+        'activate.success': 'You have successfully activated your account',
 
-        // handle activate page
-        'activate.success': 'You have successfully activated your account'
+        // handle game_search page
+        'games_search.title': 'Searched games',
+        'games_search.not_found': 'No games matching your search',
     },
     zh: {
 
@@ -343,6 +345,10 @@ export const messages = {
         'balance.error': '您输入的资金不正确',
         'balance.confirm': '您要加入的资金数量是 $',
 
+        // handle game_search page
+        'games_search.title': '搜尋結果',
+        'games_search.not_found': '沒有您的搜尋結果',
+
         // handle activation page
         'activation.message': '账户激活链接已发至您的邮箱',
 
@@ -509,15 +515,20 @@ export const messages = {
         'balance.error': 'Les fonds que vous avez entrés sont incorrects',
         'balance.confirm': 'Le montant que vous souhaitez rejoindre est de $',
 
-         // handle game_detail page message
-         'game_detail.title': 'Détails du jeu',
-         'game_detail.name': 'Prénom: ',
-         'game_detail.category': 'Catégorie: ',
-         'game_detail.startTime': 'Heure de début: ',
-         'game_detail.endTime': 'Heure de fin: ',
-         'game_detail.opponent1': 'Adversaire1: ',
-         'game_detail.opponent2': 'Adversaire2: ',
-         'game_detail.description': 'La description: ',
+        // handle game_detail page message
+        'game_detail.title': 'Détails du jeu',
+        'game_detail.name': 'Prénom: ',
+        'game_detail.category': 'Catégorie: ',
+        'game_detail.startTime': 'Heure de début: ',
+        'game_detail.endTime': 'Heure de fin: ',
+        'game_detail.opponent1': 'Adversaire1: ',
+        'game_detail.opponent2': 'Adversaire2: ',
+        'game_detail.description': 'La description: ',
+
+
+        // handle game_search page
+        'games_search.title': 'Résultat de la recherche',
+        'games_search.not_found': 'Aucun jeu ne correspond à votre recherche',
 
         // handle activation page
         'activation.message': "Un lien d'activation de compte a été envoyé à votre adresse e-mail",

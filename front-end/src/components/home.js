@@ -94,7 +94,7 @@ class Home extends Component {
             this.state.sports.map(item => {
               return (
                   <div key={item.name} style={{marginLeft: '300px'}}>
-                    <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                    <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
                     <img src={item.image} height = "100" width="100" alt = 'Not available'/>
@@ -110,7 +110,7 @@ class Home extends Component {
             this.state.poker.map(item => {
               return (
                   <div key={item.name} style={{marginLeft: '300px'}}>
-                    <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                    <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
                     <img src={item.image} height = "100" width="100" alt = 'Not available'/>
@@ -126,7 +126,7 @@ class Home extends Component {
             this.state.casino.map(item => {
               return (
                   <div key={item.name} style={{marginLeft: '300px'}}>
-                    <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                    <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
                     <img src={item.image} height = "100" width="100" alt = 'Not available'/>
