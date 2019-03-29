@@ -72,7 +72,7 @@ class Navigation extends Component {
               {placeholder => <input type="text" placeholder={placeholder} className="form-control" value={this.state.term} onChange={this.onInputChange} />}
               </FormattedMessage>
               <span className="input-group-btn">
-                <NavLink to = {`/game_search/term=${this.state.term}`}  style={{ textDecoration: 'none' }}>
+                <NavLink to = {`/game_search/${this.state.term}`}  style={{ textDecoration: 'none' }}>
                 <button type="submit" className="btn btn-secondary"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
                 </NavLink>
               </span>

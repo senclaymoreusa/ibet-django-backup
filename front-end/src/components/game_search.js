@@ -60,7 +60,7 @@ class Game_Search extends Component {
     searchGame = async (term) => {
         if (term){
             var temp = [];
-            var URL = API_URL + 'users/api/games/?' + term;
+            var URL = API_URL + 'users/api/games/?term=' + term;
             await axios.get(URL, config)
             .then(res => {
                 temp = res.data;
@@ -94,7 +94,7 @@ class Game_Search extends Component {
                 if (this.props.lang === 'zh' && item.name_zh) {
                   return (
                     <div key={item.name}>
-                      <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                      <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name_zh} </NavLink>
                       <br/>
                       <img src={item.image} height = "100" width="100" alt = 'Not available'/>
@@ -104,7 +104,7 @@ class Game_Search extends Component {
                 else if (this.props.lang === 'fr' && item.name_fr) {
                   return (
                     <div key={item.name}>
-                      <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                      <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name_fr} </NavLink>
                       <br/>
                       <img src={item.image} height = "100" width="100" alt = 'Not available'/>
@@ -114,7 +114,7 @@ class Game_Search extends Component {
                 else {
                   return (
                     <div key={item.name}>
-                      <NavLink to = {`/game_detail/id=${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
+                      <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                       <br/>
                       <img src={item.image} height = "100" width="100" alt = 'Not available'/>
