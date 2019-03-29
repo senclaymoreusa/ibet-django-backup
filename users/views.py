@@ -124,7 +124,6 @@ class GameAPIListView(ListAPIView):
 
         if not data:
             logger.error('Search term did not match any categories or token')
-
         return data
 
 class GameDetailAPIListView(ListAPIView):
@@ -509,4 +508,3 @@ class AddBalance(View):
             current_points = reward_points + data.Referee_add_balance_reward
             referr_object.update(reward_points=current_points)
         return HttpResponse('Success')
-

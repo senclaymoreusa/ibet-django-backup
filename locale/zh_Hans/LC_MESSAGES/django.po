@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-05 22:29-0800\n"
+"POT-Creation-Date: 2019-03-27 15:24-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,99 +26,107 @@ msgstr ""
 msgid "Invalid date - renewal more than 4 weeks ahead"
 msgstr ""
 
-#: users/serializers.py:83
+#: users/serializers.py:75
 msgid "A user is already registered with this username."
 msgstr ""
 
-#: users/serializers.py:90
+#: users/serializers.py:82
 msgid "A user is already registered with this e-mail address."
 msgstr ""
 
-#: users/serializers.py:99
+#: users/serializers.py:90
 msgid "The two password fields didn't match"
 msgstr "密碼不相符"
 
-#: users/serializers.py:101
+#: users/serializers.py:92
 msgid "First name not valid"
 msgstr "名字不正確"
 
-#: users/serializers.py:103
+#: users/serializers.py:94
 msgid "Last name not valid"
 msgstr "姓名不正確"
 
-#: users/serializers.py:105
+#: users/serializers.py:96
 msgid "Date of birth not valid"
 msgstr "出生日不正確"
 
-#: users/serializers.py:107
+#: users/serializers.py:98
 msgid "Phone not valid"
 msgstr "手機號不正確"
 
-#: users/serializers.py:109
+#: users/serializers.py:100
 msgid "City not valid"
 msgstr "城市名不正確"
 
-#: users/serializers.py:111
+#: users/serializers.py:102
 msgid "Country not valid"
 msgstr "國家不正確"
 
-#: users/serializers.py:113
+#: users/serializers.py:104
 msgid "State not valid"
 msgstr "州不正確"
 
-#: users/serializers.py:115
+#: users/serializers.py:106
 msgid "Zipcode not valid"
 msgstr "郵遞區號不正確"
 
-#: users/serializers.py:180
+#: users/serializers.py:166
 msgid "Must include \"email\" and \"password\"."
 msgstr ""
 
-#: users/serializers.py:191
+#: users/serializers.py:177
 msgid "Must include \"username\" and \"password\"."
 msgstr ""
 
-#: users/serializers.py:204
+#: users/serializers.py:190
 msgid "Must include either \"username\" or \"email\" and \"password\"."
 msgstr ""
 
-#: users/serializers.py:245
+#: users/serializers.py:231
 msgid "User account is disabled."
 msgstr ""
 
-#: users/serializers.py:248
+#: users/serializers.py:234
 msgid "Unable to log in with provided credentials."
 msgstr "用户名或密码错误"
 
-#: users/serializers.py:257
+#: users/serializers.py:243
 msgid "E-mail is not verified."
 msgstr ""
 
-#: users/views.py:365
+#: users/views.py:202
 msgid "Current user is blocked!"
 msgstr "用户被禁用"
 
-#: users/views.py:454
+#: users/views.py:289
 msgid "Welcome to Claymore, "
 msgstr "歡迎來到克萊摩爾, "
 
-#: users/views.py:455
+#: users/views.py:290
 msgid "You have successfully set up your new email account: "
 msgstr "你已成功設定好新郵箱地址: "
 
-#: users/views.py:458
+#: users/views.py:293
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: users/views.py:459
+#: users/views.py:294
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: users/views.py:494
+#: users/views.py:297
+msgid " referred you to sign up an account with Claymore"
+msgstr ""
+
+#: users/views.py:298
+msgid "Please use the referral link to register your new account: "
+msgstr ""
+
+#: users/views.py:318
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: users/views.py:496
+#: users/views.py:320
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "

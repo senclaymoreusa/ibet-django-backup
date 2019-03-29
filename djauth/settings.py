@@ -41,6 +41,7 @@ CRSF_COOKIE_SAMESITE = None
 # Application definition
 
 INSTALLED_APPS = [
+    'test_without_migrations',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,7 +59,8 @@ INSTALLED_APPS = [
     'allauth.account',             # Stephen
     'rest_auth.registration',      # Stephen
     'allauth.socialaccount',       # Stephen
-    'django_rest_passwordreset'
+    'django_rest_passwordreset',
+    'django_nose'
 ]
 
 SITE_ID = 1                        # Stephen
@@ -228,3 +230,17 @@ TIME_ZONE = 'America/Los_Angeles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'users/media')
+
+
+# Test Part
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'foo' and 'bar' apps
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=users',
+    #'--cover-html'
+]
+
+TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
