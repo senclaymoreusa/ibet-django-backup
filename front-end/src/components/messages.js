@@ -8,17 +8,21 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies available',
         'home.authors': 'Authors',
+        'home.sports': 'Most Popular Sports',
+        'home.casino': 'Most Popluar Casino',
+        'home.poker': 'Most Popluar Poker',
 
         // handle navigation page message
         'nav.title': 'Home',
         'nav.books': 'All books',
         'nav.authors': 'All authors',
-        'nav.games': 'All games',
+        'nav.games': 'All Games',
         'nav.search': 'Search',
         'nav.profile': 'Profile',
         'nav.login': 'Login',
         'nav.logout': 'Logout',
         'nav.referral': 'Refer new user',
+        'nav.placeholder': 'Search game...',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -80,6 +84,7 @@ export const messages = {
         'profile.level': 'Referral Level',
         'profile.balance': 'Current balance: ',
         'profile.add': 'Add Balance',
+        'profile.referral': 'Referral link: ',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Enter your email address: ',
@@ -116,6 +121,7 @@ export const messages = {
         'sign.state_empty_error': 'State cannot be empty', 
         'sign.country_empty_error': 'Country cannot be empty', 
         'sign.zipcode_empty_error': 'Zipcode cannot be empty',  
+        'sign.show_date': 'Show date',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -162,7 +168,13 @@ export const messages = {
         'game_detail.opponent2': 'Opponent2: ',
         'game_detail.description': 'Description: ',
 
+        // handle activation page
+        'activation.message': 'An email with an activation link has been sent to your email address',
+        'activate.success': 'You have successfully activated your account',
 
+        // handle game_search page
+        'games_search.title': 'Searched games',
+        'games_search.not_found': 'No games matching your search',
     },
     zh: {
 
@@ -174,6 +186,9 @@ export const messages = {
         'home.copies': '副本',
         'home.copies_available': '可用副本',
         'home.authors': '作者',
+        'home.sports': '最受欢迎的体育游戏',
+        'home.casino': '最受欢迎的赌场游戏',
+        'home.poker': '最受欢迎的扑克游戏',
 
         // handle navigation page message
         'nav.title': '首頁',
@@ -185,6 +200,7 @@ export const messages = {
         'nav.login': '登入',
         'nav.logout': '登出',
         'nav.referral': '推荐新用户',
+        'nav.placeholder': '搜尋遊戲...',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -245,6 +261,7 @@ export const messages = {
         'profile.level': '用户推荐层级',
         'profile.balance': '当前账户余额: ',
         'profile.add': '添加资金',
+        'profile.referral': '推荐链接: ',
 
         // handle forget_password page message
         'forget_password.enter_email': '請輸入郵箱: ',
@@ -280,7 +297,8 @@ export const messages = {
         'sign.city_empty_error': '請輸入城市地址', 
         'sign.state_empty_error': '請輸入地址州', 
         'sign.country_empty_error': '請輸入國家', 
-        'sign.zipcode_empty_error': '請輸入郵遞區號',  
+        'sign.zipcode_empty_error': '請輸入郵遞區號', 
+        'sign.show_date': '显示日期', 
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -325,9 +343,17 @@ export const messages = {
         'balance.enter_balance': '请输入您想增加的资金',
         'balance.submit': '提交',
         'balance.error': '您输入的资金不正确',
-        'balance.confirm': '您要加入的资金数量是 $'
+        'balance.confirm': '您要加入的资金数量是 $',
 
+        // handle game_search page
+        'games_search.title': '搜尋結果',
+        'games_search.not_found': '沒有您的搜尋結果',
 
+        // handle activation page
+        'activation.message': '账户激活链接已发至您的邮箱',
+
+        // handle activate page
+        'activate.success': '您已经成功的激活了您的邮箱'
     }, 
     fr: {
 
@@ -339,6 +365,9 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies disponibles',
         'home.authors': 'Auteures',
+        'home.sports': 'Les jeux de sport les plus populaires',
+        'home.casino': 'Les jeux de casino les plus populaires',
+        'home.poker': 'Jeu de poker le plus populaire',
 
         // handle navigation page message
         'nav.title': 'Accueil',
@@ -350,6 +379,7 @@ export const messages = {
         'nav.login': 'S\'identifier',
         'nav.logout': 'Connectez - Out',
         'nav.referral': 'Recommander de nouveaux utilisateurs',
+        'nav.placeholder': 'Jeu de recherche...',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',
@@ -410,6 +440,7 @@ export const messages = {
         'profile.level': "Niveau de recommandation de l'utilisateur",
         'profile.balance': 'Solde du compte courant: ',
         'profile.add': 'Ajouter des fonds',
+        "profile.referral": "Lien recommandé': ",
 
         // handle forget_password page message
         'forget_password.enter_email': 'Entrez votre adresse email: ',
@@ -446,6 +477,7 @@ export const messages = {
         'sign.state_empty_error': 'Etat ne peut être vide', 
         'sign.country_empty_error': 'Le pays ne peut pas être vide', 
         'sign.zipcode_empty_error': 'Le code postal ne peut pas être vide',  
+        'sign.show_date': 'Montrer la date', 
         
 
         // handle update_profile page message
@@ -483,16 +515,26 @@ export const messages = {
         'balance.error': 'Les fonds que vous avez entrés sont incorrects',
         'balance.confirm': 'Le montant que vous souhaitez rejoindre est de $',
 
-         // handle game_detail page message
-         'game_detail.title': 'Détails du jeu',
-         'game_detail.name': 'Prénom: ',
-         'game_detail.category': 'Catégorie: ',
-         'game_detail.startTime': 'Heure de début: ',
-         'game_detail.endTime': 'Heure de fin: ',
-         'game_detail.opponent1': 'Adversaire1: ',
-         'game_detail.opponent2': 'Adversaire2: ',
-         'game_detail.description': 'La description: ',
+        // handle game_detail page message
+        'game_detail.title': 'Détails du jeu',
+        'game_detail.name': 'Prénom: ',
+        'game_detail.category': 'Catégorie: ',
+        'game_detail.startTime': 'Heure de début: ',
+        'game_detail.endTime': 'Heure de fin: ',
+        'game_detail.opponent1': 'Adversaire1: ',
+        'game_detail.opponent2': 'Adversaire2: ',
+        'game_detail.description': 'La description: ',
 
+
+        // handle game_search page
+        'games_search.title': 'Résultat de la recherche',
+        'games_search.not_found': 'Aucun jeu ne correspond à votre recherche',
+
+        // handle activation page
+        'activation.message': "Un lien d'activation de compte a été envoyé à votre adresse e-mail",
+
+        // handle activate page
+        'activate.success': 'Vous avez activé avec succès votre boîte aux lettres'
     }
 }
 

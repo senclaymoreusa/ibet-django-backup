@@ -71,7 +71,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
 AUTH_USER_MODEL = 'users.CustomUser' # new
 
-
+HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
 
 MIDDLEWARE = [
@@ -180,7 +180,7 @@ STATIC_URL = '/static/'
 
 # djauth/settings.py
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = '/admin'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
@@ -192,6 +192,11 @@ STATIC_URL = '/static/'
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+log_filename = "logs/debug.log"
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)  
+
 
 # Logging setup added by Stephen
 LOGGING = {

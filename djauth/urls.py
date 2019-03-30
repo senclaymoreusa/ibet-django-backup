@@ -25,7 +25,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
 #    path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('', RedirectView.as_view(url='/users/', permanent=True)),
+    path('', RedirectView.as_view(url='/admin/')),
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('users/', include('django.contrib.auth.urls')),
@@ -41,11 +41,6 @@ from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns+= static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-#Add URL maps to redirect the base URL to our application
-from django.views.generic import RedirectView
-urlpatterns += [
-    path('', RedirectView.as_view(url='/users/', permanent=True)),
-]
 
 #Add Django site authentication urls (for login, logout, password management)
 urlpatterns += [

@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers, exceptions
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+import datetime
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -40,7 +41,7 @@ class GameSerializer(serializers.ModelSerializer):
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active')
         read_only_fields = ('username', )
 
 
@@ -92,7 +93,13 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(_("First name not valid"))
         if not data['last_name'] or len(data['last_name']) > 20 or not data['last_name'].isalpha():
             raise serializers.ValidationError(_("Last name not valid"))
-        if not data['date_of_birth'] or len(data['date_of_birth']) > 20 or any(char.isalpha() for char in data['date_of_birth']) :
+        if not data['date_of_birth'] or len(data['date_of_birth']) != 10 or any(char.isalpha() for char in data['date_of_birth']) :
+            raise serializers.ValidationError(_("Date of birth not valid"))
+        date = data['date_of_birth']
+        date = date.split('/')
+        if len(date) != 3:
+            raise serializers.ValidationError(_("Date of birth not valid"))
+        if not (1 <= int(date[0]) <= 12) or not ( 1 <= int(date[1]) <= 31) or not (1900 <= int(date[2]) <= int(str(datetime.datetime.now())[0:4])):
             raise serializers.ValidationError(_("Date of birth not valid"))
         if not data['phone'] or not data['phone'].isdigit() or len(data['phone']) < 8 or len(data['phone']) > 20:
             raise serializers.ValidationError(_("Phone not valid"))

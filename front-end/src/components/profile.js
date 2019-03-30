@@ -8,6 +8,9 @@ import { config } from '../util_config';
 
 const API_URL = process.env.REACT_APP_REST_API;
 
+const HOST_URL = process.env.REACT_APP_LOCAL_API;
+
+
 class Profile extends Component {
 
     state = {
@@ -116,6 +119,9 @@ class Profile extends Component {
                 <NavLink to='/balance' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.add" defaultMessage='Add Balance' /></NavLink> 
               </button>
             </div>
+            <div> <b>
+            <FormattedMessage id="profile.referral" defaultMessage='Referral link: ' />
+            </b>  {HOST_URL + 'signup/'+ this.state.data.referral_id}  </div>
             
             <button className="btn btn-secondary"> 
                 <NavLink to='/update_profile' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.update" defaultMessage='Update' /></NavLink> 

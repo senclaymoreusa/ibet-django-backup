@@ -46,6 +46,11 @@ import os
 
 from django.contrib.auth import get_user_model
 
+import base64
+import uuid
+
+from threading import Timer
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -114,6 +119,7 @@ class GameAPIListView(ListAPIView):
     serializer_class = GameSerializer
     def get_queryset(self):
         term = self.request.GET['term']
+        # print("term:" + term)
         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
 
         if not data:
@@ -201,6 +207,10 @@ class BlockedUserException(APIException):
     default_detail = _('Current user is blocked!')
     default_code = 'block'
 
+class InactiveUserException(APIException):
+    status_code = 403
+    default_detail = _('Please activate your account!') 
+
 
 class LoginView(GenericAPIView):
     """
@@ -240,6 +250,10 @@ class LoginView(GenericAPIView):
         if self.user.block is True:
             print("user block")
             raise BlockedUserException
+        if self.user.active == False:
+            print('User not active')
+            raise InactiveUserException
+
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(self.user)
         else:
@@ -285,8 +299,8 @@ class SendEmail(View):
         from_email_address = 'claymore@claymoreusa.com'
         if case == 'signup':
             to_email_address = self.request.GET['to_email_address']
-            email_subject = _('Welcome to Claymore, ') + self.request.GET['username']
-            email_content = _('You have successfully set up your new email account: ') + self.request.GET['email']
+            email_subject = str(_('You have registered an account at ibet.com, ')) + ' '
+            email_content = str(_('You username is ')) + self.request.GET['username'] + str(_(', and your email address is ')) + self.request.GET['email']
         elif case == 'change_email':
             to_email_address = self.request.GET['to_email_address']
             email_subject = _('Request of changing email address') + ' '
@@ -508,3 +522,40 @@ class AddBalance(View):
             current_points = reward_points + data.Referee_add_balance_reward
             referr_object.update(reward_points=current_points)
         return HttpResponse('Success')
+
+
+class Activation(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        user = get_user_model().objects.filter(email=email)
+        activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
+        user.update(activation_code=activation_code)
+        def timeout():
+            user.update(activation_code='')
+        thread = Timer(1800.0, timeout)
+        thread.start()
+
+        from_email_address = 'claymore@claymoreusa.com'
+        to_email_address = email
+        email_subject = str(_('Please activate you ibet account ')) + ' '
+        email_content = settings.HOST_URL + 'activate/' + activation_code
+
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email(from_email_address)
+        to_email = Email(to_email_address)
+        subject = email_subject
+        content = Content("text/plain", email_content)
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        #print(response.status_code)
+        return HttpResponse('Email has been sent!')
+
+class ActivationVerify(View):
+    def post(self, request, *args, **kwargs):
+        token = self.request.GET['token']
+        user = get_user_model().objects.filter(activation_code=token)
+        if len(user) != 0:
+            user.update(active=True)
+            user.update(activation_code='')
+            return HttpResponse('Success')
+        return HttpResponse('The link has expired')

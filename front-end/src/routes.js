@@ -16,16 +16,18 @@ import Email_Sent from './components/email_sent'
 import Reset_Password_Done from './components/reset_password_done'
 import Referral from './components/referral'
 import Balance from './components/balance'
+import Activation from './components/activation'
+import Activate from './components/activate'
 
 const BaseRouter = () => (
   <div>
     <Route exact path="/" component={Home} />
-    <Route exact path="/game_type" component={Game_Type} />
-    <Route exact path="/game_list" component={Game_List} />
+    <Route exact path="/game_type/" component={Game_Type} />
+    <Route exact path="/game_list/:term?" component={Game_List} />
     <Route exact path="/login" component={Login} />
     <Route exact path="/signup/:filter?" component={Signup} />
-    <Route exact path="/game_detail/:id" component={Game_Detail} />
-    <Route exact path="/game_search" component={Game_Search} />
+    <Route exact path="/game_detail/:id?" component={Game_Detail} />
+    <Route exact path="/game_search/:term?" component={Game_Search} />
     <Route exact path="/profile" component={Profile} />
     <Route exact path="/update_profile" component={Update} />
     <Route exact path="/change_email" component={Change_Email} />
@@ -35,6 +37,8 @@ const BaseRouter = () => (
     <Route exact path="/reset_password_done" component={Reset_Password_Done} />
     <Route exact path="/referral" component={Referral} />
     <Route exact path="/balance" component={Balance} />
+    <Route exact path="/activation" component={Activation} />
+    <Route exact path="/activate/:token?" component={Activate} />
   </div>
 );
 

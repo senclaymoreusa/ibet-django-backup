@@ -22,6 +22,10 @@ class Navigation extends Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
+    componentWillReceiveProps(props) {
+      this.setState({ term: '' });
+    }
+
     componentDidMount() {}
 
     handleChange = (languageOption) => {
@@ -32,14 +36,12 @@ class Navigation extends Component {
       });
     }
 
-    onInputChange(event){
-        this.setState({term: event.target.value});
-        //this.props.handle_search(event.target.value);
+    onInputChange(event) {
+      this.setState({ term: event.target.value });
     }
 
-    onFormSubmit(event){
-        localStorage.setItem('search_term', this.state.term);
-        this.props.history.push("/game_search");
+    // not used right now!
+    onFormSubmit(event) {
         event.preventDefault();
         this.setState({ term: '' });
     }
@@ -66,17 +68,14 @@ class Navigation extends Component {
             </div>
 
             <form onSubmit={this.onFormSubmit} className="input-group">
-                <input
-                    placeholder="Search games..."
-                    className="form-control"
-                    value={this.state.term}
-                    onChange={this.onInputChange}
-                />
-                <span className="input-group-btn">
-                    <button type="submit" className="btn btn-secondary"> 
-                      <NavLink to='/game_search' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.search" defaultMessage='Search' /></NavLink>
-                    </button>
-                </span>
+              <FormattedMessage id="nav.placeholder" defaultMessage="Search games...">
+              {placeholder => <input type="text" placeholder={placeholder} className="form-control" value={this.state.term} onChange={this.onInputChange} />}
+              </FormattedMessage>
+              <span className="input-group-btn">
+                <NavLink to = {`/game_search/${this.state.term}`}  style={{ textDecoration: 'none' }}>
+                <button type="submit" className="btn btn-secondary"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
+                </NavLink>
+              </span>
             </form>
             {
               this.props.isAuthenticated ?

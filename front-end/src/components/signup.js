@@ -6,6 +6,7 @@ import axios from 'axios';
 import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
+import Calendar from 'react-calendar';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -36,6 +37,8 @@ class Signup extends React.Component {
       city: '',
       zipcode: '',
       state: '',
+      date: new Date(),
+      show_date: false
     };
 
     this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -53,6 +56,7 @@ class Signup extends React.Component {
     this.onInputChange_zipcode          = this.onInputChange_zipcode.bind(this);
     this.onInputChange_state            = this.onInputChange_state.bind(this);
     this.onFormSubmit                   = this.onFormSubmit.bind(this);
+    this.onInputChange_date             = this.onInputChange_date.bind(this);
   }
 
   componentDidMount() {
@@ -120,6 +124,18 @@ class Signup extends React.Component {
     this.setState({state: event.target.value});
   }
 
+  onInputChange_date(date){
+    var res = date.toString().split(" ");
+    var month = res[1]
+    var day = res[2]
+    var year = res[3]
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    var months_to = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+    month = months_to[months.indexOf(month)]
+    var result = month + '/' + day + '/' + year
+    this.setState({date_of_birth: result})
+  }
+
   onFormSubmit(event){
     event.preventDefault();
 
@@ -152,8 +168,9 @@ class Signup extends React.Component {
     } else {
         if (!referrer_id){
         this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
-        .then(() => {
-          this.props.history.push('/');
+        .then((res) => {
+          this.props.history.push('/activation');
+          axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
           axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
         }).catch(err => {
           // console.log(err.response);
@@ -174,18 +191,19 @@ class Signup extends React.Component {
           }
 
           if ('password1' in err.response.data) {
-            this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+            this.setState({password_error: err.response.data.password1[0]})
           }
         })
       }else{
           this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
           .then((res) => {
-            this.props.history.push('/');
+            this.props.history.push('/activation');
+            axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
             axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
             axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
         
         }).catch(err => {
-            console.log(err)
+            // console.log(err.response);
             if (err.response &&  'username' in err.response.data) {
               this.setState({username_error: err.response.data.username[0]})
             } else {
@@ -203,7 +221,7 @@ class Signup extends React.Component {
             }
     
             if (err.response && 'password1' in err.response.data) {
-              this.setState({password_error: err.response.data.non_field_errors.slice(0)})
+              this.setState({password_error: err.response.data.password1[0]})
             }
           })
       }
@@ -406,7 +424,17 @@ class Signup extends React.Component {
                 value={this.state.date_of_birth}
                 onChange={this.onInputChange_date_of_birth}
             />
+            <div onClick={() => {this.setState({show_date: !this.state.show_date})}} style={{color: 'blue'}}>
+              <FormattedMessage id="sign.show_date" defaultMessage='Show date' />
+            </div>
           </div>
+         
+          {
+          this.state.show_date && <Calendar
+            onChange={this.onInputChange_date}
+            value={this.state.date}
+          />
+          }
 
           <div>
             <label><b>
