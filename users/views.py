@@ -130,7 +130,6 @@ class GameAPIListView(ListAPIView):
 
         if not data:
             logger.error('Search term did not match any categories or token')
-
         return data
 
 class GameDetailAPIListView(ListAPIView):
