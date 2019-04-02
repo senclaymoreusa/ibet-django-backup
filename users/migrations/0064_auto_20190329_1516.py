@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterField(
             model_name='customuser',
-            name='activation_code',
+            name='activation',
             field=models.CharField(blank=True, default='', max_length=300),
         ),
     ]
