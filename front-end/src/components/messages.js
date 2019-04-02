@@ -175,6 +175,9 @@ export const messages = {
         // handle game_search page
         'games_search.title': 'Searched games',
         'games_search.not_found': 'No games matching your search',
+
+        // handle referral page
+        'referral.user': 'You have successfully referred a User'
     },
     zh: {
 
@@ -353,7 +356,10 @@ export const messages = {
         'activation.message': '账户激活链接已发至您的邮箱',
 
         // handle activate page
-        'activate.success': '您已经成功的激活了您的邮箱'
+        'activate.success': '您已经成功的激活了您的邮箱',
+
+        // handle referral page
+        'referral.user': '您已成功推荐该用户'
     }, 
     fr: {
 
@@ -534,7 +540,10 @@ export const messages = {
         'activation.message': "Un lien d'activation de compte a été envoyé à votre adresse e-mail",
 
         // handle activate page
-        'activate.success': 'Vous avez activé avec succès votre boîte aux lettres'
+        'activate.success': 'Vous avez activé avec succès votre boîte aux lettres',
+
+        // handle referral page
+        'referral.user': 'Vous avez référé un utilisateur avec succès'
     }
 }
 

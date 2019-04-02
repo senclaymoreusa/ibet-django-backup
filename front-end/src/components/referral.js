@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { config } from '../util_config';
 import { NavLink } from 'react-router-dom';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -35,13 +35,16 @@ class Referral extends React.Component {
     }
 
     onFormSubmit(event){
+        const { formatMessage } = this.props.intl;
+        const message = formatMessage({ id: 'referral.user' });
+
         event.preventDefault();
         axios.get(API_URL + `users/api/checkreferral?referral_id=${this.state.data.referral_id}`, config)
         .then(res =>{
             if (res.data === 'Valid'){
                 axios.get(API_URL + `users/api/sendemail/?case=referral&to_email_address=${this.state.email}&username=${this.state.data.username}&referralid=${this.state.data.referral_id}`, config)
                 .then(res =>{
-                    alert('You have successfully referred a User')
+                    alert(message)
                     this.props.history.push('/');
                 }).catch(err => {
                     console.log(err.response)
@@ -72,7 +75,7 @@ class Referral extends React.Component {
 
                     <span className="input-group-btn">
                         <button type="submit" className="btn btn-secondary"> 
-                            Submit   
+                            <FormattedMessage id="balance.submit" defaultMessage='Submit' />   
                         </button>
                     </span>          
 
@@ -89,4 +92,4 @@ class Referral extends React.Component {
     }
 }
 
-export default Referral;
+export default injectIntl(Referral);
