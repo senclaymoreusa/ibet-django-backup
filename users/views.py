@@ -531,7 +531,8 @@ class Activation(View):
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code)
         def timeout():
-            user.update(activation_code='')
+            if user[0].activation_code:
+                user.delete()
         thread = Timer(1800.0, timeout)
         thread.start()
 
