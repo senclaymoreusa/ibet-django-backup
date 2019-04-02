@@ -104,7 +104,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
 
-console.log(axios);
 API_URL = 'http://localhost:8000/';
 const config = {
     headers: {
@@ -114,11 +113,9 @@ const config = {
 };
 
 $(document).ready(function() {
-    console.log("hello world");
     axios.get(API_URL + 'users/api/language/', config)
     .then(res => {
         let language = res.data.languageCode;
-        console.log(language);
         $('#language-select').val(language);    
     });
 });
