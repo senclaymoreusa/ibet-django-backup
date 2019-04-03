@@ -102,34 +102,8 @@
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script>
+{% load staticfiles %}
+<script type="module" src="{% static "js/test.js" %}"></script>
 
-API_URL = 'http://localhost:8000/';
-const config = {
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-};
-
-$(document).ready(function() {
-    axios.get(API_URL + 'users/api/language/', config)
-    .then(res => {
-        let language = res.data.languageCode;
-        $('#language-select').val(language);    
-    });
-});
-
-$("#language-select").change(function(){
-
-    return axios.post(API_URL + 'users/api/language/', {
-            languageCode: $("#language-select").val()
-        }, config)
-        .then(res => {
-            location.reload();
-        });
-});
-        
-</script>
 </body>
 </html>

@@ -249,3 +249,8 @@ NOSE_ARGS = [
 ]
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
+
+STATIC_DIRS = 'static'
+STATICFILES_DIRS = [
+    STATIC_DIRS,
+]
