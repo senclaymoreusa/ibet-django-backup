@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { errors } from './errors';
-import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
-import IoEye from 'react-icons/lib/io/eye'
+import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions';
+import IoEye from 'react-icons/lib/io/eye';
 
 class Login extends React.Component {
 
@@ -58,7 +58,7 @@ class Login extends React.Component {
             this.props.history.push('/');
         })
         .catch(err => {
-            this.setState({errorCode: err})
+            this.setState({errorCode: err});
         });
     }
   }

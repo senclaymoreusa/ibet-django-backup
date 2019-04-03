@@ -4,7 +4,7 @@ import { errors } from './errors';
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
-import IoEye from 'react-icons/lib/io/eye'
+import IoEye from 'react-icons/lib/io/eye';
 
 const API_URL = process.env.REACT_APP_REST_API;
 

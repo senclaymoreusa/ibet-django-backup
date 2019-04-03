@@ -7,7 +7,7 @@ import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
-import IoEye from 'react-icons/lib/io/eye'
+import IoEye from 'react-icons/lib/io/eye';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
