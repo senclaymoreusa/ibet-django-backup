@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-27 15:09-0700\n"
+"POT-Creation-Date: 2019-04-01 22:26-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,11 +77,11 @@ msgid ""
 "page. Would you like to login to a different account?"
 msgstr ""
 
-#: templates/admin/login.html:58
+#: templates/admin/login.html:57
 msgid "Forgotten your password or username?"
 msgstr ""
 
-#: templates/admin/login.html:62
+#: templates/admin/login.html:61
 msgid "Log in"
 msgstr ""
 
@@ -155,7 +155,7 @@ msgstr "必须包括 \"username\" and \"password\""
 
 #: users/serializers.py:197
 msgid "Must include either \"username\" or \"email\" and \"password\"."
-msgstr "必须包括 \"username\" or \"email\" and \"password\"" 
+msgstr "必须包括 \"username\" or \"email\" and \"password\""
 
 #: users/serializers.py:238
 msgid "User account is disabled."
@@ -169,59 +169,53 @@ msgstr "用户名或密码错误"
 msgid "E-mail is not verified."
 msgstr "邮件没有被核实"
 
-#: users/views.py:207
+#: users/views.py:208
 msgid "Current user is blocked!"
 msgstr "用户被禁用"
 
-#: users/views.py:212
+#: users/views.py:213
 msgid "Please activate your account!"
 msgstr "请激活您的账户!"
 
-#: users/views.py:302
+#: users/views.py:303
 msgid "You have registered an account at ibet.com, "
 msgstr "您已经再ibet.com 注册了邮箱"
 
-#: users/views.py:303
+#: users/views.py:304
 msgid "You username is "
 msgstr "您的用户名是"
 
-#: users/views.py:303
+#: users/views.py:304
 #, fuzzy
 #| msgid "Your new Email Address is: "
 msgid ", and your email address is "
 msgstr "您新郵箱地址: "
 
-#: users/views.py:306
+#: users/views.py:307
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: users/views.py:307
+#: users/views.py:308
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: users/views.py:310
+#: users/views.py:311
 msgid " referred you to sign up an account with Claymore"
 msgstr "推荐你注册一个claymore的账号"
 
-#: users/views.py:311
+#: users/views.py:312
 msgid "Please use the referral link to register your new account: "
 msgstr "请用推荐链接注册您的新账户"
 
-#: users/views.py:331
+#: users/views.py:332
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: users/views.py:333
+#: users/views.py:334
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "
 
-#: users/views.py:540
+#: users/views.py:541
 msgid "Please activate you ibet account "
 msgstr "请激活您的ibet账户"
-
-#~ msgid "Welcome to Claymore, "
-#~ msgstr "歡迎來到克萊摩爾, "
-
-#~ msgid "You have successfully set up your new email account: "
-#~ msgstr "你已成功設定好新郵箱地址: "
