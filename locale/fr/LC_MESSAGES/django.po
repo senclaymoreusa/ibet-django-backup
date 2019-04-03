@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-27 15:09-0700\n"
+"POT-Creation-Date: 2019-04-01 22:31-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,11 +77,11 @@ msgid ""
 "page. Would you like to login to a different account?"
 msgstr ""
 
-#: templates/admin/login.html:58
+#: templates/admin/login.html:57
 msgid "Forgotten your password or username?"
 msgstr ""
 
-#: templates/admin/login.html:62
+#: templates/admin/login.html:61
 msgid "Log in"
 msgstr ""
 
@@ -147,15 +147,15 @@ msgstr "Code postal non valide"
 
 #: users/serializers.py:173
 msgid "Must include \"email\" and \"password\"."
-msgstr "Doit inclure \ "email \" et \ "password \""
+msgstr ""
 
 #: users/serializers.py:184
 msgid "Must include \"username\" and \"password\"."
-msgstr "Doit inclure \ "nom d'utilisateur \" et \ "mot de passe \"."
+msgstr ""
 
 #: users/serializers.py:197
 msgid "Must include either \"username\" or \"email\" and \"password\"."
-msgstr "Doit inclure \ "nom d'utilisateur \" ou \ "email \" et \ "mot de passe \"."
+msgstr ""
 
 #: users/serializers.py:238
 msgid "User account is disabled."
@@ -163,69 +163,63 @@ msgstr "Le compte d'utilisateur est désactivé"
 
 #: users/serializers.py:241
 msgid "Unable to log in with provided credentials."
-msgstr "Impossible de se connecter avec les informations d'identification fournies"
+msgstr ""
+"Impossible de se connecter avec les informations d'identification fournies"
 
 #: users/serializers.py:250
 msgid "E-mail is not verified."
 msgstr "L'e-mail n'est pas vérifié"
 
-#: users/views.py:207
+#: users/views.py:208
 msgid "Current user is blocked!"
 msgstr "L'utilisateur actuel est bloqué!"
 
-#: users/views.py:212
+#: users/views.py:213
 msgid "Please activate your account!"
 msgstr "Veuillez activer votre compte!"
 
-#: users/views.py:302
+#: users/views.py:303
 msgid "You have registered an account at ibet.com, "
 msgstr "Vous avez enregistré un compte sur ibet.com"
 
-#: users/views.py:303
+#: users/views.py:304
 msgid "You username is "
 msgstr "Votre nom d'utilisateur est"
 
-#: users/views.py:303
+#: users/views.py:304
 #, fuzzy
 #| msgid "Your new Email Address is: "
 msgid ", and your email address is "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: users/views.py:306
+#: users/views.py:307
 msgid "Request of changing email address"
 msgstr "Demande de changement d'adresse email"
 
-#: users/views.py:307
+#: users/views.py:308
 msgid "Your new Email Address is: "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: users/views.py:310
+#: users/views.py:311
 msgid " referred you to sign up an account with Claymore"
 msgstr "Vous a demandé de créer un compte avec Claymore"
 
-#: users/views.py:311
+#: users/views.py:312
 msgid "Please use the referral link to register your new account: "
-msgstr "Veuillez utiliser le lien de parrainage pour enregistrer votre nouveau compte"
+msgstr ""
+"Veuillez utiliser le lien de parrainage pour enregistrer votre nouveau compte"
 
-#: users/views.py:331
+#: users/views.py:332
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr ""
 "Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
 
-#: users/views.py:333
+#: users/views.py:334
 msgid "Click the link to reset your email password: "
 msgstr ""
 "Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "
 
-#: users/views.py:540
+#: users/views.py:541
 msgid "Please activate you ibet account "
 msgstr "Merci d'activer votre compte ibet"
-
-#~ msgid "Welcome to Claymore, "
-#~ msgstr "Bienvenue chez Claymore, "
-
-#~ msgid "You have successfully set up your new email account: "
-#~ msgstr ""
-#~ "Vous avez configuré avec succès votre nouveau compte de messagerie: "
-
