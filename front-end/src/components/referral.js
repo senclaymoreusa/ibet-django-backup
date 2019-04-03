@@ -13,7 +13,7 @@ class Referral extends React.Component {
         this.state = {
           data: '',
           email: '',
-          error: ''
+          error: false
         };
 
         this.onInputChange_email            = this.onInputChange_email.bind(this);
@@ -50,7 +50,7 @@ class Referral extends React.Component {
                     console.log(err.response)
                 })
             }else{
-                this.setState({error: 'You have reached the maximum referral number'})
+                this.setState({error: true})
             }
         })
     }
@@ -84,7 +84,7 @@ class Referral extends React.Component {
                     <NavLink to='/' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.back" defaultMessage='Back' /></NavLink> 
                 </button>
                 {
-                    <div style={{color: 'red'}}> {this.state.error} </div>
+                    this.state.error && <FormattedMessage id="referral.error" defaultMessage='You have reached the maximum referral number' />
                 }
 
             </div>
