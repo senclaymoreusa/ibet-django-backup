@@ -65,23 +65,6 @@
 
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script>
-
-$(document).ready(function() {
-    $("#id_username").val($.cookie('username'));
-    $("#id_password").val($.cookie('password'));
-    $("#login-form").submit(function() {
-        if ($("#id_remember_me").prop('checked')) {
-            $.cookie('username', $("#id_username").val());
-            $.cookie('password', $("#id_password").val());
-        } else {
-            $.removeCookie('username');
-            $.removeCookie('password');
-        }
-        return true;
-    });
-});
-
-</script>
+{% load staticfiles %}
+<script type="module" src="{% static "js/rmb_pwd.js" %}"></script>
 {% endblock %}
