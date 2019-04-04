@@ -53,14 +53,14 @@ class CustomizedAuthenticationForm(AuthenticationForm):
 
     username = forms.CharField(label=_("username") ,widget=TextInput())
     password = forms.CharField(label=_("password") ,widget=PasswordInput())
-    remember_me = forms.BooleanField(required=False, initial=False)
+    remember_me = forms.BooleanField(required=False, initial=True)
 
     def clean(self):
         username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
         remember = self.cleaned_data.get('remember_me')
 
-        if username is not None and password:
+        if username and password:
             self.user_cache = authenticate(self.request, username=username, password=password)
             if self.user_cache is None:
                 raise self.get_invalid_login_error()
