@@ -53,7 +53,7 @@ class CustomizedAuthenticationForm(AuthenticationForm):
 
     username = forms.CharField(label=_("username") ,widget=TextInput())
     password = forms.CharField(label=_("password") ,widget=PasswordInput())
-    remember_me = forms.BooleanField(required=False, initial=True)
+    remember_me = forms.BooleanField(required=False, initial=False)
 
     def clean(self):
         username = self.cleaned_data.get('username')
