@@ -7,6 +7,7 @@ import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -363,6 +364,10 @@ class Signup extends React.Component {
                 value={this.state.password1}
                 onChange={this.onInputChange_password1}
             />
+            {
+              this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
+            }
+
           </div>
 
           <div>
