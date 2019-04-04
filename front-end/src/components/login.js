@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { errors } from './errors';
-import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
+import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions';
+import IoEye from 'react-icons/lib/io/eye';
 
 class Login extends React.Component {
 
@@ -14,11 +15,13 @@ class Login extends React.Component {
           errorCode: '',
           username: '',
           password: '',
+          hidden: true,
         };
     
         this.onInputChange_username         = this.onInputChange_username.bind(this);
         this.onInputChange_password         = this.onInputChange_password.bind(this)
         this.onFormSubmit                   = this.onFormSubmit.bind(this);
+        this.toggleShow                     = this.toggleShow.bind(this);
     }
 
   componentDidMount() {
@@ -38,6 +41,10 @@ class Login extends React.Component {
     this.setState({password: event.target.value});
   }
 
+  toggleShow() {
+    this.setState({ hidden: !this.state.hidden });
+  }
+
   onFormSubmit(event){
     event.preventDefault();
 
@@ -51,7 +58,7 @@ class Login extends React.Component {
             this.props.history.push('/');
         })
         .catch(err => {
-            this.setState({errorCode: err})
+            this.setState({errorCode: err});
         });
     }
   }
@@ -100,12 +107,13 @@ class Login extends React.Component {
             <FormattedMessage id="login.password" defaultMessage='Password: ' />  
             </b></label>
             <input
-                type = 'password'
+                type = {this.state.hidden ? "password" : "text"}
                 placeholder="password"
                 className="form-control"
                 value={this.state.password}
                 onChange={this.onInputChange_password}
             />
+            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
             </div>
 
             <span className="input-group-btn">

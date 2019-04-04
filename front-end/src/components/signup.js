@@ -7,6 +7,7 @@ import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
+import IoEye from 'react-icons/lib/io/eye';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -22,6 +23,7 @@ class Signup extends React.Component {
       username_error: '',
       errorCode: '',
       password_error: '',
+      hidden: true,
   
       username: '',
       email: '',
@@ -57,6 +59,7 @@ class Signup extends React.Component {
     this.onInputChange_state            = this.onInputChange_state.bind(this);
     this.onFormSubmit                   = this.onFormSubmit.bind(this);
     this.onInputChange_date             = this.onInputChange_date.bind(this);
+    this.toggleShow                     = this.toggleShow.bind(this);
   }
 
   componentDidMount() {
@@ -122,6 +125,10 @@ class Signup extends React.Component {
 
   onInputChange_state(event){
     this.setState({state: event.target.value});
+  }
+
+  toggleShow() {
+    this.setState({ hidden: !this.state.hidden });
   }
 
   onInputChange_date(date){
@@ -357,12 +364,13 @@ class Signup extends React.Component {
             <FormattedMessage id="signup.password" defaultMessage='Password: ' />   
             </b></label>
             <input
-                type = 'password'
+                type = {this.state.hidden ? "password" : "text"}
                 placeholder="password"
                 className="form-control"
                 value={this.state.password1}
                 onChange={this.onInputChange_password1}
             />
+            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
           </div>
 
           <div>
