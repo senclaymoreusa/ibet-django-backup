@@ -40,7 +40,7 @@ class Balance extends Component {
         const message = formatMessage({ id: "balance.confirm" });
         event.preventDefault();
         if (window.confirm( message + this.state.balance)){
-            axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`)
+            axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`, config)
             .then(res => {
                 if (res.data === 'Failed'){
                     this.setState({error: true});

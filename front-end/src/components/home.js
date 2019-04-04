@@ -30,25 +30,25 @@ class Home extends Component {
       this.setState({notices: res.data});
     })
 
-    var URL = API_URL + 'users/api/games/' + '?term=' + 'Sports'
+    var URL = API_URL + 'users/api/games/?term=Sports';
 
     await axios.get(URL, config)
     .then(res => {
-      this.setState({sports: res.data.slice(0, 3)})
+      this.setState({sports: res.data.slice(0, 3)});
     })
 
-    var URL = API_URL + 'users/api/games/' + '?term=' + 'Casino'
+    URL = API_URL + 'users/api/games/?term=Casino';
 
     await axios.get(URL, config)
     .then(res => {
-      this.setState({casino: res.data.slice(0, 3)})
+      this.setState({casino: res.data.slice(0, 3)});
     })
 
-    var URL = API_URL + 'users/api/games/' + '?term=' + 'Poker'
+    URL = API_URL + 'users/api/games/?term=Poker';
 
     await axios.get(URL, config)
     .then(res => {
-      this.setState({poker: res.data.slice(0, 3)})
+      this.setState({poker: res.data.slice(0, 3)});
     })
  
   }
