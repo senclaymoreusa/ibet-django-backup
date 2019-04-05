@@ -125,6 +125,9 @@ export const messages = {
         'sign.gender': 'Gender',
         'sign.eighteen': 'Over eighteen',
         'sign.contact': 'Preferred contact method',
+        'sign.gendererror': 'Gender not selected',
+        'sign.team': 'Preferred team: ',
+        'sign.title': 'Title',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -309,6 +312,9 @@ export const messages = {
         'sign.gender': '性别',
         'sign.eighteen': '满18岁',
         'sign.contact': '倾向的联系方式',
+        'sign.gendererror': '您未选择性别',
+        'sign.team': '喜欢的队伍: ',
+        'sign.title': '称呼',
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -495,6 +501,9 @@ export const messages = {
         'sign.gender': 'le sexe',
         'sign.eighteen': 'Plus de dix-huit',
         'sign.contact': 'Méthode de contact préférée',
+        'sign.gendererror': 'Sexe non sélectionné',
+        'sign.team': 'équipe préférée: ',
+        'sign.title': 'Titre',
 
         // handle update_profile page message
         'update_profile.username':'Nom d\'utilisateur: ',

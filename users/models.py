@@ -100,7 +100,7 @@ class CustomUser(AbstractBaseUser):
     over_eighteen = models.BooleanField(default=False)
     odds_display = models.FloatField(default=0, blank=True)
     preferred_team = models.CharField(max_length=50, blank=True)
-    contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS)
+    contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
     currency = models.CharField(max_length=30, choices=CRRENCY_TYPES)

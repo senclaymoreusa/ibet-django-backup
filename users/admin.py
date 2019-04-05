@@ -26,7 +26,6 @@ class UserAdmin(BaseUserAdmin):
 
 	filter_horizontal = ()
 
-
 admin.site.register(CustomUser, UserAdmin)
 admin.site.unregister(Group)
 admin.site.register(Language)
@@ -42,3 +41,34 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     model = CustomUser
     list_display = ['email', 'username',]
+
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate
+from django import forms
+from django.forms.widgets import PasswordInput, TextInput
+from django.utils.translation import gettext as _, gettext_lazy
+
+
+class CustomizedAuthenticationForm(AuthenticationForm):
+
+    username = forms.CharField(label=_("username") ,widget=TextInput())
+    password = forms.CharField(label=_("password") ,widget=PasswordInput())
+    remember_me = forms.BooleanField(required=False, initial=False)
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        remember = self.cleaned_data.get('remember_me')
+
+        if username is not None and password:
+            self.user_cache = authenticate(self.request, username=username, password=password)
+            if self.user_cache is None:
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
+
+admin.site.login_form = CustomizedAuthenticationForm
+
+

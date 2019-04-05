@@ -183,10 +183,6 @@ class RegisterView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
-        temp = CustomUser.objects.filter(username=user.username)
-        temp.update(gender=request.data['gender'])
-        temp.update(over_eighteen=request.data['over_eighteen'])
-        temp.update(contact_option=request.data['contact_option'])
         headers = self.get_success_headers(serializer.data)
 
         return Response(self.get_response_data(user),

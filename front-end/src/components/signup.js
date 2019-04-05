@@ -7,6 +7,7 @@ import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 import IoEye from 'react-icons/lib/io/eye';
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
@@ -14,7 +15,7 @@ import 'react-dropdown/style.css'
 
 const options = ['Male', 'Female']
 
-const contact = ['Email', 'SMS', 'OMS', 'Push_Notification']
+const contact = ['Email', 'SMS', 'OMS', 'Push Notification']
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -49,7 +50,9 @@ class Signup extends React.Component {
       show_date: false,
       gender: '',
       check: false,
-      contact: ''
+      contact: '',
+      preferred_team: '',
+      title: ''
     };
 
     this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -72,6 +75,8 @@ class Signup extends React.Component {
     this.onInputChange_gender           = this.onInputChange_gender.bind(this);
     this.onInputChange_checkbox         = this.onInputChange_checkbox.bind(this);
     this.onInputChange_contact          = this.onInputChange_contact.bind(this);
+    this.onInputChange_team             = this.onInputChange_team.bind(this);
+    this.onInputChange_title            = this.onInputChange_title.bind(this);
   }
 
   componentDidMount() {
@@ -155,6 +160,14 @@ class Signup extends React.Component {
     this.setState({contact: event.value})
   }
 
+  onInputChange_team(event){
+    this.setState({preferred_team: event.target.value});
+  }
+
+  onInputChange_title(event){
+    this.setState({title: event.target.value});
+  }
+
   onInputChange_date(date){
     var res = date.toString().split(" ");
     var month = res[1]
@@ -169,6 +182,7 @@ class Signup extends React.Component {
 
   onFormSubmit(event){
     event.preventDefault();
+    //console.log(this.state.gender)
 
     const referrer_id = this.props.location.pathname.slice(8)
 
@@ -196,9 +210,11 @@ class Signup extends React.Component {
       this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
     } else if (!this.state.zipcode){
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
+    } else if (!this.state.gender){
+      this.setState({ errorCode: errors.GENDER_NOT_VALID})
     } else {
         if (!referrer_id){
-        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact)
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
         .then((res) => {
           this.props.history.push('/activation');
           axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -226,7 +242,7 @@ class Signup extends React.Component {
           }
         })
       }else{
-          this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
+          this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
           .then((res) => {
             this.props.history.push('/activation');
             axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -347,11 +363,17 @@ class Signup extends React.Component {
         return (
             <div style={{color: 'red'}}> {this.state.password_error} </div>
         )
-      } else if (!this.state.username_error && !this.state.email_error && !this.state.password_error){
+      } else if (this.state.errorCode === errors.GENDER_NOT_VALID){
+        return (
+          <div style={{color: 'red'}}>
+            <FormattedMessage id="sign.gendererror" defaultMessage='Gender not selected' /> 
+          </div>
+        );
+      }else if (!this.state.username_error && !this.state.email_error && !this.state.password_error){
         return (
           <div style={{color: 'red'}}> {this.state.error} </div>
         )
-      }
+      } 
     }
     
     return (
@@ -394,7 +416,13 @@ class Signup extends React.Component {
                 value={this.state.password1}
                 onChange={this.onInputChange_password1}
             />
+
+            {
+              this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
+            }
+
             <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+
           </div>
 
           <div>
@@ -407,6 +435,18 @@ class Signup extends React.Component {
                 className="form-control"
                 value={this.state.password2}
                 onChange={this.onInputChange_password2}
+            />
+          </div>
+
+          <div>
+            <label><b>
+            <FormattedMessage id="sign.title" defaultMessage='Title: ' />  
+            </b></label>
+            <input
+                placeholder="Mr./Mrs."
+                className="form-control"
+                value={this.state.title}
+                onChange={this.onInputChange_title}
             />
           </div>
 
@@ -572,7 +612,7 @@ class Signup extends React.Component {
             <label><b>
               <FormattedMessage id="sign.contact" defaultMessage='Preferred contact method: ' />    
             </b></label>
-            <div style = {{width: '100px', height: '15px'}}>  
+            <div style = {{width: '150px', height: '15px'}}>  
               <Dropdown 
                 options={contact} 
                 onChange={this.onInputChange_contact} 
@@ -582,6 +622,20 @@ class Signup extends React.Component {
           </div>
 
           <br />
+
+          <div>
+            <label><b>
+              <FormattedMessage id="sign.team" defaultMessage='Preferred team: ' />    
+            </b></label>
+            <input
+                placeholder="Thunder"
+                className="form-control"
+                value={this.state.preferred_team}
+                onChange={this.onInputChange_team}
+            />
+          </div>        
+
+          <br />  
           
           <span className="input-group-btn">
               <button type="submit" className="btn btn-secondary"> 

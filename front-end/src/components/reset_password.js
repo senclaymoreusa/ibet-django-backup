@@ -4,7 +4,9 @@ import { errors } from './errors';
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 import IoEye from 'react-icons/lib/io/eye';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -114,6 +116,9 @@ class Reset_Password extends Component {
                                 value={this.state.password1}
                                 onChange={this.onInputChange_password1}
                             />
+                            {
+                              this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
+                            }
                             <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
                         </div>
 
