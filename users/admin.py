@@ -60,7 +60,7 @@ class CustomizedAuthenticationForm(AuthenticationForm):
         password = self.cleaned_data.get('password')
         remember = self.cleaned_data.get('remember_me')
 
-        if username and password:
+        if username is not None and password:
             self.user_cache = authenticate(self.request, username=username, password=password)
             if self.user_cache is None:
                 raise self.get_invalid_login_error()
