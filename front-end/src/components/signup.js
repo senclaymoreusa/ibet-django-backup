@@ -7,6 +7,7 @@ import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 import IoEye from 'react-icons/lib/io/eye';
 
 
@@ -370,7 +371,13 @@ class Signup extends React.Component {
                 value={this.state.password1}
                 onChange={this.onInputChange_password1}
             />
+
+            {
+              this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
+            }
+
             <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+
           </div>
 
           <div>
