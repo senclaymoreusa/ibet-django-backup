@@ -8,7 +8,13 @@ import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
 import IoEye from 'react-icons/lib/io/eye';
+import Dropdown from 'react-dropdown'
+import 'react-dropdown/style.css'
 
+
+const options = ['Male', 'Female']
+
+const contact = ['Email', 'SMS', 'OMS', 'Push_Notification']
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -40,7 +46,10 @@ class Signup extends React.Component {
       zipcode: '',
       state: '',
       date: new Date(),
-      show_date: false
+      show_date: false,
+      gender: '',
+      check: false,
+      contact: ''
     };
 
     this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -60,6 +69,9 @@ class Signup extends React.Component {
     this.onFormSubmit                   = this.onFormSubmit.bind(this);
     this.onInputChange_date             = this.onInputChange_date.bind(this);
     this.toggleShow                     = this.toggleShow.bind(this);
+    this.onInputChange_gender           = this.onInputChange_gender.bind(this);
+    this.onInputChange_checkbox         = this.onInputChange_checkbox.bind(this);
+    this.onInputChange_contact          = this.onInputChange_contact.bind(this);
   }
 
   componentDidMount() {
@@ -131,6 +143,18 @@ class Signup extends React.Component {
     this.setState({ hidden: !this.state.hidden });
   }
 
+  onInputChange_gender(event){
+    this.setState({gender: 'Male' ? 'Female' : 'Male'})
+  }
+
+  onInputChange_checkbox(event){
+    this.setState({check: !this.state.check})
+  }
+
+  onInputChange_contact(event){
+    this.setState({contact: event.value})
+  }
+
   onInputChange_date(date){
     var res = date.toString().split(" ");
     var month = res[1]
@@ -174,7 +198,7 @@ class Signup extends React.Component {
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
     } else {
         if (!referrer_id){
-        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state)
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact)
         .then((res) => {
           this.props.history.push('/activation');
           axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -516,6 +540,49 @@ class Signup extends React.Component {
             />
           </div> 
 
+          <div>
+            <label><b>
+              <FormattedMessage id="sign.gender" defaultMessage='Gender: ' />    
+            </b></label>
+            <div style = {{width: '100px', height: '15px'}}>  
+              <Dropdown 
+                options={options} 
+                onChange={this.onInputChange_gender} 
+                value={this.state.gender} 
+              />
+            </div>
+          </div>
+
+          <br />
+
+          <div>
+            <label><b>
+              <FormattedMessage id="sign.eighteen" defaultMessage='Over eighteen: ' />    
+            </b></label>
+            <input
+              type="checkbox"
+              checked={this.state.check}
+              onChange={this.onInputChange_checkbox} 
+            />
+          </div>
+
+          <br />
+
+          <div>
+            <label><b>
+              <FormattedMessage id="sign.contact" defaultMessage='Preferred contact method: ' />    
+            </b></label>
+            <div style = {{width: '100px', height: '15px'}}>  
+              <Dropdown 
+                options={contact} 
+                onChange={this.onInputChange_contact} 
+                value={this.state.contact} 
+              />
+            </div>
+          </div>
+
+          <br />
+          
           <span className="input-group-btn">
               <button type="submit" className="btn btn-secondary"> 
               <FormattedMessage id="signup.submit" defaultMessage='Submit' />    
