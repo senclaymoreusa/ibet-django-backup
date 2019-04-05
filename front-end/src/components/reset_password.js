@@ -5,6 +5,8 @@ import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { config } from '../util_config';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
+import IoEye from 'react-icons/lib/io/eye';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -19,11 +21,13 @@ class Reset_Password extends Component {
            password2: '',
            error_message: '',
            errorCode: '',
+           hidden: true
         }
 
         this.onInputChange_password1  = this.onInputChange_password1.bind(this);
         this.onInputChange_password2  = this.onInputChange_password2.bind(this);
         this.onFormSubmit             = this.onFormSubmit.bind(this);
+        this.toggleShow               = this.toggleShow.bind(this);
     }
 
     componentDidMount() {
@@ -47,6 +51,10 @@ class Reset_Password extends Component {
     onInputChange_password2(event){
         this.setState({password2: event.target.value});
     }
+
+    toggleShow() {
+        this.setState({ hidden: !this.state.hidden });
+      }
 
     onFormSubmit(event){
         event.preventDefault();
@@ -102,7 +110,7 @@ class Reset_Password extends Component {
                             <FormattedMessage id="reset_password.password" defaultMessage='Password: ' /> 
                             </b></label>
                             <input
-                                type="password"
+                                type={this.state.hidden ? "password" : "text"}
                                 placeholder="password"
                                 className="form-control"
                                 value={this.state.password1}
@@ -111,6 +119,7 @@ class Reset_Password extends Component {
                             {
                               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
                             }
+                            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
                         </div>
 
                         <div>
