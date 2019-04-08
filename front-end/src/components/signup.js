@@ -196,7 +196,7 @@ class Signup extends React.Component {
           }
 
           if ('phone' in err.response.data) {
-            this.setState({email_error: err.response.data.phone[0]})
+            this.setState({phone_error: err.response.data.phone[0]})
           } else {
             this.setState({phone_error: ''})
           }
