@@ -25,6 +25,7 @@ class Signup extends React.Component {
       errorCode: '',
       password_error: '',
       hidden: true,
+      phone_error: '',
   
       username: '',
       email: '',
@@ -192,6 +193,12 @@ class Signup extends React.Component {
             this.setState({email_error: err.response.data.email[0]})
           } else {
             this.setState({email_error: ''})
+          }
+
+          if ('phone' in err.response.data) {
+            this.setState({email_error: err.response.data.phone[0]})
+          } else {
+            this.setState({phone_error: ''})
           }
 
           if ('non_field_errors' in err.response.data) {
