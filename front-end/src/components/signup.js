@@ -149,7 +149,7 @@ class Signup extends React.Component {
   }
 
   onInputChange_gender(event){
-    this.setState({gender: 'Male' ? 'Female' : 'Male'})
+    this.setState({gender: event.value})
   }
 
   onInputChange_checkbox(event){
