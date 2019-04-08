@@ -12,7 +12,7 @@ import { NavLink } from 'react-router-dom';
 const API_URL = process.env.REACT_APP_REST_API;
 
 
-class Home extends Component {
+export class Home extends Component {
 
   state = {
     notices: [],

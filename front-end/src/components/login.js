@@ -6,7 +6,7 @@ import { errors } from './errors';
 import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions';
 import IoEye from 'react-icons/lib/io/eye';
 
-class Login extends React.Component {
+export class Login extends React.Component {
 
     constructor(props){
         super(props);
@@ -88,58 +88,58 @@ class Login extends React.Component {
     
     return (
         <div>
-        <form onSubmit={this.onFormSubmit} >
+            <form id="form" onSubmit={this.onFormSubmit} >
 
-            <div>
-            <label><b>
-            <FormattedMessage id="login.username" defaultMessage='Username: ' />
-            </b></label>
-            <input
-                placeholder="claymore"
-                className="form-control"
-                value={this.state.username}
-                onChange={this.onInputChange_username}
-            />
-            </div>
+                <div>
+                <label><b>
+                <FormattedMessage id="login.username" defaultMessage='Username: ' />
+                </b></label>
+                <input
+                    placeholder="claymore"
+                    className="form-control"
+                    value={this.state.username}
+                    onChange={this.onInputChange_username}
+                />
+                </div>
 
-            <div>
-            <label><b>
-            <FormattedMessage id="login.password" defaultMessage='Password: ' />  
-            </b></label>
-            <input
-                type = {this.state.hidden ? "password" : "text"}
-                placeholder="password"
-                className="form-control"
-                value={this.state.password}
-                onChange={this.onInputChange_password}
-            />
-            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
-            </div>
+                <div>
+                <label><b>
+                <FormattedMessage id="login.password" defaultMessage='Password: ' />  
+                </b></label>
+                <input
+                    type = {this.state.hidden ? "password" : "text"}
+                    placeholder="password"
+                    className="form-control"
+                    value={this.state.password}
+                    onChange={this.onInputChange_password}
+                />
+                <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+                </div>
 
-            <span className="input-group-btn">
-                <button type="submit" className="btn btn-secondary"> 
-                <FormattedMessage id="login.login" defaultMessage='Login' />
-                </button>
-            </span> 
-            <FormattedMessage id="login.or" defaultMessage='Or' />        
-            <NavLink to='/signup' style={{ textDecoration: 'none', color: 'blue' }}>
-                <FormattedMessage id="login.signup" defaultMessage='Signup' />
-            </NavLink>
+                <span className="input-group-btn">
+                    <button type="submit" className="btn btn-secondary"> 
+                    <FormattedMessage id="login.login" defaultMessage='Login' />
+                    </button>
+                </span> 
+                <FormattedMessage id="login.or" defaultMessage='Or' />        
+                <NavLink to='/signup' style={{ textDecoration: 'none', color: 'blue' }}>
+                    <FormattedMessage id="login.signup" defaultMessage='Signup' />
+                </NavLink>
+                <br/>
+                <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
+                    <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
+                </NavLink>
+            </form>
+
+            <button> 
+                <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+                <FormattedMessage id="login.back" defaultMessage='Back' /> 
+                </NavLink>
+            </button>
             <br/>
-            <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
-                <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
-            </NavLink>
-        </form>
-
-        <button> 
-            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <FormattedMessage id="login.back" defaultMessage='Back' /> 
-            </NavLink>
-        </button>
-        <br/>
-        {
-            showErrors()
-        }
+            {
+                showErrors()
+            }
     </div>
     );
   }
