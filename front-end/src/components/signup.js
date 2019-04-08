@@ -230,6 +230,12 @@ class Signup extends React.Component {
             } else {
               this.setState({email_error: ''})
             }
+
+            if ('phone' in err.response.data) {
+              this.setState({phone_error: err.response.data.phone[0]})
+            } else {
+              this.setState({phone_error: ''})
+            }
     
             if (err.response && 'non_field_errors' in err.response.data) {
               this.setState({error: err.response.data.non_field_errors.slice(0)})
@@ -326,8 +332,11 @@ class Signup extends React.Component {
         return (
             <div style={{color: 'red'}}> {this.state.email_error} </div>
         )
-        
-      } else if (this.state.password_error) {
+      } else if(this.state.phone_error){
+        return (
+            <div style={{color: 'red'}}> {this.state.phone_error} </div>
+        )
+      }else if (this.state.password_error) {
         return (
             <div style={{color: 'red'}}> {this.state.password_error} </div>
         )
