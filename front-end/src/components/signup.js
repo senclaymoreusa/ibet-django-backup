@@ -31,6 +31,8 @@ class Signup extends React.Component {
       errorCode: '',
       password_error: '',
       hidden: true,
+      button_color: 'grey',
+      button_disable: true,
   
       username: '',
       email: '',
@@ -52,7 +54,19 @@ class Signup extends React.Component {
       check: false,
       contact: '',
       preferred_team: '',
-      title: ''
+      title: '',
+
+      live_check_username: false,
+      live_check_email: false,
+      live_check_firstname: false,
+      live_check_lastname: false,
+      live_check_phone: false,
+      live_check_dob: false,
+      live_check_city: false,
+      live_check_country: false,
+      live_check_state: false,
+      live_check_zipcode: false,
+      live_check_passwordmatch: false
     };
 
     this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -89,10 +103,23 @@ class Signup extends React.Component {
   }
 
   onInputChange_username(event){
+    if (!event.target.value.match(/^[0-9a-zA-Z]+$/)){
+      this.setState({live_check_username: true, button_disable: true,})
+    }else{
+      this.setState({live_check_username: false})
+      this.check_button_disable()
+    }
     this.setState({username: event.target.value});
   }
 
   onInputChange_email(event){
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!event.target.value.match(re)){
+      this.setState({live_check_email: true, button_disable: true,})
+    }else{
+      this.setState({live_check_email: false})
+      this.check_button_disable()
+    }
     this.setState({email: event.target.value});
   }
 
@@ -101,22 +128,52 @@ class Signup extends React.Component {
   }
 
   onInputChange_password2(event){
+    if (this.state.password1 !== event.target.value){
+      this.setState({live_check_passwordmatch: true, button_disable: true,})
+    }else{
+      this.setState({live_check_passwordmatch: false})
+      this.check_button_disable()
+    }
     this.setState({password2: event.target.value});
   }
 
   onInputChange_first_name(event){
+    if (!event.target.value.match(/^[a-zA-Z]+$/)){
+      this.setState({live_check_firstname: true, button_disable: true,})
+    }else{
+      this.setState({live_check_firstname: false})
+      this.check_button_disable()
+    }
     this.setState({first_name: event.target.value});
   }
 
   onInputChange_last_name(event){
+    if (!event.target.value.match(/^[a-zA-Z]+$/)){
+      this.setState({live_check_lastname: true, button_disable: true,})
+    }else{
+      this.setState({live_check_lastname: false})
+      this.check_button_disable()
+    }
     this.setState({last_name: event.target.value});
   }
 
   onInputChange_phone(event){
+    if (!event.target.value.match(/^(()?\d{3}())?(-|\s)?\d{3}(-|\s)?\d{4}$/)){
+      this.setState({live_check_phone: true, button_disable: true,})
+    }else{
+      this.setState({live_check_phone: false})
+      this.check_button_disable()
+    }
     this.setState({phone: event.target.value});
   }
 
   onInputChange_date_of_birth(event){
+    if (!event.target.value.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/)){
+      this.setState({live_check_dob: true, button_disable: true,})
+    }else{
+      this.setState({live_check_dob: false})
+      this.check_button_disable()
+    }
     this.setState({date_of_birth: event.target.value});
   }
 
@@ -129,18 +186,42 @@ class Signup extends React.Component {
   }
 
   onInputChange_country(event){
+    if (!event.target.value.match(/^[a-zA-Z\s]+$/)){
+      this.setState({live_check_country: true, button_disable: true,})
+    }else{
+      this.setState({live_check_country: false})
+      this.check_button_disable()
+    }
     this.setState({country: event.target.value});
   }
 
   onInputChange_city(event){
+    if (!event.target.value.match(/^[a-zA-Z\s]+$/)){
+      this.setState({live_check_city: true, button_disable: true,})
+    }else{
+      this.setState({live_check_city: false})
+      this.check_button_disable()
+    }
     this.setState({city: event.target.value});
   }
 
   onInputChange_zipcode(event){
+    if (!event.target.value.match(/^[0-9]+$/)){
+      this.setState({live_check_zipcode: true, button_disable: true,})
+    }else{
+      this.setState({live_check_zipcode: false})
+      this.check_button_disable()
+    }
     this.setState({zipcode: event.target.value});
   }
 
   onInputChange_state(event){
+    if (!event.target.value.match(/^[a-zA-Z]+$/)){
+      this.setState({live_check_state: true, button_disable: true,})
+    }else{
+      this.setState({live_check_state: false})
+      this.check_button_disable()
+    }
     this.setState({state: event.target.value});
   }
 
@@ -168,7 +249,7 @@ class Signup extends React.Component {
     this.setState({title: event.target.value});
   }
 
-  onInputChange_date(date){
+  async onInputChange_date(date){
     var res = date.toString().split(" ");
     var month = res[1]
     var day = res[2]
@@ -177,7 +258,26 @@ class Signup extends React.Component {
     var months_to = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
     month = months_to[months.indexOf(month)]
     var result = month + '/' + day + '/' + year
-    this.setState({date_of_birth: result})
+    await this.setState({date_of_birth: result})
+    this.setState({live_check_dob: false})
+    this.check_button_disable()
+  }
+
+  check_button_disable(){
+    //console.log(this.state.username, this.state.email, this.state.first_name, this.state.last_name, this.state.date_of_birth, this.state.phone, this.state.city, this.state.country, this.state.state, this.state.zipcode)
+    if (!this.state.live_check_username && this.state.username && 
+      !this.state.live_check_email && this.state.email && 
+      !this.state.live_check_firstname && this.state.first_name && 
+      !this.state.live_check_lastname && this.state.last_name && 
+      !this.state.live_check_dob && this.state.date_of_birth && 
+      !this.state.live_check_phone && this.state.phone && 
+      !this.state.live_check_city && this.state.city && 
+      !this.state.live_check_country && this.state.country && 
+      !this.state.live_check_state && this.state.state && 
+      !this.state.live_check_zipcode && this.state.zipcode){
+
+      this.setState({button_disable: false})
+    }
   }
 
   onFormSubmit(event){
@@ -393,6 +493,8 @@ class Signup extends React.Component {
             />
           </div>
 
+          {this.state.live_check_username && <div style={{color: 'red'}}> <FormattedMessage  id="error.username" defaultMessage='Username not valid' /> </div>}
+
           <div>
             <label><b>
             *<FormattedMessage id="signup.email" defaultMessage='Email: ' />    
@@ -404,6 +506,8 @@ class Signup extends React.Component {
                 onChange={this.onInputChange_email}
             />
           </div>
+
+          {this.state.live_check_email && <div style={{color: 'red'}}> <FormattedMessage  id="error.email" defaultMessage='Email address not valid' /> </div>}
 
           <div>
             <label><b>
@@ -438,6 +542,8 @@ class Signup extends React.Component {
             />
           </div>
 
+          {this.state.live_check_passwordmatch && <div style={{color: 'red'}}> <FormattedMessage  id="error.passwordnotmatch" defaultMessage='Two password you entered do not match' /> </div>}
+
           <div>
             <label><b>
             <FormattedMessage id="sign.title" defaultMessage='Title: ' />  
@@ -462,6 +568,8 @@ class Signup extends React.Component {
             />
           </div>
 
+          {this.state.live_check_firstname && <div style={{color: 'red'}}> <FormattedMessage  id="error.firstname" defaultMessage='First name not valid' /> </div>}
+
           <div>
             <label><b>
             *<FormattedMessage id="signup.lastName" defaultMessage='Last Name: ' />   
@@ -474,6 +582,8 @@ class Signup extends React.Component {
             />
           </div>
 
+          {this.state.live_check_lastname && <div style={{color: 'red'}}> <FormattedMessage  id="error.lastname" defaultMessage='Last name not valid' /> </div>}
+
           <div>
             <label><b>
             *<FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
@@ -485,6 +595,8 @@ class Signup extends React.Component {
                 onChange={this.onInputChange_phone}
             />
           </div>
+
+          {this.state.live_check_phone && <div style={{color: 'red'}}> <FormattedMessage  id="error.phone" defaultMessage='Phone number not valid' /> </div>}
 
           <div>
             <label><b>
@@ -507,6 +619,8 @@ class Signup extends React.Component {
             value={this.state.date}
           />
           }
+
+          {this.state.live_check_dob && <div style={{color: 'red'}}> <FormattedMessage  id="error.dateofbirth" defaultMessage='Date of birth not valid' /> </div>}
 
           <div>
             <label><b>
@@ -544,6 +658,8 @@ class Signup extends React.Component {
             />
           </div> 
 
+          {this.state.live_check_city && <div style={{color: 'red'}}> <FormattedMessage  id="error.city" defaultMessage='City not valid' /> </div>}
+
           <div>
             <label><b>
             *<FormattedMessage id="signup.state" defaultMessage='State: ' />  
@@ -554,7 +670,9 @@ class Signup extends React.Component {
                 value={this.state.state}
                 onChange={this.onInputChange_state}
             />
-          </div>           
+          </div>       
+
+          {this.state.live_check_state && <div style={{color: 'red'}}> <FormattedMessage  id="error.state" defaultMessage='State not valid' /> </div>}    
 
           <div>
             <label><b>
@@ -566,7 +684,9 @@ class Signup extends React.Component {
                 value={this.state.country}
                 onChange={this.onInputChange_country}
             />
-          </div>           
+          </div>         
+
+          {this.state.live_check_country && <div style={{color: 'red'}}> <FormattedMessage  id="error.country" defaultMessage='Country not valid' /> </div>}  
 
           <div>
             <label><b>
@@ -579,6 +699,8 @@ class Signup extends React.Component {
                 onChange={this.onInputChange_zipcode}
             />
           </div> 
+
+          {this.state.live_check_zipcode && <div style={{color: 'red'}}> <FormattedMessage  id="error.zipcode" defaultMessage='Zipcode not valid' /> </div>}
 
           <div>
             <label><b>
@@ -638,8 +760,8 @@ class Signup extends React.Component {
           <br />  
           
           <span className="input-group-btn">
-              <button type="submit" className="btn btn-secondary"> 
-              <FormattedMessage id="signup.submit" defaultMessage='Submit' />    
+              <button disabled = {this.state.button_disable} type="submit" className="btn btn-secondary"> 
+                <FormattedMessage id="signup.submit" defaultMessage='Submit' />    
               </button>
           </span>          
 
