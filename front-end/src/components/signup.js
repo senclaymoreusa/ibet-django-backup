@@ -148,6 +148,8 @@ class Signup extends React.Component {
   onFormSubmit(event){
     event.preventDefault();
 
+    this.setState({errorCode: ''})
+
     const referrer_id = this.props.location.pathname.slice(8)
 
     if (!this.state.username) {
@@ -231,7 +233,7 @@ class Signup extends React.Component {
               this.setState({email_error: ''})
             }
 
-            if ('phone' in err.response.data) {
+            if (err.response && 'phone' in err.response.data) {
               this.setState({phone_error: err.response.data.phone[0]})
             } else {
               this.setState({phone_error: ''})
