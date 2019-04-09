@@ -383,7 +383,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.username" defaultMessage='Username: ' />  
+            *<FormattedMessage id="signup.username" defaultMessage='Username: ' />  
             </b></label>
             <input
                 placeholder="Wilson"
@@ -395,7 +395,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.email" defaultMessage='Email: ' />    
+            *<FormattedMessage id="signup.email" defaultMessage='Email: ' />    
             </b></label>
             <input
                 placeholder="example@gmail.com"
@@ -407,7 +407,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.password" defaultMessage='Password: ' />   
+            *<FormattedMessage id="signup.password" defaultMessage='Password: ' />   
             </b></label>
             <input
                 type = {this.state.hidden ? "password" : "text"}
@@ -427,7 +427,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.confirm" defaultMessage='Confirm: ' />   
+            *<FormattedMessage id="signup.confirm" defaultMessage='Confirm: ' />   
             </b></label>
             <input
                 type = 'password'
@@ -452,7 +452,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.firstName" defaultMessage='First Name: ' />     
+            *<FormattedMessage id="signup.firstName" defaultMessage='First Name: ' />     
             </b></label>
             <input
                 placeholder="Vicky"
@@ -464,7 +464,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.lastName" defaultMessage='Last Name: ' />   
+            *<FormattedMessage id="signup.lastName" defaultMessage='Last Name: ' />   
             </b></label>
             <input
                 placeholder="Stephen"
@@ -476,7 +476,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
+            *<FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
             </b></label>
             <input
                 placeholder="9496541234"
@@ -488,7 +488,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.dob" defaultMessage='Date of birth: ' />  
+            *<FormattedMessage id="signup.dob" defaultMessage='Date of birth: ' />  
             </b></label>
             <input
                 placeholder="mm/dd/yyyy"
@@ -534,7 +534,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.city" defaultMessage='City: ' />  
+            *<FormattedMessage id="signup.city" defaultMessage='City: ' />  
             </b></label>
             <input
                 placeholder="Mountain View"
@@ -546,7 +546,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.state" defaultMessage='State: ' />  
+            *<FormattedMessage id="signup.state" defaultMessage='State: ' />  
             </b></label>
             <input
                 placeholder="CA"
@@ -558,7 +558,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.country" defaultMessage='Country: ' />   
+            *<FormattedMessage id="signup.country" defaultMessage='Country: ' />   
             </b></label>
             <input
                 placeholder="United States"
@@ -570,7 +570,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-            <FormattedMessage id="signup.zipcode" defaultMessage='Zipcode: ' />    
+            *<FormattedMessage id="signup.zipcode" defaultMessage='Zipcode: ' />    
             </b></label>
             <input
                 placeholder="92612"
@@ -582,7 +582,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-              <FormattedMessage id="sign.gender" defaultMessage='Gender: ' />    
+              *<FormattedMessage id="sign.gender" defaultMessage='Gender: ' />    
             </b></label>
             <div style = {{width: '100px', height: '15px'}}>  
               <Dropdown 
