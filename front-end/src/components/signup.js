@@ -9,6 +9,7 @@ import { errors } from './errors';
 import Calendar from 'react-calendar';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import IoEye from 'react-icons/lib/io/eye';
+import { CountryDropdown } from 'react-country-region-selector';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -112,8 +113,8 @@ class Signup extends React.Component {
     this.setState({street_address_2: event.target.value});
   }
 
-  onInputChange_country(event){
-    this.setState({country: event.target.value});
+  onInputChange_country(country){
+    this.setState({country: country});
   }
 
   onInputChange_city(event){
@@ -503,11 +504,9 @@ class Signup extends React.Component {
             <label><b>
             <FormattedMessage id="signup.country" defaultMessage='Country: ' />   
             </b></label>
-            <input
-                placeholder="United States"
-                className="form-control"
-                value={this.state.country}
-                onChange={this.onInputChange_country}
+            <CountryDropdown
+              value={this.state.country}
+              onChange={this.onInputChange_country} 
             />
           </div>           
 
