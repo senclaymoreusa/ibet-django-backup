@@ -87,8 +87,8 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
-        temp1 = CustomUser.objects.filter(phone=data['phone'])
-        if temp1:
+        check_duplicate = CustomUser.objects.filter(phone=data['phone'])
+        if check_duplicate:
             raise serializers.ValidationError(
                     _("A user is already registered with this phone number."))
 
