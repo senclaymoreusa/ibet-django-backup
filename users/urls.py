@@ -33,5 +33,7 @@ urlpatterns += [
     path('api/config/', views.Global.as_view(), name='config'),
     path('api/addbalance/', csrf_exempt(views.AddBalance.as_view()), name='add_balance'),
     path('api/activate/', csrf_exempt(views.Activation.as_view()), name='activate'),
-    path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify')
+    path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify'),
+    path('api/facebooksignup/', views.FacebookRegister.as_view(), name='facebook_signup'),
+    path('api/facebooklogin/', csrf_exempt(views.FacebookLoginView.as_view()), name='facebook_login')
 ]

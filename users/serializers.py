@@ -156,6 +156,54 @@ class RegisterSerializer(serializers.Serializer):
         return user
 
 
+class FacebookRegisterSerializer(serializers.Serializer):
+    
+    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    
+    def validate_username(self, username):
+
+        user_model = get_user_model() # your way of getting the User
+        try:
+           user_model.objects.get(username__iexact=username)
+        except user_model.DoesNotExist:
+            return username
+        raise serializers.ValidationError(
+                    _("A user is already registered with this username."))
+
+    def validate_email(self, email):
+        email = get_adapter().clean_email(email)
+        if allauth_settings.UNIQUE_EMAIL:
+            if email and email_address_exists(email):
+                raise serializers.ValidationError(
+                    _("A user is already registered with this e-mail address."))
+        return email
+
+
+    def validate(self, data):
+        return data
+
+    def custom_signup(self, request, user):
+        pass
+
+    def get_cleaned_data(self):
+        return {
+            'username': self.validated_data.get('username', ''),
+            'email': self.validated_data.get('email', '')
+        }
+
+    def save(self, request):
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        self.cleaned_data = self.get_cleaned_data()
+        adapter.save_user(request, user, self)
+        self.custom_signup(request, user)
+        setup_user_email(request, user, [])
+
+        user.save()
+        return user
+
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)
@@ -220,6 +268,151 @@ class LoginSerializer(serializers.Serializer):
             # Authentication through either username or email
             else:
                 user = self._validate_username_email(username, email, password)
+
+        else:
+            # Authentication without using allauth
+            if email:
+                try:
+                    username = UserModel.objects.get(email__iexact=email).get_username()
+                except UserModel.DoesNotExist:
+                    pass
+
+            if username:
+                user = self._validate_username_email(username, '', password)
+
+        # Did we get back an active user?
+        if user:
+            if not user.is_active:
+                msg = _('User account is disabled.')
+                raise exceptions.ValidationError(msg)
+        else:
+            msg = _('Unable to log in with provided credentials.')
+            raise exceptions.ValidationError({'detail': msg})
+
+        # If required, is the email verified?
+        if 'rest_auth.registration' in settings.INSTALLED_APPS:
+            from allauth.account import app_settings
+            if app_settings.EMAIL_VERIFICATION == app_settings.EmailVerificationMethod.MANDATORY:
+                email_address = user.emailaddress_set.get(email=user.email)
+                if not email_address.verified:
+                    raise serializers.ValidationError(_('E-mail is not verified.'))
+
+        attrs['user'] = user
+        return attrs
+
+
+class FacebookRegisterSerializer(serializers.Serializer):
+    
+    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    
+    def validate_username(self, username):
+
+        user_model = get_user_model() # your way of getting the User
+        try:
+           user_model.objects.get(username__iexact=username)
+        except user_model.DoesNotExist:
+            return username
+        raise serializers.ValidationError(
+                    _("A user is already registered with this username."))
+
+    def validate_email(self, email):
+        email = get_adapter().clean_email(email)
+        if allauth_settings.UNIQUE_EMAIL:
+            if email and email_address_exists(email):
+                raise serializers.ValidationError(
+                    _("A user is already registered with this e-mail address."))
+        return email
+
+
+    def validate(self, data):
+        return data
+
+    def custom_signup(self, request, user):
+        pass
+
+    def get_cleaned_data(self):
+        return {
+            'username': self.validated_data.get('username', ''),
+            'email': self.validated_data.get('email', '')
+        }
+
+    def save(self, request):
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        self.cleaned_data = self.get_cleaned_data()
+        adapter.save_user(request, user, self)
+        self.custom_signup(request, user)
+        setup_user_email(request, user, [])
+
+        user.save()
+        return user
+
+
+class FacebookLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
+
+    def authenticate(self, **kwargs):
+        return authenticate(self.context['request'], **kwargs)
+
+    def _validate_email(self, email, password):
+        user = None
+
+        if email and password:
+            user = self.authenticate(email=email, password=password)
+        else:
+            msg = _('Must include "email" and "password".')
+            raise exceptions.ValidationError(msg)
+
+        return user
+
+    def _validate_username(self, username, password):
+        user = None
+
+        if username and password:
+            user = self.authenticate(username=username, password=password)
+        else:
+            msg = _('Must include "username" and "password".')
+            raise exceptions.ValidationError(msg)
+
+        return user
+
+    def _validate_username_email(self, username, email, password):
+        user = None
+
+        if email and password:
+            user = self.authenticate(email=email, password=password)
+        elif username and password:
+            user = self.authenticate(username=username, password=password)
+        else:
+            msg = _('Must include either "username" or "email" and "password".')
+            raise exceptions.ValidationError(msg)
+
+        return user
+
+    def custom_check_username_email(self, username, email):
+        try:
+            temp = CustomUser.objects.filter(username=username)
+            temp.update(active=True)
+            user = CustomUser.objects.get(username=username)
+            if user:
+                if user.email == email:
+                    return user
+        except: 
+            user = ''
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        user = None
+
+        if 'allauth' in settings.INSTALLED_APPS:
+            from allauth.account import app_settings
+
+            user = self.custom_check_username_email(username, email)
 
         else:
             # Authentication without using allauth
