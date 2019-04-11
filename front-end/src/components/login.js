@@ -205,7 +205,9 @@ class Login extends React.Component {
             </NavLink>
         </form>
 
-        <div> Or login with </div>
+        <div>
+          <FormattedMessage id="login.option" defaultMessage='Or login with' />
+        </div>
 
         <FacebookLogin
           appId="236001567251034"
