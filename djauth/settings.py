@@ -38,11 +38,18 @@ SESSION_COOKIE_SAMESITE = None
 CRSF_COOKIE_SAMESITE = None
 
 
+import sys
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
+
 # Application definition
 
 INSTALLED_APPS = [
     'test_without_migrations',
     'django.contrib.admin',
+    'xadmin',
+    'crispy_forms',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -60,7 +67,8 @@ INSTALLED_APPS = [
     'rest_auth.registration',      # Stephen
     'allauth.socialaccount',       # Stephen
     'django_rest_passwordreset',
-    'django_nose'
+    'django_nose',
+    # 'reversion',
 ]
 
 SITE_ID = 1                        # Stephen
@@ -70,6 +78,9 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
 ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
 AUTH_USER_MODEL = 'users.CustomUser' # new
+
+
+
 
 HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
@@ -100,6 +111,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
             ],
         },
     },
@@ -155,6 +170,13 @@ REST_FRAMEWORK = {
 
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
+
+from django.utils.translation import ugettext_lazy as _
+LANGUAGES = (
+    ('en', _('English')),
+    ('zh-hans', _('Chinese')),
+    ('fr', _('Franch')),
+)
 
 TIME_ZONE = 'UTC'
 
