@@ -212,7 +212,6 @@ class Login extends React.Component {
         <FacebookLogin
           appId="236001567251034"
           textButton="Facebook"
-          autoLoad={true}
           fields="name, email, picture"
           onClick={this.componentClicked}
           callback={this.responseFacebook}
