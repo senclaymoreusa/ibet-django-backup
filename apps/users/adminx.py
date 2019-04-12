@@ -3,7 +3,7 @@ import xadmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import  CustomUser
+from .models import  CustomUser, UserTag, Category
 from .forms import UserCreationForm
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
@@ -34,6 +34,13 @@ class UserAdmin(object):
     ordering = ('username','email')
 
     filter_horizontal = ()
+    model_icon = 'fa fa-user fa-fw'
+
+
+
+class TagAdmin(object):
+    
+    model_icon = 'fa fa-tag'
 
 
 xadmin.site.register(views.CommAdminView, GlobalSettings)
@@ -41,5 +48,7 @@ xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
 xadmin.site.unregister(Group)
 xadmin.site.register(CustomUser,UserAdmin)
+xadmin.site.register(UserTag,TagAdmin)
+# xadmin.site.register(Category)
 
 xadmin.site.login_form = AdminAuthenticationForm

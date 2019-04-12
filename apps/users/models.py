@@ -37,6 +37,15 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+class UserTag(models.Model):
+    tag_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=50)
+    name_zh = models.CharField(max_length=50, null=True, blank=True)
+    name_fr = models.CharField(max_length=50, null=True, blank=True)
+    notes = models.CharField(max_length=200)
+
+    def __str__(self):
+        return '{0}'.format(self.name)
 
 class CustomUser(AbstractBaseUser):
     # add additional fields in here
@@ -74,6 +83,7 @@ class CustomUser(AbstractBaseUser):
     balance = models.FloatField(default=0)
     active = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=300, default='', blank=True)
+    # userTag = models.ForeignKey(UserTag, on_delete=models.CASCADE, blank=True)
 
     objects = MyUserManager()
 
