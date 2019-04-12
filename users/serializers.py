@@ -87,6 +87,11 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
+        check_duplicate = CustomUser.objects.filter(phone=data['phone'])
+        if check_duplicate:
+            raise serializers.ValidationError(
+                    _("A user is already registered with this phone number."))
+
         if data['password1'] != data['password2']:
             raise serializers.ValidationError(_("The two password fields didn't match"))
         if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
@@ -198,6 +203,31 @@ class LoginSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
 
         return user
+    
+    def custom_check_username_email_phone_password(self, item, password):
+        try:
+            user = CustomUser.objects.get(username=item)
+            if user:
+                if user.check_password(password):
+                    return user
+        except:
+            user = ''
+        
+        try:
+            user = CustomUser.objects.get(email=item)
+            if user:
+                if user.check_password(password):
+                    return user
+        except: 
+            user = ''
+
+        try:
+            user = CustomUser.objects.get(phone=item)
+            if user:
+                if user.check_password(password):
+                    return user
+        except:
+            user = ''
 
     def validate(self, attrs):
         username = attrs.get('username')
@@ -209,17 +239,7 @@ class LoginSerializer(serializers.Serializer):
         if 'allauth' in settings.INSTALLED_APPS:
             from allauth.account import app_settings
 
-            # Authentication through email
-            if app_settings.AUTHENTICATION_METHOD == app_settings.AuthenticationMethod.EMAIL:
-                user = self._validate_email(email, password)
-
-            # Authentication through username
-            elif app_settings.AUTHENTICATION_METHOD == app_settings.AuthenticationMethod.USERNAME:
-                user = self._validate_username(username, password)
-
-            # Authentication through either username or email
-            else:
-                user = self._validate_username_email(username, email, password)
+            user = self.custom_check_username_email_phone_password(username, password)
 
         else:
             # Authentication without using allauth
