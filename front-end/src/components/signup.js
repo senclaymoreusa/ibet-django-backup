@@ -115,6 +115,7 @@ class Signup extends React.Component {
 
   onInputChange_country(country){
     this.setState({country: country});
+    console.log(this.state.country)
   }
 
   onInputChange_city(event){
