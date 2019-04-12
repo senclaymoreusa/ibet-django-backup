@@ -257,8 +257,7 @@ class LoginView(GenericAPIView):
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(self.user)
         else:
-            self.token = create_token(self.token_model, self.user,
-                                      self.serializer)
+            self.token = create_token(self.token_model, self.user, self.serializer)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()

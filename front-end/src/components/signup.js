@@ -26,6 +26,7 @@ class Signup extends React.Component {
       errorCode: '',
       password_error: '',
       hidden: true,
+      phone_error: '',
   
       username: '',
       email: '',
@@ -115,7 +116,6 @@ class Signup extends React.Component {
 
   onInputChange_country(country){
     this.setState({country: country});
-    console.log(this.state.country)
   }
 
   onInputChange_city(event){
@@ -148,6 +148,8 @@ class Signup extends React.Component {
 
   onFormSubmit(event){
     event.preventDefault();
+
+    this.setState({errorCode: ''})
 
     const referrer_id = this.props.location.pathname.slice(8)
 
@@ -196,6 +198,12 @@ class Signup extends React.Component {
             this.setState({email_error: ''})
           }
 
+          if ('phone' in err.response.data) {
+            this.setState({phone_error: err.response.data.phone[0]})
+          } else {
+            this.setState({phone_error: ''})
+          }
+
           if ('non_field_errors' in err.response.data) {
             this.setState({error: err.response.data.non_field_errors.slice(0)})
           }
@@ -224,6 +232,12 @@ class Signup extends React.Component {
               this.setState({email_error: err.response.data.email[0]})
             } else {
               this.setState({email_error: ''})
+            }
+
+            if (err.response && 'phone' in err.response.data) {
+              this.setState({phone_error: err.response.data.phone[0]})
+            } else {
+              this.setState({phone_error: ''})
             }
     
             if (err.response && 'non_field_errors' in err.response.data) {
@@ -321,8 +335,11 @@ class Signup extends React.Component {
         return (
             <div style={{color: 'red'}}> {this.state.email_error} </div>
         )
-        
-      } else if (this.state.password_error) {
+      } else if(this.state.phone_error){
+        return (
+            <div style={{color: 'red'}}> {this.state.phone_error} </div>
+        )
+      }else if (this.state.password_error) {
         return (
             <div style={{color: 'red'}}> {this.state.password_error} </div>
         )
