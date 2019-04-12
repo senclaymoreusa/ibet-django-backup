@@ -391,11 +391,13 @@ class Signup extends React.Component {
                 onChange={this.onInputChange_password1}
             />
 
+            <span style = {{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+
             {
               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
             }
 
-            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+            
 
           </div>
 
