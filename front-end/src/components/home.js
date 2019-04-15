@@ -25,9 +25,9 @@ class Home extends Component {
   async componentDidMount() {
 
     this.props.authCheckState()
-    axios.get(API_URL + 'users/api/notice-message', config)
+    axios.get(API_URL + 'operation/api/notice-message', config)
     .then(res => {
-      // console.log(res);
+    //   console.log(res);
       this.setState({notices: res.data});
     })
 
