@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from users import models as usersModel
+from django.utils.translation import ugettext_lazy as _
 
 
 # Create your models here.
@@ -11,6 +12,11 @@ class Category(models.Model):
     name_fr = models.CharField(max_length=50, null=True, blank=True)
     parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.CharField(max_length=200)
+
+    class Meta:
+        verbose_name_plural = _('Game Category')
+
+
     def __str__(self):
         return '{0}, parent: {1}'.format(self.name, self.parent_id)
 
@@ -32,6 +38,10 @@ class Game(models.Model):
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
     
+    class Meta:
+        verbose_name_plural = _('Game')
+
+
     def __str__(self):
         return '{0}: {1}'.format(self.name, self.category_id)
 

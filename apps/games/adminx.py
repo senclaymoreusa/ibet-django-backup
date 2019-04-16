@@ -5,8 +5,8 @@ from .models import Game, Category
 from django.utils.translation import ugettext_lazy as _
 
 
-# class NoticeAdmin(object):
-#     model_icon = 'fa fa-tasks'
+class GameAdmin(object):
+    model_icon = 'fa fa-gamepad'
 
 
-xadmin.site.register(Game)
+xadmin.site.register(Game, GameAdmin)

@@ -9,6 +9,7 @@ from datetime import date
 from django.contrib.auth.models import User
 import base64
 from django.contrib.auth import get_user_model
+from django.utils.translation import ugettext_lazy as _
 
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -45,6 +46,9 @@ class UserTag(models.Model):
     name_fr = models.CharField(max_length=50, null=True, blank=True)
     notes = models.CharField(max_length=200)
 
+    class Meta:
+        verbose_name_plural = _('User Tag')
+    
     def __str__(self):
         return '{0}'.format(self.name)
 
@@ -91,6 +95,9 @@ class CustomUser(AbstractBaseUser):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'phone']
+
+    class Meta:
+        verbose_name_plural = _('Customer User')
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
