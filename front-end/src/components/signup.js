@@ -550,7 +550,9 @@ class Signup extends React.Component {
 
 
         <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
+            <button style={{color: 'red'}}>
+                <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
+            </button>
         </NavLink>
 
 
