@@ -14,22 +14,23 @@ from django.contrib.auth import get_user_model
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, username, email, password=None):
+    def create_user(self, username, email, phone, password=None):
         if not email:
             raise ValueError('Users must have an email address')
 
         user = self.model(
 					username = username,
-					email = self.normalize_email(email)
+					email = self.normalize_email(email),
+                    phone = phone
 				)
         user.set_password(password)
         user.save(using=self._db)
         return user
 		# user.password = password # bad - do not do this
 
-    def create_superuser(self, username, email, password=None):
+    def create_superuser(self, username, email, phone, password=None):
         user = self.create_user(
-            username, email, password=password
+            username = username, email = email, phone = phone, password = password
 		)
         user.is_admin = True
         user.is_staff = True
@@ -89,7 +90,7 @@ class CustomUser(AbstractBaseUser):
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ['email', 'phone']
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
