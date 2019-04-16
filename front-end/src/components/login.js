@@ -131,11 +131,11 @@ class Login extends React.Component {
             </NavLink>
         </form>
 
-        <button> 
-            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+
+        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
             <FormattedMessage id="login.back" defaultMessage='Back' /> 
-            </NavLink>
-        </button>
+        </NavLink>
+
         <br/>
         {
             showErrors()
