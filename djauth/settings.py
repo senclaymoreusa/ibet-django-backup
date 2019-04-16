@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
+    'games.apps.GamesConfig',
     'rest_framework',              # Stephen
     'corsheaders',                 # Stephen
     'rest_auth',                   # Stephen

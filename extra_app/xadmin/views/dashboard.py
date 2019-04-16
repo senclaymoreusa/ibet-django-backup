@@ -33,7 +33,7 @@ class WidgetTypeSelect(forms.Widget):
         super(WidgetTypeSelect, self).__init__(attrs)
         self._widgets = widgets
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if value is None:
             value = ''
         final_attrs = self.build_attrs(attrs, extra_attrs={'name': name})
@@ -114,12 +114,12 @@ class UserWidgetAdmin(object):
 
     def get_list_display(self):
         list_display = super(UserWidgetAdmin, self).get_list_display()
-        if not self.user.is_superuser:
+        if not self.user.is_admin:
             list_display.remove('user')
         return list_display
 
     def queryset(self):
-        if self.user.is_superuser:
+        if self.user.is_admin:
             return super(UserWidgetAdmin, self).queryset()
         return UserWidget.objects.filter(user=self.user)
 
@@ -208,7 +208,7 @@ class BaseWidget(forms.Form):
         self.id = self.cleaned_data['id']
         self.title = self.cleaned_data['title'] or self.base_title
 
-        if not (self.user.is_superuser or self.has_perm()):
+        if not (self.user.is_admin or self.has_perm()):
             raise PermissionDenied
 
     @property

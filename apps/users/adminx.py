@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, Category
-from .forms import UserCreationForm
+from .forms import UserCreationForm, CustomUserChangeForm
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 
@@ -21,8 +21,10 @@ class GlobalSettings(object):
     menu_style = 'accordion'  # 设置左侧菜单  折叠样式
 
 # 用户的后台管理
-class UserAdmin(object):
-    add_form = UserCreationForm
+from .admin import UserAdmin
+class MyUserAdmin(object):
+    # add_form = UserCreationForm
+    # form = CustomUserCreationForm
     list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block')
     list_filter = ('is_admin',)
 
@@ -35,6 +37,13 @@ class UserAdmin(object):
 
     filter_horizontal = ()
     model_icon = 'fa fa-user fa-fw'
+    
+    def get_model_form(self, **kwargs):
+        if self.org_obj is None:
+            self.form = UserCreationForm
+        # else:
+        #     self.form = CustomUserChangeForm
+        return super(MyUserAdmin, self).get_model_form(**kwargs)
 
 
 
@@ -47,8 +56,7 @@ xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
 xadmin.site.unregister(Group)
-xadmin.site.register(CustomUser,UserAdmin)
+xadmin.site.register(CustomUser, MyUserAdmin)
 xadmin.site.register(UserTag,TagAdmin)
-# xadmin.site.register(Category)
 
 xadmin.site.login_form = AdminAuthenticationForm

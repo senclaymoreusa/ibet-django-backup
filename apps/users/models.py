@@ -63,10 +63,7 @@ class CustomUser(AbstractBaseUser):
 			unique=True,
 			verbose_name='email address'
 		)
-    
-    is_admin = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
-    block = models.BooleanField(default=False)
+    user_tag = models.ManyToManyField(UserTag, blank=True)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20, unique=True)
@@ -81,9 +78,13 @@ class CustomUser(AbstractBaseUser):
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
     balance = models.FloatField(default=0)
-    active = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=300, default='', blank=True)
+    active = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    block = models.BooleanField(default=False)
     # userTag = models.ForeignKey(UserTag, on_delete=models.CASCADE, blank=True)
+    
 
     objects = MyUserManager()
 
