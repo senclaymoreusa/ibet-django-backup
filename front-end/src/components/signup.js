@@ -548,11 +548,13 @@ class Signup extends React.Component {
 
         </form>
 
-        <button> 
-          <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-          <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
-          </NavLink>
-        </button>
+
+        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+            <button style={{color: 'red'}}>
+                <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
+            </button>
+        </NavLink>
+
 
         { showErrors() }
 
