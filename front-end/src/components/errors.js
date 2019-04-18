@@ -18,5 +18,6 @@ export const errors = {
     EMAIL_NOT_MATCH: 3001,
     EMAIL_CAN_NOT_BE_SAME: 3002,
     EMAIL_NOT_VALID: 3003,
+    GENDER_NOT_VALID: 3004
 
 }

@@ -107,13 +107,14 @@ class Login extends React.Component {
             <FormattedMessage id="login.password" defaultMessage='Password: ' />  
             </b></label>
             <input
+                
                 type = {this.state.hidden ? "password" : "text"}
                 placeholder="password"
                 className="form-control"
                 value={this.state.password}
                 onChange={this.onInputChange_password}
             />
-            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+            <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
             </div>
 
             <span className="input-group-btn">

@@ -41,27 +41,32 @@ class GameSerializer(serializers.ModelSerializer):
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'gender', 'over_eighteen')
         read_only_fields = ('username', )
 
 
 class RegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
-    password1 = serializers.CharField(write_only=True)
-    password2 = serializers.CharField(write_only=True)
-
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
-    date_of_birth = serializers.CharField(required=True)
-    phone = serializers.CharField(required=True)
+    username         = serializers.CharField(required=True)
+    email            = serializers.EmailField(required=True)
+    password1        = serializers.CharField(write_only=True)
+    password2        = serializers.CharField(write_only=True)
+    first_name       = serializers.CharField(required=True)
+    last_name        = serializers.CharField(required=True)
+    date_of_birth    = serializers.CharField(required=True)
+    phone            = serializers.CharField(required=True)
     street_address_1 = serializers.CharField(required=False)
     street_address_2 = serializers.CharField(required=False, allow_blank=True)
-    city = serializers.CharField(required=True)
-    country = serializers.CharField(required=True)
-    state = serializers.CharField(required=True)
-    zipcode = serializers.CharField(required=True)
-    
+    city             = serializers.CharField(required=True)
+    country          = serializers.CharField(required=True)
+    state            = serializers.CharField(required=True)
+    zipcode          = serializers.CharField(required=True)
+    preferred_team   = serializers.CharField(required=False, allow_blank=True)
+    gender           = serializers.CharField(required=False, allow_blank=True)
+    over_eighteen    = serializers.BooleanField(required=False)
+    contact_option   = serializers.CharField(required=False, allow_blank=True)
+    title            = serializers.CharField(required=False, allow_blank=True)
+
+
     def validate_username(self, username):
 
         #username = get_adapter().clean_username(username)
@@ -123,21 +128,24 @@ class RegisterSerializer(serializers.Serializer):
 
     def get_cleaned_data(self):
         return {
-            'username': self.validated_data.get('username', ''),
-            'password1': self.validated_data.get('password1', ''),
-            'email': self.validated_data.get('email', ''),
-
-            'first_name': self.validated_data.get('first_name', ''),
-            'last_name': self.validated_data.get('last_name', ''),
-            'phone': self.validated_data.get('phone', ''),
-            'date_of_birth': self.validated_data.get('date_of_birth', ''),
+            'username':         self.validated_data.get('username', ''),
+            'password1':        self.validated_data.get('password1', ''),
+            'email':            self.validated_data.get('email', ''),
+            'first_name':       self.validated_data.get('first_name', ''),
+            'last_name':        self.validated_data.get('last_name', ''),
+            'phone':            self.validated_data.get('phone', ''),
+            'date_of_birth':    self.validated_data.get('date_of_birth', ''),
             'street_address_1': self.validated_data.get('street_address_1', ''),
             'street_address_2': self.validated_data.get('street_address_2', ''),
-            'city': self.validated_data.get('city', ''),
-            'country': self.validated_data.get('country', ''),
-            'state': self.validated_data.get('state', ''),
-            'zipcode': self.validated_data.get('zipcode', ''),
-            
+            'city':             self.validated_data.get('city', ''),
+            'country':          self.validated_data.get('country', ''),
+            'state':            self.validated_data.get('state', ''),
+            'zipcode':          self.validated_data.get('zipcode', ''),
+            'preferred_team':   self.validated_data.get('preferred_team', ''),
+            'gender':           self.validated_data.get('gender', ''),
+            'over_eighteen':    self.validated_data.get('over_eighteen', ''),
+            'contact_option':   self.validated_data.get('contact_option', ''),
+            'title':            self.validated_data.get('title', ''),
         }
 
     def save(self, request):
@@ -148,14 +156,19 @@ class RegisterSerializer(serializers.Serializer):
         self.custom_signup(request, user)
         setup_user_email(request, user, [])
 
-        user.phone= self.cleaned_data.get('phone')
-        user.date_of_birth = self.cleaned_data.get('date_of_birth')
+        user.phone            = self.cleaned_data.get('phone')
+        user.date_of_birth    = self.cleaned_data.get('date_of_birth')
         user.street_address_1 = self.cleaned_data.get('street_address_1')
         user.street_address_2 = self.cleaned_data.get('street_address_2')
-        user.city = self.cleaned_data.get('city')
-        user.country = self.cleaned_data.get('country')
-        user.state = self.cleaned_data.get('state')
-        user.zipcode = self.cleaned_data.get('zipcode')
+        user.city             = self.cleaned_data.get('city')
+        user.country          = self.cleaned_data.get('country')
+        user.state            = self.cleaned_data.get('state')
+        user.zipcode          = self.cleaned_data.get('zipcode')
+        user.preferred_team   = self.cleaned_data.get('preferred_team')
+        user.gender           = self.cleaned_data.get('gender')
+        user.over_eighteen    = self.cleaned_data.get('over_eighteen')
+        user.contact_option   = self.cleaned_data.get('contact_option')
+        user.title            = self.cleaned_data.get('title')
 
         user.save()
         return user
