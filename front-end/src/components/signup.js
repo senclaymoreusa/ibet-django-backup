@@ -270,7 +270,8 @@ class Signup extends React.Component {
       !this.state.live_check_phone && this.state.phone && 
       !this.state.live_check_city && this.state.city && 
       !this.state.live_check_state && this.state.state && 
-      !this.state.live_check_zipcode && this.state.zipcode){
+      !this.state.live_check_zipcode && this.state.zipcode &&
+      this.state.password1 && this.state.password2){
 
       this.setState({button_disable: false})
     }
