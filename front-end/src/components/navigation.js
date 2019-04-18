@@ -6,9 +6,9 @@ import { FormattedMessage } from 'react-intl';
 import { logout, handle_search, setLanguage } from '../actions';
 
 const languages = [
-  { value: 'en', label: 'English' },
-  { value: 'zh-hans', label: 'Chinese' },
-  { value: 'fr', label: 'French' }
+  { value: 'en', label: 'English (en)' },
+  { value: 'zh-hans', label: '簡體中文 (zh-hans)' },
+  { value: 'fr', label: 'français (fr)' }
 ];
 
 class Navigation extends Component {
