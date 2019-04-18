@@ -81,10 +81,10 @@ export class Home extends Component {
     return (
       <div >
         { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
-        <div className="rows"> 
+        <div className="rows" data-test="headerLine"> 
           <Navigation />
           <div> 
-            <h1> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
+            <h1 data-test="header"> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
           </div>
         </div>
 

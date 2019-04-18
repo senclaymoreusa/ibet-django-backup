@@ -1,13 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Login Component should render without throwing an error 1`] = `
+exports[`Home Component should render without throwing an error 1`] = `
 <div>
   <div
     className="rows"
+    data-test="headerLine"
   >
     <withRouter(Connect(Navigation)) />
     <div>
-      <h1>
+      <h1
+        data-test="header"
+      >
          
         <FormattedMessage
           defaultMessage="Claymore"

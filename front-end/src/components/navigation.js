@@ -11,7 +11,7 @@ const languages = [
   { value: 'fr', label: 'French' }
 ];
 
-class Navigation extends Component {
+export class Navigation extends Component {
 
     constructor(props){
         super(props);
