@@ -11,6 +11,7 @@ import PasswordStrengthMeter from './PasswordStrengthMeter';
 import IoEye from 'react-icons/lib/io/eye';
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
+import { CountryDropdown } from 'react-country-region-selector';
 
 
 const options = ['Male', 'Female']
@@ -31,8 +32,11 @@ class Signup extends React.Component {
       errorCode: '',
       password_error: '',
       hidden: true,
+
       button_color: 'grey',
       button_disable: true,
+
+      phone_error: '',
   
       username: '',
       email: '',
@@ -63,7 +67,6 @@ class Signup extends React.Component {
       live_check_phone: false,
       live_check_dob: false,
       live_check_city: false,
-      live_check_country: false,
       live_check_state: false,
       live_check_zipcode: false,
       live_check_passwordmatch: false
@@ -158,7 +161,7 @@ class Signup extends React.Component {
   }
 
   onInputChange_phone(event){
-    if (!event.target.value.match(/^(()?\d{3}())?(-|\s)?\d{3}(-|\s)?\d{4}$/)){
+    if (!event.target.value.match(/^[0-9]+$/)){
       this.setState({live_check_phone: true, button_disable: true,})
     }else{
       this.setState({live_check_phone: false})
@@ -185,14 +188,8 @@ class Signup extends React.Component {
     this.setState({street_address_2: event.target.value});
   }
 
-  onInputChange_country(event){
-    if (!event.target.value.match(/^[a-zA-Z\s]+$/)){
-      this.setState({live_check_country: true, button_disable: true,})
-    }else{
-      this.setState({live_check_country: false})
-      this.check_button_disable()
-    }
-    this.setState({country: event.target.value});
+  onInputChange_country(country){
+    this.setState({country: country});
   }
 
   onInputChange_city(event){
@@ -272,7 +269,6 @@ class Signup extends React.Component {
       !this.state.live_check_dob && this.state.date_of_birth && 
       !this.state.live_check_phone && this.state.phone && 
       !this.state.live_check_city && this.state.city && 
-      !this.state.live_check_country && this.state.country && 
       !this.state.live_check_state && this.state.state && 
       !this.state.live_check_zipcode && this.state.zipcode){
 
@@ -283,6 +279,8 @@ class Signup extends React.Component {
   onFormSubmit(event){
     event.preventDefault();
     //console.log(this.state.gender)
+
+    this.setState({errorCode: ''})
 
     const referrer_id = this.props.location.pathname.slice(8)
 
@@ -310,8 +308,6 @@ class Signup extends React.Component {
       this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
     } else if (!this.state.zipcode){
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
-    } else if (!this.state.gender){
-      this.setState({ errorCode: errors.GENDER_NOT_VALID})
     } else {
         if (!referrer_id){
         this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
@@ -331,6 +327,12 @@ class Signup extends React.Component {
             this.setState({email_error: err.response.data.email[0]})
           } else {
             this.setState({email_error: ''})
+          }
+
+          if ('phone' in err.response.data) {
+            this.setState({phone_error: err.response.data.phone[0]})
+          } else {
+            this.setState({phone_error: ''})
           }
 
           if ('non_field_errors' in err.response.data) {
@@ -361,6 +363,12 @@ class Signup extends React.Component {
               this.setState({email_error: err.response.data.email[0]})
             } else {
               this.setState({email_error: ''})
+            }
+
+            if (err.response && 'phone' in err.response.data) {
+              this.setState({phone_error: err.response.data.phone[0]})
+            } else {
+              this.setState({phone_error: ''})
             }
     
             if (err.response && 'non_field_errors' in err.response.data) {
@@ -458,8 +466,11 @@ class Signup extends React.Component {
         return (
             <div style={{color: 'red'}}> {this.state.email_error} </div>
         )
-        
-      } else if (this.state.password_error) {
+      } else if(this.state.phone_error){
+        return (
+            <div style={{color: 'red'}}> {this.state.phone_error} </div>
+        )
+      }else if (this.state.password_error) {
         return (
             <div style={{color: 'red'}}> {this.state.password_error} </div>
         )
@@ -521,11 +532,13 @@ class Signup extends React.Component {
                 onChange={this.onInputChange_password1}
             />
 
+            <span style = {{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+
             {
               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
             }
 
-            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+            
 
           </div>
 
@@ -678,15 +691,12 @@ class Signup extends React.Component {
             <label><b>
             *<FormattedMessage id="signup.country" defaultMessage='Country: ' />   
             </b></label>
-            <input
-                placeholder="United States"
-                className="form-control"
-                value={this.state.country}
-                onChange={this.onInputChange_country}
+            <CountryDropdown
+              value={this.state.country}
+              onChange={this.onInputChange_country} 
             />
           </div>         
 
-          {this.state.live_check_country && <div style={{color: 'red'}}> <FormattedMessage  id="error.country" defaultMessage='Country not valid' /> </div>}  
 
           <div>
             <label><b>
@@ -704,7 +714,7 @@ class Signup extends React.Component {
 
           <div>
             <label><b>
-              *<FormattedMessage id="sign.gender" defaultMessage='Gender: ' />    
+              <FormattedMessage id="sign.gender" defaultMessage='Gender: ' />    
             </b></label>
             <div style = {{width: '100px', height: '15px'}}>  
               <Dropdown 
@@ -767,11 +777,13 @@ class Signup extends React.Component {
 
         </form>
 
-        <button> 
-          <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-          <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
-          </NavLink>
-        </button>
+
+        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+            <button style={{color: 'red'}}>
+                <FormattedMessage id="signup.cancel" defaultMessage='Cancel' />
+            </button>
+        </NavLink>
+
 
         { showErrors() }
 

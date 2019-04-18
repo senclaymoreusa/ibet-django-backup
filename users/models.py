@@ -35,22 +35,23 @@ CRRENCY_TYPES = (
 )
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, username, email, password=None):
+    def create_user(self, username, email, phone, password=None):
         if not email:
             raise ValueError('Users must have an email address')
 
         user = self.model(
 					username = username,
-					email = self.normalize_email(email)
+					email = self.normalize_email(email),
+                    phone = phone
 				)
         user.set_password(password)
         user.save(using=self._db)
         return user
 		# user.password = password # bad - do not do this
 
-    def create_superuser(self, username, email, password=None):
+    def create_superuser(self, username, email, phone, password=None):
         user = self.create_user(
-            username, email, password=password
+            username = username, email = email, phone = phone, password = password
 		)
         user.is_admin = True
         user.is_staff = True
@@ -81,7 +82,7 @@ class CustomUser(AbstractBaseUser):
     block = models.BooleanField(default=False)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, unique=True)
     country = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
     street_address_1 = models.CharField(max_length=100, blank=True)
@@ -95,7 +96,7 @@ class CustomUser(AbstractBaseUser):
     balance = models.FloatField(default=0)
     active = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=300, default='', blank=True)
-    gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True)
     title = models.CharField(max_length=10, blank=True)
     over_eighteen = models.BooleanField(default=False)
     odds_display = models.FloatField(default=0, blank=True)
@@ -108,7 +109,7 @@ class CustomUser(AbstractBaseUser):
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ['email', 'phone']
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
