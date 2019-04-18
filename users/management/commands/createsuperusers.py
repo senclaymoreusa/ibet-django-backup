@@ -112,6 +112,10 @@ class Command(BaseCommand):
                         input_value = self.get_input_data(field, message)
                         check_duplicate_email = get_user_model().objects.filter(email=input_value)
                         check_duplicate_phone = get_user_model().objects.filter(phone=input_value)
+                        if field_name == 'phone':
+                            if input_value.isnumeric() == False:
+                                self.stderr.write('Error: the phone you entered is not valid')
+                                continue
                         if check_duplicate_email or check_duplicate_phone:
                             self.stderr.write('Error: That ' + str(field_name) + ' is already taken' )
                         else:
