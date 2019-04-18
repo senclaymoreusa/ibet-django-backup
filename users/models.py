@@ -13,6 +13,27 @@ from django.contrib.auth import get_user_model
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
+GENDER_CHOICES = (
+    ('Male','Male'),
+    ('Female', 'Female')
+)
+
+CONTACT_OPTIONS = (
+    ('Email', 'Email'),
+    ('SMS', 'SMS'),
+    ('OMS', 'OMS'),
+    ('Push_Notification', 'Push Notification')
+)
+
+CRRENCY_TYPES = (
+    ('usd', 'USD'),
+    ('eur', 'EUR'),
+    ('jpy', 'JPY'),
+    ('cny', 'CNY'),
+    ('hkd', 'HKD'),
+    ('aud', 'AUD')
+)
+
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
         if not email:
@@ -75,6 +96,15 @@ class CustomUser(AbstractBaseUser):
     balance = models.FloatField(default=0)
     active = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=300, default='', blank=True)
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True)
+    title = models.CharField(max_length=10, blank=True)
+    over_eighteen = models.BooleanField(default=False)
+    odds_display = models.FloatField(default=0, blank=True)
+    preferred_team = models.CharField(max_length=50, blank=True)
+    contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
+    deposit_limit = models.FloatField(default=100)
+    promo_code = models.IntegerField(blank=True, null=True)
+    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES)
 
     objects = MyUserManager()
 
