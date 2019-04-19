@@ -18,41 +18,41 @@ describe('Auth Reducer', () => {
 
     it('should return error: null, loading: true for AUTH_START', () => {
         const curState = authReducer(INITIAL_STATE, authStart());
-        const expectState = {
+        const expectedState = {
             token: null,
             error: null,
             loading: true
         };
-        expect(curState).toEqual(expectState);
+        expect(curState).toEqual(expectedState);
     });
 
     it('should return token: action.token, error: null, loading: false for AUTH_SUCCESS', () => {
         const curState = authReducer(INITIAL_STATE, authSuccess());
-        const expectState = {
+        const expectedState = {
             token: authSuccess.token,
             error: null,
             loading: false
         };
-        expect(curState).toEqual(expectState);
+        expect(curState).toEqual(expectedState);
     });
 
     it('should return error: action.error, loading: false for AUTH_FAIL', () => {
         const curState = authReducer(INITIAL_STATE, authFail());
-        const expectState = {
+        const expectedState = {
             token: null,
             error: authFail().error,
             loading: false
         };
-        expect(curState).toEqual(expectState);
+        expect(curState).toEqual(expectedState);
     });
 
     it('should return token: null for AUTH_LOGOUT', () => {
         const curState = authReducer(INITIAL_STATE, logout());
-        const expectState = {
+        const expectedState = {
             error: null,
             loading: false,
             token: null
         };
-        expect(curState).toEqual(expectState);
+        expect(curState).toEqual(expectedState);
     });
 });
