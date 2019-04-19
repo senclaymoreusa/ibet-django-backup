@@ -27,7 +27,7 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
 from .models import Game, CustomUser, Category, Config, NoticeMessage
 
@@ -255,6 +255,7 @@ class LoginView(GenericAPIView):
             raise InactiveUserException
 
         if getattr(settings, 'REST_USE_JWT', False):
+            
             self.token = jwt_encode(self.user)
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
@@ -559,3 +560,127 @@ class ActivationVerify(View):
             user.update(activation_code='')
             return HttpResponse('Success')
         return HttpResponse('The link has expired')
+
+
+class FacebookRegister(CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = FacebookRegisterSerializer
+    permission_classes = [AllowAny, ]
+    token_model = TokenModel
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(FacebookRegister, self).dispatch(*args, **kwargs)
+
+    def get_response_data(self, user):
+        if allauth_settings.EMAIL_VERIFICATION == allauth_settings.EmailVerificationMethod.MANDATORY:
+            return {"detail": ("Verification e-mail sent.")}
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            data = {
+                'user': user,
+                'token': self.token
+            }
+            return JWTSerializer(data).data
+        else:
+            return TokenSerializer(user.auth_token).data
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(self.get_response_data(user),
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+    def perform_create(self, serializer):
+        user = serializer.save(self.request)
+        if getattr(settings, 'REST_USE_JWT', False):
+            self.token = jwt_encode(user)
+        else:
+            create_token(self.token_model, user, serializer)
+
+        complete_signup(self.request._request, user,
+                        allauth_settings.EMAIL_VERIFICATION,
+                        None)
+        return user
+
+
+class FacebookLoginView(GenericAPIView):
+    """
+    Check the credentials and return the REST Token
+    if the credentials are valid and authenticated.
+    Calls Django Auth login method to register User ID
+    in Django session framework
+    Accept the following POST parameters: username, password
+    Return the REST Framework Token Object's key.
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = FacebookLoginSerializer
+    token_model = TokenModel
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(FacebookLoginView, self).dispatch(*args, **kwargs)
+
+    def process_login(self):
+        django_login(self.request, self.user)
+
+    def get_response_serializer(self):
+        if getattr(settings, 'REST_USE_JWT', False):
+            response_serializer = JWTSerializer
+        else:
+            response_serializer = TokenSerializer
+        return response_serializer
+
+    def login(self):
+
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in self.request.session:
+            languageCode = self.request.session[LANGUAGE_SESSION_KEY]
+        # print('login language code: ' + languageCode)
+
+        self.user = self.serializer.validated_data['user']
+        if self.user.block is True:
+            print("user block")
+            raise BlockedUserException
+        if self.user.active == False:
+            print('User not active')
+            raise InactiveUserException
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            
+            self.token = jwt_encode(self.user)
+        else:
+            self.token = create_token(self.token_model, self.user,
+                                      self.serializer)
+
+        if getattr(settings, 'REST_SESSION_LOGIN', True):
+            self.process_login()
+        return self.get_response()
+
+    def get_response(self):
+        serializer_class = self.get_response_serializer()
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            data = {
+                'user': self.user,
+                'token': self.token
+            }
+            serializer = serializer_class(instance=data,
+                                          context={'request': self.request})
+        else:
+            serializer = serializer_class(instance=self.token,
+                                          context={'request': self.request})
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):        
+        self.request = request
+        self.serializer = self.get_serializer(data=self.request.data,
+                                              context={'request': request})
+        self.serializer.is_valid(raise_exception=True)
+
+        return self.login()

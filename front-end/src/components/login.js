@@ -3,8 +3,10 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { errors } from './errors';
-import { authLogin, authCheckState, AUTH_RESULT_SUCCESS } from '../actions';
+import { authLogin, authCheckState, AUTH_RESULT_SUCCESS, FacebookSignup, FacebookauthLogin } from '../actions';
 import IoEye from 'react-icons/lib/io/eye';
+import FacebookLogin from "react-facebook-login";
+
 
 class Login extends React.Component {
 
@@ -16,6 +18,10 @@ class Login extends React.Component {
           username: '',
           password: '',
           hidden: true,
+
+          name: '',
+          email: '',
+          button_clicked: 0
         };
     
         this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -44,6 +50,72 @@ class Login extends React.Component {
   toggleShow() {
     this.setState({ hidden: !this.state.hidden });
   }
+
+  componentClicked = () => {
+    this.setState({button_clicked: 1})
+    var username = this.state.name
+    var email = this.state.email
+    console.log(username, email)
+
+    this.props.FacebookauthLogin(username, email)
+    .then(res => {
+        this.props.history.push('/');
+    }).catch(err => {
+        this.props.FacebookSignup(username, email)
+        .then(res => {
+            this.props.FacebookauthLogin(username, email)
+            .then(res => {
+                this.props.history.push('/');
+            })
+            .catch(err => {
+            })
+        })
+        .catch(err => {
+        })
+    })
+  }
+
+  responseFacebook = (response) => {
+    //console.log(response);
+    
+    localStorage.setItem('facebook', true)
+
+    var facebookObj = {
+        userID:  response.userID,
+        name:    response.name,
+        email:   response.email,
+        picture: response.picture.data.url
+    }
+
+    this.setState({
+      name:  response.name,
+      email: response.email
+    })
+
+    localStorage.setItem('facebookObj', JSON.stringify(facebookObj));
+
+    var username = this.state.name
+    var email = this.state.email
+    
+    if (this.state.button_clicked === 1){
+        this.props.FacebookauthLogin(username, email)
+        .then(res => {
+            this.props.history.push('/');
+        }).catch(err => {
+            this.props.FacebookSignup(username, email)
+            .then(res => {
+                this.props.FacebookauthLogin(username, email)
+                .then(res => {
+                    this.props.history.push('/');
+                })
+                .catch(err => {
+                })
+            })
+            .catch(err => {
+            })
+        })
+    }
+  };
 
   onFormSubmit(event){
     event.preventDefault();
@@ -132,12 +204,31 @@ class Login extends React.Component {
             </NavLink>
         </form>
 
+        <div>
+          <FormattedMessage id="login.option" defaultMessage='Or login with' />
+        </div>
+
+        <FacebookLogin
+          appId="236001567251034"
+          textButton="Facebook"
+          fields="name, email, picture"
+          onClick={this.componentClicked}
+          callback={this.responseFacebook}
+        />
+
+        <button> 
+            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+            <FormattedMessage id="login.back" defaultMessage='Back' /> 
+            </NavLink>
+        </button>
+
 
         <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
             <button style={{color: 'red'}}>
                 <FormattedMessage id="login.back" defaultMessage='Back' /> 
             </button>
         </NavLink>
+
 
         <br/>
         {
@@ -149,10 +240,12 @@ class Login extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    const { token } = state.auth;
     return {
+        isAuthenticated: token !== null && token !== undefined,
         loading: state.auth.loading,
         error: state.auth.error,
     }
 }
 
-export default connect(mapStateToProps, {authLogin, authCheckState})(Login);
+export default connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login);
