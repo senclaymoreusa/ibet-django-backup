@@ -87,7 +87,7 @@ export const authStart = () => {
     }
   }
 
-  export const authSignup = (username, email, password1, password2, first_name, last_name, phone, date_of_birth, street_address_1, street_address_2, country, city, zipcode, state) => {
+  export const authSignup = (username, email, password1, password2, first_name, last_name, phone, date_of_birth, street_address_1, street_address_2, country, city, zipcode, state, gender, over_eighteen, contact_option, preferred_team, title) => {
     return dispatch => {
         dispatch(authStart());
         // const config = {
@@ -96,7 +96,7 @@ export const authStart = () => {
         //   }
         // };
         const body = JSON.stringify({ username, email, password1, password2, first_name, last_name, phone, date_of_birth,
-          street_address_1, street_address_2, country, city, zipcode, state
+          street_address_1, street_address_2, country, city, zipcode, state, gender, over_eighteen, contact_option, preferred_team, title
         });
 
         return axios.post(API_URL + 'users/api/signup/', body, config)

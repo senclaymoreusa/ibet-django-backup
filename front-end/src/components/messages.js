@@ -123,6 +123,12 @@ export const messages = {
         'sign.country_empty_error': 'Country cannot be empty', 
         'sign.zipcode_empty_error': 'Zipcode cannot be empty',  
         'sign.show_date': 'Show date',
+        'sign.gender': 'Gender',
+        'sign.eighteen': 'Over eighteen',
+        'sign.contact': 'Preferred contact method',
+        'sign.gendererror': 'Gender not selected',
+        'sign.team': 'Preferred team: ',
+        'sign.title': 'Title',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -179,7 +185,20 @@ export const messages = {
 
         // handle referral page
         'referral.user': 'You have successfully referred a User',
-        'referral.error': 'You have reached the maximum referral number'
+        'referral.error': 'You have reached the maximum referral number',
+
+        //handel signup live check error
+        'error.username': 'Username not valid',
+        'error.email': 'Email address not valid',
+        'error.firstname': 'First name not valid',
+        'error.lastname': 'Last name not valid',
+        'error.phone': 'Phone number not valid',
+        'error.dateofbirth': 'Date of birth not valid',
+        'error.country': 'Country not valid',
+        'error.city': 'City not valid',
+        'error.state': 'State not valid',
+        'error.zipcode': 'Zipcode not valid',
+        'error.passwordnotmatch': 'Two password you entered do not match'
     },
     zh: {
 
@@ -305,6 +324,12 @@ export const messages = {
         'sign.country_empty_error': '請輸入國家', 
         'sign.zipcode_empty_error': '請輸入郵遞區號', 
         'sign.show_date': '显示日期', 
+        'sign.gender': '性别',
+        'sign.eighteen': '满18岁',
+        'sign.contact': '倾向的联系方式',
+        'sign.gendererror': '您未选择性别',
+        'sign.team': '喜欢的队伍: ',
+        'sign.title': '称呼',
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -363,7 +388,20 @@ export const messages = {
 
         // handle referral page
         'referral.user': '您已成功推荐该用户',
-        'referral.error': '您已达到最大推荐人数'
+        'referral.error': '您已达到最大推荐人数',
+
+        //handel signup live check error
+        'error.username': '用户名错误',
+        'error.email': '邮箱地址错误',
+        'error.firstname': '名错误',
+        'error.lastname': '姓错误',
+        'error.phone': '电话错误',
+        'error.dateofbirth': '出生日期错误',
+        'error.country': '国家错误',
+        'error.city': '城市错误',
+        'error.state': '省市错误',
+        'error.zipcode': '邮编错误',
+        'error.passwordnotmatch': '两次输入的密码不一致'
     }, 
     fr: {
 
@@ -489,7 +527,12 @@ export const messages = {
         'sign.country_empty_error': 'Le pays ne peut pas être vide', 
         'sign.zipcode_empty_error': 'Le code postal ne peut pas être vide',  
         'sign.show_date': 'Montrer la date', 
-        
+        'sign.gender': 'le sexe',
+        'sign.eighteen': 'Plus de dix-huit',
+        'sign.contact': 'Méthode de contact préférée',
+        'sign.gendererror': 'Sexe non sélectionné',
+        'sign.team': 'équipe préférée: ',
+        'sign.title': 'Titre',
 
         // handle update_profile page message
         'update_profile.username':'Nom d\'utilisateur: ',
@@ -549,7 +592,20 @@ export const messages = {
 
         // handle referral page
         'referral.user': 'Vous avez référé un utilisateur avec succès',
-        'referral.error': 'Vous avez atteint le nombre maximum de références'
+        'referral.error': 'Vous avez atteint le nombre maximum de références',
+
+        //handel signup live check error
+        'error.username': "nom d'utilisateur non valide",
+        'error.email': 'Adresse email non valide',
+        'error.firstname': 'Prénom non valide',
+        'error.lastname': 'Nom non valide',
+        'error.phone': 'Numéro de téléphone non valide',
+        'error.dateofbirth': 'Date de naissance non valide',
+        'error.country': 'Pays non valide',
+        'error.city': 'Ville non valide',
+        'error.state': 'Etat non valide',
+        'error.zipcode': 'Code postal non valide',
+        'error.passwordnotmatch': 'Deux mot de passe que vous avez entré ne correspondent pas'
     }
 }
 

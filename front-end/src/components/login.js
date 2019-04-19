@@ -8,7 +8,6 @@ import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
 
 
-
 class Login extends React.Component {
 
     constructor(props){
@@ -75,7 +74,6 @@ class Login extends React.Component {
         })
     })
   }
-
 
   responseFacebook = (response) => {
     //console.log(response);
@@ -181,13 +179,14 @@ class Login extends React.Component {
             <FormattedMessage id="login.password" defaultMessage='Password: ' />  
             </b></label>
             <input
+                
                 type = {this.state.hidden ? "password" : "text"}
                 placeholder="password"
                 className="form-control"
                 value={this.state.password}
                 onChange={this.onInputChange_password}
             />
-            <span onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+            <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
             </div>
 
             <span className="input-group-btn">
@@ -217,12 +216,20 @@ class Login extends React.Component {
           callback={this.responseFacebook}
         />
 
-
         <button> 
             <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
             <FormattedMessage id="login.back" defaultMessage='Back' /> 
             </NavLink>
         </button>
+
+
+        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+            <button style={{color: 'red'}}>
+                <FormattedMessage id="login.back" defaultMessage='Back' /> 
+            </button>
+        </NavLink>
+
+
         <br/>
         {
             showErrors()

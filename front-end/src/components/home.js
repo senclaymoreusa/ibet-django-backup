@@ -18,15 +18,16 @@ class Home extends Component {
     notices: [],
     sports: [],
     casino: [],
-    poker: []
+    poker: [],
+    ready: false
   }
   
   async componentDidMount() {
 
     this.props.authCheckState()
-    axios.get(API_URL + 'users/api/notice-message', config)
+    axios.get(API_URL + 'operation/api/notice-message', config)
     .then(res => {
-      // console.log(res);
+    //   console.log(res);
       this.setState({notices: res.data});
     })
 
@@ -50,6 +51,8 @@ class Home extends Component {
     .then(res => {
       this.setState({poker: res.data.slice(0, 3)});
     })
+
+    this.setState({ready: true})
  
   }
 
@@ -87,11 +90,14 @@ class Home extends Component {
             <h1> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
           </div>
         </div>
-
-        <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' /> </h2>
+        
+        {
+          this.state.ready && <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' /> </h2>
+        }
+        
         <div className="rows" >
           {
-            this.state.sports.map(item => {
+            this.state.ready && this.state.sports.map(item => {
               return (
                   <div key={item.name} style={{marginLeft: '300px'}}>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
@@ -103,11 +109,13 @@ class Home extends Component {
             })
           }
         </div>
-
-        <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' /> </h2>
+        {
+          this.state.ready && <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' /> </h2>
+        }
+        
         <div className="rows" >
           {
-            this.state.poker.map(item => {
+            this.state.ready && this.state.poker.map(item => {
               return (
                   <div key={item.name} style={{marginLeft: '300px'}}>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
@@ -119,11 +127,13 @@ class Home extends Component {
             })
           }
         </div>
-
-        <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' /> </h2>
+        {
+          this.state.ready && <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' /> </h2>
+        }
+        
         <div className="rows" >
           {
-            this.state.casino.map(item => {
+            this.state.ready && this.state.casino.map(item => {
               return (
                   <div key={item.name} style={{marginLeft: '300px'}}>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
