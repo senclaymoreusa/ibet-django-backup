@@ -6,7 +6,9 @@ import { Navigation } from '../navigation';
 import { NavLink } from 'react-router-dom';
 
 const setUp = (props={}) => {
-    const component = shallow(<Home {...props} />);
+    // localStorage.setItem('token', "12345");
+    const authCheckState = jest.fn();
+    const component = shallow(<Home authCheckState={authCheckState} />);
     return component;
 };
 
@@ -29,9 +31,12 @@ describe('Home Component', () => {
 
     //Components Test
     it('should have one header', () => {
+
         const wrapper = findByTestAtrr(component, 'headerLine');
         expect(wrapper.length).toBe(1);
     });
+
+    
 
     it('should render a H1', () => {
         const h1 = findByTestAtrr(component, 'header');
@@ -43,11 +48,6 @@ describe('Home Component', () => {
         const wrapper = shallow(<Navigation lang ={'en'}/>);
         expect(wrapper.find(NavLink).first().props().to).toEqual('/');
     });
-
-    // process.on('unhandledRejection', (error) => {
-    //     console.error('Unhandled Promise rejection:', error);
-    //     //process.exit(0.1);
-    // });
       
 });
  
