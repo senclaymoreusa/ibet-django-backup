@@ -79,7 +79,6 @@ class Signup extends React.Component {
     this.onInputChange_first_name       = this.onInputChange_first_name.bind(this);
     this.onInputChange_last_name        = this.onInputChange_last_name.bind(this);
     this.onInputChange_phone            = this.onInputChange_phone.bind(this);
-    this.onInputChange_date_of_birth    = this.onInputChange_date_of_birth.bind(this);
     this.onInputChange_street_address_1 = this.onInputChange_street_address_1.bind(this);
     this.onInputChange_street_address_2 = this.onInputChange_street_address_2.bind(this);
     this.onInputChange_country          = this.onInputChange_country.bind(this);
@@ -170,16 +169,6 @@ class Signup extends React.Component {
     this.setState({phone: event.target.value});
   }
 
-  onInputChange_date_of_birth(event){
-    if (!event.target.value.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/)){
-      this.setState({live_check_dob: true, button_disable: true,})
-    }else{
-      this.setState({live_check_dob: false})
-      this.check_button_disable()
-    }
-    this.setState({date_of_birth: event.target.value});
-  }
-
   onInputChange_street_address_1(event){
     this.setState({street_address_1: event.target.value});
   }
@@ -251,13 +240,26 @@ class Signup extends React.Component {
     var month = res[1]
     var day = res[2]
     var year = res[3]
+    
+    var today = new Date();
+    var cur_year = today.getFullYear();
+    var cur_month = today.getMonth()+1 ;
+    var cur_day = today.getDate();
+
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     var months_to = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
     month = months_to[months.indexOf(month)]
-    var result = month + '/' + day + '/' + year
-    await this.setState({date_of_birth: result})
-    this.setState({live_check_dob: false})
-    this.check_button_disable()
+    if (parseInt(year) > cur_year || (parseInt(year) === cur_year && parseInt(month) > cur_month) || (parseInt(year) === cur_year && parseInt(month) === cur_month && parseInt(day) > cur_day))
+    {
+      var result = month + '/' + day + '/' + year
+      await this.setState({date_of_birth: result})
+      this.setState({live_check_dob: true, button_disable: true})
+    }else{
+      var result = month + '/' + day + '/' + year
+      await this.setState({date_of_birth: result})
+      this.setState({live_check_dob: false})
+      this.check_button_disable()
+    }
   }
 
   check_button_disable(){
@@ -279,7 +281,6 @@ class Signup extends React.Component {
 
   onFormSubmit(event){
     event.preventDefault();
-    //console.log(this.state.gender)
 
     this.setState({errorCode: ''})
 
@@ -353,7 +354,6 @@ class Signup extends React.Component {
             axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
         
         }).catch(err => {
-            // console.log(err.response);
             if (err.response &&  'username' in err.response.data) {
               this.setState({username_error: err.response.data.username[0]})
             } else {
@@ -539,8 +539,6 @@ class Signup extends React.Component {
               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
             }
 
-            
-
           </div>
 
           <div>
@@ -616,23 +614,25 @@ class Signup extends React.Component {
             <label><b>
             *<FormattedMessage id="signup.dob" defaultMessage='Date of birth: ' />  
             </b></label>
-            <input
-                placeholder="mm/dd/yyyy"
-                className="form-control"
-                value={this.state.date_of_birth}
-                onChange={this.onInputChange_date_of_birth}
-            />
-            <div onClick={() => {this.setState({show_date: !this.state.show_date})}} style={{color: 'blue'}}>
-              <FormattedMessage id="sign.show_date" defaultMessage='Show date' />
-            </div>
           </div>
-         
-          {
-          this.state.show_date && <Calendar
-            onChange={this.onInputChange_date}
-            value={this.state.date}
-          />
-          }
+
+          <div>
+
+            {
+              <div style={{color: 'blue'}}>  {this.state.date_of_birth}  </div>
+            }
+
+            <div onClick={() => {this.setState({show_date: !this.state.show_date})}} style={{color: 'blue'}}>
+                <FormattedMessage id="sign.show_date" defaultMessage='Show date' />
+            </div>
+
+          </div>
+            {
+              this.state.show_date && 
+              <Calendar
+                onChange={this.onInputChange_date}
+              />
+            }
 
           {this.state.live_check_dob && <div style={{color: 'red'}}> <FormattedMessage  id="error.dateofbirth" defaultMessage='Date of birth not valid' /> </div>}
 
@@ -697,7 +697,6 @@ class Signup extends React.Component {
               onChange={this.onInputChange_country} 
             />
           </div>         
-
 
           <div>
             <label><b>
