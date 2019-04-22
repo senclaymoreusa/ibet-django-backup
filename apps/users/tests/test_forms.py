@@ -21,8 +21,9 @@ class UserCreationFormTest(TestCase):
             'username': 'wluuuu01',
             'email': 'wluuuu01@test.com',
             'password1': 'hellotest1',
-            'password2': 'hellotest1'
-        },instance = CustomUser.objects.create(username = 'wludksuuu', email = 'wluudsuu@test.com'))
+            'password2': 'hellotest1',
+            'phone':'123'
+        },instance = CustomUser.objects.create(username = 'wludksuuu', email = 'wluudsuu@test.com', phone='123345'))
         self.assertTrue(form.is_valid())
 
     def test_password1_field_label(self):
@@ -34,6 +35,31 @@ class UserCreationFormTest(TestCase):
             'username': 'wluuuu02',
             'email': 'wluuuu02@test.com',
             'password1': 'hellotest1',
-            'password2': 'hellotestdiff'
-        },instance = CustomUser.objects.create(username = 'wluddkfksuuu', email = 'wluufsdndsuu@test.com'))
+            'password2': 'hellotestdiff',
+            'phone':'1234'
+        },instance = CustomUser.objects.create(username = 'wluddkfksuuu', email = 'wluufsdndsuu@test.com', phone='23456'))
         self.assertFalse(form.is_valid())
+
+    def test_if_phone_number_unique(self):
+        form = UserCreationForm(data={
+            'username': 'samet1',
+            'email': 'samet1@test.com',
+            'password1': 'Password1',
+            'password2': 'Password1',
+            'phone':'12345'
+        },instance = CustomUser.objects.create(username = 'samet2', email = 'samet2@test.com', phone='12345'))
+        self.assertTrue(form.is_valid())
+
+    
+    def test_if_email_unique(self):
+        form = UserCreationForm(data={
+            'username': 'samet2',
+            'email': 'samet2@test.com',
+            'password1': 'Password1',
+            'password2': 'Password1',
+            'phone':'12345'
+        },instance = CustomUser.objects.create(username = 'samet3', email = 'samet2@test.com', phone='123455'))
+        self.assertTrue(form.is_valid())
+ 
+
+    
