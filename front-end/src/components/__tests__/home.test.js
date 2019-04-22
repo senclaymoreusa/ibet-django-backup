@@ -2,11 +2,10 @@ import React from 'react';
 import { shallow } from 'enzyme';
 
 import { Home } from '../home';
-import { Navigation } from '../navigation';
-import { NavLink } from 'react-router-dom';
 
 const setUp = (props={}) => {
-    const component = shallow(<Home {...props} />);
+    const authCheckState = jest.fn();
+    const component = shallow(<Home authCheckState={authCheckState} />);
     return component;
 };
 
@@ -38,11 +37,6 @@ describe('Home Component', () => {
         expect(h1.length).toBe(1);
     });
 
-    //Testing User Interactive Event
-    it('should call mock function when button is clicked', () => {
-        const wrapper = shallow(<Navigation lang ={'en'}/>);
-        expect(wrapper.find(NavLink).first().props().to).toEqual('/');
-    });
 
     // process.on('unhandledRejection', (error) => {
     //     console.error('Unhandled Promise rejection:', error);
