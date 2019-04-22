@@ -34,6 +34,7 @@ export const messages = {
         'login.forget_password': 'Forget password',
         'login.username_empty_error': 'Username cannot be empty',
         'login.password_empty_error': 'Password cannot be empty',
+        'login.option': 'Or login with',
 
         // handle books page message
         'books.title': 'Book List',
@@ -235,6 +236,7 @@ export const messages = {
         'login.forget_password': '忘記密碼',
         'login.username_empty_error': '用戶名不能為空',
         'login.password_empty_error': '密碼不能為空',
+        'login.option': '或用已下方式登陆',
 
         // handle books page message
         'books.title': '書籍列表',
@@ -437,6 +439,7 @@ export const messages = {
         'login.forget_password': 'Mot de passe oublié',
         'login.username_empty_error': 'Le nom d\'utilisateur ne peut pas être vide',
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
+        'login.option': 'Ou connectez-vous avec',
 
         // handle books page message
         'books.title': 'Liste de livres',
