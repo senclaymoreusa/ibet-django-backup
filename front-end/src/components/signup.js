@@ -60,6 +60,8 @@ class Signup extends React.Component {
       preferred_team: '',
       title: '',
 
+      location_country_name:'',
+
       live_check_username: false,
       live_check_email: false,
       live_check_firstname: false,
@@ -103,6 +105,11 @@ class Signup extends React.Component {
         this.props.history.push('/'); 
       } 
     });
+
+    axios.get('https://ipapi.co/json/')
+    .then(res => {
+      this.setState({location_country_name: res.data.country_name})
+    })
   }
 
   onInputChange_username(event){
@@ -303,15 +310,13 @@ class Signup extends React.Component {
       this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
     } else if (!this.state.city) {
       this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
-    } else if (!this.state.state) {
+    } else if (!this.state.country && !this.state.location_country_name) {
       this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
-    } else if (!this.state.country) {
-      this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
     } else if (!this.state.zipcode){
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
     } else {
         if (!referrer_id){
-        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
         .then((res) => {
           this.props.history.push('/activation');
           axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -345,7 +350,7 @@ class Signup extends React.Component {
           }
         })
       }else{
-          this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
           .then((res) => {
             this.props.history.push('/activation');
             axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -693,6 +698,8 @@ class Signup extends React.Component {
             *<FormattedMessage id="signup.country" defaultMessage='Country: ' />   
             </b></label>
             <CountryDropdown
+              showDefaultOption={true}
+              defaultOptionLabel={this.state.location_country_name}
               value={this.state.country}
               onChange={this.onInputChange_country} 
             />
