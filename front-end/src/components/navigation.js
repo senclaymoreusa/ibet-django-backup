@@ -6,9 +6,9 @@ import { FormattedMessage } from 'react-intl';
 import { logout, handle_search, setLanguage } from '../actions';
 
 const languages = [
-  { value: 'en', label: 'English' },
-  { value: 'zh-hans', label: 'Chinese' },
-  { value: 'fr', label: 'French' }
+  { value: 'en', label: 'English (en)' },
+  { value: 'zh-hans', label: '簡體中文 (zh-hans)' },
+  { value: 'fr', label: 'français (fr)' }
 ];
 
 export class Navigation extends Component {
@@ -16,7 +16,16 @@ export class Navigation extends Component {
     constructor(props){
         super(props);
 
-        this.state = { term: '' };
+        this.state = { 
+          term: '', 
+
+          facebooklogin: false, 
+          userID: "",
+          name: "",
+          email: "",
+          picture: "" 
+        };
+
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -26,7 +35,19 @@ export class Navigation extends Component {
       this.setState({ term: '' });
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+       var fackbooklogin = localStorage.getItem('facebook')
+       this.setState({facebooklogin: fackbooklogin})
+       var fackbookObj = JSON.parse(localStorage.getItem('facebookObj'))
+       if (fackbooklogin === 'true'){
+        this.setState({
+          userID:   fackbookObj.userID, 
+          name:     fackbookObj.name,
+          email:    fackbookObj.email,
+          picture:  fackbookObj.picture
+       })
+       }
+    }
 
     handleChange = (languageOption) => {
       this.setState({ languageOption });
@@ -93,10 +114,27 @@ export class Navigation extends Component {
             }
 
             {
-              this.props.isAuthenticated ?
+              this.state.facebooklogin === 'true' ?
+                <div className = 'rows' style = {{width: "100px", heihgt: '50px'}}>
+                  <div> 
+                    <img style = {{width: '30px', height: '30px'}} src={this.state.picture} alt={this.state.name} />
+                  </div>
+                  <div>
+                    <h2 style={{width: "100px", margin: 'auto'}}> {this.state.name} </h2>
+                  </div>
+                </div>
+              :
+                  <div> </div>
+            }
+
+            {
+              this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
               
               <div>
-                <NavLink to = '/' style={{ textDecoration: 'none' }} onClick={()=>{this.props.logout()}}><FormattedMessage id="nav.logout" defaultMessage='Logout' /></NavLink>
+                <NavLink to = '/' style={{ textDecoration: 'none' }} onClick={()=>{
+                  this.props.logout()
+                  window.location.reload()
+                  }}><FormattedMessage id="nav.logout" defaultMessage='Logout' /></NavLink>
               </div>
               :
               <div> 
