@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, UserWithTag
+from django.forms import ModelForm
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -91,12 +92,19 @@ class RenewBookForm(forms.Form):
 
 
 
-from django.contrib.auth.forms import AuthenticationForm
+# from django.contrib.auth.forms import AuthenticationForm
 
-class AuthenticationFormWithChekUsersStatus(AuthenticationForm):
-    def confirm_login_allowed(self, user):
-        if not user.status == 'enabled':
-            raise forms.ValidationError(
-                ("Your account has disabled."),
-                code='inactive',
-            )
+# class AuthenticationFormWithChekUsersStatus(AuthenticationForm):
+#     def confirm_login_allowed(self, user):
+#         if not user.status == 'enabled':
+#             raise forms.ValidationError(
+#                 ("Your account has disabled."),
+#                 code='inactive',
+#             )
+
+
+class userWithTagCreationForm(ModelForm):
+
+    class Meta:
+        model = UserWithTag
+        fields = ('user', 'tag')
