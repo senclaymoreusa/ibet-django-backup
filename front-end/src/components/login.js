@@ -216,11 +216,13 @@ class Login extends React.Component {
           callback={this.responseFacebook}
         />
 
-        <button> 
-            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+         
+        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
+            <button>
                 <FormattedMessage id="login.back" defaultMessage='Back' /> 
-            </NavLink>
-        </button>
+            </button>
+        </NavLink>
+        
 
         <br/>
         {
