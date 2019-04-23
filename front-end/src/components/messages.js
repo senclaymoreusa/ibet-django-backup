@@ -186,6 +186,8 @@ export const messages = {
         // handle referral page
         'referral.user': 'You have successfully referred a User',
         'referral.error': 'You have reached the maximum referral number',
+        'referral.email_exist': 'This email has already been registerd',
+        'referral.email_valid': 'Please enter a valid email address',
 
         //handel signup live check error
         'error.username': 'Username not valid',
@@ -389,6 +391,8 @@ export const messages = {
         // handle referral page
         'referral.user': '您已成功推荐该用户',
         'referral.error': '您已达到最大推荐人数',
+        'referral.email_exist': '您输入的邮箱已被注册',
+        'referral.email_valid': '请输入正确的邮箱',
 
         //handel signup live check error
         'error.username': '用户名错误',
@@ -593,6 +597,8 @@ export const messages = {
         // handle referral page
         'referral.user': 'Vous avez référé un utilisateur avec succès',
         'referral.error': 'Vous avez atteint le nombre maximum de références',
+        'referral.email_exist': 'Cet email a déjà été enregistré',
+        'referral.email_valid': "S'il vous plaît, mettez une adresse email valide",
 
         //handel signup live check error
         'error.username': "nom d'utilisateur non valide",
