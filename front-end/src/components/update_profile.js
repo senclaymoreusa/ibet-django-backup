@@ -4,6 +4,8 @@ import { NavLink, withRouter } from 'react-router-dom';
 import { config } from '../util_config';
 import { FormattedMessage } from 'react-intl';
 import { errors } from './errors';
+import { CountryDropdown } from 'react-country-region-selector';
+import Calendar from 'react-calendar';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -28,14 +30,22 @@ class Update extends Component {
             state: '',
             
             fetched_data: {},
-            errorCode: ''
+            errorCode: '',
+
+            button_disable: false,
+            show_date: false,
+
+            live_check_firstname: false,
+            live_check_lastname: false,
+            live_check_dob: false,
+            live_check_country: false,
+            live_check_city: false,
+            live_check_state: false,
+            live_check_zipcode: false,
         }
 
-        this.onInputChange_username         = this.onInputChange_username.bind(this);
-        this.onInputChange_email            = this.onInputChange_email.bind(this);
         this.onInputChange_first_name       = this.onInputChange_first_name.bind(this);
         this.onInputChange_last_name        = this.onInputChange_last_name.bind(this);
-        this.onInputChange_phone            = this.onInputChange_phone.bind(this);
         this.onInputChange_date_of_birth    = this.onInputChange_date_of_birth.bind(this);
         this.onInputChange_street_address_1 = this.onInputChange_street_address_1.bind(this);
         this.onInputChange_street_address_2 = this.onInputChange_street_address_2.bind(this);
@@ -48,11 +58,6 @@ class Update extends Component {
     
     async componentDidMount() {
       const token = localStorage.getItem('token');
-    //   const config = {
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     }
-    //   };
       config.headers["Authorization"] = `Token ${token}`;
 
       await axios.get(API_URL + 'users/api/user/', config)
@@ -76,29 +81,52 @@ class Update extends Component {
     })
     }
 
-    onInputChange_username(event){
-        this.setState({username: event.target.value});
-    }
-
-    onInputChange_email(event){
-        this.setState({email: event.target.value});
-    }
-
     onInputChange_first_name(event){
+        if (!event.target.value.match(/^[a-zA-Z]+$/)){
+            this.setState({live_check_firstname: true, button_disable: true})
+        }else{
+            this.setState({live_check_firstname: false})
+            this.check_button_disable()
+        }
         this.setState({first_name: event.target.value});
     }
 
     onInputChange_last_name(event){
+        if (!event.target.value.match(/^[a-zA-Z]+$/)){
+            this.setState({live_check_lastname: true, button_disable: true})
+          }else{
+            this.setState({live_check_lastname: false})
+            this.check_button_disable()
+          }
         this.setState({last_name: event.target.value});
     }
 
-    onInputChange_phone(event){
-        this.setState({phone: event.target.value});
-    }
-
-    onInputChange_date_of_birth(event){
-        this.setState({date_of_birth: event.target.value});
-    }
+    async onInputChange_date_of_birth(date){
+        var res = date.toString().split(" ");
+        var month = res[1]
+        var day = res[2]
+        var year = res[3]
+        
+        var today = new Date();
+        var cur_year = today.getFullYear();
+        var cur_month = today.getMonth()+1 ;
+        var cur_day = today.getDate();
+    
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        var months_to = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+        month = months_to[months.indexOf(month)]
+        if (parseInt(year) > cur_year || (parseInt(year) === cur_year && parseInt(month) > cur_month) || (parseInt(year) === cur_year && parseInt(month) === cur_month && parseInt(day) > cur_day))
+        {
+          var result = month + '/' + day + '/' + year
+          await this.setState({date_of_birth: result})
+          this.setState({live_check_dob: true, button_disable: true})
+        }else{
+          var result = month + '/' + day + '/' + year
+          await this.setState({date_of_birth: result})
+          this.setState({live_check_dob: false})
+          this.check_button_disable()
+        }
+      }
 
     onInputChange_street_address_1(event){
         this.setState({street_address_1: event.target.value});
@@ -108,21 +136,51 @@ class Update extends Component {
         this.setState({street_address_2: event.target.value});
     }
 
-    onInputChange_country(event){
-        this.setState({country: event.target.value});
+    onInputChange_country(country){
+        this.setState({country: country});
     }
 
     onInputChange_city(event){
+        if (!event.target.value.match(/^[a-zA-Z\s]+$/)){
+            this.setState({live_check_city: true, button_disable: true})
+        }else{
+            this.setState({live_check_city: false})
+            this.check_button_disable()
+        }
         this.setState({city: event.target.value});
     }
 
     onInputChange_zipcode(event){
+        if (!event.target.value.match(/^[0-9]+$/)){
+            this.setState({live_check_zipcode: true, button_disable: true,})
+        }else{
+            this.setState({live_check_zipcode: false})
+            this.check_button_disable()
+        }
         this.setState({zipcode: event.target.value});
     }
 
     onInputChange_state(event){
+        if (!event.target.value.match(/^[a-zA-Z]+$/)){
+            this.setState({live_check_state: true, button_disable: true,})
+        }else{
+            this.setState({live_check_state: false})
+            this.check_button_disable()
+        }
         this.setState({state: event.target.value});
     }
+
+    check_button_disable(){
+        if (
+            !this.state.live_check_firstname && this.state.first_name && 
+            !this.state.live_check_lastname && this.state.last_name && 
+            !this.state.live_check_dob && this.state.date_of_birth && 
+            !this.state.live_check_city && this.state.city && 
+            !this.state.live_check_state && this.state.state && 
+            !this.state.live_check_zipcode && this.state.zipcode){
+          this.setState({button_disable: false})
+        }
+      }
 
     onFormSubmit(event){
         event.preventDefault();
@@ -137,49 +195,24 @@ class Update extends Component {
             last_name:        this.state.last_name        ? this.state.last_name        : this.state.fetched_data.last_name,
             phone:            this.state.phone            ? this.state.phone            : this.state.fetched_data.phone, 
             date_of_birth:    this.state.date_of_birth    ? this.state.date_of_birth    : this.state.fetched_data.date_of_birth,
-            street_address_1: this.state.street_address_1 ? this.state.street_address_1 : this.state.fetched_data.street_address_1,
-            street_address_2: this.state.street_address_2 ? this.state.street_address_2 : this.state.fetched_data.street_address_2,
+            street_address_1: this.state.street_address_1,
+            street_address_2: this.state.street_address_2,
             country:          this.state.country          ? this.state.country          : this.state.fetched_data.country,
             city:             this.state.city             ? this.state.city             : this.state.fetched_data.city,
             state:            this.state.state            ? this.state.state            : this.state.fetched_data.state,
             zipcode:          this.state.zipcode          ? this.state.zipcode          : this.state.fetched_data.zipcode
-      });
+        });
 
-
-      if (!this.state.email) {
-        this.setState({ errorCode: errors.EMAIL_EMPTY_ERROR });
-      } else if (!this.state.first_name) {
-        this.setState({ errorCode: errors.FIRST_NAME_EMPTY_ERROR });
-      } else if (!this.state.last_name) {
-        this.setState({ errorCode: errors.LAST_NAME_EMPTY_ERROR });
-      } else if (!this.state.phone) {
-        this.setState({ errorCode: errors.PHONE_EMPTY_ERROR });
-      } else if (!this.state.date_of_birth) {
-        this.setState({ errorCode: errors.DATEOFBIRTH_EMPTY_ERROR });
-      } else if (!this.state.street_address_1) {
-        this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
-      } else if (!this.state.city) {
-        this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
-      } else if (!this.state.state) {
-        this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
-      } else if (!this.state.country) {
-        this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
-      } else if (!this.state.zipcode){
-        this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
-      } else {
-            axios.put(API_URL + 'users/api/user/', body, config)
+        axios.put(API_URL + 'users/api/user/', body, config)
             .then(() => {
                 this.props.history.push("/profile");
             })
             .catch((err) => {
                 console.log(err.response);
-            })
-            
-      }
+        })
     }
 
     render() {
-
         const showErrors = () => {
             if (this.state.errorCode === errors.EMAIL_EMPTY_ERROR) {
                 return (
@@ -267,18 +300,24 @@ class Update extends Component {
                     <div>
                         <div><b>
                         <FormattedMessage id="update_profile.username" defaultMessage='Username: ' />
-                        </b>: {this.state.username} </div>
+                        </b> {this.state.username} </div>
                     </div>
 
                     <div>
                         <b>
                         <FormattedMessage id="update_profile.email" defaultMessage='Email: ' />    
-                        </b>: {this.state.email}
+                        </b> {this.state.email}
                         <button> 
                             <NavLink to='/change_email/' style={{ textDecoration: 'none' }}>
                             <FormattedMessage id="update_profile.update_email" defaultMessage='Update Email' />    
                             </NavLink>
                         </button>
+                    </div>
+
+                    <div>
+                        <label><b>
+                        <FormattedMessage id="update_profile.phone" defaultMessage='Phone: ' />      
+                        </b> {this.state.phone} </label>
                     </div>
 
                     <div>
@@ -293,6 +332,8 @@ class Update extends Component {
                         />
                     </div>
 
+                    {this.state.live_check_firstname && <div style={{color: 'red'}}> <FormattedMessage  id="error.firstname" defaultMessage='First name not valid' /> </div>}
+
                     <div>
                         <label><b>
                         <FormattedMessage id="update_profile.lastName" defaultMessage='Last Name: ' />     
@@ -305,29 +346,26 @@ class Update extends Component {
                         />
                     </div>
 
-                    <div>
-                        <label><b>
-                        <FormattedMessage id="update_profile.phone" defaultMessage='Phone: ' />      
-                        </b></label>
-                        <input
-                            placeholder="123456789"
-                            className="form-control"
-                            value={this.state.phone}
-                            onChange={this.onInputChange_phone}
-                        />
-                    </div>
+                    {this.state.live_check_lastname && <div style={{color: 'red'}}> <FormattedMessage  id="error.lastname" defaultMessage='Last name not valid' /> </div>}
 
                     <div>
                         <label><b>
                         <FormattedMessage id="update_profile.dob" defaultMessage='Date of Birth: ' />      
                         </b></label>
-                        <input
-                            placeholder="mm/dd/yyyy"
-                            className="form-control"
-                            value={this.state.date_of_birth}
-                            onChange={this.onInputChange_date_of_birth}
-                        />
+                        {this.state.date_of_birth}
+                        <div onClick={() => {this.setState({show_date: !this.state.show_date})}} style={{color: 'blue'}}>
+                            <FormattedMessage id="sign.show_date" defaultMessage='Show date' />
+                        </div>
                     </div>
+
+                    {
+                        this.state.show_date && <Calendar
+                            onChange={this.onInputChange_date_of_birth}
+                            value={this.state.date}
+                        />
+                    }
+
+                    {this.state.live_check_dob && <div style={{color: 'red'}}> <FormattedMessage  id="error.dateofbirth" defaultMessage='Date of birth not valid' /> </div>}
 
                     <div>
                         <label><b>
@@ -357,11 +395,9 @@ class Update extends Component {
                         <label><b>
                         <FormattedMessage id="update_profile.country" defaultMessage='Country: ' />       
                         </b></label>
-                        <input
-                            placeholder="United States"
-                            className="form-control"
+                        <CountryDropdown
                             value={this.state.country}
-                            onChange={this.onInputChange_country}
+                            onChange={this.onInputChange_country} 
                         />
                     </div>
 
@@ -377,6 +413,8 @@ class Update extends Component {
                         />
                     </div>
 
+                    {this.state.live_check_city && <div style={{color: 'red'}}> <FormattedMessage  id="error.city" defaultMessage='City not valid' /> </div>}
+
                     <div>
                         <label><b>
                         <FormattedMessage id="update_profile.zipcode" defaultMessage='Zipcode: ' />      
@@ -389,6 +427,8 @@ class Update extends Component {
                         />
                     </div>
 
+                    {this.state.live_check_zipcode && <div style={{color: 'red'}}> <FormattedMessage  id="error.zipcode" defaultMessage='Zipcode not valid' /> </div>}
+
                     <div>
                         <label><b>
                         <FormattedMessage id="update_profile.state" defaultMessage='State: ' />    
@@ -400,15 +440,17 @@ class Update extends Component {
                             onChange={this.onInputChange_state}
                         />
                     </div>
+
+                    {this.state.live_check_state && <div style={{color: 'red'}}> <FormattedMessage  id="error.state" defaultMessage='State not valid' /> </div>}    
                     
                     <span className="input-group-btn">
-                        <button type="submit" className="btn btn-secondary"> 
-                        <FormattedMessage id="update_profile.submit" defaultMessage='Submit' />
+                        <button disabled = {this.state.button_disable} type="submit" className="btn btn-secondary"> 
+                            <FormattedMessage id="update_profile.submit" defaultMessage='Submit' />
                         </button>
                     </span>
                 </form>
                 <button style={{color: 'red'}} onClick={()=>{this.props.history.push("/profile")}}> 
-                <FormattedMessage id="update_profile.cancel" defaultMessage='Cancel' /> 
+                    <FormattedMessage id="update_profile.cancel" defaultMessage='Cancel' /> 
                 </button>
 
                 {
