@@ -50,9 +50,11 @@ class Referral extends React.Component {
         const message = formatMessage({ id: 'referral.user' });
 
         event.preventDefault();
-        axios.get(API_URL + `users/api/checkreferral?referral_id=${this.state.data.referral_id}`, config)
+        axios.get(API_URL + `users/api/checkreferral?referral_id=${this.state.data.referral_id}&email=${this.state.email}`, config)
         .then(res =>{
-            if (res.data === 'Valid'){
+            if (res.data === 'Duplicate'){
+                this.setState({email_exist_error: true})
+            }else if (res.data === 'Valid'){
                 axios.get(API_URL + `users/api/sendemail/?case=referral&to_email_address=${this.state.email}&username=${this.state.data.username}&referralid=${this.state.data.referral_id}`, config)
                 .then(res =>{
                     alert(message)
