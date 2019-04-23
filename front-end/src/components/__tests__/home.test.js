@@ -1,3 +1,5 @@
+// Home components test
+
 import React from 'react';
 import { shallow } from 'enzyme';
 
@@ -32,16 +34,11 @@ describe('Home Component', () => {
         expect(wrapper.length).toBe(1);
     });
 
+
     it('should render a H1', () => {
         const h1 = findByTestAtrr(component, 'header');
         expect(h1.length).toBe(1);
     });
-
-
-    // process.on('unhandledRejection', (error) => {
-    //     console.error('Unhandled Promise rejection:', error);
-    //     //process.exit(0.1);
-    // });
       
 });
  

@@ -1,6 +1,13 @@
+// Auth reducers test
+
 import authReducer from '../auth';
 
-import { authStart, authSuccess, authFail, logout } from './../../actions/auth'
+import { 
+    authFail, 
+    authStart, 
+    authSuccess, 
+    logout 
+} from './../../actions/auth'
 
 
 describe('Auth Reducer', () => {
