@@ -12,6 +12,8 @@ import IoEye from 'react-icons/lib/io/eye';
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
 import { CountryDropdown } from 'react-country-region-selector';
+import 'react-phone-number-input/style.css'
+import PhoneInput from 'react-phone-number-input'
 
 
 const options = ['Male', 'Female']
@@ -61,6 +63,7 @@ class Signup extends React.Component {
       title: '',
 
       location_country_name:'',
+      location_country: '',
 
       live_check_username: false,
       live_check_email: false,
@@ -108,7 +111,9 @@ class Signup extends React.Component {
 
     axios.get('https://ipapi.co/json/')
     .then(res => {
-      this.setState({location_country_name: res.data.country_name})
+      this.setState({
+        location_country_name: res.data.country_name, 
+        location_country: res.data.country})
     })
   }
 
@@ -167,14 +172,16 @@ class Signup extends React.Component {
     this.setState({last_name: event.target.value});
   }
 
-  onInputChange_phone(event){
-    if (!event.target.value.match(/^[0-9]+$/)){
-      this.setState({live_check_phone: true, button_disable: true,})
-    }else{
-      this.setState({live_check_phone: false})
-      this.check_button_disable()
+  onInputChange_phone(phone){
+    if (phone){
+      if (!phone.slice(1).match(/^[0-9]+$/)){
+        this.setState({live_check_phone: true, button_disable: true,})
+      }else{
+        this.setState({live_check_phone: false})
+        this.check_button_disable()
+      }
+      this.setState({phone: phone.slice(1)});
     }
-    this.setState({phone: event.target.value});
   }
 
   onInputChange_date_of_birth(event){
@@ -607,12 +614,15 @@ class Signup extends React.Component {
             <label><b>
             *<FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
             </b></label>
-            <input
-                placeholder="9496541234"
-                className="form-control"
-                value={this.state.phone}
-                onChange={this.onInputChange_phone}
-            />
+            
+            <div style={{width: '250px'}}>
+              <PhoneInput
+                country={this.state.location_country}
+                placeholder="Enter phone number"
+                value={ this.state.phone }
+                onChange={ this.onInputChange_phone } 
+              />
+            </div>
           </div>
 
           {this.state.live_check_phone && <div style={{color: 'red'}}> <FormattedMessage  id="error.phone" defaultMessage='Phone number not valid' /> </div>}
