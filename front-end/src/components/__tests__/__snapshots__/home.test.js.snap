@@ -20,57 +20,12 @@ exports[`Home Component should render without throwing an error 1`] = `
       </h1>
     </div>
   </div>
-  <h2
-    style={
-      Object {
-        "marginLeft": "400px",
-      }
-    }
-  >
-     
-    <FormattedMessage
-      defaultMessage="Most Popular Sports"
-      id="home.sports"
-      values={Object {}}
-    />
-     
-  </h2>
   <div
     className="rows"
   />
-  <h2
-    style={
-      Object {
-        "marginLeft": "400px",
-      }
-    }
-  >
-     
-    <FormattedMessage
-      defaultMessage="Most Popluar Poker"
-      id="home.poker"
-      values={Object {}}
-    />
-     
-  </h2>
   <div
     className="rows"
   />
-  <h2
-    style={
-      Object {
-        "marginLeft": "400px",
-      }
-    }
-  >
-     
-    <FormattedMessage
-      defaultMessage="Most Popluar Casino"
-      id="home.casino"
-      values={Object {}}
-    />
-     
-  </h2>
   <div
     className="rows"
   />
