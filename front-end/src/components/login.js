@@ -8,7 +8,7 @@ import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
 
 
-class Login extends React.Component {
+export class Login extends React.Component {
 
     constructor(props){
         super(props);
