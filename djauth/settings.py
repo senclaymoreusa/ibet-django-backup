@@ -38,17 +38,27 @@ SESSION_COOKIE_SAMESITE = None
 CRSF_COOKIE_SAMESITE = None
 
 
+import sys
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
+sys.path.insert(0,os.path.join(BASE_DIR, 'apps'))
+
 # Application definition
 
 INSTALLED_APPS = [
+    'test_without_migrations',
     'django.contrib.admin',
+    'xadmin',
+    'crispy_forms',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
-
+    'operation.apps.OperationConfig',
+    'games.apps.GamesConfig',
     'rest_framework',              # Stephen
     'corsheaders',                 # Stephen
     'rest_auth',                   # Stephen
@@ -58,7 +68,9 @@ INSTALLED_APPS = [
     'allauth.account',             # Stephen
     'rest_auth.registration',      # Stephen
     'allauth.socialaccount',       # Stephen
-    'django_rest_passwordreset'
+    'django_rest_passwordreset',
+    'django_nose',
+    # 'reversion',
 ]
 
 SITE_ID = 1                        # Stephen
@@ -70,6 +82,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 AUTH_USER_MODEL = 'users.CustomUser' # new
 
 
+
+
+HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
 
 MIDDLEWARE = [
@@ -98,6 +113,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
             ],
         },
     },
@@ -154,6 +173,13 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
 
+from django.utils.translation import ugettext_lazy as _
+LANGUAGES = (
+    ('en', _('English')),
+    ('zh-hans', _('Chinese')),
+    ('fr', _('Franch')),
+)
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -161,6 +187,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+DATETIME_FORMAT = '%d-%m-%Y-%H-%M-%S'
 
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
@@ -175,8 +203,8 @@ SESSION_COOKIE_HTTPONLY = False
 STATIC_URL = '/static/'
 
 # djauth/settings.py
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = 'index'
+# LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/admin'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
@@ -188,6 +216,11 @@ STATIC_URL = '/static/'
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+log_filename = "logs/debug.log"
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)  
+
 
 # Logging setup added by Stephen
 LOGGING = {
@@ -225,4 +258,23 @@ LOGGING = {
 TIME_ZONE = 'America/Los_Angeles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'users/media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'apps/users/media')
+
+
+# Test Part
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'foo' and 'bar' apps
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=users',
+    #'--cover-html'
+]
+
+TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
+
+STATIC_DIRS = 'static'
+STATICFILES_DIRS = [
+    STATIC_DIRS,
+]

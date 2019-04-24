@@ -8,17 +8,21 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies available',
         'home.authors': 'Authors',
+        'home.sports': 'Most Popular Sports',
+        'home.casino': 'Most Popluar Casino',
+        'home.poker': 'Most Popluar Poker',
 
         // handle navigation page message
         'nav.title': 'Home',
         'nav.books': 'All books',
         'nav.authors': 'All authors',
-        'nav.games': 'All games',
+        'nav.games': 'All Games',
         'nav.search': 'Search',
         'nav.profile': 'Profile',
         'nav.login': 'Login',
         'nav.logout': 'Logout',
         'nav.referral': 'Refer new user',
+        'nav.placeholder': 'Search game...',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -30,6 +34,7 @@ export const messages = {
         'login.forget_password': 'Forget password',
         'login.username_empty_error': 'Username cannot be empty',
         'login.password_empty_error': 'Password cannot be empty',
+        'login.option': 'Or login with',
 
         // handle books page message
         'books.title': 'Book List',
@@ -78,6 +83,9 @@ export const messages = {
         'profile.update': 'Update',
         'profile.back': 'Back',
         'profile.level': 'Referral Level',
+        'profile.balance': 'Current balance: ',
+        'profile.add': 'Add Balance',
+        'profile.referral': 'Referral link: ',
 
         // handle forget_password page message
         'forget_password.enter_email': 'Enter your email address: ',
@@ -114,6 +122,13 @@ export const messages = {
         'sign.state_empty_error': 'State cannot be empty', 
         'sign.country_empty_error': 'Country cannot be empty', 
         'sign.zipcode_empty_error': 'Zipcode cannot be empty',  
+        'sign.show_date': 'Show date',
+        'sign.gender': 'Gender',
+        'sign.eighteen': 'Over eighteen',
+        'sign.contact': 'Preferred contact method',
+        'sign.gendererror': 'Gender not selected',
+        'sign.team': 'Preferred team: ',
+        'sign.title': 'Title',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -141,8 +156,49 @@ export const messages = {
         'change_email.email_can_not_be_same': 'New email address has to be different from the old email address',
 
         // handel referral page message
-        'referral.enter_email': 'Please enter the email account for your referral'
+        'referral.enter_email': 'Please enter the email account for your referral',
 
+
+        // handle balance page
+        'balance.enter_balance': 'Please enter the amount you want to add to your account',
+        'balance.submit': 'Submit',
+        'balance.error': 'The balance you entered is not valid',
+        'balance.confirm': 'The amount you want to add to your balance is $ ',
+
+        // handle game_detail page message
+        'game_detail.title': 'Game Details',
+        'game_detail.name': 'Name: ',
+        'game_detail.category': 'Category: ',
+        'game_detail.startTime': 'Start time: ',
+        'game_detail.endTime': 'End time: ',
+        'game_detail.opponent1': 'Opponent1: ',
+        'game_detail.opponent2': 'Opponent2: ',
+        'game_detail.description': 'Description: ',
+
+        // handle activation page
+        'activation.message': 'An email with an activation link has been sent to your email address',
+        'activate.success': 'You have successfully activated your account',
+
+        // handle game_search page
+        'games_search.title': 'Searched games',
+        'games_search.not_found': 'No games matching your search',
+
+        // handle referral page
+        'referral.user': 'You have successfully referred a User',
+        'referral.error': 'You have reached the maximum referral number',
+
+        //handel signup live check error
+        'error.username': 'Username not valid',
+        'error.email': 'Email address not valid',
+        'error.firstname': 'First name not valid',
+        'error.lastname': 'Last name not valid',
+        'error.phone': 'Phone number not valid',
+        'error.dateofbirth': 'Date of birth not valid',
+        'error.country': 'Country not valid',
+        'error.city': 'City not valid',
+        'error.state': 'State not valid',
+        'error.zipcode': 'Zipcode not valid',
+        'error.passwordnotmatch': 'Two password you entered do not match'
     },
     zh: {
 
@@ -154,6 +210,9 @@ export const messages = {
         'home.copies': '副本',
         'home.copies_available': '可用副本',
         'home.authors': '作者',
+        'home.sports': '最受欢迎的体育游戏',
+        'home.casino': '最受欢迎的赌场游戏',
+        'home.poker': '最受欢迎的扑克游戏',
 
         // handle navigation page message
         'nav.title': '首頁',
@@ -165,6 +224,7 @@ export const messages = {
         'nav.login': '登入',
         'nav.logout': '登出',
         'nav.referral': '推荐新用户',
+        'nav.placeholder': '搜尋遊戲...',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -176,6 +236,7 @@ export const messages = {
         'login.forget_password': '忘記密碼',
         'login.username_empty_error': '用戶名不能為空',
         'login.password_empty_error': '密碼不能為空',
+        'login.option': '或用已下方式登陆',
 
         // handle books page message
         'books.title': '書籍列表',
@@ -223,6 +284,9 @@ export const messages = {
         'profile.update': '更新',
         'profile.back': '返回',
         'profile.level': '用户推荐层级',
+        'profile.balance': '当前账户余额: ',
+        'profile.add': '添加资金',
+        'profile.referral': '推荐链接: ',
 
         // handle forget_password page message
         'forget_password.enter_email': '請輸入郵箱: ',
@@ -258,7 +322,14 @@ export const messages = {
         'sign.city_empty_error': '請輸入城市地址', 
         'sign.state_empty_error': '請輸入地址州', 
         'sign.country_empty_error': '請輸入國家', 
-        'sign.zipcode_empty_error': '請輸入郵遞區號',  
+        'sign.zipcode_empty_error': '請輸入郵遞區號', 
+        'sign.show_date': '显示日期', 
+        'sign.gender': '性别',
+        'sign.eighteen': '满18岁',
+        'sign.contact': '倾向的联系方式',
+        'sign.gendererror': '您未选择性别',
+        'sign.team': '喜欢的队伍: ',
+        'sign.title': '称呼',
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -285,10 +356,52 @@ export const messages = {
         'change_email.cancel': '取消',
         'change_email.email_not_match': '兩郵箱不一致',
         'change_email.email_can_not_be_same': '新郵箱不能跟舊郵箱一樣',
+        
+        // handle game_detail page message
+        'game_detail.title': '遊戲詳情',
+        'game_detail.name': '名稱: ',
+        'game_detail.category': '種類: ',
+        'game_detail.startTime': '開始時間: ',
+        'game_detail.endTime': '結束時間: ',
+        'game_detail.opponent1': '對手1: ',
+        'game_detail.opponent2': '對手2: ',
+        'game_detail.description': '遊戲說明: ',
 
         // handel referral page message
-        'referral.enter_email': '请输入您想推荐的邮箱'
+        'referral.enter_email': '请输入您想推荐的邮箱',
 
+        // handle balance page
+        'balance.enter_balance': '请输入您想增加的资金',
+        'balance.submit': '提交',
+        'balance.error': '您输入的资金不正确',
+        'balance.confirm': '您要加入的资金数量是 $',
+
+        // handle game_search page
+        'games_search.title': '搜尋結果',
+        'games_search.not_found': '沒有您的搜尋結果',
+
+        // handle activation page
+        'activation.message': '账户激活链接已发至您的邮箱',
+
+        // handle activate page
+        'activate.success': '您已经成功的激活了您的邮箱',
+
+        // handle referral page
+        'referral.user': '您已成功推荐该用户',
+        'referral.error': '您已达到最大推荐人数',
+
+        //handel signup live check error
+        'error.username': '用户名错误',
+        'error.email': '邮箱地址错误',
+        'error.firstname': '名错误',
+        'error.lastname': '姓错误',
+        'error.phone': '电话错误',
+        'error.dateofbirth': '出生日期错误',
+        'error.country': '国家错误',
+        'error.city': '城市错误',
+        'error.state': '省市错误',
+        'error.zipcode': '邮编错误',
+        'error.passwordnotmatch': '两次输入的密码不一致'
     }, 
     fr: {
 
@@ -300,6 +413,9 @@ export const messages = {
         'home.copies': 'Copies',
         'home.copies_available': 'Copies disponibles',
         'home.authors': 'Auteures',
+        'home.sports': 'Les jeux de sport les plus populaires',
+        'home.casino': 'Les jeux de casino les plus populaires',
+        'home.poker': 'Jeu de poker le plus populaire',
 
         // handle navigation page message
         'nav.title': 'Accueil',
@@ -311,6 +427,7 @@ export const messages = {
         'nav.login': 'S\'identifier',
         'nav.logout': 'Connectez - Out',
         'nav.referral': 'Recommander de nouveaux utilisateurs',
+        'nav.placeholder': 'Jeu de recherche...',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',
@@ -322,6 +439,7 @@ export const messages = {
         'login.forget_password': 'Mot de passe oublié',
         'login.username_empty_error': 'Le nom d\'utilisateur ne peut pas être vide',
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
+        'login.option': 'Ou connectez-vous avec',
 
         // handle books page message
         'books.title': 'Liste de livres',
@@ -369,6 +487,9 @@ export const messages = {
         'profile.update': 'Mettre à jour',
         'profile.back': 'Retour',
         'profile.level': "Niveau de recommandation de l'utilisateur",
+        'profile.balance': 'Solde du compte courant: ',
+        'profile.add': 'Ajouter des fonds',
+        "profile.referral": "Lien recommandé': ",
 
         // handle forget_password page message
         'forget_password.enter_email': 'Entrez votre adresse email: ',
@@ -405,7 +526,13 @@ export const messages = {
         'sign.state_empty_error': 'Etat ne peut être vide', 
         'sign.country_empty_error': 'Le pays ne peut pas être vide', 
         'sign.zipcode_empty_error': 'Le code postal ne peut pas être vide',  
-        
+        'sign.show_date': 'Montrer la date', 
+        'sign.gender': 'le sexe',
+        'sign.eighteen': 'Plus de dix-huit',
+        'sign.contact': 'Méthode de contact préférée',
+        'sign.gendererror': 'Sexe non sélectionné',
+        'sign.team': 'équipe préférée: ',
+        'sign.title': 'Titre',
 
         // handle update_profile page message
         'update_profile.username':'Nom d\'utilisateur: ',
@@ -433,7 +560,52 @@ export const messages = {
         'change_email.email_can_not_be_same': 'La nouvelle adresse électronique doit être différente de l\'ancienne',
 
         // handel referral page message
-        'referral.enter_email': "Veuillez saisir l'adresse e-mail que vous souhaitez recommander"
+        'referral.enter_email': "Veuillez saisir l'adresse e-mail que vous souhaitez recommander",
+
+
+        // handle balance page
+        'balance.enter_balance': "S'il vous plaît entrer les fonds que vous souhaitez augmenter",
+        'balance.submit': 'Soumettre',
+        'balance.error': 'Les fonds que vous avez entrés sont incorrects',
+        'balance.confirm': 'Le montant que vous souhaitez rejoindre est de $',
+
+        // handle game_detail page message
+        'game_detail.title': 'Détails du jeu',
+        'game_detail.name': 'Prénom: ',
+        'game_detail.category': 'Catégorie: ',
+        'game_detail.startTime': 'Heure de début: ',
+        'game_detail.endTime': 'Heure de fin: ',
+        'game_detail.opponent1': 'Adversaire1: ',
+        'game_detail.opponent2': 'Adversaire2: ',
+        'game_detail.description': 'La description: ',
+
+
+        // handle game_search page
+        'games_search.title': 'Résultat de la recherche',
+        'games_search.not_found': 'Aucun jeu ne correspond à votre recherche',
+
+        // handle activation page
+        'activation.message': "Un lien d'activation de compte a été envoyé à votre adresse e-mail",
+
+        // handle activate page
+        'activate.success': 'Vous avez activé avec succès votre boîte aux lettres',
+
+        // handle referral page
+        'referral.user': 'Vous avez référé un utilisateur avec succès',
+        'referral.error': 'Vous avez atteint le nombre maximum de références',
+
+        //handel signup live check error
+        'error.username': "nom d'utilisateur non valide",
+        'error.email': 'Adresse email non valide',
+        'error.firstname': 'Prénom non valide',
+        'error.lastname': 'Nom non valide',
+        'error.phone': 'Numéro de téléphone non valide',
+        'error.dateofbirth': 'Date de naissance non valide',
+        'error.country': 'Pays non valide',
+        'error.city': 'Ville non valide',
+        'error.state': 'Etat non valide',
+        'error.zipcode': 'Code postal non valide',
+        'error.passwordnotmatch': 'Deux mot de passe que vous avez entré ne correspondent pas'
     }
 }
 

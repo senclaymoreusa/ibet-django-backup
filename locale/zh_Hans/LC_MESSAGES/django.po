@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-05 22:29-0800\n"
+"POT-Creation-Date: 2019-04-16 14:26-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,107 +18,265 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: users/forms.py:81
+#: apps/games/apps.py:7
+msgid "3RD Part Game System"
+msgstr "第三方遊戲系統"
+
+#: apps/games/models.py:17
+msgid "Game Category"
+msgstr "遊戲種類"
+
+#: apps/games/models.py:42
+msgid "Game"
+msgstr "遊戲"
+
+#: apps/operation/apps.py:8
+msgid "Operation System"
+msgstr "營運系統"
+
+#: apps/operation/models.py:23
+msgid "Notice Message"
+msgstr "通知消息"
+
+#: apps/users/admin.py:54
+#, fuzzy
+#| msgid "You username is "
+msgid "username"
+msgstr "您的用户名是"
+
+#: apps/users/admin.py:55
+msgid "password"
+msgstr "密碼"
+
+#: apps/users/adminx.py:18
+msgid "IBET Administration"
+msgstr "IBET管理"
+
+#: apps/users/apps.py:6
+msgid "User System"
+msgstr "用戶系統"
+
+#: apps/users/forms.py:82
 msgid "Invalid date - renewal in past"
-msgstr ""
+msgstr "日期错误"
 
-#: users/forms.py:84
+#: apps/users/forms.py:85
 msgid "Invalid date - renewal more than 4 weeks ahead"
-msgstr ""
+msgstr "日期错误，至少提前4周"
 
-#: users/serializers.py:83
+#: apps/users/models.py:50
+msgid "User Tag"
+msgstr "用戶標籤"
+
+#: apps/users/models.py:100
+msgid "Customer User"
+msgstr "用戶"
+
+#: apps/users/serializers.py:76
 msgid "A user is already registered with this username."
-msgstr ""
+msgstr "该用户名已被占用"
 
-#: users/serializers.py:90
+#: apps/users/serializers.py:83
 msgid "A user is already registered with this e-mail address."
-msgstr ""
+msgstr "该邮箱已被注册"
 
-#: users/serializers.py:99
+#: apps/users/serializers.py:93
+#, fuzzy
+#| msgid "A user is already registered with this username."
+msgid "A user is already registered with this phone number."
+msgstr "该用户名已被占用"
+
+#: apps/users/serializers.py:96
 msgid "The two password fields didn't match"
 msgstr "密碼不相符"
 
-#: users/serializers.py:101
+#: apps/users/serializers.py:98
 msgid "First name not valid"
 msgstr "名字不正確"
 
-#: users/serializers.py:103
+#: apps/users/serializers.py:100
 msgid "Last name not valid"
 msgstr "姓名不正確"
 
-#: users/serializers.py:105
+#: apps/users/serializers.py:102 apps/users/serializers.py:106
+#: apps/users/serializers.py:108
 msgid "Date of birth not valid"
 msgstr "出生日不正確"
 
-#: users/serializers.py:107
+#: apps/users/serializers.py:110
 msgid "Phone not valid"
 msgstr "手機號不正確"
 
-#: users/serializers.py:109
+#: apps/users/serializers.py:112
 msgid "City not valid"
 msgstr "城市名不正確"
 
-#: users/serializers.py:111
+#: apps/users/serializers.py:114
 msgid "Country not valid"
 msgstr "國家不正確"
 
-#: users/serializers.py:113
+#: apps/users/serializers.py:116
 msgid "State not valid"
 msgstr "州不正確"
 
-#: users/serializers.py:115
+#: apps/users/serializers.py:118
 msgid "Zipcode not valid"
 msgstr "郵遞區號不正確"
 
-#: users/serializers.py:180
+#: apps/users/serializers.py:178
 msgid "Must include \"email\" and \"password\"."
-msgstr ""
+msgstr "必须包括 \"email\" and \"password\""
 
-#: users/serializers.py:191
+#: apps/users/serializers.py:189
 msgid "Must include \"username\" and \"password\"."
-msgstr ""
+msgstr "必须包括 \"username\" and \"password\""
 
-#: users/serializers.py:204
+#: apps/users/serializers.py:202
 msgid "Must include either \"username\" or \"email\" and \"password\"."
-msgstr ""
+msgstr "必须包括 \"username\" or \"email\" and \"password\""
 
-#: users/serializers.py:245
+#: apps/users/serializers.py:258
 msgid "User account is disabled."
-msgstr ""
+msgstr "用户账号不可用"
 
-#: users/serializers.py:248
+#: apps/users/serializers.py:261
 msgid "Unable to log in with provided credentials."
 msgstr "用户名或密码错误"
 
-#: users/serializers.py:257
+#: apps/users/serializers.py:270
 msgid "E-mail is not verified."
-msgstr ""
+msgstr "邮件没有被核实"
 
-#: users/views.py:365
+#: apps/users/views.py:207
 msgid "Current user is blocked!"
 msgstr "用户被禁用"
 
-#: users/views.py:454
-msgid "Welcome to Claymore, "
-msgstr "歡迎來到克萊摩爾, "
+#: apps/users/views.py:212
+msgid "Please activate your account!"
+msgstr "请激活您的账户!"
 
-#: users/views.py:455
-msgid "You have successfully set up your new email account: "
-msgstr "你已成功設定好新郵箱地址: "
+#: apps/users/views.py:301
+msgid "You have registered an account at ibet.com, "
+msgstr "您已经再ibet.com 注册了邮箱"
 
-#: users/views.py:458
+#: apps/users/views.py:302
+msgid "You username is "
+msgstr "您的用户名是"
+
+#: apps/users/views.py:302
+#, fuzzy
+#| msgid "Your new Email Address is: "
+msgid ", and your email address is "
+msgstr "您新郵箱地址: "
+
+#: apps/users/views.py:305
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: users/views.py:459
+#: apps/users/views.py:306
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: users/views.py:494
+#: apps/users/views.py:309
+msgid " referred you to sign up an account with Claymore"
+msgstr "推荐你注册一个claymore的账号"
+
+#: apps/users/views.py:310
+msgid "Please use the referral link to register your new account: "
+msgstr "请用推荐链接注册您的新账户"
+
+#: apps/users/views.py:330
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: users/views.py:496
+#: apps/users/views.py:332
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "
+
+#: apps/users/views.py:540
+msgid "Please activate you ibet account "
+msgstr "请激活您的ibet账户"
+
+#: djauth/settings.py:178 templates/admin/base.html:34
+msgid "English"
+msgstr ""
+
+#: djauth/settings.py:179 templates/admin/base.html:35
+msgid "Chinese"
+msgstr "中文"
+
+#: djauth/settings.py:180
+msgid "Franch"
+msgstr ""
+
+#: templates/admin/base.html:36
+msgid "French"
+msgstr ""
+
+#: templates/admin/base.html:42
+msgid "Welcome,"
+msgstr ""
+
+#: templates/admin/base.html:47
+msgid "View site"
+msgstr ""
+
+#: templates/admin/base.html:52
+msgid "Documentation"
+msgstr ""
+
+#: templates/admin/base.html:56
+msgid "Change password"
+msgstr ""
+
+#: templates/admin/base.html:58
+msgid "Log out"
+msgstr ""
+
+#: templates/admin/base.html:68 templates/registration/logged_out.html:4
+msgid "Home"
+msgstr ""
+
+#: templates/admin/base_site.html:3
+msgid "Django site admin"
+msgstr ""
+
+#: templates/admin/base_site.html:6
+msgid "Django administration"
+msgstr ""
+
+#: templates/admin/login.html:21
+msgid "Please correct the error below."
+msgstr ""
+
+#: templates/admin/login.html:21
+msgid "Please correct the errors below."
+msgstr ""
+
+#: templates/admin/login.html:37
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+
+#: templates/admin/login.html:57
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: templates/admin/login.html:60
+msgid "Save password"
+msgstr ""
+
+#: templates/admin/login.html:62
+msgid "Log in"
+msgstr ""
+
+#: templates/registration/logged_out.html:8
+msgid "Thanks for spending some quality time with the Web site today."
+msgstr ""
+
+#: templates/registration/logged_out.html:10
+msgid "Log in again"
+msgstr ""
