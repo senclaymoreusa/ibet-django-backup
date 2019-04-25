@@ -36,5 +36,6 @@ urlpatterns += [
     path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify'),
     path('api/facebooksignup/', views.FacebookRegister.as_view(), name='facebook_signup'),
     path('api/facebooklogin/', csrf_exempt(views.FacebookLoginView.as_view()), name='facebook_login'),
-    path('api/oneclicksignup/', csrf_exempt(views.OneclickRegister.as_view()), name='one_click')
+    path('api/oneclicksignup/', csrf_exempt(views.OneclickRegister.as_view()), name='one_click'),
+    path('api/updateemail/', csrf_exempt(views.UpdateEmail.as_view()), name='update_email')
 ]

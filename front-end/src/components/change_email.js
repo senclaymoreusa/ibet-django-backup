@@ -16,7 +16,14 @@ class Change_Email extends Component {
             new_email: '',
             confirm_email: '',
             errorCode: '',
-            fetched_data: {}
+            fetched_data: {},
+
+            live_check_email: false,
+            live_check_email_match: false,
+
+            email_existed_error: false,
+
+            button_disable: true
         }
 
         this.onInputChange_new_email     = this.onInputChange_new_email.bind(this);
@@ -35,48 +42,52 @@ class Change_Email extends Component {
     }
 
     onInputChange_new_email(event){
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!event.target.value.match(re)){
+            this.setState({live_check_email: true, button_disable: true})
+        }else{
+            this.setState({live_check_email: false})
+            this.check_button_disable()
+        }
         this.setState({new_email: event.target.value});
     }
     
     onInputChange_confirm_email(event){
+        if (this.state.new_email != event.target.value){
+            this.setState({live_check_email_match: true, button_disable: true})
+        }else{
+            this.setState({live_check_email_match: false, button_disable: false})
+        }
         this.setState({confirm_email: event.target.value});
     }
+
+    check_button_disable(){
+        if (!this.live_check_email && this.state.new_email && this.state.confirm_email){
+          this.setState({button_disable: false})
+        }
+      }
     
     onFormSubmit(event){
         event.preventDefault();
         
-        if (this.state.new_email !== this.state.confirm_email) {
-            this.setState({errorCode: errors.EMAIL_NOT_MATCH});
-        } else if(this.state.new_email === this.state.fetched_data.email){
-            this.setState({errorCode: errors.EMAIL_CAN_NOT_BE_SAME});
-        } else if (this.state.new_email === this.state.confirm_email){
-            const token = localStorage.getItem('token');
-            config.headers["Authorization"] = `Token ${token}`;
-            
-            const body = JSON.stringify({
-                username:         this.state.fetched_data.username,
-                email:            this.state.new_email,
-                first_name:       this.state.fetched_data.first_name,
-                last_name:        this.state.fetched_data.last_name,
-                phone:            this.state.fetched_data.phone,
-                date_of_birth:    this.state.fetched_data.date_of_birth,
-                street_address_1: this.state.fetched_data.street_address_1,
-                street_address_2: this.state.fetched_data.street_address_2,
-                country:          this.state.fetched_data.country,
-                city:             this.state.fetched_data.city,
-                zipcode:          this.state.fetched_data.zipcode,
-                state:            this.state.fetched_data.state
-            })
-             
-            axios.put(API_URL + 'users/api/user/', body, config)
-            
-            axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.fetched_data.email}&email=${this.state.new_email}`, config)
-            .then(res => {
-                axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.new_email}&&email=${this.state.new_email}`, config)
-            })
-            
-            this.props.history.push("/profile");
-        }
+        this.setState({email_existed_error: false})
+
+        const token = localStorage.getItem('token');
+        config.headers["Authorization"] = `Token ${token}`;
+
+        axios.post(API_URL + `users/api/updateemail/?old_email=${this.state.fetched_data.email}&new_email=${this.state.new_email}`, config)
+        .then(res => {
+            if (res.data === 'Duplicate'){
+                this.setState({email_existed_error: true})
+            }else{
+                axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.fetched_data.email}&email=${this.state.new_email}`, config)
+                .then(res => {
+                    axios.get(API_URL + `users/api/sendemail/?case=change_email&to_email_address=${this.state.new_email}&&email=${this.state.new_email}`, config)
+                })
+                
+                this.props.history.push("/profile");
+            }
+        })
     }
     render(){
 
@@ -112,6 +123,10 @@ class Change_Email extends Component {
                         />
                     </div>
 
+                    {this.state.live_check_email && <div style={{color: 'red'}}> <FormattedMessage  id="error.email" defaultMessage='Email address not valid' /> </div>}
+
+                    {this.state.email_existed_error && <div style={{color: 'red'}}> <FormattedMessage  id="referral.email_exist" defaultMessage='This email has already been registerd' /> </div>}
+                    
                     <div>
                         <label><b>
                         <FormattedMessage id="change_email.confirm_email" defaultMessage='Confirm Email address: ' />
@@ -124,13 +139,16 @@ class Change_Email extends Component {
                         />
                     </div>
 
+                    {this.state.live_check_email_match && <div style={{color: 'red'}}> <FormattedMessage id="change_email.email_not_match" defaultMessage='Email does not match' />  </div>}
+
                     <span className="input-group-btn">
-                        <button type="submit" className="btn btn-secondary"> 
+                        <button disabled = {this.state.button_disable} type="submit" className="btn btn-secondary"> 
                         <FormattedMessage id="change_email.sumbit" defaultMessage='Submit' />    
                         </button>
                     </span>
+
                     <button style={{color: 'red'}} onClick={()=>{this.props.history.push("/update_profile")}}> 
-                    <FormattedMessage id="change_email.cancel" defaultMessage='Cancel' />       
+                        <FormattedMessage id="change_email.cancel" defaultMessage='Cancel' />       
                     </button>
                 </form>
                 {
