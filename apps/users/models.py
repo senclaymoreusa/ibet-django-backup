@@ -177,8 +177,11 @@ class UserWithTag(models.Model):
     tag = models.ForeignKey(UserTag, on_delete=models.CASCADE, verbose_name=_('Tag'))
     status = models.SmallIntegerField(default=0, choices=STATUS_CHOICES, verbose_name=_('Status'))
     
+    def __str__(self):
+        return '{0}'.format(self.tag)
     class Meta:
         unique_together = (('user','tag'),)
+        verbose_name = "Tag"
         verbose_name_plural = _('Assign tag to user')
 
     

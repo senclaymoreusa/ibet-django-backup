@@ -23,8 +23,9 @@ class GlobalSettings(object):
 from django.contrib import admin
 class UserWithTagInline(object):
     model = UserWithTag
-    extra = 1
-
+    extra = 0
+    exclude = ('tag',)
+    
 # 用户的后台管理
 from .admin import UserAdmin
 class MyUserAdmin(object):
@@ -43,6 +44,7 @@ class MyUserAdmin(object):
     filter_horizontal = ()
     model_icon = 'fa fa-user fa-fw'
     inlines = (UserWithTagInline,)
+    # refresh_times = [3,5] 
     
     def get_model_form(self, **kwargs):
         if self.org_obj is None:
