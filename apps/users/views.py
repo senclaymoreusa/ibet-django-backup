@@ -470,6 +470,10 @@ class CheckReferral(View):
     def get(self, request, *args, **kwargs):
         
         referral_id = self.request.GET['referral_id']
+        email = self.request.GET['email']
+        check_duplicate = get_user_model().objects.filter(email__iexact=email)
+        if check_duplicate:
+            return HttpResponse('Duplicate')
         user = get_user_model().objects.filter(referral_id=referral_id)
         data = Config.objects.all()[0]
         maximum = data.referral_limit

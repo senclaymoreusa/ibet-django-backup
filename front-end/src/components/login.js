@@ -242,6 +242,9 @@ export class Login extends React.Component {
           callback={this.responseFacebook}
         />
 
+
+         
+
         <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
 
         <button onClick={this.handle_one_click}>
@@ -250,19 +253,13 @@ export class Login extends React.Component {
 
         <br/>
 
-        <button> 
-            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <FormattedMessage id="login.back" defaultMessage='Back' /> 
-            </NavLink>
-        </button>
-
 
         <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <button style={{color: 'red'}}>
+            <button>
                 <FormattedMessage id="login.back" defaultMessage='Back' /> 
             </button>
         </NavLink>
-
+        
 
         <br/>
         {
