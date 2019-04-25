@@ -468,7 +468,7 @@ class CheckReferral(View):
         
         referral_id = self.request.GET['referral_id']
         email = self.request.GET['email']
-        check_duplicate = get_user_model().objects.filter(email=email)
+        check_duplicate = get_user_model().objects.filter(email__iexact=email)
         if check_duplicate:
             return HttpResponse('Duplicate')
         user = get_user_model().objects.filter(referral_id=referral_id)
