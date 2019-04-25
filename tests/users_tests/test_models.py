@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 
 from users.models import (
@@ -52,3 +54,18 @@ class GameModelTest(TestCase):
         game = Game.objects.get(id=1)
         expected_object_name = f'{game.name}: {game.category_id}'
         self.assertEquals(expected_object_name, str(game))
+        
+    def test_if_category_null(self):
+        game = Game.objects.get(id=1)
+        category_id = game._meta.get_field('category_id')
+        self.assertNotEqual(category_id, None)
+
+    def test_if_status_null(self):
+        game = Game.objects.get(id=1)
+        category_id = game._meta.get_field('status_id')
+        self.assertNotEqual(category_id, None)
+
+    def test_description_max_length(self):
+        game = Game.objects.get(id=1)
+        max_length = game._meta.get_field('description').max_length
+        self.assertEquals(max_length, 200)

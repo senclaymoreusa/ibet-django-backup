@@ -1,14 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl} from 'react-intl';
 import { errors } from './errors';
 import { authLogin, authCheckState, AUTH_RESULT_SUCCESS, FacebookSignup, FacebookauthLogin } from '../actions';
 import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
+import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_REST_API;
 
-class Login extends React.Component {
+export class Login extends React.Component {
 
     constructor(props){
         super(props);
@@ -28,6 +30,7 @@ class Login extends React.Component {
         this.onInputChange_password         = this.onInputChange_password.bind(this)
         this.onFormSubmit                   = this.onFormSubmit.bind(this);
         this.toggleShow                     = this.toggleShow.bind(this);
+        this.handle_one_click               = this.handle_one_click.bind(this);
     }
 
   componentDidMount() {
@@ -37,6 +40,21 @@ class Login extends React.Component {
         this.props.history.push('/'); 
       } 
     });
+  }
+
+  handle_one_click(){
+    axios.post(API_URL + 'users/api/oneclicksignup/')
+    .then(res => {
+        const { formatMessage } = this.props.intl;
+        const message_username = formatMessage({ id: "login.username" });
+
+        const message_password = formatMessage({ id: "login.password" });
+
+        var temp = res.data.split('-')
+        var username = temp[0]
+        var password = temp[1]
+        alert(message_username + username + '  ' + message_password + password)
+    })
   }
 
   onInputChange_username(event){
@@ -204,6 +222,14 @@ class Login extends React.Component {
             </NavLink>
         </form>
 
+        <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+
+        <button onClick={this.handle_one_click}>
+           <FormattedMessage id="login.signup" defaultMessage='Signup' />
+        </button>
+
+        <br/>
+
         <div>
           <FormattedMessage id="login.option" defaultMessage='Or login with' />
         </div>
@@ -216,7 +242,18 @@ class Login extends React.Component {
           callback={this.responseFacebook}
         />
 
+
          
+
+        <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+
+        <button onClick={this.handle_one_click}>
+           <FormattedMessage id="login.signup" defaultMessage='Signup' />
+        </button>
+
+        <br/>
+
+
         <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
             <button>
                 <FormattedMessage id="login.back" defaultMessage='Back' /> 
@@ -242,4 +279,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login);
+export default injectIntl(connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login));

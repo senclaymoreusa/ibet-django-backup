@@ -51,6 +51,9 @@ import uuid
 
 from threading import Timer
 
+from django.utils.crypto import get_random_string
+import random
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -688,3 +691,33 @@ class FacebookLoginView(GenericAPIView):
         self.serializer.is_valid(raise_exception=True)
 
         return self.login()
+
+
+class OneclickRegister(View):
+    def post(self, request, *args, **kwargs):
+        username = get_random_string(length=8)     # only alphanumeric allowed
+        check_duplicate = CustomUser.objects.filter(username=username)
+        while check_duplicate:
+            username = get_random_string(length=8)
+            check_duplicate = CustomUser.objects.filter(username=username)
+
+        email = get_random_string(length=8)
+        check_duplicate = CustomUser.objects.filter(email=email)
+        while check_duplicate:
+            email = get_random_string(length=8)
+            check_duplicate = CustomUser.objects.filter(email=email)
+
+        phone = ''.join([str(random.randint(0,10)) for i in range(10)])
+        check_duplicate = CustomUser.objects.filter(phone=phone)
+        while check_duplicate:
+            phone = ''.join([str(random.randint(0,10)) for i in range(10)])
+            check_duplicate = CustomUser.objects.filter(phone=phone)
+
+        password = get_random_string(length=10)
+        email = email + '@gmail.com'
+
+        CustomUser.objects.create_user(username, email, phone, password)
+        user = CustomUser.objects.filter(username=username)
+        user.update(active=True)
+
+        return HttpResponse(username + '-' + password)
