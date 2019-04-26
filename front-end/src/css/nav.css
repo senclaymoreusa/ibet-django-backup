@@ -1,0 +1,50 @@
+.nav {
+    display:flex;
+    flex-direction: row;
+    width: 100% ;
+    background-color: grey
+}
+
+.logo {
+    font-size: 30px;
+    margin-left: 10%;
+}
+
+.game {
+    font-size: 25px;
+    margin-left: 10%;
+}
+
+.search {
+    margin-left: 10%;
+}
+
+.language {
+    width: 13%;
+    margin-left: 10%;
+}
+
+.signup {
+    height: 75%;
+    width: 100%;
+    border: 1px solid blue;
+    margin-left: 100%;
+    color: blue;
+    margin-top: 5%;
+   
+}
+
+.login {
+    height: 75%;
+    width: 100%;
+    border: 1px solid blue;
+    margin-left: 30%;
+    color: blue;
+    margin-top: 5%;
+}
+
+
+.row {
+    display:flex;
+    flex-direction: row;
+}

@@ -16,7 +16,7 @@ export const messages = {
         'nav.title': 'Home',
         'nav.books': 'All books',
         'nav.authors': 'All authors',
-        'nav.games': 'All Games',
+        'nav.games': 'Games',
         'nav.search': 'Search',
         'nav.profile': 'Profile',
         'nav.login': 'Login',
@@ -36,8 +36,6 @@ export const messages = {
         'login.password_empty_error': 'Password cannot be empty',
         'login.option': 'Or login with',
         'login.one-click': 'Or try one-click signup',
-        'login.username': 'Your Username is: ',
-        'login.password': 'Your Password is: ',
 
         // handle books page message
         'books.title': 'Book List',
@@ -243,8 +241,6 @@ export const messages = {
         'login.password_empty_error': '密碼不能為空',
         'login.option': '或用已下方式登陆',
         'login.one-click': '或尝试一键注册',
-        'login.username': '您的用户名是: ',
-        'login.password': '您的密码是: ',
 
         // handle books page message
         'books.title': '書籍列表',
@@ -451,8 +447,6 @@ export const messages = {
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
         'login.option': 'Ou connectez-vous avec',
         'login.one-click': "Ou essayez l'inscription en un clic",
-        'login.username': "Votre nom d'utilisateur est: ",
-        'login.password': 'Votre mot de passe est: ',
 
         // handle books page message
         'books.title': 'Liste de livres',

@@ -1,0 +1,14 @@
+.row {
+    display:flex;
+    flex-direction: row;
+}
+
+.type {
+    margin-left: 12%;
+    margin-top: 15%;
+}
+
+.title-game {
+    font-size: 25px;
+    margin-left: 20%;
+}

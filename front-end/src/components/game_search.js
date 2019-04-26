@@ -6,6 +6,7 @@ import { game_detail } from '../actions'
 import { config } from '../util_config';
 import Navigation from './navigation';
 import { FormattedMessage } from 'react-intl';
+import '../css/game_search.css';
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -85,15 +86,17 @@ class Game_Search extends Component {
     render() {
       var games = this.state.games;
       return (
-        <div className="rows" >
+        <div>
+
             <Navigation />
-            <div style={{marginLeft: 30, marginTop: 0}}>
-            <h1><FormattedMessage id="games_search.title" defaultMessage='Searched games' /></h1>
+
+            <div className='row'>
+
             {
               games.map(item => {
                 if (this.props.lang === 'zh' && item.name_zh) {
                   return (
-                    <div key={item.name}>
+                    <div key={item.name} className="game_search">
                       <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name_zh} </NavLink>
                       <br/>
@@ -103,7 +106,7 @@ class Game_Search extends Component {
                 }
                 else if (this.props.lang === 'fr' && item.name_fr) {
                   return (
-                    <div key={item.name}>
+                    <div key={item.name} className="game_search">
                       <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name_fr} </NavLink>
                       <br/>
@@ -113,7 +116,7 @@ class Game_Search extends Component {
                 }
                 else {
                   return (
-                    <div key={item.name}>
+                    <div key={item.name} className="game_search">
                       <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                       <br/>
