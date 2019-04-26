@@ -72,6 +72,7 @@ class RelatedFieldWidgetWrapper(forms.Widget):
         return media
 
     def render(self, name, value, renderer=None, *args, **kwargs):
+        override_name = name.split("-")[-1]
         self.widget.choices = self.choices
         output = []
         if self.add_url:

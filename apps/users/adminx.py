@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category
-from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm
+from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 
@@ -23,8 +23,8 @@ class GlobalSettings(object):
 from django.contrib import admin
 class UserWithTagInline(object):
     model = UserWithTag
-    extra = 0
-    exclude = ('tag',)
+    extra = 1
+    # exclude = ('tag',)
     
 # 用户的后台管理
 from .admin import UserAdmin
@@ -92,8 +92,8 @@ class UserWithTagAdmin(object):
     def get_model_form(self, **kwargs):
         if self.org_obj is None:
             self.form = userWithTagCreationForm
-        # else:
-        #     self.form = CustomUserChangeForm
+        else:
+            self.form = userWithTagEditForm
         return super(UserWithTagAdmin, self).get_model_form(**kwargs)
 
 

@@ -24,7 +24,6 @@ class UserCreationForm(forms.ModelForm):
         return self.cleaned_data
 
     def save(self, commit=True):
-        print('UserCreationForm saving user...')
         user = super(UserCreationForm, self).save(commit=False)
         user.set_password(self.cleaned_data['password1'])
 
@@ -108,3 +107,18 @@ class userWithTagCreationForm(ModelForm):
     class Meta:
         model = UserWithTag
         fields = ('user', 'tag')
+
+
+class userWithTagEditForm(forms.ModelForm):
+    class Meta:
+        model = UserWithTag
+        fields = ('tag', 'user', 'status', )
+
+    def __init__(self, *args, **kwargs):
+        super(userWithTagEditForm, self).__init__(*args, **kwargs)
+        self.fields['tag'].disabled = True
+        self.fields['user'].disabled = True
+        # self.fields['status'].disabled = True
+    
+    def has_add_permission(self):
+        return False
