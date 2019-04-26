@@ -23,6 +23,7 @@ export const messages = {
         'nav.logout': 'Logout',
         'nav.referral': 'Refer new user',
         'nav.placeholder': 'Search game...',
+        'nav.account': 'Accont',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -228,6 +229,7 @@ export const messages = {
         'nav.logout': '登出',
         'nav.referral': '推荐新用户',
         'nav.placeholder': '搜尋遊戲...',
+        'nav.account': '账户',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -241,6 +243,7 @@ export const messages = {
         'login.password_empty_error': '密碼不能為空',
         'login.option': '或用已下方式登陆',
         'login.one-click': '或尝试一键注册',
+        
 
         // handle books page message
         'books.title': '書籍列表',
@@ -434,6 +437,7 @@ export const messages = {
         'nav.logout': 'Connectez - Out',
         'nav.referral': 'Recommander de nouveaux utilisateurs',
         'nav.placeholder': 'Jeu de recherche...',
+        'nav.account': 'Compte',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',

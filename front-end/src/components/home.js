@@ -86,10 +86,11 @@ export class Home extends Component {
 
     return (
       <div >
-        { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
-      
+
         <Navigation />
 
+        { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
+      
         {
           this.state.ready && 
           <div className='games' style={{marginTop: height * 0.1}}> 

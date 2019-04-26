@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-16 14:26-0700\n"
+"POT-Creation-Date: 2019-04-23 15:57-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,99 +52,127 @@ msgstr "mot de passe"
 msgid "IBET Administration"
 msgstr "IBET Administration"
 
+#: apps/users/adminx.py:86 apps/users/models.py:178
+msgid "Status"
+msgstr "Statut"
+
 #: apps/users/apps.py:6
 msgid "User System"
 msgstr "Système utilisateur"
 
-#: apps/users/forms.py:82
+#: apps/users/forms.py:83
 msgid "Invalid date - renewal in past"
 msgstr "Date invalide - renouvellement dans le passé"
 
-#: apps/users/forms.py:85
+#: apps/users/forms.py:86
 msgid "Invalid date - renewal more than 4 weeks ahead"
 msgstr "Date invalide - renouvellement plus de 4 semaines à l'avance"
 
-#: apps/users/models.py:50
+#: apps/users/models.py:65
+msgid "Tag name"
+msgstr "Nom du tag"
+
+#: apps/users/models.py:68
+msgid "Notes"
+msgstr "Remarques"
+
+#: apps/users/models.py:71
 msgid "User Tag"
 msgstr "Tag utilisateur"
 
-#: apps/users/models.py:100
+#: apps/users/models.py:129
 msgid "Customer User"
 msgstr "Utilisateur du client"
 
-#: apps/users/serializers.py:76
+#: apps/users/models.py:176
+#, fuzzy
+#| msgid "User Tag"
+msgid "User"
+msgstr "Tag utilisateur"
+
+#: apps/users/models.py:177
+msgid "Tag"
+msgstr "étiquette"
+
+#: apps/users/models.py:182
+msgid "Assign tag to user"
+msgstr "Attribuer une balise à l'utilisateur"
+
+#: apps/users/serializers.py:81 apps/users/serializers.py:190
+#: apps/users/serializers.py:350
 msgid "A user is already registered with this username."
 msgstr "Un utilisateur est déjà enregistré avec ce nom d'utilisateur"
 
-#: apps/users/serializers.py:83
+#: apps/users/serializers.py:88 apps/users/serializers.py:197
+#: apps/users/serializers.py:357
 msgid "A user is already registered with this e-mail address."
 msgstr "Un utilisateur est déjà enregistré avec cette adresse e-mail"
 
-#: apps/users/serializers.py:93
+#: apps/users/serializers.py:98
 #, fuzzy
 #| msgid "A user is already registered with this username."
 msgid "A user is already registered with this phone number."
 msgstr "Un utilisateur est déjà enregistré avec ce nom d'utilisateur"
 
-#: apps/users/serializers.py:96
+#: apps/users/serializers.py:101
 msgid "The two password fields didn't match"
 msgstr "Les deux champs de mot de passe ne correspondent pas"
 
-#: apps/users/serializers.py:98
+#: apps/users/serializers.py:103
 msgid "First name not valid"
 msgstr "Prénom non valide"
 
-#: apps/users/serializers.py:100
+#: apps/users/serializers.py:105
 msgid "Last name not valid"
 msgstr "Nom non valide"
 
-#: apps/users/serializers.py:102 apps/users/serializers.py:106
-#: apps/users/serializers.py:108
+#: apps/users/serializers.py:107 apps/users/serializers.py:111
+#: apps/users/serializers.py:113
 msgid "Date of birth not valid"
 msgstr "Date de naissance non valide"
 
-#: apps/users/serializers.py:110
+#: apps/users/serializers.py:115
 msgid "Phone not valid"
 msgstr "Téléphone non valide"
 
-#: apps/users/serializers.py:112
+#: apps/users/serializers.py:117
 msgid "City not valid"
 msgstr "Ville non valide"
 
-#: apps/users/serializers.py:114
+#: apps/users/serializers.py:119
 msgid "Country not valid"
 msgstr "Pays non valide"
 
-#: apps/users/serializers.py:116
+#: apps/users/serializers.py:121
 msgid "State not valid"
 msgstr "Etat non valide"
 
-#: apps/users/serializers.py:118
+#: apps/users/serializers.py:123
 msgid "Zipcode not valid"
 msgstr "Code postal non valide"
 
-#: apps/users/serializers.py:178
+#: apps/users/serializers.py:239 apps/users/serializers.py:398
 msgid "Must include \"email\" and \"password\"."
 msgstr ""
 
-#: apps/users/serializers.py:189
+#: apps/users/serializers.py:250 apps/users/serializers.py:409
 msgid "Must include \"username\" and \"password\"."
 msgstr ""
 
-#: apps/users/serializers.py:202
+#: apps/users/serializers.py:263 apps/users/serializers.py:422
 msgid "Must include either \"username\" or \"email\" and \"password\"."
 msgstr ""
 
-#: apps/users/serializers.py:258
+#: apps/users/serializers.py:319 apps/users/serializers.py:464
 msgid "User account is disabled."
 msgstr "Le compte d'utilisateur est désactivé"
 
-#: apps/users/serializers.py:261
+#: apps/users/serializers.py:322 apps/users/serializers.py:467
 msgid "Unable to log in with provided credentials."
 msgstr ""
 "Impossible de se connecter avec les informations d'identification fournies"
 
-#: apps/users/serializers.py:270
+#: apps/users/serializers.py:331 apps/users/serializers.py:476
 msgid "E-mail is not verified."
 msgstr "L'e-mail n'est pas vérifié"
 
@@ -156,49 +184,49 @@ msgstr "L'utilisateur actuel est bloqué!"
 msgid "Please activate your account!"
 msgstr "Veuillez activer votre compte!"
 
-#: apps/users/views.py:301
+#: apps/users/views.py:302
 msgid "You have registered an account at ibet.com, "
 msgstr "Vous avez enregistré un compte sur ibet.com"
 
-#: apps/users/views.py:302
+#: apps/users/views.py:303
 msgid "You username is "
 msgstr "Votre nom d'utilisateur est"
 
-#: apps/users/views.py:302
+#: apps/users/views.py:303
 #, fuzzy
 #| msgid "Your new Email Address is: "
 msgid ", and your email address is "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: apps/users/views.py:305
+#: apps/users/views.py:306
 msgid "Request of changing email address"
 msgstr "Demande de changement d'adresse email"
 
-#: apps/users/views.py:306
+#: apps/users/views.py:307
 msgid "Your new Email Address is: "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: apps/users/views.py:309
+#: apps/users/views.py:310
 msgid " referred you to sign up an account with Claymore"
 msgstr "Vous a demandé de créer un compte avec Claymore"
 
-#: apps/users/views.py:310
+#: apps/users/views.py:311
 msgid "Please use the referral link to register your new account: "
 msgstr ""
 "Veuillez utiliser le lien de parrainage pour enregistrer votre nouveau compte"
 
-#: apps/users/views.py:330
+#: apps/users/views.py:331
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr ""
 "Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
 
-#: apps/users/views.py:332
+#: apps/users/views.py:333
 msgid "Click the link to reset your email password: "
 msgstr ""
 "Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "
 
-#: apps/users/views.py:540
+#: apps/users/views.py:541
 msgid "Please activate you ibet account "
 msgstr "Merci d'activer votre compte ibet"
 

@@ -6,6 +6,42 @@ import { FormattedMessage } from 'react-intl';
 import { logout, handle_search, setLanguage } from '../actions';
 import IoAndroidPerson from "react-icons/lib/io/android-person";
 import '../css/nav.css';
+import {push as BurgerMenu} from 'react-burger-menu'
+
+let styles = {
+  bmBurgerButton: {
+      position: 'relative',
+      width: '100px',
+      height: '30px',
+      left: '100px',
+      top: '5px'
+  },
+  bmBurgerBars: {
+      background: '#373a47'
+  },
+  bmCrossButton: {
+      height: '24px',
+      width: '24px'
+  },
+  bmCross: {
+      background: '#bdc3c7'
+  },
+  bmMenu: {
+      background: 'white',
+      padding: '2.5em 1.5em 0',
+      fontSize: '1.15em'
+  },
+  bmMorphShape: {
+      fill: '#373a47'
+  },
+  bmItemList: {
+      color: '#b8b7ad',
+      padding: '0.8em'
+  },
+  bmOverlay: {
+      background: 'rgba(0, 0, 0, 0.3)'
+  }
+};
 
 const languages = [
   { value: 'en', label: 'English (en)' },
@@ -86,7 +122,7 @@ export class Navigation extends Component {
             <div className='logo' onClick={ () => {this.props.history.push('/')}}>
                ibet 
             </div>
-
+           
             <div className='game'>
                 <NavLink to='/game_type/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.games" defaultMessage='Games' /></NavLink>
             </div>
@@ -127,19 +163,46 @@ export class Navigation extends Component {
             {
               this.props.isAuthenticated ?
               <div>
-                  <div> 
-                      <NavLink to = '/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
-                  </div>
-                  
-                  <div>
-                      <NavLink to = '/referral/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.referral" defaultMessage='Refer new user' /></NavLink>
-                  </div>
+                <BurgerMenu styles={styles} right 
+                    customBurgerIcon={ 
+                      <div className='row account' >
+                        
+                        <div>
+                            <IoAndroidPerson /> 
+                        </div>
+                 
+                        <FormattedMessage id="nav.account" defaultMessage="Account" /> 
+                      </div>
+                    }>
+                    <div> 
+                        <NavLink to = '/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
+                    </div>
+                    
+                    <div>
+                        <NavLink to = '/referral/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.referral" defaultMessage='Refer new user' /></NavLink>
+                    </div>
+
+                    <div>
+                        <NavLink to = '/' 
+                          style={{ textDecoration: 'none' }}
+                          onClick={()=>{
+                          this.props.logout()
+                          window.location.reload()
+                          }}><FormattedMessage id="nav.logout" defaultMessage='Logout' />
+                        </NavLink>
+                    </div>
+
+                </BurgerMenu>
               </div>
               :
               <div> </div>
             }
 
-            {
+            
+            {/*       
+
+              Save this for later use
+
               this.state.facebooklogin === 'true' ?
                 <div className = 'rows' style = {{width: "100px", heihgt: '50px'}}>
                   <div> 
@@ -151,17 +214,20 @@ export class Navigation extends Component {
                 </div>
               :
                   <div> </div>
-            }
+            */}
 
             {
               this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
               
               <div>
+                {/*
                 <NavLink to = '/' style={{ textDecoration: 'none' }} onClick={()=>{
                   this.props.logout()
                   window.location.reload()
                   }}><FormattedMessage id="nav.logout" defaultMessage='Logout' /></NavLink>
+                */}
               </div>
+
               :
               <div className='row'> 
                   <div className='signup' onClick={ () => {this.props.history.push('/signup/')}}>

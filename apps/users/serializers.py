@@ -54,7 +54,7 @@ class RegisterSerializer(serializers.Serializer):
     last_name        = serializers.CharField(required=True)
     date_of_birth    = serializers.CharField(required=True)
     phone            = serializers.CharField(required=True)
-    street_address_1 = serializers.CharField(required=False)
+    street_address_1 = serializers.CharField(required=False, allow_blank=True)
     street_address_2 = serializers.CharField(required=False, allow_blank=True)
     city             = serializers.CharField(required=True)
     country          = serializers.CharField(required=True)
