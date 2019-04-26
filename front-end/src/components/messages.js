@@ -35,6 +35,9 @@ export const messages = {
         'login.username_empty_error': 'Username cannot be empty',
         'login.password_empty_error': 'Password cannot be empty',
         'login.option': 'Or login with',
+        'login.one-click': 'Or try one-click signup',
+        'login.username': 'Your Username is: ',
+        'login.password': 'Your Password is: ',
 
         // handle books page message
         'books.title': 'Book List',
@@ -186,6 +189,8 @@ export const messages = {
         // handle referral page
         'referral.user': 'You have successfully referred a User',
         'referral.error': 'You have reached the maximum referral number',
+        'referral.email_exist': 'This email has already been registerd',
+        'referral.email_valid': 'Please enter a valid email address',
 
         //handel signup live check error
         'error.username': 'Username not valid',
@@ -237,6 +242,9 @@ export const messages = {
         'login.username_empty_error': '用戶名不能為空',
         'login.password_empty_error': '密碼不能為空',
         'login.option': '或用已下方式登陆',
+        'login.one-click': '或尝试一键注册',
+        'login.username': '您的用户名是: ',
+        'login.password': '您的密码是: ',
 
         // handle books page message
         'books.title': '書籍列表',
@@ -389,6 +397,8 @@ export const messages = {
         // handle referral page
         'referral.user': '您已成功推荐该用户',
         'referral.error': '您已达到最大推荐人数',
+        'referral.email_exist': '您输入的邮箱已被注册',
+        'referral.email_valid': '请输入正确的邮箱',
 
         //handel signup live check error
         'error.username': '用户名错误',
@@ -440,6 +450,9 @@ export const messages = {
         'login.username_empty_error': 'Le nom d\'utilisateur ne peut pas être vide',
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
         'login.option': 'Ou connectez-vous avec',
+        'login.one-click': "Ou essayez l'inscription en un clic",
+        'login.username': "Votre nom d'utilisateur est: ",
+        'login.password': 'Votre mot de passe est: ',
 
         // handle books page message
         'books.title': 'Liste de livres',
@@ -593,6 +606,8 @@ export const messages = {
         // handle referral page
         'referral.user': 'Vous avez référé un utilisateur avec succès',
         'referral.error': 'Vous avez atteint le nombre maximum de références',
+        'referral.email_exist': 'Cet email a déjà été enregistré',
+        'referral.email_valid': "S'il vous plaît, mettez une adresse email valide",
 
         //handel signup live check error
         'error.username': "nom d'utilisateur non valide",

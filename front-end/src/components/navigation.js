@@ -11,7 +11,7 @@ const languages = [
   { value: 'fr', label: 'français (fr)' }
 ];
 
-class Navigation extends Component {
+export class Navigation extends Component {
 
     constructor(props){
         super(props);
@@ -139,6 +139,8 @@ class Navigation extends Component {
               :
               <div> 
                   <NavLink to='/login/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.login" defaultMessage='Login' /></NavLink> 
+                  <br/>
+                  <NavLink to='/signup/' style={{ textDecoration: 'none', color: 'blue' }}> <FormattedMessage id="login.signup" defaultMessage='Signup' /> </NavLink>
               </div>
             }
           </div>

@@ -49,3 +49,12 @@ class ViewsTest(TestCase):
         # self.assertTrue('is_paginated' in response.context)
         # self.assertTrue(response.context['is_paginated'] == True)
         self.assertTrue(len(json.loads(response.content)) == 12)
+
+    def test_view_url_accessible_by_exact_search(self):
+        response = self.client.get('/users/api/games/?term=TestSport')
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue(len(json.loads(response.content)) == 12)
+
+    def test_view_url_accessible_by_search(self):
+        response = self.client.get('/users/api/games/?term=Test')
+        self.assertEquals(response.status_code, 200)
