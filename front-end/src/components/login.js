@@ -7,6 +7,8 @@ import { authLogin, authCheckState, AUTH_RESULT_SUCCESS, FacebookSignup, Faceboo
 import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
 import axios from 'axios';
+import IoSocialFacebook from 'react-icons/lib/io/social-facebook';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -91,6 +93,10 @@ export class Login extends React.Component {
         .catch(err => {
         })
     })
+  }
+
+  FacebookFailed = () => {
+      console.log('Facebook Login cancelled')
   }
 
   responseFacebook = (response) => {
@@ -236,14 +242,18 @@ export class Login extends React.Component {
 
         <FacebookLogin
           appId="236001567251034"
-          textButton="Facebook"
+          size = 'small'
+          textButton=""
           fields="name, email, picture"
           onClick={this.componentClicked}
           callback={this.responseFacebook}
+          onFailure={this.FacebookFailed}
+          icon ={ 
+              <div style={{fontSize: '25px'}}> 
+                  <IoSocialFacebook />
+              </div>
+        }
         />
-
-
-         
 
         <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
 
