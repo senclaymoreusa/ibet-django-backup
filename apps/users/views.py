@@ -721,3 +721,18 @@ class OneclickRegister(View):
         user.update(active=True)
 
         return HttpResponse(username + '-' + password)
+
+
+class UpdateEmail(View):
+    def post(self, request, *args, **kwargs):
+
+        old_email = self.request.GET['old_email']
+        new_email = self.request.GET['new_email']
+
+        check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
+        if check_duplicate:
+            return HttpResponse('Duplicate')
+            
+        user = CustomUser.objects.filter(email=old_email)
+        user.update(email=new_email)
+        return HttpResponse('Success')
