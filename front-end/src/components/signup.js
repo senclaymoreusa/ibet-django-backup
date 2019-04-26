@@ -12,6 +12,8 @@ import IoEye from 'react-icons/lib/io/eye';
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
 import { CountryDropdown } from 'react-country-region-selector';
+import 'react-phone-number-input/style.css'
+import PhoneInput from 'react-phone-number-input'
 
 
 const options = ['Male', 'Female']
@@ -60,6 +62,9 @@ class Signup extends React.Component {
       preferred_team: '',
       title: '',
 
+      location_country_name:'',
+      location_country: '',
+
       live_check_username: false,
       live_check_email: false,
       live_check_firstname: false,
@@ -103,6 +108,13 @@ class Signup extends React.Component {
         this.props.history.push('/'); 
       } 
     });
+
+    axios.get('https://ipapi.co/json/')
+    .then(res => {
+      this.setState({
+        location_country_name: res.data.country_name, 
+        location_country: res.data.country})
+    })
   }
 
   onInputChange_username(event){
@@ -160,14 +172,13 @@ class Signup extends React.Component {
     this.setState({last_name: event.target.value});
   }
 
-  onInputChange_phone(event){
-    if (!event.target.value.match(/^[0-9]+$/)){
-      this.setState({live_check_phone: true, button_disable: true,})
+  onInputChange_phone(phone){
+    if (phone && phone.length <= 13 && phone.length >= 7){
+        this.setState({live_check_phone: false, phone: phone})
+        this.check_button_disable()
     }else{
-      this.setState({live_check_phone: false})
-      this.check_button_disable()
+        this.setState({live_check_phone: true})
     }
-    this.setState({phone: event.target.value});
   }
 
   onInputChange_date_of_birth(event){
@@ -303,15 +314,13 @@ class Signup extends React.Component {
       this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
     } else if (!this.state.city) {
       this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
-    } else if (!this.state.state) {
+    } else if (!this.state.country && !this.state.location_country_name) {
       this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
-    } else if (!this.state.country) {
-      this.setState({ errorCode: errors.COUNTRY_EMPTY_ERROR });
     } else if (!this.state.zipcode){
       this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
     } else {
         if (!referrer_id){
-        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
         .then((res) => {
           this.props.history.push('/activation');
           axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -345,7 +354,7 @@ class Signup extends React.Component {
           }
         })
       }else{
-          this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
+        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
           .then((res) => {
             this.props.history.push('/activation');
             axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
@@ -539,8 +548,6 @@ class Signup extends React.Component {
               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
             }
 
-            
-
           </div>
 
           <div>
@@ -602,12 +609,15 @@ class Signup extends React.Component {
             <label><b>
             *<FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
             </b></label>
-            <input
-                placeholder="9496541234"
-                className="form-control"
-                value={this.state.phone}
-                onChange={this.onInputChange_phone}
-            />
+            
+            <div style={{width: '250px'}}>
+              <PhoneInput
+                country={this.state.location_country}
+                placeholder="Enter phone number"
+                value={ this.state.phone }
+                onChange={ this.onInputChange_phone } 
+              />
+            </div>
           </div>
 
           {this.state.live_check_phone && <div style={{color: 'red'}}> <FormattedMessage  id="error.phone" defaultMessage='Phone number not valid' /> </div>}
@@ -693,6 +703,8 @@ class Signup extends React.Component {
             *<FormattedMessage id="signup.country" defaultMessage='Country: ' />   
             </b></label>
             <CountryDropdown
+              showDefaultOption={true}
+              defaultOptionLabel={this.state.location_country_name}
               value={this.state.country}
               onChange={this.onInputChange_country} 
             />

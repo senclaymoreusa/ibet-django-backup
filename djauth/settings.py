@@ -30,6 +30,7 @@ CORS_ORIGIN_WHITELIST = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
 # CORS_ORIGIN_ALLOW_ALL=True     # Stephen
 CORS_ORIGIN_ALLOW_ALL=True
