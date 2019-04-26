@@ -204,10 +204,18 @@
           }
           selected.push($.map(input.find(opt) ,function(opt) { return opt.value; }));
       }
+     
       $.get(this.refresh_url + selected.join() ,function(form_html, status, xhr){
+        // console.log($('<body>' + form_html + '</body>').find('#' + wrap.attr('id')));
         wrap.html($('<body>' + form_html + '</body>').find('#' + wrap.attr('id')).html());
         wrap.exform();
-      });
+      }).fail(
+        function() {
+            // console.log('failed to get select dropdown. Redirect...');
+            window.location.hash = '#' + wrap.attr('id');
+            window.location.reload(true);
+        });
+      ;
       this.modal.modal('hide');
     }
 

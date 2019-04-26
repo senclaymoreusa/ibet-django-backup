@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-16 14:26-0700\n"
+"POT-Creation-Date: 2019-04-23 15:57-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,98 +52,126 @@ msgstr "密碼"
 msgid "IBET Administration"
 msgstr "IBET管理"
 
+#: apps/users/adminx.py:86 apps/users/models.py:178
+msgid "Status"
+msgstr ""
+
 #: apps/users/apps.py:6
 msgid "User System"
 msgstr "用戶系統"
 
-#: apps/users/forms.py:82
+#: apps/users/forms.py:83
 msgid "Invalid date - renewal in past"
 msgstr "日期错误"
 
-#: apps/users/forms.py:85
+#: apps/users/forms.py:86
 msgid "Invalid date - renewal more than 4 weeks ahead"
 msgstr "日期错误，至少提前4周"
 
-#: apps/users/models.py:50
+#: apps/users/models.py:65
+msgid "Tag name"
+msgstr "標籤"
+
+#: apps/users/models.py:68
+msgid "Notes"
+msgstr "標註"
+
+#: apps/users/models.py:71
 msgid "User Tag"
 msgstr "用戶標籤"
 
-#: apps/users/models.py:100
+#: apps/users/models.py:129
 msgid "Customer User"
-msgstr "用戶"
+msgstr "用戶列表"
 
-#: apps/users/serializers.py:76
+#: apps/users/models.py:176
+#, fuzzy
+#| msgid "User Tag"
+msgid "User"
+msgstr "用戶標籤"
+
+#: apps/users/models.py:177
+msgid "Tag"
+msgstr "標籤"
+
+#: apps/users/models.py:182
+msgid "Assign tag to user"
+msgstr "標記用戶標籤"
+
+#: apps/users/serializers.py:81 apps/users/serializers.py:190
+#: apps/users/serializers.py:350
 msgid "A user is already registered with this username."
 msgstr "该用户名已被占用"
 
-#: apps/users/serializers.py:83
+#: apps/users/serializers.py:88 apps/users/serializers.py:197
+#: apps/users/serializers.py:357
 msgid "A user is already registered with this e-mail address."
 msgstr "该邮箱已被注册"
 
-#: apps/users/serializers.py:93
+#: apps/users/serializers.py:98
 #, fuzzy
 #| msgid "A user is already registered with this username."
 msgid "A user is already registered with this phone number."
 msgstr "该用户名已被占用"
 
-#: apps/users/serializers.py:96
+#: apps/users/serializers.py:101
 msgid "The two password fields didn't match"
 msgstr "密碼不相符"
 
-#: apps/users/serializers.py:98
+#: apps/users/serializers.py:103
 msgid "First name not valid"
 msgstr "名字不正確"
 
-#: apps/users/serializers.py:100
+#: apps/users/serializers.py:105
 msgid "Last name not valid"
 msgstr "姓名不正確"
 
-#: apps/users/serializers.py:102 apps/users/serializers.py:106
-#: apps/users/serializers.py:108
+#: apps/users/serializers.py:107 apps/users/serializers.py:111
+#: apps/users/serializers.py:113
 msgid "Date of birth not valid"
 msgstr "出生日不正確"
 
-#: apps/users/serializers.py:110
+#: apps/users/serializers.py:115
 msgid "Phone not valid"
 msgstr "手機號不正確"
 
-#: apps/users/serializers.py:112
+#: apps/users/serializers.py:117
 msgid "City not valid"
 msgstr "城市名不正確"
 
-#: apps/users/serializers.py:114
+#: apps/users/serializers.py:119
 msgid "Country not valid"
 msgstr "國家不正確"
 
-#: apps/users/serializers.py:116
+#: apps/users/serializers.py:121
 msgid "State not valid"
 msgstr "州不正確"
 
-#: apps/users/serializers.py:118
+#: apps/users/serializers.py:123
 msgid "Zipcode not valid"
 msgstr "郵遞區號不正確"
 
-#: apps/users/serializers.py:178
+#: apps/users/serializers.py:239 apps/users/serializers.py:398
 msgid "Must include \"email\" and \"password\"."
 msgstr "必须包括 \"email\" and \"password\""
 
-#: apps/users/serializers.py:189
+#: apps/users/serializers.py:250 apps/users/serializers.py:409
 msgid "Must include \"username\" and \"password\"."
 msgstr "必须包括 \"username\" and \"password\""
 
-#: apps/users/serializers.py:202
+#: apps/users/serializers.py:263 apps/users/serializers.py:422
 msgid "Must include either \"username\" or \"email\" and \"password\"."
 msgstr "必须包括 \"username\" or \"email\" and \"password\""
 
-#: apps/users/serializers.py:258
+#: apps/users/serializers.py:319 apps/users/serializers.py:464
 msgid "User account is disabled."
 msgstr "用户账号不可用"
 
-#: apps/users/serializers.py:261
+#: apps/users/serializers.py:322 apps/users/serializers.py:467
 msgid "Unable to log in with provided credentials."
 msgstr "用户名或密码错误"
 
-#: apps/users/serializers.py:270
+#: apps/users/serializers.py:331 apps/users/serializers.py:476
 msgid "E-mail is not verified."
 msgstr "邮件没有被核实"
 
@@ -155,46 +183,46 @@ msgstr "用户被禁用"
 msgid "Please activate your account!"
 msgstr "请激活您的账户!"
 
-#: apps/users/views.py:301
+#: apps/users/views.py:302
 msgid "You have registered an account at ibet.com, "
 msgstr "您已经再ibet.com 注册了邮箱"
 
-#: apps/users/views.py:302
+#: apps/users/views.py:303
 msgid "You username is "
 msgstr "您的用户名是"
 
-#: apps/users/views.py:302
+#: apps/users/views.py:303
 #, fuzzy
 #| msgid "Your new Email Address is: "
 msgid ", and your email address is "
 msgstr "您新郵箱地址: "
 
-#: apps/users/views.py:305
+#: apps/users/views.py:306
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: apps/users/views.py:306
+#: apps/users/views.py:307
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: apps/users/views.py:309
+#: apps/users/views.py:310
 msgid " referred you to sign up an account with Claymore"
 msgstr "推荐你注册一个claymore的账号"
 
-#: apps/users/views.py:310
+#: apps/users/views.py:311
 msgid "Please use the referral link to register your new account: "
 msgstr "请用推荐链接注册您的新账户"
 
-#: apps/users/views.py:330
+#: apps/users/views.py:331
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: apps/users/views.py:332
+#: apps/users/views.py:333
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "
 
-#: apps/users/views.py:540
+#: apps/users/views.py:541
 msgid "Please activate you ibet account "
 msgstr "请激活您的ibet账户"
 
