@@ -464,8 +464,6 @@ class Signup extends React.Component {
               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
             }
 
-            
-
           </div>
 
           <div>
