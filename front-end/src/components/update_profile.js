@@ -103,9 +103,9 @@ class Update extends Component {
 
     async onInputChange_date_of_birth(date){
         var res = date.toString().split(" ");
-        var month = res[1]
-        var day = res[2]
-        var year = res[3]
+        var month = res[1];
+        var day = res[2];
+        var year = res[3];
         
         var today = new Date();
         var cur_year = today.getFullYear();
@@ -117,14 +117,14 @@ class Update extends Component {
         month = months_to[months.indexOf(month)]
         if (parseInt(year) > cur_year || (parseInt(year) === cur_year && parseInt(month) > cur_month) || (parseInt(year) === cur_year && parseInt(month) === cur_month && parseInt(day) > cur_day))
         {
-          var result = month + '/' + day + '/' + year
-          await this.setState({date_of_birth: result})
-          this.setState({live_check_dob: true, button_disable: true})
+          var result = month + '/' + day + '/' + year;
+          await this.setState({date_of_birth: result});
+          this.setState({live_check_dob: true, button_disable: true});
         }else{
-          var result = month + '/' + day + '/' + year
-          await this.setState({date_of_birth: result})
-          this.setState({live_check_dob: false})
-          this.check_button_disable()
+          var result = month + '/' + day + '/' + year;
+          await this.setState({date_of_birth: result});
+          this.setState({live_check_dob: false});
+          this.check_button_disable();
         }
       }
 
@@ -142,7 +142,7 @@ class Update extends Component {
 
     onInputChange_city(event){
         if (!event.target.value.match(/^[a-zA-Z\s]+$/)){
-            this.setState({live_check_city: true, button_disable: true})
+            this.setState({live_check_city: true, button_disable: true});
         }else{
             this.setState({live_check_city: false})
             this.check_button_disable()
@@ -152,7 +152,7 @@ class Update extends Component {
 
     onInputChange_zipcode(event){
         if (!event.target.value.match(/^[0-9]+$/)){
-            this.setState({live_check_zipcode: true, button_disable: true,})
+            this.setState({live_check_zipcode: true, button_disable: true});
         }else{
             this.setState({live_check_zipcode: false})
             this.check_button_disable()
@@ -162,7 +162,7 @@ class Update extends Component {
 
     onInputChange_state(event){
         if (!event.target.value.match(/^[a-zA-Z]+$/)){
-            this.setState({live_check_state: true, button_disable: true,})
+            this.setState({live_check_state: true, button_disable: true});
         }else{
             this.setState({live_check_state: false})
             this.check_button_disable()
