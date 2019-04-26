@@ -173,7 +173,7 @@ class Signup extends React.Component {
   }
 
   onInputChange_phone(phone){
-    if (phone && phone.length <= 13 && phone.length >= 7){
+    if (phone && phone.length <= 20 && phone.length >= 6){
         this.setState({live_check_phone: false, phone: phone})
         this.check_button_disable()
     }else{
