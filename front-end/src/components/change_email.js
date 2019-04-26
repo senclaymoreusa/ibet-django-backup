@@ -49,12 +49,26 @@ class Change_Email extends Component {
             this.setState({live_check_email: false})
             this.check_button_disable()
         }
+        if (this.state.confirm_email){
+            if (this.state.confirm_email !== event.target.value){
+                this.setState({live_check_email_match: true, button_disable: true})
+            }
+        }
+        if (this.state.confirm_email === event.target.value && event.target.value.match(re)){
+            this.setState({ button_disable: false, live_check_email_match: false})
+        }
         this.setState({new_email: event.target.value});
     }
     
     onInputChange_confirm_email(event){
-        if (this.state.new_email != event.target.value){
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (this.state.new_email !== event.target.value){
             this.setState({live_check_email_match: true, button_disable: true})
+        }else if(!event.target.value.match(re)){
+            this.setState({button_disable: true})
+            if (this.state.new_email === event.target.value){
+                this.setState({live_check_email_match: false})
+            }
         }else{
             this.setState({live_check_email_match: false, button_disable: false})
         }
@@ -62,7 +76,7 @@ class Change_Email extends Component {
     }
 
     check_button_disable(){
-        if (!this.live_check_email && this.state.new_email && this.state.confirm_email){
+        if (!this.live_check_email && this.state.new_email && this.state.confirm_email && this.state.confirm_email === this.state.new_email){
           this.setState({button_disable: false})
         }
       }
