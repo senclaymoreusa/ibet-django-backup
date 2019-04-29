@@ -17,6 +17,10 @@ class Forget_Password extends Component {
            old_email: '',
            success: false,
            errorCode: '',
+
+           button_disable: true,
+
+           live_check_email: ''
         }
 
         this.onInputChange_old_email  = this.onInputChange_old_email.bind(this);
@@ -24,6 +28,12 @@ class Forget_Password extends Component {
     }
 
     onInputChange_old_email(event){
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!event.target.value.match(re)){
+            this.setState({live_check_email: true, button_disable: true})
+        }else{
+            this.setState({live_check_email: false, button_disable: false})
+        }
         this.setState({old_email: event.target.value});
     }
 
@@ -76,8 +86,8 @@ class Forget_Password extends Component {
                     />
 
                     <span className="input-group-btn">
-                        <button type="submit" className="btn btn-secondary"> 
-                        <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
+                        <button disabled = {this.state.button_disable} type="submit" className="btn btn-secondary"> 
+                            <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
                         </button>
                     </span>
                 </form>
