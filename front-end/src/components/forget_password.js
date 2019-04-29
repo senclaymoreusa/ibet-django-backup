@@ -82,6 +82,10 @@ class Forget_Password extends Component {
                     </span>
                 </form>
 
+                <button style={{color: 'red'}} onClick={ () => {this.props.history.push('/')}}>
+                    <FormattedMessage id="login.back" defaultMessage='Back' />
+                </button>
+
                 {
                     showErrors()
                 }
