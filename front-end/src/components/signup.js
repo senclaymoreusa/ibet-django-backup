@@ -22,6 +22,8 @@ const contact = ['Email', 'SMS', 'OMS', 'Push Notification']
 
 const API_URL = process.env.REACT_APP_REST_API;
 
+var height = window.innerHeight
+var width = window.innerWidth
 
 class Signup extends React.Component {
 
@@ -708,6 +710,13 @@ class Signup extends React.Component {
 
         </form>
 
+        <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+
+        <button style={{marginLeft: width * 0.02}} onClick={this.handle_one_click}>
+            <FormattedMessage id="login.signup" defaultMessage='Signup' />
+        </button>
+
+        <br />
 
         <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
             <button style={{color: 'red'}}>
