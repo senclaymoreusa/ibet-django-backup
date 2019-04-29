@@ -7,8 +7,12 @@ import { authLogin, authCheckState, AUTH_RESULT_SUCCESS, FacebookSignup, Faceboo
 import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
 import axios from 'axios';
+import '../css/login.css';
 
 const API_URL = process.env.REACT_APP_REST_API;
+
+var height = window.innerHeight
+var width = window.innerWidth
 
 export class Login extends React.Component {
 
@@ -177,94 +181,103 @@ export class Login extends React.Component {
     }
     
     return (
-        <div>
-        <form onSubmit={this.onFormSubmit} >
+        <div className='login-form '>
 
-            <div>
-            <label><b>
-            <FormattedMessage id="login.username" defaultMessage='Username: ' />
-            </b></label>
-            <input
-                placeholder="claymore"
-                className="form-control"
-                value={this.state.username}
-                onChange={this.onInputChange_username}
-            />
+            <div className='title'> 
+                <FormattedMessage id="nav.login" defaultMessage='Login' />
             </div>
 
-            <div>
-            <label><b>
-            <FormattedMessage id="login.password" defaultMessage='Password: ' />  
-            </b></label>
-            <input
+            <form onSubmit={this.onFormSubmit} >
                 
-                type = {this.state.hidden ? "password" : "text"}
-                placeholder="password"
-                className="form-control"
-                value={this.state.password}
-                onChange={this.onInputChange_password}
-            />
-            <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+                <FormattedMessage id="login.username" defaultMessage='Username: ' />
+                
+                <br/>
+
+                <input
+                    placeholder="claymore"
+                    className="form-control"
+                    value={this.state.username}
+                    onChange={this.onInputChange_username}
+                />
+
+                <br/>
+
+                <FormattedMessage id="login.password" defaultMessage='Password: ' />  
+ 
+                <br/>
+
+                <input
+                    
+                    type = {this.state.hidden ? "password" : "text"}
+                    placeholder="password"
+                    className="form-control"
+                    value={this.state.password}
+                    onChange={this.onInputChange_password}
+                />
+
+
+                <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+ 
+                <br/>
+
+                <button className="login-button" type="submit" > 
+                    <FormattedMessage id="login.login" defaultMessage='Login' />
+                </button>
+                
+                <br />
+
+                <div className='or'> 
+                    <FormattedMessage id="login.or" defaultMessage='Or' /> 
+                </div>
+
+       
+
+                <button className="submit-button" onClick={ () => {this.props.history.push('/signup/')}}>
+                    <FormattedMessage id="login.signup" defaultMessage='Signup' />
+                </button>
+
+                <br/>
+
+                <div className='forget'> 
+                    <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
+                        <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
+                    </NavLink>
+                </div>
+
+            </form>
+
+            <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+
+            <button style={{marginLeft: width * 0.02}} onClick={this.handle_one_click}>
+                <FormattedMessage id="login.signup" defaultMessage='Signup' />
+            </button>
+
+            <br/>
+
+            <div style={{marginLeft: width * 0.05, marginTop: height * 0.01}}>
+                <FormattedMessage id="login.option" defaultMessage='Or login with' />
             </div>
 
-            <span className="input-group-btn">
-                <button type="submit" className="btn btn-secondary"> 
-                <FormattedMessage id="login.login" defaultMessage='Login' />
-                </button>
-            </span> 
-            <FormattedMessage id="login.or" defaultMessage='Or' />        
-            <NavLink to='/signup' style={{ textDecoration: 'none', color: 'blue' }}>
-                <FormattedMessage id="login.signup" defaultMessage='Signup' />
-            </NavLink>
+            <div className='facebook'> 
+                <FacebookLogin
+                    appId="236001567251034"
+                    textButton="Facebook"
+                    fields="name, email, picture"
+                    onClick={this.componentClicked}
+                    callback={this.responseFacebook}
+                />
+            </div>
+
             <br/>
-            <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
-                <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
-            </NavLink>
-        </form>
 
-        <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
-
-        <button onClick={this.handle_one_click}>
-           <FormattedMessage id="login.signup" defaultMessage='Signup' />
-        </button>
-
-        <br/>
-
-        <div>
-          <FormattedMessage id="login.option" defaultMessage='Or login with' />
-        </div>
-
-        <FacebookLogin
-          appId="236001567251034"
-          textButton="Facebook"
-          fields="name, email, picture"
-          onClick={this.componentClicked}
-          callback={this.responseFacebook}
-        />
-
-
-         
-
-        <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
-
-        <button onClick={this.handle_one_click}>
-           <FormattedMessage id="login.signup" defaultMessage='Signup' />
-        </button>
-
-        <br/>
-
-
-        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <button>
-                <FormattedMessage id="login.back" defaultMessage='Back' /> 
+            <button className="back" onClick={ () => {this.props.history.push('/')}}>
+                <FormattedMessage id="login.back" defaultMessage='Back' />
             </button>
-        </NavLink>
-        
 
-        <br/>
-        {
-            showErrors()
-        }
+            <br/>
+            {
+                showErrors()
+            }
     </div>
     );
   }
