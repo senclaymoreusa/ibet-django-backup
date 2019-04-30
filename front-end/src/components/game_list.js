@@ -6,6 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import Navigation from "./navigation";
 import { game_detail } from '../actions';
 import { config } from '../util_config';
+import '../css/game_list.css';
 
 
 
@@ -33,17 +34,14 @@ class Game_List extends Component {
     render() {
       const games = this.state.games;
       return (
-        <div className="rows">
-          <div>
+        <div>
             <Navigation />
-          </div>
-          <div>
-          <h1><FormattedMessage id="games_list.title" defaultMessage='Game List' /></h1>
+          <div className='row'>
             {
               games.map(item => {
                   if (this.props.lang === 'zh' && item.name_zh) {
                     return (
-                      <div key={item.name}>
+                      <div key={item.name} className='game_list'>
                         <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                           }}> {item.name_zh} </NavLink>
                         <br/>
@@ -53,7 +51,7 @@ class Game_List extends Component {
                   }
                   else if (this.props.lang === 'fr' && item.name_fr) {
                     return (
-                      <div key={item.name}>
+                      <div key={item.name} className='game_list'>
                         <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                           }}> {item.name_fr} </NavLink>
                         <br/>
@@ -63,7 +61,7 @@ class Game_List extends Component {
                   }
                   else {
                     return (
-                      <div key={item.name}>
+                      <div key={item.name} className='game_list'>
                         <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                           }}> {item.name} </NavLink>
                         <br/>

@@ -57,10 +57,8 @@ class Game_Detail extends Component {
    
     
     return(
-      <div className='rows'>
-        <div>
+      <div>
           <Navigation />
-        </div>
         <div>
           <h1><FormattedMessage id="game_detail.title" defaultMessage='Game Details' /></h1>
           
