@@ -13,7 +13,6 @@ let styles = {
       position: 'relative',
       width: '100px',
       height: '30px',
-      left: '100px',
       top: '5px'
   },
   bmBurgerBars: {
