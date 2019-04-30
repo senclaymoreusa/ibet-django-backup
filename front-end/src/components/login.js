@@ -29,7 +29,12 @@ export class Login extends React.Component {
 
           name: '',
           email: '',
-          button_clicked: 0
+          button_clicked: 0,
+
+          live_check_username: false,
+          live_check_password: false,
+          button_disable: true,
+          button_type: 'login-button-disable'
         };
     
         this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -64,10 +69,20 @@ export class Login extends React.Component {
   }
 
   onInputChange_username(event){
+    if(event.target.value && this.state.password){
+        this.setState({button_disable: false, button_type: 'login-button'})
+    }else{
+        this.setState({button_disable: true, button_type: 'login-button-disable'})
+    }
     this.setState({username: event.target.value});
   }
 
   onInputChange_password(event){
+    if(event.target.value && this.state.username){
+        this.setState({button_disable: false, button_type: 'login-button'})
+    }else{
+        this.setState({button_disable: true, button_type: 'login-button-disable'})
+    }
     this.setState({password: event.target.value});
   }
 
@@ -165,7 +180,6 @@ export class Login extends React.Component {
 
   render() {
 
-
     const showErrors = () => {
       if (this.state.errorCode === errors.USERNAME_EMPTY_ERROR) {
           return (
@@ -226,7 +240,7 @@ export class Login extends React.Component {
  
                 <br/>
 
-                <button className="login-button" type="submit" > 
+                <button disabled = {this.state.button_disable} className={this.state.button_type} type="submit" > 
                     <FormattedMessage id="login.login" defaultMessage='Login' />
                 </button>
                 
