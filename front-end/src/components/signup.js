@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { authSignup, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
 import axios from 'axios';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
@@ -101,6 +101,7 @@ class Signup extends React.Component {
     this.onInputChange_contact          = this.onInputChange_contact.bind(this);
     this.onInputChange_team             = this.onInputChange_team.bind(this);
     this.onInputChange_title            = this.onInputChange_title.bind(this);
+    this.handle_one_click               = this.handle_one_click.bind(this);
   }
 
   componentDidMount() {
@@ -301,6 +302,22 @@ class Signup extends React.Component {
 
       this.setState({button_disable: false})
     }
+  }
+
+  handle_one_click(){
+    axios.post(API_URL + 'users/api/oneclicksignup/')
+    .then(res => {
+        const { formatMessage } = this.props.intl;
+        const message_username = formatMessage({ id: "login.username" });
+
+        const message_password = formatMessage({ id: "login.password" });
+
+        var temp = res.data.split('-')
+        var username = temp[0]
+        var password = temp[1]
+        alert(message_username + username + '  ' + message_password + password)
+        this.props.history.push('/login/')
+    })
   }
 
   onFormSubmit(event){
@@ -739,4 +756,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, {authSignup, authCheckState})(Signup);
+export default injectIntl(connect(mapStateToProps, {authSignup, authCheckState})(Signup));
