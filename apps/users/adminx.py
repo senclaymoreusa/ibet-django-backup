@@ -3,7 +3,7 @@ import xadmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import  CustomUser, UserTag, UserWithTag, Category
+from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
@@ -97,6 +97,14 @@ class UserWithTagAdmin(object):
         return super(UserWithTagAdmin, self).get_model_form(**kwargs)
 
 
+class UserActionAdmin(object):
+
+    list_display = ('user','event_type','dollow_amount', 'created_time', 'modified_time')
+    list_filter = ('user', 'event_type')
+    model_icon = 'fa fa-cogs'
+    search_fields = ('user__username', 'event_type')
+
+
     
 xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
@@ -105,5 +113,6 @@ xadmin.site.unregister(Group)
 xadmin.site.register(CustomUser, MyUserAdmin)
 xadmin.site.register(UserTag,TagAdmin)
 xadmin.site.register(UserWithTag,UserWithTagAdmin)
+xadmin.site.register(UserAction, UserActionAdmin)
 
 xadmin.site.login_form = AdminAuthenticationForm

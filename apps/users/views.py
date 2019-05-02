@@ -29,7 +29,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -265,6 +265,13 @@ class LoginView(GenericAPIView):
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
+        
+        action = UserAction(
+            user=CustomUser.objects.filter(username=self.user),
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=0,
+        )
+        action.save()
         return self.get_response()
 
     def get_response(self):

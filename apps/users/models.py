@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 import base64
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -268,3 +269,39 @@ class Config(models.Model):
     def __str__(self):
         return self.name
     
+class UserAction(models.Model):
+    
+    EVENT_CHOICES = (
+        (0, 'Login'),
+        (1, 'Logout'),
+        (2, 'Register'),
+        (3, 'Deposit'),
+        (4, 'Withdraw'),
+        (5, 'Page Visit'),
+    )
+
+    ip_addr = models.GenericIPAddressField(_('action ip'), blank=True, null=True)
+    event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event type'))
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    device = models.CharField(max_length=50, blank=True, null=True)
+    browser = models.CharField(max_length=50, blank=True, null=True)
+    refer_url = models.CharField(max_length=50, blank=True, null=True)
+    dollow_amount = models.FloatField()
+    page_id = models.IntegerField(blank=True, null=True)
+    created_time = models.DateTimeField(
+        _('created time'),
+        default=timezone.now,
+        editable=False,
+    )
+    modified_time = models.DateTimeField(
+        _('modified time'),
+        default=timezone.now,
+        editable=False,
+    )
+    
+
+
+
+
+
+
