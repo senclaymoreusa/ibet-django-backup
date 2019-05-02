@@ -188,6 +188,13 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
+        action = UserAction(
+            user= CustomUser.objects.filter(username=str(user))[0],
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=2,
+        )
+        action.save()
+
         return Response(self.get_response_data(user),
                         status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -263,15 +270,15 @@ class LoginView(GenericAPIView):
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
 
-        if getattr(settings, 'REST_SESSION_LOGIN', True):
-            self.process_login()
-        
         action = UserAction(
-            user=CustomUser.objects.filter(username=self.user),
+            user= CustomUser.objects.filter(username=self.user)[0],
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=0,
         )
         action.save()
+
+        if getattr(settings, 'REST_SESSION_LOGIN', True):
+            self.process_login()
         return self.get_response()
 
     def get_response(self):
@@ -535,6 +542,14 @@ class AddBalance(View):
             reward_points = referr_object[0].reward_points
             current_points = reward_points + data.Referee_add_balance_reward
             referr_object.update(reward_points=current_points)
+
+        action = UserAction(
+            user= CustomUser.objects.filter(username=username)[0],
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=3,
+            dollow_amount=balance
+        )
+        action.save()
         return HttpResponse('Success')
 
 
