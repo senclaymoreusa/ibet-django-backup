@@ -19,6 +19,8 @@ import Balance from './components/balance'
 import Activation from './components/activation'
 import Activate from './components/activate'
 
+const deposit = "deposit"
+const withdraw = "withdraw"
 const BaseRouter = () => (
   <div>
     <Route exact path="/" component={Home} />
@@ -36,7 +38,7 @@ const BaseRouter = () => (
     <Route exact path="/email_sent" component={Email_Sent} />
     <Route exact path="/reset_password_done" component={Reset_Password_Done} />
     <Route exact path="/referral" component={Referral} />
-    <Route exact path="/balance" component={Balance} />
+    <Route exact path="/balance/:type?" component={Balance} />
     <Route exact path="/activation" component={Activation} />
     <Route exact path="/activate/:token?" component={Activate} />
   </div>
