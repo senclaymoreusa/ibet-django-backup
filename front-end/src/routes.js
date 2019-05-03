@@ -19,8 +19,6 @@ import Balance from './components/balance'
 import Activation from './components/activation'
 import Activate from './components/activate'
 
-const deposit = "deposit"
-const withdraw = "withdraw"
 const BaseRouter = () => (
   <div>
     <Route exact path="/" component={Home} />
