@@ -50,7 +50,7 @@ class Balance extends Component {
         
         event.preventDefault();
         if (window.confirm( message + this.state.balance)){
-            if (this.state.type == 'add') {
+            if (this.state.type === 'add') {
                 axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`, config)
                 .then(res => {
                     if (res.data === 'Failed'){
