@@ -144,7 +144,7 @@ export class Navigation extends Component {
 
               <span className="input-group-btn">
                 <NavLink to = {`/game_search/${this.state.term}`}  style={{ textDecoration: 'none' }}>
-                <button type="submit" className="btn btn-secondary"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
+                    <button type="submit" className="cursor"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
                 </NavLink>
               </span>
 
@@ -229,11 +229,11 @@ export class Navigation extends Component {
 
               :
               <div className='row'> 
-                  <div className='signup' onClick={ () => {this.props.history.push('/signup/')}}>
+                  <div className='signup cursor' onClick={ () => {this.props.history.push('/signup/')}}>
                       <FormattedMessage id="login.signup" defaultMessage='Signup' /> 
                   </div>
 
-                  <div className='login row'  onClick={ () => {this.props.history.push('/login/')}}> 
+                  <div className='login row cursor'  onClick={ () => {this.props.history.push('/login/')}}> 
                       <IoAndroidPerson />
                       <FormattedMessage id="nav.login" defaultMessage='Login' /> 
                   </div>
