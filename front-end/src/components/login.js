@@ -261,7 +261,7 @@ export class Login extends React.Component {
 
                 <div className='forget'> 
                     <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
-                        <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
+                        <FormattedMessage id="login.forget_password" defaultMessage='Forgot Password?' /> 
                     </NavLink>
                 </div>
 
