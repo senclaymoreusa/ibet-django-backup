@@ -8,6 +8,7 @@
 .logo {
     font-size: 30px;
     margin-left: 10%;
+    cursor: pointer;
 }
 
 .game {
@@ -55,4 +56,8 @@
     color: blue;
     width: 1000%;
     height: 10%;
+}
+
+.cursor {
+    cursor: pointer;
 }

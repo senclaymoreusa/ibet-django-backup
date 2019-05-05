@@ -107,6 +107,10 @@ class Forget_Password extends Component {
                     {this.state.email_not_exist && <div style={{color: 'red'}}> <FormattedMessage  id="forget_password.email_not_valid" defaultMessage='Email does not exsit' /> </div>}
                 </form>
 
+                <button style={{color: 'red'}} onClick={ () => {this.props.history.push('/')}}>
+                    <FormattedMessage id="login.back" defaultMessage='Back' />
+                </button>
+
                 {
                     showErrors()
                 }
