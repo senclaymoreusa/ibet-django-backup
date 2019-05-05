@@ -7,7 +7,9 @@ import { authLogin, authCheckState, AUTH_RESULT_SUCCESS, FacebookSignup, Faceboo
 import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
 import axios from 'axios';
+import IoSocialFacebook from 'react-icons/lib/io/social-facebook';
 import '../css/login.css';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -95,6 +97,10 @@ export class Login extends React.Component {
         .catch(err => {
         })
     })
+  }
+
+  FacebookFailed = () => {
+      console.log('Facebook Login cancelled')
   }
 
   responseFacebook = (response) => {
@@ -238,11 +244,13 @@ export class Login extends React.Component {
 
                 <br/>
 
+
                 <div className='forget'> 
                     <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
                         <FormattedMessage id="login.forget_password" defaultMessage='Forgot Password?' /> 
                     </NavLink>
                 </div>
+
 
             </form>
 
@@ -252,21 +260,27 @@ export class Login extends React.Component {
                 <FormattedMessage id="login.signup" defaultMessage='Signup' />
             </button>
 
+
             <br/>
 
             <div style={{marginLeft: width * 0.05, marginTop: height * 0.01}}>
                 <FormattedMessage id="login.option" defaultMessage='Or login with' />
             </div>
 
-            <div className='facebook'> 
-                <FacebookLogin
-                    appId="236001567251034"
-                    textButton="Facebook"
-                    fields="name, email, picture"
-                    onClick={this.componentClicked}
-                    callback={this.responseFacebook}
-                />
-            </div>
+            <FacebookLogin
+                appId="236001567251034"
+                size = 'small'
+                textButton=""
+                fields="name, email, picture"
+                onClick={this.componentClicked}
+                callback={this.responseFacebook}
+                onFailure={this.FacebookFailed}
+                icon ={ 
+                    <div style={{fontSize: '25px'}}> 
+                        <IoSocialFacebook />
+                    </div>
+                }
+            />
 
             <br/>
 

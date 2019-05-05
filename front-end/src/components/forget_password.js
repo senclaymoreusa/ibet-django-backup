@@ -17,6 +17,12 @@ class Forget_Password extends Component {
            old_email: '',
            success: false,
            errorCode: '',
+
+           button_disable: true,
+
+           live_check_email: '',
+
+           email_not_exist: false
         }
 
         this.onInputChange_old_email  = this.onInputChange_old_email.bind(this);
@@ -24,7 +30,13 @@ class Forget_Password extends Component {
     }
 
     onInputChange_old_email(event){
-        this.setState({old_email: event.target.value});
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!event.target.value.match(re)){
+            this.setState({live_check_email: true, button_disable: true})
+        }else{
+            this.setState({live_check_email: false, button_disable: false})
+        }
+        this.setState({old_email: event.target.value, email_not_exist: false});
     }
 
     onFormSubmit(event){
@@ -34,14 +46,23 @@ class Forget_Password extends Component {
             email: this.state.old_email
         }
 
-        axios.post(API_URL + 'users/api/reset-password/', body, config)
+        axios.get(API_URL + `users/api/checkemailexist/?email=${this.state.old_email}`, config)
         .then(res => {
-            this.setState({success: true})
-            this.props.history.push("/email_sent")
+            if (res.data === 'Exist'){
+                axios.post(API_URL + 'users/api/reset-password/', body, config)
+                .then(res => {
+                    this.setState({success: true})
+                    this.props.history.push("/email_sent")
+                })
+                .catch((err) => {
+                    this.setState({errorCode: errors.EMAIL_NOT_VALID});
+                });
+            }else{
+                this.setState({email_not_exist: true})
+            }
         })
-        .catch((err) => {
-            this.setState({errorCode: errors.EMAIL_NOT_VALID});
-        });
+
+        
     }
 
     render(){
@@ -76,10 +97,14 @@ class Forget_Password extends Component {
                     />
 
                     <span className="input-group-btn">
-                        <button type="submit" className="btn btn-secondary"> 
-                        <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
+                        <button disabled = {this.state.button_disable} type="submit" className="btn btn-secondary"> 
+                            <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
                         </button>
                     </span>
+
+                    {this.state.live_check_email && <div style={{color: 'red'}}> <FormattedMessage  id="error.email" defaultMessage='Email address not valid' /> </div>}
+
+                    {this.state.email_not_exist && <div style={{color: 'red'}}> <FormattedMessage  id="forget_password.email_not_valid" defaultMessage='Email does not exsit' /> </div>}
                 </form>
 
                 <button style={{color: 'red'}} onClick={ () => {this.props.history.push('/')}}>
