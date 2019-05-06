@@ -88,14 +88,14 @@ class Game_List extends Component {
             this.setState({
               games: res.data
           });
-          this.setState({game_to: Menu(this.state.games, this.props.lang)})
+          this.setState({game_to_render: Menu(this.state.games, this.props.lang)})
         });
     }
 
     render() {
       const games = this.state.games;
 
-      const menu = this.state.game_to;
+      const menu = this.state.game_to_render;
 
       return (
         <div>

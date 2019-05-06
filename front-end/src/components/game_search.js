@@ -129,7 +129,7 @@ class Game_Search extends Component {
                 temp = res.data;
             })
           this.setState({games: temp});
-          this.setState({game_to: Menu(this.state.games, this.props.lang)})
+          this.setState({game_to_render: Menu(this.state.games, this.props.lang)})
         }
         this.setState({loading: false});
     }
@@ -149,7 +149,7 @@ class Game_Search extends Component {
     render() {
       var games = this.state.games;
 
-      const menu = this.state.game_to;
+      const menu = this.state.game_to_render;
 
       return (
         <div>
