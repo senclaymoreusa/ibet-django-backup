@@ -13,6 +13,10 @@ import { createStore, applyMiddleware } from 'redux';
 import ReduxThunk from 'redux-thunk';
 import reducers from './reducers';
 
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap-css-only/css/bootstrap.min.css';
+import './assets/scss/mdb.scss';
+
 addLocaleData(en);
 addLocaleData(zh);
 addLocaleData(fr);

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Navigation from "./navigation";
+import TopNavbar from "./top_navbar";
 import { connect } from 'react-redux';
 import { authCheckState } from '../actions';
 import { FormattedMessage } from 'react-intl';
@@ -24,39 +25,39 @@ export class Home extends Component {
     poker: [],
     ready: false
   }
-  
+
   async componentDidMount() {
 
     this.props.authCheckState()
     axios.get(API_URL + 'operation/api/notice-message', config)
-    .then(res => {
-    //   console.log(res);
-      this.setState({notices: res.data});
-    })
+      .then(res => {
+        //   console.log(res);
+        this.setState({ notices: res.data });
+      })
 
     var URL = API_URL + 'users/api/games/?term=Sports';
 
     await axios.get(URL, config)
-    .then(res => {
-      this.setState({sports: res.data.slice(0, 3)});
-    })
+      .then(res => {
+        this.setState({ sports: res.data.slice(0, 3) });
+      })
 
     URL = API_URL + 'users/api/games/?term=Casino';
 
     await axios.get(URL, config)
-    .then(res => {
-      this.setState({casino: res.data.slice(0, 3)});
-    })
+      .then(res => {
+        this.setState({ casino: res.data.slice(0, 3) });
+      })
 
     URL = API_URL + 'users/api/games/?term=Poker';
 
     await axios.get(URL, config)
-    .then(res => {
-      this.setState({poker: res.data.slice(0, 3)});
-    })
+      .then(res => {
+        this.setState({ poker: res.data.slice(0, 3) });
+      })
 
-    this.setState({ready: true})
- 
+    this.setState({ ready: true })
+
   }
 
   render() {
@@ -82,92 +83,92 @@ export class Home extends Component {
       for (let i = 0; i < 20; i++) {
         noticeStr += "\u00A0";
       }
-    });   
+    });
 
     return (
       <div >
 
         <Navigation />
+        <TopNavbar />
+        {noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
 
-        { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
-      
         {
-          this.state.ready && 
-          <div className='games' style={{marginTop: height * 0.1}}> 
-              <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' /> 
+          this.state.ready &&
+          <div className='games' style={{ marginTop: height * 0.1 }}>
+            <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' />
           </div>
         }
-        
+
         <div className="rows" >
           {
             this.state.ready && this.state.sports.map(item => {
               return (
-                  <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
-                    <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
-                        }}> {item.name} </NavLink>
-                    <br/>
-                    <img src={item.image} height = "100" width="100" alt = 'Not available'/>
-                  </div>
-                )
+                <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1, width: width * 0.1 }}>
+                  <NavLink to={`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={() => {
+                  }}> {item.name} </NavLink>
+                  <br />
+                  <img src={item.image} height="100" width="100" alt='Not available' />
+                </div>
+              )
             })
           }
         </div>
 
 
         {
-          this.state.ready && 
-          <div className='poker' style={{marginTop: height * 0.1}}> 
-              <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' /> 
+          this.state.ready &&
+          <div className='poker' style={{ marginTop: height * 0.1 }}>
+            <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' />
           </div>
         }
-        
+
         <div className="rows" >
           {
             this.state.ready && this.state.poker.map(item => {
               return (
-                  <div key={item.name} style={{  marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
-                    <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
-                        }}> {item.name} </NavLink>
-                    <br/>
-                    <img src={item.image} height = "100" width="100" alt = 'Not available'/>
-                  </div>
-                )
+                <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1, width: width * 0.1 }}>
+                  <NavLink to={`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={() => {
+                  }}> {item.name} </NavLink>
+                  <br />
+                  <img src={item.image} height="100" width="100" alt='Not available' />
+                </div>
+              )
             })
           }
         </div>
 
         {
-          this.state.ready && 
-          <div className='casino' style={{marginTop: height * 0.1}}> 
-              <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' /> 
+          this.state.ready &&
+          <div className='casino' style={{ marginTop: height * 0.1 }}>
+            <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' />
           </div>
         }
-        
+
         <div className="rows" >
           {
             this.state.ready && this.state.casino.map(item => {
               return (
-                  <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
-                    <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
-                        }}> {item.name} </NavLink>
-                    <br/>
-                    <img src={item.image} height = "100" width="100" alt = 'Not available'/>
-                  </div>
-                )
+                <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1, width: width * 0.1 }}>
+                  <NavLink to={`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={() => {
+                  }}> {item.name} </NavLink>
+                  <br />
+                  <img src={item.image} height="100" width="100" alt='Not available' />
+                </div>
+              )
             })
           }
         </div>
 
       </div>
-      
+
     );
   }
 }
 
-  const mapStateToProps = (state) => {
-    return {
-        lang: state.language.lang
-    }
+const mapStateToProps = (state) => {
+  return {
+    lang: state.language.lang
   }
+}
 
-  export default connect(mapStateToProps, {authCheckState})(Home);
+export default connect(mapStateToProps, { authCheckState })(Home);
