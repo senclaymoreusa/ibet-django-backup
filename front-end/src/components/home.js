@@ -8,11 +8,14 @@ import axios from 'axios';
 import { config } from '../util_config';
 import moment from 'moment';
 import { NavLink } from 'react-router-dom';
+import '../css/home.css';
 
 const API_URL = process.env.REACT_APP_REST_API;
 
+var height = window.innerHeight
+var width = window.innerWidth
 
-class Home extends Component {
+export class Home extends Component {
 
   state = {
     notices: [],
@@ -83,23 +86,23 @@ class Home extends Component {
 
     return (
       <div >
+
+        <Navigation />
+
         { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
-        <div className="rows"> 
-          <Navigation />
-          <div> 
-            <h1> <FormattedMessage id="home.title" defaultMessage='Claymore' /></h1>
-          </div>
-        </div>
-        
+      
         {
-          this.state.ready && <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' /> </h2>
+          this.state.ready && 
+          <div className='games' style={{marginTop: height * 0.1}}> 
+              <FormattedMessage id="home.sports" defaultMessage='Most Popular Sports' /> 
+          </div>
         }
         
         <div className="rows" >
           {
             this.state.ready && this.state.sports.map(item => {
               return (
-                  <div key={item.name} style={{marginLeft: '300px'}}>
+                  <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
@@ -109,15 +112,20 @@ class Home extends Component {
             })
           }
         </div>
+
+
         {
-          this.state.ready && <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' /> </h2>
+          this.state.ready && 
+          <div className='poker' style={{marginTop: height * 0.1}}> 
+              <FormattedMessage id="home.poker" defaultMessage='Most Popluar Poker' /> 
+          </div>
         }
         
         <div className="rows" >
           {
             this.state.ready && this.state.poker.map(item => {
               return (
-                  <div key={item.name} style={{marginLeft: '300px'}}>
+                  <div key={item.name} style={{  marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
@@ -127,15 +135,19 @@ class Home extends Component {
             })
           }
         </div>
+
         {
-          this.state.ready && <h2 style={{marginLeft: '400px'}}> <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' /> </h2>
+          this.state.ready && 
+          <div className='casino' style={{marginTop: height * 0.1}}> 
+              <FormattedMessage id="home.casino" defaultMessage='Most Popluar Casino' /> 
+          </div>
         }
         
         <div className="rows" >
           {
             this.state.ready && this.state.casino.map(item => {
               return (
-                  <div key={item.name} style={{marginLeft: '300px'}}>
+                  <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>

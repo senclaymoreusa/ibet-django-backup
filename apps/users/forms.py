@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, UserWithTag
+from django.forms import ModelForm
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -23,7 +24,6 @@ class UserCreationForm(forms.ModelForm):
         return self.cleaned_data
 
     def save(self, commit=True):
-        print('UserCreationForm saving user...')
         user = super(UserCreationForm, self).save(commit=False)
         user.set_password(self.cleaned_data['password1'])
 
@@ -91,12 +91,34 @@ class RenewBookForm(forms.Form):
 
 
 
-from django.contrib.auth.forms import AuthenticationForm
+# from django.contrib.auth.forms import AuthenticationForm
 
-class AuthenticationFormWithChekUsersStatus(AuthenticationForm):
-    def confirm_login_allowed(self, user):
-        if not user.status == 'enabled':
-            raise forms.ValidationError(
-                ("Your account has disabled."),
-                code='inactive',
-            )
+# class AuthenticationFormWithChekUsersStatus(AuthenticationForm):
+#     def confirm_login_allowed(self, user):
+#         if not user.status == 'enabled':
+#             raise forms.ValidationError(
+#                 ("Your account has disabled."),
+#                 code='inactive',
+#             )
+
+
+class userWithTagCreationForm(ModelForm):
+
+    class Meta:
+        model = UserWithTag
+        fields = ('user', 'tag')
+
+
+class userWithTagEditForm(forms.ModelForm):
+    class Meta:
+        model = UserWithTag
+        fields = ('tag', 'user', 'status', )
+
+    def __init__(self, *args, **kwargs):
+        super(userWithTagEditForm, self).__init__(*args, **kwargs)
+        self.fields['tag'].disabled = True
+        self.fields['user'].disabled = True
+        # self.fields['status'].disabled = True
+    
+    def has_add_permission(self):
+        return False

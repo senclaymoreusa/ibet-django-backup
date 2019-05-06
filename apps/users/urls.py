@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from users.forms import AuthenticationFormWithChekUsersStatus
+# from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
 from django.views.decorators.csrf import csrf_exempt
 
@@ -35,5 +35,8 @@ urlpatterns += [
     path('api/activate/', csrf_exempt(views.Activation.as_view()), name='activate'),
     path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify'),
     path('api/facebooksignup/', views.FacebookRegister.as_view(), name='facebook_signup'),
-    path('api/facebooklogin/', csrf_exempt(views.FacebookLoginView.as_view()), name='facebook_login')
+    path('api/facebooklogin/', csrf_exempt(views.FacebookLoginView.as_view()), name='facebook_login'),
+    path('api/oneclicksignup/', csrf_exempt(views.OneclickRegister.as_view()), name='one_click'),
+    path('api/updateemail/', csrf_exempt(views.UpdateEmail.as_view()), name='update_email'),
+    path('api/checkemailexist/', views.CheckEmailExixted.as_view(), name='email_exist')
 ]

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { authSignup, authCheckState, AUTH_RESULT_SUCCESS } from '../actions'
 import axios from 'axios';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { config } from '../util_config';
 import { errors } from './errors';
 import Calendar from 'react-calendar';
@@ -12,6 +12,8 @@ import IoEye from 'react-icons/lib/io/eye';
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
 import { CountryDropdown } from 'react-country-region-selector';
+import 'react-phone-number-input/style.css'
+import PhoneInput from 'react-phone-number-input'
 
 
 const options = ['Male', 'Female']
@@ -20,6 +22,8 @@ const contact = ['Email', 'SMS', 'OMS', 'Push Notification']
 
 const API_URL = process.env.REACT_APP_REST_API;
 
+var height = window.innerHeight
+var width = window.innerWidth
 
 class Signup extends React.Component {
 
@@ -61,6 +65,7 @@ class Signup extends React.Component {
       title: '',
 
       location_country_name:'',
+      location_country: '',
 
       live_check_username: false,
       live_check_email: false,
@@ -96,6 +101,7 @@ class Signup extends React.Component {
     this.onInputChange_contact          = this.onInputChange_contact.bind(this);
     this.onInputChange_team             = this.onInputChange_team.bind(this);
     this.onInputChange_title            = this.onInputChange_title.bind(this);
+    this.handle_one_click               = this.handle_one_click.bind(this);
   }
 
   componentDidMount() {
@@ -108,7 +114,9 @@ class Signup extends React.Component {
 
     axios.get('https://ipapi.co/json/')
     .then(res => {
-      this.setState({location_country_name: res.data.country_name})
+      this.setState({
+        location_country_name: res.data.country_name, 
+        location_country: res.data.country})
     })
   }
 
@@ -167,19 +175,18 @@ class Signup extends React.Component {
     this.setState({last_name: event.target.value});
   }
 
-  onInputChange_phone(event){
-    if (!event.target.value.match(/^[0-9]+$/)){
-      this.setState({live_check_phone: true, button_disable: true,})
+  onInputChange_phone(phone){
+    if (phone && phone.length <= 20 && phone.length >= 6){
+        this.setState({live_check_phone: false, phone: phone})
+        this.check_button_disable()
     }else{
-      this.setState({live_check_phone: false})
-      this.check_button_disable()
+        this.setState({live_check_phone: true, button_disable: true, phone: phone})
     }
-    this.setState({phone: event.target.value});
   }
 
   onInputChange_date_of_birth(event){
     if (!event.target.value.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/)){
-      this.setState({live_check_dob: true, button_disable: true,})
+      this.setState({live_check_dob: true, button_disable: true})
     }else{
       this.setState({live_check_dob: false})
       this.check_button_disable()
@@ -258,13 +265,26 @@ class Signup extends React.Component {
     var month = res[1]
     var day = res[2]
     var year = res[3]
+    
+    var today = new Date();
+    var cur_year = today.getFullYear();
+    var cur_month = today.getMonth()+1 ;
+    var cur_day = today.getDate();
+
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     var months_to = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
     month = months_to[months.indexOf(month)]
-    var result = month + '/' + day + '/' + year
-    await this.setState({date_of_birth: result})
-    this.setState({live_check_dob: false})
-    this.check_button_disable()
+    if (parseInt(year) > cur_year || (parseInt(year) === cur_year && parseInt(month) > cur_month) || (parseInt(year) === cur_year && parseInt(month) === cur_month && parseInt(day) > cur_day))
+    {
+      var result = month + '/' + day + '/' + year
+      await this.setState({date_of_birth: result})
+      this.setState({live_check_dob: true, button_disable: true})
+    }else{
+      var result = month + '/' + day + '/' + year
+      await this.setState({date_of_birth: result})
+      this.setState({live_check_dob: false})
+      this.check_button_disable()
+    }
   }
 
   check_button_disable(){
@@ -284,187 +304,106 @@ class Signup extends React.Component {
     }
   }
 
+  handle_one_click(){
+    axios.post(API_URL + 'users/api/oneclicksignup/')
+    .then(res => {
+        const { formatMessage } = this.props.intl;
+        const message_username = formatMessage({ id: "login.username" });
+
+        const message_password = formatMessage({ id: "login.password" });
+
+        var temp = res.data.split('-')
+        var username = temp[0]
+        var password = temp[1]
+        alert(message_username + username + '  ' + message_password + password)
+        this.props.history.push('/login/')
+    })
+  }
+
   onFormSubmit(event){
     event.preventDefault();
-    //console.log(this.state.gender)
 
     this.setState({errorCode: ''})
 
     const referrer_id = this.props.location.pathname.slice(8)
 
-    if (!this.state.username) {
-      this.setState({ errorCode: errors.USERNAME_EMPTY_ERROR });
-    } else if (!this.state.email) {
-      this.setState({ errorCode: errors.EMAIL_EMPTY_ERROR });
-    } else if (!this.state.password1 || !this.state.password2) {
-      this.setState({ errorCode: errors.PASSWORD_EMPTY_ERROR });
-    } else if (!this.state.first_name) {
-      this.setState({ errorCode: errors.FIRST_NAME_EMPTY_ERROR });
-    } else if (!this.state.last_name) {
-      this.setState({ errorCode: errors.LAST_NAME_EMPTY_ERROR });
-    } else if (!this.state.phone) {
-      this.setState({ errorCode: errors.PHONE_EMPTY_ERROR });
-    } else if (!this.state.date_of_birth) {
-      this.setState({ errorCode: errors.DATEOFBIRTH_EMPTY_ERROR });
-    } else if (!this.state.street_address_1) {
-      this.setState({ errorCode: errors.STREET_EMPTY_ERROR });
-    } else if (!this.state.city) {
-      this.setState({ errorCode: errors.CITY_EMPTY_ERROR });
-    } else if (!this.state.country && !this.state.location_country_name) {
-      this.setState({ errorCode: errors.STATE_EMPTY_ERROR });
-    } else if (!this.state.zipcode){
-      this.setState({ errorCode: errors.ZIPCODE_EMPTY_ERROR });
-    } else {
-        if (!referrer_id){
-        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
-        .then((res) => {
-          this.props.history.push('/activation');
-          axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
-          axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
-        }).catch(err => {
-          // console.log(err.response);
-          if ('username' in err.response.data) {
-            this.setState({username_error: err.response.data.username[0]})
-          } else {
-            this.setState({username_error: ''})
-          }
-
-          if ('email' in err.response.data) {
-            this.setState({email_error: err.response.data.email[0]})
-          } else {
-            this.setState({email_error: ''})
-          }
-
-          if ('phone' in err.response.data) {
-            this.setState({phone_error: err.response.data.phone[0]})
-          } else {
-            this.setState({phone_error: ''})
-          }
-
-          if ('non_field_errors' in err.response.data) {
-            this.setState({error: err.response.data.non_field_errors.slice(0)})
-          }
-
-          if ('password1' in err.response.data) {
-            this.setState({password_error: err.response.data.password1[0]})
-          }
-        })
-      }else{
-        this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone, this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
-          .then((res) => {
-            this.props.history.push('/activation');
-            axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
-            axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
-            axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
-        
-        }).catch(err => {
-            // console.log(err.response);
-            if (err.response &&  'username' in err.response.data) {
-              this.setState({username_error: err.response.data.username[0]})
-            } else {
-              this.setState({username_error: ''})
-            }
-    
-            if (err.response && 'email' in err.response.data) {
-              this.setState({email_error: err.response.data.email[0]})
-            } else {
-              this.setState({email_error: ''})
-            }
-
-            if (err.response && 'phone' in err.response.data) {
-              this.setState({phone_error: err.response.data.phone[0]})
-            } else {
-              this.setState({phone_error: ''})
-            }
-    
-            if (err.response && 'non_field_errors' in err.response.data) {
-              this.setState({error: err.response.data.non_field_errors.slice(0)})
-            }
-    
-            if (err.response && 'password1' in err.response.data) {
-              this.setState({password_error: err.response.data.password1[0]})
-            }
-          })
+    if (!referrer_id){
+    this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone.slice(1), this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
+    .then((res) => {
+      this.props.history.push('/activation');
+      axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
+      axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
+    }).catch(err => {
+      // console.log(err.response);
+      if ('username' in err.response.data) {
+        this.setState({username_error: err.response.data.username[0]})
+      } else {
+        this.setState({username_error: ''})
       }
+
+      if ('email' in err.response.data) {
+        this.setState({email_error: err.response.data.email[0]})
+      } else {
+        this.setState({email_error: ''})
+      }
+
+      if ('phone' in err.response.data) {
+        this.setState({phone_error: err.response.data.phone[0]})
+      } else {
+        this.setState({phone_error: ''})
+      }
+
+      if ('non_field_errors' in err.response.data) {
+        this.setState({error: err.response.data.non_field_errors.slice(0)})
+      }
+
+      if ('password1' in err.response.data) {
+        this.setState({password_error: err.response.data.password1[0]})
+      }
+    })
+  }else{
+    this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone.slice(1), this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
+      .then((res) => {
+        this.props.history.push('/activation');
+        axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
+        axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
+        axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
+    
+    }).catch(err => {
+        // console.log(err.response);
+        if (err.response &&  'username' in err.response.data) {
+          this.setState({username_error: err.response.data.username[0]})
+        } else {
+          this.setState({username_error: ''})
+        }
+
+        if (err.response && 'email' in err.response.data) {
+          this.setState({email_error: err.response.data.email[0]})
+        } else {
+          this.setState({email_error: ''})
+        }
+
+        if (err.response && 'phone' in err.response.data) {
+          this.setState({phone_error: err.response.data.phone[0]})
+        } else {
+          this.setState({phone_error: ''})
+        }
+
+        if (err.response && 'non_field_errors' in err.response.data) {
+          this.setState({error: err.response.data.non_field_errors.slice(0)})
+        }
+
+        if (err.response && 'password1' in err.response.data) {
+          this.setState({password_error: err.response.data.password1[0]})
+        }
+      })
     }
   }
 
   render() {
 
     const showErrors = () => {
-      if (this.state.errorCode === errors.USERNAME_EMPTY_ERROR) {
-          return (
-              <div style={{color: 'red'}}> 
-                  <FormattedMessage id="sign.username_empty_error" defaultMessage='Username cannot be empty' /> 
-              </div>
-          );
-      } else if (this.state.errorCode === errors.EMAIL_EMPTY_ERROR) {
-          return (
-              <div style={{color: 'red'}}> 
-                  <FormattedMessage id="sign.email_empty_error" defaultMessage='Email cannot be empty' /> 
-              </div>
-          );
-      } else if (this.state.errorCode === errors.PASSWORD_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.password_empty_error" defaultMessage='Password cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.FIRST_NAME_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.firstName_empty_error" defaultMessage='First Name cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.LAST_NAME_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.lastName_empty_error" defaultMessage='Last Name cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.PHONE_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.phone_empty_error" defaultMessage='Phone cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.DATEOFBIRTH_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.dob_empty_error" defaultMessage='Date Of Birth cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.STREET_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.street_empty_error" defaultMessage='Street cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.CITY_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.city_empty_error" defaultMessage='City cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.STATE_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.state_empty_error" defaultMessage='State cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.COUNTRY_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.country_empty_error" defaultMessage='Country cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.errorCode === errors.ZIPCODE_EMPTY_ERROR) {
-        return (
-            <div style={{color: 'red'}}> 
-                <FormattedMessage id="sign.zipcode_empty_error" defaultMessage='Zipcode cannot be empty' /> 
-            </div>
-        );
-      } else if (this.state.username_error) {
+      if (this.state.username_error) {
         return (
             <div style={{color: 'red'}}> {this.state.username_error} </div>
         )
@@ -544,8 +483,6 @@ class Signup extends React.Component {
               this.state.password1 && <PasswordStrengthMeter password={this.state.password1} />
             }
 
-            
-
           </div>
 
           <div>
@@ -607,37 +544,42 @@ class Signup extends React.Component {
             <label><b>
             *<FormattedMessage id="signup.phone" defaultMessage='Phone: ' />    
             </b></label>
-            <input
-                placeholder="9496541234"
-                className="form-control"
-                value={this.state.phone}
-                onChange={this.onInputChange_phone}
-            />
+            
+            <div style={{width: '250px'}}>
+              <PhoneInput
+                country={this.state.location_country}
+                placeholder="Enter phone number"
+                value={ this.state.phone }
+                onChange={ this.onInputChange_phone } 
+              />
+            </div>
           </div>
 
           {this.state.live_check_phone && <div style={{color: 'red'}}> <FormattedMessage  id="error.phone" defaultMessage='Phone number not valid' /> </div>}
 
-          <div>
+          <div className='rows'>
             <label><b>
             *<FormattedMessage id="signup.dob" defaultMessage='Date of birth: ' />  
             </b></label>
-            <input
-                placeholder="mm/dd/yyyy"
-                className="form-control"
-                value={this.state.date_of_birth}
-                onChange={this.onInputChange_date_of_birth}
-            />
+
+            {
+              <div style={{color: 'blue'}}>  {this.state.date_of_birth}  </div>
+            }
+
+          </div>
+
+          <div>
             <div onClick={() => {this.setState({show_date: !this.state.show_date})}} style={{color: 'blue'}}>
-              <FormattedMessage id="sign.show_date" defaultMessage='Show date' />
+                <FormattedMessage id="sign.show_date" defaultMessage='Show date' />
             </div>
           </div>
-         
-          {
-          this.state.show_date && <Calendar
-            onChange={this.onInputChange_date}
-            value={this.state.date}
-          />
-          }
+
+            {
+              this.state.show_date && 
+              <Calendar
+                onChange={this.onInputChange_date}
+              />
+            }
 
           {this.state.live_check_dob && <div style={{color: 'red'}}> <FormattedMessage  id="error.dateofbirth" defaultMessage='Date of birth not valid' /> </div>}
 
@@ -785,6 +727,13 @@ class Signup extends React.Component {
 
         </form>
 
+        <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+
+        <button style={{marginLeft: width * 0.02}} onClick={this.handle_one_click}>
+            <FormattedMessage id="login.signup" defaultMessage='Signup' />
+        </button>
+
+        <br />
 
         <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
             <button style={{color: 'red'}}>
@@ -807,4 +756,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, {authSignup, authCheckState})(Signup);
+export default injectIntl(connect(mapStateToProps, {authSignup, authCheckState})(Signup));

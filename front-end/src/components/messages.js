@@ -16,13 +16,14 @@ export const messages = {
         'nav.title': 'Home',
         'nav.books': 'All books',
         'nav.authors': 'All authors',
-        'nav.games': 'All Games',
+        'nav.games': 'Games',
         'nav.search': 'Search',
         'nav.profile': 'Profile',
         'nav.login': 'Login',
         'nav.logout': 'Logout',
         'nav.referral': 'Refer new user',
         'nav.placeholder': 'Search game...',
+        'nav.account': 'Accont',
 
         // handle login page message
         'login.username': 'Username: ',
@@ -31,10 +32,11 @@ export const messages = {
         'login.login': 'Login',
         'login.signup': 'Signup',
         'login.back': 'Back',
-        'login.forget_password': 'Forget password',
+        'login.forget_password': 'Forgot Password?',
         'login.username_empty_error': 'Username cannot be empty',
         'login.password_empty_error': 'Password cannot be empty',
         'login.option': 'Or login with',
+        'login.one-click': 'Or try one-click signup',
 
         // handle books page message
         'books.title': 'Book List',
@@ -186,6 +188,8 @@ export const messages = {
         // handle referral page
         'referral.user': 'You have successfully referred a User',
         'referral.error': 'You have reached the maximum referral number',
+        'referral.email_exist': 'This email has already been registerd',
+        'referral.email_valid': 'Please enter a valid email address',
 
         //handel signup live check error
         'error.username': 'Username not valid',
@@ -225,6 +229,7 @@ export const messages = {
         'nav.logout': '登出',
         'nav.referral': '推荐新用户',
         'nav.placeholder': '搜尋遊戲...',
+        'nav.account': '账户',
 
         // handle login page message
         'login.username': '用戶名: ',
@@ -233,10 +238,12 @@ export const messages = {
         'login.login': '登入',
         'login.signup': '註冊',
         'login.back': '返回',
-        'login.forget_password': '忘記密碼',
+        'login.forget_password': '忘記密碼?',
         'login.username_empty_error': '用戶名不能為空',
         'login.password_empty_error': '密碼不能為空',
         'login.option': '或用已下方式登陆',
+        'login.one-click': '或尝试一键注册',
+        
 
         // handle books page message
         'books.title': '書籍列表',
@@ -389,6 +396,8 @@ export const messages = {
         // handle referral page
         'referral.user': '您已成功推荐该用户',
         'referral.error': '您已达到最大推荐人数',
+        'referral.email_exist': '您输入的邮箱已被注册',
+        'referral.email_valid': '请输入正确的邮箱',
 
         //handel signup live check error
         'error.username': '用户名错误',
@@ -428,6 +437,7 @@ export const messages = {
         'nav.logout': 'Connectez - Out',
         'nav.referral': 'Recommander de nouveaux utilisateurs',
         'nav.placeholder': 'Jeu de recherche...',
+        'nav.account': 'Compte',
 
         // handle login page message
         'login.username': 'Nom d\'utilisateur: ',
@@ -436,10 +446,11 @@ export const messages = {
         'login.login': 'S\'identifier',
         'login.signup': 'S\'inscrire',
         'login.back': 'Retour',
-        'login.forget_password': 'Mot de passe oublié',
+        'login.forget_password': 'Mot de passe oublié?',
         'login.username_empty_error': 'Le nom d\'utilisateur ne peut pas être vide',
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
         'login.option': 'Ou connectez-vous avec',
+        'login.one-click': "Ou essayez l'inscription en un clic",
 
         // handle books page message
         'books.title': 'Liste de livres',
@@ -593,6 +604,8 @@ export const messages = {
         // handle referral page
         'referral.user': 'Vous avez référé un utilisateur avec succès',
         'referral.error': 'Vous avez atteint le nombre maximum de références',
+        'referral.email_exist': 'Cet email a déjà été enregistré',
+        'referral.email_valid': "S'il vous plaît, mettez une adresse email valide",
 
         //handel signup live check error
         'error.username': "nom d'utilisateur non valide",

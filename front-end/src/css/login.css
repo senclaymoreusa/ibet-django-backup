@@ -1,0 +1,52 @@
+.login-form {
+    margin-left: 38%;
+    margin-top: 10%;
+}
+
+.login-button {
+    background-color: white;
+    border: 1px solid blue;
+    width: 25%;
+    color: blue;
+}
+
+.login-button-disable {
+    background-color: white;
+    border: 1px solid grey;
+    width: 25%;
+    color: grey;
+}
+
+.submit-button {
+    background-color: white;
+    border: 1px solid blue;
+    width: 25%;
+    color: blue;
+}
+
+.or {
+    margin-left: 12%;
+}
+
+.forget {
+    margin-top: 1%;
+    margin-left: 6%;
+}
+
+.facebook {
+    width: 10%;
+    height: 10%;
+    margin-left: 5%;
+}
+
+.back {
+    background-color: white;
+    border: 1px solid red;
+    width: 25%;
+    color: red;
+}
+
+.title {
+    font-size: 30px;
+    margin-left: 8%;
+}

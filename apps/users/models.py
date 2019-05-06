@@ -62,16 +62,16 @@ class MyUserManager(BaseUserManager):
 
 class UserTag(models.Model):
     tag_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, verbose_name=_("Tag name"), unique=True)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
-    notes = models.CharField(max_length=200)
+    notes = models.CharField(max_length=200, verbose_name=_("Notes"))
 
     class Meta:
         verbose_name_plural = _('User Tag')
     
     def __str__(self):
-        return '{0}'.format(self.name)
+        return self.name
 
 class CustomUser(AbstractBaseUser):
     # add additional fields in here
@@ -89,7 +89,7 @@ class CustomUser(AbstractBaseUser):
 			unique=True,
 			verbose_name='email address'
 		)
-    user_tag = models.ManyToManyField(UserTag, blank=True)
+    user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20, unique=True)
@@ -118,7 +118,7 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES)
+    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
 
     objects = MyUserManager()
 
@@ -167,6 +167,24 @@ class CustomUser(AbstractBaseUser):
         return True
 
 
+class UserWithTag(models.Model):
+
+    STATUS_CHOICES = (
+        (0, 'pending'),
+        (1, 'approved'),
+    )
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    tag = models.ForeignKey(UserTag, on_delete=models.CASCADE, verbose_name=_('Tag'))
+    status = models.SmallIntegerField(default=0, choices=STATUS_CHOICES, verbose_name=_('Status'))
+    
+    def __str__(self):
+        return '{0}'.format(self.tag)
+    class Meta:
+        unique_together = (('user','tag'),)
+        verbose_name = "Tag"
+        verbose_name_plural = _('Assign tag to user')
+
+    
 class Status(models.Model):
     status_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)

@@ -1,14 +1,22 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl} from 'react-intl';
 import { errors } from './errors';
 import { authLogin, authCheckState, AUTH_RESULT_SUCCESS, FacebookSignup, FacebookauthLogin } from '../actions';
 import IoEye from 'react-icons/lib/io/eye';
 import FacebookLogin from "react-facebook-login";
+import axios from 'axios';
+import IoSocialFacebook from 'react-icons/lib/io/social-facebook';
+import '../css/login.css';
 
 
-class Login extends React.Component {
+const API_URL = process.env.REACT_APP_REST_API;
+
+var height = window.innerHeight
+var width = window.innerWidth
+
+export class Login extends React.Component {
 
     constructor(props){
         super(props);
@@ -21,13 +29,19 @@ class Login extends React.Component {
 
           name: '',
           email: '',
-          button_clicked: 0
+          button_clicked: 0,
+
+          live_check_username: false,
+          live_check_password: false,
+          button_disable: true,
+          button_type: 'login-button-disable'
         };
     
         this.onInputChange_username         = this.onInputChange_username.bind(this);
         this.onInputChange_password         = this.onInputChange_password.bind(this)
         this.onFormSubmit                   = this.onFormSubmit.bind(this);
         this.toggleShow                     = this.toggleShow.bind(this);
+        this.handle_one_click               = this.handle_one_click.bind(this);
     }
 
   componentDidMount() {
@@ -39,11 +53,36 @@ class Login extends React.Component {
     });
   }
 
+  handle_one_click(){
+    axios.post(API_URL + 'users/api/oneclicksignup/')
+    .then(res => {
+        const { formatMessage } = this.props.intl;
+        const message_username = formatMessage({ id: "login.username" });
+
+        const message_password = formatMessage({ id: "login.password" });
+
+        var temp = res.data.split('-')
+        var username = temp[0]
+        var password = temp[1]
+        alert(message_username + username + '  ' + message_password + password)
+    })
+  }
+
   onInputChange_username(event){
+    if(event.target.value && this.state.password){
+        this.setState({button_disable: false, button_type: 'login-button'})
+    }else{
+        this.setState({button_disable: true, button_type: 'login-button-disable'})
+    }
     this.setState({username: event.target.value});
   }
 
   onInputChange_password(event){
+    if(event.target.value && this.state.username){
+        this.setState({button_disable: false, button_type: 'login-button'})
+    }else{
+        this.setState({button_disable: true, button_type: 'login-button-disable'})
+    }
     this.setState({password: event.target.value});
   }
 
@@ -73,6 +112,10 @@ class Login extends React.Component {
         .catch(err => {
         })
     })
+  }
+
+  FacebookFailed = () => {
+      console.log('Facebook Login cancelled')
   }
 
   responseFacebook = (response) => {
@@ -137,7 +180,6 @@ class Login extends React.Component {
 
   render() {
 
-
     const showErrors = () => {
       if (this.state.errorCode === errors.USERNAME_EMPTY_ERROR) {
           return (
@@ -159,81 +201,111 @@ class Login extends React.Component {
     }
     
     return (
-        <div>
-        <form onSubmit={this.onFormSubmit} >
+        <div className='login-form '>
 
-            <div>
-            <label><b>
-            <FormattedMessage id="login.username" defaultMessage='Username: ' />
-            </b></label>
-            <input
-                placeholder="claymore"
-                className="form-control"
-                value={this.state.username}
-                onChange={this.onInputChange_username}
-            />
+            <div className='title'> 
+                <FormattedMessage id="nav.login" defaultMessage='Login' />
             </div>
 
-            <div>
-            <label><b>
-            <FormattedMessage id="login.password" defaultMessage='Password: ' />  
-            </b></label>
-            <input
+            <form onSubmit={this.onFormSubmit} >
                 
-                type = {this.state.hidden ? "password" : "text"}
-                placeholder="password"
-                className="form-control"
-                value={this.state.password}
-                onChange={this.onInputChange_password}
-            />
-            <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+                <FormattedMessage id="login.username" defaultMessage='Username: ' />
+                
+                <br/>
+
+                <input
+                    placeholder="claymore"
+                    className="form-control"
+                    value={this.state.username}
+                    onChange={this.onInputChange_username}
+                />
+
+                <br/>
+
+                <FormattedMessage id="login.password" defaultMessage='Password: ' />  
+ 
+                <br/>
+
+                <input
+                    
+                    type = {this.state.hidden ? "password" : "text"}
+                    placeholder="password"
+                    className="form-control"
+                    value={this.state.password}
+                    onChange={this.onInputChange_password}
+                />
+
+
+                <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
+ 
+                <br/>
+
+                <button disabled = {this.state.button_disable} className={this.state.button_type} type="submit" > 
+                    <FormattedMessage id="login.login" defaultMessage='Login' />
+                </button>
+                
+                <br />
+
+                <div className='or'> 
+                    <FormattedMessage id="login.or" defaultMessage='Or' /> 
+                </div>
+
+       
+
+                <button className="submit-button" onClick={ () => {this.props.history.push('/signup/')}}>
+                    <FormattedMessage id="login.signup" defaultMessage='Signup' />
+                </button>
+
+                <br/>
+
+
+                <div className='forget'> 
+                    <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
+                        <FormattedMessage id="login.forget_password" defaultMessage='Forgot Password?' /> 
+                    </NavLink>
+                </div>
+
+
+            </form>
+
+            <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+
+            <button style={{marginLeft: width * 0.02}} onClick={this.handle_one_click}>
+                <FormattedMessage id="login.signup" defaultMessage='Signup' />
+            </button>
+
+
+            <br/>
+
+            <div style={{marginLeft: width * 0.05, marginTop: height * 0.01}}>
+                <FormattedMessage id="login.option" defaultMessage='Or login with' />
             </div>
 
-            <span className="input-group-btn">
-                <button type="submit" className="btn btn-secondary"> 
-                <FormattedMessage id="login.login" defaultMessage='Login' />
-                </button>
-            </span> 
-            <FormattedMessage id="login.or" defaultMessage='Or' />        
-            <NavLink to='/signup' style={{ textDecoration: 'none', color: 'blue' }}>
-                <FormattedMessage id="login.signup" defaultMessage='Signup' />
-            </NavLink>
+            <FacebookLogin
+                appId="236001567251034"
+                size = 'small'
+                textButton=""
+                fields="name, email, picture"
+                onClick={this.componentClicked}
+                callback={this.responseFacebook}
+                onFailure={this.FacebookFailed}
+                icon ={ 
+                    <div style={{fontSize: '25px'}}> 
+                        <IoSocialFacebook />
+                    </div>
+                }
+            />
+
             <br/>
-            <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
-                <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
-            </NavLink>
-        </form>
 
-        <div>
-          <FormattedMessage id="login.option" defaultMessage='Or login with' />
-        </div>
-
-        <FacebookLogin
-          appId="236001567251034"
-          textButton="Facebook"
-          fields="name, email, picture"
-          onClick={this.componentClicked}
-          callback={this.responseFacebook}
-        />
-
-        <button> 
-            <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <FormattedMessage id="login.back" defaultMessage='Back' /> 
-            </NavLink>
-        </button>
-
-
-        <NavLink to='/' style={{ textDecoration: 'none', color: 'red' }}>
-            <button style={{color: 'red'}}>
-                <FormattedMessage id="login.back" defaultMessage='Back' /> 
+            <button className="back" onClick={ () => {this.props.history.push('/')}}>
+                <FormattedMessage id="login.back" defaultMessage='Back' />
             </button>
-        </NavLink>
 
-
-        <br/>
-        {
-            showErrors()
-        }
+            <br/>
+            {
+                showErrors()
+            }
     </div>
     );
   }
@@ -248,4 +320,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login);
+export default injectIntl(connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login));
