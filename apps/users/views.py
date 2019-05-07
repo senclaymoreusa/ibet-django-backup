@@ -736,3 +736,12 @@ class UpdateEmail(View):
         user = CustomUser.objects.filter(email=old_email)
         user.update(email=new_email)
         return HttpResponse('Success')
+
+
+class CheckEmailExixted(View):
+    def get(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        check_exist = get_user_model().objects.filter(email__iexact=email)
+        if check_exist:
+            return HttpResponse('Exist')
+        return HttpResponse('Invalid')
