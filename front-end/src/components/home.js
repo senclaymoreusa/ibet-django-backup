@@ -87,7 +87,7 @@ export class Home extends Component {
     return (
       <div >
 
-        {/* <Navigation /> */}
+        <Navigation />
 
         { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
       
