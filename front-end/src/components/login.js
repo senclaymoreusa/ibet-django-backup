@@ -51,6 +51,16 @@ export class Login extends React.Component {
         this.props.history.push('/'); 
       } 
     });
+
+    const check = localStorage.getItem('one-click');
+    if (check){
+        const username = localStorage.getItem('username');
+        const password = localStorage.getItem('password');
+        localStorage.removeItem('one-click');
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        this.setState({username: username, password: password, button_disable: false, button_type: 'login-button' })
+    }
   }
 
   handle_one_click(){
@@ -64,6 +74,7 @@ export class Login extends React.Component {
         var temp = res.data.split('-')
         var username = temp[0]
         var password = temp[1]
+        this.setState({username: username, password: password, button_disable: false, button_type: 'login-button'})
         alert(message_username + username + '  ' + message_password + password)
     })
   }
