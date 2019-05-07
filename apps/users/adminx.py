@@ -92,20 +92,6 @@ class UserWithTagAdmin(object):
     model_icon = 'fa fa-tag'
     actions = [make_approved]
     search_fields = ('user__username', 'tag__name')
-    
-
-    def get_status(self, obj):
-        return obj.get_status_display()
-    get_status.short_description = _('Status')
-    get_status.admin_order_field = 'status'
-    # readonly_fields = ('get_status_display',)
-
-    def get_model_form(self, **kwargs):
-        if self.org_obj is None:
-            self.form = userWithTagCreationForm
-        else:
-            self.form = userWithTagEditForm
-        return super(UserWithTagAdmin, self).get_model_form(**kwargs)
 
     def get_status(self, obj):
         return obj.get_status_display()
