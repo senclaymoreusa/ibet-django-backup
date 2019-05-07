@@ -2,11 +2,49 @@ import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logout, handle_search, setLanguage } from '../actions';
+import { FormattedMessage } from 'react-intl';
+import { NavLink } from 'react-router-dom';
+import { push as BurgerMenu } from 'react-burger-menu'
+import IoAndroidPerson from "react-icons/lib/io/android-person";
 
 import {
     MDBNavbar, MDBNavbarBrand, MDBNavbarNav, MDBNavItem, MDBNavLink, MDBNavbarToggler, MDBCollapse, MDBFormInline,
     MDBDropdown, MDBDropdownToggle, MDBDropdownMenu, MDBDropdownItem, MDBIcon, MDBBtn
 } from "mdbreact";
+
+let styles = {
+    bmBurgerButton: {
+        position: 'relative',
+        width: '100px',
+        height: '30px',
+        top: '5px'
+    },
+    bmBurgerBars: {
+        background: '#373a47'
+    },
+    bmCrossButton: {
+        height: '24px',
+        width: '24px'
+    },
+    bmCross: {
+        background: '#bdc3c7'
+    },
+    bmMenu: {
+        background: 'white',
+        padding: '2.5em 1.5em 0',
+        fontSize: '1.15em'
+    },
+    bmMorphShape: {
+        fill: '#373a47'
+    },
+    bmItemList: {
+        color: '#b8b7ad',
+        padding: '0.8em'
+    },
+    bmOverlay: {
+        background: 'rgba(0, 0, 0, 0.3)'
+    }
+};
 
 const languages = [
     { value: 'en', label: 'English (en)' },
@@ -15,10 +53,6 @@ const languages = [
 ];
 
 export class TopNavbar extends Component {
-    state = {
-        isOpen: false
-    };
-
     constructor(props) {
         super(props);
 
@@ -32,6 +66,7 @@ export class TopNavbar extends Component {
             picture: ""
         };
 
+        this.onInputChange = this.onInputChange.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
 
@@ -51,6 +86,9 @@ export class TopNavbar extends Component {
                 picture: fackbookObj.picture
             })
         }
+    }
+    onInputChange(event) {
+        this.setState({ term: event.target.value });
     }
 
     handleChange = (languageOption) => {
@@ -103,11 +141,17 @@ export class TopNavbar extends Component {
                         </MDBNavItem>
                     </MDBNavbarNav>
                     <MDBNavbarNav right>
-                        <MDBNavItem >
-                            <MDBFormInline className="md-form mr-auto m-0">
-                                <input className="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" value={this.state.term} />
-                                <MDBBtn outline color="white" size="sm" type="submit" className="mr-auto">Search</MDBBtn>
-                            </MDBFormInline>
+
+                        <MDBNavItem>
+                            <MDBNavbarNav right>
+                                <MDBFormInline className="md-form mr-auto m-0">
+                                    <input className="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" value={this.state.term}
+                                        onChange={this.onInputChange} />
+                                    <NavLink to={`/game_search/${this.state.term}`} style={{ textDecoration: 'none' }}>
+                                        <MDBBtn outline color="white" size="sm" type="submit" className="mr-auto">Search</MDBBtn>
+                                    </NavLink>
+                                </MDBFormInline>
+                            </MDBNavbarNav>
                         </MDBNavItem>
                         <MDBNavItem>
                             <MDBDropdown>
@@ -121,6 +165,25 @@ export class TopNavbar extends Component {
                                 </MDBDropdownMenu>
                             </MDBDropdown>
                         </MDBNavItem>
+                        {
+                            this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
+                                <div>
+                                    {}
+                                </div>
+                                :
+                                <div className='row'>
+                                    <MDBNavItem>
+                                        <MDBNavLink className="waves-effect waves-light" to="/signup/">
+                                            Sign up <MDBIcon icon="user-plus" />
+                                        </MDBNavLink>
+                                    </MDBNavItem>
+                                    <MDBNavItem>
+                                        <MDBNavLink className="waves-effect waves-light" to="/login/">
+                                            Log in <MDBIcon icon="sign-in-alt" />
+                                        </MDBNavLink>
+                                    </MDBNavItem>
+                                </div>
+                        }
                         <MDBNavItem>
                             <MDBNavLink className="waves-effect waves-light" to="/signup/">
                                 Sign up <MDBIcon icon="user-plus" />
@@ -131,6 +194,39 @@ export class TopNavbar extends Component {
                                 Log in <MDBIcon icon="sign-in-alt" />
                             </MDBNavLink>
                         </MDBNavItem>
+                        {
+                            this.props.isAuthenticated ?
+                                <div>
+                                    <BurgerMenu styles={styles} right
+                                        customBurgerIcon={
+                                            <div className='row account' >
+                                                <div>
+                                                    <IoAndroidPerson />
+                                                </div>
+                                                <FormattedMessage id="nav.account" defaultMessage="Account" />
+                                            </div>
+                                        }>
+                                        <div>
+                                            <NavLink to='/profile/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.profile" defaultMessage='Profile' /></NavLink>
+                                        </div>
+                                        <div>
+                                            <NavLink to='/referral/' style={{ textDecoration: 'none' }}><FormattedMessage id="nav.referral" defaultMessage='Refer new user' /></NavLink>
+                                        </div>
+                                        <div>
+                                            <NavLink to='/'
+                                                style={{ textDecoration: 'none' }}
+                                                onClick={() => {
+                                                    this.props.logout()
+                                                    window.location.reload()
+                                                }}><FormattedMessage id="nav.logout" defaultMessage='Logout' />
+                                            </NavLink>
+                                        </div>
+
+                                    </BurgerMenu>
+                                </div>
+                                :
+                                <div> </div>
+                        }
                     </MDBNavbarNav>
                 </MDBCollapse>
             </MDBNavbar>
