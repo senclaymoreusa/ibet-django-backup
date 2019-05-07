@@ -87,7 +87,7 @@ export class Home extends Component {
     return (
       <div >
 
-        <Navigation />
+        {/* <Navigation /> */}
 
         { noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
       
@@ -102,7 +102,7 @@ export class Home extends Component {
           {
             this.state.ready && this.state.sports.map(item => {
               return (
-                  <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
+                  <div key={item.name} className='each-game' >
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
@@ -125,7 +125,7 @@ export class Home extends Component {
           {
             this.state.ready && this.state.poker.map(item => {
               return (
-                  <div key={item.name} style={{  marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
+                  <div key={item.name} className='each-game'>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
@@ -147,7 +147,7 @@ export class Home extends Component {
           {
             this.state.ready && this.state.casino.map(item => {
               return (
-                  <div key={item.name} style={{ marginLeft: width * 0.18, height: height * 0.1 , width: width * 0.1}}>
+                  <div key={item.name} className='each-game'>
                     <NavLink to = {`/game_detail/${item.pk}`} style={{ textDecoration: 'none' }} onClick={()=>{
                         }}> {item.name} </NavLink>
                     <br/>
