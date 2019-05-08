@@ -78,6 +78,10 @@ class Game_Detail extends Component {
           <br/>
           <img src={game.image} height = "100" width="100" alt = 'Not available'/>
         </div>
+
+          <button style={{backgroundColor: 'white', border: '1px solid red', color: 'red'}} onClick={ () => {this.props.history.push('/')}}>
+              <FormattedMessage id="login.back" defaultMessage='Back' />
+          </button>
       </div>
     )
   }

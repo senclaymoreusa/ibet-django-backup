@@ -316,6 +316,9 @@ class Signup extends React.Component {
         var username = temp[0]
         var password = temp[1]
         alert(message_username + username + '  ' + message_password + password)
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
+        localStorage.setItem('one-click', 'true');
         this.props.history.push('/login/')
     })
   }
