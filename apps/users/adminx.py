@@ -20,16 +20,6 @@ class GlobalSettings(object):
     site_url = '/'
     menu_style = 'accordion'  # 设置左侧菜单  折叠样式
 
-    # def get_site_menu(self):
-    #     return [
-    #         {
-    #             'title': 'Home',
-    #             'icon': 'fa fa-home',
-    #             'url': '/xadmin/'
-    #         }
-    #     ]
-
-
 from django.contrib import admin
 class UserWithTagInline(object):
     model = UserWithTag
