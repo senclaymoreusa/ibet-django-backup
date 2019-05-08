@@ -27,9 +27,7 @@ class Transaction(models.Model):
         (0, 'Success'), 
         (1, 'Unsuccess'),
     )
-    status = models.SmallIntegerField(choices=STATE_CHOICES,default=1)
-
-    
+    status = models.SmallIntegerField(choices=STATE_CHOICES,default=1, verbose_name=_('Status'))
     channel = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Channel'))
 
     TYPE_CHOICES = (
@@ -37,7 +35,7 @@ class Transaction(models.Model):
         (1, 'Withdraw')
     )
     transaction_type = models.SmallIntegerField(choices=TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
-    remark = models.CharField(max_length=200, blank=True) 
+    remark = models.CharField(max_length=200, blank=True, verbose_name=_('Note')) 
 
     def __str__(self):
         return '{0}: {1}'.format(self.user_id, self.transaction_type)
