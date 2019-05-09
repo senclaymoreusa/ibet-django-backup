@@ -692,24 +692,13 @@ class FacebookLoginView(GenericAPIView):
 
         return self.login()
 
-def generate_username():
-    name_list = [ 'Stephen', 'Mike', 'Tom', 'Luke', 'James', 'Kevin', 'Stephan', 'Wilson', 'Alice', 'Sunny', 'Cloris', 'Jack', 
-        'Leo', 'Shaw', 'Peter', 'Ben', 'Ross', 'Rachel', 'Michael', 'Jordan', 'Oliver', 'Harry', 'John', 'William', 'David', 'Richard', 'Joseph',
-        'Charles', 'Thomas', 'Joe', 'George', 'Oscar', 'Amelia', 'Margaret', 'Megan', 'Jennifer', 'Bethany', 'Isla', 'Lauren', 'Samantha', 'Emma',
-        'Joanne', 'Ava', 'Tracy', 'Elizabeth', 'Sophie', 'Lily', 'Jacob', 'Robert']
-
-    username_1 = name_list[random.randint(1, len(name_list) - 1)]
-    username_2 = ''.join([str(random.randint(0, 9)) for i in range(5)])
-    return username_1 + username_2
-
 
 class OneclickRegister(View):
     def post(self, request, *args, **kwargs):
-        
-        username = generate_username()
+        username = get_random_string(length=8)     # only alphanumeric allowed
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
-            username = generate_username
+            username = get_random_string(length=8)
             check_duplicate = CustomUser.objects.filter(username=username)
 
         email = get_random_string(length=8)
