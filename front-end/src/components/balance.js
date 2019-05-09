@@ -50,26 +50,17 @@ class Balance extends Component {
         
         event.preventDefault();
         if (window.confirm( message + this.state.balance)){
-            if (this.state.type === 'add') {
-                axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`, config)
-                .then(res => {
-                    if (res.data === 'Failed'){
-                        this.setState({error: true});
-                    }else{
-                        this.props.history.push("/profile");
-                    }
-                })
-            } else {
-                axios.post(API_URL + `users/api/withdrawbalance/?username=${this.state.data.username}&balance=${this.state.balance}`, config)
-                .then(res => {
-                    if (res.data === 'Failed'){
-                        this.setState({error: true});
-                    }else{
-                        this.props.history.push("/profile");
-                    }
-                })
-            }
             
+            axios.post(API_URL + `users/api/addorwithdrawbalance/?type=${this.state.type}&username=${this.state.data.username}&balance=${this.state.balance}`, config)
+            .then(res => {
+                if (res.data === 'Failed'){
+                    this.setState({error: true});
+                } else if (res.data === 'The balance is not enough') {
+                    alert("cannot withdraw this amount")
+                } else {
+                    this.props.history.push("/profile");
+                }
+            });
         }
     }
 

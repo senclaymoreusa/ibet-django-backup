@@ -120,6 +120,7 @@ class CustomUser(AbstractBaseUser):
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
     currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
+    login_times = models.IntegerField(default=0)
 
     objects = MyUserManager()
 
@@ -278,6 +279,7 @@ class UserAction(models.Model):
         (3, 'Deposit'),
         (4, 'Withdraw'),
         (5, 'Page Visit'),
+        (6, 'bet')
     )
 
     ip_addr = models.GenericIPAddressField(_('action ip'), blank=True, null=True)
@@ -298,10 +300,5 @@ class UserAction(models.Model):
         default=timezone.now,
         editable=False,
     )
-    
-
-
-
-
 
 

@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as django_login, logout as django_logout
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
 from django.dispatch import receiver
@@ -276,6 +277,9 @@ class LoginView(GenericAPIView):
             event_type=0,
         )
         action.save()
+        loginUser = CustomUser.objects.filter(username=self.user)
+        loginTimes = CustomUser.objects.filter(username=self.user)[0].login_times
+        loginUser.update(login_times=loginTimes+1)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -523,66 +527,63 @@ class Global(View):
         return HttpResponse(data.level)
 
         
-class AddBalance(View):
+class AddOrWithdrawBalance(View):
+
     def post(self, request, *args, **kwargs):
+
         username = self.request.GET['username']
         balance = self.request.GET['balance']
+        type_balance = self.request.GET['type']
+
         user = get_user_model().objects.filter(username=username)
         currrent_balance = user[0].balance
         if balance.isdigit() == False:
             return HttpResponse('Failed')
 
-        new_balance = currrent_balance + int(balance)
-        user.update(balance=new_balance)
-        referrer = user[0].referred_by
+        if type_balance == 'add':
+            new_balance = currrent_balance + int(balance)
+            user.update(balance=new_balance)
+            referrer = user[0].referred_by
 
-        if referrer:
-            referr_object = get_user_model().objects.filter(username=referrer.username)
-            data = Config.objects.all()[0]
-            reward_points = referr_object[0].reward_points
-            current_points = reward_points + data.Referee_add_balance_reward
-            referr_object.update(reward_points=current_points)
+            if referrer:
+                referr_object = get_user_model().objects.filter(username=referrer.username)
+                data = Config.objects.all()[0]
+                reward_points = referr_object[0].reward_points
+                current_points = reward_points + data.Referee_add_balance_reward
+                referr_object.update(reward_points=current_points)
 
-        action = UserAction(
-            user= CustomUser.objects.filter(username=username)[0],
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=3,
-            dollow_amount=balance
-        )
-        action.save()
-        return HttpResponse('Deposit Success')
+            action = UserAction(
+                user= CustomUser.objects.filter(username=username)[0],
+                ip_addr=self.request.META['REMOTE_ADDR'],
+                event_type=3,
+                dollow_amount=balance
+            )
+            action.save()
+            return HttpResponse('Deposit Success')
 
+        else:
+            if float(balance) > currrent_balance:
+                return HttpResponse('The balance is not enough')
 
+            new_balance = currrent_balance - int(balance)
+            user.update(balance=new_balance)
+            referrer = user[0].referred_by
 
-class WithdrawBalance(View):
+            if referrer:
+                referr_object = get_user_model().objects.filter(username=referrer.username)
+                data = Config.objects.all()[0]
+                reward_points = referr_object[0].reward_points
+                current_points = reward_points + data.Referee_add_balance_reward
+                referr_object.update(reward_points=current_points)
 
-    def post(self, request, *args, **kwargs):
-        username = self.request.GET['username']
-        balance = self.request.GET['balance']
-        user = get_user_model().objects.filter(username=username)
-        currrent_balance = user[0].balance
-        if balance.isdigit() == False:
-            return HttpResponse('Failed')
-
-        new_balance = currrent_balance - int(balance)
-        user.update(balance=new_balance)
-        referrer = user[0].referred_by
-
-        if referrer:
-            referr_object = get_user_model().objects.filter(username=referrer.username)
-            data = Config.objects.all()[0]
-            reward_points = referr_object[0].reward_points
-            current_points = reward_points + data.Referee_add_balance_reward
-            referr_object.update(reward_points=current_points)
-
-        action = UserAction(
-            user= CustomUser.objects.filter(username=username)[0],
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=4,
-            dollow_amount=balance
-        )
-        action.save()
-        return HttpResponse('Withdraw Success')
+            action = UserAction(
+                user= CustomUser.objects.filter(username=username)[0],
+                ip_addr=self.request.META['REMOTE_ADDR'],
+                event_type=4,
+                dollow_amount=balance
+            )
+            action.save()
+            return HttpResponse('Withdraw Success')
 
 class Activation(View):
     def post(self, request, *args, **kwargs):
