@@ -30,6 +30,7 @@ export class Login extends React.Component {
           name: '',
           email: '',
           button_clicked: 0,
+          check: false,
 
           live_check_username: false,
           live_check_password: false,
@@ -44,13 +45,35 @@ export class Login extends React.Component {
         this.handle_one_click               = this.handle_one_click.bind(this);
     }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.props.authCheckState()
     .then(res => {
       if (res === AUTH_RESULT_SUCCESS) {
         this.props.history.push('/'); 
       } 
     });
+
+    const remember_check = localStorage.getItem('remember_check');
+    if (remember_check){
+        await this.setState({check: true})
+    }
+
+    const check = localStorage.getItem('one-click');
+    if (check){
+        const username = localStorage.getItem('username');
+        const password = localStorage.getItem('password');
+        localStorage.removeItem('one-click');
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        this.setState({username: username, password: password, button_disable: false, button_type: 'login-button' })
+    }else{
+        const remember_check = localStorage.getItem('remember_check');
+        if (remember_check){
+            const username = localStorage.getItem('remember_username');
+            const password = localStorage.getItem('remember_password');
+            this.setState({username: username, password: password, button_disable: false, button_type: 'login-button' })
+        }
+    }
   }
 
   handle_one_click(){
@@ -64,6 +87,12 @@ export class Login extends React.Component {
         var temp = res.data.split('-')
         var username = temp[0]
         var password = temp[1]
+        this.setState({username: username, password: password, button_disable: false, button_type: 'login-button', check: false})
+
+        localStorage.removeItem('remember_username');
+        localStorage.removeItem('remember_password');
+        localStorage.removeItem('remember_check');
+
         alert(message_username + username + '  ' + message_password + password)
     })
   }
@@ -160,6 +189,12 @@ export class Login extends React.Component {
     }
   };
 
+  onInputChange_checkbox = async (event) => {
+    
+     await this.setState({check: !this.state.check})
+
+  }
+
   onFormSubmit(event){
     event.preventDefault();
 
@@ -170,6 +205,15 @@ export class Login extends React.Component {
     }else{
         this.props.authLogin(this.state.username, this.state.password)
         .then(() => {
+            if (this.state.check){
+                localStorage.setItem('remember_username', this.state.username);
+                localStorage.setItem('remember_password', this.state.password);
+                localStorage.setItem('remember_check', 'checked')
+            }else{
+                localStorage.removeItem('remember_username');
+                localStorage.removeItem('remember_password');
+                localStorage.removeItem('remember_check');
+            }
             this.props.history.push('/');
         })
         .catch(err => {
@@ -246,12 +290,23 @@ export class Login extends React.Component {
                 
                 <br />
 
+                <div>
+
+                    <FormattedMessage id="login.remember" defaultMessage='Remember Password ' />    
+
+                    <input
+                      type="checkbox"
+                      checked={this.state.check}
+                      onChange={this.onInputChange_checkbox} 
+                    />
+
+                </div>
+
                 <div className='or'> 
                     <FormattedMessage id="login.or" defaultMessage='Or' /> 
                 </div>
 
        
-
                 <button className="submit-button" onClick={ () => {this.props.history.push('/signup/')}}>
                     <FormattedMessage id="login.signup" defaultMessage='Signup' />
                 </button>
