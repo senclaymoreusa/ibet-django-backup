@@ -9,6 +9,9 @@ from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
 from django.contrib.admin import SimpleListFilter
+from django.conf import settings
+
+DOMAIN = settings.DOMAIN
 
 
 class BaseSetting(object):
@@ -94,7 +97,7 @@ class MyUserAdmin(object):
     bet_count.short_description = "Bet"
 
     def user_action_link(self, obj):
-        return '<a href="%s">More actions for this user</a>' % ('http://localhost:8000/xadmin/users/useraction/?_p_user__id__exact=' + str(obj.id))
+        return '<a href="%s">More actions for this user</a>' % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.id))
     user_action_link.allow_tags = True
     
 
@@ -145,7 +148,7 @@ class UserActionAdmin(object):
         self.list_display_links = (None, )
 
     def user_action_link(self, obj):
-        return '<a href="%s">More actions for this user</a>' % ('http://localhost:8000/xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
+        return '<a href="%s">More actions for this user</a>' % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
     user_action_link.allow_tags = True
 
 
