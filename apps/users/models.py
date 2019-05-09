@@ -302,3 +302,44 @@ class UserAction(models.Model):
     )
 
 
+
+
+class Bonus(models.Model):
+
+    bonus_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=500)
+    start_time = models.DateTimeField('Start Time', blank=False)
+    end_time = models.DateTimeField('End Time', blank=False)
+    expiration_days = models.IntegerField()
+    is_valid = models.BooleanField(default=False)
+    ## A comma-separated list of country IDs where this bonus is applicable (to be normalized)
+    countries = models.CharField(max_length=500)
+    ## A comma-separated list of category IDs where this bonus is applicable (to be normalized)
+    categories = models.CharField(max_length=500)
+    ## A comma-separated list of requirement IDs that we need to apply (to be normalized)
+    requirement_ids = models.CharField(max_length=500)  
+    amount = models.FloatField()
+    percentage = models.FloatField()
+    is_free_bid = models.BooleanField(default=False)
+
+
+class BonusRequirement(models.Model):
+
+    requirement_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ## Name of the field in the user_event table where this requirement is based on
+    field_name = models.CharField(max_length=50)
+    ## sum or count or single
+    aggregate_method = models.CharField(max_length=50)
+    time_limit = models.IntegerField()
+    turnover_multiplier = models.IntegerField()
+    ## A comma-separated list of category IDs where this requirement is applicable (to be normalized)
+    categories = models.CharField(max_length=500)
+
+class UserBonus(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
+    start_time = models.DateTimeField('Start Time', blank=False)
+    is_successful = models.BooleanField(default=False)
+

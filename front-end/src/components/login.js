@@ -29,7 +29,12 @@ export class Login extends React.Component {
 
           name: '',
           email: '',
-          button_clicked: 0
+          button_clicked: 0,
+
+          live_check_username: false,
+          live_check_password: false,
+          button_disable: true,
+          button_type: 'login-button-disable'
         };
     
         this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -46,6 +51,16 @@ export class Login extends React.Component {
         this.props.history.push('/'); 
       } 
     });
+
+    const check = localStorage.getItem('one-click');
+    if (check){
+        const username = localStorage.getItem('username');
+        const password = localStorage.getItem('password');
+        localStorage.removeItem('one-click');
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        this.setState({username: username, password: password, button_disable: false, button_type: 'login-button' })
+    }
   }
 
   handle_one_click(){
@@ -59,15 +74,26 @@ export class Login extends React.Component {
         var temp = res.data.split('-')
         var username = temp[0]
         var password = temp[1]
+        this.setState({username: username, password: password, button_disable: false, button_type: 'login-button'})
         alert(message_username + username + '  ' + message_password + password)
     })
   }
 
   onInputChange_username(event){
+    if(event.target.value && this.state.password){
+        this.setState({button_disable: false, button_type: 'login-button'})
+    }else{
+        this.setState({button_disable: true, button_type: 'login-button-disable'})
+    }
     this.setState({username: event.target.value});
   }
 
   onInputChange_password(event){
+    if(event.target.value && this.state.username){
+        this.setState({button_disable: false, button_type: 'login-button'})
+    }else{
+        this.setState({button_disable: true, button_type: 'login-button-disable'})
+    }
     this.setState({password: event.target.value});
   }
 
@@ -165,7 +191,6 @@ export class Login extends React.Component {
 
   render() {
 
-
     const showErrors = () => {
       if (this.state.errorCode === errors.USERNAME_EMPTY_ERROR) {
           return (
@@ -226,7 +251,7 @@ export class Login extends React.Component {
  
                 <br/>
 
-                <button className="login-button" type="submit" > 
+                <button disabled = {this.state.button_disable} className={this.state.button_type} type="submit" > 
                     <FormattedMessage id="login.login" defaultMessage='Login' />
                 </button>
                 
@@ -247,7 +272,7 @@ export class Login extends React.Component {
 
                 <div className='forget'> 
                     <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
-                        <FormattedMessage id="login.forget_password" defaultMessage='Forget password' /> 
+                        <FormattedMessage id="login.forget_password" defaultMessage='Forgot Password?' /> 
                     </NavLink>
                 </div>
 
