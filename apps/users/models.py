@@ -288,7 +288,7 @@ class UserAction(models.Model):
     device = models.CharField(max_length=50, blank=True, null=True)
     browser = models.CharField(max_length=50, blank=True, null=True)
     refer_url = models.CharField(max_length=50, blank=True, null=True)
-    dollow_amount = models.FloatField(blank=True, null=True)
+    dollar_amount = models.FloatField(blank=True, null=True)
     page_id = models.IntegerField(blank=True, null=True)
     created_time = models.DateTimeField(
         _('created time'),

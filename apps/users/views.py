@@ -556,7 +556,7 @@ class AddOrWithdrawBalance(View):
                 user= CustomUser.objects.filter(username=username)[0],
                 ip_addr=self.request.META['REMOTE_ADDR'],
                 event_type=3,
-                dollow_amount=balance
+                dollar_amount=balance
             )
             action.save()
             return HttpResponse('Deposit Success')
@@ -580,7 +580,7 @@ class AddOrWithdrawBalance(View):
                 user= CustomUser.objects.filter(username=username)[0],
                 ip_addr=self.request.META['REMOTE_ADDR'],
                 event_type=4,
-                dollow_amount=balance
+                dollar_amount=balance
             )
             action.save()
             return HttpResponse('Withdraw Success')

@@ -166,7 +166,7 @@ export const messages = {
         'balance.submit': 'Submit',
         'balance.error': 'The balance you entered is not valid',
         'balance.confirm': 'The amount you want to add to your balance is $ ',
-        'balance.withdrawconfirm' : 'The amount you want to withdraw form your balance is $ ',
+        'balance.withdrawconfirm' : 'The amount you want to withdraw from your balance is $ ',
 
         // handle game_detail page message
         'game_detail.title': 'Game Details',
