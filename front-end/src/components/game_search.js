@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { game_detail } from '../actions'
 import { config } from '../util_config';
-import Navigation from './navigation';
+import TopNavbar from './top_navbar';
 import { FormattedMessage } from 'react-intl';
 import '../css/game_search.css';
 
@@ -88,7 +88,7 @@ class Game_Search extends Component {
       return (
         <div>
 
-            <Navigation />
+            <TopNavbar />
 
             <div className='row'>
 

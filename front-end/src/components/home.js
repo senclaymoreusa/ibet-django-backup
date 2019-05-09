@@ -87,8 +87,6 @@ export class Home extends Component {
 
     return (
       <div >
-
-        <Navigation />
         <TopNavbar />
         {noticeStr && <div style={{ overflowX: 'hidden' }}><Marquee >{noticeStr}</Marquee></div>}
 
