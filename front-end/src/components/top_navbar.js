@@ -38,6 +38,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 
+import Collapse from '@material-ui/core/Collapse';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import StarBorder from '@material-ui/icons/StarBorder';
+
+import Flag from 'react-flagkit';
+
 const styles = theme => ({
     root: {
         width: '100%',
@@ -51,6 +58,14 @@ const styles = theme => ({
     menuButton: {
         marginLeft: -12,
         marginRight: 20,
+    },
+    mobileLeftMenuButton: {
+        marginLeft: -12,
+        marginRight: 2,
+    },
+    mobileMenuButton: {
+        marginLeft: 0,
+        marginRight: -12,
     },
     title: {
         display: 'none',
@@ -115,6 +130,9 @@ const styles = theme => ({
         textTransform: 'capitalize',
         color: 'white'
     },
+    nested: {
+        paddingLeft: theme.spacing.unit * 4,
+    },
 });
 
 const languages = [
@@ -134,6 +152,7 @@ export class TopNavbar extends React.Component {
             lang: 'en',
             showLeftPanel: false,
             showRightPanel: false,
+            showLangListItems: false,
             term: '',
             facebooklogin: false,
             userID: "",
@@ -159,7 +178,11 @@ export class TopNavbar extends React.Component {
 
     handleLanguageMenuClose = (ev) => {
         this.setState({ anchorEl: null });
-        this.props.setLanguage(ev.nativeEvent.target.dataset.myValue)
+        this.changeLanguage(ev.nativeEvent.target.dataset.myValue);
+    };
+
+    changeLanguage = (lang) => {
+        this.props.setLanguage(lang)
             .then((res) => {
                 // console.log("language change to:" + res.data);
             });
@@ -192,28 +215,49 @@ export class TopNavbar extends React.Component {
         }
     }
 
+    toggleLanguageListItem = () => {
+        this.setState(state => ({ showLangListItems: !state.showLangListItems }));
+    };
+
     render() {
         const { anchorEl } = this.state;
         const { classes } = this.props;
 
-        const sideList = (
+        const leftMobileSideList = (
             <div className={classes.list}>
                 <List>
-                    {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                        <ListItem button key={text}>
-                            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                            <ListItemText primary={text} />
-                        </ListItem>
-                    ))}
-                </List>
-                <Divider />
-                <List>
-                    {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                        <ListItem button key={text}>
-                            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                            <ListItemText primary={text} />
-                        </ListItem>
-                    ))}
+                    <ListItem button component="a" href="/">
+                        <ListItemIcon>
+                            <Person />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.sports" defaultMessage='Sports' />
+                        </ListItemText>
+                    </ListItem>
+                    <ListItem button component="a" href="/">
+                        <ListItemIcon>
+                            <Person />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.livecasino" defaultMessage='Live Casino' />
+                        </ListItemText>
+                    </ListItem>
+                    <ListItem button component="a" href="/">
+                        <ListItemIcon>
+                            <Person />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.games" defaultMessage='Games' />
+                        </ListItemText>
+                    </ListItem>
+                    <ListItem button component="a" href="/">
+                        <ListItemIcon>
+                            <Person />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.lottery" defaultMessage='Lottery' />
+                        </ListItemText>
+                    </ListItem>
                 </List>
             </div>
         );
@@ -254,13 +298,105 @@ export class TopNavbar extends React.Component {
             </div>
         );
 
+        const rightMobileSideList = (
+            <div className={classes.list}>
+                <List>
+                    {
+                        this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
+                            <div>
+                                <ListItem button component="a" href="/profile/">
+                                    <ListItemIcon>
+                                        <Person />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.profile" defaultMessage='Profile' />
+                                    </ListItemText>
+                                </ListItem>
+
+                                <ListItem button component="a" href="/referral/">
+                                    <ListItemIcon>
+                                        <PeopleOutline />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
+                                    </ListItemText>
+                                </ListItem>
+
+                                <ListItem onClick={() => {
+                                    this.props.logout()
+                                    window.location.reload()
+                                }}>
+                                    <ListItemIcon>
+                                        <DirectionsRun />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.logout" defaultMessage='Logout' />
+                                    </ListItemText>
+                                </ListItem>
+                            </div>
+                            :
+                            <div>
+                                <ListItem button component="a" href="/signup/">
+                                    <ListItemIcon>
+                                        <PersonAdd />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.signup" defaultMessage='Signup' />
+                                    </ListItemText>
+                                </ListItem>
+                                <ListItem button component="a" href="/login/">
+                                    <ListItemIcon>
+                                        <Input />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.login" defaultMessage='Login' />
+                                    </ListItemText>
+                                </ListItem>
+                            </div>
+                    }
+                    <div>
+                        <Divider />
+                        <ListItem button onClick={this.toggleLanguageListItem}>
+                            <ListItemIcon>
+                                <Language />
+                            </ListItemIcon>
+                            <ListItemText inset primary="Languages" />
+                            {this.state.showLangListItems ? <ExpandLess /> : <ExpandMore />}
+                        </ListItem>
+                        <Collapse in={this.state.showLangListItems} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                <ListItem button className={classes.nested}>
+                                    <ListItemIcon>
+                                        <Flag country="US" />
+                                    </ListItemIcon>
+                                    <ListItemText inset primary="English" onClick={() => this.changeLanguage('en')} />
+                                </ListItem>
+                                <ListItem button className={classes.nested} onClick={() => this.changeLanguage('zh-hans')}>
+                                    <ListItemIcon>
+                                        <Flag country="CN" />
+                                    </ListItemIcon>
+                                    <ListItemText inset primary="簡體中文" />
+                                </ListItem>
+                                <ListItem button className={classes.nested}>
+                                    <ListItemIcon>
+                                        <Flag country="FR" />
+                                    </ListItemIcon>
+                                    <ListItemText inset primary="Français" onClick={() => this.changeLanguage('fr')} />
+                                </ListItem>
+                            </List>
+                        </Collapse>
+                    </div>
+                </List>
+            </div>
+        );
+
         return (
             <div className={classes.root}>
                 <AppBar position="static" color="primary">
                     <Toolbar>
                         <div className={classes.sectionMobile}>
                             <IconButton
-                                className={classes.menuButton}
+                                className={classes.mobileLeftMenuButton}
                                 color="inherit"
                                 aria-label="Open drawer"
                                 onClick={this.toggleSidePanel('showLeftPanel', true)}>
@@ -273,7 +409,7 @@ export class TopNavbar extends React.Component {
                                     onClick={this.toggleSidePanel('showLeftPanel', false)}
                                     onKeyDown={this.toggleSidePanel('showLeftPanel', false)}
                                 >
-                                    {sideList}
+                                    {leftMobileSideList}
                                 </div>
                             </Drawer>
                         </div>
@@ -320,6 +456,44 @@ export class TopNavbar extends React.Component {
                         {
                             this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
                                 <div className={classes.sectionDesktop}>
+                                    <Tooltip title="Change Language" placement="bottom">
+                                        <IconButton
+                                            className={classes.menuButton}
+                                            aria-owns={Boolean(anchorEl) ? 'material-appbar' : undefined}
+                                            aria-haspopup="true"
+                                            onClick={this.handleLanguageMenuOpen}
+                                            color="inherit"
+                                        >
+                                            <Language />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Menu
+                                        value={this.state.lang} onChange={this.langMenuClicked}
+                                        anchorEl={anchorEl}
+                                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                        open={Boolean(anchorEl)}
+                                        onClose={this.handleLanguageMenuClose}
+                                    >
+                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'en'}>
+                                            <ListItemIcon className={classes.icon}>
+                                                <Flag country="US" />
+                                            </ListItemIcon>
+                                            <ListItemText classes={{ primary: classes.primary }} inset primary="English" />
+                                        </MenuItem>
+                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'zh-hans'}>
+                                            <ListItemIcon className={classes.icon}>
+                                                <Flag country="CN" />
+                                            </ListItemIcon>
+                                            <ListItemText classes={{ primary: classes.primary }} inset primary="簡體中文" />
+                                        </MenuItem>
+                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'fr'}><ListItemIcon className={classes.icon}>
+                                            <Flag country="FR" />
+                                        </ListItemIcon>
+                                            <ListItemText classes={{ primary: classes.primary }} inset primary="Français" />
+                                        </MenuItem>
+                                    </Menu>
+
                                     <Tooltip title="Account" placement="bottom">
                                         <IconButton
                                             className={classes.menuButton}
@@ -360,9 +534,23 @@ export class TopNavbar extends React.Component {
                                         open={Boolean(anchorEl)}
                                         onClose={this.handleLanguageMenuClose}
                                     >
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'en'}>English</MenuItem>
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'zh-hans'}>簡體中文</MenuItem>
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'fr'}>Français</MenuItem>
+                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'en'}>
+                                            <ListItemIcon className={classes.icon}>
+                                                <Flag country="US" />
+                                            </ListItemIcon>
+                                            <ListItemText classes={{ primary: classes.primary }} inset primary="English" />
+                                        </MenuItem>
+                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'zh-hans'}>
+                                            <ListItemIcon className={classes.icon}>
+                                                <Flag country="CN" />
+                                            </ListItemIcon>
+                                            <ListItemText classes={{ primary: classes.primary }} inset primary="簡體中文" />
+                                        </MenuItem>
+                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'fr'}><ListItemIcon className={classes.icon}>
+                                            <Flag country="FR" />
+                                        </ListItemIcon>
+                                            <ListItemText classes={{ primary: classes.primary }} inset primary="Français" />
+                                        </MenuItem>
                                     </Menu>
                                     <Tooltip title="Signup" placement="bottom">
                                         <IconButton
@@ -388,15 +576,24 @@ export class TopNavbar extends React.Component {
                         }
                         <div className={classes.sectionMobile}>
                             <IconButton
-                                aria-haspopup="true"
-                                onClick={this.handleMobileMenuOpen}
-                                color="inherit">
+                                className={classes.mobileMenuButton}
+                                color="inherit"
+                                aria-label="Open drawer"
+                                onClick={this.toggleSidePanel('showRightPanel', true)}>
                                 <MoreIcon />
                             </IconButton>
+                            <Drawer anchor="right" open={this.state.showRightPanel} onClose={this.toggleSidePanel('showRightPanel', false)}>
+                                <div
+                                    tabIndex={0}
+                                    role="button"
+                                >
+                                    {rightMobileSideList}
+                                </div>
+                            </Drawer>
                         </div>
                     </Toolbar>
                 </AppBar>
-            </div>
+            </div >
         );
     }
 }

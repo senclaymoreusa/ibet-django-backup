@@ -21,6 +21,7 @@
     "react-dom": "^16.7.0",
     "react-dropdown": "^1.6.4",
     "react-facebook-login": "^4.1.1",
+    "react-flagkit": "^1.0.2",
     "react-icons": "^2.2.7",
     "react-intl": "^2.8.0",
     "react-phone-number-input": "^2.3.11",
