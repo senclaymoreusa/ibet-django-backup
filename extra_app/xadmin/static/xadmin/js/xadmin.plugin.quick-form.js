@@ -4,7 +4,7 @@
   $('form.widget-form').on('post-success', function(e, data){
     $(this).data('ajaxform').clean()
     $('.alert-success #change-link').attr('href', data['change_url'])
-    $('.alert-success').show()
+    // $('.alert-success').hide()
   })
 
   var AjaxForm = function(element, options) {
