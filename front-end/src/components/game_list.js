@@ -3,7 +3,7 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
-import Navigation from "./navigation";
+import TopNavbar from "./top_navbar";
 import { game_detail } from '../actions';
 import { config } from '../util_config';
 import '../css/game_list.css';
@@ -35,7 +35,7 @@ class Game_List extends Component {
       const games = this.state.games;
       return (
         <div>
-            <Navigation />
+            <TopNavbar />
           <div className='row'>
             {
               games.map(item => {

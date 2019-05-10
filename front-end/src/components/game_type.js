@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { game_type } from '../actions';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import Navigation from "./navigation";
+import  TopNavbar from "./top_navbar";
 import '../css/game_type.css';
 
 class Game_Type extends Component {
@@ -16,7 +16,7 @@ class Game_Type extends Component {
       return (
         <div>
           
-            <Navigation />
+            <TopNavbar />
           
           <div className='row'>
 

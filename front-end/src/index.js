@@ -13,6 +13,8 @@ import { createStore, applyMiddleware } from 'redux';
 import ReduxThunk from 'redux-thunk';
 import reducers from './reducers';
 
+import 'typeface-roboto';
+
 addLocaleData(en);
 addLocaleData(zh);
 addLocaleData(fr);
