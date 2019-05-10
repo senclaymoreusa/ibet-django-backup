@@ -1,6 +1,6 @@
 .login-form {
     margin-left: 38%;
-    margin-top: 10%;
+    margin-top: 5%;
 }
 
 .login-button {
@@ -29,8 +29,7 @@
 }
 
 .forget {
-    margin-top: 1%;
-    margin-left: 6%;
+    margin-top: 2%;
 }
 
 .facebook {
@@ -48,5 +47,5 @@
 
 .title {
     font-size: 30px;
-    margin-left: 8%;
+    margin-left: 10%;
 }
