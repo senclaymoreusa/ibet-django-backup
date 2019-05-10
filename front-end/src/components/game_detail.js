@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Navigation from "./navigation";
+import TopNavbar from "./top_navbar";
 import axios from 'axios';
 import { config } from '../util_config';
 import { FormattedMessage } from 'react-intl';
@@ -58,7 +58,7 @@ class Game_Detail extends Component {
     
     return(
       <div>
-          <Navigation />
+          <TopNavbar />
         <div>
           <h1><FormattedMessage id="game_detail.title" defaultMessage='Game Details' /></h1>
           
@@ -78,6 +78,10 @@ class Game_Detail extends Component {
           <br/>
           <img src={game.image} height = "100" width="100" alt = 'Not available'/>
         </div>
+
+          <button style={{backgroundColor: 'white', border: '1px solid red', color: 'red'}} onClick={ () => {this.props.history.push('/')}}>
+              <FormattedMessage id="login.back" defaultMessage='Back' />
+          </button>
       </div>
     )
   }
