@@ -271,7 +271,6 @@ class LoginView(GenericAPIView):
         serializer_class = self.get_response_serializer()
 
         if getattr(settings, 'REST_USE_JWT', False):
-            print('REST_USE_JWT enabled')
             data = {
                 'user': self.user,
                 'token': self.token
@@ -279,7 +278,6 @@ class LoginView(GenericAPIView):
             serializer = serializer_class(instance=data,
                                           context={'request': self.request})
         else:
-            print('REST_USE_JWT disabled')
             serializer = serializer_class(instance=self.token,
                                           context={'request': self.request})
 
