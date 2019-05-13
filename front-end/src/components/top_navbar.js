@@ -52,6 +52,12 @@ const styles = theme => ({
     list: {
         width: 250,
     },
+    subMenu: {
+        marginTop:50,
+        flexGrow: 1,
+        height: 100,
+        backgroundColor: 'gray'
+    },
     grow: {
         flexGrow: 1,
     },
@@ -150,6 +156,7 @@ export class TopNavbar extends React.Component {
             anchorEl: null,
 
             lang: 'en',
+            showTopPanel: false,
             showLeftPanel: false,
             showRightPanel: false,
             showLangListItems: false,
@@ -163,8 +170,11 @@ export class TopNavbar extends React.Component {
 
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
-
     }
+
+    submenuHandleChange = (event, submenu) => {
+        this.setState({ submenu });
+    };
 
     toggleSidePanel = (side, open) => () => {
         this.setState({
@@ -222,6 +232,12 @@ export class TopNavbar extends React.Component {
     render() {
         const { anchorEl } = this.state;
         const { classes } = this.props;
+
+        const top2dnTierMenu = (
+            <div className={classes.subMenu}>
+
+            </div>
+        );
 
         const leftMobileSideList = (
             <div className={classes.list}>
@@ -419,18 +435,29 @@ export class TopNavbar extends React.Component {
                         </Button>
                         </Typography>
                         <div className={classes.sectionDesktop}>
-                            <Button href="#text-buttons" className={classes.button}>
+                            <Button className={classes.button}
+                                onClick={this.toggleSidePanel('showTopPanel', true)}>
                                 Sports
-                        </Button>
+                            </Button>
+                            <Drawer open={this.state.showTopPanel} anchor="top" onClose={this.toggleSidePanel('showTopPanel', false)}>
+                                <div
+                                    tabIndex={0}
+                                    role="button"
+                                    onClick={this.toggleSidePanel('showTopPanel', false)}
+                                    onKeyDown={this.toggleSidePanel('showTopPanel', false)}
+                                >
+                                    {top2dnTierMenu}
+                                </div>
+                            </Drawer>
                             <Button href="/game_type/" className={classes.button}>
                                 Games
-                        </Button>
+                            </Button>
                             <Button href="/game_type/" className={classes.button}>
                                 Live Casino
-                        </Button>
+                            </Button>
                             <Button href="#text-buttons" className={classes.button}>
                                 Lottery
-                        </Button>
+                            </Button>
                         </div>
                         <form onSubmit={this.onFormSubmit} className="search">
                             <div className={classes.search}>
