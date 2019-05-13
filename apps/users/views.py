@@ -756,3 +756,5 @@ class CheckEmailExixted(View):
         if check_exist:
             return HttpResponse('Exist')
         return HttpResponse('Invalid')
+
+
