@@ -51,7 +51,12 @@ class Balance extends Component {
         event.preventDefault();
         if (window.confirm( message + this.state.balance)){
             
-            axios.post(API_URL + `users/api/addorwithdrawbalance/?type=${this.state.type}&username=${this.state.data.username}&balance=${this.state.balance}`, config)
+            const body = JSON.stringify({
+                type : this.state.type,
+                username: this.state.data.username,
+                balance: this.state.balance
+            });
+            axios.post(API_URL + `users/api/addorwithdrawbalance/`, body, config)
             .then(res => {
                 if (res.data === 'Failed'){
                     this.setState({error: true});

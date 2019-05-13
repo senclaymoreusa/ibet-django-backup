@@ -30,9 +30,10 @@ class UserActionModelTest(APITestCase):
             user = user
         )
         test_user_action.save()
+        user.balance += 100
+        user.save()
 
     def test_action_create_success(self):
-        action_querySet = UserAction.objects.all()
         user = CustomUser.objects.filter(username="vicky_test")
         self.assertTrue(UserAction.objects.filter(user=user[0], event_type=0).exists())
         self.assertEqual(UserAction.objects.all().count(), 1)
@@ -66,9 +67,45 @@ class UserActionModelTest(APITestCase):
             'zipcode': '92929'
 
         }, format='json')
-        print("!!!!" + str(response.content))
-        print("!!!!" + str(response.status_code))
         assert response.status_code == 201
         user = CustomUser.objects.filter(username="vickytestsignup")
         self.assertTrue(UserAction.objects.filter(user=user[0], event_type=2).exists())
-        self.assertEqual(UserAction.objects.filter(event_type=2).count(), 1)
+        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=2).count(), 1)
+        self.assertEqual(UserAction.objects.all().count(), 2)
+
+
+    def test_action_create_success_when_add_money(self):
+        response = self.client.post(reverse('add_withdraw_balance'), {
+            'username': 'vicky_test',
+            'type': 'add',
+            'balance': '100',
+        }, format='json')
+        assert response.status_code == 200
+        user = CustomUser.objects.filter(username="vicky_test")
+        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=3).exists())
+        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=3).count(), 1)
+        self.assertEqual(UserAction.objects.all().count(), 2)
+
+    
+    def test_action_create_success_when_withdraw_money(self):
+        response = self.client.post(reverse('add_withdraw_balance'), {
+            'username': 'vicky_test',
+            'type': 'withdraw',
+            'balance': '10',
+        }, format='json')
+        assert response.status_code == 200
+        user = CustomUser.objects.filter(username="vicky_test")
+        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=4).exists())
+        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=4).count(), 1)
+        self.assertEqual(UserAction.objects.all().count(), 2)
+
+
+    def test_action_fail_when_not_enough_money_to_withdraw(self):
+        response = self.client.post(reverse('add_withdraw_balance'), {
+            'username': 'vicky_test',
+            'type': 'withdraw',
+            'balance': '1000',
+        }, format='json')
+        assert response.status_code == 400
+        self.assertTrue(response.content.decode("utf-8") , 'The balance is not enough')
+        self.assertEqual(UserAction.objects.all().count(), 1)

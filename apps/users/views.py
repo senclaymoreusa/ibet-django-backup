@@ -28,7 +28,7 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
 from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction
 
@@ -527,18 +527,27 @@ class Global(View):
         return HttpResponse(data.level)
 
         
-class AddOrWithdrawBalance(View):
+class AddOrWithdrawBalance(APIView):
+
+    throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = BalanceSerializer
+
+    
 
     def post(self, request, *args, **kwargs):
-
-        username = self.request.GET['username']
-        balance = self.request.GET['balance']
-        type_balance = self.request.GET['type']
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        balance = serializer.validated_data['balance']
+        type_balance = serializer.validated_data['type']
 
         user = get_user_model().objects.filter(username=username)
         currrent_balance = user[0].balance
-        if balance.isdigit() == False:
-            return HttpResponse('Failed')
+        # if balance.isdigit() == False:
+        #     return HttpResponse('Failed')
 
         if type_balance == 'add':
             new_balance = currrent_balance + int(balance)
@@ -563,7 +572,7 @@ class AddOrWithdrawBalance(View):
 
         else:
             if float(balance) > currrent_balance:
-                return HttpResponse('The balance is not enough')
+                return HttpResponse('The balance is not enough', status=400)
 
             new_balance = currrent_balance - int(balance)
             user.update(balance=new_balance)
