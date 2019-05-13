@@ -271,6 +271,7 @@ class LoginView(GenericAPIView):
         serializer_class = self.get_response_serializer()
 
         if getattr(settings, 'REST_USE_JWT', False):
+            print('REST_USE_JWT enabled')
             data = {
                 'user': self.user,
                 'token': self.token
@@ -278,6 +279,7 @@ class LoginView(GenericAPIView):
             serializer = serializer_class(instance=data,
                                           context={'request': self.request})
         else:
+            print('REST_USE_JWT disabled')
             serializer = serializer_class(instance=self.token,
                                           context={'request': self.request})
 
@@ -290,7 +292,45 @@ class LoginView(GenericAPIView):
         self.serializer.is_valid(raise_exception=True)
 
         return self.login()
-        
+
+
+from django.core.exceptions import ObjectDoesNotExist
+
+class LogoutView(APIView):
+    """
+    Calls Django logout method and delete the Token object
+    assigned to the current User object.
+    Accepts/Returns nothing.
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        if getattr(settings, 'ACCOUNT_LOGOUT_ON_GET', False):
+            response = self.logout(request)
+        else:
+            response = self.http_method_not_allowed(request, *args, **kwargs)
+
+        return self.finalize_response(request, response, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.logout(request)
+
+    def logout(self, request):
+        try:
+            request.user.auth_token.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+        if getattr(settings, 'REST_SESSION_LOGIN', True):
+            django_logout(request)
+
+        response = Response({"detail": _("Successfully logged out.")},
+                            status=status.HTTP_200_OK)
+        if getattr(settings, 'REST_USE_JWT', False):
+            from rest_framework_jwt.settings import api_settings as jwt_settings
+            if jwt_settings.JWT_AUTH_COOKIE:
+                response.delete_cookie(jwt_settings.JWT_AUTH_COOKIE)
+        return response
+
 
 import sendgrid
 from sendgrid.helpers.mail import *
