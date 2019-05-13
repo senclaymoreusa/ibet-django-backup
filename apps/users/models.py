@@ -287,16 +287,11 @@ class UserAction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     device = models.CharField(max_length=50, blank=True, null=True)
     browser = models.CharField(max_length=50, blank=True, null=True)
-    refer_url = models.CharField(max_length=50, blank=True, null=True)
+    refer_url = models.CharField(max_length=300, blank=True, null=True)
     dollar_amount = models.FloatField(blank=True, null=True)
     page_id = models.IntegerField(blank=True, null=True)
     created_time = models.DateTimeField(
         _('created time'),
-        default=timezone.now,
-        editable=False,
-    )
-    modified_time = models.DateTimeField(
-        _('modified time'),
         default=timezone.now,
         editable=False,
     )

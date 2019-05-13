@@ -190,7 +190,7 @@ class RegisterView(CreateAPIView):
         headers = self.get_success_headers(serializer.data)
 
         action = UserAction(
-            user= CustomUser.objects.filter(username=str(user))[0],
+            user= CustomUser.objects.filter(username=user)[0],
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=2,
         )

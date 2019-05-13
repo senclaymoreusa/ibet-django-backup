@@ -47,3 +47,28 @@ class UserActionModelTest(APITestCase):
         user = CustomUser.objects.filter(username="vicky_test")
         self.assertTrue(UserAction.objects.filter(user=user[0], event_type=0).exists())
         self.assertEqual(UserAction.objects.all().count(), 2)
+
+
+    def test_action_create_success_when_signup(self):
+        response = self.client.post(reverse('api_register'), {
+            'username': 'vickytestsignup',
+            'email': 'vicky_signup@gamil.com',
+            'password1': 'testtest1231',
+            'password2': 'testtest1231',
+            'first_name': 'vicky',
+            'last_name': 'yaya',
+            'date_of_birth': "01/01/2011",
+            'phone': '5849939393',
+            'city': "SF",
+            'country': 'USA',
+            'state': 'CA',
+            'over_eighteen': 'false',
+            'zipcode': '92929'
+
+        }, format='json')
+        print("!!!!" + str(response.content))
+        print("!!!!" + str(response.status_code))
+        assert response.status_code == 201
+        user = CustomUser.objects.filter(username="vickytestsignup")
+        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=2).exists())
+        self.assertEqual(UserAction.objects.filter(event_type=2).count(), 1)
