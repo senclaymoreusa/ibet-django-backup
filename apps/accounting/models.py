@@ -10,6 +10,8 @@ CHANNEL_CHOICES = (
     (0, 'Alipay'),
     (1, 'Wechat'),
     (2, 'Card'),
+    (3, 'Qaicash'),
+    (4, 'Asia Pay')
 )
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -47,6 +49,7 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = verbose_name
+    
 
 class ThirdParty(models.Model):
     thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -54,12 +57,24 @@ class ThirdParty(models.Model):
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
-    transaction_fee = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True, verbose_name=_('Transaction Fee'))
     switch = models.BooleanField(default=True, verbose_name=_('Active'))
 
     def __str__(self):
         return '{0}'.format(self.thridParty_id)
 
     class Meta:
-        verbose_name = 'ThirdParty'
+        abstract = True
+    
+class DepositChannel(ThirdParty):
+    priority = models.IntegerField(default=0, verbose_name=_('Priority'))
+
+    class Meta:
+        verbose_name = 'Deposit Channel'
+        verbose_name_plural = verbose_name
+
+class WithdrawChannel(ThirdParty):
+    transaction_fee = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True, verbose_name=_('Transaction Fee'))
+    
+    class Meta:
+        verbose_name = 'Withdraw Channel'
         verbose_name_plural = verbose_name
