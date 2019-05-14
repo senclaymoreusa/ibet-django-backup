@@ -535,8 +535,6 @@ class AddOrWithdrawBalance(APIView):
     renderer_classes = (renderers.JSONRenderer,)
     serializer_class = BalanceSerializer
 
-    
-
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)

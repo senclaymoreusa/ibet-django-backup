@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-23 15:57-0700\n"
+"POT-Creation-Date: 2019-05-13 23:33-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -515,7 +515,7 @@ msgstr ""
 msgid "Forgotten your password or username?"
 msgstr ""
 
-#: extra_app/xadmin/plugins/quickform.py:80
+#: extra_app/xadmin/plugins/quickform.py:81
 #, python-format
 msgid "Create New %s"
 msgstr ""

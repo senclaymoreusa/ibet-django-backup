@@ -69,36 +69,39 @@ class MyUserAdmin(object):
             tag_names.append(user_with_tag.tag.name)
         return ', '.join(tag_names)
 
-    get_approved_tag.short_description = 'User Tag'
+    get_approved_tag.short_description = _('User Tag')
     get_approved_tag.admin_order_field = 'UserWithTag__user'
 
     def login_count(self, obj):
         qs = UserAction.objects.filter(user=obj, event_type=0)
         return qs.count()
 
-    login_count.short_description = "Login"
+    login_count.short_description = _("Login")
 
     def deposit_count(self, obj):
         qs = UserAction.objects.filter(user=obj, event_type=3)
         return qs.count()
 
-    deposit_count.short_description = "Deposit"
+    deposit_count.short_description = _("Deposit")
 
     def withdraw_count(self, obj):
         qs = UserAction.objects.filter(user=obj, event_type=4)
         return qs.count()
 
-    withdraw_count.short_description = "Withdraw"
+    withdraw_count.short_description = _("Withdraw")
+    
 
     def bet_count(self, obj):
         qs = UserAction.objects.filter(user=obj, event_type=6)
         return qs.count()
 
-    bet_count.short_description = "Bet"
+    bet_count.short_description = _("Bet")
 
     def user_action_link(self, obj):
-        return '<a href="%s">More actions for this user</a>' % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.id))
+        msg = _("More actions for this user")
+        return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.id))
     user_action_link.allow_tags = True
+    user_action_link.short_description = _("User action link")
     
 
 
@@ -113,7 +116,7 @@ class UserWithTagAdmin(object):
 
     def make_approved(modeladmin, request, queryset):
         queryset.update(status=1)
-    make_approved.short_description = "Approved tag assign to user"
+    make_approved.short_description = _("Approved tag assign to user")
 
     list_display = ('user','tag','get_status')
     list_filter = ('user', 'tag', 'status')
@@ -137,7 +140,7 @@ class UserWithTagAdmin(object):
 
 class UserActionAdmin(object):
 
-    list_display = ('user','event_type', 'ip_addr','dollar_amount', 'created_time', 'modified_time', 'user_action_link')
+    list_display = ('user','event_type', 'ip_addr','dollar_amount', 'created_time', 'user_action_link')
     list_filter = ('user', 'event_type', 'created_time')
     model_icon = 'fa fa-cogs'
     search_fields = ('user__username', 'event_type',)
@@ -148,8 +151,10 @@ class UserActionAdmin(object):
         self.list_display_links = (None, )
 
     def user_action_link(self, obj):
-        return '<a href="%s">More actions for this user</a>' % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
+        msg = _("More actions for this user")
+        return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
     user_action_link.allow_tags = True
+    user_action_link.short_description = _("User action link")
 
 
 xadmin.site.register(views.CommAdminView, GlobalSettings)

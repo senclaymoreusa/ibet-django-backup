@@ -172,8 +172,8 @@ class CustomUser(AbstractBaseUser):
 class UserWithTag(models.Model):
 
     STATUS_CHOICES = (
-        (0, 'pending'),
-        (1, 'approved'),
+        (0, _('pending')),
+        (1, _('approved')),
     )
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     tag = models.ForeignKey(UserTag, on_delete=models.CASCADE, verbose_name=_('Tag'))
@@ -273,29 +273,30 @@ class Config(models.Model):
 class UserAction(models.Model):
     
     EVENT_CHOICES = (
-        (0, 'Login'),
-        (1, 'Logout'),
-        (2, 'Register'),
-        (3, 'Deposit'),
-        (4, 'Withdraw'),
-        (5, 'Page Visit'),
-        (6, 'bet')
+        (0, _('Login')),
+        (1, _('Logout')),
+        (2, _('Register')),
+        (3, _('Deposit')),
+        (4, _('Withdraw')),
+        (5, _('Page Visit')),
+        (6, _('bet'))
     )
 
-    ip_addr = models.GenericIPAddressField(_('action ip'), blank=True, null=True)
-    event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event type'))
+    ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
+    event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
-    device = models.CharField(max_length=50, blank=True, null=True)
-    browser = models.CharField(max_length=50, blank=True, null=True)
-    refer_url = models.CharField(max_length=300, blank=True, null=True)
-    dollar_amount = models.FloatField(blank=True, null=True)
-    page_id = models.IntegerField(blank=True, null=True)
+    device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
+    browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
+    refer_url = models.CharField(_('Refer URL'), max_length=300, blank=True, null=True)
+    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2,blank=True, null=True)
+    page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
-        _('created time'),
+        _('Created Time'),
         default=timezone.now,
         editable=False,
     )
-
+    class Meta:
+        verbose_name_plural = _('User action history')
 
 
 

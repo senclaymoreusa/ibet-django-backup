@@ -82,9 +82,10 @@ class UserActionModelTest(APITestCase):
         }, format='json')
         assert response.status_code == 200
         user = CustomUser.objects.filter(username="vicky_test")
-        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=3).exists())
-        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=3).count(), 1)
+        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=3, dollar_amount=100).exists())
+        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=3, dollar_amount=100).count(), 1)
         self.assertEqual(UserAction.objects.all().count(), 2)
+        self.assertEqual(user[0].balance, 200)
 
     
     def test_action_create_success_when_withdraw_money(self):
@@ -95,10 +96,10 @@ class UserActionModelTest(APITestCase):
         }, format='json')
         assert response.status_code == 200
         user = CustomUser.objects.filter(username="vicky_test")
-        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=4).exists())
-        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=4).count(), 1)
+        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=4, dollar_amount=10).exists())
+        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=4, dollar_amount=10).count(), 1)
         self.assertEqual(UserAction.objects.all().count(), 2)
-
+        self.assertEqual(user[0].balance, 90)
 
     def test_action_fail_when_not_enough_money_to_withdraw(self):
         response = self.client.post(reverse('add_withdraw_balance'), {
@@ -108,4 +109,7 @@ class UserActionModelTest(APITestCase):
         }, format='json')
         assert response.status_code == 400
         self.assertTrue(response.content.decode("utf-8") , 'The balance is not enough')
-        self.assertEqual(UserAction.objects.all().count(), 1)
+        self.assertEqual(UserAction.objects.all().count(), 1)    # withdraw not success
+        user = CustomUser.objects.filter(username="vicky_test")
+        self.assertEqual(user[0].balance, 100)
+        
