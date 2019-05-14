@@ -116,7 +116,10 @@ class Profile extends Component {
               {this.state.data.balance} 
               {' '}
               <button className="btn btn-secondary"> 
-                <NavLink to='/balance' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.add" defaultMessage='Add Balance' /></NavLink> 
+                <NavLink to='/balance/add' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.add" defaultMessage='Add Balance' /></NavLink> 
+              </button>
+              <button className="btn btn-secondary"> 
+                <NavLink to='/balance/withdraw' style={{ textDecoration: 'none' }}><FormattedMessage id="profile.withdraw" defaultMessage='Withdraw Balance' /></NavLink> 
               </button>
             </div>
             <div> <b>

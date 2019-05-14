@@ -145,6 +145,19 @@ export const FacebookSignup = (username, email) => {
         }, expirationTime * 1000)
     }
   }
+
+  export const postLogout = () => {
+    const body = JSON.stringify({});
+    return axios.post(API_URL + 'users/api/logout/', body, config)
+    .then(res => {
+        window.location.reload();
+        console.log(res);
+    })
+    .catch(err => {
+        window.location.reload();
+        console.log(err);
+    });
+  }
   
   export const logout = () => {
     localStorage.removeItem('token');

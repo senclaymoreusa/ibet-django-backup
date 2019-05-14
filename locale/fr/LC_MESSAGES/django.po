@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-23 15:57-0700\n"
+"POT-Creation-Date: 2019-05-13 23:33-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,63 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: apps/accounting/apps.py:7
+#, fuzzy
+#| msgid "Operation System"
+msgid "Accounting System"
+msgstr "Le système d'exploitation"
+
+#: apps/accounting/models.py:21 apps/users/models.py:178
+#: apps/users/models.py:287 apps/users/models.py:337
+#, fuzzy
+#| msgid "User Tag"
+msgid "User"
+msgstr "Tag utilisateur"
+
+#: apps/accounting/models.py:22 apps/users/models.py:291
+msgid "Amount"
+msgstr ""
+
+#: apps/accounting/models.py:23
+msgid "Request Time"
+msgstr ""
+
+#: apps/accounting/models.py:24
+msgid "Arrive Time"
+msgstr ""
+
+#: apps/accounting/models.py:33
+msgid "Channel"
+msgstr ""
+
+#: apps/accounting/models.py:39
+msgid "Transaction Type"
+msgstr ""
+
+#: apps/accounting/models.py:51
+msgid "Name"
+msgstr ""
+
+#: apps/accounting/models.py:52
+msgid "Currency"
+msgstr ""
+
+#: apps/accounting/models.py:53
+msgid "Min Amount"
+msgstr ""
+
+#: apps/accounting/models.py:54
+msgid "Max Amount"
+msgstr ""
+
+#: apps/accounting/models.py:55
+msgid "Transaction Fee"
+msgstr ""
+
+#: apps/accounting/models.py:56
+msgid "Active"
+msgstr ""
 
 #: apps/games/apps.py:7
 msgid "3RD Part Game System"
@@ -48,11 +105,45 @@ msgstr "Votre nom d'utilisateur est"
 msgid "password"
 msgstr "mot de passe"
 
-#: apps/users/adminx.py:18
+#: apps/users/adminx.py:23
 msgid "IBET Administration"
 msgstr "IBET Administration"
 
-#: apps/users/adminx.py:86 apps/users/models.py:178
+#: apps/users/adminx.py:72 apps/users/models.py:72
+msgid "User Tag"
+msgstr "Tag utilisateur"
+
+#: apps/users/adminx.py:79 apps/users/models.py:276
+msgid "Login"
+msgstr "Temps de connexion"
+
+#: apps/users/adminx.py:85 apps/users/models.py:279
+msgid "Deposit"
+msgstr "Délais de dépôt"
+
+#: apps/users/adminx.py:91 apps/users/models.py:280
+msgid "Withdraw"
+msgstr "Temps de retrait"
+
+#: apps/users/adminx.py:98
+msgid "Bet"
+msgstr "Temps de paris"
+
+#: apps/users/adminx.py:101 apps/users/adminx.py:154
+msgid "More actions for this user"
+msgstr "Plus d'actions pour cet utilisateur"
+
+#: apps/users/adminx.py:104 apps/users/adminx.py:157
+msgid "User action link"
+msgstr "Lien d'action utilisateur"
+
+#: apps/users/adminx.py:119
+#, fuzzy
+#| msgid "Assign tag to user"
+msgid "Approved tag assign to user"
+msgstr "Attribuer une balise à l'utilisateur"
+
+#: apps/users/adminx.py:129 apps/users/models.py:180
 msgid "Status"
 msgstr "Statut"
 
@@ -60,43 +151,93 @@ msgstr "Statut"
 msgid "User System"
 msgstr "Système utilisateur"
 
-#: apps/users/forms.py:83
+#: apps/users/forms.py:82
 msgid "Invalid date - renewal in past"
 msgstr "Date invalide - renouvellement dans le passé"
 
-#: apps/users/forms.py:86
+#: apps/users/forms.py:85
 msgid "Invalid date - renewal more than 4 weeks ahead"
 msgstr "Date invalide - renouvellement plus de 4 semaines à l'avance"
 
-#: apps/users/models.py:65
+#: apps/users/models.py:66
 msgid "Tag name"
 msgstr "Nom du tag"
 
-#: apps/users/models.py:68
+#: apps/users/models.py:69
 msgid "Notes"
 msgstr "Remarques"
 
-#: apps/users/models.py:71
-msgid "User Tag"
-msgstr "Tag utilisateur"
-
-#: apps/users/models.py:129
+#: apps/users/models.py:131
 msgid "Customer User"
 msgstr "Utilisateur du client"
 
-#: apps/users/models.py:176
-#, fuzzy
-#| msgid "User Tag"
-msgid "User"
-msgstr "Tag utilisateur"
+#: apps/users/models.py:175
+msgid "pending"
+msgstr "en attendant"
 
-#: apps/users/models.py:177
+#: apps/users/models.py:176
+msgid "approved"
+msgstr "approuvé"
+
+#: apps/users/models.py:179
 msgid "Tag"
 msgstr "étiquette"
 
-#: apps/users/models.py:182
+#: apps/users/models.py:187
 msgid "Assign tag to user"
 msgstr "Attribuer une balise à l'utilisateur"
+
+#: apps/users/models.py:277
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: apps/users/models.py:278
+msgid "Register"
+msgstr "S'inscrire"
+
+#: apps/users/models.py:281
+msgid "Page Visit"
+msgstr "Visite de page"
+
+#: apps/users/models.py:282
+msgid "bet"
+msgstr "Pari"
+
+#: apps/users/models.py:285
+msgid "Action Ip"
+msgstr "Action Ip"
+
+#: apps/users/models.py:286
+msgid "Event Type"
+msgstr "Type d'événement"
+
+#: apps/users/models.py:288
+msgid "Device"
+msgstr "Appareil"
+
+#: apps/users/models.py:289
+msgid "Browser"
+msgstr "Navigateur"
+
+#: apps/users/models.py:290
+msgid "Refer URL"
+msgstr "URL de référence"
+
+#: apps/users/models.py:292
+msgid "Page"
+msgstr "Page"
+
+#: apps/users/models.py:294
+msgid "Created Time"
+msgstr "Temps créé"
+
+#: apps/users/models.py:299
+msgid "User action history"
+msgstr "Historique des actions de l'utilisateur"
+
+#: apps/users/models.py:338
+msgid "Bonus"
+msgstr ""
 
 #: apps/users/serializers.py:81 apps/users/serializers.py:190
 #: apps/users/serializers.py:350
@@ -176,69 +317,69 @@ msgstr ""
 msgid "E-mail is not verified."
 msgstr "L'e-mail n'est pas vérifié"
 
-#: apps/users/views.py:207
+#: apps/users/views.py:218
 msgid "Current user is blocked!"
 msgstr "L'utilisateur actuel est bloqué!"
 
-#: apps/users/views.py:212
+#: apps/users/views.py:223
 msgid "Please activate your account!"
 msgstr "Veuillez activer votre compte!"
 
-#: apps/users/views.py:302
+#: apps/users/views.py:323
 msgid "You have registered an account at ibet.com, "
 msgstr "Vous avez enregistré un compte sur ibet.com"
 
-#: apps/users/views.py:303
+#: apps/users/views.py:324
 msgid "You username is "
 msgstr "Votre nom d'utilisateur est"
 
-#: apps/users/views.py:303
+#: apps/users/views.py:324
 #, fuzzy
 #| msgid "Your new Email Address is: "
 msgid ", and your email address is "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: apps/users/views.py:306
+#: apps/users/views.py:327
 msgid "Request of changing email address"
 msgstr "Demande de changement d'adresse email"
 
-#: apps/users/views.py:307
+#: apps/users/views.py:328
 msgid "Your new Email Address is: "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: apps/users/views.py:310
+#: apps/users/views.py:331
 msgid " referred you to sign up an account with Claymore"
 msgstr "Vous a demandé de créer un compte avec Claymore"
 
-#: apps/users/views.py:311
+#: apps/users/views.py:332
 msgid "Please use the referral link to register your new account: "
 msgstr ""
 "Veuillez utiliser le lien de parrainage pour enregistrer votre nouveau compte"
 
-#: apps/users/views.py:331
+#: apps/users/views.py:352
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr ""
 "Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
 
-#: apps/users/views.py:333
+#: apps/users/views.py:354
 msgid "Click the link to reset your email password: "
 msgstr ""
 "Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "
 
-#: apps/users/views.py:541
+#: apps/users/views.py:609
 msgid "Please activate you ibet account "
 msgstr "Merci d'activer votre compte ibet"
 
-#: djauth/settings.py:178 templates/admin/base.html:34
+#: djauth/settings.py:180 templates/admin/base.html:34
 msgid "English"
 msgstr ""
 
-#: djauth/settings.py:179 templates/admin/base.html:35
+#: djauth/settings.py:181 templates/admin/base.html:35
 msgid "Chinese"
 msgstr "Chinese"
 
-#: djauth/settings.py:180
+#: djauth/settings.py:182
 msgid "Franch"
 msgstr ""
 

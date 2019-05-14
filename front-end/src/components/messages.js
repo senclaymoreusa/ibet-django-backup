@@ -35,8 +35,10 @@ export const messages = {
         'login.forget_password': 'Forgot Password?',
         'login.username_empty_error': 'Username cannot be empty',
         'login.password_empty_error': 'Password cannot be empty',
-        'login.option': 'Or login with',
+        'login.option': 'Other login options',
         'login.one-click': 'Or try one-click signup',
+        'login.remember': 'Remember passowrd',
+        'login.notauser': 'Not a member? Signup for free',
 
         // handle books page message
         'books.title': 'Book List',
@@ -166,6 +168,7 @@ export const messages = {
         'balance.submit': 'Submit',
         'balance.error': 'The balance you entered is not valid',
         'balance.confirm': 'The amount you want to add to your balance is $ ',
+        'balance.withdrawconfirm' : 'The amount you want to withdraw from your balance is $ ',
 
         // handle game_detail page message
         'game_detail.title': 'Game Details',
@@ -241,8 +244,10 @@ export const messages = {
         'login.forget_password': '忘記密碼?',
         'login.username_empty_error': '用戶名不能為空',
         'login.password_empty_error': '密碼不能為空',
-        'login.option': '或用已下方式登陆',
+        'login.option': '其他登陆方式',
         'login.one-click': '或尝试一键注册',
+        'login.remember': '记住密码',
+        'login.notauser': '还不是用户? 尝试免费注册',
         
 
         // handle books page message
@@ -449,8 +454,10 @@ export const messages = {
         'login.forget_password': 'Mot de passe oublié?',
         'login.username_empty_error': 'Le nom d\'utilisateur ne peut pas être vide',
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
-        'login.option': 'Ou connectez-vous avec',
+        'login.option': 'Autres options de connexion',
         'login.one-click': "Ou essayez l'inscription en un clic",
+        'login.remember': 'se souvenir du mot de passe',
+        'login.notauser': 'Pas un membre? Inscription gratuite',
 
         // handle books page message
         'books.title': 'Liste de livres',
