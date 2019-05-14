@@ -53,10 +53,9 @@ const styles = theme => ({
         width: 250,
     },
     subMenu: {
-        marginTop:50,
         flexGrow: 1,
         height: 100,
-        backgroundColor: 'gray'
+        backgroundColor: 'red'
     },
     grow: {
         flexGrow: 1,
@@ -138,6 +137,9 @@ const styles = theme => ({
     },
     nested: {
         paddingLeft: theme.spacing.unit * 4,
+    },
+    paper: {
+        marginTop: 65,
     },
 });
 
@@ -406,6 +408,7 @@ export class TopNavbar extends React.Component {
             </div>
         );
 
+
         return (
             <div className={classes.root}>
                 <AppBar position="static" color="primary">
@@ -439,7 +442,13 @@ export class TopNavbar extends React.Component {
                                 onClick={this.toggleSidePanel('showTopPanel', true)}>
                                 Sports
                             </Button>
-                            <Drawer open={this.state.showTopPanel} anchor="top" onClose={this.toggleSidePanel('showTopPanel', false)}>
+                            <Drawer open={this.state.showTopPanel}
+                                anchor="top" o
+                                nClose={this.toggleSidePanel('showTopPanel', false)}
+                                classes={{
+                                    paper: classes.paper,
+                                    modal: classes.modal
+                                }}>
                                 <div
                                     tabIndex={0}
                                     role="button"
