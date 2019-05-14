@@ -120,6 +120,8 @@ class CustomUser(AbstractBaseUser):
     promo_code = models.IntegerField(blank=True, null=True)
     currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
 
+    reset_password_code = models.CharField(max_length=4, blank=True)
+
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
@@ -307,4 +309,7 @@ class UserBonus(models.Model):
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
     start_time = models.DateTimeField('Start Time', blank=False)
     is_successful = models.BooleanField(default=False)
+
+
+
 

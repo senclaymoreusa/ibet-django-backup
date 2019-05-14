@@ -692,13 +692,24 @@ class FacebookLoginView(GenericAPIView):
 
         return self.login()
 
+def generate_username():
+    name_list = [ 'Stephen', 'Mike', 'Tom', 'Luke', 'James', 'Kevin', 'Stephan', 'Wilson', 'Alice', 'Sunny', 'Cloris', 'Jack', 
+        'Leo', 'Shaw', 'Peter', 'Ben', 'Ross', 'Rachel', 'Michael', 'Jordan', 'Oliver', 'Harry', 'John', 'William', 'David', 'Richard', 'Joseph',
+        'Charles', 'Thomas', 'Joe', 'George', 'Oscar', 'Amelia', 'Margaret', 'Megan', 'Jennifer', 'Bethany', 'Isla', 'Lauren', 'Samantha', 'Emma',
+        'Joanne', 'Ava', 'Tracy', 'Elizabeth', 'Sophie', 'Lily', 'Jacob', 'Robert']
+
+    username_1 = name_list[random.randint(1, len(name_list) - 1)]
+    username_2 = ''.join([str(random.randint(0, 9)) for i in range(5)])
+    return username_1 + username_2
+
 
 class OneclickRegister(View):
     def post(self, request, *args, **kwargs):
-        username = get_random_string(length=8)     # only alphanumeric allowed
+        
+        username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
-            username = get_random_string(length=8)
+            username = generate_username
             check_duplicate = CustomUser.objects.filter(username=username)
 
         email = get_random_string(length=8)
@@ -745,3 +756,58 @@ class CheckEmailExixted(View):
         if check_exist:
             return HttpResponse('Exist')
         return HttpResponse('Invalid')
+
+
+class GenerateForgetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        user = get_user_model().objects.filter(email__iexact=email)
+        if user:
+            code = ''.join([str(random.randint(0, 9)) for i in range(4)])
+            user.update(reset_password_code=code)
+            return HttpResponse('Success')
+        return HttpResponse('Failed')
+
+class SendResetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        user = get_user_model().objects.filter(email=email)
+        reset_password_code = user[0].reset_password_code
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email('ibet@ibet.com')
+        to_email = Email(email)
+        subject =  str(_('Reset Password'))
+        content_text = str(_('Use this code to reset your password '))
+        content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        return HttpResponse('Success')
+
+class VerifyResetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        code = self.request.GET['code']
+        user = get_user_model().objects.filter(email=email)
+        #user1 = get_user_model().objects.get(email=email)
+        verify = user[0].reset_password_code
+        if code == verify:
+            user.update(reset_password_code='')
+            #user1.set_password('kevinkevin88')
+            #user1.save()
+            return HttpResponse('Success')
+        else:
+            return HttpResponse('Failed')
+
+class ChangeAndResetPassword(View):
+    def post(self, request, *args, **kwargs):
+        password =  self.request.GET['password']
+        email = self.request.FET['email']
+        user = get_user_model().objects.get(email=email)
+        user.set_password(password)
+        user.save()
+        return HttpResponse('Success')
+
+
+
+        
+

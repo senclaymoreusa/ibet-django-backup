@@ -30,19 +30,23 @@ class Reset_Password extends Component {
         this.toggleShow               = this.toggleShow.bind(this);
     }
 
-    componentDidMount() {
+    
+    // Do not delete this, I saved it for future use
+    
+    // componentDidMount() {
 
-        const body = {
-            token: this.props.location.pathname.slice(16)
-        }
+    //     const body = {
+    //         token: this.props.location.pathname.slice(16)
+    //     }
 
-        axios.post(API_URL + 'users/api/reset-password/verify-token/', body, config)
-        .then(res => {
-          // does nothing
-        }).catch(err => {
-          this.setState({show_page: false})
-        })
-    }
+    //     axios.post(API_URL + 'users/api/reset-password/verify-token/', body, config)
+    //     .then(res => {
+    //       // does nothing
+    //     }).catch(err => {
+    //       this.setState({show_page: false})
+    //     })
+    // }
+    
 
     onInputChange_password1(event){
         this.setState({password1: event.target.value});

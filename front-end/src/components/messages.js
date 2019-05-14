@@ -55,6 +55,11 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': 'An email has been sent to you email address to reset your password',
+        'email_sent.topmessage': 'We sent to a code to reset you password',
+        'email_sent.sentto': 'Sent to',
+        'email_sent.resend': "Try resending the email if you haven't received in five minutes",
+        'email_sent.verify': 'Verification Code',
+        'email_sent.error': 'The verification code is not correct or it is outdated, try resending email',
         
 
         // handle reset_password page message
@@ -91,7 +96,7 @@ export const messages = {
         'profile.referral': 'Referral link: ',
 
         // handle forget_password page message
-        'forget_password.enter_email': 'Enter your email address: ',
+        'forget_password.enter_email': "Enter your registered email. We'll email you a code to reset your password",
         'forget_password.mail': 'Email: ',
         'forget_password.confirm': 'Confirm',
         'forget_password.email_not_valid': 'Email does not exsit',
@@ -203,7 +208,10 @@ export const messages = {
         'error.city': 'City not valid',
         'error.state': 'State not valid',
         'error.zipcode': 'Zipcode not valid',
-        'error.passwordnotmatch': 'Two password you entered do not match'
+        'error.passwordnotmatch': 'Two password you entered do not match',
+
+
+        
     },
     zh: {
 
@@ -263,6 +271,11 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': '郵件已成功發送至您的郵箱',
+        'email_sent.topmessage': '我们已讲验证码发送给您来重设密码',
+        'email_sent.sentto': '发送到',
+        'email_sent.resend': "若您在五分钟之内没有收到，请尝试重新发送邮件",
+        'email_sent.verify': '验证码',
+        'email_sent.error': '验证码不正确或已失效，请尝试重新发送邮件',
 
         // handle reset_password page message
         'reset_password.page_not_valid': '頁面不再存在',
@@ -298,7 +311,7 @@ export const messages = {
         'profile.referral': '推荐链接: ',
 
         // handle forget_password page message
-        'forget_password.enter_email': '請輸入郵箱: ',
+        'forget_password.enter_email': '请输入您的邮箱地址，我们会发送给您验证码来重设您的密码',
         'forget_password.mail': '郵箱: ',
         'forget_password.confirm': '確認',
         'forget_password.email_not_valid': '郵件不存在',
@@ -412,7 +425,10 @@ export const messages = {
         'error.city': '城市错误',
         'error.state': '省市错误',
         'error.zipcode': '邮编错误',
-        'error.passwordnotmatch': '两次输入的密码不一致'
+        'error.passwordnotmatch': '两次输入的密码不一致',
+
+
+        
     }, 
     fr: {
 
@@ -471,6 +487,11 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': 'Le message a été envoyé avec succès à votre boîte aux lettres',
+        'email_sent.topmessage': 'Nous avons envoyé un code pour réinitialiser votre mot de passe',
+        'email_sent.sentto': 'Envoyé à',
+        'email_sent.resend': "Essayez de renvoyer l'e-mail si vous ne l'avez pas reçu dans les cinq minutes",
+        'email_sent.verify': 'Code de vérification',
+        'email_sent.error': "Le code de vérification n'est pas correct ou est obsolète, essayez de renvoyer un courrier électronique",
 
         // handle reset_password page message
         'reset_password.page_not_valid': 'La page n\'existe plus',
@@ -506,7 +527,7 @@ export const messages = {
         "profile.referral": "Lien recommandé': ",
 
         // handle forget_password page message
-        'forget_password.enter_email': 'Entrez votre adresse email: ',
+        'forget_password.enter_email': 'Entrez votre email enregistré. Nous vous enverrons un code pour réinitialiser votre mot de passe',
         'forget_password.mail': 'Email: ',
         'forget_password.confirm': 'Confirmer',
         'forget_password.email_not_valid': 'Email n\'existe pas',
@@ -621,7 +642,10 @@ export const messages = {
         'error.city': 'Ville non valide',
         'error.state': 'Etat non valide',
         'error.zipcode': 'Code postal non valide',
-        'error.passwordnotmatch': 'Deux mot de passe que vous avez entré ne correspondent pas'
+        'error.passwordnotmatch': 'Deux mot de passe que vous avez entré ne correspondent pas',
+
+
+        
     }
 }
 

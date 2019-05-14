@@ -4,6 +4,49 @@ import { withRouter } from 'react-router-dom';
 import { config } from '../util_config';
 import { FormattedMessage } from 'react-intl';
 import { errors } from './errors';
+import TopNavbar from "./top_navbar";
+
+
+// Material design
+import { withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import Button from '@material-ui/core/Button';
+import blue from '@material-ui/core/colors/blue';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import classNames from 'classnames';
+
+import '../css/forget_password.css';
+
+
+const styles = theme => ({
+    root: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
+
+    margin: {
+      margin: 'auto',
+    },
+
+    textField: {
+      flexBasis: 200,
+      width: 300,
+      height: 50
+    },
+
+    cssRoot: {
+        color: theme.palette.getContrastText(blue[300]),
+        backgroundColor: blue[300],
+        '&:hover': {
+          backgroundColor: blue[800],
+        },
+      },
+  });
 
 
 const API_URL = process.env.REACT_APP_REST_API;
@@ -39,20 +82,45 @@ class Forget_Password extends Component {
         this.setState({old_email: event.target.value, email_not_exist: false});
     }
 
+
+    //  Do not delete the below function, I saved it for future use
+
+    // onFormSubmit(event){
+    //     event.preventDefault();
+      
+    //     const body = {
+    //         email: this.state.old_email
+    //     }
+
+    //     axios.get(API_URL + `users/api/checkemailexist/?email=${this.state.old_email}`, config)
+    //     .then(res => {
+    //         if (res.data === 'Exist'){
+    //             axios.post(API_URL + 'users/api/reset-password/', body, config)
+    //             .then(res => {
+    //                 this.setState({success: true})
+    //                 this.props.history.push("/email_sent")
+    //             })
+    //             .catch((err) => {
+    //                 this.setState({errorCode: errors.EMAIL_NOT_VALID});
+    //             });
+    //         }else{
+    //             this.setState({email_not_exist: true})
+    //         }
+    //     })
+    // }
+
+
     onFormSubmit(event){
         event.preventDefault();
-      
-        const body = {
-            email: this.state.old_email
-        }
 
-        axios.get(API_URL + `users/api/checkemailexist/?email=${this.state.old_email}`, config)
+        axios.post(API_URL + `users/api/generatepasswordcode/?email=${this.state.old_email}`, config)
         .then(res => {
-            if (res.data === 'Exist'){
-                axios.post(API_URL + 'users/api/reset-password/', body, config)
+            if (res.data === 'Success'){
+                axios.post(API_URL + `users/api/sendresetpasswordcode/?email=${this.state.old_email}`, config)
                 .then(res => {
                     this.setState({success: true})
-                    this.props.history.push("/email_sent")
+                    //localStorage.removeItem('reset_password_email')
+                    this.props.history.push(`/email_sent/${this.state.old_email}`)
                 })
                 .catch((err) => {
                     this.setState({errorCode: errors.EMAIL_NOT_VALID});
@@ -61,11 +129,12 @@ class Forget_Password extends Component {
                 this.setState({email_not_exist: true})
             }
         })
-
-        
     }
 
+
     render(){
+
+        const { classes } = this.props;
 
         const showErrors = () => {
             if (this.state.success) {
@@ -82,42 +151,65 @@ class Forget_Password extends Component {
                 );
             }
         }
+
         return (
             <div> 
-                <div><FormattedMessage id="forget_password.enter_email" defaultMessage='Enter your email address: ' /></div>
-                <form onSubmit={this.onFormSubmit} >
-                    <label><b>
-                    <FormattedMessage id="forget_password.mail" defaultMessage='Email: ' />
-                    </b></label>
-                    <input
-                        placeholder="example@gmail.com"
-                        className="form-control"
-                        value={this.state.old_email}
-                        onChange={this.onInputChange_old_email}
-                    />
+                <TopNavbar />
 
-                    <span className="input-group-btn">
-                        <button disabled = {this.state.button_disable} type="submit" className="btn btn-secondary"> 
+                <div className='forget-password-form'> 
+
+                    <div className='forget-title'> 
+                        <FormattedMessage id="forget_password.enter_email" defaultMessage='Enter your email address: ' />
+                    </div>
+
+                    <br/>
+
+                    <form onSubmit={this.onFormSubmit} >
+
+                        <div>
+                            <FormattedMessage id="forget_password.mail" defaultMessage='Email: ' />
+                        </div>
+
+                        <TextField
+                            id="outlined-adornment-password"
+                            className={classNames(classes.margin, classes.textField)}
+                            variant="outlined"
+                            type={'text'}
+                            label="Email"
+                            value={this.state.old_email}
+                            onChange={this.onInputChange_old_email}
+                        />
+
+                        <br/>
+                        <br/>
+    
+
+                        <Button 
+                            variant="contained"
+                            color="primary"
+                            disabled = {this.state.button_disable} 
+                            type="submit" 
+                        > 
                             <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
-                        </button>
-                    </span>
+                        </Button>
 
-                    {this.state.live_check_email && <div style={{color: 'red'}}> <FormattedMessage  id="error.email" defaultMessage='Email address not valid' /> </div>}
+                        <br/>
 
-                    {this.state.email_not_exist && <div style={{color: 'red'}}> <FormattedMessage  id="forget_password.email_not_valid" defaultMessage='Email does not exsit' /> </div>}
-                </form>
 
-                <button style={{color: 'red'}} onClick={ () => {this.props.history.push('/')}}>
-                    <FormattedMessage id="login.back" defaultMessage='Back' />
-                </button>
+                        {this.state.live_check_email && <div style={{color: 'red'}}> <FormattedMessage  id="error.email" defaultMessage='Email address not valid' /> </div>}
 
-                {
-                    showErrors()
-                }
-                
+                        {this.state.email_not_exist && <div style={{color: 'red'}}> <FormattedMessage  id="forget_password.email_not_valid" defaultMessage='Email does not exsit' /> </div>}
+                    </form>
+
+
+                    {
+                        showErrors()
+                    }
+
+                </div>
             </div>
         )
     }
 }
 
-export default withRouter(Forget_Password);
+export default  withStyles(styles)(withRouter(Forget_Password));
