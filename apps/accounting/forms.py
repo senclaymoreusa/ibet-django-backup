@@ -1,6 +1,7 @@
 from django import forms
+from django.forms import ModelForm
 # from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import Transaction
+from .models import Transaction, DepositAccessManagement
 
 # from django.contrib.auth import get_user_model
 class TransactionForm(forms.ModelForm):
@@ -34,3 +35,23 @@ class DepositReviewForm(forms.ModelForm):
     
 class WithdrawReviewForm(DepositReviewForm):
     pass
+
+class UserDepositAccessManagementCreateFrom(ModelForm):
+    class Meta:
+        model = DepositAccessManagement
+        fields = ('user_id', 'deposit_channel')
+
+
+class UserDepositAccessManagementEditFrom(forms.ModelForm):
+    class Meta:
+        model = DepositAccessManagement
+        fields = ('deposit_channel', )
+
+    def __init__(self, *args, **kwargs):
+        super(UserDepositAccessManagementEditFrom, self).__init__(*args, **kwargs)
+        # self.fields['tag'].disabled = True
+        # self.fields['user'].disabled = True
+        # self.fields['status'].disabled = True
+    
+    def has_add_permission(self):
+        return False

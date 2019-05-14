@@ -1,7 +1,7 @@
 import xadmin
 from xadmin.layout import Main, Side, Fieldset
 
-from .models import Transaction, DepositChannel, WithdrawChannel
+from .models import Transaction, DepositAccessManagement, DepositChannel, WithdrawChannel
 from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
 
 class TransactionAdmin(object):
@@ -12,12 +12,6 @@ class TransactionAdmin(object):
 
     def get_model_form(self, **kwargs):
         return TransactionForm
-    
-class WithdrawChannelAdmin(object):
-    list_display = ('thridParty_name', 'min_amount', 'max_amount', 'transaction_fee', 'currency', 'switch',)
-
-class DepositChannelAdmin(object):
-    list_display = ('thridParty_name', 'min_amount', 'max_amount', 'currency', 'priority', 'switch',)
 
 class DepositReview(Transaction):
     class Meta:
@@ -87,8 +81,30 @@ class WithdrawReviewAdmin(object):
             self.form = WithdrawReviewForm
         return super().get_model_form(**kwargs)
 
-xadmin.site.register(Transaction,TransactionAdmin)
+class WithdrawChannelAdmin(object):
+    list_display = ('thridParty_name', 'min_amount', 'max_amount', 'transaction_fee', 'currency', 'switch',)
+
+class DepositChannelAdmin(object):
+    list_display = ('thridParty_name', 'min_amount', 'max_amount', 'currency', 'priority', 'switch',)
+
+
+# class DepositAccessManagementInline(object):
+#     model = DepositAccessManagement
+#     extra = 1
+
+class DepositAccessManagementAdmin(object):
+    list_display = ('user_id', 'deposit_channel')
+    # inlines = [DepositAccessManagementInline,]
+    # exclude = ('deposit_channel',)
+
+    def __str__(self):
+        return '{0}'.format(self.user_id)
+
+
+
+xadmin.site.register(DepositAccessManagement,DepositAccessManagementAdmin)
 xadmin.site.register(DepositChannel,DepositChannelAdmin)
-xadmin.site.register(WithdrawChannel,WithdrawChannelAdmin)
 xadmin.site.register(DepositReview,DepositReviewAdmin)
+xadmin.site.register(Transaction,TransactionAdmin)
+xadmin.site.register(WithdrawChannel,WithdrawChannelAdmin)
 xadmin.site.register(WithdrawReview,WithdrawReviewAdmin)

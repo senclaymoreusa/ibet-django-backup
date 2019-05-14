@@ -54,19 +54,31 @@ class Transaction(models.Model):
 class ThirdParty(models.Model):
     thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     thridParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
     switch = models.BooleanField(default=True, verbose_name=_('Active'))
 
     def __str__(self):
-        return '{0}'.format(self.thridParty_id)
+        return '{0}'.format(self.thridParty_name)
 
     class Meta:
         abstract = True
-    
+ 
 class DepositChannel(ThirdParty):
     priority = models.IntegerField(default=0, verbose_name=_('Priority'))
+    # deposit_channel = models.ForeignKey(De)
+    deposit_channel = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True, 
+        related_name = "sb",
+        through='DepositAccessManagement',
+        through_fields=('deposit_channel', 'user_id'),
+    )
+
+    def __str__(self):
+        return self.get_thridParty_name_display() 
 
     class Meta:
         verbose_name = 'Deposit Channel'
@@ -77,4 +89,19 @@ class WithdrawChannel(ThirdParty):
     
     class Meta:
         verbose_name = 'Withdraw Channel'
+        verbose_name_plural = verbose_name
+
+class DepositAccessManagement(models.Model):
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, on_delete=models.CASCADE, related_name="use")
+    deposit_channel = models.ForeignKey(DepositChannel, on_delete=models.CASCADE, related_name="deposit_access_channel", verbose_name=_('Channel'))
+
+    def group_deposit_channel(self):
+        return ','.join([i.thridParty_name for i in self.deposit_channel.all()])
+        
+    def __str__(self):
+        return self.get_thridParty_name_display() 
+
+    class Meta:
+        # unique_together = (('user_id','deposit_channel'),)
+        verbose_name = "Deposit Access management"
         verbose_name_plural = verbose_name
