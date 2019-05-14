@@ -149,6 +149,12 @@ const languages = [
     { value: 'fr', label: 'Français' }
 ];
 
+class SubNavBar extends React.Component {
+    render() {
+        return (<div>I'm the child</div>);
+    }
+}
+
 export class TopNavbar extends React.Component {
 
     constructor(props) {
@@ -158,6 +164,7 @@ export class TopNavbar extends React.Component {
             anchorEl: null,
 
             lang: 'en',
+            childVisible: false,
             showTopPanel: false,
             showLeftPanel: false,
             showRightPanel: false,
@@ -172,6 +179,11 @@ export class TopNavbar extends React.Component {
 
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
+        this.onLotteryClick = this.onLotteryClick.bind(this);
+    }
+
+    onLotteryClick() {
+        this.setState({ childVisible: !this.state.childVisible });
     }
 
     submenuHandleChange = (event, submenu) => {
@@ -461,10 +473,10 @@ export class TopNavbar extends React.Component {
                             <Button href="/game_type/" className={classes.button}>
                                 Games
                             </Button>
-                            <Button href="/game_type/" className={classes.button}>
+                            <Button className={classes.button}>
                                 Live Casino
                             </Button>
-                            <Button href="#text-buttons" className={classes.button}>
+                            <Button onClick={this.onLotteryClick} href="#text-buttons" className={classes.button}>
                                 Lottery
                             </Button>
                         </div>
@@ -629,6 +641,12 @@ export class TopNavbar extends React.Component {
                         </div>
                     </Toolbar>
                 </AppBar>
+                {
+                    this.state.childVisible
+                        ? <SubNavBar />
+                        : null
+                }
+
             </div >
         );
     }
