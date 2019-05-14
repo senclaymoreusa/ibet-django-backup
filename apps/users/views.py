@@ -609,8 +609,12 @@ class AddOrWithdrawBalance(APIView):
                 current_points = reward_points + data.Referee_add_balance_reward
                 referr_object.update(reward_points=current_points)
 
-            create = Transaction.object.create(user_id=username, amount=balance, transaction_type='0')
-            
+            create = Transaction.objects.create(
+                user_id=CustomUser.objects.filter(username=username).first(), 
+                amount=balance, 
+                transaction_type=0
+            )
+
             action = UserAction(
                 user= CustomUser.objects.filter(username=username).first(),
                 ip_addr=self.request.META['REMOTE_ADDR'],
@@ -634,6 +638,12 @@ class AddOrWithdrawBalance(APIView):
                 reward_points = referr_object[0].reward_points
                 current_points = reward_points + data.Referee_add_balance_reward
                 referr_object.update(reward_points=current_points)
+
+            create = Transaction.objects.create(
+                user_id=CustomUser.objects.filter(username=username).first(), 
+                amount=balance, 
+                transaction_type=1
+            )
 
             action = UserAction(
                 user= CustomUser.objects.filter(username=username).first(),
