@@ -54,7 +54,6 @@ class Transaction(models.Model):
 class ThirdParty(models.Model):
     thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     thridParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
@@ -66,9 +65,9 @@ class ThirdParty(models.Model):
     class Meta:
         abstract = True
  
+
 class DepositChannel(ThirdParty):
     priority = models.IntegerField(default=0, verbose_name=_('Priority'))
-    # deposit_channel = models.ForeignKey(De)
     deposit_channel = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True, 
@@ -78,30 +77,45 @@ class DepositChannel(ThirdParty):
     )
 
     def __str__(self):
-        return self.get_thridParty_name_display() 
+        return self.get_thridParty_name_display()
 
     class Meta:
         verbose_name = 'Deposit Channel'
         verbose_name_plural = verbose_name
 
+
 class WithdrawChannel(ThirdParty):
     transaction_fee = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True, verbose_name=_('Transaction Fee'))
     
+    def __str__(self):
+        return self.get_thridParty_name_display()
+
     class Meta:
         verbose_name = 'Withdraw Channel'
         verbose_name_plural = verbose_name
 
+
 class DepositAccessManagement(models.Model):
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, on_delete=models.CASCADE, related_name="use")
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, on_delete=models.CASCADE, related_name="deposit_user")
     deposit_channel = models.ForeignKey(DepositChannel, on_delete=models.CASCADE, related_name="deposit_access_channel", verbose_name=_('Channel'))
 
     def group_deposit_channel(self):
         return ','.join([i.thridParty_name for i in self.deposit_channel.all()])
-        
-    def __str__(self):
-        return self.get_thridParty_name_display() 
 
     class Meta:
-        # unique_together = (('user_id','deposit_channel'),)
+        unique_together = (('user_id','deposit_channel'),)
         verbose_name = "Deposit Access management"
+        verbose_name_plural = verbose_name
+
+
+class WithdrawAccessManagement(models.Model):
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, on_delete=models.CASCADE, related_name="withdraw_user")
+    withdraw_channel = models.ForeignKey(WithdrawChannel, on_delete=models.CASCADE, related_name="withdraw_access_channel", verbose_name=_('Channel'))
+
+    def group_withdraw_channel(self):
+        return ','.join([i.thridParty_name for i in self.withdraw_channel.all()])
+
+    class Meta:
+        unique_together = (('user_id','withdraw_channel'),)
+        verbose_name = "Withdraw Access management"
         verbose_name_plural = verbose_name

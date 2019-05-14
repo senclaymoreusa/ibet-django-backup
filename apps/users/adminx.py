@@ -32,7 +32,8 @@ from .admin import UserAdmin
 class MyUserAdmin(object):
     # add_form = UserCreationForm
     # form = CustomUserCreationForm
-    list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block', 'get_approved_tag', 'user_channel')
+    list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block', 'get_approved_tag', 'user_deposit_channel', 
+    'user_withdraw_channel')
     list_filter = ('is_admin', 'user_tag')
 
     fieldsets = (
