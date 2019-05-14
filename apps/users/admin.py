@@ -8,7 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, Config, NoticeMessage
+from .models import Language, Category, Status, Game, Config, NoticeMessage, Bonus, BonusRequirement, UserBonus
 from .forms import UserCreationForm
 
 class UserAdmin(BaseUserAdmin):
@@ -34,6 +34,9 @@ admin.site.register(Status)
 admin.site.register(Game)
 admin.site.register(Config)
 admin.site.register(NoticeMessage)
+admin.site.register(Bonus)
+admin.site.register(BonusRequirement)
+admin.site.register(UserBonus)
 
 
 class CustomUserAdmin(UserAdmin):
