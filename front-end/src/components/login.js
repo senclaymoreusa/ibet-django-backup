@@ -11,10 +11,52 @@ import IoSocialFacebook from 'react-icons/lib/io/social-facebook';
 import '../css/login.css';
 
 
+// Material design
+import { withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import Button from '@material-ui/core/Button';
+import blue from '@material-ui/core/colors/blue';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import classNames from 'classnames';
+
+import TopNavbar from "./top_navbar";
+
+
 const API_URL = process.env.REACT_APP_REST_API;
 
 var height = window.innerHeight
 var width = window.innerWidth
+
+
+const styles = theme => ({
+    root: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
+
+    margin: {
+      margin: 'auto',
+    },
+
+    textField: {
+      flexBasis: 200,
+      width: 300,
+      height: 50
+    },
+
+    cssRoot: {
+        color: theme.palette.getContrastText(blue[300]),
+        backgroundColor: blue[300],
+        '&:hover': {
+          backgroundColor: blue[800],
+        },
+      },
+  });
 
 export class Login extends React.Component {
 
@@ -31,6 +73,7 @@ export class Login extends React.Component {
           email: '',
           button_clicked: 0,
           check: false,
+          showPassword: false,
 
           live_check_username: false,
           live_check_password: false,
@@ -44,6 +87,12 @@ export class Login extends React.Component {
         this.toggleShow                     = this.toggleShow.bind(this);
         this.handle_one_click               = this.handle_one_click.bind(this);
     }
+
+
+    
+    handleClickShowPassword = () => {
+        this.setState(state => ({ showPassword: !state.showPassword }));
+    };
 
   async componentDidMount() {
     this.props.authCheckState()
@@ -190,9 +239,7 @@ export class Login extends React.Component {
   };
 
   onInputChange_checkbox = async (event) => {
-    
      await this.setState({check: !this.state.check})
-
   }
 
   onFormSubmit(event){
@@ -224,6 +271,11 @@ export class Login extends React.Component {
 
   render() {
 
+    const { classes } = this.props;
+
+    const { formatMessage } = this.props.intl;
+    const remember_password = formatMessage({ id: "login.remember" });
+
     const showErrors = () => {
       if (this.state.errorCode === errors.USERNAME_EMPTY_ERROR) {
           return (
@@ -245,122 +297,156 @@ export class Login extends React.Component {
     }
     
     return (
-        <div className='login-form '>
+        <div> 
+            <TopNavbar />
+            <div className='login-form '>
 
-            <div className='title'> 
-                <FormattedMessage id="nav.login" defaultMessage='Login' />
-            </div>
+                <div className='title'> 
+                    <FormattedMessage id="nav.login" defaultMessage='Login' />
+                </div>
 
-            <form onSubmit={this.onFormSubmit} >
-                
-                <FormattedMessage id="login.username" defaultMessage='Username: ' />
-                
-                <br/>
-
-                <input
-                    placeholder="claymore"
-                    className="form-control"
-                    value={this.state.username}
-                    onChange={this.onInputChange_username}
-                />
-
-                <br/>
-
-                <FormattedMessage id="login.password" defaultMessage='Password: ' />  
- 
-                <br/>
-
-                <input
+                <form onSubmit={this.onFormSubmit} >
                     
-                    type = {this.state.hidden ? "password" : "text"}
-                    placeholder="password"
-                    className="form-control"
-                    value={this.state.password}
-                    onChange={this.onInputChange_password}
-                />
+                    <FormattedMessage id="login.username" defaultMessage='Username: ' />
+                    
+                    <br/>
+                    
 
-
-                <span style ={{position: 'relative',  left: '-25px'}} onMouseDown={this.toggleShow} onMouseUp={this.toggleShow}> <IoEye /> </span>
- 
-                <br/>
-
-                <button disabled = {this.state.button_disable} className={this.state.button_type} type="submit" > 
-                    <FormattedMessage id="login.login" defaultMessage='Login' />
-                </button>
-                
-                <br />
-
-                <div>
-
-                    <FormattedMessage id="login.remember" defaultMessage='Remember Password ' />    
-
-                    <input
-                      type="checkbox"
-                      checked={this.state.check}
-                      onChange={this.onInputChange_checkbox} 
+                    <TextField
+                        id="outlined-adornment-password"
+                        className={classNames(classes.margin, classes.textField)}
+                        variant="outlined"
+                        type={'text'}
+                        label="Username"
+                        value={this.state.username}
+                        onChange={this.onInputChange_username}
                     />
 
-                </div>
 
-                <div className='or'> 
-                    <FormattedMessage id="login.or" defaultMessage='Or' /> 
-                </div>
+                    <br/>
 
-       
-                <button className="submit-button" onClick={ () => {this.props.history.push('/signup/')}}>
-                    <FormattedMessage id="login.signup" defaultMessage='Signup' />
-                </button>
+                    <FormattedMessage id="login.password" defaultMessage='Password: ' />  
+    
+                    <br/>
+
+
+                    <TextField
+                        id="outlined-adornment-password"
+                        className={classNames(classes.margin, classes.textField)}
+                        variant="outlined"
+                        type={this.state.showPassword ? 'text' : 'password'}
+                        label="Password"
+                        value={this.state.password}
+                        onChange={this.onInputChange_password}
+                        InputProps={{
+                            endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                aria-label="Toggle password visibility"
+                                onClick={this.handleClickShowPassword}
+                                >
+                                {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                            </InputAdornment>
+                            ),
+                        }}
+                    />
+    
+                    <br/>
+
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                            checked={this.state.check}
+                            onChange={this.onInputChange_checkbox}
+                            value="checkedA"
+                            />
+                        }
+                        label = {remember_password}
+                    />
+
+                    <br />
+
+                    <Button 
+                        variant="contained"
+                        color="primary"
+                        disabled = {this.state.button_disable} 
+                        className={this.state.button_type} 
+                        type="submit" > 
+                        <FormattedMessage id="login.login" defaultMessage='Login' />
+                    </Button>
+
+                </form>
+
 
                 <br/>
 
-
-                <div className='forget'> 
+                <div> 
                     <NavLink to='/forget_password' style={{ textDecoration: 'none', color: 'blue' }}>
                         <FormattedMessage id="login.forget_password" defaultMessage='Forgot Password?' /> 
                     </NavLink>
                 </div>
 
+                <br/>
 
-            </form>
+                <div> 
+                    <NavLink to='/signup' style={{ textDecoration: 'none', color: 'blue' }}>
+                        <FormattedMessage id="login.notauser" defaultMessage='Not a member? Signup for free' /> 
+                    </NavLink>
+                </div>
 
-            <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+                <br/>
 
-            <button style={{marginLeft: width * 0.02}} onClick={this.handle_one_click}>
-                <FormattedMessage id="login.signup" defaultMessage='Signup' />
-            </button>
+                <div> 
+                    <FormattedMessage id="login.one-click" defaultMessage='Or try one click signup' />
+                </div>
+
+                <br/>
+
+                <div> 
+                    <Button  
+                        onClick={this.handle_one_click}
+                        variant="contained"
+                        color="primary"
+                        className={this.state.button_type}
+                    >
+                        <FormattedMessage id="login.signup" defaultMessage='Signup' />
+                    </Button>
+                </div>
 
 
-            <br/>
+                <br/>
 
-            <div style={{marginLeft: width * 0.05, marginTop: height * 0.01}}>
-                <FormattedMessage id="login.option" defaultMessage='Or login with' />
-            </div>
+                <div>
+                    <FormattedMessage id="login.option" defaultMessage='Other login options' />
+                </div>
 
-            <FacebookLogin
-                appId="236001567251034"
-                size = 'small'
-                textButton=""
-                fields="name, email, picture"
-                onClick={this.componentClicked}
-                callback={this.responseFacebook}
-                onFailure={this.FacebookFailed}
-                icon ={ 
-                    <div style={{fontSize: '25px'}}> 
-                        <IoSocialFacebook />
-                    </div>
+                <br />
+
+                <div> 
+                    <FacebookLogin
+                        appId="236001567251034"
+                        size = 'small'
+                        textButton=""
+                        fields="name, email, picture"
+                        onClick={this.componentClicked}
+                        callback={this.responseFacebook}
+                        onFailure={this.FacebookFailed}
+                        icon ={ 
+                            <div style={{fontSize: '25px'}}> 
+                                <IoSocialFacebook />
+                            </div>
+                        }
+                    />
+                </div>
+
+                <br/>
+
+                <br/>
+                {
+                    showErrors()
                 }
-            />
-
-            <br/>
-
-            <button className="back" onClick={ () => {this.props.history.push('/')}}>
-                <FormattedMessage id="login.back" defaultMessage='Back' />
-            </button>
-
-            <br/>
-            {
-                showErrors()
-            }
+        </div>
     </div>
     );
   }
@@ -375,4 +461,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default injectIntl(connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login));
+export default withStyles(styles)(injectIntl(connect(mapStateToProps, {authLogin, authCheckState, FacebookSignup, FacebookauthLogin})(Login)));

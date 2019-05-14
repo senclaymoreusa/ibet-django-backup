@@ -4,23 +4,19 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
-import Badge from '@material-ui/core/Badge';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
-import AccountCircle from '@material-ui/icons/AccountCircle';
 import PersonAdd from '@material-ui/icons/PersonAdd';
 import Person from '@material-ui/icons/Person';
 import Input from '@material-ui/icons/Input';
 import Language from '@material-ui/icons/Language';
-import MailIcon from '@material-ui/icons/Mail';
 import PeopleOutline from '@material-ui/icons/PeopleOutline';
 import DirectionsRun from '@material-ui/icons/DirectionsRun';
 
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -36,12 +32,11 @@ import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
+import AccountMenu from './account_menu';
 
 import Collapse from '@material-ui/core/Collapse';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
 
 import Flag from 'react-flagkit';
 
@@ -134,12 +129,6 @@ const styles = theme => ({
         paddingLeft: theme.spacing.unit * 4,
     },
 });
-
-const languages = [
-    { value: 'en', label: 'English' },
-    { value: 'zh-hans', label: '簡體中文' },
-    { value: 'fr', label: 'Français' }
-];
 
 export class TopNavbar extends React.Component {
 
@@ -258,134 +247,6 @@ export class TopNavbar extends React.Component {
                             <FormattedMessage id="nav.lottery" defaultMessage='Lottery' />
                         </ListItemText>
                     </ListItem>
-                </List>
-            </div>
-        );
-
-        const rightSideList = (
-            <div className={classes.list}>
-                <List>
-                    <ListItem button component="a" href="/profile/">
-                        <ListItemIcon>
-                            <Person />
-                        </ListItemIcon>
-                        <ListItemText>
-                            <FormattedMessage id="nav.profile" defaultMessage='Profile' />
-                        </ListItemText>
-                    </ListItem>
-
-                    <ListItem button component="a" href="/referral/">
-                        <ListItemIcon>
-                            <PeopleOutline />
-                        </ListItemIcon>
-                        <ListItemText>
-                            <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
-                        </ListItemText>
-                    </ListItem>
-
-                    <ListItem onClick={() => {
-                        this.props.logout();
-                        postLogout();
-                    }}>
-                        <ListItemIcon>
-                            <DirectionsRun />
-                        </ListItemIcon>
-                        <ListItemText>
-                            <FormattedMessage id="nav.logout" defaultMessage='Logout' />
-                        </ListItemText>
-                    </ListItem>
-                </List>
-            </div>
-        );
-
-        const rightMobileSideList = (
-            <div className={classes.list}>
-                <List>
-                    {
-                        this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
-                            <div>
-                                <ListItem button component="a" href="/profile/">
-                                    <ListItemIcon>
-                                        <Person />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.profile" defaultMessage='Profile' />
-                                    </ListItemText>
-                                </ListItem>
-
-                                <ListItem button component="a" href="/referral/">
-                                    <ListItemIcon>
-                                        <PeopleOutline />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
-                                    </ListItemText>
-                                </ListItem>
-
-                                <ListItem onClick={() => {
-                                    this.props.logout();
-                                    postLogout();
-                                }}>
-                                    <ListItemIcon>
-                                        <DirectionsRun />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.logout" defaultMessage='Logout' />
-                                    </ListItemText>
-                                </ListItem>
-                            </div>
-                            :
-                            <div>
-                                <ListItem button component="a" href="/signup/">
-                                    <ListItemIcon>
-                                        <PersonAdd />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.signup" defaultMessage='Signup' />
-                                    </ListItemText>
-                                </ListItem>
-                                <ListItem button component="a" href="/login/">
-                                    <ListItemIcon>
-                                        <Input />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.login" defaultMessage='Login' />
-                                    </ListItemText>
-                                </ListItem>
-                            </div>
-                    }
-                    <div>
-                        <Divider />
-                        <ListItem button onClick={this.toggleLanguageListItem}>
-                            <ListItemIcon>
-                                <Language />
-                            </ListItemIcon>
-                            <ListItemText inset primary="Languages" />
-                            {this.state.showLangListItems ? <ExpandLess /> : <ExpandMore />}
-                        </ListItem>
-                        <Collapse in={this.state.showLangListItems} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                                <ListItem button className={classes.nested}>
-                                    <ListItemIcon>
-                                        <Flag country="US" />
-                                    </ListItemIcon>
-                                    <ListItemText inset primary="English" onClick={() => this.changeLanguage('en')} />
-                                </ListItem>
-                                <ListItem button className={classes.nested} onClick={() => this.changeLanguage('zh-hans')}>
-                                    <ListItemIcon>
-                                        <Flag country="CN" />
-                                    </ListItemIcon>
-                                    <ListItemText inset primary="簡體中文" />
-                                </ListItem>
-                                <ListItem button className={classes.nested}>
-                                    <ListItemIcon>
-                                        <Flag country="FR" />
-                                    </ListItemIcon>
-                                    <ListItemText inset primary="Français" onClick={() => this.changeLanguage('fr')} />
-                                </ListItem>
-                            </List>
-                        </Collapse>
-                    </div>
                 </List>
             </div>
         );
@@ -510,7 +371,7 @@ export class TopNavbar extends React.Component {
                                             onClick={this.toggleSidePanel('showRightPanel', false)}
                                             onKeyDown={this.toggleSidePanel('showRightPanel', false)}
                                         >
-                                            {rightSideList}
+                                            <AccountMenu/>
                                         </div>
                                     </Drawer>
                                 </div>
@@ -587,7 +448,7 @@ export class TopNavbar extends React.Component {
                                     tabIndex={0}
                                     role="button"
                                 >
-                                    {rightMobileSideList}
+                                    <AccountMenu/>
                                 </div>
                             </Drawer>
                         </div>
