@@ -143,7 +143,7 @@ export class Navigation extends Component {
               </FormattedMessage>
 
               <span className="input-group-btn">
-                <NavLink to = {`/game_search/${this.state.term}`}  style={{ textDecoration: 'none' }}>
+                <NavLink to = {`/game_search/${this.state.term}`}  style={{ textDecoration: 'none' }} onClick={() => {window.location.reload()}}>
                     <button type="submit" className="cursor"> <FormattedMessage id="nav.search" defaultMessage='Search' /></button>
                 </NavLink>
               </span>
