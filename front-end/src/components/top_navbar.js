@@ -251,6 +251,134 @@ export class TopNavbar extends React.Component {
             </div>
         );
 
+        const rightSideList = (
+            <div className={classes.list}>
+                <List>
+                    <ListItem button component="a" href="/profile/">
+                        <ListItemIcon>
+                            <Person />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.profile" defaultMessage='Profile' />
+                        </ListItemText>
+                    </ListItem>
+
+                    <ListItem button component="a" href="/referral/">
+                        <ListItemIcon>
+                            <PeopleOutline />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
+                        </ListItemText>
+                    </ListItem>
+
+                    <ListItem onClick={() => {
+                        this.props.logout();
+                        postLogout();
+                    }}>
+                        <ListItemIcon>
+                            <DirectionsRun />
+                        </ListItemIcon>
+                        <ListItemText>
+                            <FormattedMessage id="nav.logout" defaultMessage='Logout' />
+                        </ListItemText>
+                    </ListItem>
+                </List>
+            </div>
+        );
+
+        const rightMobileSideList = (
+            <div className={classes.list}>
+                <List>
+                    {
+                        this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
+                            <div>
+                                <ListItem button component="a" href="/profile/">
+                                    <ListItemIcon>
+                                        <Person />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.profile" defaultMessage='Profile' />
+                                    </ListItemText>
+                                </ListItem>
+
+                                <ListItem button component="a" href="/referral/">
+                                    <ListItemIcon>
+                                        <PeopleOutline />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
+                                    </ListItemText>
+                                </ListItem>
+
+                                <ListItem onClick={() => {
+                                    this.props.logout();
+                                    postLogout();
+                                }}>
+                                    <ListItemIcon>
+                                        <DirectionsRun />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.logout" defaultMessage='Logout' />
+                                    </ListItemText>
+                                </ListItem>
+                            </div>
+                            :
+                            <div>
+                                <ListItem button component="a" href="/signup/">
+                                    <ListItemIcon>
+                                        <PersonAdd />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.signup" defaultMessage='Signup' />
+                                    </ListItemText>
+                                </ListItem>
+                                <ListItem button component="a" href="/login/">
+                                    <ListItemIcon>
+                                        <Input />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        <FormattedMessage id="nav.login" defaultMessage='Login' />
+                                    </ListItemText>
+                                </ListItem>
+                            </div>
+                    }
+                    <div>
+                        <Divider />
+                        <ListItem button onClick={this.toggleLanguageListItem}>
+                            <ListItemIcon>
+                                <Language />
+                            </ListItemIcon>
+                            <ListItemText inset primary="Languages" />
+                            {this.state.showLangListItems ? <ExpandLess /> : <ExpandMore />}
+                        </ListItem>
+                        <Collapse in={this.state.showLangListItems} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                <ListItem button className={classes.nested}>
+                                    <ListItemIcon>
+                                        <Flag country="US" />
+                                    </ListItemIcon>
+                                    <ListItemText inset primary="English" onClick={() => this.changeLanguage('en')} />
+                                </ListItem>
+                                <ListItem button className={classes.nested} onClick={() => this.changeLanguage('zh-hans')}>
+                                    <ListItemIcon>
+                                        <Flag country="CN" />
+                                    </ListItemIcon>
+                                    <ListItemText inset primary="簡體中文" />
+                                </ListItem>
+                                <ListItem button className={classes.nested}>
+                                    <ListItemIcon>
+                                        <Flag country="FR" />
+                                    </ListItemIcon>
+                                    <ListItemText inset primary="Français" onClick={() => this.changeLanguage('fr')} />
+                                </ListItem>
+                            </List>
+                        </Collapse>
+                    </div>
+                </List>
+            </div>
+        );
+
         return (
             <div className={classes.root}>
                 <AppBar position="static" color="primary">

@@ -5,3 +5,8 @@ class depositMethodSerialize(serializers.ModelSerializer):
     class Meta:
         model = ThirdParty
         fields = ('method', 'currency', 'minTransactionAmount', 'maxTransactionAmount')
+
+class bankListSerialize(serializers.ModelSerializer):
+    class Meta:
+        model = ThirdParty
+        fields = ('bank')
