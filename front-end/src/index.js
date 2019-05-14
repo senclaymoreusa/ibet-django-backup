@@ -13,6 +13,9 @@ import { createStore, applyMiddleware } from 'redux';
 import ReduxThunk from 'redux-thunk';
 import reducers from './reducers';
 
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap-css-only/css/bootstrap.min.css';
+import './assets/scss/mdb.scss';
 import 'typeface-roboto';
 
 addLocaleData(en);
@@ -25,8 +28,8 @@ ReactDOM.render(
     <Provider store={store}>
         <App />
     </Provider>
-, 
-document.getElementById('root'));
+    ,
+    document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
