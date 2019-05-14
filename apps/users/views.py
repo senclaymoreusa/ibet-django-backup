@@ -272,13 +272,13 @@ class LoginView(GenericAPIView):
             self.token = create_token(self.token_model, self.user, self.serializer)
 
         action = UserAction(
-            user= CustomUser.objects.filter(username=self.user)[0],
+            user= CustomUser.objects.filter(username=self.user).first(),
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=0,
         )
         action.save()
         loginUser = CustomUser.objects.filter(username=self.user)
-        loginTimes = CustomUser.objects.filter(username=self.user)[0].login_times
+        loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
         loginUser.update(login_times=loginTimes+1)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
@@ -332,15 +332,25 @@ class LogoutView(APIView):
         return self.logout(request)
 
     def logout(self, request):
+        self.user = request.user
         try:
             request.user.auth_token.delete()
         except (AttributeError, ObjectDoesNotExist):
             pass
+
+        action = UserAction(
+            user= CustomUser.objects.filter(username=self.user).first(),
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=1,
+        )
+        action.save()
+
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             django_logout(request)
-
+        
         response = Response({"detail": _("Successfully logged out.")},
                             status=status.HTTP_200_OK)
+
         if getattr(settings, 'REST_USE_JWT', False):
             from rest_framework_jwt.settings import api_settings as jwt_settings
             if jwt_settings.JWT_AUTH_COOKIE:
@@ -598,7 +608,7 @@ class AddOrWithdrawBalance(APIView):
                 referr_object.update(reward_points=current_points)
 
             action = UserAction(
-                user= CustomUser.objects.filter(username=username)[0],
+                user= CustomUser.objects.filter(username=username).first(),
                 ip_addr=self.request.META['REMOTE_ADDR'],
                 event_type=3,
                 dollar_amount=balance
@@ -622,7 +632,7 @@ class AddOrWithdrawBalance(APIView):
                 referr_object.update(reward_points=current_points)
 
             action = UserAction(
-                user= CustomUser.objects.filter(username=username)[0],
+                user= CustomUser.objects.filter(username=username).first(),
                 ip_addr=self.request.META['REMOTE_ADDR'],
                 event_type=4,
                 dollar_amount=balance
