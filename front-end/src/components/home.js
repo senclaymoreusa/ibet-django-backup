@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Navigation from "./navigation";
+import Footer from "./footer";
 import TopNavbar from "./top_navbar";
 import { connect } from 'react-redux';
 import { authCheckState } from '../actions';
@@ -10,6 +11,7 @@ import { config } from '../util_config';
 import moment from 'moment';
 import { NavLink } from 'react-router-dom';
 import '../css/home.css';
+
 
 const API_URL = process.env.REACT_APP_REST_API;
 
@@ -157,7 +159,7 @@ export class Home extends Component {
             })
           }
         </div>
-
+          <Footer/>
       </div>
 
     );
