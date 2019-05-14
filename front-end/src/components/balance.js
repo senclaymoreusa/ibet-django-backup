@@ -14,7 +14,8 @@ class Balance extends Component {
         this.state = {
           balance: '',
           error: false,
-          data: ''
+          data: '',
+          type: '',
         };
 
         this.onInputChange_balance          = this.onInputChange_balance.bind(this);
@@ -29,6 +30,9 @@ class Balance extends Component {
           .then(res => {
             this.setState({data: res.data});
           })
+        const { type } = this.props.match.params;
+        this.setState({type: type});
+
     }
 
     onInputChange_balance(event){
@@ -37,17 +41,31 @@ class Balance extends Component {
 
     onFormSubmit(event){
         const { formatMessage } = this.props.intl;
-        const message = formatMessage({ id: "balance.confirm" });
+        let message = '';
+        if (this.state.type === 'add') {
+            message = formatMessage({ id: "balance.confirm" });
+        } else {
+            message = formatMessage({ id: "balance.withdrawconfirm" });
+        }
+        
         event.preventDefault();
         if (window.confirm( message + this.state.balance)){
-            axios.post(API_URL + `users/api/addbalance/?username=${this.state.data.username}&balance=${this.state.balance}`, config)
+            
+            const body = JSON.stringify({
+                type : this.state.type,
+                username: this.state.data.username,
+                balance: this.state.balance
+            });
+            axios.post(API_URL + `users/api/addorwithdrawbalance/`, body, config)
             .then(res => {
                 if (res.data === 'Failed'){
                     this.setState({error: true});
-                }else{
+                } else if (res.data === 'The balance is not enough') {
+                    alert("cannot withdraw this amount")
+                } else {
                     this.props.history.push("/profile");
                 }
-            })
+            });
         }
     }
 
@@ -57,9 +75,16 @@ class Balance extends Component {
                 <form onSubmit={this.onFormSubmit} >
                     <div>
                         <div>
+                            {this.state.type === 'add' ? 
                             <label><b>
                                 <FormattedMessage id='balance.enter_balance' defaultMessage='Please enter the amount you want to add to your account' />
                             </b></label>
+                            :
+                            <label><b>
+                                <FormattedMessage id='balance.withdraw_balance' defaultMessage='Please enter the amount you want to withdraw from your account' />
+                            </b></label>
+                            }
+                            
                         </div>
                         <input
                             placeholder="$50.00"

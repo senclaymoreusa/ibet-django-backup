@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 import base64
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -119,6 +120,7 @@ class CustomUser(AbstractBaseUser):
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
     currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
+    login_times = models.IntegerField(default=0)
 
     objects = MyUserManager()
 
@@ -170,8 +172,8 @@ class CustomUser(AbstractBaseUser):
 class UserWithTag(models.Model):
 
     STATUS_CHOICES = (
-        (0, 'pending'),
-        (1, 'approved'),
+        (0, _('pending')),
+        (1, _('approved')),
     )
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     tag = models.ForeignKey(UserTag, on_delete=models.CASCADE, verbose_name=_('Tag'))
@@ -267,6 +269,35 @@ class Config(models.Model):
 
     def __str__(self):
         return self.name
+    
+class UserAction(models.Model):
+    
+    EVENT_CHOICES = (
+        (0, _('Login')),
+        (1, _('Logout')),
+        (2, _('Register')),
+        (3, _('Deposit')),
+        (4, _('Withdraw')),
+        (5, _('Page Visit')),
+        (6, _('bet'))
+    )
+
+    ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
+    event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
+    browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
+    refer_url = models.CharField(_('Refer URL'), max_length=300, blank=True, null=True)
+    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2,blank=True, null=True)
+    page_id = models.IntegerField(_('Page'), blank=True, null=True)
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        default=timezone.now,
+        editable=False,
+    )
+    class Meta:
+        verbose_name_plural = _('User action history')
+
 
 
 class Bonus(models.Model):
