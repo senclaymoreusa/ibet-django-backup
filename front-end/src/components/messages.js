@@ -37,6 +37,7 @@ export const messages = {
         'login.password_empty_error': 'Password cannot be empty',
         'login.option': 'Or login with',
         'login.one-click': 'Or try one-click signup',
+        'login.remember': 'Remember passowrd',
 
         // handle books page message
         'books.title': 'Book List',
@@ -244,6 +245,7 @@ export const messages = {
         'login.password_empty_error': '密碼不能為空',
         'login.option': '或用已下方式登陆',
         'login.one-click': '或尝试一键注册',
+        'login.remember': '记住密码',
         
 
         // handle books page message
@@ -452,6 +454,7 @@ export const messages = {
         'login.password_empty_error': 'Le mot de passe ne peut pas être vide',
         'login.option': 'Ou connectez-vous avec',
         'login.one-click': "Ou essayez l'inscription en un clic",
+        'login.remember': 'se souvenir du mot de passe',
 
         // handle books page message
         'books.title': 'Liste de livres',
