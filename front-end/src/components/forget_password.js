@@ -119,6 +119,7 @@ class Forget_Password extends Component {
                 axios.post(API_URL + `users/api/sendresetpasswordcode/?email=${this.state.old_email}`, config)
                 .then(res => {
                     this.setState({success: true})
+                    localStorage.setItem('forget-password-inprogress', 'true')
                     this.props.history.push(`/email_sent/${this.state.old_email}`)
                 })
                 .catch((err) => {

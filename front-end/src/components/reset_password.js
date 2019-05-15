@@ -94,6 +94,13 @@ class Reset_Password extends Component {
     //       this.setState({show_page: false})
     //     })
     // }
+
+    componentDidMount() {
+        const check = localStorage.getItem('forget-password-inprogress')
+        if (!check){
+            this.setState({show_page: false})
+        }
+    }
     
 
     async onInputChange_password1(event){
@@ -172,6 +179,7 @@ class Reset_Password extends Component {
         .then(res => {
             const { formatMessage } = this.props.intl;
             const message = formatMessage({ id: "reset_password.done" });
+            localStorage.removeItem('forget-password-inprogress')
             alert(message)
             this.props.history.push("/login");
         })
@@ -292,12 +300,15 @@ class Reset_Password extends Component {
                         </div>
                     </div>
                     : 
-                    <div> <FormattedMessage id="reset_password.page_not_valid" defaultMessage='You have successfully reset your password' /> </div>
-                }
+                    <div> 
 
-                {
-                    // <div style={{color: 'red'}}> {this.state.error_message} </div>
-                    showErrors()
+                        <TopNavbar />
+
+                        <div className='reset-password-form' style={{fontSize: '20px'}}> 
+                            <FormattedMessage id="reset_password.page_not_valid" defaultMessage='This page no longer exists' /> 
+                        </div>
+
+                    </div>
                 }
 
             </div>
