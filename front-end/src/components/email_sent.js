@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { NavLink } from 'react-router-dom';
 import { config } from '../util_config';
 import axios from 'axios';
@@ -119,7 +119,7 @@ class Email_Sent extends Component {
         axios.post(API_URL + `users/api/verifyresetpasswordcode/?email=${this.props.match.params.email}&code=${code}`, config)
         .then(res => {
           if (res.data === 'Success'){
-               this.props.history.push(`/reset_password/${this.state.old_email}`)
+               this.props.history.push(`/reset_password/${this.props.match.params.email}`)
           }else{
                this.setState({error: true})
           }
@@ -217,6 +217,30 @@ class Email_Sent extends Component {
                             <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
                         </Button>
                     </form>
+
+                    <br/>
+
+                    <div 
+                    className='pointer'
+                    style={{
+                        color: 'blue',
+                    }}
+                    onClick={() => {
+                        axios.post(API_URL + `users/api/generatepasswordcode/?email=${email}`, config)
+                        .then(res => {
+                            if (res.data === 'Success'){
+                                axios.post(API_URL + `users/api/sendresetpasswordcode/?email=${email}`, config)
+                                .then(res => {
+                                    const { formatMessage } = this.props.intl;
+                                    const message = formatMessage({ id: "email_sent.resendsuccess" });
+                                    alert(message)
+                                })
+                            }
+                        })
+                    }}>
+                        <FormattedMessage id="reset_password.resend" defaultMessage='Resend email' />
+                    </div>
+
                     <div style={{color: 'red'}}>
                         {
                             this.state.error && <FormattedMessage id="email_sent.error" defaultMessage='The verification code is not correct or it is outdated, try resending email' />
@@ -228,4 +252,4 @@ class Email_Sent extends Component {
     }
 }
 
-export default withStyles(styles)(Email_Sent);
+export default withStyles(styles)(injectIntl(Email_Sent));

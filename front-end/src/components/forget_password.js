@@ -119,7 +119,6 @@ class Forget_Password extends Component {
                 axios.post(API_URL + `users/api/sendresetpasswordcode/?email=${this.state.old_email}`, config)
                 .then(res => {
                     this.setState({success: true})
-                    //localStorage.removeItem('reset_password_email')
                     this.props.history.push(`/email_sent/${this.state.old_email}`)
                 })
                 .catch((err) => {
@@ -192,6 +191,7 @@ class Forget_Password extends Component {
                         > 
                             <FormattedMessage id="forget_password.confirm" defaultMessage='Confirm' />
                         </Button>
+                        
 
                         <br/>
 
