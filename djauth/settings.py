@@ -280,3 +280,11 @@ STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
+#payment
+QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
+MERCHANTID = '1'
+CURRENCY = 'IDR'
+MERCHANTAPIKEY = 'secret'
+APIVERSION = 'v2.0'
+METHOD = 'LBT_ONLINE'
+DEPOSIT_URL = '/deposit/routing/'
