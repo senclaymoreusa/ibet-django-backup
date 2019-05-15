@@ -9,6 +9,7 @@ from datetime import date
 from django.contrib.auth.models import User
 import base64
 from django.contrib.auth import get_user_model
+from accounting.models import DepositChannel, DepositAccessManagement, WithdrawChannel, WithdrawAccessManagement
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
@@ -91,6 +92,8 @@ class CustomUser(AbstractBaseUser):
 			verbose_name='email address'
 		)
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
+    user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
+    user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20, unique=True)
@@ -167,6 +170,9 @@ class CustomUser(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+    
+    def channel_list(self):
+        return ','.join([i.thridParty_name for i in self.user_channel.all()])
 
 
 class UserWithTag(models.Model):

@@ -24,6 +24,7 @@ class GlobalSettings(object):
     site_footer = 'Ibet'  # 页尾
     site_url = '/'
     menu_style = 'accordion'  # 设置左侧菜单  折叠样式
+   
 
 from django.contrib import admin
 class UserWithTagInline(object):
@@ -37,7 +38,8 @@ class MyUserAdmin(object):
     # add_form = UserCreationForm
     # form = CustomUserCreationForm
 
-    list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link')
+    list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 
+    'user_withdraw_channel')
     list_filter = ('is_admin', 'user_tag', 'useraction__created_time',)
 
     fieldsets = (
