@@ -105,9 +105,6 @@ class DepositAccessManagement(models.Model):
         verbose_name = "Deposit Access management"
         verbose_name_plural = verbose_name
 
-    def group_deposit_channel(self):
-        return ','.join([i.thridParty_name for i in self.deposit_channel.all()])
-
 
 class WithdrawAccessManagement(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, null=False, on_delete=models.CASCADE, related_name="withdraw_user")
@@ -117,6 +114,3 @@ class WithdrawAccessManagement(models.Model):
         unique_together = (('user_id','withdraw_channel'),)
         verbose_name = "Withdraw Access management"
         verbose_name_plural = verbose_name
-        
-    def group_withdraw_channel(self):
-        return ','.join([i.thridParty_name for i in self.withdraw_channel.all()])

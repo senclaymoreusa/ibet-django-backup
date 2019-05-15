@@ -49,9 +49,6 @@ class UserDepositAccessManagementEditFrom(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserDepositAccessManagementEditFrom, self).__init__(*args, **kwargs)
-        # self.fields['tag'].disabled = True
-        # self.fields['user'].disabled = True
-        # self.fields['status'].disabled = True
     
     def has_add_permission(self):
         return False
