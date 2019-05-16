@@ -193,8 +193,12 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
+        customUser = CustomUser.objects.filter(username=user).first()
+        customUser.time_of_registration = timezone.now()
+        customUser.save()
+        
         action = UserAction(
-            user= CustomUser.objects.filter(username=user)[0],
+            user= customUser,
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=2,
         )
@@ -275,12 +279,14 @@ class LoginView(GenericAPIView):
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
 
+        customUser = CustomUser.objects.filter(username=self.user)
         action = UserAction(
-            user= CustomUser.objects.filter(username=self.user).first(),
+            user= customUser.first(),
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=0,
         )
         action.save()
+        customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
         loginUser = CustomUser.objects.filter(username=self.user)
         loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
         loginUser.update(login_times=loginTimes+1)
@@ -524,14 +530,14 @@ class ReferralAward(View):
         for item in user:
             points = item.reward_points
         points_sum = points + to_add
-        user.update(reward_points=points_sum)
+        user.update(reward_points=points_sum, modified_time=timezone.now())
 
         for item in referred_user:
             points_referred = item.reward_points
         points_sum_referred = to_add_accept + points_referred
-        referred_user.update(reward_points = points_sum_referred)
+        referred_user.update(reward_points = points_sum_referred, modified_time=timezone.now())
    
-        referred_user.update(referred_by=user[0])
+        referred_user.update(referred_by=user[0], modified_time=timezone.now())
         
         return HttpResponse('Update successful')
 
@@ -600,8 +606,11 @@ class AddOrWithdrawBalance(APIView):
         #     return HttpResponse('Failed')
 
         if type_balance == 'add':
+            if user[0].ftd_time is None:
+                user.update(ftd_time=timezone.now(), modified_time=timezone.now())
+
             new_balance = currrent_balance + int(balance)
-            user.update(balance=new_balance)
+            user.update(balance=new_balance, modified_time=timezone.now())
             referrer = user[0].referred_by
 
             if referrer:
@@ -609,7 +618,7 @@ class AddOrWithdrawBalance(APIView):
                 data = Config.objects.all()[0]
                 reward_points = referr_object[0].reward_points
                 current_points = reward_points + data.Referee_add_balance_reward
-                referr_object.update(reward_points=current_points)
+                referr_object.update(reward_points=current_points, modified_time=timezone.now())
 
             create = Transaction.objects.create(
                 user_id=CustomUser.objects.filter(username=username).first(), 
@@ -631,15 +640,7 @@ class AddOrWithdrawBalance(APIView):
                 return HttpResponse('The balance is not enough', status=200)
 
             new_balance = currrent_balance - int(balance)
-            user.update(balance=new_balance)
-            referrer = user[0].referred_by
-
-            if referrer:
-                referr_object = get_user_model().objects.filter(username=referrer.username)
-                data = Config.objects.all()[0]
-                reward_points = referr_object[0].reward_points
-                current_points = reward_points + data.Referee_add_balance_reward
-                referr_object.update(reward_points=current_points)
+            user.update(balance=new_balance, modified_time=timezone.now())
 
             create = Transaction.objects.create(
                 user_id=CustomUser.objects.filter(username=username).first(), 
@@ -664,8 +665,9 @@ class Activation(View):
         email = body['email']
 
         user = get_user_model().objects.filter(email=email)
+        user.update(verfication_time=timezone.now(), modified_time=timezone.now())
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
-        user.update(activation_code=activation_code)
+        user.update(activation_code=activation_code, modified_time=timezone.now())
         def timeout():
             if user[0].activation_code:
                 user.delete()
@@ -697,7 +699,7 @@ class ActivationVerify(View):
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
-            user.update(activation_code='')
+            user.update(activation_code='', modified_time=timezone.now())
             return HttpResponse('Success')
         return HttpResponse('The link has expired')
 
@@ -862,7 +864,7 @@ class OneclickRegister(View):
 
         CustomUser.objects.create_user(username, email, phone, password)
         user = CustomUser.objects.filter(username=username)
-        user.update(active=True)
+        user.update(active=True, modified_time=timezone.now())
 
         return HttpResponse(username + '-' + password)
 
@@ -883,7 +885,7 @@ class UpdateEmail(View):
             return HttpResponse('Duplicate')
             
         user = CustomUser.objects.filter(email=old_email)
-        user.update(email=new_email)
+        user.update(email=new_email, modified_time=timezone.now())
         return HttpResponse('Success')
 
 

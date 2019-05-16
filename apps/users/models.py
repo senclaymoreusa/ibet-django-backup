@@ -76,6 +76,18 @@ class UserTag(models.Model):
         return self.name
 
 class CustomUser(AbstractBaseUser):
+
+    USER_ATTRIBUTE = (
+        ('0', _('Direct User')),
+        ('1', _('User from Promo')),
+        ('2', _('Advertisements'))
+    )
+
+    MEMBER_STATUS = (
+        ('0', _('Active')),
+        ('1', _('Inactive')),
+        ('2', _('Blocked'))
+    )
     # add additional fields in here
     username = models.CharField(
 					max_length=300,
@@ -126,6 +138,28 @@ class CustomUser(AbstractBaseUser):
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
+    user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default='0')
+    product_attribute = models.CharField(_('Product Attribute'), max_length=300, default='', blank=True)
+    time_of_registration = models.DateTimeField(_('Time of Registration'), default=None, null=True)
+    ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
+    verfication_time = models.DateTimeField(_('Time of Verification'), default=timezone.now)
+    id_location = models.CharField(_('Location shown on the ID'), max_length=300, default='') 
+    last_login_time = models.DateTimeField(_('Last Login Time'), default=timezone.now)
+    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=timezone.now)
+    member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+    main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
+    other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
+
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        default=timezone.now,
+        editable=False,
+    )
+    modified_time = models.DateTimeField(
+        _('Created Time'),
+        default=timezone.now,
+        editable=False,
+    )
 
     objects = MyUserManager()
 
@@ -296,7 +330,7 @@ class UserAction(models.Model):
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
     refer_url = models.CharField(_('Refer URL'), max_length=300, blank=True, null=True)
-    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2,blank=True, null=True)
+    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),

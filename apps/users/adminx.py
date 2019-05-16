@@ -38,8 +38,8 @@ class MyUserAdmin(object):
     # add_form = UserCreationForm
     # form = CustomUserCreationForm
 
-    list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 
-    'user_withdraw_channel')
+
+    list_display = ('username','email','is_admin', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 'user_withdraw_channel','time_of_registration', 'ftd_time', 'verfication_time', 'modified_time', 'last_login_time')
     list_filter = ('is_admin', 'user_tag', 'useraction__created_time',)
 
     fieldsets = (

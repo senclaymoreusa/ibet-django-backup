@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-13 23:33-0700\n"
+"POT-Creation-Date: 2019-05-15 23:33-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,14 +24,14 @@ msgstr ""
 msgid "Accounting System"
 msgstr "Le système d'exploitation"
 
-#: apps/accounting/models.py:21 apps/users/models.py:178
-#: apps/users/models.py:287 apps/users/models.py:337
+#: apps/accounting/models.py:21 apps/users/models.py:213
+#: apps/users/models.py:322 apps/users/models.py:372
 #, fuzzy
 #| msgid "User Tag"
 msgid "User"
 msgstr "Tag utilisateur"
 
-#: apps/accounting/models.py:22 apps/users/models.py:291
+#: apps/accounting/models.py:22 apps/users/models.py:326
 msgid "Amount"
 msgstr ""
 
@@ -71,7 +71,7 @@ msgstr ""
 msgid "Transaction Fee"
 msgstr ""
 
-#: apps/accounting/models.py:56
+#: apps/accounting/models.py:56 apps/users/models.py:86
 msgid "Active"
 msgstr ""
 
@@ -95,13 +95,13 @@ msgstr "Le système d'exploitation"
 msgid "Notice Message"
 msgstr "Message d'avis"
 
-#: apps/users/admin.py:54
+#: apps/users/admin.py:57
 #, fuzzy
 #| msgid "You username is "
 msgid "username"
 msgstr "Votre nom d'utilisateur est"
 
-#: apps/users/admin.py:55
+#: apps/users/admin.py:58
 msgid "password"
 msgstr "mot de passe"
 
@@ -113,15 +113,15 @@ msgstr "IBET Administration"
 msgid "User Tag"
 msgstr "Tag utilisateur"
 
-#: apps/users/adminx.py:79 apps/users/models.py:276
+#: apps/users/adminx.py:79 apps/users/models.py:311
 msgid "Login"
 msgstr "Temps de connexion"
 
-#: apps/users/adminx.py:85 apps/users/models.py:279
+#: apps/users/adminx.py:85 apps/users/models.py:314
 msgid "Deposit"
 msgstr "Délais de dépôt"
 
-#: apps/users/adminx.py:91 apps/users/models.py:280
+#: apps/users/adminx.py:91 apps/users/models.py:315
 msgid "Withdraw"
 msgstr "Temps de retrait"
 
@@ -143,7 +143,7 @@ msgstr "Lien d'action utilisateur"
 msgid "Approved tag assign to user"
 msgstr "Attribuer une balise à l'utilisateur"
 
-#: apps/users/adminx.py:129 apps/users/models.py:180
+#: apps/users/adminx.py:129 apps/users/models.py:215
 msgid "Status"
 msgstr "Statut"
 
@@ -167,75 +167,135 @@ msgstr "Nom du tag"
 msgid "Notes"
 msgstr "Remarques"
 
-#: apps/users/models.py:131
-msgid "Customer User"
-msgstr "Utilisateur du client"
+#: apps/users/models.py:80
+msgid "Direct User"
+msgstr ""
 
-#: apps/users/models.py:175
-msgid "pending"
-msgstr "en attendant"
+#: apps/users/models.py:81
+msgid "User from Promo"
+msgstr ""
 
-#: apps/users/models.py:176
-msgid "approved"
-msgstr "approuvé"
+#: apps/users/models.py:82
+msgid "Advertisements"
+msgstr ""
 
-#: apps/users/models.py:179
-msgid "Tag"
-msgstr "étiquette"
+#: apps/users/models.py:87
+msgid "Inactive"
+msgstr ""
 
-#: apps/users/models.py:187
-msgid "Assign tag to user"
-msgstr "Attribuer une balise à l'utilisateur"
+#: apps/users/models.py:88
+msgid "Blocked"
+msgstr ""
 
-#: apps/users/models.py:277
-msgid "Logout"
-msgstr "Déconnexion"
+#: apps/users/models.py:137
+msgid "User Attribute"
+msgstr ""
 
-#: apps/users/models.py:278
-msgid "Register"
-msgstr "S'inscrire"
+#: apps/users/models.py:138
+msgid "Product Attribute"
+msgstr ""
 
-#: apps/users/models.py:281
-msgid "Page Visit"
-msgstr "Visite de page"
+#: apps/users/models.py:139
+msgid "Time of Registration"
+msgstr ""
 
-#: apps/users/models.py:282
-msgid "bet"
-msgstr "Pari"
+#: apps/users/models.py:140
+msgid "Time of FTD"
+msgstr ""
 
-#: apps/users/models.py:285
-msgid "Action Ip"
-msgstr "Action Ip"
+#: apps/users/models.py:141
+msgid "Time of Verification"
+msgstr ""
 
-#: apps/users/models.py:286
-msgid "Event Type"
-msgstr "Type d'événement"
+#: apps/users/models.py:142
+msgid "Location shown on the ID"
+msgstr ""
 
-#: apps/users/models.py:288
-msgid "Device"
-msgstr "Appareil"
+#: apps/users/models.py:143
+msgid "Last Login Time"
+msgstr ""
 
-#: apps/users/models.py:289
-msgid "Browser"
-msgstr "Navigateur"
+#: apps/users/models.py:144
+msgid "Last Betting Time"
+msgstr ""
 
-#: apps/users/models.py:290
-msgid "Refer URL"
-msgstr "URL de référence"
+#: apps/users/models.py:146
+msgid "Main Wallet"
+msgstr ""
 
-#: apps/users/models.py:292
-msgid "Page"
-msgstr "Page"
+#: apps/users/models.py:147
+msgid "Other Game Wallet"
+msgstr ""
 
-#: apps/users/models.py:294
+#: apps/users/models.py:150 apps/users/models.py:155 apps/users/models.py:329
 msgid "Created Time"
 msgstr "Temps créé"
 
-#: apps/users/models.py:299
+#: apps/users/models.py:166
+msgid "Customer User"
+msgstr "Utilisateur du client"
+
+#: apps/users/models.py:210
+msgid "pending"
+msgstr "en attendant"
+
+#: apps/users/models.py:211
+msgid "approved"
+msgstr "approuvé"
+
+#: apps/users/models.py:214
+msgid "Tag"
+msgstr "étiquette"
+
+#: apps/users/models.py:222
+msgid "Assign tag to user"
+msgstr "Attribuer une balise à l'utilisateur"
+
+#: apps/users/models.py:312
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: apps/users/models.py:313
+msgid "Register"
+msgstr "S'inscrire"
+
+#: apps/users/models.py:316
+msgid "Page Visit"
+msgstr "Visite de page"
+
+#: apps/users/models.py:317
+msgid "bet"
+msgstr "Pari"
+
+#: apps/users/models.py:320
+msgid "Action Ip"
+msgstr "Action Ip"
+
+#: apps/users/models.py:321
+msgid "Event Type"
+msgstr "Type d'événement"
+
+#: apps/users/models.py:323
+msgid "Device"
+msgstr "Appareil"
+
+#: apps/users/models.py:324
+msgid "Browser"
+msgstr "Navigateur"
+
+#: apps/users/models.py:325
+msgid "Refer URL"
+msgstr "URL de référence"
+
+#: apps/users/models.py:327
+msgid "Page"
+msgstr "Page"
+
+#: apps/users/models.py:334
 msgid "User action history"
 msgstr "Historique des actions de l'utilisateur"
 
-#: apps/users/models.py:338
+#: apps/users/models.py:373
 msgid "Bonus"
 msgstr ""
 
@@ -317,57 +377,59 @@ msgstr ""
 msgid "E-mail is not verified."
 msgstr "L'e-mail n'est pas vérifié"
 
-#: apps/users/views.py:218
+#: apps/users/views.py:222
 msgid "Current user is blocked!"
 msgstr "L'utilisateur actuel est bloqué!"
 
-#: apps/users/views.py:223
+#: apps/users/views.py:227
 msgid "Please activate your account!"
 msgstr "Veuillez activer votre compte!"
 
-#: apps/users/views.py:323
+#: apps/users/views.py:355
+msgid "Successfully logged out."
+msgstr ""
+
+#: apps/users/views.py:375
 msgid "You have registered an account at ibet.com, "
 msgstr "Vous avez enregistré un compte sur ibet.com"
 
-#: apps/users/views.py:324
+#: apps/users/views.py:376
 msgid "You username is "
 msgstr "Votre nom d'utilisateur est"
 
-#: apps/users/views.py:324
-#, fuzzy
-#| msgid "Your new Email Address is: "
+#: apps/users/views.py:376
 msgid ", and your email address is "
-msgstr "Votre nouvelle adresse e-mail est: "
+msgstr ", Votre nouvelle adresse e-mail est: "
 
-#: apps/users/views.py:327
+#: apps/users/views.py:379
 msgid "Request of changing email address"
 msgstr "Demande de changement d'adresse email"
 
-#: apps/users/views.py:328
+#: apps/users/views.py:380
 msgid "Your new Email Address is: "
 msgstr "Votre nouvelle adresse e-mail est: "
 
-#: apps/users/views.py:331
+#: apps/users/views.py:383
 msgid " referred you to sign up an account with Claymore"
 msgstr "Vous a demandé de créer un compte avec Claymore"
 
-#: apps/users/views.py:332
+#: apps/users/views.py:384
 msgid "Please use the referral link to register your new account: "
 msgstr ""
 "Veuillez utiliser le lien de parrainage pour enregistrer votre nouveau compte"
 
-#: apps/users/views.py:352
+#: apps/users/views.py:404
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr ""
 "Bonjour %(username)s, Vous avez demandé à réinitialiser votre mot de passe"
 
-#: apps/users/views.py:354
+#: apps/users/views.py:406
 msgid "Click the link to reset your email password: "
 msgstr ""
 "Cliquez sur le lien pour réinitialiser votre mot de passe de messagerie: "
 
-#: apps/users/views.py:609
+#: apps/users/views.py:656
 msgid "Please activate you ibet account "
 msgstr "Merci d'activer votre compte ibet"
 
