@@ -490,3 +490,8 @@ class NoticeMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoticeMessage
         fields = ('pk', 'start_time', 'end_time', 'message', 'message_zh', 'message_fr')
+
+class BalanceSerializer(serializers.Serializer):
+    type = serializers.CharField()
+    balance = serializers.FloatField()
+    username = serializers.CharField()

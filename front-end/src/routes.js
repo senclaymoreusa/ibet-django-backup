@@ -37,7 +37,7 @@ const BaseRouter = () => (
     <Route exact path="/email_sent/:email?" component={Email_Sent} />
     <Route exact path="/reset_password_done" component={Reset_Password_Done} />
     <Route exact path="/referral" component={Referral} />
-    <Route exact path="/balance" component={Balance} />
+    <Route exact path="/balance/:type?" component={Balance} />
     <Route exact path="/activation" component={Activation} />
     <Route exact path="/activate/:token?" component={Activate} />
   </div>

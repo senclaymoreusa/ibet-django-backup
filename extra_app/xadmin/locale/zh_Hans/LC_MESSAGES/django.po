@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: xadmin-core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-23 15:57-0700\n"
+"POT-Creation-Date: 2019-05-13 23:33-0700\n"
 "PO-Revision-Date: 2013-11-20 10:21+0000\n"
 "Last-Translator: sshwsfc <sshwsfc@gmail.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/projects/p/xadmin/"
@@ -520,7 +520,7 @@ msgstr "图标"
 msgid "Forgotten your password or username?"
 msgstr "忘记了您的密码或用户名？"
 
-#: extra_app/xadmin/plugins/quickform.py:80
+#: extra_app/xadmin/plugins/quickform.py:81
 #, python-format
 msgid "Create New %s"
 msgstr "创建新的 %s"
