@@ -266,8 +266,7 @@ export class TopNavbar extends React.Component {
     }
 
     handleSubMenuToggle = (param) => {
-        alert('menutype :'+ this.subMenuType + ' param:'+param)
-        if (this.subMenuType == param) {
+        if (this.state.subMenuType == param) {
             this.setState({ showSubMenu: false });
             this.setState({ subMenuType: null });
         } else {
@@ -496,22 +495,8 @@ export class TopNavbar extends React.Component {
                             }}
                                 aria-owns={showSubMenu ? 'menu-list-grow' : undefined}
                                 aria-haspopup="true"
-                                onClick={(param) => this.handleSubMenuToggle('sports')} className={classes.button}>
+                                onClick={() => this.handleSubMenuToggle('sports')} className={classes.button}>
                                 Sports
-                            </Button>
-                            <Button buttonRef={node => {
-                                this.anchorEl = node;
-                            }}
-                                aria-owns={showSubMenu ? 'menu-list-grow' : undefined}
-                                aria-haspopup="true"
-                                onClick={(param) => this.handleSubMenuToggle('games')} className={classes.button}>
-                                Games
-                            </Button>
-                            <Button className={classes.button}>
-                                Live Casino
-                            </Button>
-                            <Button className={classes.button}>
-                                Lottery
                             </Button>
                             <Popper open={showSubMenu} anchorEl={this.anchorEl} transition disablePortal className={classes.subMenu}>
                                 {({ TransitionProps, placement }) => (
@@ -528,6 +513,16 @@ export class TopNavbar extends React.Component {
                                     </Grow>
                                 )}
                             </Popper>
+                            <Button className={classes.button} href='/game_type/'>
+                                Games
+                            </Button>
+                            <Button className={classes.button}>
+                                Live Casino
+                            </Button>
+                            <Button className={classes.button}>
+                                Lottery
+                            </Button>
+                            
                         </div>
 
                         <div className={classes.grow} />
