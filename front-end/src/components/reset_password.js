@@ -175,7 +175,10 @@ class Reset_Password extends Component {
 
         const { email } = this.props.match.params;
 
-        axios.post(API_URL + `users/api/changeandresetpassword/?email=${email}&password=${this.state.password1}`, config)
+        axios.post(API_URL + `users/api/changeandresetpassword/`,{
+            email: email,
+            password: this.state.password1
+        }, config)
         .then(res => {
             const { formatMessage } = this.props.intl;
             const message = formatMessage({ id: "reset_password.done" });
