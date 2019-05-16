@@ -14,8 +14,6 @@ import PersonAdd from '@material-ui/icons/PersonAdd';
 import Person from '@material-ui/icons/Person';
 import Input from '@material-ui/icons/Input';
 import Language from '@material-ui/icons/Language';
-import PeopleOutline from '@material-ui/icons/PeopleOutline';
-import DirectionsRun from '@material-ui/icons/DirectionsRun';
 
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -24,19 +22,21 @@ import Button from '@material-ui/core/Button';
 import { FormattedMessage } from 'react-intl';
 import { NavLink, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { logout, postLogout, handle_search, setLanguage } from '../actions';
+import { logout, handle_search, setLanguage } from '../actions';
 
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import AccountMenu from './account_menu';
 
-import Collapse from '@material-ui/core/Collapse';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Grow from '@material-ui/core/Grow';
+import Paper from '@material-ui/core/Paper';
+import Popper from '@material-ui/core/Popper';
+import ButtonBase from '@material-ui/core/ButtonBase';
+
 
 import Flag from 'react-flagkit';
 
@@ -48,9 +48,8 @@ const styles = theme => ({
         width: 250,
     },
     subMenu: {
-        flexGrow: 1,
-        height: 100,
-        backgroundColor: 'red'
+        width: '99%',
+        marginTop: 15
     },
     grow: {
         flexGrow: 1,
@@ -76,12 +75,13 @@ const styles = theme => ({
     search: {
         position: 'relative',
         borderRadius: theme.shape.borderRadius,
-        backgroundColor: fade(theme.palette.common.white, 0.15),
+        backgroundColor: fade(theme.palette.common.black, 0.15),
         '&:hover': {
-            backgroundColor: fade(theme.palette.common.white, 0.25),
+            backgroundColor: fade(theme.palette.common.black, 0.25),
         },
         marginRight: theme.spacing.unit * 2,
         marginLeft: 0,
+        marginTop: 5,
         width: '100%',
         [theme.breakpoints.up('sm')]: {
             marginLeft: theme.spacing.unit * 3,
@@ -96,7 +96,7 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white'
+        color: 'black'
     },
     inputRoot: {
         color: 'inherit',
@@ -127,28 +127,113 @@ const styles = theme => ({
     },
     button: {
         margin: theme.spacing.unit,
-        textTransform: 'capitalize',
         color: 'white'
     },
-    nested: {
-        paddingLeft: theme.spacing.unit * 4,
+    subbutton: {
+        margin: theme.spacing.unit
     },
-    paper: {
-        marginTop: 65,
+    nested: {
+        paddingLeft: theme.spacing.unit * 4
+    },
+    image: {
+        position: 'relative',
+        height: 200,
+        [theme.breakpoints.down('xs')]: {
+            width: '100% !important', // Overrides inline-style
+            height: 100,
+        },
+        '&:hover, &$focusVisible': {
+            zIndex: 1,
+            '& $imageBackdrop': {
+                opacity: 0.15,
+            },
+            '& $imageMarked': {
+                opacity: 0,
+            },
+            '& $imageTitle': {
+                border: '4px solid currentColor',
+            },
+        },
+    },
+    focusVisible: {},
+    imageButton: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: theme.palette.common.white,
+    },
+    imageSrc: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 40%',
+    },
+    imageBackdrop: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        backgroundColor: theme.palette.common.black,
+        opacity: 0.4,
+        transition: theme.transitions.create('opacity'),
+    },
+    imageTitle: {
+        position: 'relative',
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 4}px ${theme.spacing.unit + 6}px`,
+    },
+    imageMarked: {
+        height: 3,
+        width: 18,
+        backgroundColor: theme.palette.common.white,
+        position: 'absolute',
+        bottom: -2,
+        left: 'calc(50% - 9px)',
+        transition: theme.transitions.create('opacity'),
     },
 });
 
-const languages = [
-    { value: 'en', label: 'English' },
-    { value: 'zh-hans', label: '簡體中文' },
-    { value: 'fr', label: 'Français' }
+const images = [
+    {
+        url: '/images/sports_submenu/in_play.jpg',
+        title: 'In-play',
+        width: '18%',
+    },
+    {
+        url: '/images/sports_submenu/football.jpg',
+        title: 'Football',
+        width: '18%',
+    },
+    {
+        url: '/images/sports_submenu/basketball.jpg',
+        title: 'Basketball',
+        width: '18%',
+    },
+    {
+        url: '/images/sports_submenu/tennis.jpg',
+        title: 'Tennis',
+        width: '18%',
+    },
+    {
+        url: '/images/sports_submenu/horse_racing.jpg',
+        title: 'Horse Racing',
+        width: '18%',
+    },
+    {
+        url: '/images/sports_submenu/all_sports.jpg',
+        title: 'All Sports',
+        width: '18%',
+    },
 ];
 
-class SubNavBar extends React.Component {
-    render() {
-        return (<div>I'm the child</div>);
-    }
-}
 
 export class TopNavbar extends React.Component {
 
@@ -156,10 +241,14 @@ export class TopNavbar extends React.Component {
         super(props);
 
         this.state = {
-            anchorEl: null,
+            open: false,
+            subMenuType: null,
+            showSubMenu: false,
 
+            anchorEl: null,
+            showSportsMenu: false,
+            showGamesMenu: false,
             lang: 'en',
-            childVisible: false,
             showTopPanel: false,
             showLeftPanel: false,
             showRightPanel: false,
@@ -174,12 +263,31 @@ export class TopNavbar extends React.Component {
 
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
-        this.onLotteryClick = this.onLotteryClick.bind(this);
     }
 
-    onLotteryClick() {
-        this.setState({ childVisible: !this.state.childVisible });
-    }
+    handleSubMenuToggle = (param) => {
+        alert('menutype :'+ this.subMenuType + ' param:'+param)
+        if (this.subMenuType == param) {
+            this.setState({ showSubMenu: false });
+            this.setState({ subMenuType: null });
+        } else {
+            this.setState({ showSubMenu: false });
+            this.setState({ showSubMenu: true });
+            this.setState({ subMenuType: param });
+        }
+    };
+
+    handleGamesToggle = () => {
+        this.setState({ showSportsMenu: false });
+        this.setState(state => ({ showGamesMenu: !state.showGamesMenu }));
+    };
+
+    handleClose = event => {
+        if (this.anchorEl.contains(event.target)) { return; }
+
+        this.setState({ showSubMenu: false });
+        this.setState({ subMenuType: null });
+    };
 
     submenuHandleChange = (event, submenu) => {
         this.setState({ submenu });
@@ -241,12 +349,8 @@ export class TopNavbar extends React.Component {
     render() {
         const { anchorEl } = this.state;
         const { classes } = this.props;
-
-        const top2dnTierMenu = (
-            <div className={classes.subMenu}>
-
-            </div>
-        );
+        const { showSubMenu } = this.state;
+        const { subMenuType } = this.state;
 
         const leftMobileSideList = (
             <div className={classes.list}>
@@ -287,134 +391,76 @@ export class TopNavbar extends React.Component {
             </div>
         );
 
-        const rightSideList = (
-            <div className={classes.list}>
-                <List>
-                    <ListItem button component="a" href="/profile/">
-                        <ListItemIcon>
-                            <Person />
-                        </ListItemIcon>
-                        <ListItemText>
-                            <FormattedMessage id="nav.profile" defaultMessage='Profile' />
-                        </ListItemText>
-                    </ListItem>
-
-                    <ListItem button component="a" href="/referral/">
-                        <ListItemIcon>
-                            <PeopleOutline />
-                        </ListItemIcon>
-                        <ListItemText>
-                            <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
-                        </ListItemText>
-                    </ListItem>
-
-                    <ListItem onClick={() => {
-                        this.props.logout()
-                        window.location.reload()
-                    }}>
-                        <ListItemIcon>
-                            <DirectionsRun />
-                        </ListItemIcon>
-                        <ListItemText>
-                            <FormattedMessage id="nav.logout" defaultMessage='Logout' />
-                        </ListItemText>
-                    </ListItem>
-                </List>
+        const gamesSubMenu = (
+            <div style={{ display: 'flex' }}>
+                <Button className={classes.subbutton} href="/game_type/" >Games</Button>
+                <Button className={classes.subbutton}>Tournaments</Button>
+                <div className={classes.grow} />
+                <div className={classes.sectionDesktop}>
+                    <form onSubmit={this.onFormSubmit} className="search">
+                        <div className={classes.search}>
+                            <div className={classes.searchIcon}>
+                                <NavLink to={`/game_search/${this.state.term}`} style={{ color: 'white' }}>
+                                    <IconButton type="submit" color="inherit">
+                                        <SearchIcon />
+                                    </IconButton>
+                                </NavLink>
+                            </div>
+                            <InputBase
+                                placeholder="Search…"
+                                classes={{
+                                    root: classes.inputRoot,
+                                    input: classes.inputInput,
+                                }}
+                                value={this.state.term}
+                                onChange={this.onInputChange}
+                            />
+                        </div>
+                    </form>
+                </div>
             </div>
         );
 
-        const rightMobileSideList = (
-            <div className={classes.list}>
-                <List>
-                    {
-                        this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
-                            <div>
-                                <ListItem button component="a" href="/profile/">
-                                    <ListItemIcon>
-                                        <Person />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.profile" defaultMessage='Profile' />
-                                    </ListItemText>
-                                </ListItem>
-
-                                <ListItem button component="a" href="/referral/">
-                                    <ListItemIcon>
-                                        <PeopleOutline />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.referral" defaultMessage='Refer new user' />
-                                    </ListItemText>
-                                </ListItem>
-
-                                <ListItem onClick={() => {
-                                    this.props.logout()
-                                    window.location.reload()
-                                }}>
-                                    <ListItemIcon>
-                                        <DirectionsRun />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.logout" defaultMessage='Logout' />
-                                    </ListItemText>
-                                </ListItem>
-                            </div>
-                            :
-                            <div>
-                                <ListItem button component="a" href="/signup/">
-                                    <ListItemIcon>
-                                        <PersonAdd />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.signup" defaultMessage='Signup' />
-                                    </ListItemText>
-                                </ListItem>
-                                <ListItem button component="a" href="/login/">
-                                    <ListItemIcon>
-                                        <Input />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        <FormattedMessage id="nav.login" defaultMessage='Login' />
-                                    </ListItemText>
-                                </ListItem>
-                            </div>
-                    }
-                    <div>
-                        <Divider />
-                        <ListItem button onClick={this.toggleLanguageListItem}>
-                            <ListItemIcon>
-                                <Language />
-                            </ListItemIcon>
-                            <ListItemText inset primary="Languages" />
-                            {this.state.showLangListItems ? <ExpandLess /> : <ExpandMore />}
-                        </ListItem>
-                        <Collapse in={this.state.showLangListItems} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                                <ListItem button className={classes.nested}>
-                                    <ListItemIcon>
-                                        <Flag country="US" />
-                                    </ListItemIcon>
-                                    <ListItemText inset primary="English" onClick={() => this.changeLanguage('en')} />
-                                </ListItem>
-                                <ListItem button className={classes.nested} onClick={() => this.changeLanguage('zh-hans')}>
-                                    <ListItemIcon>
-                                        <Flag country="CN" />
-                                    </ListItemIcon>
-                                    <ListItemText inset primary="簡體中文" />
-                                </ListItem>
-                                <ListItem button className={classes.nested}>
-                                    <ListItemIcon>
-                                        <Flag country="FR" />
-                                    </ListItemIcon>
-                                    <ListItemText inset primary="Français" onClick={() => this.changeLanguage('fr')} />
-                                </ListItem>
-                            </List>
-                        </Collapse>
-                    </div>
-                </List>
+        const sportsSubMenu = (
+            <div style={{ display: 'flex' }}>
+                {images.map(image => (
+                    <ButtonBase
+                        focusRipple
+                        key={image.title}
+                        className={classes.image}
+                        focusVisibleClassName={classes.focusVisible}
+                        style={{ width: image.width }}
+                    >
+                        <span
+                            className={classes.imageSrc}
+                            style={{ backgroundImage: `url(${window.location.origin + image.url})`, }}
+                        />
+                        <span className={classes.imageBackdrop} />
+                        <span className={classes.imageButton}>
+                            <Typography
+                                component="span"
+                                variant="subtitle1"
+                                color="inherit"
+                                className={classes.imageTitle}
+                            >
+                                {image.title}
+                                <span className={classes.imageMarked} />
+                            </Typography>
+                        </span>
+                    </ButtonBase>
+                ))}
             </div>
         );
 
+
+        let subMenuItem = (<div></div>);
+
+        switch (subMenuType) {
+            case 'games':
+                subMenuItem = gamesSubMenu;
+            case 'sports':
+                subMenuItem = sportsSubMenu;
+        }
 
         return (
             <div className={classes.root}>
@@ -445,56 +491,45 @@ export class TopNavbar extends React.Component {
                         </Button>
                         </Typography>
                         <div className={classes.sectionDesktop}>
-                            <Button className={classes.button}
-                                onClick={this.toggleSidePanel('showTopPanel', true)}>
+                            <Button buttonRef={node => {
+                                this.anchorEl = node;
+                            }}
+                                aria-owns={showSubMenu ? 'menu-list-grow' : undefined}
+                                aria-haspopup="true"
+                                onClick={(param) => this.handleSubMenuToggle('sports')} className={classes.button}>
                                 Sports
                             </Button>
-                            <Drawer open={this.state.showTopPanel}
-                                anchor="top" o
-                                nClose={this.toggleSidePanel('showTopPanel', false)}
-                                classes={{
-                                    paper: classes.paper,
-                                    modal: classes.modal
-                                }}>
-                                <div
-                                    tabIndex={0}
-                                    role="button"
-                                    onClick={this.toggleSidePanel('showTopPanel', false)}
-                                    onKeyDown={this.toggleSidePanel('showTopPanel', false)}
-                                >
-                                    {top2dnTierMenu}
-                                </div>
-                            </Drawer>
-                            <Button href="/game_type/" className={classes.button}>
+                            <Button buttonRef={node => {
+                                this.anchorEl = node;
+                            }}
+                                aria-owns={showSubMenu ? 'menu-list-grow' : undefined}
+                                aria-haspopup="true"
+                                onClick={(param) => this.handleSubMenuToggle('games')} className={classes.button}>
                                 Games
                             </Button>
                             <Button className={classes.button}>
                                 Live Casino
                             </Button>
-                            <Button onClick={this.onLotteryClick} href="#text-buttons" className={classes.button}>
+                            <Button className={classes.button}>
                                 Lottery
                             </Button>
+                            <Popper open={showSubMenu} anchorEl={this.anchorEl} transition disablePortal className={classes.subMenu}>
+                                {({ TransitionProps, placement }) => (
+                                    <Grow
+                                        {...TransitionProps}
+                                        id="menu-list-grow"
+                                        style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
+                                    >
+                                        <Paper>
+                                            <ClickAwayListener onClickAway={this.handleClose}>
+                                                {subMenuItem}
+                                            </ClickAwayListener>
+                                        </Paper>
+                                    </Grow>
+                                )}
+                            </Popper>
                         </div>
-                        <form onSubmit={this.onFormSubmit} className="search">
-                            <div className={classes.search}>
-                                <div className={classes.searchIcon}>
-                                    <NavLink to={`/game_search/${this.state.term}`} style={{ color: 'white' }}>
-                                        <IconButton type="submit" color="inherit">
-                                            <SearchIcon />
-                                        </IconButton>
-                                    </NavLink>
-                                </div>
-                                <InputBase
-                                    placeholder="Search…"
-                                    classes={{
-                                        root: classes.inputRoot,
-                                        input: classes.inputInput,
-                                    }}
-                                    value={this.state.term}
-                                    onChange={this.onInputChange}
-                                />
-                            </div>
-                        </form>
+
                         <div className={classes.grow} />
                         {
                             this.props.isAuthenticated || this.state.facebooklogin === 'true' ?
@@ -553,7 +588,7 @@ export class TopNavbar extends React.Component {
                                             onClick={this.toggleSidePanel('showRightPanel', false)}
                                             onKeyDown={this.toggleSidePanel('showRightPanel', false)}
                                         >
-                                            <AccountMenu/>
+                                            <AccountMenu />
                                         </div>
                                     </Drawer>
                                 </div>
@@ -630,18 +665,12 @@ export class TopNavbar extends React.Component {
                                     tabIndex={0}
                                     role="button"
                                 >
-                                    <AccountMenu/>
+                                    <AccountMenu />
                                 </div>
                             </Drawer>
                         </div>
                     </Toolbar>
                 </AppBar>
-                {
-                    this.state.childVisible
-                        ? <SubNavBar />
-                        : null
-                }
-
             </div >
         );
     }
