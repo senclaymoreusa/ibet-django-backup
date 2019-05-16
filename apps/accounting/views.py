@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
-from .models import Transaction, ThirdParty
+from .models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -40,11 +40,11 @@ def generateHash(key, message):
 
 class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
     lookup_filed = 'pk'  #id
-    queryset = Transaction.objects.all()
+    queryset = DepositChannel.objects.all()
     serializer_class = depositMethodSerialize
     
     def get(self, request, *args, **kwargs):
-        queryset = Transaction.objects.all()
+        queryset = DepositChannel.objects.all()
         serializer = depositMethodSerialize(queryset)
 
         url = api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods'
@@ -77,10 +77,15 @@ class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
         data = r.json()
         #print (my_hmac)
         
-        return Response(json.dumps(data))
+        return Response(data)
 
 
-class getBankList(generics.CreateAPIView):
+   
+
+    
+
+
+class getBankList(generics.RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = bankListSerialize
     
@@ -115,9 +120,9 @@ class getBankList(generics.CreateAPIView):
         data = r.json()
         #print (my_hmac)
         
-        return Response(json.dumps(data))
+        return Response(data)
 
-class getBankLimits(generics.CreateAPIView):
+class getBankLimits(generics.RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = bankLimitsSerialize
     
@@ -153,6 +158,6 @@ class getBankLimits(generics.CreateAPIView):
         data = r.json()
         #print (my_hmac)
         
-        return Response(json.dumps(data))
+        return Response(data)
             
        
