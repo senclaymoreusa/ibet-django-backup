@@ -6,7 +6,6 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0084_bonus_bonusrequirement_userbonus'),
         ('users', '0084_merge_20190513_1628'),
     ]
 

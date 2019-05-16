@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
-
+from .models import Transaction, ThirdParty
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,12 +21,6 @@ import hmac
 import hashlib 
 import base64
 
-merchantId = '1'
-currency = 'IDR'
-merchantApiKey = 'secret'
-apiVersion = 'v2.0'
-method = 'LBT_ONLINE'
-
 #payment
 merchantId = settings.MERCHANTID
 currency = settings.CURRENCY
@@ -36,21 +30,23 @@ method = settings.METHOD
 api = settings.QAICASH_URL 
 deposit_url = settings.DEPOSIT_URL
 
-class ServiceUnavailable(APIException):
-    status_code = 503
-    default_detail = 'Service temporarily unavailable, try again later.'
-    default_code = 'service_unavailable'
+
 
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
     return hash.hexdigest()
 
-class getDepositMethod(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = depositMethodSerialize
 
+class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
+    lookup_filed = 'pk'  #id
+    queryset = Transaction.objects.all()
+    serializer_class = depositMethodSerialize
+    
     def get(self, request, *args, **kwargs):
+        queryset = Transaction.objects.all()
+        serializer = depositMethodSerialize(queryset)
+
         url = api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods'
         headers = {'Accept': 'application/json'}
         username = self.request.GET.get('username')
@@ -60,23 +56,34 @@ class getDepositMethod(generics.CreateAPIView):
         secret = bytes(merchantApiKey, 'utf-8')
         
         my_hmac = generateHash(secret, message)
+        #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.get(url, headers=headers, params = {
+                    'userId' : userId,
+                    'hmac' : my_hmac,
+                    'deviceType' : 'PC',
+                })
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+        if not success:
+            logger.info('Failed to complete a request for...')
+        # Handle error
 
-        r = requests.get(url, headers=headers, params = {
-            'userId' : userId,
-            'hmac' : my_hmac,
-            'deviceType' : 'PC',
-        })
         data = r.json()
         #print (my_hmac)
-        if r.status_code == 503:
-            raise ServiceUnavailable
-        else:
-            return Response(json.dumps(data)) 
+        
+        return Response(json.dumps(data))
+
 
 class getBankList(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = bankListSerialize
-
+    
     def get(self, request, *args, **kwargs):
         url = api + apiVersion +'/' + merchantId + deposit_url +currency + '/methods/' + method + '/banks'
         headers = {'Accept': 'application/json'}
@@ -86,22 +93,34 @@ class getBankList(generics.CreateAPIView):
         secret = bytes(merchantApiKey, 'utf-8')
         my_hmac = generateHash(secret, message)
 
-        r = requests.get(url, headers=headers, params = {
-            'userId' : userId,
-            'hmac' : my_hmac,
-            'deviceType' : 'PC',
-        })
+        #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.get(url, headers=headers, params = {
+                    'userId' : userId,
+                    'hmac' : my_hmac,
+                    'deviceType' : 'PC',
+                })
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+        if not success:
+            logger.info('Failed to complete a request for...')
+        # Handle error
+
+        
         data = r.json()
         #print (my_hmac)
-        if r.status_code == 503:
-            raise ServiceUnavailable
-        else:
-            return Response(json.dumps(data))
+        
+        return Response(json.dumps(data))
 
 class getBankLimits(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = bankLimitsSerialize
-
+    
     def get(self, request, *args, **kwargs):
         bank = 'CMBCCN'
         url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits'
@@ -112,16 +131,28 @@ class getBankLimits(generics.CreateAPIView):
         secret = bytes(merchantApiKey, 'utf-8')
         my_hmac = generateHash(secret, message)
 
-        r = requests.get(url, headers=headers, params = {
-            'userId' : userId,
-            'hmac' : my_hmac,
-            'deviceType' : 'PC',
-        })
+         #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.get(url, headers=headers, params = {
+                    'userId' : userId,
+                    'hmac' : my_hmac,
+                    'deviceType' : 'PC',
+                })
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+        if not success:
+            logger.info('Failed to complete a request for...')
+        # Handle error
+
+        
         data = r.json()
         #print (my_hmac)
-        if r.status_code == 503:
-            raise ServiceUnavailable
-        else:
-            return Response(json.dumps(data))
+        
+        return Response(json.dumps(data))
             
        
