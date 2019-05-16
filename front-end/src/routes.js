@@ -32,9 +32,8 @@ const BaseRouter = () => (
     <Route exact path="/update_profile" component={Update} />
     <Route exact path="/change_email" component={Change_Email} />
     <Route exact path="/forget_password" component={Forget_Password} />
-    {/*<Route exact path="/reset_password/:filter?" component={Reset_Password} /> */}  
-    <Route exact path="/reset_password/:email?" component={Reset_Password} />
-    <Route exact path="/email_sent/:email?" component={Email_Sent} />
+    <Route exact path="/reset_password/:filter?" component={Reset_Password} />
+    <Route exact path="/email_sent" component={Email_Sent} />
     <Route exact path="/reset_password_done" component={Reset_Password_Done} />
     <Route exact path="/referral" component={Referral} />
     <Route exact path="/balance/:type?" component={Balance} />
