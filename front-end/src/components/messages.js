@@ -56,29 +56,20 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': 'An email has been sent to you email address to reset your password',
-        'email_sent.topmessage': 'We sent to a code to reset you password',
-        'email_sent.sentto': 'Sent to',
-        'email_sent.resend': "Try resending the email if you haven't received in five minutes",
-        'email_sent.verify': 'Verification Code',
-        'email_sent.error': 'The verification code is not correct or it is outdated, try resending email',
-        'email_sent.resendsuccess': 'We have resent an email to you emil address',
-
         
 
         // handle reset_password page message
         'reset_password.page_not_valid': 'This page no longer exists',
-        'reset_password.new_password': 'New Password',
+        'reset_password.change_password': 'Change your password',
         'reset_password.password': 'Password: ',
         'reset_password.confirm_password': 'Confirm Password: ',
         'reset_password.confirm': 'Confirm',
         'reset_password_done.back': 'Back to',
         'reset_password_done.home': 'Home page',
         'reset_password_done.change_confirm': 'You have successfully reset your password',
-        'reset_password.password_not_match': 'Password not match',
+        'reset_password.password_not_match': 'Two passwords you entered do not match',
         'reset_password.password_not_valid': 'Password has to be at least 8 characters',
-        'reset_password.resend':'Resend email',
-        'reset_password.simple':"Password is too simple",
-        'reset_password.done': 'You have successfully reset your password',
+        'reset_password.done': 'You have successfully reset you password',
 
 
         // handle profile page message
@@ -102,7 +93,7 @@ export const messages = {
         'profile.referral': 'Referral link: ',
 
         // handle forget_password page message
-        'forget_password.enter_email': "Enter your registered email. We'll email you a code to reset your password",
+        'forget_password.enter_email': 'Enter your email address: ',
         'forget_password.mail': 'Email: ',
         'forget_password.confirm': 'Confirm',
         'forget_password.email_not_valid': 'Email does not exsit',
@@ -143,6 +134,7 @@ export const messages = {
         'sign.gendererror': 'Gender not selected',
         'sign.team': 'Preferred team: ',
         'sign.title': 'Title',
+        'signup.password_simple': 'Password is too simple',
 
         // handle update_profile page message
         'update_profile.username':'Username: ',
@@ -215,10 +207,7 @@ export const messages = {
         'error.city': 'City not valid',
         'error.state': 'State not valid',
         'error.zipcode': 'Zipcode not valid',
-        'error.passwordnotmatch': 'Two password you entered do not match',
-
-
-        
+        'error.passwordnotmatch': 'Two password you entered do not match'
     },
     zh: {
 
@@ -279,16 +268,10 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': '郵件已成功發送至您的郵箱',
-        'email_sent.topmessage': '我们已讲验证码发送给您来重设密码',
-        'email_sent.sentto': '发送到',
-        'email_sent.resend': "若您在五分钟之内没有收到，请尝试重新发送邮件",
-        'email_sent.verify': '验证码',
-        'email_sent.error': '验证码不正确或已失效，请尝试重新发送邮件',
-        'email_sent.resendsuccess': '新的邮件已发至您的邮箱',
 
         // handle reset_password page message
         'reset_password.page_not_valid': '頁面不再存在',
-        'reset_password.new_password': '新密码: ',
+        'reset_password.change_password': '更改你的密碼: ',
         'reset_password.password': '密碼: ',
         'reset_password.confirm_password': '確認密碼: ',
         'reset_password.confirm': '確認',
@@ -297,9 +280,7 @@ export const messages = {
         'reset_password_done.change_confirm': '您已成功重置密碼',
         'reset_password.password_not_match': '兩個密碼不相同',
         'reset_password.password_not_valid': '密碼必須超過8個字母',
-        'reset_password.resend':'重新发送',
-        'reset_password.simple':"密码过于简单",
-        'reset_password.done': '您已成功更新密码',
+        'reset_password.done': '您已成功修改密码',
 
 
         // handle profile page message
@@ -323,7 +304,7 @@ export const messages = {
         'profile.referral': '推荐链接: ',
 
         // handle forget_password page message
-        'forget_password.enter_email': '请输入您的邮箱地址，我们会发送给您验证码来重设您的密码',
+        'forget_password.enter_email': '請輸入郵箱: ',
         'forget_password.mail': '郵箱: ',
         'forget_password.confirm': '確認',
         'forget_password.email_not_valid': '郵件不存在',
@@ -364,6 +345,7 @@ export const messages = {
         'sign.gendererror': '您未选择性别',
         'sign.team': '喜欢的队伍: ',
         'sign.title': '称呼',
+        'signup.password_simple': '密码过于简单',
 
         // handle update_profile page message
         'update_profile.username':'用戶名: ',
@@ -437,10 +419,7 @@ export const messages = {
         'error.city': '城市错误',
         'error.state': '省市错误',
         'error.zipcode': '邮编错误',
-        'error.passwordnotmatch': '两次输入的密码不一致',
-
-
-        
+        'error.passwordnotmatch': '两次输入的密码不一致'
     }, 
     fr: {
 
@@ -500,16 +479,10 @@ export const messages = {
 
         // handle email_sent page message
         'email_sent.message': 'Le message a été envoyé avec succès à votre boîte aux lettres',
-        'email_sent.topmessage': 'Nous avons envoyé un code pour réinitialiser votre mot de passe',
-        'email_sent.sentto': 'Envoyé à',
-        'email_sent.resend': "Essayez de renvoyer l'e-mail si vous ne l'avez pas reçu dans les cinq minutes",
-        'email_sent.verify': 'Code de vérification',
-        'email_sent.error': "Le code de vérification n'est pas correct ou est obsolète, essayez de renvoyer un courrier électronique",
-        'email_sent.resendsuccess': 'Nous avons renvoyé un email à votre adresse emil',
 
         // handle reset_password page message
         'reset_password.page_not_valid': 'La page n\'existe plus',
-        'reset_password.new_password': 'nouveau mot de passe',
+        'reset_password.change_password': 'changez votre mot de passe',
         'reset_password.password': 'Mot de passe: ',
         'reset_password.confirm_password': 'Confirmez le mot de passe: ',
         'reset_password.confirm': 'Confirmer',
@@ -518,8 +491,6 @@ export const messages = {
         'reset_password_done.change_confirm': 'Vous avez réinitialisé votre mot de passe avec succès',
         'reset_password.password_not_match': 'Deux mots de passe que vous avez entrés ne correspondent pas',
         'reset_password.password_not_valid': 'Le mot de passe doit comporter au moins 8 caractères',
-        'reset_password.resend':"Ré-envoyer l'email",
-        'reset_password.simple':"Le mot de passe est trop simple",
         'reset_password.done': 'Vous avez réinitialisé votre mot de passe avec succès',
 
 
@@ -544,7 +515,7 @@ export const messages = {
         "profile.referral": "Lien recommandé': ",
 
         // handle forget_password page message
-        'forget_password.enter_email': 'Entrez votre email enregistré. Nous vous enverrons un code pour réinitialiser votre mot de passe',
+        'forget_password.enter_email': 'Entrez votre adresse email: ',
         'forget_password.mail': 'Email: ',
         'forget_password.confirm': 'Confirmer',
         'forget_password.email_not_valid': 'Email n\'existe pas',
@@ -585,6 +556,7 @@ export const messages = {
         'sign.gendererror': 'Sexe non sélectionné',
         'sign.team': 'équipe préférée: ',
         'sign.title': 'Titre',
+        'signup.password_simple': 'Le mot de passe est trop simple',
 
         // handle update_profile page message
         'update_profile.username':'Nom d\'utilisateur: ',
@@ -659,10 +631,7 @@ export const messages = {
         'error.city': 'Ville non valide',
         'error.state': 'Etat non valide',
         'error.zipcode': 'Code postal non valide',
-        'error.passwordnotmatch': 'Deux mot de passe que vous avez entré ne correspondent pas',
-
-
-        
+        'error.passwordnotmatch': 'Deux mot de passe que vous avez entré ne correspondent pas'
     }
 }
 
