@@ -125,6 +125,8 @@ class CustomUser(AbstractBaseUser):
     currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
     login_times = models.IntegerField(default=0)
 
+    reset_password_code = models.CharField(max_length=4, blank=True)
+
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
