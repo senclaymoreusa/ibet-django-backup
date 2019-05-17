@@ -119,9 +119,3 @@ class AccountingModelTest(TestCase):
             withdraw_channel = withdraw_channel,
         )
         self.assertTrue(WithdrawAccessManagement.objects.exists())
-
-
-
-
-
-
