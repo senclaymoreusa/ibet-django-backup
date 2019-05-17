@@ -113,10 +113,10 @@ class Forget_Password extends Component {
     onFormSubmit(event){
         event.preventDefault();
 
-        axios.post(API_URL + `users/api/generatepasswordcode/?email=${this.state.old_email}`, config)
+        axios.post(API_URL + `users/api/generatepasswordcode/`, {email: this.state.old_email}, config)
         .then(res => {
             if (res.data === 'Success'){
-                axios.post(API_URL + `users/api/sendresetpasswordcode/?email=${this.state.old_email}`, config)
+                axios.post(API_URL + `users/api/sendresetpasswordcode/`, {email: this.state.old_email}, config)
                 .then(res => {
                     this.setState({success: true})
                     localStorage.setItem('forget-password-inprogress', 'true')

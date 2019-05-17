@@ -89,7 +89,10 @@ class Change_Email extends Component {
         const token = localStorage.getItem('token');
         config.headers["Authorization"] = `Token ${token}`;
 
-        axios.post(API_URL + `users/api/updateemail/?old_email=${this.state.fetched_data.email}&new_email=${this.state.new_email}`, config)
+        axios.post(API_URL + `users/api/updateemail/`, {
+            old_email: this.state.fetched_data.email,
+            new_email: this.state.new_email
+        }, config)
         .then(res => {
             if (res.data === 'Duplicate'){
                 this.setState({email_existed_error: true})

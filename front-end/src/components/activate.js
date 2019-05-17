@@ -19,7 +19,7 @@ class Activate extends Component {
   
   componentDidMount() {
     const { token } = this.props.match.params;
-    axios.post(API_URL + `users/api/activate-verify/?token=${token}`)
+    axios.post(API_URL + `users/api/activate-verify/`,{token: token})
     .then(res => {
         if (res.data === 'Success'){
             this.setState({loading: false, error: ''});
