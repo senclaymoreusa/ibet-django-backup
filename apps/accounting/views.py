@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
@@ -47,7 +48,7 @@ class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
     
     def get(self, request, *args, **kwargs):
         
-        serializer = depositMethodSerialize(queryset)
+        serializer = depositMethodSerialize(self.queryset)
 
         url = api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods'
         headers = {'Accept': 'application/json'}
@@ -97,6 +98,7 @@ class getBankList(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
+        serializer = depositMethodSerialize(self.queryset)
         url = api + apiVersion +'/' + merchantId + deposit_url +currency + '/methods/' + method + '/banks'
         headers = {'Accept': 'application/json'}
         # username = self.request.GET.get('username')
@@ -132,11 +134,11 @@ class getBankList(generics.RetrieveUpdateDestroyAPIView):
 class getBankLimits(generics.RetrieveUpdateDestroyAPIView):
     queryset = DepositChannel.objects.all()
     serializer_class = depositMethodSerialize
-    permission_classes = (IsAuthenticated,)
     
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, *args, **kwargs):
-        queryset = DepositChannel.objects.all()
-        serializer = depositMethodSerialize(queryset)
+        serializer = depositMethodSerialize(self.queryset)
         bank = 'CMBCCN'
         
         url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits'
