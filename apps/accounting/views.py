@@ -11,6 +11,8 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import generics
+from rest_framework.decorators import api_view, permission_classes
+
 
 from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize
 from django.conf import settings
@@ -37,6 +39,7 @@ def generateHash(key, message):
     #hash.hexdigest()
     return hash.hexdigest()
 
+#@permission_classes((IsAuthenticated, ))
 
 class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
     lookup_filed = 'pk'  #id
@@ -76,6 +79,18 @@ class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
 
         data = r.json()
         #print (my_hmac)
+        
+        for x in data:
+            
+            action = DepositChannel.objects.get_or_create(
+            thridParty_name= 3,
+            method=x['method'],
+            currency=3,
+            min_amount=x['limits'].get('minTransactionAmount'),
+            max_amount=x['limits'].get('maxTransactionAmount'),
+            
+        )
+        
         
         return Response(data)
 
