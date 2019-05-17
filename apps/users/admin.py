@@ -18,7 +18,7 @@ class UserAdmin(BaseUserAdmin):
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code')}),
 			('Permissions', {'fields': ('is_admin', 'is_staff')})
 		)
 	search_fields = ('username','email')

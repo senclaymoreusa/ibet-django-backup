@@ -881,3 +881,56 @@ class CheckEmailExixted(View):
         return HttpResponse('Invalid')
 
 
+class GenerateForgetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        user = get_user_model().objects.filter(email__iexact=email)
+        if user:
+            code = ''.join([str(random.randint(0, 9)) for i in range(4)])
+            user.update(reset_password_code=code)
+            return HttpResponse('Success')
+        return HttpResponse('Failed')
+
+class SendResetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        user = get_user_model().objects.filter(email=email)
+        reset_password_code = user[0].reset_password_code
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email('ibet@ibet.com')
+        to_email = Email(email)
+        subject =  str(_('Reset Password'))
+        content_text = str(_('Use this code to reset your password '))
+        content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        return HttpResponse('Success')
+
+class VerifyResetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+        email = self.request.GET['email']
+        code = self.request.GET['code']
+        user = get_user_model().objects.filter(email=email)
+        #user1 = get_user_model().objects.get(email=email)
+        verify = user[0].reset_password_code
+        if code == verify:
+            user.update(reset_password_code='')
+            #user1.set_password('kevinkevin88')
+            #user1.save()
+            return HttpResponse('Success')
+        else:
+            return HttpResponse('Failed')
+
+class ChangeAndResetPassword(View):
+    def post(self, request, *args, **kwargs):
+        password =  self.request.GET['password']
+        email = self.request.GET['email']
+        user = get_user_model().objects.get(email=email)
+        user.set_password(password)
+        user.save()
+        return HttpResponse('Success')
+
+
+
+        
+
