@@ -59,6 +59,7 @@ class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
         secret = bytes(merchantApiKey, 'utf-8')
         
         my_hmac = generateHash(secret, message)
+        delay = kwargs.get("delay", 5)
         #retry
         success = False
         for x in range(3):
@@ -73,6 +74,8 @@ class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
                     break
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -106,7 +109,7 @@ class getBankList(generics.RetrieveUpdateDestroyAPIView):
         message = bytes(merchantId + '|' + currency, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         my_hmac = generateHash(secret, message)
-
+        delay = kwargs.get("delay", 5)
         #retry
         success = False
         for x in range(3):
@@ -121,6 +124,8 @@ class getBankList(generics.RetrieveUpdateDestroyAPIView):
                     break
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -148,6 +153,7 @@ class getBankLimits(generics.RetrieveUpdateDestroyAPIView):
         message = bytes(merchantId + '|' + currency, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         my_hmac = generateHash(secret, message)
+        delay = kwargs.get("delay", 5)
 
          #retry
         success = False
@@ -163,6 +169,8 @@ class getBankLimits(generics.RetrieveUpdateDestroyAPIView):
                     break
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
