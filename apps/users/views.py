@@ -57,6 +57,8 @@ from threading import Timer
 from django.utils.crypto import get_random_string
 import random
 
+import simplejson as json
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -656,7 +658,11 @@ class AddOrWithdrawBalance(APIView):
 
 class Activation(View):
     def post(self, request, *args, **kwargs):
-        email = self.request.GET['email']
+        
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
         user = get_user_model().objects.filter(email=email)
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code)
@@ -683,7 +689,11 @@ class Activation(View):
 
 class ActivationVerify(View):
     def post(self, request, *args, **kwargs):
-        token = self.request.GET['token']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        token = body['token']
+
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
@@ -860,8 +870,13 @@ class OneclickRegister(View):
 class UpdateEmail(View):
     def post(self, request, *args, **kwargs):
 
-        old_email = self.request.GET['old_email']
-        new_email = self.request.GET['new_email']
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        old_email = body['old_email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        new_email = body['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
@@ -874,6 +889,7 @@ class UpdateEmail(View):
 
 class CheckEmailExixted(View):
     def get(self, request, *args, **kwargs):
+        
         email = self.request.GET['email']
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
@@ -883,7 +899,10 @@ class CheckEmailExixted(View):
 
 class GenerateForgetPasswordCode(View):
     def post(self, request, *args, **kwargs):
-        email = self.request.GET['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
         user = get_user_model().objects.filter(email__iexact=email)
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
@@ -891,9 +910,13 @@ class GenerateForgetPasswordCode(View):
             return HttpResponse('Success')
         return HttpResponse('Failed')
 
+
 class SendResetPasswordCode(View):
     def post(self, request, *args, **kwargs):
-        email = self.request.GET['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
         user = get_user_model().objects.filter(email=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
@@ -906,25 +929,38 @@ class SendResetPasswordCode(View):
         response = sg.client.mail.send.post(request_body=mail.get())
         return HttpResponse('Success')
 
+
 class VerifyResetPasswordCode(View):
     def post(self, request, *args, **kwargs):
-        email = self.request.GET['email']
-        code = self.request.GET['code']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        code = body['code']
+
         user = get_user_model().objects.filter(email=email)
-        #user1 = get_user_model().objects.get(email=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
-            #user1.set_password('kevinkevin88')
-            #user1.save()
             return HttpResponse('Success')
         else:
             return HttpResponse('Failed')
 
+
 class ChangeAndResetPassword(View):
     def post(self, request, *args, **kwargs):
-        password =  self.request.GET['password']
-        email = self.request.GET['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        password = body['password']
+
         user = get_user_model().objects.get(email=email)
         user.set_password(password)
         user.save()

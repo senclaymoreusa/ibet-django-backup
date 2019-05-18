@@ -76,7 +76,9 @@ class Signup extends React.Component {
       live_check_city: false,
       live_check_state: false,
       live_check_zipcode: false,
-      live_check_passwordmatch: false
+      live_check_passwordmatch: false,
+
+      password_too_simple: false
     };
 
     this.onInputChange_username         = this.onInputChange_username.bind(this);
@@ -120,78 +122,91 @@ class Signup extends React.Component {
     })
   }
 
-  onInputChange_username(event){
+  async onInputChange_username(event){
     if (!event.target.value.match(/^[0-9a-zA-Z]+$/)){
-      this.setState({live_check_username: true, button_disable: true,})
+      this.setState({live_check_username: true, button_disable: true})
     }else{
       this.setState({live_check_username: false})
-      this.check_button_disable()
     }
-    this.setState({username: event.target.value});
+    await this.setState({username: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_email(event){
+  async onInputChange_email(event){
     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (!event.target.value.match(re)){
       this.setState({live_check_email: true, button_disable: true,})
     }else{
       this.setState({live_check_email: false})
-      this.check_button_disable()
     }
-    this.setState({email: event.target.value});
+    await this.setState({email: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_password1(event){
-    this.setState({password1: event.target.value});
+  async onInputChange_password1(event){
+
+    if (!event.target.value.match(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)){
+      this.setState({password_too_simple: true, button_disable: true})
+    }else{
+      this.setState({password_too_simple: false})
+    }
+
+    if (this.state.password2 !== event.target.value){
+      this.setState({live_check_passwordmatch: true, button_disable: true,})
+    }else{
+      this.setState({live_check_passwordmatch: false})
+    }
+    await this.setState({password1: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_password2(event){
+  async onInputChange_password2(event){
     if (this.state.password1 !== event.target.value){
       this.setState({live_check_passwordmatch: true, button_disable: true,})
     }else{
       this.setState({live_check_passwordmatch: false})
-      this.check_button_disable()
     }
-    this.setState({password2: event.target.value});
+    await this.setState({password2: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_first_name(event){
+  async onInputChange_first_name(event){
     if (!event.target.value.match(/^[a-zA-Z]+$/)){
       this.setState({live_check_firstname: true, button_disable: true,})
     }else{
       this.setState({live_check_firstname: false})
-      this.check_button_disable()
     }
-    this.setState({first_name: event.target.value});
+    await this.setState({first_name: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_last_name(event){
+  async onInputChange_last_name(event){
     if (!event.target.value.match(/^[a-zA-Z]+$/)){
       this.setState({live_check_lastname: true, button_disable: true,})
     }else{
       this.setState({live_check_lastname: false})
-      this.check_button_disable()
     }
-    this.setState({last_name: event.target.value});
+    await this.setState({last_name: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_phone(phone){
+  async onInputChange_phone(phone){
     if (phone && phone.length <= 20 && phone.length >= 6){
-        this.setState({live_check_phone: false, phone: phone})
+        await this.setState({live_check_phone: false, phone: phone})
         this.check_button_disable()
     }else{
         this.setState({live_check_phone: true, button_disable: true, phone: phone})
     }
   }
 
-  onInputChange_date_of_birth(event){
+  async onInputChange_date_of_birth(event){
     if (!event.target.value.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/)){
       this.setState({live_check_dob: true, button_disable: true})
     }else{
       this.setState({live_check_dob: false})
-      this.check_button_disable()
     }
-    this.setState({date_of_birth: event.target.value});
+    await this.setState({date_of_birth: event.target.value});
+    this.check_button_disable()
   }
 
   onInputChange_street_address_1(event){
@@ -206,34 +221,34 @@ class Signup extends React.Component {
     this.setState({country: country});
   }
 
-  onInputChange_city(event){
+  async onInputChange_city(event){
     if (!event.target.value.match(/^[a-zA-Z\s]+$/)){
       this.setState({live_check_city: true, button_disable: true,})
     }else{
       this.setState({live_check_city: false})
-      this.check_button_disable()
     }
-    this.setState({city: event.target.value});
+    await this.setState({city: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_zipcode(event){
+  async onInputChange_zipcode(event){
     if (!event.target.value.match(/^[0-9]+$/)){
       this.setState({live_check_zipcode: true, button_disable: true,})
     }else{
       this.setState({live_check_zipcode: false})
-      this.check_button_disable()
     }
-    this.setState({zipcode: event.target.value});
+    await this.setState({zipcode: event.target.value});
+    this.check_button_disable()
   }
 
-  onInputChange_state(event){
+  async onInputChange_state(event){
     if (!event.target.value.match(/^[a-zA-Z]+$/)){
       this.setState({live_check_state: true, button_disable: true,})
     }else{
       this.setState({live_check_state: false})
-      this.check_button_disable()
     }
-    this.setState({state: event.target.value});
+    await this.setState({state: event.target.value});
+    this.check_button_disable()
   }
 
   toggleShow() {
@@ -298,7 +313,8 @@ class Signup extends React.Component {
       !this.state.live_check_city && this.state.city && 
       !this.state.live_check_state && this.state.state && 
       !this.state.live_check_zipcode && this.state.zipcode &&
-      this.state.password1 && this.state.password2){
+      this.state.password1 && this.state.password2 &&
+      !this.state.password_too_simple){
 
       this.setState({button_disable: false})
     }
@@ -340,7 +356,7 @@ class Signup extends React.Component {
     this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone.slice(1), this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
     .then((res) => {
       this.props.history.push('/activation');
-      axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
+      axios.post(API_URL + `users/api/activate/`, {email: this.state.email })
       axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
     }).catch(err => {
       // console.log(err.response);
@@ -374,7 +390,7 @@ class Signup extends React.Component {
     this.props.authSignup(this.state.username, this.state.email, this.state.password1, this.state.password2, this.state.first_name, this.state.last_name, this.state.phone.slice(1), this.state.date_of_birth, this.state.street_address_1, this.state.street_address_2, this.state.country ? this.state.country : this.state.location_country_name, this.state.city, this.state.zipcode, this.state.state, this.state.gender, this.state.check, this.state.contact, this.state.preferred_team, this.state.title)
       .then((res) => {
         this.props.history.push('/activation');
-        axios.post(API_URL + `users/api/activate/?email=${this.state.email}`)
+        axios.post(API_URL + `users/api/activate/`, { email: this.state.email })
         axios.get(API_URL + `users/api/sendemail/?case=signup&to_email_address=${this.state.email}&username=${this.state.username}&email=${this.state.email}`, config)
         axios.get(API_URL + `users/api/referral/?referral_id=${referrer_id}&referred=${this.state.username}`, config)
     
@@ -507,6 +523,7 @@ class Signup extends React.Component {
             />
           </div>
 
+          {this.state.password_too_simple && <div style={{color: 'red'}}> <FormattedMessage  id="signup.password_simple" defaultMessage='Password is too simple' /> </div>}
           {this.state.live_check_passwordmatch && <div style={{color: 'red'}}> <FormattedMessage  id="error.passwordnotmatch" defaultMessage='Two password you entered do not match' /> </div>}
 
           <div>

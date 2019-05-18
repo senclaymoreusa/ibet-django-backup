@@ -116,7 +116,10 @@ class Email_Sent extends Component {
         
         const code = this.state.code_1 + this.state.code_2 + this.state.code_3  + this.state.code_4 
 
-        axios.post(API_URL + `users/api/verifyresetpasswordcode/?email=${this.props.match.params.email}&code=${code}`, config)
+        axios.post(API_URL + `users/api/verifyresetpasswordcode/`,{
+            email: this.props.match.params.email,
+            code: code
+        }, config)
         .then(res => {
           if (res.data === 'Success'){
                this.props.history.push(`/reset_password/${this.props.match.params.email}`)
@@ -226,10 +229,10 @@ class Email_Sent extends Component {
                         color: 'blue',
                     }}
                     onClick={() => {
-                        axios.post(API_URL + `users/api/generatepasswordcode/?email=${email}`, config)
+                        axios.post(API_URL + `users/api/generatepasswordcode/`, {email: email},config)
                         .then(res => {
                             if (res.data === 'Success'){
-                                axios.post(API_URL + `users/api/sendresetpasswordcode/?email=${email}`, config)
+                                axios.post(API_URL + `users/api/sendresetpasswordcode/`,{email: email}, config)
                                 .then(res => {
                                     const { formatMessage } = this.props.intl;
                                     const message = formatMessage({ id: "email_sent.resendsuccess" });
