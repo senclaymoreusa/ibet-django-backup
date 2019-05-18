@@ -18,7 +18,7 @@ import DirectionsRun from '@material-ui/icons/DirectionsRun';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { logout, handle_search, setLanguage } from '../actions';
+import { logout, handle_search, setLanguage, postLogout } from '../actions';
 
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
@@ -240,7 +240,7 @@ export class AccountMenu extends React.Component {
                           
                             <Button variant="contained" className={classes.button} onClick={() => {
                                 this.props.logout()
-                                window.location.reload()
+                                postLogout();
                             }}>
                                 <FormattedMessage id="nav.logout" defaultMessage='Logout' />
                             </Button>

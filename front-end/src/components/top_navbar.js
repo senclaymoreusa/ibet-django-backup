@@ -302,6 +302,15 @@ export class TopNavbar extends React.Component {
         this.setState({ anchorEl: event.currentTarget });
     };
 
+    langMenuClicked = (event) => {
+        this.setState({ anchorEl: null });
+       this.setState({
+            lang: event.currentTarget.dataset.myValue
+        })
+        //console.log(this.state.lang)
+        this.changeLanguage(event.currentTarget.dataset.myValue);
+    }
+
     handleLanguageMenuClose = (ev) => {
         this.setState({ anchorEl: null });
         this.changeLanguage(ev.nativeEvent.target.dataset.myValue);
@@ -546,27 +555,25 @@ export class TopNavbar extends React.Component {
                                         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                                         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                                         open={Boolean(anchorEl)}
-                                        onClose={this.handleLanguageMenuClose}
                                     >
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'en'}>
+                                        <MenuItem onClick={this.langMenuClicked} data-my-value={'en'}>
                                             <ListItemIcon className={classes.icon}>
                                                 <Flag country="US" />
                                             </ListItemIcon>
                                             <ListItemText classes={{ primary: classes.primary }} inset primary="English" />
                                         </MenuItem>
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'zh-hans'}>
+                                        <MenuItem onClick={this.langMenuClicked} data-my-value={'zh-hans'}>
                                             <ListItemIcon className={classes.icon}>
                                                 <Flag country="CN" />
                                             </ListItemIcon>
                                             <ListItemText classes={{ primary: classes.primary }} inset primary="簡體中文" />
                                         </MenuItem>
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'fr'}><ListItemIcon className={classes.icon}>
+                                        <MenuItem onClick={this.langMenuClicked} data-my-value={'fr'}><ListItemIcon className={classes.icon}>
                                             <Flag country="FR" />
                                         </ListItemIcon>
                                             <ListItemText classes={{ primary: classes.primary }} inset primary="Français" />
                                         </MenuItem>
                                     </Menu>
-
                                     <Tooltip title="Account" placement="bottom">
                                         <IconButton
                                             className={classes.menuButton}
@@ -600,28 +607,30 @@ export class TopNavbar extends React.Component {
                                         </IconButton>
                                     </Tooltip>
                                     <Menu
-                                        value={this.state.lang} onChange={this.langMenuClicked}
+                                        value={this.state.lang}
+                                        onChange={this.langMenuClicked}
                                         anchorEl={anchorEl}
                                         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                                         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                                         open={Boolean(anchorEl)}
                                         onClose={this.handleLanguageMenuClose}
                                     >
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'en'}>
+                                        <MenuItem data-my-value={'en'} onClick={this.langMenuClicked}>
                                             <ListItemIcon className={classes.icon}>
                                                 <Flag country="US" />
                                             </ListItemIcon>
                                             <ListItemText classes={{ primary: classes.primary }} inset primary="English" />
                                         </MenuItem>
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'zh-hans'}>
+                                        <MenuItem data-my-value={'zh-hans'} onClick={this.langMenuClicked}>
                                             <ListItemIcon className={classes.icon}>
                                                 <Flag country="CN" />
                                             </ListItemIcon>
                                             <ListItemText classes={{ primary: classes.primary }} inset primary="簡體中文" />
                                         </MenuItem>
-                                        <MenuItem onClick={this.handleLanguageMenuClose} data-my-value={'fr'}><ListItemIcon className={classes.icon}>
-                                            <Flag country="FR" />
-                                        </ListItemIcon>
+                                        <MenuItem data-my-value={'fr'} onClick={this.langMenuClicked}>
+                                            <ListItemIcon className={classes.icon}>
+                                                <Flag country="FR" />
+                                            </ListItemIcon>
                                             <ListItemText classes={{ primary: classes.primary }} inset primary="Français" />
                                         </MenuItem>
                                     </Menu>
