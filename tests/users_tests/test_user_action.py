@@ -107,8 +107,8 @@ class UserActionModelTest(APITestCase):
             'type': 'withdraw',
             'balance': '1000',
         }, format='json')
-        assert response.status_code == 400
-        self.assertTrue(response.content.decode("utf-8") , 'The balance is not enough')
+        assert response.status_code == 200
+        self.assertEqual(response.content.decode("utf-8") , 'The balance is not enough')
         self.assertEqual(UserAction.objects.all().count(), 1)    # withdraw not success
         user = CustomUser.objects.filter(username="vicky_test")
         self.assertEqual(user[0].balance, 100)

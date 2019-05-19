@@ -628,7 +628,7 @@ class AddOrWithdrawBalance(APIView):
 
         else:
             if float(balance) > currrent_balance:
-                return HttpResponse('The balance is not enough', status=400)
+                return HttpResponse('The balance is not enough', status=200)
 
             new_balance = currrent_balance - int(balance)
             user.update(balance=new_balance)
