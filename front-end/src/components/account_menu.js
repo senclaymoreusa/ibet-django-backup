@@ -1,5 +1,4 @@
 import React from 'react'; import PropTypes from 'prop-types';
-import { fade } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import PersonAdd from '@material-ui/icons/PersonAdd';
 import Person from '@material-ui/icons/Person';
@@ -17,7 +16,7 @@ import PeopleOutline from '@material-ui/icons/PeopleOutline';
 import DirectionsRun from '@material-ui/icons/DirectionsRun';
 
 import { FormattedMessage } from 'react-intl';
-import { NavLink, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logout, handle_search, setLanguage, postLogout } from '../actions';
 
