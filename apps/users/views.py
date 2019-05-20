@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as django_login, logout as django_logout
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
 from django.dispatch import receiver
@@ -27,9 +28,11 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction
+
+from accounting.models import Transaction
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -53,6 +56,8 @@ from threading import Timer
 
 from django.utils.crypto import get_random_string
 import random
+
+import simplejson as json
 
 logger = logging.getLogger('django')
 
@@ -188,6 +193,13 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
+        action = UserAction(
+            user= CustomUser.objects.filter(username=user)[0],
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=2,
+        )
+        action.save()
+
         return Response(self.get_response_data(user),
                         status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -263,6 +275,16 @@ class LoginView(GenericAPIView):
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
 
+        action = UserAction(
+            user= CustomUser.objects.filter(username=self.user).first(),
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=0,
+        )
+        action.save()
+        loginUser = CustomUser.objects.filter(username=self.user)
+        loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
+        loginUser.update(login_times=loginTimes+1)
+
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
         return self.get_response()
@@ -290,7 +312,55 @@ class LoginView(GenericAPIView):
         self.serializer.is_valid(raise_exception=True)
 
         return self.login()
+
+
+from django.core.exceptions import ObjectDoesNotExist
+
+class LogoutView(APIView):
+    """
+    Calls Django logout method and delete the Token object
+    assigned to the current User object.
+    Accepts/Returns nothing.
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        if getattr(settings, 'ACCOUNT_LOGOUT_ON_GET', False):
+            response = self.logout(request)
+        else:
+            response = self.http_method_not_allowed(request, *args, **kwargs)
+
+        return self.finalize_response(request, response, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.logout(request)
+
+    def logout(self, request):
+        self.user = request.user
+        try:
+            request.user.auth_token.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+
+        action = UserAction(
+            user= CustomUser.objects.filter(username=self.user).first(),
+            ip_addr=self.request.META['REMOTE_ADDR'],
+            event_type=1,
+        )
+        action.save()
+
+        if getattr(settings, 'REST_SESSION_LOGIN', True):
+            django_logout(request)
         
+        response = Response({"detail": _("Successfully logged out.")},
+                            status=status.HTTP_200_OK)
+
+        if getattr(settings, 'REST_USE_JWT', False):
+            from rest_framework_jwt.settings import api_settings as jwt_settings
+            if jwt_settings.JWT_AUTH_COOKIE:
+                response.delete_cookie(jwt_settings.JWT_AUTH_COOKIE)
+        return response
+
 
 import sendgrid
 from sendgrid.helpers.mail import *
@@ -509,31 +579,90 @@ class Global(View):
         return HttpResponse(data.level)
 
         
-class AddBalance(View):
+class AddOrWithdrawBalance(APIView):
+
+    throttle_classes = ()
+    permission_classes = ()
+    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
+    renderer_classes = (renderers.JSONRenderer,)
+    serializer_class = BalanceSerializer
+
     def post(self, request, *args, **kwargs):
-        username = self.request.GET['username']
-        balance = self.request.GET['balance']
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        balance = serializer.validated_data['balance']
+        type_balance = serializer.validated_data['type']
+
         user = get_user_model().objects.filter(username=username)
         currrent_balance = user[0].balance
-        if balance.isdigit() == False:
-            return HttpResponse('Failed')
+        # if balance.isdigit() == False:
+        #     return HttpResponse('Failed')
 
-        new_balance = currrent_balance + int(balance)
-        user.update(balance=new_balance)
-        referrer = user[0].referred_by
+        if type_balance == 'add':
+            new_balance = currrent_balance + int(balance)
+            user.update(balance=new_balance)
+            referrer = user[0].referred_by
 
-        if referrer:
-            referr_object = get_user_model().objects.filter(username=referrer.username)
-            data = Config.objects.all()[0]
-            reward_points = referr_object[0].reward_points
-            current_points = reward_points + data.Referee_add_balance_reward
-            referr_object.update(reward_points=current_points)
-        return HttpResponse('Success')
+            if referrer:
+                referr_object = get_user_model().objects.filter(username=referrer.username)
+                data = Config.objects.all()[0]
+                reward_points = referr_object[0].reward_points
+                current_points = reward_points + data.Referee_add_balance_reward
+                referr_object.update(reward_points=current_points)
 
+            create = Transaction.objects.create(
+                user_id=CustomUser.objects.filter(username=username).first(), 
+                amount=balance, 
+                transaction_type=0
+            )
+
+            action = UserAction(
+                user= CustomUser.objects.filter(username=username).first(),
+                ip_addr=self.request.META['REMOTE_ADDR'],
+                event_type=3,
+                dollar_amount=balance
+            )
+            action.save()
+            return HttpResponse('Deposit Success')
+
+        else:
+            if float(balance) > currrent_balance:
+                return HttpResponse('The balance is not enough', status=200)
+
+            new_balance = currrent_balance - int(balance)
+            user.update(balance=new_balance)
+            referrer = user[0].referred_by
+
+            if referrer:
+                referr_object = get_user_model().objects.filter(username=referrer.username)
+                data = Config.objects.all()[0]
+                reward_points = referr_object[0].reward_points
+                current_points = reward_points + data.Referee_add_balance_reward
+                referr_object.update(reward_points=current_points)
+
+            create = Transaction.objects.create(
+                user_id=CustomUser.objects.filter(username=username).first(), 
+                amount=balance, 
+                transaction_type=1
+            )
+
+            action = UserAction(
+                user= CustomUser.objects.filter(username=username).first(),
+                ip_addr=self.request.META['REMOTE_ADDR'],
+                event_type=4,
+                dollar_amount=balance
+            )
+            action.save()
+            return HttpResponse('Withdraw Success')
 
 class Activation(View):
     def post(self, request, *args, **kwargs):
-        email = self.request.GET['email']
+        
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
         user = get_user_model().objects.filter(email=email)
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code)
@@ -560,7 +689,11 @@ class Activation(View):
 
 class ActivationVerify(View):
     def post(self, request, *args, **kwargs):
-        token = self.request.GET['token']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        token = body['token']
+
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
@@ -692,13 +825,24 @@ class FacebookLoginView(GenericAPIView):
 
         return self.login()
 
+def generate_username():
+    name_list = [ 'Stephen', 'Mike', 'Tom', 'Luke', 'James', 'Kevin', 'Stephan', 'Wilson', 'Alice', 'Sunny', 'Cloris', 'Jack', 
+        'Leo', 'Shaw', 'Peter', 'Ben', 'Ross', 'Rachel', 'Michael', 'Jordan', 'Oliver', 'Harry', 'John', 'William', 'David', 'Richard', 'Joseph',
+        'Charles', 'Thomas', 'Joe', 'George', 'Oscar', 'Amelia', 'Margaret', 'Megan', 'Jennifer', 'Bethany', 'Isla', 'Lauren', 'Samantha', 'Emma',
+        'Joanne', 'Ava', 'Tracy', 'Elizabeth', 'Sophie', 'Lily', 'Jacob', 'Robert']
+
+    username_1 = name_list[random.randint(1, len(name_list) - 1)]
+    username_2 = ''.join([str(random.randint(0, 9)) for i in range(5)])
+    return username_1 + username_2
+
 
 class OneclickRegister(View):
     def post(self, request, *args, **kwargs):
-        username = get_random_string(length=8)     # only alphanumeric allowed
+        
+        username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
-            username = get_random_string(length=8)
+            username = generate_username
             check_duplicate = CustomUser.objects.filter(username=username)
 
         email = get_random_string(length=8)
@@ -726,8 +870,13 @@ class OneclickRegister(View):
 class UpdateEmail(View):
     def post(self, request, *args, **kwargs):
 
-        old_email = self.request.GET['old_email']
-        new_email = self.request.GET['new_email']
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        old_email = body['old_email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        new_email = body['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
@@ -740,8 +889,84 @@ class UpdateEmail(View):
 
 class CheckEmailExixted(View):
     def get(self, request, *args, **kwargs):
+        
         email = self.request.GET['email']
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
             return HttpResponse('Exist')
         return HttpResponse('Invalid')
+
+
+class GenerateForgetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+        user = get_user_model().objects.filter(email__iexact=email)
+        if user:
+            code = ''.join([str(random.randint(0, 9)) for i in range(4)])
+            user.update(reset_password_code=code)
+            return HttpResponse('Success')
+        return HttpResponse('Failed')
+
+
+class SendResetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+        user = get_user_model().objects.filter(email=email)
+        reset_password_code = user[0].reset_password_code
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email('ibet@ibet.com')
+        to_email = Email(email)
+        subject =  str(_('Reset Password'))
+        content_text = str(_('Use this code to reset your password '))
+        content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        return HttpResponse('Success')
+
+
+class VerifyResetPasswordCode(View):
+    def post(self, request, *args, **kwargs):
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        code = body['code']
+
+        user = get_user_model().objects.filter(email=email)
+        verify = user[0].reset_password_code
+        if code == verify:
+            user.update(reset_password_code='')
+            return HttpResponse('Success')
+        else:
+            return HttpResponse('Failed')
+
+
+class ChangeAndResetPassword(View):
+    def post(self, request, *args, **kwargs):
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        email = body['email']
+
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        password = body['password']
+
+        user = get_user_model().objects.get(email=email)
+        user.set_password(password)
+        user.save()
+        return HttpResponse('Success')
+
+
+
+        
+

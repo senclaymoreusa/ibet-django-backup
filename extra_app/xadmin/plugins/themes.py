@@ -82,7 +82,7 @@ class ThemePlugin(BaseAdminPlugin):
                             'css': t['cssMin'], 'thumbnail': t['thumbnail']}
                         for t in watch_themes])
                 except Exception as e:
-                    print(e)
+                    pass
 
                 cache.set(THEME_CACHE_KEY, json.dumps(ex_themes), 24 * 3600)
                 themes.extend(ex_themes)

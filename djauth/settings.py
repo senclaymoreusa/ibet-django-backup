@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
     'games.apps.GamesConfig',
+    'accounting.apps.AccountingConfig',
     'rest_framework',              # Stephen
     'corsheaders',                 # Stephen
     'rest_auth',                   # Stephen
@@ -84,7 +85,7 @@ AUTH_USER_MODEL = 'users.CustomUser' # new
 
 
 
-
+DOMAIN = 'http://localhost:8000/'
 HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
 
@@ -269,8 +270,8 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 # Tell nose to measure coverage on the 'foo' and 'bar' apps
 NOSE_ARGS = [
     '--with-coverage',
-    '--cover-package=users',
-    #'--cover-html'
+    '--cover-package=users,accounting,games,operation',
+    '--verbosity=1'
 ]
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
@@ -279,3 +280,11 @@ STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
+#payment
+QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
+MERCHANTID = '1'
+CURRENCY = 'IDR'
+MERCHANTAPIKEY = 'secret'
+APIVERSION = 'v2.0'
+METHOD = 'LBT_ONLINE'
+DEPOSIT_URL = '/deposit/routing/'

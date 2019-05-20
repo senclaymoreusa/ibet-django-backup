@@ -40,6 +40,7 @@ urlpatterns = [
     path('operation/', include('operation.urls')),
     path('users/', include('django.contrib.auth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
+    path('accounting/', include('accounting.urls')),
     path('api-auth/', include('rest_framework.urls')),   # Stephen
     path('rest-auth/', include('rest_auth.urls')),         # Stephen
     path('rest-auth/registration/', include('rest_auth.registration.urls'))    # Stephen
