@@ -78,15 +78,15 @@ class UserTag(models.Model):
 class CustomUser(AbstractBaseUser):
 
     USER_ATTRIBUTE = (
-        ('0', _('Direct User')),
-        ('1', _('User from Promo')),
-        ('2', _('Advertisements'))
+        (0, _('Direct User')),
+        (1, _('User from Promo')),
+        (2, _('Advertisements'))
     )
 
     MEMBER_STATUS = (
-        ('0', _('Active')),
-        ('1', _('Inactive')),
-        ('2', _('Blocked'))
+        (0, _('Active')),
+        (1, _('Inactive')),
+        (2, _('Blocked'))
     )
     # add additional fields in here
     username = models.CharField(
@@ -119,7 +119,7 @@ class CustomUser(AbstractBaseUser):
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
-    balance = models.FloatField(default=0)
+    # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=300, default='', blank=True)
     active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -138,15 +138,17 @@ class CustomUser(AbstractBaseUser):
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
-    user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default='0')
+    user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=300, default='', blank=True)
-    time_of_registration = models.DateTimeField(_('Time of Registration'), default=None, null=True)
+    time_of_registration = models.DateTimeField(_('Time of Registration'), default=timezone.now, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
-    verfication_time = models.DateTimeField(_('Time of Verification'), default=timezone.now)
+    verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=300, default='') 
-    last_login_time = models.DateTimeField(_('Last Login Time'), default=timezone.now)
-    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=timezone.now)
+    last_login_time = models.DateTimeField(_('Last Login Time'), default=None, null=True)
+    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=None, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+
+    # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
@@ -156,7 +158,7 @@ class CustomUser(AbstractBaseUser):
         editable=False,
     )
     modified_time = models.DateTimeField(
-        _('Created Time'),
+        _('Modified Time'),
         default=timezone.now,
         editable=False,
     )
@@ -210,6 +212,10 @@ class CustomUser(AbstractBaseUser):
     def channel_list(self):
         return ','.join([i.thridParty_name for i in self.user_channel.all()])
 
+    def test_name(self):
+        return "test"
+
+    
 
 class UserWithTag(models.Model):
 

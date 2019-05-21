@@ -10,6 +10,10 @@ from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
 from django.contrib.admin import SimpleListFilter
 from django.conf import settings
+# from xadmin.layout import Main, Fieldset, Row
+from xadmin.layout import *
+from xadmin.plugins.inline import Inline
+
 
 DOMAIN = settings.DOMAIN
 
@@ -39,13 +43,14 @@ class MyUserAdmin(object):
     # form = CustomUserCreationForm
 
 
-    list_display = ('username','email','is_admin', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 'user_withdraw_channel','time_of_registration', 'ftd_time', 'verfication_time', 'modified_time', 'last_login_time')
+    list_display = ('username','email','is_admin', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 'user_withdraw_channel','time_of_registration', 'ftd_time', 'verfication_time', 'modified_time', 'last_login_time', 'last_login_ip')
     list_filter = ('is_admin', 'user_tag', 'useraction__created_time',)
 
-    fieldsets = (
-        (None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'activation_code')}),
-        ('Permissions', {'fields': ('is_admin', 'is_staff')})
-    )
+    # fieldsets = (
+    #     (None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'activation_code')}),
+    #     ('Permissions', {'fields': ('is_admin', 'is_staff')})
+    # )
+
     search_fields = ('username','email', 'user_tag__name')
     ordering = ('username','email',)
     # list_editable = 'username'
@@ -56,6 +61,32 @@ class MyUserAdmin(object):
     inlines = (UserWithTagInline,)
     list_per_page = 20
     # refresh_times = [3,5] 
+
+    form_layout = (
+        Main(
+            TabHolder(
+                Tab('User Info',
+                    Fieldset('General Info',
+                            'username', 'member_status', 'user_attribute', 'test_name'
+                            Row('email', 'phone'),
+                            description="User Detail",
+                    ),
+                    Fieldset('Balance',
+                            'main_wallet', 'other_game_wallet',
+                    ),
+                    Inline(UserWithTag),
+                    
+                ),
+                Tab('User Detail',
+                    Fieldset('Last',
+                            'first_name', 'last_name',
+                    ),
+                ),
+            )
+            
+        ),
+    )
+
     
     def get_model_form(self, **kwargs):
         if self.org_obj is None:
@@ -104,9 +135,17 @@ class MyUserAdmin(object):
         return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.id))
     user_action_link.allow_tags = True
     user_action_link.short_description = _("User action link")
+
+    def last_login_ip(self, obj):
+        qs = UserAction.objects.filter(user=obj, event_type=0).order_by('-created_time')
+        if qs.count() == 0:
+            return None
+        return qs[0].ip_addr
+
+    def save_models(self):
+        obj = self.new_obj
+        super().save_models()
     
-
-
 class TagAdmin(object):
     
     list_display = ('name', 'notes')
