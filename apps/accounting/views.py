@@ -11,12 +11,12 @@ from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 
 
-from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize
+from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize
 from django.conf import settings
 import requests,json
 import os
@@ -368,4 +368,62 @@ class submitPayout(generics.GenericAPIView):
             logger.error('post information is not correct, please try again')
 
         print(rdata)
-        return Response(rdata)   
+        return Response(rdata)
+           
+class getPayoutTransaction(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = payoutTransactionSerialize
+    permission_classes = [IsAuthenticated,]
+    
+
+    def get(self, request, *args, **kwargs):
+        serializer = payoutTransactionSerialize(self.queryset, many=True)
+        
+        orderId = self.request.POST.get('order_id', 'Q_LOCAL_BANK_TRANSFER_30')
+        message = bytes(merchantId + '|' + orderId, 'utf-8')
+        secret = bytes(merchantApiKey, 'utf-8')
+        
+        my_hmac = generateHash(secret, message)
+        url =  api + apiVersion +'/' + merchantId + '/payout/' + orderId + '/mac/' + my_hmac
+        headers = {'Accept': 'application/json'}
+         #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.get(url, headers=headers)
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
+        if not success:
+            logger.info('Failed to complete a request for payout transaction')
+        # Handle error
+
+        rdata = r.json()
+        print(rdata)
+        if r.status_code == 201:  
+            
+            for x in Transaction._meta.get_field('currency').choices:
+
+                if rdata['currency'] == x[1]:
+                    cur_val = x[0]
+            user = CustomUser.objects.get(username=rdata['userId'])   
+            create = Transaction.objects.get_or_create(
+                order_id= rdata['orderId'],
+                request_time=rdata["dateCreated"],
+                amount=rdata["amount"],
+                status=cur_status,
+                user_id=user,
+                method= rdata["payoutMethod"],
+                currency= cur_val,
+                transaction_type=1,
+                
+            )
+        else:
+            logger.error('The request information is nor correct, please try again')
+        
+        
+        return Response(rdata)

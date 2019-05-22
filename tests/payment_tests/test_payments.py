@@ -80,6 +80,9 @@ class ThirdPartyTestCases(TestCase):
         
         self.assertTrue(Transaction.objects.filter(transaction_type=0).exists())
         self.assertFalse(Transaction.objects.filter(transaction_type=1).exists())
-        
+    def test_get_payout_transaction(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        response = self.client.get(reverse('payout_Transaction'))
+        self.assertEqual(response.status_code, 200)
         
 

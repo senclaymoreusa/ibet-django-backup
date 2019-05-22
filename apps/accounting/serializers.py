@@ -70,3 +70,7 @@ class submitPayoutSerialize(serializers.Serializer):
         instance.save() 
         return instance
    
+class payoutTransactionSerialize(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ('order_id','method', 'request_time','amount', 'currency', 'status', 'user_id')
