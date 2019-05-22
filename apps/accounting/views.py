@@ -237,8 +237,8 @@ class submitDeposit(generics.GenericAPIView):
         
         first_name = self.request.GET.get('first_name')
         email = self.request.GET.get('email')
-         #retry
-        success = False
+        
+        
         r = requests.post(url, headers=headers, data = {
             'orderId' : orderId,
             'amount' : amount,
@@ -255,9 +255,9 @@ class submitDeposit(generics.GenericAPIView):
         })
         
         rdata = r.json()
-        #print(rdata)
-        user = CustomUser.objects.get(username=rdata['depositTransaction']['depositorUserId'])
-        if r.status_code == 201:   
+
+        if rdata.get("ok"):
+            user = CustomUser.objects.get(username=rdata['depositTransaction']['depositorUserId'])
             for x in Transaction._meta.get_field('currency').choices:
                 if rdata["depositTransaction"]["currency"] == x[1]:
                     cur_val = x[0]
@@ -274,10 +274,12 @@ class submitDeposit(generics.GenericAPIView):
                 user_id=user,
                 method= rdata["depositTransaction"]["depositMethod"],
                 currency= cur_val,
-                
+                transaction_type=0,
             )
         else:
-            logger.error('post information is not correct, please try again')
+            logger.error("Please check the data you input, something is wrong.")
+        
+        print(rdata)
         
         return Response(rdata)
 
