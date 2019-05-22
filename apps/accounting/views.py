@@ -344,9 +344,9 @@ class submitPayout(generics.GenericAPIView):
         })
         
         rdata = r.json()
-        
-        user = CustomUser.objects.get(username=rdata['payoutTransaction']['userId'])
-        if r.status_code == 201:   
+        if r.status_code == 201:  
+            user = CustomUser.objects.get(username=rdata['payoutTransaction']['userId'])
+         
             for x in Transaction._meta.get_field('currency').choices:
                 if rdata["payoutTransaction"]["currency"] == x[1]:
                     cur_val = x[0]
@@ -366,5 +366,6 @@ class submitPayout(generics.GenericAPIView):
             )
         else:
             logger.error('post information is not correct, please try again')
-        
+
+        print(rdata)
         return Response(rdata)   
