@@ -67,7 +67,7 @@ class MyUserAdmin(object):
             TabHolder(
                 Tab('User Info',
                     Fieldset('General Info',
-                            'username', 'member_status', 'user_attribute', 'test_name'
+                            'username', 'member_status', 'user_attribute',
                             Row('email', 'phone'),
                             description="User Detail",
                     ),

@@ -60,7 +60,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):    
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'user_tag', 'main_wallet', 'other_game_wallet', 'member_status', 'user_attribute', 'test_name')
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'user_tag', 'main_wallet', 'other_game_wallet', 'member_status', 'user_attribute',)
 
     # def __init__(self, *args, **kwargs):
     #     super(CustomUserChangeForm, self).__init__(*args, **kwargs)

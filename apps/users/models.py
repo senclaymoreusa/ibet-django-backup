@@ -208,12 +208,6 @@ class CustomUser(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
-    
-    def channel_list(self):
-        return ','.join([i.thridParty_name for i in self.user_channel.all()])
-
-    def test_name(self):
-        return "test"
 
     
 

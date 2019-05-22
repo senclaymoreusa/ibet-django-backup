@@ -58,6 +58,7 @@ from django.utils.crypto import get_random_string
 import random
 
 import simplejson as json
+import decimal
 
 logger = logging.getLogger('django')
 
@@ -601,7 +602,7 @@ class AddOrWithdrawBalance(APIView):
         type_balance = serializer.validated_data['type']
 
         user = get_user_model().objects.filter(username=username)
-        currrent_balance = user[0].balance
+        currrent_balance = user[0].main_wallet
         # if balance.isdigit() == False:
         #     return HttpResponse('Failed')
 
@@ -609,8 +610,8 @@ class AddOrWithdrawBalance(APIView):
             if user[0].ftd_time is None:
                 user.update(ftd_time=timezone.now(), modified_time=timezone.now())
 
-            new_balance = currrent_balance + int(balance)
-            user.update(balance=new_balance, modified_time=timezone.now())
+            new_balance = currrent_balance + decimal.Decimal(balance)
+            user.update(main_wallet=new_balance, modified_time=timezone.now())
             referrer = user[0].referred_by
 
             if referrer:
@@ -636,11 +637,11 @@ class AddOrWithdrawBalance(APIView):
             return HttpResponse('Deposit Success')
 
         else:
-            if float(balance) > currrent_balance:
+            if decimal.Decimal(balance) > currrent_balance:
                 return HttpResponse('The balance is not enough', status=200)
 
-            new_balance = currrent_balance - int(balance)
-            user.update(balance=new_balance, modified_time=timezone.now())
+            new_balance = currrent_balance - decimal.Decimal(balance)
+            user.update(main_wallet=new_balance, modified_time=timezone.now())
 
             create = Transaction.objects.create(
                 user_id=CustomUser.objects.filter(username=username).first(), 
