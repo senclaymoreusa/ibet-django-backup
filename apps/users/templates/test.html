@@ -1,0 +1,136 @@
+{% extends 'xadmin/base_site.html' %}
+
+<head>  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+    <!-- Add additional CSS in static file -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+</head>
+
+{% block content %} 
+    <!-- <div style='border:1px solid black; width:50%; float:left'>
+        {% block title %}
+        <div style='background-color: coral; border-bottom:1px solid black;'>
+            Member Detail:
+        </div>
+        <div>
+        {% endblock %}
+        <div>
+            <div style='width: 50%; float:left'>photo</div>
+            <div style='width: 50%; float:right'>
+                
+                <p>Member ID: {{ customuser.pk }}</p>
+                <p>Username: {{ customuser.username }}</p>
+                <p>First Name : {{ customuser.first_name }}</p>
+                <p>Last Name : {{ customuser.last_name }}</p>
+                <p>Email : {{ customuser.email }}</p>
+                <p>Phone : {{ customuser.phone }}</p>
+                <p>Birthday : {{ customuser.date_of_birth }}</p>
+                <p>Address : {{ customuser.street_address_1 }} {{ customuser.city }} {{ customuser.state }} {{ customuser.zipcode }}</p>
+            </div>
+        </div>
+        <hr style='color:black'> -->
+        <!-- <div style='width: 50%; float:left'>photo</div>
+        <div style='width: 50%; float:right'>{{ user.email }}</div> -->
+        <!-- <div>hgihgowehgiowgh</div>
+
+    </div> -->
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-5 user_detail_section">
+                <div class="user_detail_section_title">
+                    Member Detail:
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>photo</div>
+                    <div class='col-md-6'>
+                        <div><span>Member ID</span><span class="detail_info">{{ customuser.pk }}</span></div>
+                        <div><span class="detail_title">Username</span><span>{{ customuser.username }}</span></div>
+                        <div><span>First Name</span><span>{{ customuser.first_name }}</span></div>
+                        <div><span>Last Name</span> <span>{{ customuser.last_name }}</span></div>
+                        <div><span>Email</span><span>{{ customuser.email }}</span></div>
+                        <div><span>Phone</span><span>{{ customuser.phone }}</span></div>
+                        <div><span>Birthday</span><span>{{ customuser.date_of_birth }}</span></div>
+                        <div><span>Address</span><span>{{ customuser.street_address_1 }}</span><span>{{ customuser.city }}</span><span>{{ customuser.state }}</span><span>{{ customuser.zipcode }}</span></div> 
+                    </div>
+                </div>
+                <div class="row">
+                    <hr>
+                </div>
+
+            </div>
+            <div class="col-md-5 user_detail_section">
+                <div class="notes_section_title">
+                    Funds Status
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>photo</div>
+                    <div class='col-md-6'>
+                        <p>Member ID: {{ customuser.pk }}</p>
+                        <p>Username: {{ customuser.username }}</p>
+                        <p>First Name : {{ customuser.first_name }}</p>
+                        <p>Last Name : {{ customuser.last_name }}</p>
+                        <p>Email : {{ customuser.email }}</p>
+                        <p>Phone : {{ customuser.phone }}</p>
+                        <p>Birthday : {{ customuser.date_of_birth }}</p>
+                        <p>Address : {{ customuser.street_address_1 }} {{ customuser.city }} {{ customuser.state }} {{ customuser.zipcode }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='user_detail_section'>
+                <div class="trans_section_title">
+                    Transaction History
+                </div>
+                <div>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <table>
+                        {{ form.as_table }}
+                        </table>
+                        <input type="submit" value="Submit" />
+                    </form>
+                </div>
+                <div class="row">
+                    <table class="table" style="width:90%; margin: 5%;">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">CATEGORY</th>
+                                <th scope="col">PRODUCT</th>
+                                <th scope="col">TIME</th>
+                                <th scope="col">AMOUNT</th>
+                                <th scope="col">BALANCE</th>
+                                <th scope="col">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trans in userTransactions %} 
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ trans.transaction_type }}</td>
+                                <td>{{ trans }}</td>
+                                <td>{{ trans.request_time }}</td>
+                                <td>{{ trans.amount }}</td>
+                                <td>{{ trans.amount }}</td>
+                                <td>{{ trans.status }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

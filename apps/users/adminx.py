@@ -28,7 +28,26 @@ class GlobalSettings(object):
     site_footer = 'Ibet'  # 页尾
     site_url = '/'
     menu_style = 'accordion'  # 设置左侧菜单  折叠样式
-   
+    
+    def get_site_menu(self):  #名称不能改
+        return [
+            {
+                'title': '测试的',
+                'icon': 'fa fa-bar-chart-o',
+                'menus': (
+                    {
+                        'title': _('测试子菜单1'),    #这里是你菜单的名称
+                        'url': '/xadmin/test_view',     #这里填写你将要跳转url
+                        'icon': 'fa fa-cny'     #这里是bootstrap的icon类名，要换icon只要登录bootstrap官网找到icon的对应类名换上即可
+                    },
+                    {
+                        'title': '测试子菜单2',
+                        'url': 'http://www.taobao.com',
+                        'icon': 'fa fa-cny'
+                    }
+                )
+            }
+        ]
 
 from django.contrib import admin
 class UserWithTagInline(object):
@@ -196,6 +215,16 @@ class UserActionAdmin(object):
         return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
     user_action_link.allow_tags = True
     user_action_link.short_description = _("User action link")
+
+
+
+#注册你上面填写的url
+from .views import TestView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+xadmin.site.register_view(r'test_view/$', TestView, name='for_test')
+
+#注册GlobalSetting
+from xadmin.views import CommAdminView
+# xadmin.site.register(CommAdminView, GlobalSettings)
 
 
 xadmin.site.register(views.CommAdminView, GlobalSettings)

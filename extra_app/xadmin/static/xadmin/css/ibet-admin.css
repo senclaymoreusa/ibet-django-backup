@@ -1,0 +1,38 @@
+.user_detail_section {
+    border:1px solid black;
+    padding: 0%;
+    margin: 10px;
+    /* margin: 5%; */
+}
+
+.user_detail_section_title {
+    background-color: coral; 
+    border-bottom:1px solid black;
+}
+
+.notes_section_title {
+    background-color: lightskyblue; 
+    border-bottom:1px solid black;
+}
+
+.trans_section_title {
+    background-color: green; 
+    border-bottom:1px solid black;
+}
+
+hr {
+    width:80%;
+    /* border-color: gray; */
+    /* border:1px solid grey; */
+    border: 0; 
+    border-top: 2px solid rgb(204, 204, 204);
+}   
+
+.detail_title {
+    line-height: 2
+}
+
+.detail_info {
+    margin-left:50px !important;
+}
+
