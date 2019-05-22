@@ -16,7 +16,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 
 
-from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize
+from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize
 from django.conf import settings
 import requests,json
 import os
@@ -284,3 +284,87 @@ class submitDeposit(generics.GenericAPIView):
         return Response(rdata)
 
        
+class submitPayout(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = submitPayoutSerialize
+    permission_classes = [AllowAny, ]
+    
+    def get_response(self,request):
+        serializer_class = self.get_response_serializer()
+        serializer = serializer_class(instance=data,
+                                          context={'request': self.request})
+        if serializer.is_valid():
+            serializer.save() 
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, *args, **kwargs):
+
+        serializer = submitPayoutSerialize(self.queryset, many=True)
+        url =  api + apiVersion + '/' + merchantId + '/payout/'
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        print(url)
+        dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
+        
+        orderId = self.request.POST.get('order_id')
+        amount =self.request.POST.get('amount')
+        language = self.request.POST.get('language')
+        userId = self.request.POST.get('user_id')
+        mymethod = self.request.POST.get('method')
+        list = [merchantId, orderId, amount, currency, dateTime, userId]
+        message = '|'.join(str(x) for x in list)
+        
+        mymessage = bytes(message, 'utf-8')
+        secret = bytes(merchantApiKey, 'utf-8')
+        my_hmac = generateHash(secret, mymessage)
+        delay = kwargs.get("delay", 5)
+        
+        first_name = self.request.GET.get('first_name')
+        email = self.request.GET.get('email')
+         #retry
+        success = False
+        r = requests.post(url, headers=headers, data = {
+            'orderId' : orderId,
+            'amount' : amount,
+            'currency' : currency,
+            'dateTime': dateTime,
+            'language': language,
+            'userId': userId,
+            'depositorTier': '0',
+            'payoutMethod':  mymethod,
+            'withdrawerEmail': CustomUser.objects.filter(email=email),
+            'withdrawerName': CustomUser.objects.filter(first_name=first_name),
+            'redirectUrl': 'https://www.google.com',
+            'messageAuthenticationCode': my_hmac,
+        })
+        
+        rdata = r.json()
+        
+        user = CustomUser.objects.get(username=rdata['payoutTransaction']['userId'])
+        if r.status_code == 201:   
+            for x in Transaction._meta.get_field('currency').choices:
+                if rdata["payoutTransaction"]["currency"] == x[1]:
+                    cur_val = x[0]
+
+            for y in Transaction._meta.get_field('status').choices:
+                if rdata["payoutTransaction"]["status"] ==y[1]:
+                    cur_status = y[0] 
+            create = Transaction.objects.get_or_create(
+                order_id= rdata["payoutTransaction"]['orderId'],
+                request_time=rdata["payoutTransaction"]["dateCreated"],
+                amount=rdata["payoutTransaction"]["amount"],
+                status=cur_status,
+                user_id=user,
+                method= rdata["payoutTransaction"]["payoutMethod"],
+                currency= cur_val,
+                transaction_type=1,
+            )
+        else:
+            logger.error('post information is not correct, please try again')
+        
+        return Response(rdata)   
