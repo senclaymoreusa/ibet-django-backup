@@ -15,7 +15,7 @@ class ThirdPartyTestCases(TestCase):
     @classmethod
     def setUp(self):
         self.user = CustomUser.objects.create_superuser(username='angela', email = 'angela@test.com', phone='1239385544', password="testtest")
-        user.balance += 100
+        user.main_wallet += 100
         user.save()
         Token.objects.create(user=self.user)
         super(ThirdPartyTestCases, self).setUp() 
