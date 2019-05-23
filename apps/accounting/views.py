@@ -373,13 +373,13 @@ class submitPayout(generics.GenericAPIView):
 class getPayoutTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [AllowAny,]
     
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = payoutTransactionSerialize(self.queryset, many=True)
         
-        orderId = self.request.POST.get('order_id', 'Q_LOCAL_BANK_TRANSFER_30')
+        orderId = self.request.POST['order_id']
         message = bytes(merchantId + '|' + orderId, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         
