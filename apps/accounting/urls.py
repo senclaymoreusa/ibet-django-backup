@@ -8,4 +8,5 @@ urlpatterns = [
     path('api/submit_deposit', views.submitDeposit.as_view(), name = 'submit_Deposit'),
     path('api/submit_payout', views.submitPayout.as_view(), name = 'submit_Payout'),
     path('api/payout_transaction', views.getPayoutTransaction.as_view(), name = 'payout_Transaction'),
+    
 ]
