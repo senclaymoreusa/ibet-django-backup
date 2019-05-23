@@ -72,7 +72,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',       # Stephen
     'django_rest_passwordreset',
     'django_nose',
-    # 'reversion',
+    'reversion',
 ]
 
 SITE_ID = 1                        # Stephen
