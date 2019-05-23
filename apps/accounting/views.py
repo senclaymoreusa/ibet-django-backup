@@ -16,7 +16,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 
 
-from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize
+from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize
 from django.conf import settings
 import requests,json
 import os
@@ -227,7 +227,7 @@ class submitDeposit(generics.GenericAPIView):
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
         mymethod = self.request.POST.get('method')
-        list = [merchantId, orderId, amount, currency, dateTime, userId, method]
+        list = [merchantId, orderId, amount, currency, dateTime, userId, mymethod]
         message = '|'.join(str(x) for x in list)
         
         mymessage = bytes(message, 'utf-8')
@@ -427,7 +427,140 @@ class getPayoutTransaction(generics.GenericAPIView):
         
         
         return Response(rdata)
+class approvePayout(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = approvePayoutSerialize
+    permission_classes = [AllowAny,]
+    
 
+    def post(self, request, *args, **kwargs):
+        serializer = approvePayoutSerialize(self.queryset, many=True)
+        
+        orderId = self.request.POST['order_id']
+        userId = self.request.POST['user_id']
+        notes = self.request.POST['remark']
+        list = [merchantId, orderId, userId, notes]
+        message = '|'.join(str(x) for x in list)
+        mymessage = bytes(message, 'utf-8')
+        secret = bytes(merchantApiKey, 'utf-8')
+        my_hmac = generateHash(secret, mymessage)
 
+        url =  api + apiVersion +'/' + merchantId + '/payout/' + orderId + '/approve' 
+        headers = {'Accept': 'application/json'}
+         #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.post(url, headers=headers, data={
+                    'approvedBy': userId,
+                    'notes': notes,
+                    'messageAuthenticationCode': my_hmac,
+                })
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
+        if not success:
+            logger.info('Failed to complete a request for payout transaction')
+        # Handle error
+
+        rdata = r.json()
+        print(rdata)
+        if r.status_code == 201:  
+            
+            for x in Transaction._meta.get_field('currency').choices:
+
+                if rdata['currency'] == x[1]:
+                    cur_val = x[0]
+            user = CustomUser.objects.get(username=rdata['userId'])   
+            create = Transaction.objects.get_or_create(
+                order_id= rdata['orderId'],
+                request_time=rdata["dateCreated"],
+                amount=rdata["amount"],
+                status=cur_status,
+                user_id=user,
+                method= rdata["payoutMethod"],
+                currency= cur_val,
+                transaction_type=1,
+                review_status=0,
+                
+            )
+        else:
+            logger.error('The request information is nor correct, please try again')
+        
+        
+        return Response(rdata)
+class rejectPayout(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = approvePayoutSerialize
+    permission_classes = [AllowAny,]
+    
+
+    def post(self, request, *args, **kwargs):
+        serializer = approvePayoutSerialize(self.queryset,context={'request': request}, many=True)
+        
+        orderId = self.request.POST['order_id']
+        userId = self.request.POST['user_id']
+        notes = self.request.POST['remark']
+        list = [merchantId, orderId, userId, notes]
+        message = '|'.join(str(x) for x in list)
+        mymessage = bytes(message, 'utf-8')
+        secret = bytes(merchantApiKey, 'utf-8')
+        my_hmac = generateHash(secret, mymessage)
+
+        url =  api + apiVersion +'/' + merchantId + '/payout/' + orderId + '/reject' 
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+         #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.post(url, headers=headers, data={
+                    'rejectedBy': userId,
+                    'notes': notes,
+                    'messageAuthenticationCode': my_hmac,
+                })
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
+        if not success:
+            logger.info('Failed to complete a request for payout transaction')
+        # Handle error
+
+        rdata = r.json()
+        print(rdata)
+        if r.status_code == 201:  
+            
+            for x in Transaction._meta.get_field('currency').choices:
+
+                if rdata['currency'] == x[1]:
+                    cur_val = x[0]
+            user = CustomUser.objects.get(username=rdata['userId'])   
+            create = Transaction.objects.get_or_create(
+                order_id= rdata['orderId'],
+                request_time=rdata["dateCreated"],
+                amount=rdata["amount"],
+                status=cur_status,
+                user_id=user,
+                method= rdata["payoutMethod"],
+                currency= cur_val,
+                transaction_type=1,
+                review_status=2,
+                
+            )
+        else:
+            logger.error('The request information is nor correct, please try again')
+        
+        
+        return Response(rdata)
 
 
