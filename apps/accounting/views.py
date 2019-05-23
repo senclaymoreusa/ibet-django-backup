@@ -562,5 +562,61 @@ class rejectPayout(generics.GenericAPIView):
         
         
         return Response(rdata)
+class getDepositTransaction(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = payoutTransactionSerialize
+    permission_classes = [AllowAny,]
+    
 
+    def post(self, request, *args, **kwargs):
+        serializer = payoutTransactionSerialize(self.queryset, many=True)
+        
+        orderId = self.request.POST['order_id']
+        message = bytes(merchantId + '|' + orderId, 'utf-8')
+        secret = bytes(merchantApiKey, 'utf-8')
+        
+        my_hmac = generateHash(secret, message)
+        url =  api + apiVersion +'/' + merchantId + '/deposit/' + orderId + '/mac/' + my_hmac
+        headers = {'Accept': 'application/json'}
+         #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.get(url, headers=headers)
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
+        if not success:
+            logger.info('Failed to complete a request for payout transaction')
+        # Handle error
+
+        rdata = r.json()
+        print(rdata)
+        if r.status_code == 201:  
+            
+            for x in Transaction._meta.get_field('currency').choices:
+
+                if rdata['currency'] == x[1]:
+                    cur_val = x[0]
+            user = CustomUser.objects.get(username=rdata['userId'])   
+            create = Transaction.objects.get_or_create(
+                order_id= rdata['orderId'],
+                request_time=rdata["dateCreated"],
+                amount=rdata["amount"],
+                status=cur_status,
+                user_id=user,
+                method= rdata["payoutMethod"],
+                currency= cur_val,
+                transaction_type=0,
+                
+            )
+        else:
+            logger.error('The request information is nor correct, please try again')
+        
+        
+        return Response(rdata)
 
