@@ -90,7 +90,7 @@ class CustomUser(AbstractBaseUser):
     )
     # add additional fields in here
     username = models.CharField(
-					max_length=300,
+					max_length=255,
 					validators = [
 						RegexValidator(regex = USERNAME_REGEX,
 										message='Username must be alphanumeric or contain numbers',
@@ -120,7 +120,7 @@ class CustomUser(AbstractBaseUser):
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
-    activation_code = models.CharField(max_length=300, default='', blank=True)
+    activation_code = models.CharField(max_length=255, default='', blank=True)
     active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -139,11 +139,11 @@ class CustomUser(AbstractBaseUser):
 
     reset_password_code = models.CharField(max_length=4, blank=True)
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
-    product_attribute = models.CharField(_('Product Attribute'), max_length=300, default='', blank=True)
+    product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), default=timezone.now, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
     verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
-    id_location = models.CharField(_('Location shown on the ID'), max_length=300, default='') 
+    id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
     last_login_time = models.DateTimeField(_('Last Login Time'), default=None, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), default=None, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
@@ -329,7 +329,7 @@ class UserAction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
-    refer_url = models.CharField(_('Refer URL'), max_length=300, blank=True, null=True)
+    refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
     dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
@@ -346,17 +346,17 @@ class Bonus(models.Model):
 
     bonus_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=255)
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
     expiration_days = models.IntegerField()
     is_valid = models.BooleanField(default=False)
     ## A comma-separated list of country IDs where this bonus is applicable (to be normalized)
-    countries = models.CharField(max_length=500)
+    countries = models.CharField(max_length=255)
     ## A comma-separated list of category IDs where this bonus is applicable (to be normalized)
-    categories = models.CharField(max_length=500)
+    categories = models.CharField(max_length=255)
     ## A comma-separated list of requirement IDs that we need to apply (to be normalized)
-    requirement_ids = models.CharField(max_length=500)  
+    requirement_ids = models.CharField(max_length=255)  
     amount = models.FloatField()
     percentage = models.FloatField()
     is_free_bid = models.BooleanField(default=False)
@@ -372,7 +372,7 @@ class BonusRequirement(models.Model):
     time_limit = models.IntegerField()
     turnover_multiplier = models.IntegerField()
     ## A comma-separated list of category IDs where this requirement is applicable (to be normalized)
-    categories = models.CharField(max_length=500)
+    categories = models.CharField(max_length=255)
 
 class UserBonus(models.Model):
 
