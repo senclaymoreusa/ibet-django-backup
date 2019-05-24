@@ -974,7 +974,8 @@ class ChangeAndResetPassword(View):
         
 
 from xadmin.views import CommAdminView
-
+from django.core import serializers
+from django.http import HttpResponse
 
 class TestView(CommAdminView):
     def get(self, request):
@@ -992,3 +993,29 @@ class TestView(CommAdminView):
         
 
         return render(request, 'test.html', context)   #最后指定自定义的template模板，并返回context
+
+    def post(self, request):
+        post_type = request.POST.get('type')
+        if post_type == 'trans_filter':
+            category = request.POST.get('transaction_category')
+            user = CustomUser.objects.get(username='wluuuu')
+            if category == 'all':
+                transactions = Transaction.objects.filter(user_id=user)
+            else:
+                transactions = Transaction.objects.filter(user_id=user, transaction_type=category)
+            transactionsJson = serializers.serialize('json', transactions)
+            # print(transactionsJson)
+            return HttpResponse(transactionsJson, content_type='application/json')
+
+        if post_type == 'trans_time_range_filter':
+            time_from = request.POST.get('from')
+            time_to = request.POST.get('to')
+            print("from: " + str(time_from) + 'to: ' + str(time_to))
+            user = CustomUser.objects.get(username='wluuuu')
+            transactions = Transaction.objects.filter(user_id=user, request_time__range=[time_from, time_to])
+            if len(transactions) == 0:
+                print("No transaction at this range")
+                return HttpResponse('No transaction at this range')
+            transactionsJson = serializers.serialize('json', transactions)
+            # print('transactions:' + str(len(transactionsJson)))
+            return HttpResponse(transactionsJson, content_type='application/json')

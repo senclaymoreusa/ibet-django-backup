@@ -14,34 +14,6 @@
 </head>
 
 {% block content %} 
-    <!-- <div style='border:1px solid black; width:50%; float:left'>
-        {% block title %}
-        <div style='background-color: coral; border-bottom:1px solid black;'>
-            Member Detail:
-        </div>
-        <div>
-        {% endblock %}
-        <div>
-            <div style='width: 50%; float:left'>photo</div>
-            <div style='width: 50%; float:right'>
-                
-                <p>Member ID: {{ customuser.pk }}</p>
-                <p>Username: {{ customuser.username }}</p>
-                <p>First Name : {{ customuser.first_name }}</p>
-                <p>Last Name : {{ customuser.last_name }}</p>
-                <p>Email : {{ customuser.email }}</p>
-                <p>Phone : {{ customuser.phone }}</p>
-                <p>Birthday : {{ customuser.date_of_birth }}</p>
-                <p>Address : {{ customuser.street_address_1 }} {{ customuser.city }} {{ customuser.state }} {{ customuser.zipcode }}</p>
-            </div>
-        </div>
-        <hr style='color:black'> -->
-        <!-- <div style='width: 50%; float:left'>photo</div>
-        <div style='width: 50%; float:right'>{{ user.email }}</div> -->
-        <!-- <div>hgihgowehgiowgh</div>
-
-    </div> -->
-
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-5 user_detail_section">
@@ -64,6 +36,12 @@
                 <div class="row">
                     <hr>
                 </div>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Last Login Time<label>
+                    </div>
+                </div>
+
 
             </div>
             <div class="col-md-5 user_detail_section">
@@ -91,33 +69,83 @@
                     Transaction History
                 </div>
                 <div>
-                    <form action="" method="post">
-                        {% csrf_token %}
-                        <table>
-                        {{ form.as_table }}
-                        </table>
-                        <input type="submit" value="Submit" />
-                    </form>
+                    <div class='col-md-6'>
+                        <label>Date Range</label>
+                        <div class="row">
+                            <div class='col-md-4'>
+                                    <!-- <input class="form-control" placeholder="From" id="search-from" name='search-from'></input> -->
+                                <div class='input-group date' id='transaction_time_from'>
+                                    <input type='text' class="form-control" placeholder="From" id='transaction_time_from_input' />
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class='col-md-4'>
+                                    <!-- <input class="form-control" placeholder="To" id='search-to' name='search-from'></input> -->
+                                <div class='input-group date' id='transaction_time_to'>
+                                    <input type='text' class="form-control" placeholder="To"  id='transaction_time_to_input'/>
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class='col-md-4'>
+                                <button id="transaction_time_submit" type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='col-md-4'>
+                        <div class='col-md-6'>
+                            <label>PRODUCT</label>
+                            <div class="row">
+                                <select class="form-control" id="transaction_product_select">
+                                    <option value="all">all</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class='col-md-6'>
+                            <label>CATEGORY</label>
+                            <select class="form-control" id="transaction_category_select">
+                                <option value="all">all</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-2">
+                            <!-- <p>No transaction at this range</p> -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" id="no_data_error">
+                        <!-- <p>No transaction at this range</p> -->
+                    </div>
+                </div>
+                
                 <div class="row">
                     <table class="table" style="width:90%; margin: 5%;">
                         <thead class="thead-dark">
                             <tr>
                                 <th scope="col">#</th>
                                 <th scope="col">CATEGORY</th>
-                                <th scope="col">PRODUCT</th>
+                                <!-- <th scope="col">PRODUCT</th> -->
                                 <th scope="col">TIME</th>
                                 <th scope="col">AMOUNT</th>
                                 <th scope="col">BALANCE</th>
                                 <th scope="col">STATUS</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tansaction_tbody">
                             {% for trans in userTransactions %} 
                             <tr>
                                 <th scope="row">{{ forloop.counter }}</th>
                                 <td>{{ trans.transaction_type }}</td>
-                                <td>{{ trans }}</td>
+                                <!-- <td>{{ trans }}</td> -->
                                 <td>{{ trans.request_time }}</td>
                                 <td>{{ trans.amount }}</td>
                                 <td>{{ trans.amount }}</td>
@@ -131,6 +159,123 @@
             </div>
         </div>
     </div>
+
+<!-- <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet"/> -->
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+<script>
+
+// $('#datetimepicker1').datetimepicker();
+
+$(document).ready(function() {
+    var csrftoken = $.cookie("csrftoken");
+    console.log(csrftoken);
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    $(function () {
+        $('#transaction_time_from').datetimepicker();
+        $('#transaction_time_to').datetimepicker();
+    });
+
+    $('#transaction_time_submit').click( function(e) {
+        e.preventDefault();
+        var time_from = $('#transaction_time_from_input').val();
+        time_from = moment(time_from);
+        time_from = time_from.format('YYYY-MM-DD HH:MM');
+        var time_to = $('#transaction_time_to_input').val();
+        time_to = moment(time_to);
+        time_to = time_to.format('YYYY-MM-DD HH:MM');
+        // console.log(time_from);
+
+        $.ajax({
+            type:'POST',
+            url:"{% url 'xadmin:for_test' %}",
+            data:{ 
+                'type': 'trans_time_range_filter',
+                'from': time_from,
+                'to': time_to
+            },
+            success:function(data) {
+
+                if (data == "No transaction at this range") {
+                    $("#no_data_error").empty();
+                    var content = '';
+                    content += '<p>No transaction at this range</p>';
+                    $("#no_data_error").append(content);
+                } else {
+                    $("#no_data_error").empty();
+                    // console.log(data);
+                    $("#tansaction_tbody").empty();
+                    for (var i = 0; i < data.length; i++) {
+                        var fields = data[i].fields;
+                        var time = moment(fields.request_time);
+                        time = time.format('MMMM, DD, YYYY h:mm a');
+                        var content = '';
+                        content += '<tr>';
+                        content += '<th scope="row">' + (i+1) + '</th>';
+                        content += '<td>' + fields.transaction_type + '</td>';
+                        content += '<td>' + time + '</td>';
+                        content += '<td>' + fields.amount + '</td>';
+                        content += '<td>' + fields.amount + '</td>';
+                        content += '<td>' + fields.status + '</td>';
+                        content += '</tr>';
+                        $("#tansaction_tbody").append(content);
+                    }
+                }
+            }
+        });
+
+        //do some other stuff here
+    });
+
+    $('#transaction_category_select').change(function() { 
+        console.log("changed to " + $('#transaction_category_select').val()); 
+        var category = $('#transaction_category_select').val();
+        $.ajax({
+            type:'POST',
+            url:"{% url 'xadmin:for_test' %}",
+            data:{ 'type': 'trans_filter',
+                'transaction_category': category},
+            success:function(data) {
+ 
+                console.log(data);
+                $("#tansaction_tbody").empty();
+                for (var i = 0; i < data.length; i++) {
+                    var fields = data[i].fields;
+                    var time = moment(fields.request_time);
+                    time = time.format('MMMM, DD, YYYY h:mm a');
+                    var content = '';
+                    content += '<tr>';
+                    content += '<th scope="row">' + (i+1) + '</th>';
+                    content += '<td>' + fields.transaction_type + '</td>';
+                    content += '<td>' + time + '</td>';
+                    content += '<td>' + fields.amount + '</td>';
+                    content += '<td>' + fields.amount + '</td>';
+                    content += '<td>' + fields.status + '</td>';
+                    content += '</tr>';
+                    $("#tansaction_tbody").append(content);
+                }
+            }
+        });
+    });
+});
+
+</script>
 
 
 {% endblock %}
