@@ -29,12 +29,12 @@ CONTACT_OPTIONS = (
 )
 
 CRRENCY_TYPES = (
-    ('usd', 'USD'),
-    ('eur', 'EUR'),
-    ('jpy', 'JPY'),
-    ('cny', 'CNY'),
-    ('hkd', 'HKD'),
-    ('aud', 'AUD')
+    ('USD', 'USD'),
+    ('EUR', 'EUR'),
+    ('JPY', 'JPY'),
+    ('CNY', 'CNY'),
+    ('HKD', 'HKD'),
+    ('AUD', 'AUD')
 )
 
 class MyUserManager(BaseUserManager):
@@ -134,7 +134,7 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
+    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True, default='USD')
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
