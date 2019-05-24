@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/approve_payout', views.approvePayout.as_view(), name = 'approve_Payout'),
     path('api/reject_payout', views.rejectPayout.as_view(), name = 'reject_Payout'),
     path('api/deposit_transaction', views.getDepositTransaction.as_view(), name = 'deposit_Transaction'),
+    path('api/transaction_status', views.transactionStatusUpdate.as_view(), name = 'transaction_status_update'),
 ]
