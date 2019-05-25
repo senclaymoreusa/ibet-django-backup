@@ -84,5 +84,15 @@ class ThirdPartyTestCases(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
         response = self.client.get(reverse('payout_Transaction'))
         self.assertEqual(response.status_code, 200)
-        
+    def test_transaction_update(self):
+        response = self.client.post(reverse('transaction_status_update'), {
+            'order_id': 'ibet-2019',
+            'user_id': 'angela',
+            'status': 'PENDING',
+        }, format='json')
+        assert response.status_code == 200
+        user = CustomUser.objects.get(id=1)
+        self.assertTrue(Transaction.objects.filter(status=2).exists())
+        self.assertFalse(Transaction.objects.filter(status=0).exists())
+          
 

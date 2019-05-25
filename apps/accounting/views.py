@@ -654,21 +654,14 @@ class transactionStatusUpdate(generics.GenericAPIView):
                     cur_status = x[0] 
         order = self.request.POST['order_id']
         order_id = Transaction.objects.get(order_id=order)
-        print(order)
-        print(order_id)
-        print(method)
-        print(amount)
+
         try: 
             order_id = Transaction.objects.filter(order_id=self.request.POST['order_id'])
         except Transaction.DoesNotExist:
             order_id = None
 
-        if order_id:
-            print('exists')
-            
+        if order_id:          
             update = order_id.update(status=cur_status)
-            print(update)
-            
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND 
