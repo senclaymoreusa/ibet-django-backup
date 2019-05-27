@@ -35,3 +35,15 @@ hr {
 .detail_info {
     margin-left:50px !important;
 }
+
+.funds_section_title {
+    background-color: lightgreen; 
+    border-bottom:1px solid black;
+}
+
+.user_detail_block {
+    background-color: rgb(243, 243, 243); 
+    border:1px solid rgb(243, 243, 243);
+    width:95%;
+    padding:5%;
+}

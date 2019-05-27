@@ -976,29 +976,35 @@ class ChangeAndResetPassword(View):
 from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
+from django.db.models import Sum
 
-class TestView(CommAdminView):
-    def get(self, request):
+
+class UserDetailView(CommAdminView):
+    def get(self, request, *args, **kwargs):
         context = super().get_context()     # 这一步是关键，必须super一下继承CommAdminView里面的context，不然侧栏没有对应数据，我在这里卡了好久
         title = "测试子菜单1"     #定义面包屑变量
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})   #把面包屑变量添加到context里面
         context["title"] = title   #把面包屑变量添加到context里面
-        Customuser = CustomUser.objects.get(username='wluuuu')
+        # print("pk " + str(self.kwargs.get('pk')))
+        Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+        # print("!!!!!!!" + str(Customuser))
         context['customuser'] = Customuser
-        # print("!!!" + str(Transaction.objects.filter(user_id=user)[0]))
+        # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
         if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)
         
+        context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser).order_by('-created_time').first()
 
-        return render(request, 'test.html', context)   #最后指定自定义的template模板，并返回context
+        return render(request, 'user_detail.html', context)   #最后指定自定义的template模板，并返回context
 
     def post(self, request):
         post_type = request.POST.get('type')
+        user_id = request.POST.get('user_id')
         if post_type == 'trans_filter':
             category = request.POST.get('transaction_category')
-            user = CustomUser.objects.get(username='wluuuu')
+            user = CustomUser.objects.get(pk=user_id)
             if category == 'all':
                 transactions = Transaction.objects.filter(user_id=user)
             else:
@@ -1011,7 +1017,7 @@ class TestView(CommAdminView):
             time_from = request.POST.get('from')
             time_to = request.POST.get('to')
             print("from: " + str(time_from) + 'to: ' + str(time_to))
-            user = CustomUser.objects.get(username='wluuuu')
+            user = CustomUser.objects.get(pk=user_id)
             transactions = Transaction.objects.filter(user_id=user, request_time__range=[time_from, time_to])
             if len(transactions) == 0:
                 print("No transaction at this range")
@@ -1019,3 +1025,46 @@ class TestView(CommAdminView):
             transactionsJson = serializers.serialize('json', transactions)
             # print('transactions:' + str(len(transactionsJson)))
             return HttpResponse(transactionsJson, content_type='application/json')
+
+
+
+class UserListView(CommAdminView): 
+    def get(self, request):
+        context = super().get_context()     # 这一步是关键，必须super一下继承CommAdminView里面的context，不然侧栏没有对应数据，我在这里卡了好久
+        title = "测试子菜单1"     #定义面包屑变量
+        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})   #把面包屑变量添加到context里面
+        context["title"] = title   #把面包屑变量添加到context里面
+        Customuser = CustomUser.objects.all()
+        context['customuser'] = Customuser
+        
+        user_data = []
+        for user in Customuser:
+            userDict = {}
+            # userDict['customuser'] = user
+            userDict['id'] = user.pk
+            userDict['username'] = user.username
+            userDict['user_attribute'] = user.get_user_attribute_display
+            userDict['risk_level'] = ''
+            userDict['balance'] = user.main_wallet + user.other_game_wallet
+            userDict['product_attribute'] = ''
+            userDict['time_of_registration'] = user.time_of_registration
+            userDict['ftd_time'] = user.ftd_time
+            userDict['verfication_time'] = user.verfication_time
+            userDict['id_location'] = user.id_location
+            userDict['last_login_time'] = user.last_login_time
+            userDict['last_betting_time'] = user.last_betting_time
+            userDict['login'] = UserAction.objects.filter(user=user, event_type=0).count()
+            userDict['betting'] = UserAction.objects.filter(user=user, event_type=6).count()
+            userDict['turnover'] = ''
+            userDict['deposit'] = UserAction.objects.filter(user=user, event_type=3).count()
+            userDict['deposit_amount'] = UserAction.objects.filter(user=user, event_type=3).aggregate(Sum('dollar_amount'))
+            userDict['withdrawal'] = UserAction.objects.filter(user=user, event_type=4).count()
+            userDict['withdrawal_amount'] = UserAction.objects.filter(user=user, event_type=4).aggregate(Sum('dollar_amount'))
+            userDict['last_logint_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+            # print("object: " + str(userDict))
+            user_data.append(userDict)
+        
+        context['user_data'] = user_data
+
+
+        return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context

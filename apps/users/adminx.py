@@ -32,19 +32,14 @@ class GlobalSettings(object):
     def get_site_menu(self):  #名称不能改
         return [
             {
-                'title': '测试的',
-                'icon': 'fa fa-bar-chart-o',
+                'title': 'User System',
+                'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('测试子菜单1'),    #这里是你菜单的名称
-                        'url': '/xadmin/test_view',     #这里填写你将要跳转url
-                        'icon': 'fa fa-cny'     #这里是bootstrap的icon类名，要换icon只要登录bootstrap官网找到icon的对应类名换上即可
-                    },
-                    {
-                        'title': '测试子菜单2',
-                        'url': 'http://www.taobao.com',
+                        'title': _('User List'),
+                        'url': '/xadmin/user',
                         'icon': 'fa fa-cny'
-                    }
+                    },
                 )
             }
         ]
@@ -219,8 +214,10 @@ class UserActionAdmin(object):
 
 
 #注册你上面填写的url
-from .views import TestView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
-xadmin.site.register_view(r'test_view/$', TestView, name='for_test')
+from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+xadmin.site.register_view(r'test_view/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'test_view/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'user/$', UserListView, name='user_list')
 
 #注册GlobalSetting
 from xadmin.views import CommAdminView

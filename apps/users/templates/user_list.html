@@ -1,0 +1,64 @@
+{% extends 'xadmin/base_site.html' %}
+
+{% block content %} 
+<h1>USER LIST</h1>
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">USERNAME</th>
+            <th scope="col">USER ATTRIBUTE</th>
+            <th scope="col">RISK LEVEL</th>
+            <th scope="col">BALANCE</th>
+            <th scope="col">PRODUCT ATTRIBUTE</th>
+            <th scope="col">TIME OF REGISTRATION</th>
+            <th scope="col">TIME OF FTD</th>
+            <th scope="col">TIME OF VERIFICATION</th>
+            <th scope="col">ID LOCATION</th>
+            <th scope="col">LAST LOGIN TIME</th>
+            <th scope="col">LAST BETTING TIME</th>
+            <th scope="col">LOGIN COUNTS</th>
+            <th scope="col">BETTING COUNTS</th>
+            <th scope="col">TURNOVER AMOUNT</th>
+            <th scope="col">DEPOSIT COUNTS</th>
+            <th scope="col">DEPOSIT AMOUNT</th>
+            <th scope="col">WITHDRAWAL COUNTS</th>
+            <th scope="col">WITHDRAWAL AMOUNT</th>
+            <th scope="col">GGR AMOUNT</th>
+            <th scope="col">COUNTRIBUTION</th>
+            <th scope="col">LAST LOGIN IP</th>
+            
+            
+        </tr>
+    </thead>
+    <tbody id="tansaction_tbody">
+        {% for user in user_data %} 
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
+            <!-- <td>{{ trans }}</td> -->
+            <td>{{ user.user_attribute }}</td>
+            <td>{{ user.risk_level }}</td>
+            <td>{{ user.balance|floatformat:2 }}</td>
+            <td>{{ user.product_attribute }}</td>
+            <td>{{ user.time_of_registration }}</td>
+            <td>{{ user.ftd_time }}</td>
+            <td>{{ user.verfication_time }}</td>
+            <td>{{ user.id_location }}</td>
+            <td>{{ user.last_login_time }}</td>
+            <td>{{ user.last_betting_time }}</td>
+            <td>{{ user.login }}</td>
+            <td>{{ user.betting }}</td>
+            <td>{{ user.turnover }}</td>
+            <td>{{ user.deposit }}</td>
+            <td>{{ user.deposit_amount.dollar_amount__sum|floatformat:2 }}</td>
+            <td>{{ user.withdrawal }}</td>
+            <td>{{ user.withdrawal_amount.dollar_amount__sum|floatformat:2 }}</td>
+            <td>{{ trans.status }}</td>
+            <td>{{ trans.status }}</td>
+            <td>{{ user.last_logint_ip.ip_addr }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
