@@ -91,7 +91,7 @@ class ThirdPartyTestCases(TestCase):
             'status': 'PENDING',
         }, format='json')
         assert response.status_code == 200
-        user = CustomUser.objects.get(id=1)
+        user = CustomUser.objects.get(username='angela')
         self.assertTrue(Transaction.objects.filter(status=2).exists())
         self.assertFalse(Transaction.objects.filter(status=0).exists())
           

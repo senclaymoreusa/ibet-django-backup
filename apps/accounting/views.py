@@ -648,7 +648,6 @@ class transactionStatusUpdate(generics.GenericAPIView):
         method=self.request.POST['method']
         amount=self.request.POST['amount']
         user = CustomUser.objects.get(username=self.request.POST['user_id'])  
-
         for x in Transaction._meta.get_field('status').choices:
                 if mystatus == x[1]:
                     cur_status = x[0] 
@@ -665,4 +664,5 @@ class transactionStatusUpdate(generics.GenericAPIView):
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND 
+
         return Response({'details': 'successful update'}, status=status_code)
