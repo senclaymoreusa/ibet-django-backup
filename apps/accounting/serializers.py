@@ -1,24 +1,49 @@
 from rest_framework import serializers
 from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel
 
-class depositMethodSerialize(serializers.ModelSerializer):
-     
-    class Meta:
-        model = DepositChannel
-        fields = ('thridParty_name','method','currency', 'min_amount','max_amount')
+class depositMethodSerialize(serializers.Serializer):
+    currency         = serializers.CharField(required=True)
     
+    def create(self, validated_data):
+        return DepositChannel.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.currency = validated_data.get('currency', instance.currency)
+        
+        instance.save() 
+        return instance
     
 
-class bankListSerialize(serializers.ModelSerializer):
-    class Meta:
-        model = DepositChannel
-        fields = ('thridParty_id','thridParty_name', 'currency','min_amount', 'max_amount', 'transaction_fee', 'switch', 'method')
+class bankListSerialize(serializers.Serializer):
+    currency         = serializers.CharField(required=True)
+    method         = serializers.CharField(required=True)
+    
+    def create(self, validated_data):
+        return DepositChannel.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+
+        instance.currency = validated_data.get('currency', instance.currency)
+        instance.method = validated_data.get('method', instance.method)
+        
+        instance.save() 
+        return instance
     
 
-class bankLimitsSerialize(serializers.ModelSerializer):
-    class Meta:
-        model = DepositChannel
-        fields = ('thridParty_id','thridParty_name', 'currency','min_amount', 'max_amount', 'transaction_fee', 'switch', 'method')
+class bankLimitsSerialize(serializers.Serializer):
+    currency         = serializers.CharField(required=True)
+    method         = serializers.CharField(required=True)
+    bank           = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return DepositChannel.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+
+        instance.currency = validated_data.get('currency', instance.currency)
+        instance.method = validated_data.get('method', instance.method)
+        
+        instance.save() 
+        return instance
     
 class submitDepositSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)

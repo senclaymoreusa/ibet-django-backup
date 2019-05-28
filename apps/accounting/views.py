@@ -46,17 +46,17 @@ def generateHash(key, message):
 class getDepositMethod(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
     serializer_class = depositMethodSerialize
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         
-        serializer = depositMethodSerialize(self.queryset)
-
+        serializer = depositMethodSerialize(self.queryset, many=True)
+        currency = self.request.POST['currency']
         url = api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods'
         headers = {'Accept': 'application/json'}
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
-        
+
         message = bytes(merchantId + '|' + currency, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         
@@ -97,13 +97,15 @@ class getDepositMethod(generics.GenericAPIView):
         )
         return Response(data)
 
-class getBankList(generics.RetrieveUpdateDestroyAPIView):
+class getBankList(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
     serializer_class = bankListSerialize
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
-    def get(self, request, *args, **kwargs):
-        serializer = depositMethodSerialize(self.queryset)
+    def post(self, request, *args, **kwargs):
+        serializer = depositMethodSerialize(self.queryset, many=True)
+        currency = self.request.POST['currency']
+        method = self.request.POST['method']
         url = api + apiVersion +'/' + merchantId + deposit_url +currency + '/methods/' + method + '/banks'
         headers = {'Accept': 'application/json'}
         # username = self.request.GET.get('username')
@@ -138,16 +140,17 @@ class getBankList(generics.RetrieveUpdateDestroyAPIView):
         
         return Response(data)
 
-class getBankLimits(generics.RetrieveUpdateDestroyAPIView):
+class getBankLimits(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
-    serializer_class = depositMethodSerialize
-    
-    permission_classes = (IsAuthenticated,)
+    serializer_class = bankLimitsSerialize
 
-    def get(self, request, *args, **kwargs):
-        serializer = depositMethodSerialize(self.queryset)
-        bank = 'CMBCCN'
-        
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        serializer = bankLimitsSerialize(self.queryset, many=True)
+        bank = self.request.POST['bank']
+        currency = self.request.POST['currency']
+        method = self.request.POST['method']
         url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits'
         headers = {'Accept': 'application/json'}
         # username = self.request.GET.get('username')
@@ -176,9 +179,11 @@ class getBankLimits(generics.RetrieveUpdateDestroyAPIView):
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
-    
-        data = r.json()
-        #print (my_hmac)
+        if r.status_code == 500:
+            print('Response content is not in JSON format.')
+            data = '500 Internal Error'    
+        else:
+            data = r.json()
 
 
         for x in DepositChannel._meta.get_field('currency').choices:
@@ -794,7 +799,7 @@ class getPayoutBankLimits(generics.GenericAPIView):
             data = '500 Internal Error'    
         else:
             data = r.json()
-        print(data)
+
         if r.status_code == 201:  
             
             for x in WithdrawChannel._meta.get_field('currency').choices:
