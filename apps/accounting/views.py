@@ -43,7 +43,7 @@ def generateHash(key, message):
     #hash.hexdigest()
     return hash.hexdigest()
 
-class getDepositMethod(generics.RetrieveUpdateDestroyAPIView):
+class getDepositMethod(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
     serializer_class = depositMethodSerialize
     permission_classes = (IsAuthenticated,)
