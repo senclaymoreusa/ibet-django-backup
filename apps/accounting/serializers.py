@@ -90,3 +90,21 @@ class approvePayoutSerialize(serializers.Serializer):
         
         instance.save() 
         return instance
+class depositThirdPartySerialize(serializers.Serializer):
+    order_id         = serializers.CharField(required=True)
+    user_id        = serializers.CharField(required=True)
+    method        = serializers.CharField(required=True)
+    amount        = serializers.CharField(required=True)
+    status        = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+
+        instance.order_id = validated_data.get('order_id', instance.order_id)
+        instance.user_id = validated_data.get('user_id', instance.user_id)
+        instance.method = validated_data.get('method', instance.method)
+        instance.amount = validated_data.get('amount', instance.amount)
+        instance.status = validated_data.get('status', instance.status)
+        instance.save() 
+        return instance

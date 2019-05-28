@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from django.utils import timezone
+from django.db import IntegrityError
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from .models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
@@ -16,7 +17,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 
 
-from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize
+from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize
 from django.conf import settings
 import requests,json
 import os
@@ -410,6 +411,10 @@ class getPayoutTransaction(generics.GenericAPIView):
 
                 if rdata['currency'] == x[1]:
                     cur_val = x[0]
+            for y in Transaction._meta.get_field('status').choices:
+                if rdata["depositTransaction"]["status"] ==y[1]:
+                    cur_status = y[0] 
+
             user = CustomUser.objects.get(username=rdata['userId'])   
             create = Transaction.objects.get_or_create(
                 order_id= rdata['orderId'],
@@ -475,6 +480,10 @@ class approvePayout(generics.GenericAPIView):
 
                 if rdata['currency'] == x[1]:
                     cur_val = x[0]
+            for y in Transaction._meta.get_field('status').choices:
+                if rdata["depositTransaction"]["status"] ==y[1]:
+                    cur_status = y[0] 
+
             user = CustomUser.objects.get(username=rdata['userId'])   
             create = Transaction.objects.get_or_create(
                 order_id= rdata['orderId'],
@@ -544,6 +553,10 @@ class rejectPayout(generics.GenericAPIView):
 
                 if rdata['currency'] == x[1]:
                     cur_val = x[0]
+            for y in Transaction._meta.get_field('status').choices:
+                if rdata["depositTransaction"]["status"] ==y[1]:
+                    cur_status = y[0] 
+
             user = CustomUser.objects.get(username=rdata['userId'])   
             create = Transaction.objects.get_or_create(
                 order_id= rdata['orderId'],
@@ -602,6 +615,10 @@ class getDepositTransaction(generics.GenericAPIView):
 
                 if rdata['currency'] == x[1]:
                     cur_val = x[0]
+            for y in Transaction._meta.get_field('status').choices:
+                if rdata["depositTransaction"]["status"] ==y[1]:
+                    cur_status = y[0] 
+
             user = CustomUser.objects.get(username=rdata['userId'])   
             create = Transaction.objects.get_or_create(
                 order_id= rdata['orderId'],
@@ -620,3 +637,32 @@ class getDepositTransaction(generics.GenericAPIView):
         
         return Response(rdata)
 
+class transactionStatusUpdate(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = depositThirdPartySerialize
+    permission_classes = [AllowAny,]
+     
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(self.get_queryset(), many=True)
+        mystatus = self.request.POST['status']
+        method=self.request.POST['method']
+        amount=self.request.POST['amount']
+        user = CustomUser.objects.get(username=self.request.POST['user_id'])  
+        for x in Transaction._meta.get_field('status').choices:
+                if mystatus == x[1]:
+                    cur_status = x[0] 
+        order = self.request.POST['order_id']
+        order_id = Transaction.objects.get(order_id=order)
+
+        try: 
+            order_id = Transaction.objects.filter(order_id=self.request.POST['order_id'])
+        except Transaction.DoesNotExist:
+            order_id = None
+
+        if order_id:          
+            update = order_id.update(status=cur_status)
+            status_code = status.HTTP_200_OK
+        else:
+            status_code = status.HTTP_404_NOT_FOUND 
+
+        return Response({'details': 'successful update'}, status=status_code)
