@@ -132,3 +132,18 @@ class payoutBanklistSerialize(serializers.Serializer):
         instance.method = validated_data.get('method', instance.method)
         instance.save() 
         return instance
+class payoutBanklimitsSerialize(serializers.Serializer):
+     
+    currency         = serializers.CharField(required=True)
+    method         = serializers.CharField(required=True)
+    bank           = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return WithdrawChannel.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+
+        instance.currency = validated_data.get('currency', instance.currency)
+        instance.method = validated_data.get('method', instance.method)
+        
+        instance.save() 
+        return instance

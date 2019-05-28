@@ -17,7 +17,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 
 
-from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize
+from .serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from django.conf import settings
 import requests,json
 import os
@@ -710,15 +710,18 @@ class payoutMethod(generics.GenericAPIView):
         #print (my_hmac)
         
         for x in data:
-            
+            for y in WithdrawChannel._meta.get_field('currency').choices:
+                if x['limits'].get('currency') == y[1]:
+                    cur_val = y[0]
             create = WithdrawChannel.objects.get_or_create(
             thridParty_name= 3,
             method=x['method'],
-            currency=3,
+            currency=cur_val,
             min_amount=x['limits'].get('minTransactionAmount'),
             max_amount=x['limits'].get('maxTransactionAmount'),
             
-        )
+            )
+
         return Response(data)
 class getPayoutBankList(generics.GenericAPIView):
     queryset = WithdrawChannel.objects.all()
@@ -752,5 +755,62 @@ class getPayoutBankList(generics.GenericAPIView):
         if not success:
             logger.info('Failed to complete a request for...')   
         data = r.json()
+        
+        return Response(data)
+class getPayoutBankLimits(generics.GenericAPIView):
+    queryset = WithdrawChannel.objects.all()
+    serializer_class = payoutBanklimitsSerialize
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        serializer = payoutBanklimitsSerialize(self.queryset, many=True)
+        bank = self.request.POST['bank']
+        currency = self.request.POST['currency']
+        method = self.request.POST['method']
+        url =  api + apiVersion +'/' + merchantId + payout_url + currency + '/methods/' + method + '/banks/' + bank + '/limits'
+        headers = {'Accept': 'application/json'}
+        message = bytes(merchantId + '|' + currency, 'utf-8')
+        secret = bytes(merchantApiKey, 'utf-8')
+        my_hmac = generateHash(secret, message)
+        delay = kwargs.get("delay", 5)
+         #retry
+        success = False
+        for x in range(3):
+            try:
+                r = requests.get(url, headers=headers, params = {
+                    'hmac' : my_hmac,
+                })
+                if r.status_code == 200:
+                    success = True
+                    break
+            except ValueError:
+                logger.info('Request failed {} time(s)'.format(x+1))
+                logger.debug("wating for %s seconds before retrying again")
+                sleep(delay) 
+        if not success:
+            logger.info('Failed to complete a request for...')
+        if r.status_code == 500:
+            print('Response content is not in JSON format.')
+            data = '500 Internal Error'    
+        else:
+            data = r.json()
+        print(data)
+        if r.status_code == 201:  
+            
+            for x in WithdrawChannel._meta.get_field('currency').choices:
+
+                if rdata['currency'] == x[1]:
+                    cur_val = x[0]
+
+            create = WithdrawChannel.objects.save(
+                thridParty_name= 3,
+                method= method,
+                currency= cur_val,
+                min_amount=data['minTransactionAmount'],
+                max_amount=data['maxTransactionAmount'],
+            
+            )
+        else:
+            logger.error('The request information is nor correct, please try again')
         
         return Response(data)
