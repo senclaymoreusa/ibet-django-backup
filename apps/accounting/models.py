@@ -33,7 +33,8 @@ REVIEW_STATE_CHOICES = (
 )
 TYPE_CHOICES = (
     (0, 'Deposit'),
-    (1, 'Withdraw')
+    (1, 'Withdraw'),
+    (2, 'Bet')
 )
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),

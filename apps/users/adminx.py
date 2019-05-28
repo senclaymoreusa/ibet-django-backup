@@ -195,7 +195,7 @@ class UserWithTagAdmin(object):
 
 class UserActionAdmin(object):
 
-    list_display = ('user','event_type', 'ip_addr','dollar_amount', 'created_time', 'user_action_link')
+    list_display = ('user','event_type', 'ip_addr', 'created_time', 'user_action_link')
     list_filter = ('user', 'event_type', 'created_time')
     model_icon = 'fa fa-cogs'
     search_fields = ('user__username', 'event_type',)

@@ -982,25 +982,29 @@ from django.db.models import Sum
 class UserDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
         context = super().get_context()     # 这一步是关键，必须super一下继承CommAdminView里面的context，不然侧栏没有对应数据，我在这里卡了好久
-        title = "测试子菜单1"     #定义面包屑变量
+        title = "Member " + self.kwargs.get('pk')   #定义面包屑变量
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})   #把面包屑变量添加到context里面
         context["title"] = title   #把面包屑变量添加到context里面
         # print("pk " + str(self.kwargs.get('pk')))
         Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         # print("!!!!!!!" + str(Customuser))
         context['customuser'] = Customuser
+        context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
         # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
         if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)
         
-        context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser).order_by('-created_time').first()
+        context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
 
         return render(request, 'user_detail.html', context)   #最后指定自定义的template模板，并返回context
 
     def post(self, request):
+        # print('post!!!')
         post_type = request.POST.get('type')
+        # print(post_type)
+        # print(request.POST.get('member_id'))
         user_id = request.POST.get('user_id')
         if post_type == 'trans_filter':
             category = request.POST.get('transaction_category')
@@ -1013,7 +1017,7 @@ class UserDetailView(CommAdminView):
             # print(transactionsJson)
             return HttpResponse(transactionsJson, content_type='application/json')
 
-        if post_type == 'trans_time_range_filter':
+        elif post_type == 'trans_time_range_filter':
             time_from = request.POST.get('from')
             time_to = request.POST.get('to')
             print("from: " + str(time_from) + 'to: ' + str(time_to))
@@ -1026,16 +1030,37 @@ class UserDetailView(CommAdminView):
             # print('transactions:' + str(len(transactionsJson)))
             return HttpResponse(transactionsJson, content_type='application/json')
 
+        elif post_type == 'edit_user_detail':
+            # print("success")
+            username = request.POST.get('username')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            birthday = request.POST.get('birthday')
+            address = request.POST.get('address')
+            city = request.POST.get('city')
+            zipcode = request.POST.get('zipcode')
+            country = request.POST.get('country')
+            user = CustomUser.objects.filter(pk=user_id).update(
+                username=username, first_name=first_name, 
+                last_name=last_name, email=email, 
+                phone=phone, date_of_birth=birthday, 
+                street_address_1=address, city=city,
+                zipcode=zipcode, country=country)
+
+            # user.save()
+            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
 
 class UserListView(CommAdminView): 
     def get(self, request):
         context = super().get_context()     # 这一步是关键，必须super一下继承CommAdminView里面的context，不然侧栏没有对应数据，我在这里卡了好久
-        title = "测试子菜单1"     #定义面包屑变量
+        title = "Member List"     #定义面包屑变量
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})   #把面包屑变量添加到context里面
         context["title"] = title   #把面包屑变量添加到context里面
         Customuser = CustomUser.objects.all()
-        context['customuser'] = Customuser
+        # context['customuser'] = Customuser
         
         user_data = []
         for user in Customuser:
@@ -1054,12 +1079,12 @@ class UserListView(CommAdminView):
             userDict['last_login_time'] = user.last_login_time
             userDict['last_betting_time'] = user.last_betting_time
             userDict['login'] = UserAction.objects.filter(user=user, event_type=0).count()
-            userDict['betting'] = UserAction.objects.filter(user=user, event_type=6).count()
+            userDict['betting'] = Transaction.objects.filter(user_id=user, transaction_type=2).count()
             userDict['turnover'] = ''
-            userDict['deposit'] = UserAction.objects.filter(user=user, event_type=3).count()
-            userDict['deposit_amount'] = UserAction.objects.filter(user=user, event_type=3).aggregate(Sum('dollar_amount'))
-            userDict['withdrawal'] = UserAction.objects.filter(user=user, event_type=4).count()
-            userDict['withdrawal_amount'] = UserAction.objects.filter(user=user, event_type=4).aggregate(Sum('dollar_amount'))
+            userDict['deposit'] = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            userDict['deposit_amount'] = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            userDict['withdrawal'] = Transaction.objects.filter(user_id=user, transaction_type=2).count()
+            userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=2).aggregate(Sum('amount'))
             userDict['last_logint_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
             # print("object: " + str(userDict))
             user_data.append(userDict)
@@ -1068,3 +1093,31 @@ class UserListView(CommAdminView):
 
 
         return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context
+
+    
+    def post(self, request):
+        post_type = request.POST.get('type')
+        # user_id = request.POST.get('user_id')
+
+        if post_type == 'user_list_time_range_filter':
+            time_from = request.POST.get('from')
+            time_to = request.POST.get('to')
+            print("from: " + str(time_from) + 'to: ' + str(time_to))
+            Customuser = CustomUser.objects.all()
+            # context['customuser'] = Customuser
+            
+            updated_data = []
+            for user in Customuser:
+                userDict = {}
+                userDict['login_times'] = UserAction.objects.filter(user=user, event_type=0, created_time__range=[time_from, time_to]).count()
+                userDict['betting_times'] = Transaction.objects.filter(user_id=user, transaction_type=2, request_time__range=[time_from, time_to]).count()
+                userDict['deposit_times'] = Transaction.objects.filter(user_id=user, transaction_type=0, request_time__range=[time_from, time_to]).count()
+                userDict['deposit_amount'] = Transaction.objects.filter(user_id=user, transaction_type=0, request_time__range=[time_from, time_to]).aggregate(Sum('amount'))
+                userDict['withdrawal_times'] = Transaction.objects.filter(user_id=user, transaction_type=1, request_time__range=[time_from, time_to]).count()
+                userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1, request_time__range=[time_from, time_to]).aggregate(Sum('amount'))
+                # add GGR amount, turnover amount, contribution
+                updated_data.append(userDict)
+                # print(userDict)
+            
+            # print("sending data")
+            return HttpResponse(json.dumps(updated_data), content_type="application/json")

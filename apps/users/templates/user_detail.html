@@ -106,12 +106,109 @@
                 
                 <div class='row' style="padding-left:5%; padding-bottom: 5%">
                     <div class='col-md-4'>
-                        <button type="button" class="btn btn-primary">Edit details</button>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit details</button>
                     </div>
                     <div class='col-md-4'>
-                        <button type="button" class="btn btn-primary">Login history</button>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login_history">Login history</button>
                     </div>
                 </div>
+
+                <div class="modal fade" id="edit_details" role="dialog">
+                    <div class="modal-dialog">
+                    
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Edit member details</h4>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'xadmin:user_detail' %}" method="POST">
+                                        {% csrf_token %}
+                                    <input type="hidden" name="type" value="edit_user_detail"></input>
+                                    <input type="hidden" name="user_id" value="{{ customuser.pk }}"></input>
+                                    <div class="form-group">
+                                        <label for="member_id">MEMBER ID</label>
+                                        <input class="form-control" name="member_id" value="{{ customuser.pk }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="username">USERNAME</label>
+                                        <input class="form-control" name="username" value="{{ customuser.username }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="first_name">FIRST NAME</label>
+                                        <input class="form-control" name="first_name" value="{{ customuser.first_name }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="last_name">LAST NAME</label>
+                                        <input class="form-control" name="last_name" value="{{ customuser.last_name }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">EMAIL</label>
+                                        <input type='email' class="form-control" name="email" value="{{ customuser.email }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="phone">PHONE</label>
+                                        <input class="form-control" name="phone" value="{{ customuser.phone }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="birthday">BIRTHDAY</label>
+                                        <input class="form-control" name="birthday" value="{{ customuser.date_of_birth }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="address">ADDRESS</label>
+                                        <input class="form-control" name="address" value="{{ customuser.street_address_1 }}">
+                                        <input class="form-control" name="city" value="{{ customuser.city }}">
+                                        <input class="form-control" name="zipcode" value="{{ customuser.zipcode }}">
+                                        <input class="form-control" name="country" value="{{ customuser.country }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-default">Submit</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                    </form>
+                            </div>
+                            <!-- <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div> -->
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <div class="modal fade" id="login_history" role="dialog">
+                        <div class="modal-dialog">
+                        
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Login history</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                            <th scope="col">Time</th>
+                                            <th scope="col">Location</th>
+                                            <th scope="col">IP address</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for login in userLoginActions %}
+                                            <tr>
+                                            <td>{{ login.created_time }}</td>
+                                            <td>Location</td>
+                                            <td>{{ login.ip_addr }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div> -->
+                            </div> 
+                        </div>
+                    </div>
 
             </div>
             <div class="col-md-5 user_detail_section">
@@ -336,19 +433,19 @@ $(document).ready(function() {
         $('#transaction_time_to').datetimepicker();
     });
 
-    var user_id = $('#hidden_user_id').val();
-    console.log(user_id)
+    // var user_id = $('#hidden_user_id').val();
+    // console.log(user_id)
 
     $('#transaction_time_submit').click( function(e) {
         e.preventDefault();
         var time_from = $('#transaction_time_from_input').val();
-        console.log(time_from);
-        time_from = moment(time_from);
-        time_from = time_from.format('YYYY-MM-DD HH:mm');
+        // console.log(time_from);
+        time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+        // time_from = time_from.format('YYYY-MM-DD HH:mm');
         var time_to = $('#transaction_time_to_input').val();
-        console.log(time_to);
-        time_to = moment(time_to);
-        time_to = time_to.format('YYYY-MM-DD HH:mm');
+        // console.log(time_to);
+        time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+        // time_to = time_to.format('YYYY-MM-DD HH:mm');
         // console.log(time_from);
 
         $.ajax({
@@ -373,8 +470,8 @@ $(document).ready(function() {
                     $("#tansaction_tbody").empty();
                     for (var i = 0; i < data.length; i++) {
                         var fields = data[i].fields;
-                        var time = moment(fields.request_time);
-                        time = time.format('MMMM, DD, YYYY h:mm a');
+                        var time = moment(fields.request_time).format('MMMM, DD, YYYY h:mm a');
+                        // time = time.format();
                         var content = '';
                         content += '<tr>';
                         content += '<th scope="row">' + (i+1) + '</th>';
@@ -413,8 +510,8 @@ $(document).ready(function() {
                 $("#tansaction_tbody").empty();
                 for (var i = 0; i < data.length; i++) {
                     var fields = data[i].fields;
-                    var time = moment(fields.request_time);
-                    time = time.format('MMMM, DD, YYYY h:mm a');
+                    var time = moment(fields.request_time).format('MMMM, DD, YYYY h:mm a');
+                    // time = time.format('MMMM, DD, YYYY h:mm a');
                     var content = '';
                     content += '<tr>';
                     content += '<th scope="row">' + (i+1) + '</th>';
