@@ -94,5 +94,23 @@ class ThirdPartyTestCases(TestCase):
         user = CustomUser.objects.get(username='angela')
         self.assertTrue(Transaction.objects.filter(status=2).exists())
         self.assertFalse(Transaction.objects.filter(status=0).exists())
+    def test_payout_method(self):
+        response = self.client.post(reverse('payout_Method'), {
+            'currency': 'CNY',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+    def test_payout_banklist(self):
+        response = self.client.post(reverse('payout_Banklist'), {
+            'currency': 'CNY',
+            'method': 'LOCAL_BANK_TRANSFER',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+    def test_payout_banklimits(self):
+        response = self.client.post(reverse('payout_Banklimits'), {
+            'currency': 'CNY',
+            'method': 'LOCAL_BANK_TRANSFER',
+            'bank': 'BOSHCN',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
           
 
