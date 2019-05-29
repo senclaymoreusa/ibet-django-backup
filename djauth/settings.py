@@ -291,7 +291,7 @@ STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
-#payment
+#qaicash-payment
 QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
 MERCHANTID = '1'
 CURRENCY = 'IDR'
@@ -300,3 +300,10 @@ APIVERSION = 'v2.0'
 METHOD = 'LBT_ONLINE'
 DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
+
+#paypal-payment
+import paypalrestsdk
+
+PAYPAL_MODE = 'sandbox'   # sandbox or live
+PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
+PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
