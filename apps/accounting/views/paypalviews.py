@@ -118,6 +118,7 @@ class paypalCreatePayment(generics.GenericAPIView):
                     currency= cur_val,
                     transaction_type=0, 
                     channel=5,
+                    status=2,
                 )
                 print("Payment[%s] created successfully" % (rdata['id']))
         else:
