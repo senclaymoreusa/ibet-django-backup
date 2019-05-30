@@ -152,6 +152,8 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
+    id_image = models.CharField(max_length=250, blank=True)
+
     created_time = models.DateTimeField(
         _('Created Time'),
         default=timezone.now,

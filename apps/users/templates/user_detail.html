@@ -1,220 +1,251 @@
 {% extends 'xadmin/base_site.html' %}
 
-<head>  
+<!-- <head>  
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
     
     <!-- Add additional CSS in static file -->
-    {% load static %}
+    <!-- {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-</head>
+</head> -->
+
+{% block content-nav %}
+{% endblock %}
 
 {% block content %} 
-    <div class="container-fluid">
+    <!-- <div class="row"> -->
         <div class="row">
-            <div class="col-md-5 user_detail_section">
-                <div class="user_detail_section_title">
-                    Member Detail:
+            <div class="col-md-5 user_detail_section module_half_width rcorners left_margin">
+                <div class="user_detail_section_title module_title">
+                    Member details
                 </div>
-                <div class="row">
-                    <div class='col-md-6'>photo</div>
-                    <div class='col-md-6'>
-                        <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
-                        <div><span>Member ID</span><span class="detail_info">{{ customuser.pk }}</span></div>
-                        <div><span class="detail_title">Username</span><span>{{ customuser.username }}</span></div>
-                        <div><span>First Name</span><span>{{ customuser.first_name }}</span></div>
-                        <div><span>Last Name</span> <span>{{ customuser.last_name }}</span></div>
-                        <div><span>Email</span><span>{{ customuser.email }}</span></div>
-                        <div><span>Phone</span><span>{{ customuser.phone }}</span></div>
-                        <div><span>Birthday</span><span>{{ customuser.date_of_birth }}</span></div>
-                        <div><span>Address</span><span>{{ customuser.street_address_1 }}</span><span>{{ customuser.city }}</span><span>{{ customuser.state }}</span><span>{{ customuser.zipcode }}</span></div> 
+                <div class="section_body">
+                    <div class="row">
+                            <div class='col-md-6'>photo</div>
+                            <div class='col-md-6'>
+                                <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
+                                <div><span>Member ID</span><span class="detail_info">{{ customuser.pk }}</span></div>
+                                <div><span class="detail_title">Username</span><span>{{ customuser.username }}</span></div>
+                                <div><span>First Name</span><span>{{ customuser.first_name }}</span></div>
+                                <div><span>Last Name</span> <span>{{ customuser.last_name }}</span></div>
+                                <div><span>Email</span><span>{{ customuser.email }}</span></div>
+                                <div><span>Phone</span><span>{{ customuser.phone }}</span></div>
+                                <div><span>Birthday</span><span>{{ customuser.date_of_birth }}</span></div>
+                                <div><span>Address</span><span>{{ customuser.street_address_1 }}</span><span>{{ customuser.city }}</span><span>{{ customuser.state }}</span><span>{{ customuser.zipcode }}</span></div> 
+                            </div>
                     </div>
-                </div>
-                <div class="row">
-                    <hr>
-                </div>
-                <div class="row" style="padding: 5%;">
-                    <!-- <div class='col-md-6'> -->
-                        <label>Last Login Time</label>
+                    <div class="row">
+                            <hr>
+                    </div>
+                    <div class="row" style="padding: 5%;">
+                        <!-- <div class='col-md-6'> -->
+                            <label>Last Login Time</label>
+                            <div class='row'>
+                                <div class='col-md-4'>
+                                    <div>TIME</div>
+                                    {% if customuser.last_login_time %}
+                                        <div class='user_detail_block'>{{ customuser.last_login_time }}</div>
+                                    {% else %}
+                                        <div class='user_detail_block'>None</div>
+                                        {% endif %}
+                                </div>
+                                <div class='col-md-4'>
+                                    <div>LOCATION</div>
+                                    {% if customuser.id_location %}
+                                        <div class='user_detail_block'>{{ customuser.id_location }}</div>
+                                    {% else %}
+                                        <div class='user_detail_block'>None</div>
+                                    {% endif %}
+                                </div>
+                                <div class='col-md-4'>
+                                    <div>IP ADDRESS</div>
+                                    {% if userLastIpAddr.ip_addr %}
+                                        <div class='user_detail_block'>{{ userLastIpAddr.ip_addr }}</div>
+                                    {% else %}
+                                        <div class='user_detail_block'>None</div>
+                                    {% endif %}
+                                </div>
+                                    
+                            </div>
+                        <!-- </div> -->
+                    </div>
+                    <div class="row">
+                        <hr>
+                    </div>
+                    <div class="row" style="padding: 5%;">
+                        <label style="margin-top: 3%;">ACCOUNT CREATION</label>
                         <div class='row'>
                             <div class='col-md-4'>
-                                <label>Time</label>
-                                {% if customuser.last_login_time %}
-                                    <div class='user_detail_block'>{{ customuser.last_login_time }}</div>
-                                {% else %}
-                                    <div class='user_detail_block'>None</div>
-                                 {% endif %}
+                                <div>TIME</div>
+                                <div class='user_detail_block'>{{ customuser.time_of_registration }}</div>
                             </div>
                             <div class='col-md-4'>
-                                <label>Location</label>
+                                <div>LOCATION</div>
                                 {% if customuser.id_location %}
                                     <div class='user_detail_block'>{{ customuser.id_location }}</div>
                                 {% else %}
-                                    <div class='user_detail_block'>None</div>
+                                <div class='user_detail_block'>None</div>
                                 {% endif %}
                             </div>
                             <div class='col-md-4'>
-                                <label>IP ADDRESS</label>
-                                {% if userLastIpAddr.ip_addr %}
-                                    <div class='user_detail_block'>{{ userLastIpAddr.ip_addr }}</div>
-                                {% else %}
-                                    <div class='user_detail_block'>None</div>
-                                {% endif %}
+                                <div>SOURCE</div>
+                                <div class='user_detail_block'>{{ customuser.get_user_attribute_display }}</div>
+                            </div>   
+                        </div>
+                        <div class='row' style="padding-top:2%;">
+                            <div class='col-md-4'>
+                                <div>VERIFICATION TIME</div>
+                                <div class='user_detail_block'>{{ customuser.verfication_time }}</div>
                             </div>
-                                
-                        </div>
-                    <!-- </div> -->
-                </div>
-                <div class="row">
-                    <hr>
-                </div>
-                <div class="row" style="padding: 5%;">
-                    <label>ACCOUNT CREATION</label>
-                    <div class='row'>
-                        <div class='col-md-4'>
-                            <label>Time</label>
-                            <div class='user_detail_block'>{{ customuser.time_of_registration }}</div>
-                        </div>
-                        <div class='col-md-4'>
-                            <label>Location</label>
-                            {% if customuser.id_location %}
-                                <div class='user_detail_block'>{{ customuser.id_location }}</div>
-                            {% else %}
-                            <div class='user_detail_block'>None</div>
-                            {% endif %}
-                        </div>
-                        <div class='col-md-4'>
-                            <label>SOURCE</label>
-                            <div class='user_detail_block'>{{ customuser.get_user_attribute_display }}</div>
-                        </div>   
-                    </div>
-                    <div class='row' style="padding-top:5%;">
-                        <div class='col-md-6'>
-                            <label>VERIFICATION TIME</label>
-                            <div class='user_detail_block'>{{ customuser.verfication_time }}</div>
-                        </div>
-                        <div class='col-md-6'>
-                            <label>FIRST DEPOSIT</label>
-                            <div class='user_detail_block'>{{ customuser.ftd_time }}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class='row' style="padding-left:5%; padding-bottom: 5%">
-                    <div class='col-md-4'>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit details</button>
-                    </div>
-                    <div class='col-md-4'>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login_history">Login history</button>
-                    </div>
-                </div>
-
-                <div class="modal fade" id="edit_details" role="dialog">
-                    <div class="modal-dialog">
-                    
-                        <!-- Modal content-->
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title">Edit member details</h4>
+                            <div class='col-md-4'>
+                                <div>FIRST DEPOSIT</div>
+                                <div class='user_detail_block'>{{ customuser.ftd_time }}</div>
                             </div>
-                            <div class="modal-body">
-                                <form action="{% url 'xadmin:user_detail' %}" method="POST">
-                                        {% csrf_token %}
-                                    <input type="hidden" name="type" value="edit_user_detail"></input>
-                                    <input type="hidden" name="user_id" value="{{ customuser.pk }}"></input>
-                                    <div class="form-group">
-                                        <label for="member_id">MEMBER ID</label>
-                                        <input class="form-control" name="member_id" value="{{ customuser.pk }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="username">USERNAME</label>
-                                        <input class="form-control" name="username" value="{{ customuser.username }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="first_name">FIRST NAME</label>
-                                        <input class="form-control" name="first_name" value="{{ customuser.first_name }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="last_name">LAST NAME</label>
-                                        <input class="form-control" name="last_name" value="{{ customuser.last_name }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email">EMAIL</label>
-                                        <input type='email' class="form-control" name="email" value="{{ customuser.email }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="phone">PHONE</label>
-                                        <input class="form-control" name="phone" value="{{ customuser.phone }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="birthday">BIRTHDAY</label>
-                                        <input class="form-control" name="birthday" value="{{ customuser.date_of_birth }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="address">ADDRESS</label>
-                                        <input class="form-control" name="address" value="{{ customuser.street_address_1 }}">
-                                        <input class="form-control" name="city" value="{{ customuser.city }}">
-                                        <input class="form-control" name="zipcode" value="{{ customuser.zipcode }}">
-                                        <input class="form-control" name="country" value="{{ customuser.country }}">
-                                    </div>
-                                    <button type="submit" class="btn btn-default">Submit</button>
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                                    </form>
-                            </div>
-                            <!-- <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div> -->
                         </div>
+                    </div>
                         
+                    <div class='row' style="padding-left:5%; padding-bottom: 5%">
+                        <div class='col-md-2'>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit details</button>
+                        </div>
+                        <div class='col-md-2'>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login_history">Login history</button>
+                        </div>
                     </div>
-                </div>
-
-                <div class="modal fade" id="login_history" role="dialog">
+        
+                    <div class="modal fade" id="edit_details" role="dialog">
                         <div class="modal-dialog">
                         
                             <!-- Modal content-->
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                    <h4 class="modal-title">Login history</h4>
+                                    <h4 class="modal-title">Edit member details</h4>
+                                    <!-- <h6 style="float: right;">Update Time:</h6> -->
                                 </div>
                                 <div class="modal-body">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                            <th scope="col">Time</th>
-                                            <th scope="col">Location</th>
-                                            <th scope="col">IP address</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for login in userLoginActions %}
-                                            <tr>
-                                            <td>{{ login.created_time }}</td>
-                                            <td>Location</td>
-                                            <td>{{ login.ip_addr }}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                                    <div class='row'>
+                                        <form action="{% url 'xadmin:user_detail' %}" method="POST">
+                                            {% csrf_token %}
+                                            <div class='col-md-6'>
+                                                <input type="hidden" name="type" value="edit_user_detail"></input>
+                                                <input type="hidden" name="user_id" value="{{ customuser.pk }}"></input>
+                                                <div class="form-group">
+                                                    <label for="member_id">MEMBER ID</label>
+                                                    <input class="form-control" name="member_id" value="{{ customuser.pk }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="username">USERNAME</label>
+                                                    <input class="form-control" name="username" value="{{ customuser.username }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="first_name">FIRST NAME</label>
+                                                    <input class="form-control" name="first_name" value="{{ customuser.first_name }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="last_name">LAST NAME</label>
+                                                    <input class="form-control" name="last_name" value="{{ customuser.last_name }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="email">EMAIL</label>
+                                                    <input type='email' class="form-control" name="email" value="{{ customuser.email }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="phone">PHONE</label>
+                                                    <input class="form-control" name="phone" value="{{ customuser.phone }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="birthday">BIRTHDAY</label>
+                                                    <input class="form-control" name="birthday" value="{{ customuser.date_of_birth }}">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="address">ADDRESS</label>
+                                                    <input class="form-control" name="address" value="{{ customuser.street_address_1 }}">
+                                                    <input class="form-control" name="city" value="{{ customuser.city }}">
+                                                    <input class="form-control" name="zipcode" value="{{ customuser.zipcode }}">
+                                                    <input class="form-control" name="country" value="{{ customuser.country }}">
+                                                </div>
+                                                <div>&nbsp;</div>
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input id='hidden_input_img' type='file' accept='image/*' style='display: none;' onchange="chooseFile(event);">
+                                                {% if customuser.photoId %}
+                                                <img id="user_photo_img" src="{% static 'customuser.photoId' %}">
+                                                {% else %}
+                                                <img id="user_photo_img" src="http://placehold.it/200" alt="User ID Photo">
+                                                {% endif %}
+                                                <input type="hidden" name='user_ip_img' id="hidden_user_ip_url">
+                                                <div>&nbsp;</div>
+                                                <div class="row">
+                                                    <div class='col-md-8'>
+                                                        <button type="button" class="btn btn-primary" onclick="clickUploadImg();">Upload new document</button>
+                                                    </div>
+                                                    <div class='col-md-4'>
+                                                        <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)" onclick="clearImg();">
+                                                            <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                                 <!-- <div class="modal-footer">
                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                 </div> -->
-                            </div> 
+                            </div>
+                            
                         </div>
                     </div>
-
-            </div>
-            <div class="col-md-5 user_detail_section">
-                    <div class="notes_section_title">
-                        Notes
+        
+                    <div class="modal fade" id="login_history" role="dialog">
+                            <div class="modal-dialog">
+                            
+                                <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Login history</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                <th scope="col">Time</th>
+                                                <th scope="col">Location</th>
+                                                <th scope="col">IP address</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for login in userLoginActions %}
+                                                <tr>
+                                                <td>{{ login.created_time }}</td>
+                                                <td>Location</td>
+                                                <td>{{ login.ip_addr }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div> -->
+                                </div> 
+                            </div>
                     </div>
+                </div>
+            </div>
+            <div class="col-md-5 user_detail_section module_half_width left_margin rcorners">
+                <div class="notes_section_title module_title">
+                    Notes
+                </div>
+                <div class="section_body">
                     <div class="row">
                         <div class='col-md-6'>photo</div>
                         <div class='col-md-6'>
@@ -229,177 +260,177 @@
                         </div>
                     </div>
                 </div>
-            <div class="col-md-5 user_detail_section">
-                <div class="funds_section_title">
+            </div>
+            <div class="col-md-5 user_detail_section module_half_width left_margin rcorners" style='margin-top:20px'>
+                <div class="funds_section_title module_title">
                     Funds Status
                 </div>
-                <div class="row" style="margin: 5%;">
-                    <div class='col-md-3'>
-                        <label>MAIN</label>
-                        <label>ACCOUNT BALANCE</label>
-                        <!-- <div class='user_detail_block'>
-                            {{ customuser.main_wallet}}
-                        </div> -->
-                    </div>
-                    <div class='col-md-3'>
-                        <label>AVAILABLE FOR</label>
-                        <label>WITHDRAW</label>
-                        <!-- <div class='user_detail_block'>
-                            {{ customuser.main_wallet}}
-                        </div> -->
-                    </div>
-                    <div class='col-md-3'>
-                        <label>MIN/MAX</label>
-                        <label>WITHDRAW</label>
-                        <!-- <div class='user_detail_block'>
-                            NO LIMIT
-                        </div> -->
-                    </div>
-                    <div class='col-md-3'>
-                        <label>BONUS</label>
-                        <label>AMOUNT</label>
-                        <!-- <div class='user_detail_block'>
-                            NO LIMIT
-                        </div> -->
-                    </div>
-                </div>
-                <div class="row" style="margin: 5%;">
-                    <div class='col-md-3'>
-                        <div class='user_detail_block'>
-                            $ {{ customuser.main_wallet}}
+                <div class="section_body">
+                    <div class="row" style="margin: 5%;">
+                        <div class='col-md-3'>
+                            <label>MAIN</label>
+                            <label>ACCOUNT BALANCE</label>
+                            <!-- <div class='user_detail_block'>
+                                {{ customuser.main_wallet}}
+                            </div> -->
+                        </div>
+                        <div class='col-md-3'>
+                            <label>AVAILABLE FOR</label>
+                            <label>WITHDRAW</label>
+                            <!-- <div class='user_detail_block'>
+                                {{ customuser.main_wallet}}
+                            </div> -->
+                        </div>
+                        <div class='col-md-3'>
+                            <label>MIN/MAX</label>
+                            <label>WITHDRAW</label>
+                            <!-- <div class='user_detail_block'>
+                                NO LIMIT
+                            </div> -->
+                        </div>
+                        <div class='col-md-3'>
+                            <label>BONUS</label>
+                            <label>AMOUNT</label>
+                            <!-- <div class='user_detail_block'>
+                                NO LIMIT
+                            </div> -->
                         </div>
                     </div>
-                    <div class='col-md-3'>
-                        <div class='user_detail_block'>
-                            $ {{ customuser.main_wallet}}
+                    <div class="row" style="margin: 5%;">
+                        <div class='col-md-3'>
+                            <div class='user_detail_block'>
+                                $ {{ customuser.main_wallet}}
+                            </div>
+                        </div>
+                        <div class='col-md-3'>
+                            <div class='user_detail_block'>
+                                $ {{ customuser.main_wallet}}
+                            </div>
+                        </div>
+                        <div class='col-md-3'>
+                            <div class='user_detail_block'>
+                                NO LIMIT
+                            </div>
+                        </div>
+                        <div class='col-md-3'>
+                            <div class='user_detail_block'>
+                                NO LIMIT
+                            </div>
                         </div>
                     </div>
-                    <div class='col-md-3'>
-                        <div class='user_detail_block'>
-                            NO LIMIT
+                    <div class="row">
+                        <label style="margin-left: 10%;">BALANCE PER PRODUCT</label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>GB SPORTS</label>
+                            <div></div>
                         </div>
-                    </div>
-                    <div class='col-md-3'>
-                        <div class='user_detail_block'>
-                            NO LIMIT
+                        <div class="col-md-4">
+    
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <label style="margin-left: 10%;">BALANCE PER PRODUCT</label>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label>GB SPORTS</label>
-                        <div></div>
-                    </div>
-                    <div class="col-md-4">
-
-                    </div>
-                    <div class="col-md-4">
-
+                        <div class="col-md-4">
+    
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class='row'>
-            <div class='user_detail_section'>
-                <div class="trans_section_title">
+            <div class='user_detail_section rcorners left_margin' style="margin-right:25px;  margin-top: 25px;">
+                <div class="trans_section_title module_title">
                     Transaction History
                 </div>
-                <div>
-                    <div class='col-md-6'>
-                        {% block time_search %}
-                        <label>Date Range</label>
-                        <div class="row">
-                            <div class='col-md-4'>
-                                    <!-- <input class="form-control" placeholder="From" id="search-from" name='search-from'></input> -->
-                                <div class='input-group date' id='transaction_time_from'>
-                                    <input type='text' class="form-control" placeholder="From" id='transaction_time_from_input' />
-                                    <span class="input-group-addon">
-                                        <span class="glyphicon glyphicon-calendar"></span>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class='col-md-4'>
-                                    <!-- <input class="form-control" placeholder="To" id='search-to' name='search-from'></input> -->
-                                <div class='input-group date' id='transaction_time_to'>
-                                    <input type='text' class="form-control" placeholder="To"  id='transaction_time_to_input'/>
-                                    <span class="input-group-addon">
-                                        <span class="glyphicon glyphicon-calendar"></span>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class='col-md-4'>
-                                <button id="transaction_time_submit" type="submit" class="btn btn-primary">Submit</button>
-                            </div>
-                        </div>
-                        {% endblock %}
-                    </div>
-                    <div class='col-md-4'>
-                        <div class='col-md-6'>
-                            <label>PRODUCT</label>
+                <div class="section_body">
+                    <div class="row" style="margin: 15px;">
+                        <div class='col-md-6' style="padding: 0px;">
+                            {% block time_search %}
+                            <div>DATE RANGE</div>
                             <div class="row">
-                                <select class="form-control" id="transaction_product_select">
-                                    <option value="all">all</option>
-                                    <option value="0">0</option>
-                                    <option value="1">1</option>
-                                </select>
+                                <div class='col-md-4'>
+                                    <div class='input-group date' id='transaction_time_from'>
+                                        <input type='text' class="form-control" placeholder="From" id='transaction_time_from_input' />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class='col-md-4'>
+                                    <div class='input-group date' id='transaction_time_to'>
+                                        <input type='text' class="form-control" placeholder="To"  id='transaction_time_to_input'/>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class='col-md-4'>
+                                    <button id="transaction_time_submit" type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                            {% endblock %}
+                        </div>
+                        <div class='col-md-4'>
+                            <div class="row">
+                                <div class='col-md-6'>
+                                    <div>PRODUCT</div>
+                                        <select class="form-control" id="transaction_product_select">
+                                            <option value="all">all</option>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                        </select>
+                                </div>
+                                <div class='col-md-6'>
+                                    <div>CATEGORY</div>
+                                    <select class="form-control" id="transaction_category_select">
+                                        <option value="all">all</option>
+                                        <option value="0">Deposit</option>
+                                        <option value="1">Wihdraw</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                        <div class='col-md-6'>
-                            <label>CATEGORY</label>
-                            <select class="form-control" id="transaction_category_select">
-                                <option value="all">all</option>
-                                <option value="0">Deposit</option>
-                                <option value="1">Wihdraw</option>
-                            </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" id="no_data_error">
+                            <!-- <p>No transaction at this range</p> -->
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-2">
-                            <!-- <p>No transaction at this range</p> -->
+                    <label style="margin:15px">TRNASACTION LAST 7 DAYS</label>
+                    <div class="row" style="margin-left:15px;margin-right:25px">
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">CATEGORY</th>
+                                    <!-- <th scope="col">PRODUCT</th> -->
+                                    <th scope="col">TIME</th>
+                                    <th scope="col">AMOUNT</th>
+                                    <th scope="col">BALANCE</th>
+                                    <th scope="col">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tansaction_tbody">
+                                {% for trans in userTransactions %} 
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td>{{ trans.get_transaction_type_display }}</td>
+                                    <!-- <td>{{ trans }}</td> -->
+                                    <td>{{ trans.request_time }}</td>
+                                    <td>{{ trans.amount }}</td>
+                                    <td>{{ trans.amount }}</td>
+                                    <td>{{ trans.get_status_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4" id="no_data_error">
-                        <!-- <p>No transaction at this range</p> -->
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <table class="table" style="width:90%; margin: 5%;">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">CATEGORY</th>
-                                <!-- <th scope="col">PRODUCT</th> -->
-                                <th scope="col">TIME</th>
-                                <th scope="col">AMOUNT</th>
-                                <th scope="col">BALANCE</th>
-                                <th scope="col">STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tansaction_tbody">
-                            {% for trans in userTransactions %} 
-                            <tr>
-                                <th scope="row">{{ forloop.counter }}</th>
-                                <td>{{ trans.get_transaction_type_display }}</td>
-                                <!-- <td>{{ trans }}</td> -->
-                                <td>{{ trans.request_time }}</td>
-                                <td>{{ trans.amount }}</td>
-                                <td>{{ trans.amount }}</td>
-                                <td>{{ trans.get_status_display }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
+        <div>&nbsp;</div>
         <a class="btn btn-primary" role="button" href="{% url 'xadmin:user_list' %}">BACK</a>
-    </div>
+    <!-- </div> -->
 
 <!-- <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet"/> -->
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
@@ -420,6 +451,35 @@ $(document).ready(function() {
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
     }
 
+    chooseFile = function (event) {
+        // $("#fileInput").click();
+        // let val = $("#fileInput").val();
+        // console.log(val);
+        // $('image').attr(src) = val;
+        var input = event.target;
+        // $('#user_photo_img').css('display', 'none');
+
+        var reader = new FileReader();
+        reader.onload = function(){
+            var dataURL = reader.result;
+            var output = document.getElementById('user_photo_img');
+            output.src = dataURL;
+            $('#hidden_user_ip_url').attr('value', dataURL);
+        };
+        reader.readAsDataURL(input.files[0]);
+        
+        $('#user_photo_img').css('width', '200px');
+        $('#user_photo_img').css('height', '200px');
+   }
+
+   clickUploadImg = function () {
+        $('#hidden_input_img').click();
+   }
+
+   clearImg = function() {
+        $('#user_photo_img').attr('src', 'http://placehold.it/200');
+   }
+
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
             if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -432,8 +492,9 @@ $(document).ready(function() {
         $('#transaction_time_from').datetimepicker();
         $('#transaction_time_to').datetimepicker();
     });
+    
 
-    // var user_id = $('#hidden_user_id').val();
+    var user_id = $('#hidden_user_id').val();
     // console.log(user_id)
 
     $('#transaction_time_submit').click( function(e) {

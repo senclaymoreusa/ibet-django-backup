@@ -19,7 +19,7 @@ DOMAIN = settings.DOMAIN
 
 
 class BaseSetting(object):
-    enable_themes = True    # 使用主题
+    # enable_themes = True    # 使用主题
     use_bootswatch = True
 
 # 全局设置
@@ -27,9 +27,9 @@ class GlobalSettings(object):
     site_title = _('IBET Administration')  # 标题
     site_footer = 'Ibet'  # 页尾
     site_url = '/'
-    menu_style = 'accordion'  # 设置左侧菜单  折叠样式
+    menu_style = 'accordion'
     
-    def get_site_menu(self):  #名称不能改
+    def get_site_menu(self):
         return [
             {
                 'title': 'User System',
@@ -215,8 +215,8 @@ class UserActionAdmin(object):
 
 #注册你上面填写的url
 from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
-xadmin.site.register_view(r'test_view/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
-xadmin.site.register_view(r'test_view/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'user/$', UserListView, name='user_list')
 
 #注册GlobalSetting

@@ -1042,12 +1042,16 @@ class UserDetailView(CommAdminView):
             city = request.POST.get('city')
             zipcode = request.POST.get('zipcode')
             country = request.POST.get('country')
-            user = CustomUser.objects.filter(pk=user_id).update(
+            user_ip_img = request.POST.get('user_ip_img')
+            # print(user_ip_img)
+            CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
                 phone=phone, date_of_birth=birthday, 
                 street_address_1=address, city=city,
-                zipcode=zipcode, country=country)
+                zipcode=zipcode, country=country, id_image=user_ip_img)
+
+            print(CustomUser.objects.get(pk=user_id).id_image)
 
             # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
