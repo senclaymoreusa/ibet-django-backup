@@ -49,6 +49,13 @@ LANGUAGE_CHOICES = (
     ('ko', 'Korean'),
     ('ja', 'Japanese'),
 )
+GAME_TYPE_CHOICES = (
+    (0, 'Sports'),
+    (1, 'Games'),
+    (2, 'Live Casino'),
+    (3, 'Financial'),
+    (4, 'General'),
+)
 class Transaction(models.Model):
     transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
@@ -68,6 +75,7 @@ class Transaction(models.Model):
     transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
     bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
+    product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
     
     class Meta:
         verbose_name = 'Transaction'
