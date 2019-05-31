@@ -22,7 +22,6 @@ from django.conf import settings
 import requests,json
 import logging
 logger = logging.getLogger('django')
-logging.basicConfig(level=logging.INFO)
 
 # paypalrestsdk.configure({
 #   "mode": settings.PAYPAL_MODE, 
