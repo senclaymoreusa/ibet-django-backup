@@ -112,5 +112,13 @@ class ThirdPartyTestCases(TestCase):
             'bank': 'BOSHCN',
         }, format='json')
         self.assertEqual(response.status_code, 200)
+    def test_paypal_create_payment(self):
+        response = self.client.post(reverse('paypal_Create_Payment'), {
+            'orderId': 'ibet_1111',
+            'currency': 'USD',
+            'amount': '10',
+            'user': 'angela',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
           
 

@@ -11,7 +11,8 @@ CHANNEL_CHOICES = (
     (1, 'Wechat'),
     (2, 'Card'),
     (3, 'Qaicash'),
-    (4, 'Asia Pay')
+    (4, 'Asia Pay'),
+    (5, 'Paypal')
 )
 CURRENCY_CHOICES = (
     (0, 'CNY'),
