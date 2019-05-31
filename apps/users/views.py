@@ -627,13 +627,13 @@ class AddOrWithdrawBalance(APIView):
                 transaction_type=0
             )
 
-            action = UserAction(
-                user= CustomUser.objects.filter(username=username).first(),
-                ip_addr=self.request.META['REMOTE_ADDR'],
-                event_type=3,
-                dollar_amount=balance
-            )
-            action.save()
+            # action = UserAction(
+            #     user= CustomUser.objects.filter(username=username).first(),
+            #     ip_addr=self.request.META['REMOTE_ADDR'],
+            #     event_type=3,
+            #     dollar_amount=balance
+            # )
+            # action.save()
             return HttpResponse('Deposit Success')
 
         else:
@@ -649,13 +649,13 @@ class AddOrWithdrawBalance(APIView):
                 transaction_type=1
             )
 
-            action = UserAction(
-                user= CustomUser.objects.filter(username=username).first(),
-                ip_addr=self.request.META['REMOTE_ADDR'],
-                event_type=4,
-                dollar_amount=balance
-            )
-            action.save()
+            # action = UserAction(
+            #     user= CustomUser.objects.filter(username=username).first(),
+            #     ip_addr=self.request.META['REMOTE_ADDR'],
+            #     event_type=4,
+            #     dollar_amount=balance
+            # )
+            # action.save()
             return HttpResponse('Withdraw Success')
 
 class Activation(View):
