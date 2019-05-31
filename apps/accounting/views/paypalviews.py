@@ -35,6 +35,7 @@ password = settings.PAYPAL_CLIENT_SECRET
 url = settings.PAYPAL_SANDBOX_URL
 host_url = settings.HOST_URL
 
+
 class paypalCreatePayment(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = paypalCreatePaymentSerialize
@@ -60,12 +61,11 @@ class paypalCreatePayment(generics.GenericAPIView):
         orderId = self.request.POST['order_id']
         amount = self.request.POST['amount']
         currency = self.request.POST['currency']
-        print(self.getAccessToken())
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.getAccessToken()
         }
-        print(headers)
         body = {
             "intent": "sale",
             "payer": {
@@ -74,7 +74,7 @@ class paypalCreatePayment(generics.GenericAPIView):
             "redirect_urls": {
             "return_url": host_url + "profile",
             "cancel_url": host_url
-        },
+            },
             "transactions": [{
                 "item_list": {
                     "items": [{
@@ -110,6 +110,7 @@ class paypalCreatePayment(generics.GenericAPIView):
 
                     if currency == x[1]:
                         cur_val = x[0]
+            if rdata["state"] == 'created':  
                 create = Transaction.objects.get_or_create(
                     user_id=userId,
                     order_id= orderId,
@@ -123,7 +124,6 @@ class paypalCreatePayment(generics.GenericAPIView):
                 print("Payment[%s] created successfully" % (rdata['id']))
         else:
             logger.error('The request information is nor correct, please try again')
-        print(rdata)
         return Response(rdata)
 
 

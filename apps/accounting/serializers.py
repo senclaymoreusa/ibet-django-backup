@@ -174,6 +174,7 @@ class payoutBanklimitsSerialize(serializers.Serializer):
         return instance
 
 class paypalCreatePaymentSerialize(serializers.Serializer):
+    
     order_id         = serializers.CharField(required=True)
     currency         = serializers.CharField(required=True)
     amount           = serializers.CharField(required=True)
