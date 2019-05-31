@@ -408,6 +408,7 @@
                                     <th scope="col">AMOUNT</th>
                                     <th scope="col">BALANCE</th>
                                     <th scope="col">STATUS</th>
+                                    <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody id="tansaction_tbody">
@@ -420,10 +421,196 @@
                                     <td>{{ trans.amount }}</td>
                                     <td>{{ trans.amount }}</td>
                                     <td>{{ trans.get_status_display }}</td>
+                                    {% if trans.transaction_type == 0 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 1 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 2 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_placed_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 3 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_settled_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 4 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_in_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 5 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_out_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 6 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bonus_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% elif trans.transaction_type == 7 %}
+                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_adjustment_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                                    {% endif %}
                                 </tr>
+                                <div class="modal fade" id="trans_deposit_detail" role="dialog">
+                                    <div class="modal-dialog">
+                                        <!-- Modal content-->
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">Deposit Detail</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-5">
+                                                        <p>Client Name </p>
+                                                        <p>Transaction Number </p>
+                                                        <p>Time of application </p>
+                                                        <p>Account Time </p>
+                                                        <p>Approver </p>
+                                                        <p>Bank/Branch </p>
+                                                        <p>Receive Bank </p>
+                                                        <p>Apply amount </p>
+                                                        <p>Arrive amount </p>
+                                                        <p>Status </p>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p>{{ customuser.username }}</p>
+                                                        <p>{{ trans.transaction_id }}</p>
+                                                        <p>{{ trans.request_time }}</p>
+                                                        <p>{{ trans.request_time }}</p>
+                                                        <p>/</p>
+                                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                        <p>/</p>
+                                                        <p>{{ trans.amount }}</p>
+                                                        <p>{{ trans.amount }}</p>
+                                                        <p>{{ trans.get_status_display }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="trans_withdrawal_detail" role="dialog">
+                                    <div class="modal-dialog">
+                                        <!-- Modal content-->
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">Withdrawal Detail</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-5">
+                                                        <p>Client Name </p>
+                                                        <p>Transaction Number </p>
+                                                        <p>Time of application </p>
+                                                        <p>Account Time </p>
+                                                        <p>Bank/Branch </p>
+                                                        <p>Receive Bank </p>
+                                                        <p>Assignment error</p>
+                                                        <p>Bank Account</p>
+                                                        <p>Channel Name</p>
+                                                        <p>Apply amount </p>
+                                                        <p>Arrive amount </p>
+                                                        <p>Surcharge </p>
+                                                        <p>Time of Audit </p>
+                                                        <p>Auditor </p>
+                                                        <p>Audi Memo </p>
+                                                        <p>Status </p>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p>{{ customuser.username }}</p>
+                                                        <p>{{ trans.transaction_id }}</p>
+                                                        <p>{{ trans.request_time }}</p>
+                                                        <p>{{ trans.request_time }}</p>
+                                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                        <p>/</p>
+                                                        <p>/</p>
+                                                        <p>/</p>
+                                                        <p>{{ trans.channel }} </p>
+                                                        <p>{{ trans.amount }}</p>
+                                                        <p>{{ trans.amount }}</p>
+                                                        <p>fee</p>
+                                                        <p>/</p>
+                                                        <p>/</p>
+                                                        <p>/</p>
+                                                        <p>{{ trans.get_status_display }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="trans_bet_placed_detail" role="dialog">
+                                        <div class="modal-dialog">
+                                            <!-- Modal content-->
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    <h4 class="modal-title">Deposit Detail</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p>Client Name </p>
+                                                            <p>Transaction Number </p>
+                                                            <p>Time of application </p>
+                                                            <p>Account Time </p>
+                                                            <p>Approver </p>
+                                                            <p>Bank/Branch </p>
+                                                            <p>Receive Bank </p>
+                                                            <p>Apply amount </p>
+                                                            <p>Arrive amount </p>
+                                                            <p>Status </p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p>{{ customuser.username }}</p>
+                                                            <p>{{ trans.transaction_id }}</p>
+                                                            <p>{{ trans.request_time }}</p>
+                                                            <p>{{ trans.request_time }}</p>
+                                                            <p></p>
+                                                            <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                            <p>/</p>
+                                                            <p>{{ trans.amount }}</p>
+                                                            <p>{{ trans.amount }}</p>
+                                                            <p>{{ trans.get_status_display }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                        </div>
+                                </div>
+                                <div class="modal fade" id="trans_bet_settled_detail" role="dialog">
+                                        <div class="modal-dialog">
+                                            <!-- Modal content-->
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    <h4 class="modal-title">Deposit Detail</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p>Client Name </p>
+                                                            <p>Transaction Number </p>
+                                                            <p>Time of application </p>
+                                                            <p>Account Time </p>
+                                                            <p>Approver </p>
+                                                            <p>Bank/Branch </p>
+                                                            <p>Receive Bank </p>
+                                                            <p>Apply amount </p>
+                                                            <p>Arrive amount </p>
+                                                            <p>Status </p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p>{{ customuser.username }}</p>
+                                                            <p>{{ trans.transaction_id }}</p>
+                                                            <p>{{ trans.request_time }}</p>
+                                                            <p>{{ trans.request_time }}</p>
+                                                            <p></p>
+                                                            <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                            <p>/</p>
+                                                            <p>{{ trans.amount }}</p>
+                                                            <p>{{ trans.amount }}</p>
+                                                            <p>{{ trans.get_status_display }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                        </div>
+                                </div>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        
                     </div>
                 </div>
             </div>
@@ -434,8 +621,12 @@
 
 <!-- <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet"/> -->
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
-<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+<!-- <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/> -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 
 <script>
@@ -489,8 +680,14 @@ $(document).ready(function() {
     });
 
     $(function () {
-        $('#transaction_time_from').datetimepicker();
-        $('#transaction_time_to').datetimepicker();
+        $('#transaction_time_from').datepicker({ 
+        autoclose: true, 
+        todayHighlight: true
+        }).datepicker('update', new Date());
+        $('#transaction_time_to').datepicker({ 
+        autoclose: true, 
+        todayHighlight: true
+        }).datepicker('update', new Date());
     });
     
 

@@ -32,13 +32,13 @@ class GlobalSettings(object):
     def get_site_menu(self):
         return [
             {
-                'title': 'User System',
+                'title': 'Members',
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('User List'),
+                        'title': _('Member List'),
                         'url': '/xadmin/user',
-                        'icon': 'fa fa-cny'
+                        'icon': 'fa fa-user'
                     },
                 )
             }

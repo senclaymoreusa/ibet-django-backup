@@ -195,8 +195,11 @@ class RegisterView(CreateAPIView):
         headers = self.get_success_headers(serializer.data)
 
         customUser = CustomUser.objects.filter(username=user).first()
+
+        # if customUser.
         customUser.time_of_registration = timezone.now()
         customUser.save()
+
         
         action = UserAction(
             user= customUser,
@@ -1020,6 +1023,9 @@ class UserDetailView(CommAdminView):
         elif post_type == 'trans_time_range_filter':
             time_from = request.POST.get('from')
             time_to = request.POST.get('to')
+            print(str(time_to))
+            if time_to == '':
+                time_to = timezone.now()
             print("from: " + str(time_from) + 'to: ' + str(time_to))
             user = CustomUser.objects.get(pk=user_id)
             transactions = Transaction.objects.filter(user_id=user, request_time__range=[time_from, time_to])
