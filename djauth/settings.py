@@ -302,7 +302,6 @@ DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
 
 #paypal-payment
-import paypalrestsdk
 
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
