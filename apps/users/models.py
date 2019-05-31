@@ -318,10 +318,10 @@ class UserAction(models.Model):
         (0, _('Login')),
         (1, _('Logout')),
         (2, _('Register')),
-        (3, _('Deposit')),
-        (4, _('Withdraw')),
+        # (3, _('Deposit')),
+        # (4, _('Withdraw')),
         (5, _('Page Visit')),
-        (6, _('bet'))
+        # (6, _('bet'))
     )
 
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
@@ -330,7 +330,7 @@ class UserAction(models.Model):
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
     refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
-    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
+    # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),
