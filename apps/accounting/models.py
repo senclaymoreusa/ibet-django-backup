@@ -33,8 +33,13 @@ REVIEW_STATE_CHOICES = (
 )
 TYPE_CHOICES = (
     (0, 'Deposit'),
-    (1, 'Withdraw'),
-    (2, 'Bet')
+    (1, 'Withdrawal'),
+    (2, 'Bet Placed'),
+    (3, 'Bet Settled'),
+    (4, 'Transfer In'),
+    (5, 'Transfer Out'),
+    (6, 'Bonus'),
+    (7, 'Adjustment'),
 )
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
@@ -44,29 +49,40 @@ LANGUAGE_CHOICES = (
     ('ko', 'Korean'),
     ('ja', 'Japanese'),
 )
+GAME_TYPE_CHOICES = (
+    (0, 'Sports'),
+    (1, 'Games'),
+    (2, 'Live Casino'),
+    (3, 'Financial'),
+    (4, 'General'),
+)
 class Transaction(models.Model):
-    transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('User'))
-    order_id = models.CharField(max_length = 100, default=0,verbose_name=_('Order id'))
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Amount'))
+    transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
+    order_id = models.CharField(max_length = 100, default=0,verbose_name=_('Transaction Code'))
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Apply Amount'))
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='en-Us', verbose_name=_('Language'))
     depositorTier = models.SmallIntegerField(default=0, verbose_name=_('Depositor Tier'))
     method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 
-    request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Request Time'))
-    arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Arrive Time'))
+    request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
+    arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
     status = models.SmallIntegerField(choices=STATE_CHOICES,default=1, verbose_name=_('Status'))
-    channel = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Channel'))
+    channel = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Payment'))
     transaction_type = models.SmallIntegerField(choices=TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
     review_status = models.SmallIntegerField(choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
-    remark = models.CharField(max_length=200, blank=True, verbose_name=_('Note')) 
+    remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
+    transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))
+    transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
+    bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
+    product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
     
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return '{0}: {1}'.format(self.user_id, self.transaction_type)
+        return '{0}: {1}, {2}, {3}'.format(self.user_id, self.transaction_type, self.order_id, self.status)
     
 
 class ThirdParty(models.Model):
