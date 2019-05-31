@@ -21,7 +21,6 @@ from ..serializers import paypalCreatePaymentSerialize
 from django.conf import settings
 import requests,json
 import logging
-import paypalrestsdk
 logger = logging.getLogger('django')
 logging.basicConfig(level=logging.INFO)
 
