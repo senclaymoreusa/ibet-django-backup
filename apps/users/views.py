@@ -997,7 +997,7 @@ class UserDetailView(CommAdminView):
         if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
         else:
-            context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)
+            context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)[:20]
         
         context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
 
@@ -1017,6 +1017,16 @@ class UserDetailView(CommAdminView):
             else:
                 transactions = Transaction.objects.filter(user_id=user, transaction_type=category)
             transactionsJson = serializers.serialize('json', transactions)
+            transactionsList = json.loads(transactionsJson)
+            # print(json.dumps(Transaction._meta.get_field('status').choices))
+            statusMap = {}
+            for t in Transaction._meta.get_field('status').choices:
+                statusMap[t[0]] = t[1]
+
+            for tran in transactionsList:
+                tran['fields']['status'] = statusMap[tran['fields']['status']]
+            
+            transactionsJson = json.dumps(transactionsList)
             # print(transactionsJson)
             return HttpResponse(transactionsJson, content_type='application/json')
 
@@ -1033,6 +1043,16 @@ class UserDetailView(CommAdminView):
                 print("No transaction at this range")
                 return HttpResponse('No transaction at this range')
             transactionsJson = serializers.serialize('json', transactions)
+            transactionsList = json.loads(transactionsJson)
+            # print(json.dumps(Transaction._meta.get_field('status').choices))
+            statusMap = {}
+            for t in Transaction._meta.get_field('status').choices:
+                statusMap[t[0]] = t[1]
+
+            for tran in transactionsList:
+                tran['fields']['status'] = statusMap[tran['fields']['status']]
+            
+            transactionsJson = json.dumps(transactionsList)
             # print('transactions:' + str(len(transactionsJson)))
             return HttpResponse(transactionsJson, content_type='application/json')
 
@@ -1061,6 +1081,46 @@ class UserDetailView(CommAdminView):
 
             # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+        
+        elif post_type == 'list_pagination':
+            pageSize = int(request.POST.get('pageSize'))
+            fromItem = int(request.POST.get('fromItem'))
+            endItem = fromItem + pageSize
+            user = CustomUser.objects.get(pk=user_id)
+            count = Transaction.objects.filter(user_id=user).count()
+            response = {}
+            if endItem >= count:
+                response['isLastPage'] = True
+            else:
+                response['isLastPage'] = False
+
+            if fromItem == 0:
+                response['isFirstPage'] = True
+            else:
+                response['isFirstPage'] = False
+
+            transactions = Transaction.objects.filter(user_id=user)[fromItem:endItem]
+            # transactions = Transaction.objects.all()
+
+            transactionsJson = serializers.serialize('json', transactions)
+            # print(type(transactionsJson))
+            transactionsList = json.loads(transactionsJson)
+            # print(json.dumps(Transaction._meta.get_field('status').choices))
+            statusMap = {}
+            for t in Transaction._meta.get_field('status').choices:
+                statusMap[t[0]] = t[1]
+
+            for tran in transactionsList:
+                tran['fields']['status'] = statusMap[tran['fields']['status']]
+            
+            transactionsJson = json.dumps(transactionsList)
+            response['transactions'] = transactionsList
+    
+            # print(type(transactionsDict))
+            # print('transactions:' + str(transactionsJson))
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+        
 
 
 class UserListView(CommAdminView): 
