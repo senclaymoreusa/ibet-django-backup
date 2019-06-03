@@ -331,7 +331,7 @@ class UserAction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
-    refer_url = models.CharField(_('Refer URL'), max_length=300, blank=True, null=True)
+    refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
     # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
