@@ -984,10 +984,10 @@ from django.db.models import Sum
 
 class UserDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
-        context = super().get_context()     # 这一步是关键，必须super一下继承CommAdminView里面的context，不然侧栏没有对应数据，我在这里卡了好久
-        title = "Member " + self.kwargs.get('pk')   #定义面包屑变量
-        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})   #把面包屑变量添加到context里面
-        context["title"] = title   #把面包屑变量添加到context里面
+        context = super().get_context()
+        title = "Member " + self.kwargs.get('pk')
+        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
+        context["title"] = title
         # print("pk " + str(self.kwargs.get('pk')))
         Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         # print("!!!!!!!" + str(Customuser))
@@ -1001,7 +1001,7 @@ class UserDetailView(CommAdminView):
         
         context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
 
-        return render(request, 'user_detail.html', context)   #最后指定自定义的template模板，并返回context
+        return render(request, 'user_detail.html', context)
 
     def post(self, request):
         # print('post!!!')
@@ -1057,7 +1057,7 @@ class UserDetailView(CommAdminView):
                 street_address_1=address, city=city,
                 zipcode=zipcode, country=country, id_image=user_ip_img)
 
-            print(CustomUser.objects.get(pk=user_id).id_image)
+            # print(CustomUser.objects.get(pk=user_id).id_image)
 
             # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
@@ -1065,10 +1065,10 @@ class UserDetailView(CommAdminView):
 
 class UserListView(CommAdminView): 
     def get(self, request):
-        context = super().get_context()     # 这一步是关键，必须super一下继承CommAdminView里面的context，不然侧栏没有对应数据，我在这里卡了好久
-        title = "Member List"     #定义面包屑变量
-        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})   #把面包屑变量添加到context里面
-        context["title"] = title   #把面包屑变量添加到context里面
+        context = super().get_context()
+        title = "Member List"
+        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
+        context["title"] = title
         Customuser = CustomUser.objects.all()
         # context['customuser'] = Customuser
         
@@ -1112,7 +1112,7 @@ class UserListView(CommAdminView):
         if post_type == 'user_list_time_range_filter':
             time_from = request.POST.get('from')
             time_to = request.POST.get('to')
-            print("from: " + str(time_from) + 'to: ' + str(time_to))
+            # print("from: " + str(time_from) + 'to: ' + str(time_to))
             Customuser = CustomUser.objects.all()
             # context['customuser'] = Customuser
             
