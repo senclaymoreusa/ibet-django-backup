@@ -1025,11 +1025,11 @@ class UserDetailView(CommAdminView):
             city = request.POST.get('city')
             zipcode = request.POST.get('zipcode')
             country = request.POST.get('country')
-            user_id_img = request.POST.get('user_ip_img')
+            user_id_img = request.POST.get('user_id_img')
             # upload image to S3
             self.upload_user_photo_id(username, user_id_img)
 
-            # print(user_ip_img)
+            # print(user_id_img)
             CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
@@ -1114,7 +1114,7 @@ class UserDetailView(CommAdminView):
         object_content = s3_response_object['Body'].read()
         object_content = object_content.decode('utf-8')
 
-        logger.info('Finished download username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+        logger.info('Finished download username: ' + username + ' and file: ' + file_name + ' to S3!!!')
         return object_content
 
 

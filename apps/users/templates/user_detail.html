@@ -186,7 +186,7 @@
                                                 {% else %}
                                                 <img id="user_photo_img" src="http://placehold.it/200" alt="User ID Photo">
                                                 {% endif %}
-                                                <input type="hidden" name='user_ip_img' id="hidden_user_ip_url">
+                                                <input type="hidden" name='user_id_img' id="hidden_user_id_url">
                                                 <div>&nbsp;</div>
                                                 <div class="row">
                                                     <div class='col-md-8'>
@@ -679,7 +679,7 @@ $(document).ready(function() {
             var dataURL = reader.result;
             var output = document.getElementById('user_photo_img');
             output.src = dataURL;
-            $('#hidden_user_ip_url').attr('value', dataURL);
+            $('#hidden_user_id_url').attr('value', dataURL);
         };
         reader.readAsDataURL(input.files[0]);
         
