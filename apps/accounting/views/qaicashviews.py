@@ -77,7 +77,7 @@ class getDepositMethod(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -129,7 +129,7 @@ class getBankList(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -175,7 +175,7 @@ class getBankLimits(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -403,7 +403,7 @@ class getPayoutTransaction(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -472,7 +472,7 @@ class approvePayout(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -545,7 +545,7 @@ class rejectPayout(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay)  
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -607,7 +607,7 @@ class getDepositTransaction(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -706,7 +706,7 @@ class payoutMethod(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -756,7 +756,7 @@ class getPayoutBankList(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')   
         data = r.json()
@@ -791,7 +791,7 @@ class getPayoutBankLimits(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+                time.sleep(delay)  
         if not success:
             logger.info('Failed to complete a request for...')
         if r.status_code == 500:
