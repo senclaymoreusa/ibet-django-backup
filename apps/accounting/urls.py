@@ -16,4 +16,5 @@ urlpatterns = [
     path('api/payout_banklist', views.getPayoutBankList.as_view(), name = 'payout_Banklist'),
     path('api/payout_banklimits', views.getPayoutBankLimits.as_view(), name = 'payout_Banklimits'),
     path('api/paypal_create_payment', views.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
+    path('api/paypal_get_order', views.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
 ]
