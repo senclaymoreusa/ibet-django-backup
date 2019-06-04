@@ -998,7 +998,7 @@ class UserDetailView(CommAdminView):
         context['customuser'] = customUser
         # print(str(self.download_user_photo_id(customUser.username)))
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
-        print(str(context['userPhotoId']))
+        # print(str(context['userPhotoId']))
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
         if Transaction.objects.filter(user_id=customUser).count() == 0:
@@ -1036,7 +1036,8 @@ class UserDetailView(CommAdminView):
                 phone=phone, date_of_birth=birthday, 
                 street_address_1=address, city=city,
                 zipcode=zipcode, country=country)
-
+            
+            logger.info('Finished update user: ' + username + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
             # user.save()
@@ -1055,6 +1056,9 @@ class UserDetailView(CommAdminView):
                 time_from = datetime(2000, 1, 1)
             if time_to == "Invalid date":
                 time_to = datetime(2400, 1, 1)
+
+            logger.info('Transactions filter: username "' + user.username + '" send transactions filter request which time form: ' + time_from + ',to: ' + time_to + ',category: ' + ',category: ' + category)
+            logger.info('Pagination: Maximum size of the page is ' + pageSize + 'and from item #' + fromItem + ' to item # ' + endItem)
             
             if category == 'all':
                 transactions = Transaction.objects.filter(
@@ -1090,7 +1094,7 @@ class UserDetailView(CommAdminView):
             
             transactionsJson = json.dumps(transactionsList)
             response['transactions'] = transactionsList
-    
+
             # print(type(transactionsDict))
             # print('transactions:' + str(transactionsJson))
             return HttpResponse(json.dumps(response), content_type='application/json')
