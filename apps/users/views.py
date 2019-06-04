@@ -19,6 +19,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.views import View
+from django.utils.timezone import timedelta
+from django.db.models import Count, Sum, Q
+from django.contrib import messages
+from dateutil.relativedelta import relativedelta
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
@@ -55,10 +59,13 @@ import uuid
 from threading import Timer
 
 from django.utils.crypto import get_random_string
+from xadmin.views import CommAdminView
 import random
 
 import simplejson as json
 import decimal
+
+
 
 logger = logging.getLogger('django')
 
@@ -457,7 +464,6 @@ class CustomPasswordTokenVerificationView(APIView):
 
 
 from django.utils import timezone
-from datetime import timedelta
 from django.utils.translation import ngettext
 from .serializers import LanguageCodeSerializer
 from django.utils.translation import LANGUAGE_SESSION_KEY
@@ -970,6 +976,109 @@ class ChangeAndResetPassword(View):
         return HttpResponse('Success')
 
 
-
+from django.template.defaulttags import register
+AGENT_LEVEL = (
+    (0, 'Premium'),
+    (1, 'Invalid'),
+    (2, 'Normal'),
+    (3, 'Negative'),
+)
+class AgentView(CommAdminView):
+    def get(self, request):
+        context = super().get_context()
+        title = "Agent Overview"
+        context["breadcrumbs"].append({'url': '/agent_overview/', 'title': title})
+        context["title"] = title
+        agents = get_user_model().objects.all()
+        context["users"] = agents
+        context["premium_number"] = agents.filter(agent_level='Premium').count()
+        context["invalid_number"] = agents.filter(agent_level='Invalid').count()
+        context["normal_number"] = agents.filter(agent_level='Normal').count()
+        context["negative_number"] = agents.filter(agent_level='Negative').count()
+        startdate = timezone.now() + timedelta(days=-1)
+        enddate = timezone.now()
+        context["new_ftd"] = agents.filter(ftd_time__range=[startdate, enddate])
+        agents_has_referred = agents.filter(referred_by_id__isnull=False)
+        most_new_player_list = agents_has_referred.values("referred_by_id").annotate(downline_number=Count("referred_by_id")).order_by("-referred_by_id")
+        context["most_new_player"] = agents_has_referred.values("referred_by_id").annotate(Count("referred_by_id")).order_by("-referred_by_id")
         
+        # active user
+        last_month = startdate = timezone.now() + relativedelta(months=-1)
+        @register.filter(name='lookup')
+        def lookup(dict, index):
+            if index in dict:
+                return dict[index]
+            return '0'
 
+        active_user_dict = {}
+        for user, agent in agents.values_list('id', 'referred_by'):
+            if agent is None:
+                continue
+            elif (Transaction.objects.all().filter(Q(user_id=user) & Q(request_time__gte=last_month)).exists()):
+                active_user_dict.update({agent: active_user_dict.get(agent, 0) + 1})
+        context["active_user_dict"] = active_user_dict
+
+        # downline deposit
+        downline_deposit = {}
+        for user, agent, balance in agents.values_list('id', 'referred_by', 'main_wallet'):
+            if agent is None:
+                continue
+            else: 
+                downline_deposit.update({agent: downline_deposit.get(agent, 0) + balance})
+        context["downline_deposit"] = downline_deposit
+        
+        # commission system
+        # summary = (agents
+        #       .annotate(m=Month('commision_this_month'))
+        #       .values('m')
+        #       .annotate(total=Sum('commision'))
+        #       .order_by())
+        commission = agents.values('commission_this_month').aggregate(total_commission_this_month=Sum('commission_this_month'))
+        context["commission"] = commission['total_commission_this_month']
+
+            
+
+
+ 
+        
+        return render(request, 'users/agent_list.html', context) 
+    
+    def post(self, request, *args, **kwargs):
+        print("1!!!")
+        username = generate_username()
+        check_duplicate = CustomUser.objects.filter(username=username)
+        while check_duplicate:
+            username = generate_username
+            check_duplicate = CustomUser.objects.filter(username=username)
+
+        email = get_random_string(length=8)
+        check_duplicate = CustomUser.objects.filter(email=email)
+        while check_duplicate:
+            email = get_random_string(length=8)
+            check_duplicate = CustomUser.objects.filter(email=email)
+
+        phone = ''.join([str(random.randint(0,10)) for i in range(10)])
+        check_duplicate = CustomUser.objects.filter(phone=phone)
+        while check_duplicate:
+            phone = ''.join([str(random.randint(0,10)) for i in range(10)])
+            check_duplicate = CustomUser.objects.filter(phone=phone)
+
+        password = get_random_string(length=10)
+        email = email + '@gmail.com'
+
+        CustomUser.objects.create_user(username, email, phone, password)
+        user = CustomUser.objects.filter(username=username)
+        user.update(active=True, modified_time=timezone.now())
+
+        context = super().get_context()
+        agent_name = request.POST.get('username')
+        args = {'agent_name':username, 'agent_password':password, 'user':user}
+        # context["agent_password"] = password
+        # agent_name = request.POST['username']
+        # return HttpResponse(username + '-' + password)
+        
+        return render(request,"users/agent_list.html",args)
+
+
+    
+    

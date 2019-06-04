@@ -1,0 +1,114 @@
+{% extends "xadmin/base_site.html" %}
+
+{% block content %}
+    
+    <table style="width:90%">
+        <tr>
+            <th>#</th>
+            <th>AFFILIATE ID</th> 
+            <th>ACTIVE USERS</th>
+            <th>DOWNLINE DEPOSIT</th>
+            <th>TURNOVER</th>
+            <th>DOWNLINE GGR</th>
+            <th>COMMISSION LAST MONTH</th>
+            <th>COMMISSION MONTH BEFORE</th>
+            <th>BALANCE</th>
+            <th>STATUS</th>
+        </tr>
+        <tr>
+            {% for i in users %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ i.username }}</td>
+                <td>{{ active_user_dict|lookup:i.pk }}</td>
+                <td>{{ downline_deposit|lookup:i.pk }}</td>
+                
+            </tr>
+            {% endfor %}
+        </tr>
+    </table>
+
+
+    <table style="width:40%">
+        <tr>
+            <th>Premium</th>
+            <th>Invalid</th> 
+            <th>Normal</th>
+            <th>Negative</th>
+        </tr>
+        <tr>
+            <td>{{ premium_number }}</td>
+            <td>{{ invalid_number }}</td> 
+            <td>{{ normal_number }}</td>
+            <td>{{ negative_number }}</td>
+        </tr>
+    </table>
+
+    <table style="width:70%">
+        <tr>
+            <th>#</th>
+            <th>MONTH</th> 
+            <th>AFFILIATE COUNT</th>
+            <th>ACTIVE DOWNLINE</th>
+            <th>COMMISSION</th>
+            <th>STATUS</th>
+        </tr>
+        <tr>
+            <td>{{ commission }}</td>
+            <td>{{ invalid_number }}</td> 
+            <td>{{ normal_number }}</td>
+            <td>{{ negative_number }}</td>
+            <td>{{ commission }}</td>
+        </tr>
+    </table>
+
+    <p><Strong>New FTD Yesterday</Strong></p>
+    {% for ftd in new_ftd%}
+        <p>{{ ftd }}</p>
+    {% endfor %}
+
+    <p><Strong>Most New Player</Strong></p>
+    {% for agent in most_new_player%}
+        <p>{{ agent }}</p>
+    {% endfor %}
+
+    <!-- <form action="{% url 'xadmin:agent_view' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal fade" id="update" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                  &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                  提醒框
+                </h4>
+              </div>
+              <div class="modal-body">
+                <label>KEY</label>
+                <input type="text" class="form-control" name="new_key" value="{{user.username_}}">
+                <label>VALUES</label>
+                <input type="text" class="form-control" name="new_value" value="{{user.password_}}">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="submit" name="update_id" value="{{i.id}}" class="btn btn-primary">
+                  确定修改
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="submit" data-toggle="modal" data-target="#update" class="btn btn-info" value="修改">
+    </form> -->
+
+    <form action = "{% url 'xadmin:agent_view' %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="Add Agent">
+            <p>AgentName: {{ agent_name }}</p>
+            <p>AgentPassword: {{ agent_password }}</p>
+    </form>
+
+{% endblock %}

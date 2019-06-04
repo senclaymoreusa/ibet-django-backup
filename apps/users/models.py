@@ -37,6 +37,13 @@ CRRENCY_TYPES = (
     ('AUD', 'AUD')
 )
 
+AGENT_LEVEL = (
+    (0, 'Premium'),
+    (1, 'Invalid'),
+    (2, 'Normal'),
+    (3, 'Negative'),
+)
+
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
         if not email:
@@ -151,6 +158,11 @@ class CustomUser(AbstractBaseUser):
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
+
+    # agent
+    agent_level = models.CharField(_('Agent Level'),choices=AGENT_LEVEL, max_length=255, default='Normal')
+    commission_this_month = models.DecimalField(_('Commision This Month'), max_digits=20, decimal_places=2, default=0)
+    commission_last_month = models.DecimalField(_('Commision Last Month'), max_digits=20, decimal_places=2, default=0)
 
     created_time = models.DateTimeField(
         _('Created Time'),

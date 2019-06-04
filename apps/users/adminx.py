@@ -5,6 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
+from .views import AgentView, OneclickRegister
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -28,6 +29,20 @@ class GlobalSettings(object):
     site_footer = 'Ibet'  # 页尾
     site_url = '/'
     menu_style = 'accordion'  # 设置左侧菜单  折叠样式
+    def get_site_menu(self):  #名称不能改
+        return [
+            {
+                'title': 'Test View',
+                'icon': 'fa fa-bar-chart-o',
+                'menus': (
+                    {
+                        'title': 'Agent Overview',    #这里是你菜单的名称
+                        'url': '/xadmin/agent_view',     #这里填写你将要跳转url
+                        'icon': 'fa fa-cny'     #这里是bootstrap的icon类名，要换icon只要登录bootstrap官网找到icon的对应类名换上即可
+                    },
+                )
+            }
+        ]
    
 
 from django.contrib import admin
@@ -207,3 +222,4 @@ xadmin.site.register(UserTag,TagAdmin)
 xadmin.site.register(UserWithTag,UserWithTagAdmin)
 xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
+xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
