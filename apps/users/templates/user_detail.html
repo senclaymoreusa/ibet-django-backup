@@ -25,7 +25,13 @@
                 </div>
                 <div class="section_body">
                     <div class="row">
-                            <div class='col-md-6'>photo</div>
+                            <div class='col-md-6'>
+                                {% if userPhotoId %}
+                                <img id="user_photo_id" src="{{ userPhotoId }}">
+                                {% else %}
+                                <img id="user_photo_id" src="http://placehold.it/200" alt="User ID Photo">
+                                {% endif %}
+                            </div>
                             <div class='col-md-6'>
                                 <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
                                 <div><span>Member ID</span><span class="detail_info">{{ customuser.pk }}</span></div>
@@ -175,8 +181,8 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <input id='hidden_input_img' type='file' accept='image/*' style='display: none;' onchange="chooseFile(event);">
-                                                {% if customuser.photoId %}
-                                                <img id="user_photo_img" src="{% static 'customuser.photoId' %}">
+                                                {% if userPhotoId %}
+                                                <img id="user_photo_img" src="{{ userPhotoId }}">
                                                 {% else %}
                                                 <img id="user_photo_img" src="http://placehold.it/200" alt="User ID Photo">
                                                 {% endif %}

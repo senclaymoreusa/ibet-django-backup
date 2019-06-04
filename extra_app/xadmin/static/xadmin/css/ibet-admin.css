@@ -109,3 +109,9 @@ hr {
     border-bottom-left-radius: 3px; 
     border-bottom-right-radius: 3px;
 }
+
+#user_photo_id {
+    width:200px;
+    height: 200px;
+
+}

@@ -982,6 +982,8 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from datetime import datetime, timedelta
 from django.db.models import Q
+import boto3
+from botocore.exceptions import ClientError
 
 
 class UserDetailView(CommAdminView):
@@ -991,19 +993,22 @@ class UserDetailView(CommAdminView):
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
         # print("pk " + str(self.kwargs.get('pk')))
-        Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+        customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         # print("!!!!!!!" + str(Customuser))
-        context['customuser'] = Customuser
-        context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
+        context['customuser'] = customUser
+        # print(str(self.download_user_photo_id(customUser.username)))
+        context['userPhotoId'] = self.download_user_photo_id(customUser.username)
+        print(str(context['userPhotoId']))
+        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
-        if Transaction.objects.filter(user_id=Customuser).count() == 0:
+        if Transaction.objects.filter(user_id=customUser).count() == 0:
             context['userTransactions'] = ''
         else:
-            context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)[:20]
-        
-        context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
+            context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
+        context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
 
         return render(request, 'user_detail.html', context)
+
 
     def post(self, request):
         post_type = request.POST.get('type')
@@ -1020,14 +1025,17 @@ class UserDetailView(CommAdminView):
             city = request.POST.get('city')
             zipcode = request.POST.get('zipcode')
             country = request.POST.get('country')
-            user_ip_img = request.POST.get('user_ip_img')
+            user_id_img = request.POST.get('user_ip_img')
+            # upload image to S3
+            self.upload_user_photo_id(username, user_id_img)
+
             # print(user_ip_img)
             CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
                 phone=phone, date_of_birth=birthday, 
                 street_address_1=address, city=city,
-                zipcode=zipcode, country=country, id_image=user_ip_img)
+                zipcode=zipcode, country=country)
 
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
@@ -1086,9 +1094,37 @@ class UserDetailView(CommAdminView):
             # print(type(transactionsDict))
             # print('transactions:' + str(transactionsJson))
             return HttpResponse(json.dumps(response), content_type='application/json')
-            
 
-        
+    
+    def download_user_photo_id(self, username):
+        aws_session = boto3.Session()
+        s3_client = aws_session.client('s3')
+        file_name = self.get_user_photo_file_name(username)
+        try:
+            s3_response_object = s3_client.get_object(Bucket='ibet-admin', Key=file_name)
+        except ClientError as e:
+            # AllAccessDisabled error == bucket or object not found
+            logger.error(e)
+            logger.info('Cannout find any image from this user: ' + username)
+            return None
+        object_content = s3_response_object['Body'].read()
+        object_content = object_content.decode('utf-8')
+
+        logger.info('Finished download username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+        return object_content
+
+
+    def upload_user_photo_id(self, username, content):
+        aws_session = boto3.Session()
+        s3 = aws_session.resource('s3')
+        file_name = self.get_user_photo_file_name(username)
+        obj = s3.Object('ibet-admin', file_name)
+        obj.put(Body=content)
+        logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+
+
+    def get_user_photo_file_name(self, username):
+        return username + '_photo_id'       
 
 
 class UserListView(CommAdminView): 
