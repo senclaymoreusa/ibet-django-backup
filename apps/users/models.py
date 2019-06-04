@@ -140,7 +140,7 @@ class CustomUser(AbstractBaseUser):
     reset_password_code = models.CharField(max_length=4, blank=True)
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
-    time_of_registration = models.DateTimeField(_('Time of Registration'), default=timezone.now, null=True)
+    time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
     verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
@@ -156,12 +156,12 @@ class CustomUser(AbstractBaseUser):
 
     created_time = models.DateTimeField(
         _('Created Time'),
-        default=timezone.now,
+        auto_now_add=True,
         editable=False,
     )
     modified_time = models.DateTimeField(
         _('Modified Time'),
-        default=timezone.now,
+        auto_now_add=True,
         editable=False,
     )
 
@@ -336,7 +336,7 @@ class UserAction(models.Model):
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),
-        default=timezone.now,
+        auto_now_add=True,
         editable=False,
     )
     class Meta:

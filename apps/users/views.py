@@ -980,6 +980,8 @@ from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
 from django.db.models import Sum
+from datetime import datetime, timedelta
+from django.db.models import Q
 
 
 class UserDetailView(CommAdminView):
@@ -1119,6 +1121,69 @@ class UserDetailView(CommAdminView):
             # print(type(transactionsDict))
             # print('transactions:' + str(transactionsJson))
             return HttpResponse(json.dumps(response), content_type='application/json')
+
+        elif post_type == 'get_user_transactions':
+            time_from = request.POST.get('from')
+            time_to = request.POST.get('to')
+            pageSize = int(request.POST.get('pageSize'))
+            fromItem = int(request.POST.get('fromItem'))
+            print("!!!!!fromItem : " + str(fromItem))
+            endItem = fromItem + pageSize
+            print("!!!!!!endItem : " + str(endItem))
+            category = request.POST.get('transaction_category')
+            user = CustomUser.objects.get(pk=user_id)
+
+            if time_from == "Invalid date":
+                print("from is empty !!!!")
+                time_from = datetime(2000, 1, 1)
+            if time_to == "Invalid date":
+                print("to is empty !!!")
+                time_to = datetime(2400, 1, 1)
+            
+            if category == 'all':
+                print("catefory is none")
+                transactions = Transaction.objects.filter(
+                    Q(user_id=user) & Q(request_time__range=[time_from, time_to])
+                )[fromItem:endItem]
+                count = Transaction.objects.filter(Q(user_id=user) & Q(request_time__range=[time_from, time_to])).count()
+            else:
+                print('category:' + category)
+                print("catefory is not empty")
+                transactions = Transaction.objects.filter(
+                    Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])
+                )[fromItem:endItem]
+                count = Transaction.objects.filter(Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])).count()
+
+            # count = transactions.count()
+            print("count:" + str(count))
+            response = {}
+            if endItem >= count:
+                response['isLastPage'] = True
+            else:
+                response['isLastPage'] = False
+
+            if fromItem == 0:
+                response['isFirstPage'] = True
+            else:
+                response['isFirstPage'] = False
+
+            transactionsJson = serializers.serialize('json', transactions)
+            transactionsList = json.loads(transactionsJson)
+            # print(json.dumps(Transaction._meta.get_field('status').choices))
+            statusMap = {}
+            for t in Transaction._meta.get_field('status').choices:
+                statusMap[t[0]] = t[1]
+
+            for tran in transactionsList:
+                tran['fields']['status'] = statusMap[tran['fields']['status']]
+            
+            transactionsJson = json.dumps(transactionsList)
+            response['transactions'] = transactionsList
+    
+            # print(type(transactionsDict))
+            # print('transactions:' + str(transactionsJson))
+            return HttpResponse(json.dumps(response), content_type='application/json')
+            
 
         
 
