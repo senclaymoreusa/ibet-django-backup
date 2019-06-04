@@ -1006,60 +1006,10 @@ class UserDetailView(CommAdminView):
         return render(request, 'user_detail.html', context)
 
     def post(self, request):
-        # print('post!!!')
         post_type = request.POST.get('type')
-        # print(post_type)
-        # print(request.POST.get('member_id'))
         user_id = request.POST.get('user_id')
-        if post_type == 'trans_filter':
-            category = request.POST.get('transaction_category')
-            user = CustomUser.objects.get(pk=user_id)
-            if category == 'all':
-                transactions = Transaction.objects.filter(user_id=user)
-            else:
-                transactions = Transaction.objects.filter(user_id=user, transaction_type=category)
-            transactionsJson = serializers.serialize('json', transactions)
-            transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
-            statusMap = {}
-            for t in Transaction._meta.get_field('status').choices:
-                statusMap[t[0]] = t[1]
 
-            for tran in transactionsList:
-                tran['fields']['status'] = statusMap[tran['fields']['status']]
-            
-            transactionsJson = json.dumps(transactionsList)
-            # print(transactionsJson)
-            return HttpResponse(transactionsJson, content_type='application/json')
-
-        elif post_type == 'trans_time_range_filter':
-            time_from = request.POST.get('from')
-            time_to = request.POST.get('to')
-            print(str(time_to))
-            if time_to == '':
-                time_to = timezone.now()
-            print("from: " + str(time_from) + 'to: ' + str(time_to))
-            user = CustomUser.objects.get(pk=user_id)
-            transactions = Transaction.objects.filter(user_id=user, request_time__range=[time_from, time_to])
-            if len(transactions) == 0:
-                print("No transaction at this range")
-                return HttpResponse('No transaction at this range')
-            transactionsJson = serializers.serialize('json', transactions)
-            transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
-            statusMap = {}
-            for t in Transaction._meta.get_field('status').choices:
-                statusMap[t[0]] = t[1]
-
-            for tran in transactionsList:
-                tran['fields']['status'] = statusMap[tran['fields']['status']]
-            
-            transactionsJson = json.dumps(transactionsList)
-            # print('transactions:' + str(len(transactionsJson)))
-            return HttpResponse(transactionsJson, content_type='application/json')
-
-        elif post_type == 'edit_user_detail':
-            # print("success")
+        if post_type == 'edit_user_detail':
             username = request.POST.get('username')
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
@@ -1083,79 +1033,32 @@ class UserDetailView(CommAdminView):
 
             # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
-        
-        elif post_type == 'list_pagination':
-            pageSize = int(request.POST.get('pageSize'))
-            fromItem = int(request.POST.get('fromItem'))
-            endItem = fromItem + pageSize
-            user = CustomUser.objects.get(pk=user_id)
-            count = Transaction.objects.filter(user_id=user).count()
-            response = {}
-            if endItem >= count:
-                response['isLastPage'] = True
-            else:
-                response['isLastPage'] = False
-
-            if fromItem == 0:
-                response['isFirstPage'] = True
-            else:
-                response['isFirstPage'] = False
-
-            transactions = Transaction.objects.filter(user_id=user)[fromItem:endItem]
-            # transactions = Transaction.objects.all()
-
-            transactionsJson = serializers.serialize('json', transactions)
-            # print(type(transactionsJson))
-            transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
-            statusMap = {}
-            for t in Transaction._meta.get_field('status').choices:
-                statusMap[t[0]] = t[1]
-
-            for tran in transactionsList:
-                tran['fields']['status'] = statusMap[tran['fields']['status']]
-            
-            transactionsJson = json.dumps(transactionsList)
-            response['transactions'] = transactionsList
-    
-            # print(type(transactionsDict))
-            # print('transactions:' + str(transactionsJson))
-            return HttpResponse(json.dumps(response), content_type='application/json')
 
         elif post_type == 'get_user_transactions':
             time_from = request.POST.get('from')
             time_to = request.POST.get('to')
             pageSize = int(request.POST.get('pageSize'))
             fromItem = int(request.POST.get('fromItem'))
-            print("!!!!!fromItem : " + str(fromItem))
             endItem = fromItem + pageSize
-            print("!!!!!!endItem : " + str(endItem))
             category = request.POST.get('transaction_category')
             user = CustomUser.objects.get(pk=user_id)
 
             if time_from == "Invalid date":
-                print("from is empty !!!!")
                 time_from = datetime(2000, 1, 1)
             if time_to == "Invalid date":
-                print("to is empty !!!")
                 time_to = datetime(2400, 1, 1)
             
             if category == 'all':
-                print("catefory is none")
                 transactions = Transaction.objects.filter(
                     Q(user_id=user) & Q(request_time__range=[time_from, time_to])
                 )[fromItem:endItem]
                 count = Transaction.objects.filter(Q(user_id=user) & Q(request_time__range=[time_from, time_to])).count()
             else:
-                print('category:' + category)
-                print("catefory is not empty")
                 transactions = Transaction.objects.filter(
                     Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])
                 )[fromItem:endItem]
                 count = Transaction.objects.filter(Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])).count()
 
-            # count = transactions.count()
-            print("count:" + str(count))
             response = {}
             if endItem >= count:
                 response['isLastPage'] = True
