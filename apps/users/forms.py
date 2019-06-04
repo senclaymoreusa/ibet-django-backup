@@ -126,3 +126,9 @@ class userWithTagEditForm(forms.ModelForm):
     
     def has_add_permission(self):
         return False
+
+
+class IdImageForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ('id_image', )

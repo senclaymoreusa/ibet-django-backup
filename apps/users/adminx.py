@@ -19,7 +19,7 @@ DOMAIN = settings.DOMAIN
 
 
 class BaseSetting(object):
-    enable_themes = True    # 使用主题
+    # enable_themes = True    # 使用主题
     use_bootswatch = True
 
 # 全局设置
@@ -27,8 +27,22 @@ class GlobalSettings(object):
     site_title = _('IBET Administration')  # 标题
     site_footer = 'Ibet'  # 页尾
     site_url = '/'
-    menu_style = 'accordion'  # 设置左侧菜单  折叠样式
-   
+    menu_style = 'accordion'
+    
+    def get_site_menu(self):
+        return [
+            {
+                'title': 'Members',
+                'icon': 'fa fa-user fa-fw',
+                'menus': (
+                    {
+                        'title': _('Member List'),
+                        'url': '/xadmin/user',
+                        'icon': 'fa fa-user'
+                    },
+                )
+            }
+        ]
 
 from django.contrib import admin
 class UserWithTagInline(object):
@@ -181,7 +195,7 @@ class UserWithTagAdmin(object):
 
 class UserActionAdmin(object):
 
-    list_display = ('user','event_type', 'ip_addr','dollar_amount', 'created_time', 'user_action_link')
+    list_display = ('user','event_type', 'ip_addr', 'created_time', 'user_action_link')
     list_filter = ('user', 'event_type', 'created_time')
     model_icon = 'fa fa-cogs'
     search_fields = ('user__username', 'event_type',)
@@ -196,6 +210,18 @@ class UserActionAdmin(object):
         return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
     user_action_link.allow_tags = True
     user_action_link.short_description = _("User action link")
+
+
+
+#注册你上面填写的url
+from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'user/$', UserListView, name='user_list')
+
+#注册GlobalSetting
+from xadmin.views import CommAdminView
+# xadmin.site.register(CommAdminView, GlobalSettings)
 
 
 xadmin.site.register(views.CommAdminView, GlobalSettings)
