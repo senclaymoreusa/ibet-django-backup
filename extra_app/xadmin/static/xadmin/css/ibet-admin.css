@@ -81,7 +81,7 @@ hr {
 }
 
 #user_photo_img {
-    max-width: 200px;
+    max-width: 250px;
     max-height: 200px;
 }
 
@@ -112,6 +112,15 @@ hr {
 }
 
 #user_photo_id {
-    max-width: 200px;
+    max-width: 250px;
     max-height: 200px;
+}
+
+.zoom_btn {
+    position: absolute;
+    top: 75%;
+    left: 75%;
+    background: transparent;
+    border: transparent;
+    color:white;
 }

@@ -31,6 +31,7 @@
                                 {% else %}
                                 <img id="user_photo_id" src="http://placehold.it/200" alt="User ID Photo">
                                 {% endif %}
+                                <button id="zoom_btn" class="zoom_btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
                             </div>
                             <div class='col-md-6'>
                                 <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
@@ -43,6 +44,19 @@
                                 <div><span>Birthday</span><span>{{ customuser.date_of_birth }}</span></div>
                                 <div><span>Address</span><span>{{ customuser.street_address_1 }}</span><span>{{ customuser.city }}</span><span>{{ customuser.state }}</span><span>{{ customuser.zipcode }}</span></div> 
                             </div>
+                    </div>
+                    <div id="myModal" class="modal fade" role="dialog" style="width:600px;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">USER PHOTO ID</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <img class="showimage img-responsive" src="" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                             <hr>
@@ -684,8 +698,8 @@ $(document).ready(function() {
         };
         reader.readAsDataURL(input.files[0]);
         
-        $('#user_photo_img').css('width', '200px');
-        $('#user_photo_img').css('height', '200px');
+        $('#user_photo_img').css('max-width', '250px');
+        $('#user_photo_img').css('max-height', '200px');
    }
 
    clickUploadImg = function () {
@@ -750,6 +764,12 @@ $(document).ready(function() {
         }
     });
 
+    $('#zoom_btn').on('click', function () {
+        var image = $('#user_photo_id').attr('src');
+        $('#myModal').on('show.bs.modal', function () {
+            $(".showimage").attr("src", image);
+        });
+    });
 
     $(function () {
         $('#transaction_time_from').datepicker({ 
