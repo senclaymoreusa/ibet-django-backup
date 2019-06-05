@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-13 23:33-0700\n"
+"POT-Creation-Date: 2019-05-15 23:33-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,14 +24,14 @@ msgstr ""
 msgid "Accounting System"
 msgstr "營運系統"
 
-#: apps/accounting/models.py:21 apps/users/models.py:178
-#: apps/users/models.py:287 apps/users/models.py:337
+#: apps/accounting/models.py:21 apps/users/models.py:213
+#: apps/users/models.py:322 apps/users/models.py:372
 #, fuzzy
 #| msgid "User Tag"
 msgid "User"
 msgstr "用戶標籤"
 
-#: apps/accounting/models.py:22 apps/users/models.py:291
+#: apps/accounting/models.py:22 apps/users/models.py:326
 msgid "Amount"
 msgstr "金額"
 
@@ -71,7 +71,7 @@ msgstr ""
 msgid "Transaction Fee"
 msgstr ""
 
-#: apps/accounting/models.py:56
+#: apps/accounting/models.py:56 apps/users/models.py:86
 msgid "Active"
 msgstr ""
 
@@ -95,13 +95,11 @@ msgstr "營運系統"
 msgid "Notice Message"
 msgstr "通知消息"
 
-#: apps/users/admin.py:54
-#, fuzzy
-#| msgid "You username is "
+#: apps/users/admin.py:57
 msgid "username"
-msgstr "您的用户名是"
+msgstr "用户名"
 
-#: apps/users/admin.py:55
+#: apps/users/admin.py:58
 msgid "password"
 msgstr "密碼"
 
@@ -113,15 +111,15 @@ msgstr "IBET管理"
 msgid "User Tag"
 msgstr "用戶標籤"
 
-#: apps/users/adminx.py:79 apps/users/models.py:276
+#: apps/users/adminx.py:79 apps/users/models.py:311
 msgid "Login"
 msgstr "登入次數"
 
-#: apps/users/adminx.py:85 apps/users/models.py:279
+#: apps/users/adminx.py:85 apps/users/models.py:314
 msgid "Deposit"
 msgstr "存款次數"
 
-#: apps/users/adminx.py:91 apps/users/models.py:280
+#: apps/users/adminx.py:91 apps/users/models.py:315
 msgid "Withdraw"
 msgstr "提款次數"
 
@@ -143,7 +141,7 @@ msgstr "用戶動作詳情"
 msgid "Approved tag assign to user"
 msgstr "標記用戶標籤"
 
-#: apps/users/adminx.py:129 apps/users/models.py:180
+#: apps/users/adminx.py:129 apps/users/models.py:215
 msgid "Status"
 msgstr ""
 
@@ -167,75 +165,135 @@ msgstr "標籤"
 msgid "Notes"
 msgstr "標註"
 
-#: apps/users/models.py:131
-msgid "Customer User"
-msgstr "用戶列表"
+#: apps/users/models.py:80
+msgid "Direct User"
+msgstr ""
 
-#: apps/users/models.py:175
-msgid "pending"
-msgstr "待決"
+#: apps/users/models.py:81
+msgid "User from Promo"
+msgstr ""
 
-#: apps/users/models.py:176
-msgid "approved"
-msgstr "批准"
+#: apps/users/models.py:82
+msgid "Advertisements"
+msgstr ""
 
-#: apps/users/models.py:179
-msgid "Tag"
-msgstr "標籤"
+#: apps/users/models.py:87
+msgid "Inactive"
+msgstr ""
 
-#: apps/users/models.py:187
-msgid "Assign tag to user"
-msgstr "標記用戶標籤"
+#: apps/users/models.py:88
+msgid "Blocked"
+msgstr ""
 
-#: apps/users/models.py:277
-msgid "Logout"
-msgstr "登出"
+#: apps/users/models.py:137
+msgid "User Attribute"
+msgstr ""
 
-#: apps/users/models.py:278
-msgid "Register"
-msgstr "註冊"
+#: apps/users/models.py:138
+msgid "Product Attribute"
+msgstr ""
 
-#: apps/users/models.py:281
-msgid "Page Visit"
-msgstr "瀏覽頁面"
+#: apps/users/models.py:139
+msgid "Time of Registration"
+msgstr ""
 
-#: apps/users/models.py:282
-msgid "bet"
-msgstr "投注"
+#: apps/users/models.py:140
+msgid "Time of FTD"
+msgstr ""
 
-#: apps/users/models.py:285
-msgid "Action Ip"
-msgstr "位址"
+#: apps/users/models.py:141
+msgid "Time of Verification"
+msgstr ""
 
-#: apps/users/models.py:286
-msgid "Event Type"
-msgstr "事件類別"
+#: apps/users/models.py:142
+msgid "Location shown on the ID"
+msgstr ""
 
-#: apps/users/models.py:288
-msgid "Device"
-msgstr "裝置"
+#: apps/users/models.py:143
+msgid "Last Login Time"
+msgstr ""
 
-#: apps/users/models.py:289
-msgid "Browser"
-msgstr "瀏覽器"
+#: apps/users/models.py:144
+msgid "Last Betting Time"
+msgstr ""
 
-#: apps/users/models.py:290
-msgid "Refer URL"
-msgstr "推薦連結"
+#: apps/users/models.py:146
+msgid "Main Wallet"
+msgstr ""
 
-#: apps/users/models.py:292
-msgid "Page"
-msgstr "頁面"
+#: apps/users/models.py:147
+msgid "Other Game Wallet"
+msgstr ""
 
-#: apps/users/models.py:294
+#: apps/users/models.py:150 apps/users/models.py:155 apps/users/models.py:329
 msgid "Created Time"
 msgstr "時間"
 
-#: apps/users/models.py:299
+#: apps/users/models.py:166
+msgid "Customer User"
+msgstr "用戶列表"
+
+#: apps/users/models.py:210
+msgid "pending"
+msgstr "待決"
+
+#: apps/users/models.py:211
+msgid "approved"
+msgstr "批准"
+
+#: apps/users/models.py:214
+msgid "Tag"
+msgstr "標籤"
+
+#: apps/users/models.py:222
+msgid "Assign tag to user"
+msgstr "標記用戶標籤"
+
+#: apps/users/models.py:312
+msgid "Logout"
+msgstr "登出"
+
+#: apps/users/models.py:313
+msgid "Register"
+msgstr "註冊"
+
+#: apps/users/models.py:316
+msgid "Page Visit"
+msgstr "瀏覽頁面"
+
+#: apps/users/models.py:317
+msgid "bet"
+msgstr "投注"
+
+#: apps/users/models.py:320
+msgid "Action Ip"
+msgstr "位址"
+
+#: apps/users/models.py:321
+msgid "Event Type"
+msgstr "事件類別"
+
+#: apps/users/models.py:323
+msgid "Device"
+msgstr "裝置"
+
+#: apps/users/models.py:324
+msgid "Browser"
+msgstr "瀏覽器"
+
+#: apps/users/models.py:325
+msgid "Refer URL"
+msgstr "推薦連結"
+
+#: apps/users/models.py:327
+msgid "Page"
+msgstr "頁面"
+
+#: apps/users/models.py:334
 msgid "User action history"
 msgstr "用戶行為紀錄"
 
-#: apps/users/models.py:338
+#: apps/users/models.py:373
 msgid "Bonus"
 msgstr ""
 
@@ -316,54 +374,56 @@ msgstr "用户名或密码错误"
 msgid "E-mail is not verified."
 msgstr "邮件没有被核实"
 
-#: apps/users/views.py:218
+#: apps/users/views.py:222
 msgid "Current user is blocked!"
 msgstr "用户被禁用"
 
-#: apps/users/views.py:223
+#: apps/users/views.py:227
 msgid "Please activate your account!"
 msgstr "请激活您的账户!"
 
-#: apps/users/views.py:323
+#: apps/users/views.py:355
+msgid "Successfully logged out."
+msgstr ""
+
+#: apps/users/views.py:375
 msgid "You have registered an account at ibet.com, "
 msgstr "您已经再ibet.com 注册了邮箱"
 
-#: apps/users/views.py:324
+#: apps/users/views.py:376
 msgid "You username is "
 msgstr "您的用户名是"
 
-#: apps/users/views.py:324
-#, fuzzy
-#| msgid "Your new Email Address is: "
+#: apps/users/views.py:376
 msgid ", and your email address is "
-msgstr "您新郵箱地址: "
+msgstr ",您新郵箱地址: "
 
-#: apps/users/views.py:327
+#: apps/users/views.py:379
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: apps/users/views.py:328
+#: apps/users/views.py:380
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: apps/users/views.py:331
+#: apps/users/views.py:383
 msgid " referred you to sign up an account with Claymore"
 msgstr "推荐你注册一个claymore的账号"
 
-#: apps/users/views.py:332
+#: apps/users/views.py:384
 msgid "Please use the referral link to register your new account: "
 msgstr "请用推荐链接注册您的新账户"
 
-#: apps/users/views.py:352
+#: apps/users/views.py:404
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: apps/users/views.py:354
+#: apps/users/views.py:406
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "
 
-#: apps/users/views.py:609
+#: apps/users/views.py:656
 msgid "Please activate you ibet account "
 msgstr "请激活您的ibet账户"
 

@@ -72,7 +72,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',       # Stephen
     'django_rest_passwordreset',
     'django_nose',
-    # 'reversion',
+    'reversion',
 ]
 
 SITE_ID = 1                        # Stephen
@@ -129,13 +129,24 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
@@ -280,7 +291,7 @@ STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
-#payment
+#qaicash-payment
 QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
 MERCHANTID = '1'
 CURRENCY = 'IDR'
@@ -288,3 +299,11 @@ MERCHANTAPIKEY = 'secret'
 APIVERSION = 'v2.0'
 METHOD = 'LBT_ONLINE'
 DEPOSIT_URL = '/deposit/routing/'
+PAYOUT_URL = '/payout/routing/'
+
+#paypal-payment
+
+PAYPAL_MODE = 'sandbox'   # sandbox or live
+PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
+PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
+PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/v1/'

@@ -10,12 +10,16 @@ from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
 from django.contrib.admin import SimpleListFilter
 from django.conf import settings
+# from xadmin.layout import Main, Fieldset, Row
+from xadmin.layout import *
+from xadmin.plugins.inline import Inline
+
 
 DOMAIN = settings.DOMAIN
 
 
 class BaseSetting(object):
-    enable_themes = True    # 使用主题
+    # enable_themes = True    # 使用主题
     use_bootswatch = True
 
 # 全局设置
@@ -23,8 +27,22 @@ class GlobalSettings(object):
     site_title = _('IBET Administration')  # 标题
     site_footer = 'Ibet'  # 页尾
     site_url = '/'
-    menu_style = 'accordion'  # 设置左侧菜单  折叠样式
-   
+    menu_style = 'accordion'
+    
+    def get_site_menu(self):
+        return [
+            {
+                'title': 'Members',
+                'icon': 'fa fa-user fa-fw',
+                'menus': (
+                    {
+                        'title': _('Member List'),
+                        'url': '/xadmin/user',
+                        'icon': 'fa fa-user'
+                    },
+                )
+            }
+        ]
 
 from django.contrib import admin
 class UserWithTagInline(object):
@@ -38,14 +56,15 @@ class MyUserAdmin(object):
     # add_form = UserCreationForm
     # form = CustomUserCreationForm
 
-    list_display = ('username','email','is_admin', 'first_name', 'last_name', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 
-    'user_withdraw_channel')
+
+    list_display = ('username','email','is_admin', 'block', 'get_approved_tag', 'login_count', 'bet_count', 'deposit_count', 'withdraw_count', 'bet_count',  'user_action_link', 'user_deposit_channel', 'user_withdraw_channel','time_of_registration', 'ftd_time', 'verfication_time', 'modified_time', 'last_login_time', 'last_login_ip')
     list_filter = ('is_admin', 'user_tag', 'useraction__created_time',)
 
-    fieldsets = (
-        (None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'activation_code')}),
-        ('Permissions', {'fields': ('is_admin', 'is_staff')})
-    )
+    # fieldsets = (
+    #     (None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'balance', 'active', 'activation_code')}),
+    #     ('Permissions', {'fields': ('is_admin', 'is_staff')})
+    # )
+
     search_fields = ('username','email', 'user_tag__name')
     ordering = ('username','email',)
     # list_editable = 'username'
@@ -56,6 +75,32 @@ class MyUserAdmin(object):
     inlines = (UserWithTagInline,)
     list_per_page = 20
     # refresh_times = [3,5] 
+
+    form_layout = (
+        Main(
+            TabHolder(
+                Tab('User Info',
+                    Fieldset('General Info',
+                            'username', 'member_status', 'user_attribute',
+                            Row('email', 'phone'),
+                            description="User Detail",
+                    ),
+                    Fieldset('Balance',
+                            'main_wallet', 'other_game_wallet',
+                    ),
+                    Inline(UserWithTag),
+                    
+                ),
+                Tab('User Detail',
+                    Fieldset('Last',
+                            'first_name', 'last_name',
+                    ),
+                ),
+            )
+            
+        ),
+    )
+
     
     def get_model_form(self, **kwargs):
         if self.org_obj is None:
@@ -104,9 +149,17 @@ class MyUserAdmin(object):
         return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.id))
     user_action_link.allow_tags = True
     user_action_link.short_description = _("User action link")
+
+    def last_login_ip(self, obj):
+        qs = UserAction.objects.filter(user=obj, event_type=0).order_by('-created_time')
+        if qs.count() == 0:
+            return None
+        return qs[0].ip_addr
+
+    def save_models(self):
+        obj = self.new_obj
+        super().save_models()
     
-
-
 class TagAdmin(object):
     
     list_display = ('name', 'notes')
@@ -142,7 +195,7 @@ class UserWithTagAdmin(object):
 
 class UserActionAdmin(object):
 
-    list_display = ('user','event_type', 'ip_addr','dollar_amount', 'created_time', 'user_action_link')
+    list_display = ('user','event_type', 'ip_addr', 'created_time', 'user_action_link')
     list_filter = ('user', 'event_type', 'created_time')
     model_icon = 'fa fa-cogs'
     search_fields = ('user__username', 'event_type',)
@@ -157,6 +210,18 @@ class UserActionAdmin(object):
         return ('<a href="%s">' + str(msg) + '</a>') % (DOMAIN + 'xadmin/users/useraction/?_p_user__id__exact=' + str(obj.user.id))
     user_action_link.allow_tags = True
     user_action_link.short_description = _("User action link")
+
+
+
+#注册你上面填写的url
+from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'user/$', UserListView, name='user_list')
+
+#注册GlobalSetting
+from xadmin.views import CommAdminView
+# xadmin.site.register(CommAdminView, GlobalSettings)
 
 
 xadmin.site.register(views.CommAdminView, GlobalSettings)

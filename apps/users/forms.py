@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, UserWithTag
+from .models import CustomUser, UserWithTag, UserAction
 from django.forms import ModelForm
 
 from django.contrib.auth import get_user_model
@@ -57,11 +57,15 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ('username', 'email', 'first_name', 'last_name', 'phone')
 
-class CustomUserChangeForm(UserChangeForm):
-
+class CustomUserChangeForm(UserChangeForm):    
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'user_tag')
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'user_tag', 'main_wallet', 'other_game_wallet', 'member_status', 'user_attribute',)
+
+    # def __init__(self, *args, **kwargs):
+    #     super(CustomUserChangeForm, self).__init__(*args, **kwargs)
+    #     self.fields['time_of_registration'].disabled = True
+    #     # self.fields['user_attribute'].disabled = True
 
 
 from django.core.exceptions import ValidationError
@@ -122,3 +126,9 @@ class userWithTagEditForm(forms.ModelForm):
     
     def has_add_permission(self):
         return False
+
+
+class IdImageForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ('id_image', )

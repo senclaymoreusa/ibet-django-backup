@@ -29,12 +29,12 @@ CONTACT_OPTIONS = (
 )
 
 CRRENCY_TYPES = (
-    ('usd', 'USD'),
-    ('eur', 'EUR'),
-    ('jpy', 'JPY'),
-    ('cny', 'CNY'),
-    ('hkd', 'HKD'),
-    ('aud', 'AUD')
+    ('USD', 'USD'),
+    ('EUR', 'EUR'),
+    ('JPY', 'JPY'),
+    ('CNY', 'CNY'),
+    ('HKD', 'HKD'),
+    ('AUD', 'AUD')
 )
 
 class MyUserManager(BaseUserManager):
@@ -76,9 +76,21 @@ class UserTag(models.Model):
         return self.name
 
 class CustomUser(AbstractBaseUser):
+
+    USER_ATTRIBUTE = (
+        (0, _('Direct User')),
+        (1, _('User from Promo')),
+        (2, _('Advertisements'))
+    )
+
+    MEMBER_STATUS = (
+        (0, _('Active')),
+        (1, _('Inactive')),
+        (2, _('Blocked'))
+    )
     # add additional fields in here
     username = models.CharField(
-					max_length=300,
+					max_length=255,
 					validators = [
 						RegexValidator(regex = USERNAME_REGEX,
 										message='Username must be alphanumeric or contain numbers',
@@ -107,8 +119,8 @@ class CustomUser(AbstractBaseUser):
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
-    balance = models.FloatField(default=0)
-    activation_code = models.CharField(max_length=300, default='', blank=True)
+    # balance = models.FloatField(default=0)
+    activation_code = models.CharField(max_length=255, default='', blank=True)
     active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -122,10 +134,36 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True)
+    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True, default='USD')
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
+    user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
+    product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
+    time_of_registration = models.DateTimeField(_('Time of Registration'), default=timezone.now, null=True)
+    ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
+    verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
+    id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
+    last_login_time = models.DateTimeField(_('Last Login Time'), default=None, null=True)
+    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=None, null=True)
+    member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+
+    # balance = main_wallet + other_game_wallet
+    main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
+    other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
+
+    id_image = models.CharField(max_length=250, blank=True)
+
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        default=timezone.now,
+        editable=False,
+    )
+    modified_time = models.DateTimeField(
+        _('Modified Time'),
+        default=timezone.now,
+        editable=False,
+    )
 
     objects = MyUserManager()
 
@@ -172,10 +210,8 @@ class CustomUser(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
-    
-    def channel_list(self):
-        return ','.join([i.thridParty_name for i in self.user_channel.all()])
 
+    
 
 class UserWithTag(models.Model):
 
@@ -284,10 +320,10 @@ class UserAction(models.Model):
         (0, _('Login')),
         (1, _('Logout')),
         (2, _('Register')),
-        (3, _('Deposit')),
-        (4, _('Withdraw')),
-        (5, _('Page Visit')),
-        (6, _('bet'))
+        # (3, _('Deposit')),
+        # (4, _('Withdraw')),
+        (3, _('Page Visit')),
+        # (6, _('bet'))
     )
 
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
@@ -295,8 +331,8 @@ class UserAction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
-    refer_url = models.CharField(_('Refer URL'), max_length=300, blank=True, null=True)
-    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2,blank=True, null=True)
+    refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
+    # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -312,17 +348,17 @@ class Bonus(models.Model):
 
     bonus_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=255)
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
     expiration_days = models.IntegerField()
     is_valid = models.BooleanField(default=False)
     ## A comma-separated list of country IDs where this bonus is applicable (to be normalized)
-    countries = models.CharField(max_length=500)
+    countries = models.CharField(max_length=255)
     ## A comma-separated list of category IDs where this bonus is applicable (to be normalized)
-    categories = models.CharField(max_length=500)
+    categories = models.CharField(max_length=255)
     ## A comma-separated list of requirement IDs that we need to apply (to be normalized)
-    requirement_ids = models.CharField(max_length=500)  
+    requirement_ids = models.CharField(max_length=255)  
     amount = models.FloatField()
     percentage = models.FloatField()
     is_free_bid = models.BooleanField(default=False)
@@ -338,7 +374,7 @@ class BonusRequirement(models.Model):
     time_limit = models.IntegerField()
     turnover_multiplier = models.IntegerField()
     ## A comma-separated list of category IDs where this requirement is applicable (to be normalized)
-    categories = models.CharField(max_length=500)
+    categories = models.CharField(max_length=255)
 
 class UserBonus(models.Model):
 
