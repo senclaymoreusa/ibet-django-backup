@@ -1037,7 +1037,7 @@ class UserDetailView(CommAdminView):
                 street_address_1=address, city=city,
                 zipcode=zipcode, country=country)
             
-            logger.info('Finished update user: ' + username + 'info to DB')
+            logger.info('Finished update user: ' + str(username) + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
             # user.save()
@@ -1057,8 +1057,8 @@ class UserDetailView(CommAdminView):
             if time_to == "Invalid date":
                 time_to = datetime(2400, 1, 1)
 
-            logger.info('Transactions filter: username "' + user.username + '" send transactions filter request which time form: ' + time_from + ',to: ' + time_to + ',category: ' + ',category: ' + category)
-            logger.info('Pagination: Maximum size of the page is ' + pageSize + 'and from item #' + fromItem + ' to item # ' + endItem)
+            logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+            logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
             
             if category == 'all':
                 transactions = Transaction.objects.filter(
