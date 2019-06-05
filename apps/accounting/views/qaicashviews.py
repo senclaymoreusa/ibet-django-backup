@@ -86,11 +86,13 @@ class getDepositMethod(generics.GenericAPIView):
         #print (my_hmac)
         
         for x in data:
-            
-            create = DepositChannel.objects.get_or_create(
+            for y in DepositChannel._meta.get_field('currency').choices:
+                if x['limits'].get('currency') == y[1]:
+                    cur_val = y[0]
+            create = DepositChannel.objects.update_or_create(
             thridParty_name= 3,
             method=x['method'],
-            currency=3,
+            currency=cur_val,
             min_amount=x['limits'].get('minTransactionAmount'),
             max_amount=x['limits'].get('maxTransactionAmount'),
             
