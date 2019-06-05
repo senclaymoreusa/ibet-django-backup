@@ -142,11 +142,11 @@
                                                 <input type="hidden" name="user_id" value="{{ customuser.pk }}"></input>
                                                 <div class="form-group">
                                                     <label for="member_id">MEMBER ID</label>
-                                                    <input class="form-control" name="member_id" value="{{ customuser.pk }}">
+                                                    <input class="form-control" id='member_id' name="member_id" value="{{ customuser.pk }}">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="username">USERNAME</label>
-                                                    <input class="form-control" name="username" value="{{ customuser.username }}">
+                                                    <input class="form-control" id='username' name="username" value="{{ customuser.username }}">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="first_name">FIRST NAME</label>
@@ -158,11 +158,11 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="email">EMAIL</label>
-                                                    <input type='email' class="form-control" name="email" value="{{ customuser.email }}">
+                                                    <input type='email' id='email' class="form-control" name="email" value="{{ customuser.email }}">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="phone">PHONE</label>
-                                                    <input class="form-control" name="phone" value="{{ customuser.phone }}">
+                                                    <input class="form-control" id='phone' name="phone" value="{{ customuser.phone }}">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="birthday">BIRTHDAY</label>
@@ -176,7 +176,8 @@
                                                     <input class="form-control" name="country" value="{{ customuser.country }}">
                                                 </div>
                                                 <div>&nbsp;</div>
-                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                <p id='errorMessage'>&nbsp;</p>
+                                                <button type="submit" id="submitButton" class="btn btn-primary">Submit</button>
                                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                                             </div>
                                             <div class="col-md-6">
@@ -702,6 +703,53 @@ $(document).ready(function() {
             }
         }
     });
+
+    $("#member_id").prop("readonly", true);
+
+    // $('#username').blur(function() {
+    //     if( $(this).val().trim() == '' ) {
+    //         alert('Input can not be left blank');
+    //     }
+    // });
+
+    $('#username').blur(function() {                   
+        if( !$(this).val().trim() ) {    
+            $('#errorMessage').text('Username cannot be empty'); 
+            $('#errorMessage').css('color', 'red'); 
+            $('#username').focus();
+            $('#submitButton').attr('disabled', 'disabled');
+        } else {
+            $('#submitButton').removeAttr('disabled');
+            $('#errorMessage').text(''); 
+        }
+        
+    });
+
+    $('#email').blur(function() {                   
+        if( !$(this).val().trim() ) {    
+            $('#errorMessage').text('Email cannot be empty'); 
+            $('#errorMessage').css('color', 'red'); 
+            // $('#email').focus();
+            $('#submitButton').attr('disabled', 'disabled');
+        } else {
+            $('#submitButton').removeAttr('disabled');
+            $('#errorMessage').text('');
+        }
+        
+    });
+
+    $('#phone').blur(function() {                   
+        if( !$(this).val().trim() ) {    
+            $('#errorMessage').text('Phone cannot be empty'); 
+            $('#errorMessage').css('color', 'red'); 
+            // $('#phone').focus();
+            $('#submitButton').attr('disabled', 'disabled');
+        } else {
+            $('#submitButton').removeAttr('disabled');
+            $('#errorMessage').text('');
+        }
+    });
+
 
     $(function () {
         $('#transaction_time_from').datepicker({ 

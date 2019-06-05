@@ -984,7 +984,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 import boto3
 from botocore.exceptions import ClientError
-
+from django.conf import settings
 
 class UserDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
@@ -1105,7 +1105,7 @@ class UserDetailView(CommAdminView):
         s3_client = aws_session.client('s3')
         file_name = self.get_user_photo_file_name(username)
         try:
-            s3_response_object = s3_client.get_object(Bucket='ibet-admin', Key=file_name)
+            s3_response_object = s3_client.get_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
         except ClientError as e:
             # AllAccessDisabled error == bucket or object not found
             logger.error(e)
@@ -1122,7 +1122,7 @@ class UserDetailView(CommAdminView):
         aws_session = boto3.Session()
         s3 = aws_session.resource('s3')
         file_name = self.get_user_photo_file_name(username)
-        obj = s3.Object('ibet-admin', file_name)
+        obj = s3.Object(settings.AWS_S3_ADMIN_BUCKET, file_name)
         obj.put(Body=content)
         logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
 

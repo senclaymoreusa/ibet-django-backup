@@ -82,6 +82,7 @@ hr {
 
 #user_photo_img {
     max-width: 200px;
+    max-height: 200px;
 }
 
 .rcorners {
@@ -111,7 +112,6 @@ hr {
 }
 
 #user_photo_id {
-    width:200px;
-    height: 200px;
-
+    max-width: 200px;
+    max-height: 200px;
 }
