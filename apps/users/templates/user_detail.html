@@ -754,11 +754,13 @@ $(document).ready(function() {
     $(function () {
         $('#transaction_time_from').datepicker({ 
         autoclose: true, 
-        todayHighlight: true
+        todayHighlight: true,
+        endDate: new Date()
         }).val('');
         $('#transaction_time_to').datepicker({ 
         autoclose: true, 
-        todayHighlight: true
+        todayHighlight: true,
+        endDate: new Date()
         }).val('');
     });
     
