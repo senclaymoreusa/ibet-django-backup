@@ -996,12 +996,19 @@ class UserDetailView(CommAdminView):
         context['customuser'] = Customuser
         context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
         # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
+        transaction = Transaction.objects.filter(user_id=Customuser)
         if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)[:20]
         
         context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
+
+        if transaction.count() <= 20:
+            context['isLastPage'] = True
+        else:
+            context['isLastPage'] = False
+        
 
         return render(request, 'user_detail.html', context)
 
