@@ -59,8 +59,6 @@ class paypalCreatePayment(generics.GenericAPIView):
         #orderId = self.request.POST['order_id']
         amount = self.request.POST.get('amount')
         currency = self.request.POST.get('currency')
-        print(amount)
-
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + getAccessToken()
