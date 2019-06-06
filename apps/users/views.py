@@ -992,15 +992,10 @@ class UserDetailView(CommAdminView):
         title = "Member " + self.kwargs.get('pk')
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
-        # print("pk " + str(self.kwargs.get('pk')))
         Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
-        # print("!!!!!!!" + str(Customuser))
         context['customuser'] = Customuser
-        # print(str(self.download_user_photo_id(Customuser.username)))
         context['userPhotoId'] = self.download_user_photo_id(Customuser.username)
-        # print(str(context['userPhotoId']))
         context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
-        # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
         transaction = Transaction.objects.filter(user_id=Customuser)
         if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
@@ -1036,7 +1031,6 @@ class UserDetailView(CommAdminView):
             # upload image to S3
             self.upload_user_photo_id(username, user_id_img)
 
-            # print(user_id_img)
             CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
@@ -1047,7 +1041,7 @@ class UserDetailView(CommAdminView):
             logger.info('Finished update user: ' + str(username) + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
-            # user.save()
+            user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
         elif post_type == 'get_user_transactions':
@@ -1091,7 +1085,6 @@ class UserDetailView(CommAdminView):
 
             transactionsJson = serializers.serialize('json', transactions)
             transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
             statusMap = {}
             for t in Transaction._meta.get_field('status').choices:
                 statusMap[t[0]] = t[1]
@@ -1102,8 +1095,6 @@ class UserDetailView(CommAdminView):
             transactionsJson = json.dumps(transactionsList)
             response['transactions'] = transactionsList
 
-            # print(type(transactionsDict))
-            # print('transactions:' + str(transactionsJson))
             return HttpResponse(json.dumps(response), content_type='application/json')
 
     
@@ -1145,12 +1136,10 @@ class UserListView(CommAdminView):
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
         Customuser = CustomUser.objects.all()
-        # context['customuser'] = Customuser
         
         user_data = []
         for user in Customuser:
             userDict = {}
-            # userDict['customuser'] = user
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['user_attribute'] = user.get_user_attribute_display
@@ -1177,7 +1166,7 @@ class UserListView(CommAdminView):
         context['user_data'] = user_data
 
 
-        return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context
+        return render(request, 'user_list.html', context)
 
     
     def post(self, request):
