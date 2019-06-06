@@ -23,11 +23,9 @@ CURRENCY_CHOICES = (
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
-    (2, 'CREATED'),
-    (3, 'PENDING'),
-    (4, 'APPROVED'),
-    (5, 'REJECTED'),
-    (6, 'COMPLETED')
+    (2, 'PENDING'),
+    (3, 'APPROVED'),
+    (4, 'REJECTED'),
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'), 
@@ -79,7 +77,7 @@ class Transaction(models.Model):
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
     bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
     product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
-    payer_id = models.CharField(max_length = 100, default=0)
+    
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = verbose_name
