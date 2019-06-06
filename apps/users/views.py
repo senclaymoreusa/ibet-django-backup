@@ -993,19 +993,26 @@ class UserDetailView(CommAdminView):
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
         # print("pk " + str(self.kwargs.get('pk')))
-        customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+        Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         # print("!!!!!!!" + str(Customuser))
-        context['customuser'] = customUser
-        # print(str(self.download_user_photo_id(customUser.username)))
-        context['userPhotoId'] = self.download_user_photo_id(customUser.username)
+        context['customuser'] = Customuser
+        # print(str(self.download_user_photo_id(Customuser.username)))
+        context['userPhotoId'] = self.download_user_photo_id(Customuser.username)
         # print(str(context['userPhotoId']))
-        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
+        context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
         # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
-        if Transaction.objects.filter(user_id=customUser).count() == 0:
+        transaction = Transaction.objects.filter(user_id=Customuser)
+        if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
         else:
-            context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
-        context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+            context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)[:20]
+        context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
+
+        if transaction.count() <= 20:
+            context['isLastPage'] = True
+        else:
+            context['isLastPage'] = False
+        
 
         return render(request, 'user_detail.html', context)
 
