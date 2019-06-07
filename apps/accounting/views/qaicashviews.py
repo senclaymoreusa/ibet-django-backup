@@ -37,7 +37,12 @@ api = settings.QAICASH_URL
 deposit_url = settings.DEPOSIT_URL
 payout_url = settings.PAYOUT_URL
 logger = logging.getLogger('django')
-
+currencyConversion = {
+            "CNY": 0,
+            "USD": 1,
+            "PHP": 2,
+            "IDR": 3
+        }
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
@@ -84,19 +89,22 @@ class getDepositMethod(generics.GenericAPIView):
 
         data = r.json()
         #print (my_hmac)
-        
         for x in data:
-            for y in DepositChannel._meta.get_field('currency').choices:
-                if x['limits'].get('currency') == y[1]:
-                    cur_val = y[0]
-            create = DepositChannel.objects.update_or_create(
-            thridParty_name= 3,
-            method=x['method'],
-            currency=cur_val,
-            min_amount=x['limits'].get('minTransactionAmount'),
-            max_amount=x['limits'].get('maxTransactionAmount'),
             
-        )
+            depositData = {
+                "thridParty_name": 3,
+                "method": x['method'],
+                "currency": currencyConversion[currency],
+                "min_amount": x['limits'].get('minTransactionAmount'),
+                "max_amount": x['limits'].get('maxTransactionAmount'),
+            }
+            serializer = depositMethodSerialize(data=depositData)
+            print("have the following data for serializer:")
+            if (serializer.is_valid()):
+                print(serializer.validated_data)
+                serializer.save()
+            else:
+                return Response({"error": "Invalid data passed into serializer"})
         return Response(data)
 
 class getBankList(generics.GenericAPIView):
@@ -186,21 +194,22 @@ class getBankLimits(generics.GenericAPIView):
             data = '500 Internal Error'    
         else:
             data = r.json()
+        
+        depositData = {
+            "thridParty_name": 3,
+            "method": method,
+            "currency": currencyConversion[currency],
+            "min_amount":data["minTransactionAmount"],
+            "max_amount":data["maxTransactionAmount"],
+        }
+        serializer = depositMethodSerialize(data=depositData)
 
-
-        for x in DepositChannel._meta.get_field('currency').choices:
-
-            if data['currency'] == x[1]:
-                cur_val = x[0]
-            
-        create = DepositChannel.objects.get_or_create(
-            thridParty_name= 3,
-            method= method,
-            currency= cur_val,
-            min_amount=data['minTransactionAmount'],
-            max_amount=data['maxTransactionAmount'],
-            
-        )
+        print("have the following data for serializer:")
+        if (serializer.is_valid()):
+            print(serializer.validated_data)
+            serializer.save()
+        else:
+            return Response({"error": "Invalid data passed into serializer"})
         return Response(data)
 
 class submitDeposit(generics.GenericAPIView):
