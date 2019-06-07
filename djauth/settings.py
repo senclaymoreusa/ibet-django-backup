@@ -306,4 +306,4 @@ PAYOUT_URL = '/payout/routing/'
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
-PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/v1/'
+PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'

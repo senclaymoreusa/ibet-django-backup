@@ -23,9 +23,11 @@ CURRENCY_CHOICES = (
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
-    (2, 'PENDING'),
-    (3, 'APPROVED'),
-    (4, 'REJECTED'),
+    (2, 'CREATED'),
+    (3, 'PENDING'),
+    (4, 'APPROVED'),
+    (5, 'REJECTED'),
+    (6, 'COMPLETED')
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'), 
@@ -77,7 +79,7 @@ class Transaction(models.Model):
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
     bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
     product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
-    
+    payer_id = models.CharField(max_length = 100, default=0)
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = verbose_name
@@ -114,8 +116,8 @@ class DepositChannel(ThirdParty):
     )
 
     class Meta:
-        verbose_name = 'Deposit Channel'
-        verbose_name_plural = verbose_name
+        verbose_name = "Deposit Channel"
+        verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
@@ -126,7 +128,7 @@ class WithdrawChannel(ThirdParty):
     
     class Meta:
         verbose_name = 'Withdraw Channel'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = "Withdraw Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
