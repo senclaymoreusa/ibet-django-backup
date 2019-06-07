@@ -2,9 +2,6 @@ from django.urls import path, include
 from rest_framework import routers
 from . import views
 
-router = routers.DefaultRouter()
-router.register(r'test', views.testview.testAPI)
-# router.register(r'accounting', views.qaicashviews.getDepositMethod.as_view())
 
 urlpatterns = [
     path('api/deposit_method', views.getDepositMethod.as_view(), name = 'deposit_method'),
@@ -23,6 +20,5 @@ urlpatterns = [
     path('api/paypal_create_payment', views.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
     path('api/paypal_get_order', views.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
     path('api/paypal_execute_payment', views.paypalExecutePayment.as_view(), name = 'paypal_Execute_Payment'),
-    path('api/test', views.test, name = 'test'),
-    path('orion/', include(router.urls), name = 'test_api')
+
 ]
