@@ -35,19 +35,19 @@ url = settings.PAYPAL_SANDBOX_URL
 host_url = settings.HOST_URL
 
 def getAccessToken():
-        client_id = username
-        client_secret = password
-        headers = {
-            'Accept': 'application/json',
-            'Accept-Language': 'en_US',
-            'Content-Type':'application/x-www-form-urlencoded',
-        }
-        body = {
-                'grant_type' : 'client_credentials'
-        }
-        r = requests.post(url + 'v1/oauth2/token', body, headers, auth=(client_id, client_secret))
-        rdata = r.json()
-        return rdata["access_token"]
+    client_id = username
+    client_secret = password
+    headers = {
+        'Accept': 'application/json',
+        'Accept-Language': 'en_US',
+        'Content-Type':'application/x-www-form-urlencoded',
+    }
+    body = {
+            'grant_type' : 'client_credentials'
+    }
+    r = requests.post(url + 'v1/oauth2/token', body, headers, auth=(client_id, client_secret))
+    rdata = r.json()
+    return rdata["access_token"]
 
 class paypalCreatePayment(generics.GenericAPIView):
     queryset = Transaction.objects.all()

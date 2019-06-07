@@ -116,8 +116,8 @@ class DepositChannel(ThirdParty):
     )
 
     class Meta:
-        verbose_name = 'Deposit Channel'
-        verbose_name_plural = verbose_name
+        verbose_name = "Deposit Channel"
+        verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
@@ -128,7 +128,7 @@ class WithdrawChannel(ThirdParty):
     
     class Meta:
         verbose_name = 'Withdraw Channel'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = "Withdraw Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
