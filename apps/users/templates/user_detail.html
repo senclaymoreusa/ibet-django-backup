@@ -385,7 +385,7 @@
                                     <select class="form-control" id="transaction_category_select">
                                         <option value="all">all</option>
                                         <option value="0">Deposit</option>
-                                        <option value="1">Wihdraw</option>
+                                        <option value="1">Withdraw</option>
                                     </select>
                                 </div>
                             </div>
@@ -411,7 +411,7 @@
                                     <th scope="col"></th>
                                 </tr>
                             </thead>
-                            <tbody id="tansaction_tbody">
+                            <tbody id="transaction_tbody">
                                 {% for trans in userTransactions %} 
                                 <tr>
                                     <th scope="row">{{ forloop.counter }}</th>
@@ -610,7 +610,29 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                        
+                        <div class="row">
+                            <div class='col-md-1' style="margin-top: 20px;">
+                                <input type="hidden" id="hidden_row" value="0"></input>
+                                <select id="pagination_value"  class="form-control">
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="250">250</option>
+                                </select>
+                            </div>
+                            <div class='col-md-4'>
+                                <ul class="pagination">
+                                    <li class="page-item disabled" id='previousPage'>
+                                    <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                    </li>
+                                    {% if isLastPage is True %}
+                                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                    {% else %}
+                                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -623,7 +645,7 @@
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <!-- <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/> -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
-
+<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
@@ -683,113 +705,145 @@ $(document).ready(function() {
         $('#transaction_time_from').datepicker({ 
         autoclose: true, 
         todayHighlight: true
-        }).datepicker('update', new Date());
+        }).val('');
         $('#transaction_time_to').datepicker({ 
         autoclose: true, 
         todayHighlight: true
-        }).datepicker('update', new Date());
+        }).val('');
     });
     
-
     var user_id = $('#hidden_user_id').val();
     // console.log(user_id)
 
     $('#transaction_time_submit').click( function(e) {
         e.preventDefault();
-        var time_from = $('#transaction_time_from_input').val();
-        // console.log(time_from);
-        time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
-        // time_from = time_from.format('YYYY-MM-DD HH:mm');
-        var time_to = $('#transaction_time_to_input').val();
-        // console.log(time_to);
-        time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
-        // time_to = time_to.format('YYYY-MM-DD HH:mm');
-        // console.log(time_from);
 
-        $.ajax({
-            type:'POST',
-            url:"{% url 'xadmin:user_detail' %}",
-            data:{ 
-                'type': 'trans_time_range_filter',
-                'user_id': user_id,
-                'from': time_from,
-                'to': time_to
-            },
-            success:function(data) {
-
-                if (data == "No transaction at this range") {
-                    $("#no_data_error").empty();
-                    var content = '';
-                    content += '<p>No transaction at this range</p>';
-                    $("#no_data_error").append(content);
-                } else {
-                    $("#no_data_error").empty();
-                    // console.log(data);
-                    $("#tansaction_tbody").empty();
-                    for (var i = 0; i < data.length; i++) {
-                        var fields = data[i].fields;
-                        var time = moment(fields.request_time).format('MMMM, DD, YYYY h:mm a');
-                        // time = time.format();
-                        var content = '';
-                        content += '<tr>';
-                        content += '<th scope="row">' + (i+1) + '</th>';
-                        if (fields.transaction_type == 0) {
-                            content +=  '<td>Deposit</td>';
-                        } else if (fields.transaction_type == 1) {
-                            content +=  '<td>Withdraw</td>';
-                        }
-                        // content += '<td>' + fields.transaction_type + '</td>';
-                        content += '<td>' + time + '</td>';
-                        content += '<td>' + fields.amount + '</td>';
-                        content += '<td>' + fields.amount + '</td>';
-                        content += '<td>' + fields.status + '</td>';
-                        content += '</tr>';
-                        $("#tansaction_tbody").append(content);
-                    }
-                }
-            }
-        });
-
-        //do some other stuff here
+        $('#hidden_row').val(0);
+        getTransactions(0);
     });
 
     $('#transaction_category_select').change(function() { 
-        // console.log("changed to " + $('#transaction_category_select').val()); 
-        var category = $('#transaction_category_select').val();
-        $.ajax({
-            type:'POST',
-            url:"{% url 'xadmin:user_detail' %}",
-            data:{ 'type': 'trans_filter',
-                'user_id': user_id,
-                'transaction_category': category},
-            success:function(data) {
- 
-                console.log(data);
-                $("#tansaction_tbody").empty();
-                for (var i = 0; i < data.length; i++) {
-                    var fields = data[i].fields;
-                    var time = moment(fields.request_time).format('MMMM, DD, YYYY h:mm a');
-                    // time = time.format('MMMM, DD, YYYY h:mm a');
-                    var content = '';
-                    content += '<tr>';
-                    content += '<th scope="row">' + (i+1) + '</th>';
-                    if (fields.transaction_type == 0) {
-                        content +=  '<td>Deposit</td>';
-                    } else if (fields.transaction_type == 1) {
-                        content +=  '<td>Withdraw</td>';
-                    }
-                    // content += '<td>' + fields.transaction_type + '</td>';
-                    content += '<td>' + time + '</td>';
-                    content += '<td>' + fields.amount + '</td>';
-                    content += '<td>' + fields.amount + '</td>';
-                    content += '<td>' + fields.status + '</td>';
-                    content += '</tr>';
-                    $("#tansaction_tbody").append(content);
-                }
-            }
-        });
+        $('#hidden_row').val(0);
+        getTransactions(0);
     });
+
+    $('#pagination_value').on('change', function() {
+        $('#hidden_row').val(0);
+        getTransactions(0);
+    });
+
+    getNext = function() {
+        if ($('#nextPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = $("#pagination_value").val();
+        var oldFromItem = $('#hidden_row').val();
+        var newFromItem = Number(oldFromItem) + Number(pageSize);
+        $('#hidden_row').val(newFromItem);
+        getTransactions(newFromItem);
+       
+    }
+
+    getPrevious = function () {
+        if ($('#previousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = $("#pagination_value").val();
+        var oldFromItem = $('#hidden_row').val();
+        var newFromItem = Number(oldFromItem) - Number(pageSize);
+        $('#hidden_row').val(newFromItem);
+        getTransactions(newFromItem);
+    }
 });
+
+function getTransactions(fromItem) {
+
+    var user_id = $('#hidden_user_id').val();
+
+    var time_from = $('#transaction_time_from_input').val();
+    // console.log(time_from);
+    time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+    // time_from = time_from.format('YYYY-MM-DD HH:mm');
+    var time_to = $('#transaction_time_to_input').val();
+    // console.log(time_to);
+    time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+
+    var category = $('#transaction_category_select').val();
+
+    var pageSize = $("#pagination_value").val();
+
+    $.ajax({
+        type:'POST',
+        url:"{% url 'xadmin:user_detail' %}",
+        data:{ 
+            'type': 'get_user_transactions',
+            'user_id': user_id,
+            'from': time_from,
+            'to': time_to,
+            'fromItem': fromItem,
+            'pageSize': pageSize,
+            'transaction_category': category
+        },
+        success:function(data) {
+
+            // console.log(data);
+            getTransData(data);
+        }
+    });
+}
+
+function getTransData(data) {
+
+    if (data['isLastPage']) {
+        $('#nextPage').addClass('disabled');
+    } else {
+        $('#nextPage').removeClass('disabled');
+    }
+    if (data['isFirstPage']) {
+        $('#previousPage').addClass('disabled');
+    } else {
+        $('#previousPage').removeClass('disabled');
+    }
+    var data = data['transactions'];
+    $("#transaction_tbody").empty();
+    for (var i = 0; i < data.length; i++) {
+        var fields = data[i].fields;
+        var time = moment(fields.request_time).format('MMMM, D, YYYY h:mm a');
+        // time = time.format();
+        var content = '';
+        content += '<tr>';
+        content += '<th scope="row">' + (i+1) + '</th>';
+        if (fields.transaction_type == 0) {
+            content +=  '<td>Deposit</td>';
+        } else if (fields.transaction_type == 1) {
+            content +=  '<td>Withdraw</td>';
+        }
+        // content += '<td>' + fields.transaction_type + '</td>';
+        content += '<td>' + time + '</td>';
+        content += '<td>' + fields.amount + '</td>';
+        content += '<td>' + fields.amount + '</td>';
+        content += '<td>' + fields.status + '</td>';
+        if (fields.transaction_type == 0) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_type == 1) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_type == 2) { 
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_placed_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_type == 3) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_settled_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_type == 4) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_in_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_type == 5) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_out_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_type == 6) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bonus_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            } else if (fields.transaction_tyep == 7) {
+                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_adjustment_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+            }
+        content += '</tr>';
+        $("#transaction_tbody").append(content);
+    }
+}
 
 </script>
 
