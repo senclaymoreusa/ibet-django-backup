@@ -20,5 +20,4 @@ urlpatterns = [
     path('api/paypal_create_payment', views.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
     path('api/paypal_get_order', views.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
     path('api/paypal_execute_payment', views.paypalExecutePayment.as_view(), name = 'paypal_Execute_Payment'),
-
 ]
