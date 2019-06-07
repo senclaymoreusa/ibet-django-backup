@@ -1,4 +1,4 @@
-.user_detail_section {
+.user-detail-section {
     /* border: 0.5px solid grey; */
     /* border-left: 0.5px solid grey;
     border-right: 0.5px solid grey;
@@ -12,7 +12,7 @@
     margin-right: 20px; */
 }
 
-.user_detail_section_title {
+.user-detail-section-title {
     background-color: coral; 
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
@@ -22,7 +22,7 @@
     padding: 5px;
 }
 
-.notes_section_title {
+.notes-section-title {
     background-color: lightskyblue; 
     border-right:0.5px solid gray;
     border-left:0.5px solid gray;
@@ -32,7 +32,7 @@
     padding: 5px;
 }
 
-.trans_section_title {
+.trans-section-title {
     background-color: green; 
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
@@ -50,15 +50,15 @@ hr {
     border-top: 2px solid rgb(204, 204, 204);
 }   
 
-.detail_title {
+.detail-title {
     line-height: 2
 }
 
-.detail_info {
+.detail-info {
     margin-left:50px !important;
 }
 
-.funds_section_title {
+.funds-section-title {
     background-color: lightgreen; 
     border-right:0.5px solid gray;
     border-left:0.5px solid gray;
@@ -68,7 +68,7 @@ hr {
     border-top-right-radius: 3px;
 }
 
-.user_detail_block {
+.user-detail-block {
     background-color: rgb(243, 243, 243); 
     width:95%;
     padding:5%;
@@ -80,7 +80,7 @@ hr {
     text-align:center;
 }
 
-#user_photo_img {
+#user-photo-img {
     max-width: 250px;
     max-height: 200px;
 }
@@ -91,36 +91,67 @@ hr {
     /* padding: 20px;  */
 }
 
-.module_title {
+.module-title {
     color: white;
     font-weight:900;
 }
 
-.module_half_width {
+.module-half-width {
     width:48%;
 
 }
 
-.left_margin {
+.left-margin {
     margin-left: 15px;
 }
 
-.section_body {
+.section-body {
     border: 0.5px solid grey;
     border-bottom-left-radius: 3px; 
     border-bottom-right-radius: 3px;
 }
 
-#user_photo_id {
+#user-photo-id {
     max-width: 100%;
     max-height: 100%;
 }
 
-.zoom_btn {
+.zoom-btn {
     position: absolute;
     top: 75%;
     left: 75%;
     background: transparent;
     border: transparent;
     color:white;
+}
+
+
+.table-striped>tbody>tr:nth-child(odd)>td, 
+.table-striped>tbody>tr:nth-child(odd)>th {
+   background-color: rgb(230, 230, 230);
+}
+
+table.table-bordered{
+    border:2px solid white;
+    margin-top:20px;
+  }
+table.table-bordered > thead > tr > th{
+    border:2px solid white;
+}
+table.table-bordered > tbody > tr > td{
+    border:2px solid white;
+}
+
+#refresh-btn {
+    display: inline-block; 
+    border:1px solid grey; 
+    padding-left:3px;
+    padding-right:3px;
+    padding-top:3px; 
+    padding-bottom:1px;
+    margin-left:5px;
+    margin-right:2px;
+    margin-top:2px;
+    border-radius: 3px;
+    background-color: white;
 }

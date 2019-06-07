@@ -19,24 +19,24 @@
 {% block content %} 
     <!-- <div class="row"> -->
         <div class="row">
-            <div class="col-md-5 user_detail_section module_half_width rcorners left_margin">
-                <div class="user_detail_section_title module_title">
+            <div class="col-md-5 user-detail-section module-half-width rcorners left-margin">
+                <div class="user-detail-section-title module-title">
                     Member details
                 </div>
-                <div class="section_body">
+                <div class="section-body">
                     <div class="row">
                             <div class='col-md-6'>
                                 {% if userPhotoId %}
-                                <img id="user_photo_id" src="{{ userPhotoId }}">
+                                <img id="user-photo-id" src="{{ userPhotoId }}">
                                 {% else %}
-                                <img id="user_photo_id" src="http://placehold.it/200" alt="User ID Photo">
+                                <img id="user-photo-id" src="http://placehold.it/200" alt="User ID Photo">
                                 {% endif %}
-                                <button id="zoom_btn" class="zoom_btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
+                                <button id="zoom-btn" class="zoom-btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
                             </div>
                             <div class='col-md-6'>
                                 <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
-                                <div><span>Member ID</span><span class="detail_info">{{ customuser.pk }}</span></div>
-                                <div><span class="detail_title">Username</span><span>{{ customuser.username }}</span></div>
+                                <div><span>Member ID</span><span class="detail-info">{{ customuser.pk }}</span></div>
+                                <div><span class="detail-title">Username</span><span>{{ customuser.username }}</span></div>
                                 <div><span>First Name</span><span>{{ customuser.first_name }}</span></div>
                                 <div><span>Last Name</span> <span>{{ customuser.last_name }}</span></div>
                                 <div><span>Email</span><span>{{ customuser.email }}</span></div>
@@ -68,25 +68,25 @@
                                 <div class='col-md-4'>
                                     <div>TIME</div>
                                     {% if customuser.last_login_time %}
-                                        <div class='user_detail_block'>{{ customuser.last_login_time }}</div>
+                                        <div class='user-detail-block'>{{ customuser.last_login_time }}</div>
                                     {% else %}
-                                        <div class='user_detail_block'>None</div>
+                                        <div class='user-detail-block'>None</div>
                                         {% endif %}
                                 </div>
                                 <div class='col-md-4'>
                                     <div>LOCATION</div>
                                     {% if customuser.id_location %}
-                                        <div class='user_detail_block'>{{ customuser.id_location }}</div>
+                                        <div class='user-detail-block'>{{ customuser.id_location }}</div>
                                     {% else %}
-                                        <div class='user_detail_block'>None</div>
+                                        <div class='user-detail-block'>None</div>
                                     {% endif %}
                                 </div>
                                 <div class='col-md-4'>
                                     <div>IP ADDRESS</div>
                                     {% if userLastIpAddr.ip_addr %}
-                                        <div class='user_detail_block'>{{ userLastIpAddr.ip_addr }}</div>
+                                        <div class='user-detail-block'>{{ userLastIpAddr.ip_addr }}</div>
                                     {% else %}
-                                        <div class='user_detail_block'>None</div>
+                                        <div class='user-detail-block'>None</div>
                                     {% endif %}
                                 </div>
                                     
@@ -101,29 +101,29 @@
                         <div class='row'>
                             <div class='col-md-4'>
                                 <div>TIME</div>
-                                <div class='user_detail_block'>{{ customuser.time_of_registration }}</div>
+                                <div class='user-detail-block'>{{ customuser.time_of_registration }}</div>
                             </div>
                             <div class='col-md-4'>
                                 <div>LOCATION</div>
                                 {% if customuser.id_location %}
-                                    <div class='user_detail_block'>{{ customuser.id_location }}</div>
+                                    <div class='user-detail-block'>{{ customuser.id_location }}</div>
                                 {% else %}
-                                <div class='user_detail_block'>None</div>
+                                <div class='user-detail-block'>None</div>
                                 {% endif %}
                             </div>
                             <div class='col-md-4'>
                                 <div>SOURCE</div>
-                                <div class='user_detail_block'>{{ customuser.get_user_attribute_display }}</div>
+                                <div class='user-detail-block'>{{ customuser.get_user_attribute_display }}</div>
                             </div>   
                         </div>
                         <div class='row' style="padding-top:2%;">
                             <div class='col-md-4'>
                                 <div>VERIFICATION TIME</div>
-                                <div class='user_detail_block'>{{ customuser.verfication_time }}</div>
+                                <div class='user-detail-block'>{{ customuser.verfication_time }}</div>
                             </div>
                             <div class='col-md-4'>
                                 <div>FIRST DEPOSIT</div>
-                                <div class='user_detail_block'>{{ customuser.ftd_time }}</div>
+                                <div class='user-detail-block'>{{ customuser.ftd_time }}</div>
                             </div>
                         </div>
                     </div>
@@ -197,9 +197,9 @@
                                             <div class="col-md-6">
                                                 <input id='hidden_input_img' type='file' accept='image/*' style='display: none;' onchange="chooseFile(event);">
                                                 {% if userPhotoId %}
-                                                <img id="user_photo_img" src="{{ userPhotoId }}">
+                                                <img id="user-photo-img" src="{{ userPhotoId }}">
                                                 {% else %}
-                                                <img id="user_photo_img" src="http://placehold.it/200" alt="User ID Photo">
+                                                <img id="user-photo-img" src="http://placehold.it/200" alt="User ID Photo">
                                                 {% endif %}
                                                 <input type="hidden" name='user_id_img' id="hidden_user_id_url">
                                                 <div>&nbsp;</div>
@@ -262,11 +262,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-5 user_detail_section module_half_width left_margin rcorners">
-                <div class="notes_section_title module_title">
+            <div class="col-md-5 user-detail-section module-half-width left-margin rcorners">
+                <div class="notes-section-title module-title">
                     Notes
                 </div>
-                <div class="section_body">
+                <div class="section-body">
                     <div class="row">
                         <div class='col-md-6'>photo</div>
                         <div class='col-md-6'>
@@ -282,59 +282,59 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-5 user_detail_section module_half_width left_margin rcorners" style='margin-top:20px'>
-                <div class="funds_section_title module_title">
+            <div class="col-md-5 user-detail-section module-half-width left-margin rcorners" style='margin-top:20px'>
+                <div class="funds-section-title module-title">
                     Funds Status
                 </div>
-                <div class="section_body">
+                <div class="section-body">
                     <div class="row" style="margin: 5%;">
                         <div class='col-md-3'>
                             <label>MAIN</label>
                             <label>ACCOUNT BALANCE</label>
-                            <!-- <div class='user_detail_block'>
+                            <!-- <div class='user-detail-block'>
                                 {{ customuser.main_wallet}}
                             </div> -->
                         </div>
                         <div class='col-md-3'>
                             <label>AVAILABLE FOR</label>
                             <label>WITHDRAW</label>
-                            <!-- <div class='user_detail_block'>
+                            <!-- <div class='user-detail-block'>
                                 {{ customuser.main_wallet}}
                             </div> -->
                         </div>
                         <div class='col-md-3'>
                             <label>MIN/MAX</label>
                             <label>WITHDRAW</label>
-                            <!-- <div class='user_detail_block'>
+                            <!-- <div class='user-detail-block'>
                                 NO LIMIT
                             </div> -->
                         </div>
                         <div class='col-md-3'>
                             <label>BONUS</label>
                             <label>AMOUNT</label>
-                            <!-- <div class='user_detail_block'>
+                            <!-- <div class='user-detail-block'>
                                 NO LIMIT
                             </div> -->
                         </div>
                     </div>
                     <div class="row" style="margin: 5%;">
                         <div class='col-md-3'>
-                            <div class='user_detail_block'>
+                            <div class='user-detail-block'>
                                 $ {{ customuser.main_wallet}}
                             </div>
                         </div>
                         <div class='col-md-3'>
-                            <div class='user_detail_block'>
+                            <div class='user-detail-block'>
                                 $ {{ customuser.main_wallet}}
                             </div>
                         </div>
                         <div class='col-md-3'>
-                            <div class='user_detail_block'>
+                            <div class='user-detail-block'>
                                 NO LIMIT
                             </div>
                         </div>
                         <div class='col-md-3'>
-                            <div class='user_detail_block'>
+                            <div class='user-detail-block'>
                                 NO LIMIT
                             </div>
                         </div>
@@ -359,11 +359,11 @@
         </div>
 
         <div class='row'>
-            <div class='user_detail_section rcorners left_margin' style="margin-right:25px;  margin-top: 25px;">
-                <div class="trans_section_title module_title">
+            <div class='user-detail-section rcorners left-margin' style="margin-right:25px;  margin-top: 25px;">
+                <div class="trans-section-title module-title">
                     Transaction History
                 </div>
-                <div class="section_body">
+                <div class="section-body">
                     <div class="row" style="margin: 15px;">
                         <div class='col-md-6' style="padding: 0px;">
                             {% block time_search %}
@@ -419,8 +419,8 @@
                     </div>
                     <label style="margin:15px">TRNASACTION LAST 7 DAYS</label>
                     <div class="row" style="margin-left:15px;margin-right:25px">
-                        <table class="table">
-                            <thead class="thead-dark">
+                        <table class="table table-striped table-bordered">
+                            <thead>
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">CATEGORY</th>
@@ -435,7 +435,7 @@
                             <tbody id="tansaction_tbody">
                                 {% for trans in userTransactions %} 
                                 <tr>
-                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td scope="row">{{ forloop.counter }}</td>
                                     <td>{{ trans.get_transaction_type_display }}</td>
                                     <!-- <td>{{ trans }}</td> -->
                                     <td>{{ trans.request_time }}</td>
@@ -687,19 +687,19 @@ $(document).ready(function() {
         // console.log(val);
         // $('image').attr(src) = val;
         var input = event.target;
-        // $('#user_photo_img').css('display', 'none');
+        // $('#user-photo-img').css('display', 'none');
 
         var reader = new FileReader();
         reader.onload = function(){
             var dataURL = reader.result;
-            var output = document.getElementById('user_photo_img');
+            var output = document.getElementById('user-photo-img');
             output.src = dataURL;
             $('#hidden_user_id_url').attr('value', dataURL);
         };
         reader.readAsDataURL(input.files[0]);
         
-        $('#user_photo_img').css('max-width', '250px');
-        $('#user_photo_img').css('max-height', '200px');
+        $('#user-photo-img').css('max-width', '250px');
+        $('#user-photo-img').css('max-height', '200px');
    }
 
    clickUploadImg = function () {
@@ -707,7 +707,7 @@ $(document).ready(function() {
    }
 
    clearImg = function() {
-        $('#user_photo_img').attr('src', 'http://placehold.it/200');
+        $('#user-photo-img').attr('src', 'http://placehold.it/200');
    }
 
     $.ajaxSetup({
@@ -764,8 +764,8 @@ $(document).ready(function() {
         }
     });
 
-    $('#zoom_btn').on('click', function () {
-        var image = $('#user_photo_id').attr('src');
+    $('#zoom-btn').on('click', function () {
+        var image = $('#user-photo-id').attr('src');
         $('#myModal').on('show.bs.modal', function () {
             $(".showimage").attr("src", image);
         });
@@ -884,7 +884,7 @@ function getTransData(data) {
         // time = time.format();
         var content = '';
         content += '<tr>';
-        content += '<th scope="row">' + (i+1) + '</th>';
+        content += '<td scope="row">' + (i+1) + '</td>';
         if (fields.transaction_type == 0) {
             content +=  '<td>Deposit</td>';
         } else if (fields.transaction_type == 1) {

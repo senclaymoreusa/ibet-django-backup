@@ -5,13 +5,24 @@
 
 {% block content %} 
 <div class="row">
-    <div class='col-md-4'><h1>USER LIST</h1></div>
+    <div class='col-md-3'>
+        <!-- <div class='row'>
+            <input id='search_input' class="form-control" type="text" placeholder="Search" aria-label="Search">
+            <button id="search_btn" type='button' class="btn btn-primary" style="display: inline-block;">submit</button>
+        </div> -->
+        <div class="form-group">
+            <div class="control-label" style="font-size: 0.9em; padding-bottom:5px;padding-top:10px;">FIND A MEMBER</div>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Enter member ID, name, phone or email">
+                <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+            </div>
+        </div>
+    </div>
     <div class='col-md-8'>
         <!-- {% block time_search %} -->
-        <label>Date Range</label>
+        <!-- <label>Date Range</label>
         <div class="row">
             <div class='col-md-4'>
-                    <!-- <input class="form-control" placeholder="From" id="search-from" name='search-from'></input> -->
                 <div class='input-group date' id='user_list_time_from'>
                     <input type='text' class="form-control" placeholder="From" id='user_list_time_from_input' />
                     <span class="input-group-addon">
@@ -20,7 +31,6 @@
                 </div>
             </div>
             <div class='col-md-4'>
-                    <!-- <input class="form-control" placeholder="To" id='search-to' name='search-from'></input> -->
                 <div class='input-group date' id='user_list_time_to'>
                     <input type='text' class="form-control" placeholder="To"  id='user_list_time_to_input'/>
                     <span class="input-group-addon">
@@ -31,29 +41,30 @@
             <div class='col-md-4'>
                 <button id="user_list_time_submit" type="submit" class="btn btn-primary">Submit</button>
             </div>
-        </div>
+        </div> -->
         <!-- {% endblock %} -->
     </div>
 </div>
 
 <div style='overflow-x: scroll;'>
-<table class="table user_list_table">
+<table class="table user_list_table table-striped table-bordered">
 <!-- <table style='overflow-x: scroll;'> -->
     <thead class="thead-dark">
         <tr>
             <th scope="col">#</th>
+            <th scope="col">MEMBER ID</th>
             <th scope="col">USERNAME</th>
-            <th scope="col">USER ATTRIBUTE</th>
-            <th scope="col">RISK LEVEL</th>
-            <th scope="col">BALANCE</th>
             <th scope="col">SOURCE</th>
             <th scope="col">REGISTRATION DATE</th>
             <th scope="col">FTD DATE</th>
-            <th scope="col">TIME OF VERIFICATION</th>
-            <th scope="col">ID LOCATION</th>
-            <th scope="col">LAST LOGIN TIME</th>
-            <th scope="col">LAST BETTING TIME</th>
-            <th scope="col">LOGIN COUNTS</th>
+            <th scope="col">BALANCE($)</th>
+            <th scope="col">4 CODE ADDRESS</th>
+            <th scope="col">DEPOSIT/TURNOVER</th>
+            <th scope="col">BONUS/TURNOVER</th>
+            <th scope="col">COUNTRIBUTION</th>
+            <th scope="col">ACTIVE DAYS</th>
+            <th scope="col">BET PLATFORM</th>
+            <!-- <th scope="col">LOGIN COUNTS</th>
             <th scope="col">BETTING COUNTS</th>
             <th scope="col">TURNOVER AMOUNT</th>
             <th scope="col">DEPOSIT COUNTS</th>
@@ -62,21 +73,18 @@
             <th scope="col">WITHDRAWAL AMOUNT</th>
             <th scope="col">GGR AMOUNT</th>
             <th scope="col">COUNTRIBUTION</th>
-            <th scope="col">LAST LOGIN IP</th>
-            
+            <th scope="col">LAST LOGIN IP</th> -->
             
         </tr>
     </thead>
-    <tbody id="tansaction_tbody" id='user_list_tbody'>
+    <tbody id='users_list_tbody'>
         {% for user in user_data %} 
         <tr>
-            <th scope="row">{{ forloop.counter }}</th>
+            <td scope="row">{{ forloop.counter }}</td>
+            <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.id }}</a></td>
             <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
             <!-- <td>{{ trans }}</td> -->
-            <td>{{ user.user_attribute }}</td>
-            <td>{{ user.risk_level }}</td>
-            <td>{{ user.balance|floatformat:2 }}</td>
-            <td>{{ user.product_attribute }}</td>
+            <td>{{ user.source }}</td>
             {% if user.time_of_registration %}
                 <td>{{ user.time_of_registration }}</td>
             {% else %}
@@ -87,8 +95,15 @@
             {% else %}
                 <td></td>
             {% endif %}
+            <td>{{ user.balance|floatformat:2 }}</td>
+            <td>。。。。</td>
+            <td>{{ user.deposit_turnover }}</td>
+            <td>{{ user.bonus_turnover }}</td>
+            <td>{{ user.contribution }}</td>
+            <td>{{ user.active_days }}</td>
+            <td>{{ user.bet_platform }}</td>
             <!-- <td>{{ user.ftd_time }}</td> -->
-            <td>{{ user.verfication_time }}</td>
+            <!-- <td>{{ user.verfication_time }}</td>
             <td>{{ user.id_location }}</td>
             <td>{{ user.last_login_time }}</td>
             <td>{{ user.last_betting_time }}</td>
@@ -101,11 +116,49 @@
             <td id='user_withdrawal_amount_{{ forloop.counter }}'>{{ user.withdrawal_amount.amount__sum|floatformat:2 }}</td>
             <td>{{ trans.status }}</td>
             <td>{{ trans.status }}</td>
-            <td>{{ user.last_logint_ip.ip_addr }}</td>
+            <td>{{ user.last_logint_ip.ip_addr }}</td> -->
         </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
+
+<div class="row">
+    <div class="bottom-align-text">
+    <div class='col-md-1' style="margin-top: 20px;">
+        <div>SHOW ROWS</div>
+        <select id="pagination_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+        </select>
+    </div>
+    <!-- <div class='col-md-1' style="margin-top: 20px;">
+        <div>GO TO:</div>
+        <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+    </div> -->
+    <div class='col-md-4'>
+        <div>&nbsp;</div>
+        <ul class="pagination">
+            {% if isFirstPage is True %}
+                <li class="page-item disabled" id='perviousPage'>
+                <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                </li>
+            {% else %}
+                <li class="page-item " id='perviousPage'>
+                    <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                </li>
+            {% endif %}
+            {% if isLastPage is True %}
+                <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+            {% else %}
+                <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+            {% endif %}
+        </ul>
+    </div>
+        
+    </div>
 </div>
 
 
@@ -113,6 +166,7 @@
 <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
 
 
 <script>
@@ -122,6 +176,25 @@
 $(document).ready(function() {
     var csrftoken = $.cookie("csrftoken");
     // console.log(csrftoken);
+
+    // parse url
+    paramsMap = {
+        'search': '',
+        'pageSize': 20,
+        'offset': 0
+    };
+    var parsedUrl = new URL(window.location.href);
+    if (parsedUrl.searchParams.get("search") !== null) {
+        paramsMap['search'] = parsedUrl.searchParams.get("search");
+    }
+    if (parsedUrl.searchParams.get("pageSize") !== null) {
+        paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
+    }
+    if (parsedUrl.searchParams.get("offset") !== null) {
+        paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
+    }
+
+    $('#pagination_value').val(paramsMap['pageSize']);
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -136,72 +209,197 @@ $(document).ready(function() {
         }
     });
 
-    $(function () {
-        $('#user_list_time_from').datetimepicker();
-        $('#user_list_time_to').datetimepicker();
+    // $('#search_btn').click(function(e) {
+    //     e.preventDefault();
+    //     var search = $('#search_input').val();
+    //     console.log(search);
+    //     var url = "http://localhost:8000/users/api/userlistsearch/?Q=" + search;
+    //     console.log(url);
+    //     $.ajax({
+    //         type:'GET',
+    //         url:url,
+    //         success:function(data) {
+    //             console.log(data);
+    //             // getUserList(data);
+    //         }
+    //     });
+
+    // })
+
+    // $(function () {
+    //     $('#user_list_time_from').datetimepicker();
+    //     $('#user_list_time_to').datetimepicker();
+    // });
+
+    // $('#user_list_time_submit').click( function(e) {
+    //     e.preventDefault();
+    //     var time_from = $('#user_list_time_from_input').val();
+    //     // console.log(time_from);
+    //     time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+    //     // time_from = time_from.format('YYYY-MM-DD HH:mm');
+    //     var time_to = $('#user_list_time_to_input').val();
+    //     // console.log(time_to);
+    //     time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+    //     // time_to = time_to.format('YYYY-MM-DD HH:mm');
+    //     // console.log(time_from);
+
+    //     $.ajax({
+    //         type:'POST',
+    //         url:"{% url 'xadmin:user_list' %}",
+    //         data:{ 
+    //             'type': 'user_list_time_range_filter',
+    //             'from': time_from,
+    //             'to': time_to
+    //         },
+    //         success:function(data) {
+    //             // console.log(data);
+    //             getUserList(data);
+    //         }
+    //     });
+    // });
+
+    // $('#user_list_time_submit').click( function(e) {
+    //     e.preventDefault();
+    //     $('#hidden_row').val(0);
+    //     getUsers(0);
+    // });
+
+    $('#pagination_value').on('change', function() {
+        var pageSize = $("#pagination_value").val();;
+        var oldFromItem = paramsMap['offset'];
+       
+        window.location.href = getUserListRedirectUrl(pageSize, 0, "");
     });
 
-    $('#user_list_time_submit').click( function(e) {
-        e.preventDefault();
-        var time_from = $('#user_list_time_from_input').val();
-        // console.log(time_from);
-        time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
-        // time_from = time_from.format('YYYY-MM-DD HH:mm');
-        var time_to = $('#user_list_time_to_input').val();
-        // console.log(time_to);
-        time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
-        // time_to = time_to.format('YYYY-MM-DD HH:mm');
-        // console.log(time_from);
-
-        $.ajax({
-            type:'POST',
-            url:"{% url 'xadmin:user_list' %}",
-            data:{ 
-                'type': 'user_list_time_range_filter',
-                'from': time_from,
-                'to': time_to
-            },
-            success:function(data) {
-
-                data.forEach(i => console.log("data: " + i.login_times));
-                // console.log("!!!!!" + data);
-                for (var i = 0; i < data.length; i++) {
-                    $("#user_login_times_" + (i+1)).empty();
-                    $("#user_bettin_times_" + (i+1)).empty();
-                    $("#user_deposit_times_" + (i+1)).empty();
-                    $("#user_deposit_amount_" + (i+1)).empty();
-                    $("#user_withdrawal_times_" + (i+1)).empty();
-                    $("#user_withdrawal_amount_" + (i+1)).empty();
-                    // console.log(data[i].deposit_amount.amount__sum);
-                    var content = "<td id='user_login_times_" + (i+1) + "'>" + data[i].login_times + "</td>";
-                    $("#user_login_times_" + (i+1)).append(content);
-                    content = "<td id='user_bettin_times_" + (i+1) + "'>" + data[i].betting_times + "</td>";
-                    $("#user_bettin_times_" + (i+1)).append(content);
-                    content = "<td id='user_deposit_times_" + (i+1) + "'>" + data[i].deposit_times + "</td>";
-                    $("#user_deposit_times_" + (i+1)).append(content);
-                    content = "<td id='user_deposit_amount_" + (i+1) + "'>" + cleanField(data[i].deposit_amount.amount__sum) + "</td>";
-                    $("#user_deposit_amount_" + (i+1)).append(content);
-                    content = "<td id='user_withdrawal_times_" + (i+1) + "'>" + data[i].withdrawal_times + "</td>";
-                    $("#user_withdrawal_times_" + (i+1)).append(content);
-                    content = "<td id='user_withdrawal_amount_" + (i+1) + "'>" + cleanField(data[i].withdrawal_amount.amount__sum) + "</td>";
-                    $("#user_withdrawal_amount_" + (i+1)).append(content);
-                }
-            }
-        });
-    });
-
-    function cleanField(field) {
-        if (field === null || field === undefined) {
-            return "";
+    getNext = function() {
+        if ($('#nextPage').hasClass('disabled')) {
+            return;
         }
-        return cleanFloatField(field);
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        var newFromItem = Number(oldFromItem) + Number(pageSize);
+       
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, "");
     }
 
-    function cleanFloatField(field) {
-        return field.toFixed(2);
+    getPervious = function () {
+        if ($('#perviousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        var newFromItem = Number(oldFromItem) - Number(pageSize);
+       
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, "");
     }
 
 });
+
+function cleanField(field) {
+    if (field === null || field === undefined) {
+        return "";
+    }
+    return cleanFloatField(field);
+}
+
+function cleanFloatField(field) {
+    return field.toFixed(2);
+}
+
+function getUserListRedirectUrl(pageSize, offset, search) {
+    var curUrl = window.location.href;
+    console.log(curUrl);
+    var parts = curUrl.split('?');
+    console.log(parts);
+    
+    var redirectUrl = parts[0]; 
+    redirectUrl += '?search=' + search;
+    redirectUrl += "&pageSize=" + pageSize;
+    redirectUrl += '&offset=' + offset;
+    console.log(redirectUrl);
+    return redirectUrl;
+}
+
+// function getUsers(fromItem) {
+
+//     var time_from = $('#user_list_time_from_input').val();
+//     // console.log(time_from);
+//     time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+//     // time_from = time_from.format('YYYY-MM-DD HH:mm');
+//     var time_to = $('#user_list_time_to_input').val();
+//     // console.log(time_to);
+//     time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+
+//     var pageSize = $("#pagination_value").val();
+//     // console.log('from_item: ' + fromItem);
+//     // console.log('pagesize: ' + pageSize);
+
+//     $.ajax({
+        
+//         type:'POST',
+//         url:"{% url 'xadmin:user_list' %}",
+//         data:{ 
+//             'type': 'user_list_filter',
+//             'from': time_from,
+//             'to': time_to,
+//             'fromItem': fromItem,
+//             'pageSize': pageSize,
+//         },
+//         success:function(data) {
+//             // console.log(data);
+//             getUserList(data);
+//         }
+//     });
+// }
+
+// function getUserList(data) {
+
+//     if (data['isLastPage']) {
+//         $('#nextPage').addClass('disabled');
+//     } else {
+//         $('#nextPage').removeClass('disabled');
+//     }
+//     if (data['isFirstPage']) {
+//         $('#perviousPage').addClass('disabled');
+//     } else {
+//         $('#perviousPage').removeClass('disabled');
+//     }
+//     var data = data['usersList'];
+//     $("#users_list_tbody").empty();
+//     for (var i = 0; i < data.length; i++) {
+//         // time = time.format();
+//         var content = '';
+//         content += '<tr>';
+//         content += '<td scope="row">' + (i+1) + '</td>';
+//         var userId = data[i].id;
+//         var url = "{% url 'xadmin:user_detail' %}" + userId;
+//         content += '<td><a href="' + url + '">' + data[i].id + '</td>';
+//         content += '<td><a href="' + url + '">' + data[i].username + '</td>';
+//         content += '<td>' + data[i].source + '</td>';
+        
+//         if (data[i].time_of_registration) {
+//             var time_of_registration = moment(data[i].time_of_registration).format('MMMM, D, YYYY h:mm a');
+//             content += '<td>' + time_of_registration + '</td>';
+//         } else {
+//             content += '<td></td>';
+//         }
+//         if (data[i].ftd_time !== 'None') {
+//             var ftd_time = moment(data[i].ftd_time).format('MMMM, D, YYYY h:mm a');
+//             content += '<td>' + ftd_time + '</td>';
+//         } else {
+//             content += '<td></td>';
+//         }
+//         content += '<td>' + cleanField(data[i].balance) + '</td>';
+//         content += '<td>。。。。</td>';
+//         content += '<td>' + data[i].deposit_turnover + '</td>';
+//         content += '<td>' + data[i].bonus_turnover + '</td>';
+//         content += '<td>' + data[i].contribution + '</td>';
+//         content += '<td>' + data[i].active_days + '</td>';
+//         content += '<td>' + data[i].bet_platform + '</td>';
+//         content += '</tr>';
+//         $("#users_list_tbody").append(content);
+//     }
+// }
 
 </script>
         
