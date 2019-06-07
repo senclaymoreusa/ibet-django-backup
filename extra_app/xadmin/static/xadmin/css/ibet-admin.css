@@ -155,3 +155,16 @@ table.table-bordered > tbody > tr > td{
     border-radius: 3px;
     background-color: white;
 }
+
+
+#select-row {
+    margin-top: 20px;
+    position: absolute;
+    left:80%;
+}
+
+#pagination-btn {
+    position: relative;
+    left:90%;
+}
+

@@ -632,7 +632,7 @@
                             </tbody>
                         </table>
                         <div class="row">
-                            <div class='col-md-1' style="margin-top: 20px;">
+                            <div class='col-md-1' id="select-row">
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
                                     <option value="20">20</option>
@@ -641,7 +641,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-4'>
+                            <div class='col-md-4' id="pagination-btn">
                                 <ul class="pagination">
                                     <li class="page-item disabled" id='perviousPage'>
                                     <a class="page-link" href="javascript:getPervious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -655,7 +655,7 @@
             </div>
         </div>
         <div>&nbsp;</div>
-        <a class="btn btn-primary" role="button" href="{% url 'xadmin:user_list' %}">BACK</a>
+        <a class="btn btn-primary" role="button" id="back-btn" href="{% url 'xadmin:user_list' %}">BACK</a>
     <!-- </div> -->
 
 <!-- <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet"/> -->
@@ -675,6 +675,10 @@
 $(document).ready(function() {
     var csrftoken = $.cookie("csrftoken");
     // console.log(csrftoken);
+
+    var previousURL = document.referrer;
+
+    $("#back-btn").attr("href", previousURL);
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection

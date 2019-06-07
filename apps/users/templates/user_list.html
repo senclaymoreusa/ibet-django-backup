@@ -125,7 +125,7 @@
 
 <div class="row">
     <div class="bottom-align-text">
-    <div class='col-md-1' style="margin-top: 20px;">
+    <div class='col-md-1' id="select-row">
         <div>SHOW ROWS</div>
         <select id="pagination_value"  class="form-control">
             <option value="20">20</option>
@@ -138,7 +138,7 @@
         <div>GO TO:</div>
         <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
     </div> -->
-    <div class='col-md-4'>
+    <div class='col-md-4' id="pagination-btn">
         <div>&nbsp;</div>
         <ul class="pagination">
             {% if isFirstPage is True %}
