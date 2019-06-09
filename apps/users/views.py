@@ -984,6 +984,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 import boto3
 from botocore.exceptions import ClientError
+from botocore.exceptions import NoCredentialsError
 
 
 class UserDetailView(CommAdminView):
@@ -1102,13 +1103,28 @@ class UserDetailView(CommAdminView):
         aws_session = boto3.Session()
         s3_client = aws_session.client('s3')
         file_name = self.get_user_photo_file_name(username)
-        try:
-            s3_response_object = s3_client.get_object(Bucket='ibet-admin', Key=file_name)
-        except ClientError as e:
-            # AllAccessDisabled error == bucket or object not found
-            logger.error(e)
+
+        max_retry = 3
+        count = 0
+        success = False
+        # application level 2 extra retries
+        while count < 3:
+            if count > 0:
+                logger.info("Retrying...")
+            try:
+                s3_response_object = s3_client.get_object(Bucket='ibet-admin', Key=file_name)
+                success = True
+                break
+            except ClientError as e:
+                # AllAccessDisabled error == bucket or object not found
+                logger.error(e)
+            except NoCredentialsError as e:
+                logger.error(e)
             logger.info('Cannout find any image from this user: ' + username)
+            count += 1
+        if not success:
             return None
+
         object_content = s3_response_object['Body'].read()
         object_content = object_content.decode('utf-8')
 
