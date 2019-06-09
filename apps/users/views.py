@@ -985,6 +985,9 @@ from django.db.models import Q
 import boto3
 from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
+from django.conf import settings
+
+
 
 
 class UserDetailView(CommAdminView):
@@ -1042,7 +1045,6 @@ class UserDetailView(CommAdminView):
             logger.info('Finished update user: ' + str(username) + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
-            user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
         elif post_type == 'get_user_transactions':
@@ -1104,25 +1106,17 @@ class UserDetailView(CommAdminView):
         s3_client = aws_session.client('s3')
         file_name = self.get_user_photo_file_name(username)
 
-        max_retry = 3
-        count = 0
         success = False
-        # application level 2 extra retries
-        while count < 3:
-            if count > 0:
-                logger.info("Retrying...")
-            try:
-                s3_response_object = s3_client.get_object(Bucket='ibet-admin', Key=file_name)
-                success = True
-                break
-            except ClientError as e:
-                # AllAccessDisabled error == bucket or object not found
-                logger.error(e)
-            except NoCredentialsError as e:
-                logger.error(e)
-            logger.info('Cannout find any image from this user: ' + username)
-            count += 1
+        try:
+            s3_response_object = s3_client.get_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
+            success = True
+        except ClientError as e:
+            # AllAccessDisabled error == bucket or object not found
+            logger.error(e)
+        except NoCredentialsError as e:
+            logger.error(e)
         if not success:
+            logger.info('Cannout find any image from this user: ' + username)
             return None
 
         object_content = s3_response_object['Body'].read()
@@ -1136,9 +1130,18 @@ class UserDetailView(CommAdminView):
         aws_session = boto3.Session()
         s3 = aws_session.resource('s3')
         file_name = self.get_user_photo_file_name(username)
-        obj = s3.Object('ibet-admin', file_name)
-        obj.put(Body=content)
-        logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+
+        success = False
+        try:
+            obj = s3.Object(settings.AWS_S3_ADMIN_BUCKET, file_name)
+            obj.put(Body=content)
+            success = True
+            logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
+            logger.info('Cannout upload image: ' + username)
+            return None
 
 
     def get_user_photo_file_name(self, username):
