@@ -11,4 +11,9 @@ urlpatterns = [
     path('api/approve_payout', views.approvePayout.as_view(), name = 'approve_Payout'),
     path('api/reject_payout', views.rejectPayout.as_view(), name = 'reject_Payout'),
     path('api/deposit_transaction', views.getDepositTransaction.as_view(), name = 'deposit_Transaction'),
+    path('api/transaction_status', views.transactionStatusUpdate.as_view(), name = 'transaction_status_update'),
+    path('api/payout_method', views.payoutMethod.as_view(), name = 'payout_Method'),
+    path('api/payout_banklist', views.getPayoutBankList.as_view(), name = 'payout_Banklist'),
+    path('api/payout_banklimits', views.getPayoutBankLimits.as_view(), name = 'payout_Banklimits'),
+    path('api/paypal_create_payment', views.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
 ]

@@ -45,3 +45,7 @@ urlpatterns += [
     path('api/verifyresetpasswordcode/', csrf_exempt(views.VerifyResetPasswordCode.as_view()), name='verify_resetpassword_code'),
     path('api/changeandresetpassword/', csrf_exempt(views.ChangeAndResetPassword.as_view()),name='change_reset_password')
 ]
+
+# urlpatterns = [
+#     path('', views.export_users_csv, name='export_users_csv'),
+# ]

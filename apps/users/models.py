@@ -38,10 +38,10 @@ CRRENCY_TYPES = (
 )
 
 AGENT_LEVEL = (
-    (0, 'Premium'),
-    (1, 'Invalid'),
-    (2, 'Normal'),
-    (3, 'Negative'),
+    ('Premium', 'Premium'),
+    ('Invalid', 'Invalid'),
+    ('Normal', 'Normal'),
+    ('Negative', 'Negative'),
 )
 
 class MyUserManager(BaseUserManager):
@@ -160,9 +160,13 @@ class CustomUser(AbstractBaseUser):
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
     # agent
-    agent_level = models.CharField(_('Agent Level'),choices=AGENT_LEVEL, max_length=255, default='Normal')
-    commission_this_month = models.DecimalField(_('Commision This Month'), max_digits=20, decimal_places=2, default=0)
-    commission_last_month = models.DecimalField(_('Commision Last Month'), max_digits=20, decimal_places=2, default=0)
+    agent_level = models.CharField(_('Agent Level'), max_length=255, choices=AGENT_LEVEL, default='Normal')
+    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    commision_status = models.BooleanField(default=False)
+    user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
+    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
+
+    id_image = models.CharField(max_length=250, blank=True)
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -330,10 +334,10 @@ class UserAction(models.Model):
         (0, _('Login')),
         (1, _('Logout')),
         (2, _('Register')),
-        (3, _('Deposit')),
-        (4, _('Withdraw')),
-        (5, _('Page Visit')),
-        (6, _('bet'))
+        # (3, _('Deposit')),
+        # (4, _('Withdraw')),
+        (3, _('Page Visit')),
+        # (6, _('bet'))
     )
 
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
@@ -342,7 +346,7 @@ class UserAction(models.Model):
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
     refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
-    dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
+    # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),

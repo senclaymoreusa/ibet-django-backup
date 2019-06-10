@@ -74,32 +74,33 @@ class UserActionModelTest(APITestCase):
         self.assertEqual(UserAction.objects.all().count(), 2)
 
 
-    def test_action_create_success_when_add_money(self):
-        response = self.client.post(reverse('add_withdraw_balance'), {
-            'username': 'vicky_test',
-            'type': 'add',
-            'balance': '100',
-        }, format='json')
-        assert response.status_code == 200
-        user = CustomUser.objects.filter(username="vicky_test")
-        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=3, dollar_amount=100).exists())
-        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=3, dollar_amount=100).count(), 1)
-        self.assertEqual(UserAction.objects.all().count(), 2)
-        self.assertEqual(user[0].main_wallet, 200)
+    # This will handle by test_accounting file
+    # def test_action_create_success_when_add_money(self):
+    #     response = self.client.post(reverse('add_withdraw_balance'), {
+    #         'username': 'vicky_test',
+    #         'type': 'add',
+    #         'balance': '100',
+    #     }, format='json')
+    #     assert response.status_code == 200
+    #     user = CustomUser.objects.filter(username="vicky_test")
+    #     self.assertTrue(UserAction.objects.filter(user=user[0], event_type=3, dollar_amount=100).exists())
+    #     self.assertEqual(UserAction.objects.filter(user=user[0], event_type=3, dollar_amount=100).count(), 1)
+    #     self.assertEqual(UserAction.objects.all().count(), 2)
+    #     self.assertEqual(user[0].main_wallet, 200)
 
     
-    def test_action_create_success_when_withdraw_money(self):
-        response = self.client.post(reverse('add_withdraw_balance'), {
-            'username': 'vicky_test',
-            'type': 'withdraw',
-            'balance': '10',
-        }, format='json')
-        assert response.status_code == 200
-        user = CustomUser.objects.filter(username="vicky_test")
-        self.assertTrue(UserAction.objects.filter(user=user[0], event_type=4, dollar_amount=10).exists())
-        self.assertEqual(UserAction.objects.filter(user=user[0], event_type=4, dollar_amount=10).count(), 1)
-        self.assertEqual(UserAction.objects.all().count(), 2)
-        self.assertEqual(user[0].main_wallet, 90)
+    # def test_action_create_success_when_withdraw_money(self):
+    #     response = self.client.post(reverse('add_withdraw_balance'), {
+    #         'username': 'vicky_test',
+    #         'type': 'withdraw',
+    #         'balance': '10',
+    #     }, format='json')
+    #     assert response.status_code == 200
+    #     user = CustomUser.objects.filter(username="vicky_test")
+    #     self.assertTrue(UserAction.objects.filter(user=user[0], event_type=4, dollar_amount=10).exists())
+    #     self.assertEqual(UserAction.objects.filter(user=user[0], event_type=4, dollar_amount=10).count(), 1)
+    #     self.assertEqual(UserAction.objects.all().count(), 2)
+    #     self.assertEqual(user[0].main_wallet, 90)
 
     def test_action_fail_when_not_enough_money_to_withdraw(self):
         response = self.client.post(reverse('add_withdraw_balance'), {

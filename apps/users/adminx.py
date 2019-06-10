@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
-from .views import AgentView, OneclickRegister
+from .views import AgentView, AgentDetailView, OneclickRegister 
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -20,7 +20,7 @@ DOMAIN = settings.DOMAIN
 
 
 class BaseSetting(object):
-    enable_themes = True    # 使用主题
+    # enable_themes = True    # 使用主题
     use_bootswatch = True
 
 # 全局设置
@@ -40,10 +40,14 @@ class GlobalSettings(object):
                         'url': '/xadmin/agent_view',     #这里填写你将要跳转url
                         'icon': 'fa fa-cny'     #这里是bootstrap的icon类名，要换icon只要登录bootstrap官网找到icon的对应类名换上即可
                     },
+                    {
+                        'title': _('Member List'),
+                        'url': '/xadmin/user',
+                        'icon': 'fa fa-user'
+                    },
                 )
             }
         ]
-   
 
 from django.contrib import admin
 class UserWithTagInline(object):
@@ -196,7 +200,7 @@ class UserWithTagAdmin(object):
 
 class UserActionAdmin(object):
 
-    list_display = ('user','event_type', 'ip_addr','dollar_amount', 'created_time', 'user_action_link')
+    list_display = ('user','event_type', 'ip_addr', 'created_time', 'user_action_link')
     list_filter = ('user', 'event_type', 'created_time')
     model_icon = 'fa fa-cogs'
     search_fields = ('user__username', 'event_type',)
@@ -213,6 +217,18 @@ class UserActionAdmin(object):
     user_action_link.short_description = _("User action link")
 
 
+
+#注册你上面填写的url
+from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
+xadmin.site.register_view(r'user/$', UserListView, name='user_list')
+
+#注册GlobalSetting
+from xadmin.views import CommAdminView
+# xadmin.site.register(CommAdminView, GlobalSettings)
+
+
 xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
@@ -223,3 +239,5 @@ xadmin.site.register(UserWithTag,UserWithTagAdmin)
 xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
 xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
+xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')
