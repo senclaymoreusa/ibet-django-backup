@@ -97,39 +97,39 @@ class getDepositMethod(generics.GenericAPIView):
             if r.status_code == 200:
                 success = True
                 break
-            if r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
-                sleep(delay)
             if r.status_code == 400 or r.status_code == 401:
                 success = True
                 # Handle error
                 print("There was something wrong with the result")
                 print(data)
-                logger.info('Failed to complete a request for retrieving available deposit methods..')
+                logger.info('Failed to complete a request for retrieving available deposit methods...')
                 return Response(data)
-
+            if r.status_code == 500:
+                print("Request failed {} time(s)'.format(x+1)")
+                print("Waiting for %s seconds before retrying again")
+                sleep(delay)
         if not success:
-            return Response({"error" : "Qaicash API unresponsive. Failed with status code 500."})
+            return Response(data)
         for x in data:
             print(x)
             depositData = {
                 "thridParty_name": QAICASH_NAME, # third party name is hard-fixed to match the channel choice in models
                 "method": x['method'],
-                "currency": "ASDF",
+                "currency": currency,
                 "min_amount": x['limits'].get('minTransactionAmount'),
                 "max_amount": x['limits'].get('maxTransactionAmount'),
             }
             serializer = depositMethodSerialize(data=depositData)
-            # if (serializer.is_valid()):
-            #     serializer.save()
-            # else:
-            #     return Response({"error": "Invalid data passed into serializer", "description": serializer.errors})
+            if (serializer.is_valid()):
+                serializer.save()
+            else:
+                return Response({"error": "Invalid data passed into serializer", "description": serializer.errors})
         return Response(data)
 
+# fetch supported bank list for the specified currency + deposit method from qaicash API
 class getBankList(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
-    serializer_class = bankListSerialize # appears that we need to override this attribute for every generic API view
+    serializer_class = bankListSerialize # appears that we need to override this attribute for every GenericAPIView
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
@@ -166,14 +166,14 @@ class getBankList(generics.GenericAPIView):
                 if r.status_code == 400 or r.status_code == 401:
                     print("There was something wrong with the result")
                     print(data)
-                    logger.info("Failed to complete a request for retrieving available deposit methods..")
+                    logger.info("Failed to complete a request for retrieving available bank lists (getBankList())")
                     logger.error(data)
                     return Response(data)
                 if r.status_code == 500:
                     logger.info('Request failed {} time(s)'.format(x+1))
                     logger.debug("wating for %s seconds before retrying again")
                     time.sleep(delay) 
-            return 
+            return Response(data)
         else:
             return Response({"error": "Invalid data passed into serializer", "description": serializer.errors})
 
@@ -183,12 +183,16 @@ class getBankLimits(generics.GenericAPIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        serializer = bankLimitsSerialize(self.queryset, many=True)
         bank = self.request.POST['bank']
         currency = self.request.POST['currency']
         method = self.request.POST['method']
-        url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits'
+
+        currency_long = currencyConversion[currency]
+        method_long = methodConversion[method]
+
+        url =  api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods/' + method_longif + '/banks/' + bank + '/limits'
         headers = {'Accept': 'application/json'}
+
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
         message = bytes(merchantId + '|' + currency, 'utf-8')
@@ -199,32 +203,33 @@ class getBankLimits(generics.GenericAPIView):
          #retry
         success = False
         for x in range(3):
-            try:
-                r = requests.get(url, headers=headers, params = {
-                    # 'userId' : userId,
-                    'hmac' : my_hmac,
-                    'deviceType' : 'PC',
-                })
-                if r.status_code == 200:
-                    success = True
-                    break
-            except ValueError:
+            r = requests.get(url, headers=headers, params = {
+                # 'userId' : userId,
+                'hmac' : my_hmac,
+                'deviceType' : 'PC',
+            })
+            data = r.json()
+            if r.status_code == 200:
+                success = True
+                break
+            if r.status_code == 400 or r.status_code == 401:
+                print("There was something wrong with the result")
+                print(data)
+                logger.info("Failed to complete a request for retrieving available deposit methods..")
+                logger.error(data)
+                return Response(data)
+            if r.status_code == 500:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
                 time.sleep(delay) 
         if not success:
-            logger.info('Failed to complete a request for...')
-        # Handle error
-        if r.status_code == 500:
-            print('Response content is not in JSON format.')
-            data = '500 Internal Error'    
-        else:
-            data = r.json()
-        
+            logger.info("Failed to complete a request for getBankLimits()")
+            return Response(data)
+
         depositData = {
             "thridParty_name": 3,
             "method": method,
-            "currency": currencyConversion[currency],
+            "currency": currency,
             "min_amount":data["minTransactionAmount"],
             "max_amount":data["maxTransactionAmount"],
         }

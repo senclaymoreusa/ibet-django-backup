@@ -21,9 +21,8 @@ class bankListSerialize(serializers.Serializer):
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.ChoiceField(choices=DEPOSIT_METHOD_CHOICES, default=0)
 
-
 class bankLimitsSerialize(serializers.Serializer):
-    bank           = serializers.CharField(required=True)
+    bank = serializers.CharField(required=True)
     thridParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
     currency = serializers.CharField(required=True)
     method = serializers.CharField(required=True)
