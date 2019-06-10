@@ -982,6 +982,12 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from datetime import datetime, timedelta
 from django.db.models import Q
+import boto3
+from botocore.exceptions import ClientError
+from botocore.exceptions import NoCredentialsError
+from django.conf import settings
+
+
 
 
 class UserDetailView(CommAdminView):
@@ -990,18 +996,15 @@ class UserDetailView(CommAdminView):
         title = "Member " + self.kwargs.get('pk')
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
-        # print("pk " + str(self.kwargs.get('pk')))
         Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
-        # print("!!!!!!!" + str(Customuser))
         context['customuser'] = Customuser
+        context['userPhotoId'] = self.download_user_photo_id(Customuser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
-        # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
         transaction = Transaction.objects.filter(user_id=Customuser)
         if Transaction.objects.filter(user_id=Customuser).count() == 0:
             context['userTransactions'] = ''
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)[:20]
-        
         context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
 
         if transaction.count() <= 20:
@@ -1011,6 +1014,7 @@ class UserDetailView(CommAdminView):
         
 
         return render(request, 'user_detail.html', context)
+
 
     def post(self, request):
         post_type = request.POST.get('type')
@@ -1027,18 +1031,20 @@ class UserDetailView(CommAdminView):
             city = request.POST.get('city')
             zipcode = request.POST.get('zipcode')
             country = request.POST.get('country')
-            user_ip_img = request.POST.get('user_ip_img')
-            # print(user_ip_img)
+            user_id_img = request.POST.get('user_id_img')
+            # upload image to S3
+            self.upload_user_photo_id(username, user_id_img)
+
             CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
                 phone=phone, date_of_birth=birthday, 
                 street_address_1=address, city=city,
-                zipcode=zipcode, country=country, id_image=user_ip_img)
-
+                zipcode=zipcode, country=country)
+            
+            logger.info('Finished update user: ' + str(username) + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
-            # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
         elif post_type == 'get_user_transactions':
@@ -1054,6 +1060,9 @@ class UserDetailView(CommAdminView):
                 time_from = datetime(2000, 1, 1)
             if time_to == "Invalid date":
                 time_to = datetime(2400, 1, 1)
+
+            logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+            logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
             
             if category == 'all':
                 transactions = Transaction.objects.filter(
@@ -1079,7 +1088,6 @@ class UserDetailView(CommAdminView):
 
             transactionsJson = serializers.serialize('json', transactions)
             transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
             statusMap = {}
             for t in Transaction._meta.get_field('status').choices:
                 statusMap[t[0]] = t[1]
@@ -1089,13 +1097,55 @@ class UserDetailView(CommAdminView):
             
             transactionsJson = json.dumps(transactionsList)
             response['transactions'] = transactionsList
-    
-            # print(type(transactionsDict))
-            # print('transactions:' + str(transactionsJson))
-            return HttpResponse(json.dumps(response), content_type='application/json')
-            
 
-        
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+    
+    def download_user_photo_id(self, username):
+        aws_session = boto3.Session()
+        s3_client = aws_session.client('s3')
+        file_name = self.get_user_photo_file_name(username)
+
+        success = False
+        try:
+            s3_response_object = s3_client.get_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
+            success = True
+        except ClientError as e:
+            # AllAccessDisabled error == bucket or object not found
+            logger.error(e)
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
+            logger.info('Cannout find any image from this user: ' + username)
+            return None
+
+        object_content = s3_response_object['Body'].read()
+        object_content = object_content.decode('utf-8')
+
+        logger.info('Finished download username: ' + username + ' and file: ' + file_name + ' to S3!!!')
+        return object_content
+
+
+    def upload_user_photo_id(self, username, content):
+        aws_session = boto3.Session()
+        s3 = aws_session.resource('s3')
+        file_name = self.get_user_photo_file_name(username)
+
+        success = False
+        try:
+            obj = s3.Object(settings.AWS_S3_ADMIN_BUCKET, file_name)
+            obj.put(Body=content)
+            success = True
+            logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
+            logger.info('Cannout upload image: ' + username)
+            return None
+
+
+    def get_user_photo_file_name(self, username):
+        return username + '_photo_id'       
 
 
 class UserListView(CommAdminView): 
@@ -1105,12 +1155,10 @@ class UserListView(CommAdminView):
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
         Customuser = CustomUser.objects.all()
-        # context['customuser'] = Customuser
         
         user_data = []
         for user in Customuser:
             userDict = {}
-            # userDict['customuser'] = user
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['user_attribute'] = user.get_user_attribute_display
@@ -1137,7 +1185,7 @@ class UserListView(CommAdminView):
         context['user_data'] = user_data
 
 
-        return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context
+        return render(request, 'user_list.html', context)
 
     
     def post(self, request):
