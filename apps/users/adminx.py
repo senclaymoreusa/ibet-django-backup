@@ -36,9 +36,9 @@ class GlobalSettings(object):
                 'icon': 'fa fa-bar-chart-o',
                 'menus': (
                     {
-                        'title': 'Agent Overview',    #这里是你菜单的名称
-                        'url': '/xadmin/agent_view',     #这里填写你将要跳转url
-                        'icon': 'fa fa-cny'     #这里是bootstrap的icon类名，要换icon只要登录bootstrap官网找到icon的对应类名换上即可
+                        'title': 'Agent Overview',
+                        'url': '/xadmin/agent_view',
+                        'icon': 'fa fa-cny'
                     },
                     {
                         'title': _('Member List'),

@@ -3,61 +3,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from utils.constants import *
 
 import uuid
-# Create your models here.
-CHANNEL_CHOICES = (
-    (0, 'Alipay'),
-    (1, 'Wechat'),
-    (2, 'Card'),
-    (3, 'Qaicash'),
-    (4, 'Asia Pay'),
-    (5, 'Paypal')
-)
-CURRENCY_CHOICES = (
-    (0, 'CNY'),
-    (1, 'USD'),
-    (2, 'PHP'),
-    (3, 'IDR'),
-)
-STATE_CHOICES = (
-    (0, 'SUCCESS'), 
-    (1, 'FAILED'),
-    (2, 'PENDING'),
-    (3, 'APPROVED'),
-    (4, 'REJECTED'),
-)
-REVIEW_STATE_CHOICES = (
-    (0, 'Approved'), 
-    (1, 'Pending'),
-    (2, 'Rejected'),
-)
-TYPE_CHOICES = (
-    (0, 'Deposit'),
-    (1, 'Withdrawal'),
-    (2, 'Bet Placed'),
-    (3, 'Bet Settled'),
-    (4, 'Transfer In'),
-    (5, 'Transfer Out'),
-    (6, 'Bonus'),
-    (7, 'Adjustment'),
-    (8, 'Commission'),
-)
-LANGUAGE_CHOICES = (
-    ('en-Us', 'English – United States'),
-    ('zh-Hans', 'Chinese Simplified'),
-    ('th', 'Thai'),
-    ('vi', 'Vietnamese'),
-    ('ko', 'Korean'),
-    ('ja', 'Japanese'),
-)
-GAME_TYPE_CHOICES = (
-    (0, 'Sports'),
-    (1, 'Games'),
-    (2, 'Live Casino'),
-    (3, 'Financial'),
-    (4, 'General'),
-)
 class Transaction(models.Model):
     transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
@@ -69,16 +17,16 @@ class Transaction(models.Model):
     method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 
     request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
     arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
-    status = models.SmallIntegerField(choices=STATE_CHOICES,default=1, verbose_name=_('Status'))
+    status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
     channel = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Payment'))
-    transaction_type = models.SmallIntegerField(choices=TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
+    transaction_type = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
     review_status = models.SmallIntegerField(choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
     remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
     transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
     bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
     product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
-    
+    payer_id = models.CharField(max_length = 100, default=0)
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = verbose_name
@@ -115,8 +63,8 @@ class DepositChannel(ThirdParty):
     )
 
     class Meta:
-        verbose_name = 'Deposit Channel'
-        verbose_name_plural = verbose_name
+        verbose_name = "Deposit Channel"
+        verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
@@ -127,7 +75,7 @@ class WithdrawChannel(ThirdParty):
     
     class Meta:
         verbose_name = 'Withdraw Channel'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = "Withdraw Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()

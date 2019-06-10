@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.test.client import Client
-
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient,APITestCase
@@ -9,11 +8,13 @@ from django.urls import reverse
 from users.models import (
     CustomUser
 )
+import datetime
 
 @classmethod
 class ThirdPartyTestCases(TestCase):
     @classmethod
     def setUp(self):
+        
         self.user = CustomUser.objects.create_superuser(username='angela', email = 'angela@test.com', phone='1239385544', password="testtest")
         user.main_wallet += 100
         user.save()
@@ -117,6 +118,12 @@ class ThirdPartyTestCases(TestCase):
             'orderId': 'ibet_1111',
             'currency': 'USD',
             'amount': '10',
+            'user': 'angela',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+    def test_paypal_Get_Order(self):
+        response = self.client.post(reverse('paypal_Get_Order'), {
+            'orderId': 'ibet_1111',
             'user': 'angela',
         }, format='json')
         self.assertEqual(response.status_code, 200)
