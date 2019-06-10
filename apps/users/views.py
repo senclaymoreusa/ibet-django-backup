@@ -984,7 +984,11 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 import boto3
 from botocore.exceptions import ClientError
+from botocore.exceptions import NoCredentialsError
 from django.conf import settings
+
+
+
 
 class UserDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
@@ -993,19 +997,23 @@ class UserDetailView(CommAdminView):
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
         context['time'] = timezone.now()
-        # print("pk " + str(self.kwargs.get('pk')))
         customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
-        # print("!!!!!!!" + str(Customuser))
         context['customuser'] = customUser
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
-        # print(str(context['userPhotoId']))
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
-        # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
+        transaction = Transaction.objects.filter(user_id=customUser)
         if Transaction.objects.filter(user_id=customUser).count() == 0:
             context['userTransactions'] = ''
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
         context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+
+        transaction = Transaction.objects.filter(user_id=customUser)
+        if transaction.count() <= 20:
+            context['isLastPage'] = True
+        else:
+            context['isLastPage'] = False
+        
 
         return render(request, 'user_detail.html', context)
 
@@ -1029,7 +1037,6 @@ class UserDetailView(CommAdminView):
             # upload image to S3
             self.upload_user_photo_id(username, user_id_img)
 
-            # print(user_id_img)
             CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
@@ -1040,7 +1047,6 @@ class UserDetailView(CommAdminView):
             logger.info('Finished update user: ' + str(username) + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
-            # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
         elif post_type == 'get_user_transactions':
@@ -1084,7 +1090,6 @@ class UserDetailView(CommAdminView):
 
             transactionsJson = serializers.serialize('json', transactions)
             transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
             statusMap = {}
             for t in Transaction._meta.get_field('status').choices:
                 statusMap[t[0]] = t[1]
@@ -1095,8 +1100,6 @@ class UserDetailView(CommAdminView):
             # transactionsJson = json.dumps(transactionsList)
             response['transactions'] = transactionsList
 
-            # print(type(transactionsDict))
-            # print('transactions:' + str(transactionsJson))
             return HttpResponse(json.dumps(response), content_type='application/json')
 
     
@@ -1104,13 +1107,20 @@ class UserDetailView(CommAdminView):
         aws_session = boto3.Session()
         s3_client = aws_session.client('s3')
         file_name = self.get_user_photo_file_name(username)
+
+        success = False
         try:
             s3_response_object = s3_client.get_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
+            success = True
         except ClientError as e:
             # AllAccessDisabled error == bucket or object not found
             logger.error(e)
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
             logger.info('Cannout find any image from this user: ' + username)
             return None
+
         object_content = s3_response_object['Body'].read()
         object_content = object_content.decode('utf-8')
 
@@ -1122,9 +1132,18 @@ class UserDetailView(CommAdminView):
         aws_session = boto3.Session()
         s3 = aws_session.resource('s3')
         file_name = self.get_user_photo_file_name(username)
-        obj = s3.Object(settings.AWS_S3_ADMIN_BUCKET, file_name)
-        obj.put(Body=content)
-        logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+
+        success = False
+        try:
+            obj = s3.Object(settings.AWS_S3_ADMIN_BUCKET, file_name)
+            obj.put(Body=content)
+            success = True
+            logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
+            logger.info('Cannout upload image: ' + username)
+            return None
 
 
     def get_user_photo_file_name(self, username):
@@ -1154,24 +1173,23 @@ class UserListView(CommAdminView):
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
-        Customuser = CustomUser.objects.all()
+        customUser = CustomUser.objects.all()
 
         if offset == 0:
             context['isFirstPage'] = True
         else:
             context['isFirstPage'] = False
         
-        if Customuser.count() <= offset+pageSize:
+        if customUser.count() <= offset+pageSize:
             context['isLastPage'] = True
         else:
             context['isLastPage'] = False
 
-        Customuser = CustomUser.objects.all()[offset:offset+pageSize]
+        customUser = CustomUser.objects.all()[offset:offset+pageSize]
         # context['customuser'] = Customuser
         user_data = []
-        for user in Customuser:
+        for user in customUser:
             userDict = {}
-            # userDict['customuser'] = user
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['source'] = str(user.get_user_attribute_display())
@@ -1211,7 +1229,8 @@ class UserListView(CommAdminView):
         context['user_data'] = user_data
 
 
-        return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context
+        return render(request, 'user_list.html', context)
+
     
     def post(self, request):
         post_type = request.POST.get('type')
