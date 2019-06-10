@@ -29,7 +29,7 @@
                                 {% if userPhotoId %}
                                 <img id="user-photo-id" src="{{ userPhotoId }}">
                                 {% else %}
-                                <img id="user-photo-id" src="http://placehold.it/200" alt="User ID Photo">
+                                <img id="user-photo-id" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
                                 {% endif %}
                                 <button id="zoom-btn" class="zoom-btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
                             </div>
@@ -199,7 +199,7 @@
                                                 {% if userPhotoId %}
                                                 <img id="user-photo-img" src="{{ userPhotoId }}">
                                                 {% else %}
-                                                <img id="user-photo-img" src="http://placehold.it/200" alt="User ID Photo">
+                                                <img id="user-photo-img" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
                                                 {% endif %}
                                                 <input type="hidden" name='user_id_img' id="hidden_user_id_url">
                                                 <div>&nbsp;</div>
@@ -715,7 +715,7 @@ $(document).ready(function() {
    }
 
    clearImg = function() {
-        $('#user-photo-img').attr('src', 'http://placehold.it/200');
+        $('#user-photo-img').attr('src', 'https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png');
    }
 
     $.ajaxSetup({
