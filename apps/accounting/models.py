@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
 
 import uuid
-# Create your models here.
 
 class Transaction(models.Model):
     transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
@@ -28,7 +27,7 @@ class Transaction(models.Model):
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
     bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
     product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
-    
+    payer_id = models.CharField(max_length = 100, default=0)
     class Meta:
         verbose_name = 'Transaction'
         verbose_name_plural = verbose_name
@@ -65,8 +64,8 @@ class DepositChannel(ThirdParty):
     )
 
     class Meta:
-        verbose_name = 'Deposit Channel'
-        verbose_name_plural = verbose_name
+        verbose_name = "Deposit Channel"
+        verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
@@ -77,7 +76,7 @@ class WithdrawChannel(ThirdParty):
     
     class Meta:
         verbose_name = 'Withdraw Channel'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = "Withdraw Channels"
 
     def __str__(self):
         return self.get_thridParty_name_display()
