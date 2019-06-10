@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
 
 import uuid
+
 class Transaction(models.Model):
     transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))

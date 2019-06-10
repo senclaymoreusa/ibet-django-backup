@@ -47,6 +47,7 @@ from allauth.account import app_settings as allauth_settings
 
 from django_rest_passwordreset.models import ResetPasswordToken
 from django_rest_passwordreset.views import get_password_reset_token_expiry_time
+from django.template.defaulttags import register
 
 import datetime
 import logging
@@ -56,7 +57,7 @@ from django.contrib.auth import get_user_model
 
 import base64
 import uuid
-import datetime
+import csv
 
 from threading import Timer
 
@@ -66,8 +67,6 @@ import random
 
 import simplejson as json
 import decimal
-
-
 
 logger = logging.getLogger('django')
 
@@ -981,8 +980,7 @@ class ChangeAndResetPassword(View):
         return HttpResponse('Success')
 
 
-from django.template.defaulttags import register
-import csv
+
 
 
 class AgentView(CommAdminView):
@@ -1060,16 +1058,19 @@ class AgentView(CommAdminView):
                 commission_last_month.update({agent_name: cur.amount})
             except:
                 commission_last_month.update({agent_name: '0'})
+            
+
         for agent_name,agent_id in agents.values_list('username','id'):
             try:
                 last = tran_with_commission_month_before.get(user_id_id=agent_id)
                 commission_month_before.update({agent_name: last.amount})
             except:
                 commission_month_before.update({agent_name: '0'})
-
+        
         context["commission_last_month"] = commission_last_month
         context["commission_month_before"] = commission_month_before
 
+        # premium application
         users_with_application_to_premium = users.exclude(user_application_time=None).order_by('-user_application_time')
         context["users_with_application_to_premium"] = users_with_application_to_premium
 
@@ -1112,7 +1113,6 @@ class AgentDetailView(CommAdminView):
         context = super().get_context()
         return render(request,"users/agent_detail.html", context)
     
-from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
 from django.db.models import Sum
@@ -1240,7 +1240,6 @@ class UserListView(CommAdminView):
 
         return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context
 
-from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
 from django.db.models import Sum

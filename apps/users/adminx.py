@@ -25,30 +25,36 @@ class BaseSetting(object):
 
 # 全局设置
 class GlobalSettings(object):
-    site_title = _('IBET Administration')  # 标题
-    site_footer = 'Ibet'  # 页尾
+    site_title = _('IBET Administration') 
+    site_footer = 'Ibet'  
     site_url = '/'
-    menu_style = 'accordion'  # 设置左侧菜单  折叠样式
-    def get_site_menu(self):  #名称不能改
+    menu_style = 'accordion'  
+    def get_site_menu(self): 
         return [
             {
-                'title': 'Test View',
-                'icon': 'fa fa-bar-chart-o',
+                'title': 'Members',
+                'icon': 'fa fa-user fa-fw',
                 'menus': (
-                    {
-                        'title': 'Agent Overview',
-                        'url': '/xadmin/agent_view',
-                        'icon': 'fa fa-cny'
-                    },
                     {
                         'title': _('Member List'),
                         'url': '/xadmin/user',
                         'icon': 'fa fa-user'
                     },
                 )
+            },
+            {
+                'title': 'Affiliate',
+                'icon': 'fa fa-bar-chart-o',
+                'menus': (
+                    {
+                        'title': 'Affiliate Overview',
+                        'url': '/xadmin/agent_view',
+                        'icon': 'fa fa-cny'
+                    },
+                )
             }
         ]
-
+                    
 from django.contrib import admin
 class UserWithTagInline(object):
     model = UserWithTag
