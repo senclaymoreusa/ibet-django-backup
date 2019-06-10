@@ -11,13 +11,13 @@ class TransactionForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['user_id'].disabled = True
-        # self.fields['channel'].disabled = True
-        # self.fields['amount'].disabled = True
-        # self.fields['status'].disabled = True
-        # self.fields['request_time'].disabled = True
-        # self.fields['arrive_time'].disabled = True
-        # self.fields['transaction_type'].disabled = True
+        self.fields['user_id'].disabled = True
+        self.fields['channel'].disabled = True
+        self.fields['amount'].disabled = True
+        self.fields['status'].disabled = True
+        self.fields['request_time'].disabled = True
+        self.fields['arrive_time'].disabled = True
+        self.fields['transaction_type'].disabled = True
 
 class DepositReviewForm(forms.ModelForm):
     class Meta:

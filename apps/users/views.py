@@ -1109,6 +1109,7 @@ class AgentView(CommAdminView):
 
 class AgentDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
+        context = super().get_context()
         return render(request,"users/agent_detail.html", context)
     
 from xadmin.views import CommAdminView
