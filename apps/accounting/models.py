@@ -17,7 +17,7 @@ CHANNEL_CHOICES = (
 CURRENCY_CHOICES = (
     (0, 'CNY'),
     (1, 'USD'),
-    (2, 'PHP'),
+    (2, 'THB'),
     (3, 'IDR'),
 )
 STATE_CHOICES = (
@@ -33,6 +33,14 @@ REVIEW_STATE_CHOICES = (
     (0, 'Approved'), 
     (1, 'Pending'),
     (2, 'Rejected'),
+)
+DEPOSIT_METHOD_CHOICES = (
+    (0, "LBT_ONLINE"),
+    (1, "LBT_ATM"),
+    (2, "LBT_OTC"),
+    (3, "DIRECT_PAYMENT"),
+    (4, "BANK_TRANSFER"),
+    (5, "IBT")
 )
 TYPE_CHOICES = (
     (0, 'Deposit'),
@@ -59,6 +67,7 @@ GAME_TYPE_CHOICES = (
     (3, 'Financial'),
     (4, 'General'),
 )
+
 class Transaction(models.Model):
     transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
