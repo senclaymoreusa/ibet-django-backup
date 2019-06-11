@@ -1214,3 +1214,18 @@ class UserListView(CommAdminView):
             
             # print("sending data")
             return HttpResponse(json.dumps(updated_data), content_type="application/json")
+
+
+class ChangePassword(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            user = get_user_model().objects.get(username=username)
+            user.set_password(password)
+            user.save()
+            return Response('Success')
+        except:
+            return Response('Failed')
