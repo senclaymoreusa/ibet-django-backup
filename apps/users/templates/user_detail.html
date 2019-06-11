@@ -36,7 +36,7 @@
                         <div class="block-title"><span>DEPOSIT</span></div>
                         <div class="life-time-value-block">
                             <div class="block-content">
-                                None
+                                {{ withdrawDepositRate }}%
                             </div>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                         <div class="block-title"><span>BONUS/ DEPOSIT</span></div>
                         <div class="life-time-value-block">
                             <div class="block-content">
-                                None
+                                {{ bonusDepositRate }}%
                             </div>
                         </div>
                     </div>
@@ -75,29 +75,32 @@
                 <div class="col-md-2" style="padding: 0px;">
                     <label>DEPOSIT COUNT</label>
                     <div class="active-block">
+                        <div class="account-detail">{{ depositCount }}</div>
                     </div>
                 </div>
                 <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
                     <label>WITHDRAWAL COUNT</label>
                     <div class="active-block">
-                        <div class="account-detail" style="margin-left:15px;">15</div>
+                        <div class="account-detail">{{ withdrawCount }}</div>
                     </div>
                 </div>
                 <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
                     <label>LOGIN COUNT</label>
                     <div class="active-block">
-                        <div class="account-detail" style="float:left;margin-left:10px;">1115</div>
+                        <div class="account-detail" style="float:left;">{{ loginCount }}</div>
                         <button id="login-btn" type="button" class="btn btn-default" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
                     </div>
                 </div>
                 <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
                     <label>DEPOSTI AMOUNT</label>
                     <div class="active-block">
+                        <div class="account-detail">${{ depositAmount }}</div>
                     </div>
                 </div>
                 <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
                     <label>WITHDRAWAL AMOUNT</label>
                     <div class="active-block">
+                        <div class="account-detail">${{ withdrawAmount }}</div>
                     </div>
                 </div>
             </div>
@@ -554,7 +557,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-5" style="margin-right: -112px; float: right;">
                     <div class="block-title">DATE RANGE</div>
                     <div class="row">
                         <div class='col-md-4' style="padding-right: 0px;">
@@ -607,7 +610,7 @@
                             <td>{{ trans.get_product_display }}</td>
                             <td>{{ trans.transaction_id }}</td>
                             <td>{{ trans.transfer_to }}</td>
-                            <td>{{ trans.currency }}</td>
+                            <td>{{ trans.get_currency_display }}</td>
                             <td>{{ trans.request_time }}</td>
                             <td>{{ trans.amount }}</td>
                             <td>{{ trans.amount }}</td>
@@ -1077,10 +1080,34 @@ function getTransData(data) {
         content += '<td scope="row">' + (i+1) + '</td>';
         if (fields.transaction_type == 0) {
             content +=  '<td>Deposit</td>';
+            content +=  '<td>Deposit</td>';
         } else if (fields.transaction_type == 1) {
             content +=  '<td>Withdraw</td>';
+            content +=  '<td>Withdraw</td>';
         }
-        // content += '<td>' + fields.transaction_type + '</td>';
+
+        if (fields.product == 0) {
+            content += '<td>Sports</td>';
+        } else if (fields.product == 1) {
+            content += '<td>Games</td>';
+        } else if (fields.product == 2) {
+            content += '<td>Live Casino</td>';
+        } else if (fields.product == 3) {
+            content += '<td>Financial</td>';
+        } else if (fields.product == 4) {
+            content += '<td>General</td>';
+        }
+        content += '<td>' + data[i].pk + '</td>';
+        if (fields.transfer_to) {
+            content += '<td>' + fields.transfer_to + '</td>';
+        } else {
+            content += '<td>None</td>';
+        }
+
+        if (fields.currency == 0) {
+            content += '<td>CNY</td>';
+        }
+        // content += '<td>' + fields.currency + '</td>';
         content += '<td>' + time + '</td>';
         content += '<td>' + fields.amount + '</td>';
         content += '<td>' + fields.amount + '</td>';

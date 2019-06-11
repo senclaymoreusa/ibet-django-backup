@@ -81,7 +81,7 @@ hr {
     width: 192px;
     height: 16px;
     font-family: Helvetica;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
@@ -233,7 +233,7 @@ table.table-bordered > tbody > tr > td{
     width: 127px;
     height: 13px;
     font-family: Helvetica;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
@@ -347,11 +347,10 @@ label {
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
-    /* line-height: normal; */
     letter-spacing: normal;
     color: #4a4a4a;
-    text-align: center;
     line-height: 34px;
+    padding-left:10px;
 }
 
 
@@ -409,7 +408,7 @@ label {
     width: 249px;
     height: 13px;
     font-family: Helvetica;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;

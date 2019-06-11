@@ -1007,13 +1007,40 @@ class UserDetailView(CommAdminView):
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
         context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+        context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
             context['isLastPage'] = True
         else:
             context['isLastPage'] = False
+
+        depositAmount = Transaction.objects.filter(user_id=customUser, transaction_type=0).aggregate(Sum('amount'))
+        withdrawAmount = Transaction.objects.filter(user_id=customUser, transaction_type=1).aggregate(Sum('amount'))
+        depositCount = Transaction.objects.filter(user_id=customUser, transaction_type=0).count()
+        withdrawCount = Transaction.objects.filter(user_id=customUser, transaction_type=1).count()
+        bonusAmount = Transaction.objects.filter(user_id=customUser, transaction_type=6).aggregate(Sum('amount'))
+
+        if bonusAmount['amount__sum'] is None:
+            bonusAmount['amount__sum'] = 0
+        if withdrawAmount['amount__sum'] is None:
+            withdrawAmount['amount__sum'] = 0
+        if depositAmount['amount__sum'] is None:
+            depositAmount['amount__sum'] = 0
+
+        if depositAmount['amount__sum'] == 0:
+            withdrawRate = 0
+            bonusRate = 0
+        else:
+            withdrawRate = withdrawAmount['amount__sum']/depositAmount['amount__sum']
+            bonusRate = bonusAmount['amount__sum']/depositAmount['amount__sum']
         
+        context['withdrawDepositRate'] = "%.2f" % withdrawRate
+        context['bonusDepositRate'] = "%.2f" % bonusRate
+        context['depositCount'] = depositCount
+        context['withdrawCount'] = withdrawCount
+        context['depositAmount'] = depositAmount['amount__sum']
+        context['withdrawAmount'] = withdrawAmount['amount__sum']
 
         return render(request, 'user_detail.html', context)
 
