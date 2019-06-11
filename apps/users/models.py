@@ -117,11 +117,11 @@ class CustomUser(AbstractBaseUser):
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
-    ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
-    verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
+    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
+    verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
-    last_login_time = models.DateTimeField(_('Last Login Time'), default=None, null=True)
-    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=None, null=True)
+    last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
+    last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
 
     # balance = main_wallet + other_game_wallet
