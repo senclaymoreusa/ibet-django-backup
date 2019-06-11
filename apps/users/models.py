@@ -13,13 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
 
-AGENT_LEVEL = (
-    ('Premium', 'Premium'),
-    ('Invalid', 'Invalid'),
-    ('Normal', 'Normal'),
-    ('Negative', 'Negative'),
-)
-
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
         if not email:
