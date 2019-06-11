@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-import choices
+from .choices import *
 
 import uuid
 # Create your models here.
@@ -13,21 +13,21 @@ class Transaction(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
     order_id = models.CharField(max_length = 100, default=0,verbose_name=_('Transaction Code'))
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Apply Amount'))
-    currency = models.SmallIntegerField(choices=choices.CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
-    language = models.CharField(max_length=20, choices=choices.LANGUAGE_CHOICES, default='en-Us', verbose_name=_('Language'))
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
+    language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='en-Us', verbose_name=_('Language'))
     depositorTier = models.SmallIntegerField(default=0, verbose_name=_('Depositor Tier'))
     method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 
     request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
     arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
-    status = models.SmallIntegerField(choices=choices.STATE_CHOICES,default=2, verbose_name=_('Status'))
-    channel = models.SmallIntegerField(choices=choices.CHANNEL_CHOICES, default=2, verbose_name=_('Payment'))
-    transaction_type = models.SmallIntegerField(choices=choices.TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
-    review_status = models.SmallIntegerField(choices=choices.REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
+    status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
+    channel = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Payment'))
+    transaction_type = models.SmallIntegerField(choices=TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
+    review_status = models.SmallIntegerField(choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
     remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
     transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
     bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
-    product = models.SmallIntegerField(choices=choices.GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
+    product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
     payer_id = models.CharField(max_length = 100, default=0)
     class Meta:
         verbose_name = 'Transaction'
@@ -39,9 +39,9 @@ class Transaction(models.Model):
 
 class ThirdParty(models.Model):
     thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    thridParty_name = models.SmallIntegerField(choices=choices.CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
+    thridParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
     method = models.CharField(max_length = 30,  verbose_name =_('Method'))
-    currency = models.SmallIntegerField(choices=choices.CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
     switch = models.BooleanField(default=True, verbose_name=_('Active'))
