@@ -43,19 +43,51 @@
 }
 
 hr {
-    width:90%;
-    /* border-color: gray; */
-    /* border:1px solid grey; */
-    border: 0; 
-    border-top: 2px solid rgb(204, 204, 204);
+    width: 85%;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+  
 }   
 
+.detail-title-block {
+    width: 1380px;
+    height: 30px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+}
+
 .detail-title {
-    line-height: 2
+    width: 410px;
+    height: 22px;
+    font-family: Helvetica;
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 27px;
+    letter-spacing: normal;
+    color: #ffffff;
+    padding-left:20px;
+
 }
 
 .detail-info {
-    margin-left:50px !important;
+    width: 192px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 28px;
+    letter-spacing: normal;
+    color: #4a4a4a;
 }
 
 .funds-section-title {
@@ -112,14 +144,14 @@ hr {
 }
 
 #user-photo-id {
-    max-width: 100%;
-    max-height: 100%;
+    width: 300px;
+    height: 180px;
 }
 
 .zoom-btn {
     position: absolute;
     top: 75%;
-    left: 75%;
+    left: 85%;
     background: transparent;
     border: transparent;
     color:white;
@@ -160,11 +192,255 @@ table.table-bordered > tbody > tr > td{
 #select-row {
     margin-top: 20px;
     position: absolute;
-    left:80%;
+    left:70%;
+    width:10%;
 }
 
-#pagination-btn {
-    position: relative;
-    left:90%;
+.user-list-control-group {
+    margin-top: 20px;
 }
 
+#life-time-rectangle {
+    width: 1380px;
+    height: 280px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:3px;
+}
+
+#fund-rectangle {
+    width: 1380px;
+    height: 280px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:3px;
+    margin-top:20px;
+}
+
+
+#transaction-rectangle {
+    width: 1380px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:3px;
+    margin-top:20px;
+}
+
+.block-title {
+    width: 127px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+
+}
+
+.life-time-value-block, .fund-block{
+    width: 160px;
+    height: 105px;
+    background-color: #f3f3f3;
+}
+
+.block-content {
+    height: 38px;
+    font-family: Helvetica;
+    font-size: 32px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: center;
+    color: #4a4a4a;
+    line-height: 100px;
+
+}
+
+.status-block-content {
+    height: 38px;
+    font-family: Helvetica;
+    font-size: 20px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: center;
+    color: #4a4a4a;
+    line-height: 100px;
+}
+
+
+.pie-chart {
+    background-color:#f3f3f3;
+    width:105px;
+    height:105px;
+
+}
+
+
+#contribution-title, #balance-wallet-title {
+    width: 191px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+
+.active-block {
+    width: 210px;
+    height: 33px;
+    background-color: #f3f3f3;
+}
+
+.status-btn {
+    width: 126px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+}
+
+label {
+    width: 174px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+
+#login-btn {
+    float:right;
+    width: 33px;
+    height: 33px;
+    background-color: #428bca;
+}
+
+.active-block i, #note-btn i {
+    color: white;
+    margin-left:-4px;
+}
+
+.account-detail {
+    width: 163px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 15px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    /* line-height: normal; */
+    letter-spacing: normal;
+    color: #4a4a4a;
+    text-align: center;
+    line-height: 34px;
+}
+
+
+.member-detail-rectangle {
+    width: 682px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    padding:0px;
+    margin-right: 8px;
+}
+
+.activity-rectangle {
+    width: 682px;
+    height: 963px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    padding:0px;
+    margin-left: 8px;
+}
+
+.half-title-block {
+    height: 30px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+}
+
+
+
+.memeber-detail-label {
+    width: 75px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 30px;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+
+.note-block {
+    width: 650px;
+    height: 66px;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    margin:0px 15px 20px 15px;
+}
+
+
+.note-author {
+    width: 249px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin:15px 15px 0px 15px;
+
+}
+
+#note-input-container {
+    margin-left: 10px;
+    margin-top: 40px;
+}
+
+#notes-input {
+    display: inline-block;
+    margin-left:5px;
+    width:80%;
+
+}
+
+#post-btn{
+    margin-left: 8px;
+    width:65px;
+}
+
+#note-btn {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    border-radius: 4px;
+    background-color: #428bca;
+}

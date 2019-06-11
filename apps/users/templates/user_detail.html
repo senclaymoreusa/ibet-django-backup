@@ -1,50 +1,206 @@
 {% extends 'xadmin/base_site.html' %}
 
-<!-- <head>  
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
-    
-    <!-- Add additional CSS in static file -->
-    <!-- {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
-</head> -->
-
 {% block content-nav %}
 {% endblock %}
 
 {% block content %} 
     <!-- <div class="row"> -->
-        <div class="row">
-            <div class="col-md-5 user-detail-section module-half-width rcorners left-margin">
-                <div class="user-detail-section-title module-title">
-                    Member details
-                </div>
-                <div class="section-body">
-                    <div class="row">
-                            <div class='col-md-6'>
-                                {% if userPhotoId %}
-                                <img id="user-photo-id" src="{{ userPhotoId }}">
-                                {% else %}
-                                <img id="user-photo-id" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
-                                {% endif %}
-                                <button id="zoom-btn" class="zoom-btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
+
+        <!-- life time value section -->
+        <div class="row" id="life-time-rectangle">
+            <div class="detail-title-block" style="background-color: #ff6426;">
+                <span class="detail-title">Life Time Value</span>
+            </div>
+            <div class="row" style="margin-top:15px;">
+                <div class="col-md-6" >
+                    <div class="col-md-3">
+                        <div class="block-title"><span>&nbsp;</span></div>
+                        <div class="block-title"><span>MEMBER LEVEL</span></div>
+                        <div class="life-time-value-block">
+                            <div class="block-content">
+                                None
                             </div>
-                            <div class='col-md-6'>
-                                <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
-                                <div><span>Member ID</span><span class="detail-info">{{ customuser.pk }}</span></div>
-                                <div><span class="detail-title">Username</span><span>{{ customuser.username }}</span></div>
-                                <div><span>First Name</span><span>{{ customuser.first_name }}</span></div>
-                                <div><span>Last Name</span> <span>{{ customuser.last_name }}</span></div>
-                                <div><span>Email</span><span>{{ customuser.email }}</span></div>
-                                <div><span>Phone</span><span>{{ customuser.phone }}</span></div>
-                                <div><span>Birthday</span><span>{{ customuser.date_of_birth }}</span></div>
-                                <div><span>Address</span><span>{{ customuser.street_address_1 }}</span><span>{{ customuser.city }}</span><span>{{ customuser.state }}</span><span>{{ customuser.zipcode }}</span></div> 
-                            </div>
+                        </div>
                     </div>
+                    <div class="col-md-3">
+                        <div class="block-title"><span>&nbsp;</span></div>
+                        <div class="block-title"><span>RISK LEVEL</span></div>
+                        <div class="life-time-value-block">
+                            <div class="block-content">
+                                None
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="block-title"><span>WITHDRAWAL/</span></div>
+                        <div class="block-title"><span>DEPOSIT</span></div>
+                        <div class="life-time-value-block">
+                            <div class="block-content">
+                                None
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="block-title"><span>&nbsp;</span></div>
+                        <div class="block-title"><span>BONUS/ DEPOSIT</span></div>
+                        <div class="life-time-value-block">
+                            <div class="block-content">
+                                None
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div style="margin-top:6px;">
+                        <div><span id="contribution-title">CONTRIBUTION PER PRODUCT</span></div>
+                    </div>
+                    <div>
+                        <div class="pie-chart">
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="row" style="margin-top:15px;margin-left: 0px;">
+                <div class="col-md-2">
+                    <label>ACTIVE DAYS</label>
+                    <div class="active-block">
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding: 0px;">
+                    <label>DEPOSIT COUNT</label>
+                    <div class="active-block">
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
+                    <label>WITHDRAWAL COUNT</label>
+                    <div class="active-block">
+                        <div class="account-detail" style="margin-left:15px;">15</div>
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
+                    <label>LOGIN COUNT</label>
+                    <div class="active-block">
+                        <div class="account-detail" style="float:left;margin-left:10px;">1115</div>
+                        <button id="login-btn" type="button" class="btn btn-default" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
+                    <label>DEPOSTI AMOUNT</label>
+                    <div class="active-block">
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
+                    <label>WITHDRAWAL AMOUNT</label>
+                    <div class="active-block">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- memeber detail & activity section -->
+        <div class="row" style="margin-top:20px; margin-left:3px;">
+            <div class="member-detail-rectangle col-md-5">  
+                <div class="half-title-block" style="background-color: #ffa313;">
+                    <span class="detail-title">Member details</span>
+                </div>
+                <!-- <div class="section-body"> -->
+                <div class="row" style="margin-top:20px">
+                    <div class='col-md-5' style="margin-left:20px; padding-bottom: 30px;">
+                        <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Member ID</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.pk }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Username</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.username }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Is affilate</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info"><a href="#">Yes</a></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">First Name</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.first_name }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Last Name</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.last_name }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Email</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.email }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Phone</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.phone }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Birthday</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <span class="detail-info">{{ customuser.date_of_birth }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="memeber-detail-label">Address</span>
+                            </div>
+                            <div class="col-md-6" style="margin-left:-40px;">
+                                <div><span class="detail-info">{{ customuser.street_address_1 }}</span></div>
+                                <div><span class="detail-info">{{ customuser.street_address_2 }}</span></div>
+                                <div><span class="detail-info">{{ customuser.city}}</span></div>
+                                <div><span class="detail-info">{{ customuser.zipcode}}</span></div>
+                                <div><span class="detail-info">{{ customuser.country}}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='col-md-5' style="margin-left:30px">
+                        {% if userPhotoId %}
+                        <img id="user-photo-id" src="{{ userPhotoId }}">
+                        {% else %}
+                        <!-- <div id="user-photo-id">None</div> -->
+                        <img id="user-photo-id" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
+                        {% endif %}
+                        <button id="zoom-btn" class="zoom-btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
+                    </div>
+                    <!-- </div> -->
                     <div id="myModal" class="modal fade" role="dialog" style="width:600px;">
                         <div class="modal-dialog">
                             <div class="modal-content">
@@ -132,9 +288,9 @@
                         <div class='col-md-2'>
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit details</button>
                         </div>
-                        <div class='col-md-2'>
+                        <!-- <div class='col-md-2'>
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login_history">Login history</button>
-                        </div>
+                        </div> -->
                     </div>
         
                     <div class="modal fade" id="edit_details" role="dialog">
@@ -262,404 +418,430 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-5 user-detail-section module-half-width left-margin rcorners">
-                <div class="notes-section-title module-title">
-                    Notes
+            <div class="activity-rectangle col-md-5">  
+                <div class="half-title-block" style="background-color: #588ebd;">
+                    <span class="detail-title">Activity</span>
                 </div>
-                <div class="section-body">
+                <div class="form-group" style="padding:20px 0px 20px 0px; margin-left:25px;">
+                    <div><span class="block-title">ACTIVITY TYPE</span></div>
+                    <div style="width:165px;"><select class="form-control" id="activity-select">
+                            <option value="all">All activity</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid; overflow-y: auto; height:740px;">
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                    <div class="note-author">Martin Sandstrom</div>
+                    <div class="note-block">note</div>
+                </div>
+                <div id="note-input-container">
+                    <button id="note-btn"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
+                    <input type="text" class="form-control" id="notes-input" placeholder="Write a new note...">
+                    <button class="btn btn-primary" id="post-btn">Post</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- fund status section -->
+        <div class="row" id="fund-rectangle">
+            <div class="detail-title-block" style="background-color: #00a281;">
+                <span class="detail-title">Fund status</span>
+            </div>
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-6" >
+                    <div class="col-md-3">
+                        <div class="block-title"><span>MAIN</span></div>
+                        <div class="block-title"><span>WALLET BALANCE</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                ${{ customuser.main_wallet }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="block-title"><span>AVAILAVLE FOR</span></div>
+                        <div class="block-title"><span>WITHDRAWAL</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                ${{ customuser.main_wallet }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="block-title"><span>MIN/ MAX</span></div>
+                        <div class="block-title"><span>WITHDRAW AMOUNT</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                NO LIMIT
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="block-title"><span>&nbsp;</span></div>
+                        <div class="block-title"><span>BONUS AMOUNT</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                None
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div style="margin-top:6px;">
+                        <div><span id="balance-wallet-title">BANANCE PER WALLET</span></div>
+                    </div>
+                    <div>
+                        <div class="pie-chart">
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div style="margin-top:35px;margin-left: 15px;">
+                <button class="btn btn-primary"><span>Make adjustment</span></button>
+                <button class="btn btn-primary"><span>Transfer in/ out</span></button>
+                <button  class="btn btn-primary"><span>Release bonus</span></button>
+            </div>
+        </div>
+
+        <!-- transaction section -->
+        <div class="row" id="transaction-rectangle">
+            <div class="detail-title-block" style="background-color: #489e24;">
+                <span class="detail-title">Transaction History</span>
+            </div>
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-6" >
+                    <div class='col-md-8'>
+                        <div class="row">
+                            <div class='col-md-6'>
+                                <div class="block-title">PRODUCT</div>
+                                    <select class="form-control" id="transaction_product_select">
+                                        <option value="all">All products</option>
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                    </select>
+                            </div>
+                            <div class='col-md-6'>
+                                <div class="block-title">CATEGORY</div>
+                                <select class="form-control" id="transaction_category_select">
+                                    <option value="all">All transactions</option>
+                                    <option value="0">Deposit</option>
+                                    <option value="1">Withdraw</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="block-title">DATE RANGE</div>
                     <div class="row">
-                        <div class='col-md-6'>photo</div>
-                        <div class='col-md-6'>
-                            <p>Member ID: {{ customuser.pk }}</p>
-                            <p>Username: {{ customuser.username }}</p>
-                            <p>First Name : {{ customuser.first_name }}</p>
-                            <p>Last Name : {{ customuser.last_name }}</p>
-                            <p>Email : {{ customuser.email }}</p>
-                            <p>Phone : {{ customuser.phone }}</p>
-                            <p>Birthday : {{ customuser.date_of_birth }}</p>
-                            <p>Address : {{ customuser.street_address_1 }} {{ customuser.city }} {{ customuser.state }} {{ customuser.zipcode }}</p>
+                        <div class='col-md-4' style="padding-right: 0px;">
+                            <div class='input-group date' id='transaction_time_from'>
+                                <input type='text' class="form-control" placeholder="From" id='transaction_time_from_input' />
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class='col-md-4'>
+                            <div class='input-group date' id='transaction_time_to'>
+                                <input type='text' class="form-control" placeholder="To"  id='transaction_time_to_input'/>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class='col-md-2' style="padding-left: 0px;">
+                            <button id="transaction_time_submit" type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-5 user-detail-section module-half-width left-margin rcorners" style='margin-top:20px'>
-                <div class="funds-section-title module-title">
-                    Funds Status
-                </div>
-                <div class="section-body">
-                    <div class="row" style="margin: 5%;">
-                        <div class='col-md-3'>
-                            <label>MAIN</label>
-                            <label>ACCOUNT BALANCE</label>
-                            <!-- <div class='user-detail-block'>
-                                {{ customuser.main_wallet}}
-                            </div> -->
+            <!-- <label style="margin:15px">TRNASACTION LAST 7 DAYS</label> -->
+            <div class="row" style="margin:20px 15px 15px 15px">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">CATEGORY</th>
+                            <th scope="col">TRANSACTION TYPE</th>
+                            <th scope="col">PRODUCT</th>
+                            <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">WALLET</th>
+                            <th scope="col">CURRENCY</th>
+                            <th scope="col">TIME</th>
+                            <th scope="col">AMOUNT</th>
+                            <th scope="col">BALANCE</th>
+                            <th scope="col">STATUS</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction_tbody">
+                        {% for trans in userTransactions %} 
+                        <tr>
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>{{ trans.get_transaction_type_display }}</td>
+                            <td>{{ trans.get_transaction_type_display }}</td>
+                            <td>{{ trans.get_product_display }}</td>
+                            <td>{{ trans.transaction_id }}</td>
+                            <td>{{ trans.transfer_to }}</td>
+                            <td>{{ trans.currency }}</td>
+                            <td>{{ trans.request_time }}</td>
+                            <td>{{ trans.amount }}</td>
+                            <td>{{ trans.amount }}</td>
+                            <td>{{ trans.get_status_display }}</td>
+                            {% if trans.transaction_type == 0 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 1 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 2 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_placed_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 3 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_settled_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 4 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_in_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 5 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_out_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 6 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bonus_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transaction_type == 7 %}
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_adjustment_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% endif %}
+                        </tr>
+                        <div class="modal fade" id="trans_deposit_detail" role="dialog">
+                            <div class="modal-dialog">
+                                <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Deposit Detail</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <p>Client Name </p>
+                                                <p>Transaction Number </p>
+                                                <p>Time of application </p>
+                                                <p>Account Time </p>
+                                                <p>Approver </p>
+                                                <p>Bank/Branch </p>
+                                                <p>Receive Bank </p>
+                                                <p>Apply amount </p>
+                                                <p>Arrive amount </p>
+                                                <p>Status </p>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <p>{{ customuser.username }}</p>
+                                                <p>{{ trans.transaction_id }}</p>
+                                                <p>{{ trans.request_time }}</p>
+                                                <p>{{ trans.request_time }}</p>
+                                                <p>/</p>
+                                                <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                <p>/</p>
+                                                <p>{{ trans.amount }}</p>
+                                                <p>{{ trans.amount }}</p>
+                                                <p>{{ trans.get_status_display }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> 
+                            </div>
                         </div>
-                        <div class='col-md-3'>
-                            <label>AVAILABLE FOR</label>
-                            <label>WITHDRAW</label>
-                            <!-- <div class='user-detail-block'>
-                                {{ customuser.main_wallet}}
-                            </div> -->
+                        <div class="modal fade" id="trans_withdrawal_detail" role="dialog">
+                            <div class="modal-dialog">
+                                <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Withdrawal Detail</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <p>Client Name </p>
+                                                <p>Transaction Number </p>
+                                                <p>Time of application </p>
+                                                <p>Account Time </p>
+                                                <p>Bank/Branch </p>
+                                                <p>Receive Bank </p>
+                                                <p>Assignment error</p>
+                                                <p>Bank Account</p>
+                                                <p>Channel Name</p>
+                                                <p>Apply amount </p>
+                                                <p>Arrive amount </p>
+                                                <p>Surcharge </p>
+                                                <p>Time of Audit </p>
+                                                <p>Auditor </p>
+                                                <p>Audi Memo </p>
+                                                <p>Status </p>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <p>{{ customuser.username }}</p>
+                                                <p>{{ trans.transaction_id }}</p>
+                                                <p>{{ trans.request_time }}</p>
+                                                <p>{{ trans.request_time }}</p>
+                                                <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                <p>/</p>
+                                                <p>/</p>
+                                                <p>/</p>
+                                                <p>{{ trans.channel }} </p>
+                                                <p>{{ trans.amount }}</p>
+                                                <p>{{ trans.amount }}</p>
+                                                <p>fee</p>
+                                                <p>/</p>
+                                                <p>/</p>
+                                                <p>/</p>
+                                                <p>{{ trans.get_status_display }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> 
+                            </div>
                         </div>
-                        <div class='col-md-3'>
-                            <label>MIN/MAX</label>
-                            <label>WITHDRAW</label>
-                            <!-- <div class='user-detail-block'>
-                                NO LIMIT
-                            </div> -->
+                        <div class="modal fade" id="trans_bet_placed_detail" role="dialog">
+                                <div class="modal-dialog">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Deposit Detail</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p>Client Name </p>
+                                                    <p>Transaction Number </p>
+                                                    <p>Time of application </p>
+                                                    <p>Account Time </p>
+                                                    <p>Approver </p>
+                                                    <p>Bank/Branch </p>
+                                                    <p>Receive Bank </p>
+                                                    <p>Apply amount </p>
+                                                    <p>Arrive amount </p>
+                                                    <p>Status </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p>{{ customuser.username }}</p>
+                                                    <p>{{ trans.transaction_id }}</p>
+                                                    <p>{{ trans.request_time }}</p>
+                                                    <p>{{ trans.request_time }}</p>
+                                                    <p></p>
+                                                    <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                    <p>/</p>
+                                                    <p>{{ trans.amount }}</p>
+                                                    <p>{{ trans.amount }}</p>
+                                                    <p>{{ trans.get_status_display }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
                         </div>
-                        <div class='col-md-3'>
-                            <label>BONUS</label>
-                            <label>AMOUNT</label>
-                            <!-- <div class='user-detail-block'>
-                                NO LIMIT
-                            </div> -->
+                        <div class="modal fade" id="trans_bet_settled_detail" role="dialog">
+                                <div class="modal-dialog">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Deposit Detail</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p>Client Name </p>
+                                                    <p>Transaction Number </p>
+                                                    <p>Time of application </p>
+                                                    <p>Account Time </p>
+                                                    <p>Approver </p>
+                                                    <p>Bank/Branch </p>
+                                                    <p>Receive Bank </p>
+                                                    <p>Apply amount </p>
+                                                    <p>Arrive amount </p>
+                                                    <p>Status </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p>{{ customuser.username }}</p>
+                                                    <p>{{ trans.transaction_id }}</p>
+                                                    <p>{{ trans.request_time }}</p>
+                                                    <p>{{ trans.request_time }}</p>
+                                                    <p></p>
+                                                    <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                                    <p>/</p>
+                                                    <p>{{ trans.amount }}</p>
+                                                    <p>{{ trans.amount }}</p>
+                                                    <p>{{ trans.get_status_display }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
                         </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class='col-md-1'>
+                        <button class="btn btn-primary"><span>Export</span></button>
                     </div>
-                    <div class="row" style="margin: 5%;">
-                        <div class='col-md-3'>
-                            <div class='user-detail-block'>
-                                $ {{ customuser.main_wallet}}
-                            </div>
+                    <div class="transaction-control-group col-md-9"></div>
+                    <div>
+                        <div class='col-md-1'>
+                        <!-- <div class='col-md-1'> -->
+                            <input type="hidden" id="hidden_row" value="0"></input>
+                            <select id="pagination_value"  class="form-control">
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="250">250</option>
+                            </select>
                         </div>
-                        <div class='col-md-3'>
-                            <div class='user-detail-block'>
-                                $ {{ customuser.main_wallet}}
-                            </div>
-                        </div>
-                        <div class='col-md-3'>
-                            <div class='user-detail-block'>
-                                NO LIMIT
-                            </div>
-                        </div>
-                        <div class='col-md-3'>
-                            <div class='user-detail-block'>
-                                NO LIMIT
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <label style="margin-left: 10%;">BALANCE PER PRODUCT</label>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>GB SPORTS</label>
-                            <div></div>
-                        </div>
-                        <div class="col-md-4">
-    
-                        </div>
-                        <div class="col-md-4">
-    
+                        <div class='col-md-1'>
+                            <ul class="pagination" style="margin:0px;">
+                                <li class="page-item disabled" id='previousPage'>
+                                <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                </li>
+                                {% if isLastPage is True %}
+                                <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                {% else %}
+                                <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                {% endif %}
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class='row'>
-            <div class='user-detail-section rcorners left-margin' style="margin-right:25px;  margin-top: 25px;">
-                <div class="trans-section-title module-title">
-                    Transaction History
-                </div>
-                <div class="section-body">
-                    <div class="row" style="margin: 15px;">
-                        <div class='col-md-6' style="padding: 0px;">
-                            {% block time_search %}
-                            <div>DATE RANGE</div>
-                            <div class="row">
-                                <div class='col-md-4'>
-                                    <div class='input-group date' id='transaction_time_from'>
-                                        <input type='text' class="form-control" placeholder="From" id='transaction_time_from_input' />
-                                        <span class="input-group-addon">
-                                            <span class="glyphicon glyphicon-calendar"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class='col-md-4'>
-                                    <div class='input-group date' id='transaction_time_to'>
-                                        <input type='text' class="form-control" placeholder="To"  id='transaction_time_to_input'/>
-                                        <span class="input-group-addon">
-                                            <span class="glyphicon glyphicon-calendar"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class='col-md-4'>
-                                    <button id="transaction_time_submit" type="submit" class="btn btn-primary">Submit</button>
-                                </div>
-                            </div>
-                            {% endblock %}
-                        </div>
-                        <div class='col-md-4'>
-                            <div class="row">
-                                <div class='col-md-6'>
-                                    <div>PRODUCT</div>
-                                        <select class="form-control" id="transaction_product_select">
-                                            <option value="all">all</option>
-                                            <option value="0">0</option>
-                                            <option value="1">1</option>
-                                        </select>
-                                </div>
-                                <div class='col-md-6'>
-                                    <div>CATEGORY</div>
-                                    <select class="form-control" id="transaction_category_select">
-                                        <option value="all">all</option>
-                                        <option value="0">Deposit</option>
-                                        <option value="1">Withdraw</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4" id="no_data_error">
-                            <!-- <p>No transaction at this range</p> -->
-                        </div>
-                    </div>
-                    <label style="margin:15px">TRNASACTION LAST 7 DAYS</label>
-                    <div class="row" style="margin-left:15px;margin-right:25px">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">CATEGORY</th>
-                                    <!-- <th scope="col">PRODUCT</th> -->
-                                    <th scope="col">TIME</th>
-                                    <th scope="col">AMOUNT</th>
-                                    <th scope="col">BALANCE</th>
-                                    <th scope="col">STATUS</th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="transaction_tbody">
-                                {% for trans in userTransactions %} 
-                                <tr>
-                                    <td scope="row">{{ forloop.counter }}</td>
-                                    <td>{{ trans.get_transaction_type_display }}</td>
-                                    <!-- <td>{{ trans }}</td> -->
-                                    <td>{{ trans.request_time }}</td>
-                                    <td>{{ trans.amount }}</td>
-                                    <td>{{ trans.amount }}</td>
-                                    <td>{{ trans.get_status_display }}</td>
-                                    {% if trans.transaction_type == 0 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 1 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 2 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_placed_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 3 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_settled_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 4 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_in_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 5 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_out_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 6 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bonus_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% elif trans.transaction_type == 7 %}
-                                    <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_adjustment_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                                    {% endif %}
-                                </tr>
-                                <div class="modal fade" id="trans_deposit_detail" role="dialog">
-                                    <div class="modal-dialog">
-                                        <!-- Modal content-->
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                <h4 class="modal-title">Deposit Detail</h4>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    <div class="col-md-5">
-                                                        <p>Client Name </p>
-                                                        <p>Transaction Number </p>
-                                                        <p>Time of application </p>
-                                                        <p>Account Time </p>
-                                                        <p>Approver </p>
-                                                        <p>Bank/Branch </p>
-                                                        <p>Receive Bank </p>
-                                                        <p>Apply amount </p>
-                                                        <p>Arrive amount </p>
-                                                        <p>Status </p>
-                                                    </div>
-                                                    <div class="col-md-7">
-                                                        <p>{{ customuser.username }}</p>
-                                                        <p>{{ trans.transaction_id }}</p>
-                                                        <p>{{ trans.request_time }}</p>
-                                                        <p>{{ trans.request_time }}</p>
-                                                        <p>/</p>
-                                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
-                                                        <p>/</p>
-                                                        <p>{{ trans.amount }}</p>
-                                                        <p>{{ trans.amount }}</p>
-                                                        <p>{{ trans.get_status_display }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div> 
-                                    </div>
-                                </div>
-                                <div class="modal fade" id="trans_withdrawal_detail" role="dialog">
-                                    <div class="modal-dialog">
-                                        <!-- Modal content-->
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                <h4 class="modal-title">Withdrawal Detail</h4>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    <div class="col-md-5">
-                                                        <p>Client Name </p>
-                                                        <p>Transaction Number </p>
-                                                        <p>Time of application </p>
-                                                        <p>Account Time </p>
-                                                        <p>Bank/Branch </p>
-                                                        <p>Receive Bank </p>
-                                                        <p>Assignment error</p>
-                                                        <p>Bank Account</p>
-                                                        <p>Channel Name</p>
-                                                        <p>Apply amount </p>
-                                                        <p>Arrive amount </p>
-                                                        <p>Surcharge </p>
-                                                        <p>Time of Audit </p>
-                                                        <p>Auditor </p>
-                                                        <p>Audi Memo </p>
-                                                        <p>Status </p>
-                                                    </div>
-                                                    <div class="col-md-7">
-                                                        <p>{{ customuser.username }}</p>
-                                                        <p>{{ trans.transaction_id }}</p>
-                                                        <p>{{ trans.request_time }}</p>
-                                                        <p>{{ trans.request_time }}</p>
-                                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
-                                                        <p>/</p>
-                                                        <p>/</p>
-                                                        <p>/</p>
-                                                        <p>{{ trans.channel }} </p>
-                                                        <p>{{ trans.amount }}</p>
-                                                        <p>{{ trans.amount }}</p>
-                                                        <p>fee</p>
-                                                        <p>/</p>
-                                                        <p>/</p>
-                                                        <p>/</p>
-                                                        <p>{{ trans.get_status_display }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div> 
-                                    </div>
-                                </div>
-                                <div class="modal fade" id="trans_bet_placed_detail" role="dialog">
-                                        <div class="modal-dialog">
-                                            <!-- Modal content-->
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                    <h4 class="modal-title">Deposit Detail</h4>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <p>Client Name </p>
-                                                            <p>Transaction Number </p>
-                                                            <p>Time of application </p>
-                                                            <p>Account Time </p>
-                                                            <p>Approver </p>
-                                                            <p>Bank/Branch </p>
-                                                            <p>Receive Bank </p>
-                                                            <p>Apply amount </p>
-                                                            <p>Arrive amount </p>
-                                                            <p>Status </p>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <p>{{ customuser.username }}</p>
-                                                            <p>{{ trans.transaction_id }}</p>
-                                                            <p>{{ trans.request_time }}</p>
-                                                            <p>{{ trans.request_time }}</p>
-                                                            <p></p>
-                                                            <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
-                                                            <p>/</p>
-                                                            <p>{{ trans.amount }}</p>
-                                                            <p>{{ trans.amount }}</p>
-                                                            <p>{{ trans.get_status_display }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div> 
-                                        </div>
-                                </div>
-                                <div class="modal fade" id="trans_bet_settled_detail" role="dialog">
-                                        <div class="modal-dialog">
-                                            <!-- Modal content-->
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                    <h4 class="modal-title">Deposit Detail</h4>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <p>Client Name </p>
-                                                            <p>Transaction Number </p>
-                                                            <p>Time of application </p>
-                                                            <p>Account Time </p>
-                                                            <p>Approver </p>
-                                                            <p>Bank/Branch </p>
-                                                            <p>Receive Bank </p>
-                                                            <p>Apply amount </p>
-                                                            <p>Arrive amount </p>
-                                                            <p>Status </p>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <p>{{ customuser.username }}</p>
-                                                            <p>{{ trans.transaction_id }}</p>
-                                                            <p>{{ trans.request_time }}</p>
-                                                            <p>{{ trans.request_time }}</p>
-                                                            <p></p>
-                                                            <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
-                                                            <p>/</p>
-                                                            <p>{{ trans.amount }}</p>
-                                                            <p>{{ trans.amount }}</p>
-                                                            <p>{{ trans.get_status_display }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div> 
-                                        </div>
-                                </div>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <div class="row">
-                            <div class='col-md-1' id="select-row">
-                                <input type="hidden" id="hidden_row" value="0"></input>
-                                <select id="pagination_value"  class="form-control">
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="250">250</option>
-                                </select>
-                            </div>
-                            <div class='col-md-4' id="pagination-btn">
-                                <ul class="pagination">
-                                    <li class="page-item disabled" id='previousPage'>
-                                    <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
-                                    </li>
-                                    {% if isLastPage is True %}
-                                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-                                    {% else %}
-                                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-                                    {% endif %}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div>&nbsp;</div>
+        <div class="row">
+            <div class="col-md-11"></div>
+            <div class="col-md-1">
+                <a class="btn btn-primary" role="button" id="back-btn" href="{% url 'xadmin:user_list' %}">BACK</a>
             </div>
         </div>
-        <div>&nbsp;</div>
-        <a class="btn btn-primary" role="button" id="back-btn" href="{% url 'xadmin:user_list' %}">BACK</a>
+        
     <!-- </div> -->
 
 <!-- <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet"/> -->
