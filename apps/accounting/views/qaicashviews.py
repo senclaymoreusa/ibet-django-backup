@@ -135,7 +135,12 @@ class getBankList(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         currency = self.request.POST['currency']
         method = self.request.POST['method']
-        serializer = bankListSerialize(data={"currency": currency, "method": method})
+
+        serializer = bankListSerialize(data={ # validate POST data
+            "currency": currency,
+            "method": method
+        }) 
+
         if (serializer.is_valid()):
             currency_long = currencyConversion[currency]
             method_long = methodConversion[method]
@@ -177,12 +182,19 @@ class getBankList(generics.GenericAPIView):
         else:
             return Response({"error": "Invalid data passed into serializer", "description": serializer.errors})
 
+
+# get the specific min/max amounts for a specific bank and for a specific currency
 class getBankLimits(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
     serializer_class = bankLimitsSerialize
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
+        # POST params:
+        # bank - bank code 
+        # currency - currency ISO code
+        # method - deposit method
+        
         bank = self.request.POST['bank']
         currency = self.request.POST['currency']
         method = self.request.POST['method']
@@ -190,7 +202,7 @@ class getBankLimits(generics.GenericAPIView):
         currency_long = currencyConversion[currency]
         method_long = methodConversion[method]
 
-        url =  api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods/' + method_longif + '/banks/' + bank + '/limits'
+        url =  api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods/' + method_long + '/banks/' + bank + '/limits'
         headers = {'Accept': 'application/json'}
 
         # username = self.request.GET.get('username')
@@ -222,12 +234,14 @@ class getBankLimits(generics.GenericAPIView):
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
                 time.sleep(delay) 
+
         if not success:
             logger.info("Failed to complete a request for getBankLimits()")
             return Response(data)
 
+        # save a single bank limit into the database...?
         depositData = {
-            "thridParty_name": 3,
+            "thridParty_name": QAICASH_NAME,
             "method": method,
             "currency": currency,
             "min_amount":data["minTransactionAmount"],
