@@ -81,3 +81,9 @@ COUNTRY_CHOICES = (
     ('JP', 'Japan'),
 )
 
+AGENT_LEVEL = (
+    ('Premium', 'Premium'),
+    ('Invalid', 'Invalid'),
+    ('Normal', 'Normal'),
+    ('Negative', 'Negative'),
+)
