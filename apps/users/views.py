@@ -1076,37 +1076,38 @@ class AgentView(CommAdminView):
 
         return render(request, 'users/agent_list.html', context) 
     
-    def post(self, request, *args, **kwargs):
-        username = generate_username()
-        check_duplicate = CustomUser.objects.filter(username=username)
-        while check_duplicate:
-            username = generate_username
-            check_duplicate = CustomUser.objects.filter(username=username)
+    # post for new affiliate
+    # def post(self, request, *args, **kwargs):
+    #     username = generate_username()
+    #     check_duplicate = CustomUser.objects.filter(username=username)
+    #     while check_duplicate:
+    #         username = generate_username
+    #         check_duplicate = CustomUser.objects.filter(username=username)
 
-        email = get_random_string(length=8)
-        check_duplicate = CustomUser.objects.filter(email=email)
-        while check_duplicate:
-            email = get_random_string(length=8)
-            check_duplicate = CustomUser.objects.filter(email=email)
+    #     email = get_random_string(length=8)
+    #     check_duplicate = CustomUser.objects.filter(email=email)
+    #     while check_duplicate:
+    #         email = get_random_string(length=8)
+    #         check_duplicate = CustomUser.objects.filter(email=email)
 
-        phone = ''.join([str(random.randint(0,10)) for i in range(10)])
-        check_duplicate = CustomUser.objects.filter(phone=phone)
-        while check_duplicate:
-            phone = ''.join([str(random.randint(0,10)) for i in range(10)])
-            check_duplicate = CustomUser.objects.filter(phone=phone)
+    #     phone = ''.join([str(random.randint(0,10)) for i in range(10)])
+    #     check_duplicate = CustomUser.objects.filter(phone=phone)
+    #     while check_duplicate:
+    #         phone = ''.join([str(random.randint(0,10)) for i in range(10)])
+    #         check_duplicate = CustomUser.objects.filter(phone=phone)
 
-        password = get_random_string(length=10)
-        email = email + '@gmail.com'
+    #     password = get_random_string(length=10)
+    #     email = email + '@gmail.com'
 
-        CustomUser.objects.create_user(username, email, phone, password)
-        user = CustomUser.objects.filter(username=username)
-        user.update(active=True, modified_time=timezone.now())
+    #     CustomUser.objects.create_user(username, email, phone, password)
+    #     user = CustomUser.objects.filter(username=username)
+    #     user.update(active=True, modified_time=timezone.now())
 
-        context = super().get_context()
-        agent_name = request.POST.get('username')
-        args = {'agent_name':username, 'agent_password':password, 'user':user}
+    #     context = super().get_context()
+    #     agent_name = request.POST.get('username')
+    #     args = {'agent_name':username, 'agent_password':password, 'user':user}
         
-        return render(request,"users/agent_list.html",args)
+    #     return render(request,"users/agent_list.html",args)
 
 class AgentDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
