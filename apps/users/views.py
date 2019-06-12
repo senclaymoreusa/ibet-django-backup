@@ -21,7 +21,7 @@ from django.conf import settings
 from django.views import View
 from django.utils.timezone import timedelta
 from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, Coalesce
 from django.contrib import messages
 from dateutil.relativedelta import relativedelta
 
@@ -994,7 +994,18 @@ class AgentView(CommAdminView):
         last_month = datetime.date.today().replace(day=1) + relativedelta(months=-1)
         before_last_month = datetime.date.today().replace(day=1) + relativedelta(months=-2)
         this_month = datetime.date.today().replace(day=1)
-        tran_commission = Transaction.objects.filter(transaction_type=8)
+
+        # get transaction type 
+        tran_type = Transaction._meta.get_field('transaction_type').choices
+        commission_number=-1
+        for key, value in tran_type:
+            if value is 'Commission':
+                commission_number = key
+
+        if commission_number == -1:
+            raise ValueError('No Commission Type Here!!!')      
+        
+        tran_commission = Transaction.objects.filter(transaction_type=commission_number)
         tran_with_commission_this_month = tran_commission.filter(Q(request_time__gte=last_month) & Q(request_time__lte=this_month))
         tran_with_commission_month_before = tran_commission.filter(Q(request_time__gte=before_last_month) & Q(request_time__lte=last_month))
 

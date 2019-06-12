@@ -160,7 +160,7 @@
                     {% for i in agents %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td><a href="{% url 'xadmin:agent_detail' i.id %}"> {{ i.username }}</a></td>
+                        <td><a href="{% url 'xadmin:agent_detail' i.pk %}"> {{ i.username }}</a></td>
                         <td>{{ active_user_dict|lookup:i.pk }}</td>
                         <td>{{ downline_deposit|lookup:i.pk }}</td>
                         <td></td>

@@ -129,11 +129,12 @@ class CustomUser(AbstractBaseUser):
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
     # agent
-    agent_level = models.CharField(_('Agent Level'), max_length=255, choices=AGENT_LEVEL, default='Normal')
+    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
     commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
     commision_status = models.BooleanField(default=False)
     user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
+    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AGENT_STATUS, default='Normal')
 
     id_image = models.CharField(max_length=250, blank=True)
 

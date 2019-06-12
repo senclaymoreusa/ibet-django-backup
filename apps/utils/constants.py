@@ -57,6 +57,7 @@ TRANSACTION_TYPE_CHOICES = (
     (5, 'Transfer Out'),
     (6, 'Bonus'),
     (7, 'Adjustment'),
+    (8, 'Commission')
 )
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
@@ -86,4 +87,9 @@ AGENT_LEVEL = (
     ('Invalid', 'Invalid'),
     ('Normal', 'Normal'),
     ('Negative', 'Negative'),
+)
+
+AGENT_STATUS = (
+    ('Normal', 'Normal'),
+    ('Block', 'Block'),
 )

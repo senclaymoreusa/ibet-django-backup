@@ -25,8 +25,8 @@ class BaseSetting(object):
 
 # 全局设置
 class GlobalSettings(object):
-    site_title = _('IBET Administration') 
-    site_footer = 'Ibet'  
+    site_title = _('iBet Administration') 
+    site_footer = 'iBet'  
     site_url = '/'
     menu_style = 'accordion'  
     def get_site_menu(self): 

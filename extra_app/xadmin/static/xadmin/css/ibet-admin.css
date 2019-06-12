@@ -144,5 +144,12 @@ hr {
 
 }
 
+.panel-default > .panel-heading-custom {
+    background: #ffa313; color: #fff; 
+}
+.panel-default > .panel-heading-custom_perfomance {
+    background: #bc6ccc; color: #fff; 
+}
+
 
 
