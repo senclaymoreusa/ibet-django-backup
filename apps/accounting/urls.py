@@ -19,8 +19,8 @@ urlpatterns = [
     path('api/qaicash/payout_method', qaicash.payoutMethod.as_view(), name = 'payout_Method'),
     path('api/qaicash/payout_bank_list', qaicash.getPayoutBankList.as_view(), name = 'payout_Banklist'),
     path('api/qaicash/payout_bank_limits', qaicash.getPayoutBankLimits.as_view(), name = 'payout_Banklimits'),
-    path('api/paypal_create_payment', paypal.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
-    path('api/paypal_get_order', paypal.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
-    path('api/paypal_execute_payment', paypal.paypalExecutePayment.as_view(), name = 'paypal_Execute_Payment'),
+    path('api/paypal/create_payment', paypal.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
+    path('api/paypal/get_order', paypal.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
+    path('api/paypal/execute_payment', paypal.paypalExecutePayment.as_view(), name = 'paypal_Execute_Payment'),
     path('api/linepay/reserve_payment', linepay.reservePayment, name = "LINEpay_reserve_payment")
 ]
