@@ -3,10 +3,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from .choices import *
+from utils.constants import *
 
 import uuid
-# Create your models here.
 
 class Transaction(models.Model):
     transaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('Transaction number'))
@@ -21,7 +20,7 @@ class Transaction(models.Model):
     arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
     status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
     channel = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Payment'))
-    transaction_type = models.SmallIntegerField(choices=TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
+    transaction_type = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
     review_status = models.SmallIntegerField(choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
     remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
     transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))

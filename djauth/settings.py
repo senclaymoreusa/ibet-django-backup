@@ -307,4 +307,4 @@ PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-h
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
 
-
+AWS_S3_ADMIN_BUCKET = 'ibet-admin'
