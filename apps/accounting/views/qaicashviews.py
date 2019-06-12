@@ -93,7 +93,7 @@ class getDepositMethod(generics.GenericAPIView):
                 'hmac' : my_hmac,
                 'deviceType' : 'PC',
             })
-            data = r.json()
+            responseJson = r.json()
             if r.status_code == 200:
                 success = True
                 break
@@ -101,16 +101,16 @@ class getDepositMethod(generics.GenericAPIView):
                 success = True
                 # Handle error
                 print("There was something wrong with the result")
-                print(data)
+                print(responseJson)
                 logger.info('Failed to complete a request for retrieving available deposit methods...')
-                return Response(data)
+                return Response(responseJson)
             if r.status_code == 500:
                 print("Request failed {} time(s)'.format(x+1)")
                 print("Waiting for %s seconds before retrying again")
                 sleep(delay)
         if not success:
-            return Response(data)
-        for x in data:
+            return Response(responseJson)
+        for x in responseJson:
             print(x)
             depositData = {
                 "thridParty_name": QAICASH_NAME, # third party name is hard-fixed to match the channel choice in models
@@ -119,12 +119,12 @@ class getDepositMethod(generics.GenericAPIView):
                 "min_amount": x['limits'].get('minTransactionAmount'),
                 "max_amount": x['limits'].get('maxTransactionAmount'),
             }
-            serializer = depositMethodSerialize(data=depositData)
-            if (serializer.is_valid()):
-                serializer.save()
+            data = depositMethodSerialize(data=depositData)
+            if (data.is_valid()):
+                data.save()
             else:
-                return Response({"error": "Invalid data passed into serializer", "description": serializer.errors})
-        return Response(data)
+                return Response({"error": "Invalid data passed into serializer", "description": data.errors})
+        return Response(responseJson)
 
 # fetch supported bank list for the specified currency + deposit method from qaicash API
 class getBankList(generics.GenericAPIView):
@@ -191,24 +191,26 @@ class getBankLimits(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         # POST params:
-        # bank - bank code 
+        # bank - bank code, sandbox 
         # currency - currency ISO code
         # method - deposit method
-        
+
         bank = self.request.POST['bank']
         currency = self.request.POST['currency']
         method = self.request.POST['method']
 
-        currency_long = currencyConversion[currency]
-        method_long = methodConversion[method]
-
-        url =  api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods/' + method_long + '/banks/' + bank + '/limits'
+        # currency_long = currencyConversion[currency]
+        # method_long = methodConversion[method]
+        print(bank, currency, method)
+        url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits/'
         headers = {'Accept': 'application/json'}
 
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
-        message = bytes(merchantId + '|' + currency, 'utf-8')
+
         secret = bytes(merchantApiKey, 'utf-8')
+        message = bytes(merchantId + '|' + currency, 'utf-8')
+
         my_hmac = generateHash(secret, message)
         delay = kwargs.get("delay", 5)
 
@@ -220,25 +222,30 @@ class getBankLimits(generics.GenericAPIView):
                 'hmac' : my_hmac,
                 'deviceType' : 'PC',
             })
-            data = r.json()
+            print("bank limits response: ")
+            print(r)
             if r.status_code == 200:
                 success = True
                 break
             if r.status_code == 400 or r.status_code == 401:
                 print("There was something wrong with the result")
-                print(data)
+                print(r.text)
                 logger.info("Failed to complete a request for retrieving available deposit methods..")
-                logger.error(data)
+                logger.error(r.text)
                 return Response(data)
             if r.status_code == 500:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                print(r.text)
+                break
+                # time.sleep(delay) 
 
         if not success:
             logger.info("Failed to complete a request for getBankLimits()")
-            return Response(data)
-
+            return Response({"error" : "Qaicash API returned a status code of 500", "message": r.text})
+        else:
+            data = r.json()
+            
         # save a single bank limit into the database...?
         depositData = {
             "thridParty_name": QAICASH_NAME,
@@ -247,14 +254,14 @@ class getBankLimits(generics.GenericAPIView):
             "min_amount":data["minTransactionAmount"],
             "max_amount":data["maxTransactionAmount"],
         }
-        serializer = depositMethodSerialize(data=depositData)
+        # serializer = depositMethodSerialize(data=depositData)
 
-        print("have the following data for serializer:")
-        if (serializer.is_valid()):
-            print(serializer.validated_data)
-            serializer.save()
-        else:
-            return Response({"error": "Invalid data passed into serializer"})
+        # print("have the following data for serializer:")
+        # if (serializer.is_valid()):
+        #     print(serializer.validated_data)
+        #     serializer.save()
+        # else:
+        #     return Response({"error": "Invalid data passed into serializer"})
         return Response(data)
 
 class submitDeposit(generics.GenericAPIView):
