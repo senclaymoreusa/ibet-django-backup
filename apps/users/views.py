@@ -972,10 +972,6 @@ class ChangeAndResetPassword(View):
         user.save()
         return HttpResponse('Success')
 
-
-
-        
-
 from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
@@ -986,8 +982,6 @@ import boto3
 from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
-
-
 
 
 class UserDetailView(CommAdminView):

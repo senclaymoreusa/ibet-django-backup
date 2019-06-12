@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel
-from .choices import CURRENCY_CHOICES, CHANNEL_CHOICES, DEPOSIT_METHOD_CHOICES
+from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel, CURRENCY_CHOICES, CHANNEL_CHOICES, DEPOSIT_METHOD_CHOICES
 
 class depositMethodSerialize(serializers.Serializer):
     # specify what fields are required when we save object into database

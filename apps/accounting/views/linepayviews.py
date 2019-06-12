@@ -14,9 +14,10 @@ def reservePayment(request):
         "X-LINE-ChannelId": CHANNEL_ID,
         "X-LINE-ChannelSecret": CHANNEL_SECRET
     }
+    # orderId = #generate orderId to be unique 
     payload = {
        	"productName": "iBet-Orion-Test",
-        "productImage"
+        "productImageUrl": "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg",
         "amount": 123.12,
         "currency": "THB",
         "confirmUrl": "www.ibet.com/line-transfer-confirm",
