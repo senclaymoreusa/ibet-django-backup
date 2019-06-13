@@ -236,9 +236,7 @@ class getBankLimits(generics.GenericAPIView):
             if r.status_code == 500:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                print(r.text)
-                break
-                # time.sleep(delay) 
+                time.sleep(delay) 
 
         if not success:
             logger.info("Failed to complete a request for getBankLimits()")
