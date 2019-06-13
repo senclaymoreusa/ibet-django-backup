@@ -1,5 +1,6 @@
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from djauth.third_party_keys import CHANNEL_ID, CHANNEL_SECRET
+
 import requests
 
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
@@ -23,5 +24,6 @@ def reservePayment(request):
         "confirmUrl": "www.ibet.com/line-transfer-confirm",
         "orderId": "1a2b3c" # need to generate orderId and store into database
     }
+    
     response = requests.post(requestURL, json=payload, headers=headers)
     return JsonResponse(response.json())
