@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.urls import reverse #Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
@@ -12,30 +11,7 @@ from django.contrib.auth import get_user_model
 from accounting.models import DepositChannel, DepositAccessManagement, WithdrawChannel, WithdrawAccessManagement
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
-
-
-USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
-
-GENDER_CHOICES = (
-    ('Male','Male'),
-    ('Female', 'Female')
-)
-
-CONTACT_OPTIONS = (
-    ('Email', 'Email'),
-    ('SMS', 'SMS'),
-    ('OMS', 'OMS'),
-    ('Push_Notification', 'Push Notification')
-)
-
-CRRENCY_TYPES = (
-    ('USD', 'USD'),
-    ('EUR', 'EUR'),
-    ('JPY', 'JPY'),
-    ('CNY', 'CNY'),
-    ('HKD', 'HKD'),
-    ('AUD', 'AUD')
-)
+from utils.constants import *
 
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
@@ -134,18 +110,18 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CRRENCY_TYPES, blank=True, default='USD')
+    currency = models.CharField(max_length=30, choices=CURRENCY_TYPES, blank=True, default='USD')
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
-    ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
-    verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
+    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
+    verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
-    last_login_time = models.DateTimeField(_('Last Login Time'), default=None, null=True)
-    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=None, null=True)
+    last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
+    last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
 
     # balance = main_wallet + other_game_wallet
@@ -383,6 +359,3 @@ class UserBonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     is_successful = models.BooleanField(default=False)
 
-
-
-#CustomUser.objects.all().delete()

@@ -307,12 +307,7 @@ PAYOUT_URL = '/payout/routing/'
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
-PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/v1/'
+PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
-#pusher
-'''
-PUSHER_APP_ID = "798093"  
-PUSHER_KEY = "38f4171aa9ce43f0b1bf"  
-PUSHER_SECRET = "f4babe8983a71c89b268"
-PUSHER_CLUSTER = "us3"
-'''
+
+AWS_S3_ADMIN_BUCKET = 'ibet-admin'

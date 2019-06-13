@@ -982,28 +982,33 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from datetime import datetime, timedelta
 from django.db.models import Q
+import boto3
+from botocore.exceptions import ClientError
+from botocore.exceptions import NoCredentialsError
+from django.conf import settings
+
+
 
 
 class UserDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
         context = super().get_context()
-        title = "Member " + self.kwargs.get('pk')
-        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
+        title = 'Member ' + self.kwargs.get('pk')
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
-        # print("pk " + str(self.kwargs.get('pk')))
-        Customuser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
-        # print("!!!!!!!" + str(Customuser))
-        context['customuser'] = Customuser
-        context['userLoginActions'] = UserAction.objects.filter(user=Customuser, event_type=0)[:20]
-        # print("!!!" + str(Transaction.objects.filter(user_id=Customuser)))
-        transaction = Transaction.objects.filter(user_id=Customuser)
-        if Transaction.objects.filter(user_id=Customuser).count() == 0:
+        context['time'] = timezone.now()
+        customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+        context['customuser'] = customUser
+        context['userPhotoId'] = self.download_user_photo_id(customUser.username)
+        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
+        transaction = Transaction.objects.filter(user_id=customUser)
+        if Transaction.objects.filter(user_id=customUser).count() == 0:
             context['userTransactions'] = ''
         else:
-            context['userTransactions'] = Transaction.objects.filter(user_id=Customuser)[:20]
-        
-        context['userLastIpAddr'] = UserAction.objects.filter(user=Customuser, event_type=0).order_by('-created_time').first()
+            context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
+        context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
 
+        transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
             context['isLastPage'] = True
         else:
@@ -1011,6 +1016,7 @@ class UserDetailView(CommAdminView):
         
 
         return render(request, 'user_detail.html', context)
+
 
     def post(self, request):
         post_type = request.POST.get('type')
@@ -1027,18 +1033,20 @@ class UserDetailView(CommAdminView):
             city = request.POST.get('city')
             zipcode = request.POST.get('zipcode')
             country = request.POST.get('country')
-            user_ip_img = request.POST.get('user_ip_img')
-            # print(user_ip_img)
+            user_id_img = request.POST.get('user_id_img')
+            # upload image to S3
+            self.upload_user_photo_id(username, user_id_img)
+
             CustomUser.objects.filter(pk=user_id).update(
                 username=username, first_name=first_name, 
                 last_name=last_name, email=email, 
                 phone=phone, date_of_birth=birthday, 
                 street_address_1=address, city=city,
-                zipcode=zipcode, country=country, id_image=user_ip_img)
-
+                zipcode=zipcode, country=country)
+            
+            logger.info('Finished update user: ' + str(username) + 'info to DB')
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
-            # user.save()
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
         elif post_type == 'get_user_transactions':
@@ -1050,10 +1058,13 @@ class UserDetailView(CommAdminView):
             category = request.POST.get('transaction_category')
             user = CustomUser.objects.get(pk=user_id)
 
-            if time_from == "Invalid date":
+            if time_from == 'Invalid date':
                 time_from = datetime(2000, 1, 1)
-            if time_to == "Invalid date":
+            if time_to == 'Invalid date':
                 time_to = datetime(2400, 1, 1)
+
+            logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+            logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
             
             if category == 'all':
                 transactions = Transaction.objects.filter(
@@ -1079,7 +1090,6 @@ class UserDetailView(CommAdminView):
 
             transactionsJson = serializers.serialize('json', transactions)
             transactionsList = json.loads(transactionsJson)
-            # print(json.dumps(Transaction._meta.get_field('status').choices))
             statusMap = {}
             for t in Transaction._meta.get_field('status').choices:
                 statusMap[t[0]] = t[1]
@@ -1087,33 +1097,102 @@ class UserDetailView(CommAdminView):
             for tran in transactionsList:
                 tran['fields']['status'] = statusMap[tran['fields']['status']]
             
-            transactionsJson = json.dumps(transactionsList)
+            # transactionsJson = json.dumps(transactionsList)
             response['transactions'] = transactionsList
-    
-            # print(type(transactionsDict))
-            # print('transactions:' + str(transactionsJson))
-            return HttpResponse(json.dumps(response), content_type='application/json')
-            
 
-        
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+    
+    def download_user_photo_id(self, username):
+        aws_session = boto3.Session()
+        s3_client = aws_session.client('s3')
+        file_name = self.get_user_photo_file_name(username)
+
+        success = False
+        try:
+            s3_response_object = s3_client.get_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
+            success = True
+        except ClientError as e:
+            # AllAccessDisabled error == bucket or object not found
+            logger.error(e)
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
+            logger.info('Cannout find any image from this user: ' + username)
+            return None
+
+        object_content = s3_response_object['Body'].read()
+        object_content = object_content.decode('utf-8')
+
+        logger.info('Finished download username: ' + username + ' and file: ' + file_name + ' to S3!!!')
+        return object_content
+
+
+    def upload_user_photo_id(self, username, content):
+        aws_session = boto3.Session()
+        s3 = aws_session.resource('s3')
+        file_name = self.get_user_photo_file_name(username)
+
+        success = False
+        try:
+            obj = s3.Object(settings.AWS_S3_ADMIN_BUCKET, file_name)
+            obj.put(Body=content)
+            success = True
+            logger.info('Finished upload username: ' + username + 'and file: ' + file_name + ' to S3!!!')
+        except NoCredentialsError as e:
+            logger.error(e)
+        if not success:
+            logger.info('Cannout upload image: ' + username)
+            return None
+
+
+    def get_user_photo_file_name(self, username):
+        return username + '_photo_id'       
 
 
 class UserListView(CommAdminView): 
     def get(self, request):
+
+        # print(request.GET)
+        search = request.GET.get('search')
+        pageSize = request.GET.get('pageSize')
+        offset = request.GET.get('offset')
+
+        if pageSize is None:
+            pageSize = 20
+        else: 
+            pageSize = int(pageSize)
+
+        if offset is None:
+            offset = 0
+        else:
+            offset = int(offset)
+
         context = super().get_context()
-        title = "Member List"
-        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
-        context["title"] = title
-        Customuser = CustomUser.objects.all()
-        # context['customuser'] = Customuser
+        title = 'Member List'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context['title'] = title
+        context['time'] = timezone.now()
+        customUser = CustomUser.objects.all()
+
+        if offset == 0:
+            context['isFirstPage'] = True
+        else:
+            context['isFirstPage'] = False
         
+        if customUser.count() <= offset+pageSize:
+            context['isLastPage'] = True
+        else:
+            context['isLastPage'] = False
+
+        customUser = CustomUser.objects.all()[offset:offset+pageSize]
+        # context['customuser'] = Customuser
         user_data = []
-        for user in Customuser:
+        for user in customUser:
             userDict = {}
-            # userDict['customuser'] = user
             userDict['id'] = user.pk
             userDict['username'] = user.username
-            userDict['user_attribute'] = user.get_user_attribute_display
+            userDict['source'] = str(user.get_user_attribute_display())
             userDict['risk_level'] = ''
             userDict['balance'] = user.main_wallet + user.other_game_wallet
             userDict['product_attribute'] = ''
@@ -1121,6 +1200,19 @@ class UserListView(CommAdminView):
             userDict['ftd_time'] = user.ftd_time
             userDict['verfication_time'] = user.verfication_time
             userDict['id_location'] = user.id_location
+            userDict['phone'] = user.phone
+            userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
+            userDict['deposit_turnover'] = ''
+            userDict['bonus_turnover'] = ''
+            userDict['contribution'] = 0
+            depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
+            betTims = Transaction.objects.filter(user_id=user, transaction_type=2).count()
+            activeDays = int(depositTimes) + int(withdrawTimes) + int(betTims)
+            userDict['active_days'] = ''
+            userDict['bet_platform'] = user.product_attribute
+
+
             userDict['last_login_time'] = user.last_login_time
             userDict['last_betting_time'] = user.last_betting_time
             userDict['login'] = UserAction.objects.filter(user=user, event_type=0).count()
@@ -1128,8 +1220,8 @@ class UserListView(CommAdminView):
             userDict['turnover'] = ''
             userDict['deposit'] = Transaction.objects.filter(user_id=user, transaction_type=0).count()
             userDict['deposit_amount'] = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
-            userDict['withdrawal'] = Transaction.objects.filter(user_id=user, transaction_type=2).count()
-            userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=2).aggregate(Sum('amount'))
+            userDict['withdrawal'] = Transaction.objects.filter(user_id=user, transaction_type=1).count()
+            userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
             userDict['last_logint_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
             # print("object: " + str(userDict))
             user_data.append(userDict)
@@ -1137,7 +1229,7 @@ class UserListView(CommAdminView):
         context['user_data'] = user_data
 
 
-        return render(request, 'user_list.html', context)   #最后指定自定义的template模板，并返回context
+        return render(request, 'user_list.html', context)
 
     
     def post(self, request):
@@ -1166,3 +1258,84 @@ class UserListView(CommAdminView):
             
             # print("sending data")
             return HttpResponse(json.dumps(updated_data), content_type="application/json")
+
+        elif post_type == 'user_list_filter':
+            time_from = request.POST.get('from')
+            time_to = request.POST.get('to')
+            pageSize = int(request.POST.get('pageSize'))
+            fromItem = int(request.POST.get('fromItem'))
+            endItem = fromItem + pageSize
+
+            if time_from == 'Invalid date':
+                time_from = datetime(2000, 1, 1)
+            if time_to == 'Invalid date':
+                time_to = datetime(2400, 1, 1)
+
+            # print('fromItem: ' + str(fromItem))
+            # print('endItem: ' + str(endItem))
+            users = CustomUser.objects.all()[fromItem:endItem]
+            count = CustomUser.objects.all().count()
+            # print(str(count))
+            # usersJson = serializers.serialize('json', users)
+
+            # usersList = json.loads(usersJson)            
+            response = {}
+            if endItem >= count:
+                response['isLastPage'] = True
+            else:
+                response['isLastPage'] = False
+
+            if fromItem == 0:
+                response['isFirstPage'] = True
+            else:
+                response['isFirstPage'] = False
+            
+            sourceMap = {}
+            for t in CustomUser._meta.get_field('user_attribute').choices:
+                sourceMap[t[0]] = t[1]
+
+            usersList = []
+            for user in users:
+                userDict = {}
+                userDict['id'] = user.pk
+                userDict['username'] = user.username
+                userDict['source'] = str(sourceMap[user.user_attribute])
+                userDict['balance'] = user.main_wallet + user.other_game_wallet
+                userDict['product_attribute'] = ''
+                userDict['time_of_registration'] = str(user.time_of_registration)
+                userDict['ftd_time'] = str(user.ftd_time)
+                userDict['verfication_time'] = str(user.verfication_time)
+                userDict['id_location'] = user.id_location
+                userDict['phone'] = user.phone
+                userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
+                userDict['deposit_turnover'] = ''
+                userDict['bonus_turnover'] = ''
+                userDict['contribution'] = 0
+                depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+                # print(type(depositTimes))
+                withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
+                betTimes = Transaction.objects.filter(user_id=user, transaction_type=2).count()
+                activeDays = int(depositTimes) + int(withdrawTimes) + int(betTimes)
+                userDict['active_days'] = ''
+                userDict['bet_platform'] = user.product_attribute
+
+                # print("object: " + str(userDict))
+                usersList.append(userDict)
+            response['usersList'] = usersList
+            # response = json.loads(response)
+            return HttpResponse(json.dumps(response), content_type="application/json")    
+            
+
+class ChangePassword(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            user = get_user_model().objects.get(username=username)
+            user.set_password(password)
+            user.save()
+            return Response('Success')
+        except:
+            return Response('Failed')
