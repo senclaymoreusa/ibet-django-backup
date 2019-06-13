@@ -359,3 +359,32 @@ class UserBonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     is_successful = models.BooleanField(default=False)
 
+
+class ReferLink(models.Model):
+
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    refer_link_url = models.URLField(max_length=200, unique=True)
+    refer_link_name = models.CharField(max_length=50, default="Default")
+    ## time of this link was created
+    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+    ## the frequences downline clicked
+    click_freq = models.IntegerField(_('User Click Frequence', default=0))
+    ## the frequences downline use this link to register
+    register_freq = models.IntegerField(_('User Register Frequence', default=0))
+    
+# Mapping between Users and ReferLink
+# This is a 1:n relationship, a user can have at most 10 refer links
+class UserReferLink(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+
+
+class LinkHistory(models.Model):
+
+    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+    ## time of this link was clicked
+    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
+    ## click by ip
+    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
