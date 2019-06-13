@@ -1006,7 +1006,9 @@ class UserDetailView(CommAdminView):
             context['userTransactions'] = ''
         else:
             context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
-        context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+
+        userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
+        context['userLastIpAddr'] = userLastLogin
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
 
         transaction = Transaction.objects.filter(user_id=customUser)
@@ -1041,6 +1043,30 @@ class UserDetailView(CommAdminView):
         context['withdrawCount'] = withdrawCount
         context['depositAmount'] = depositAmount['amount__sum']
         context['withdrawAmount'] = withdrawAmount['amount__sum']
+        
+        if userLastLogin is None:
+            context['relativeAccount'] = ''
+        else:
+            context['relativeAccount'] = self.account_by_ip(userLastLogin.ip_addr, userLastLogin.user)
+        # print(str(context['relativeAccount']))
+
+        deposit = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first() 
+        depositDict = {
+            'time': deposit.request_time,
+            'amount': deposit.amount,
+            'status': deposit.get_status_display,
+        }
+        context['lastDeposit'] = depositDict
+
+        withdraw = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
+        withdrawDict = {
+            'time': withdraw.request_time,
+            'amount': withdraw.amount,
+            'status': withdraw.get_status_display,
+        }
+        context['lastWithdraw'] = withdrawDict
+          
+
 
         return render(request, 'user_detail.html', context)
 
@@ -1130,6 +1156,35 @@ class UserDetailView(CommAdminView):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
     
+    def account_by_ip(self, userIp, username):
+        relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
+        # print(relative_account)
+
+        accounts = []
+        for item in relative_account:
+            userDict = {}
+            # user = CustomUser.objects.get(username=i.user)
+            user = CustomUser.objects.get(pk=item['user_id'])
+            userDict['id'] = user.pk
+            userDict['username'] = user.username
+            userDict['source'] = user.get_user_attribute_display
+            userDict['channel'] = user.get_user_attribute_display
+            depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
+            depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
+            userDict['turnover'] = ''
+            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+            if withdrawAmount['amount__sum'] is None:
+                withdrawAmount['amount__sum'] = 0
+            userDict['withdrawal'] = withdrawAmount['amount__sum']
+            userDict['contribution'] = ''
+            userDict['riskLevel'] = 'A'
+            accounts.append(userDict)
+        return accounts
+
+
+
+
     def download_user_photo_id(self, username):
         aws_session = boto3.Session()
         s3_client = aws_session.client('s3')

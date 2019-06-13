@@ -160,7 +160,7 @@ hr {
 
 .table-striped>tbody>tr:nth-child(odd)>td, 
 .table-striped>tbody>tr:nth-child(odd)>th {
-   background-color: rgb(230, 230, 230);
+   background-color: #f3f3f3;
 }
 
 table.table-bordered{
@@ -227,6 +227,7 @@ table.table-bordered > tbody > tr > td{
     background-color: #ffffff;
     margin-left:3px;
     margin-top:20px;
+    /* min-height: 300px; */
 }
 
 .block-title {
@@ -334,7 +335,7 @@ label {
     background-color: #428bca;
 }
 
-.active-block i, #note-btn i {
+.active-block i, #note-btn i{
     color: white;
     margin-left:-4px;
 }
@@ -365,7 +366,7 @@ label {
 
 .activity-rectangle {
     width: 682px;
-    height: 963px;
+    height: 1030px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -442,4 +443,127 @@ label {
     height: 35px;
     border-radius: 4px;
     background-color: #428bca;
+}
+
+#risk-control-rectangle {
+    width: 1380px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:3px;
+    margin-top:20px;
+    min-height: 300px;
+}
+
+
+.nav-bar {
+    margin-top:20px !important; 
+    margin-left:5px !important;
+    width:95% !important;
+}
+
+#deposit-withdraw-chart {
+    max-width:1800px;
+    max-height:500px;
+}
+
+.user-detail-subtitle {
+    width: 510px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-left: 30px;
+    margin-top:10px;
+    /* margin-bottom:5px; */
+
+}
+
+.user-detail-content-title {
+    width: 166px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top:20px;
+    margin-bottom:5px;
+}
+
+
+.user-info-block {
+    width: 210px;
+    height: 175px;
+    background-color: #f3f3f3;
+}
+
+
+.block-title {
+    width: 148px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.block-text {
+    width: 206px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top:3px;
+
+}
+
+
+#member-input-container {
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.popup-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #428bca;
+    float: right;
+    margin-top:-5px;
+}
+
+
+.popup-btn i {
+    color:white;
+}
+
+
+#account-creation-rect {
+    width: 645px;
+    height: 175px;
+    background-color: #f3f3f3;
+    margin-left:30px;
+}
+
+#edit-detail-btn {
+    margin-left: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
