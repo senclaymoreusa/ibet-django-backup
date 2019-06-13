@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
+    'pusher',                      # Bobby
 ]
 
 SITE_ID = 1                        # Stephen
@@ -307,3 +308,11 @@ PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/v1/'
+
+#pusher
+'''
+PUSHER_APP_ID = "798093"  
+PUSHER_KEY = "38f4171aa9ce43f0b1bf"  
+PUSHER_SECRET = "f4babe8983a71c89b268"
+PUSHER_CLUSTER = "us3"
+'''
