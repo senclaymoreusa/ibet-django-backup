@@ -4,7 +4,6 @@ from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel, CU
 class depositMethodSerialize(serializers.Serializer):
     # specify what fields are required when we save object into database
     thridParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
-    # currency = serializers.IntegerField(required=True, min_value=0, max_value=3)
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.CharField(required=True)
     min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
@@ -17,9 +16,10 @@ class depositMethodSerialize(serializers.Serializer):
         print(validated_data)
         return p
 
-class bankListSerialize(serializers.ModelSerializer):
+class bankListSerialize(serializers.Serializer):
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.ChoiceField(choices=DEPOSIT_METHOD_CHOICES, default=0)
+
 
 class bankLimitsSerialize(serializers.Serializer):
     bank = serializers.CharField(required=True)
