@@ -3,19 +3,19 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView,
 from .serializers import NoticeMessageSerializer, NotificationSerializer
 from .models import NoticeMessage, Notification
 
-from drf_model_pusher.views import ModelPusherViewMixin
+# from drf_model_pusher.views import ModelPusherViewMixin
 
 
 class NoticeMessageView(ListAPIView):
     serializer_class = NoticeMessageSerializer
     # push_notify()
-    # queryset = NoticeMessage.objects.all()
+    queryset = NoticeMessage.objects.all()
 
     '''
-    class PushNoticeMessageView(ModelPusherViewMixin, ListAPIView):
+    class PushNoticeMessageView(ListAPIView):
         serializer_class = NoticeMessageSerializer
         queryset = PushNoticeMessage.objects.all()
-    '''
+
     def push_notify(self):
         from pusher_push_notifications import PushNotifications
 
@@ -51,6 +51,7 @@ class NoticeMessageView(ListAPIView):
     def get_queryset(self):
         self.push_notify()
         return NoticeMessage.objects.all()
+    '''
 
 
 class NotificationView(ListAPIView):
