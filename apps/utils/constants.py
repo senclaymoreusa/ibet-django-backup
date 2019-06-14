@@ -68,6 +68,7 @@ TRANSACTION_TYPE_CHOICES = (
     (5, 'Transfer Out'),
     (6, 'Bonus'),
     (7, 'Adjustment'),
+    (8, 'Commission')
 )
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
@@ -93,6 +94,19 @@ COUNTRY_CHOICES = (
 )
 
 
+AGENT_LEVEL = (
+    ('Premium', 'Premium'),
+    ('Invalid', 'Invalid'),
+    ('Normal', 'Normal'),
+    ('Negative', 'Negative'),
+)
+
+AGENT_STATUS = (
+    ('Normal', 'Normal'),
+    ('Block', 'Block'),
+)
+
+   
 BANK_LIST_CHOICES = (
     ("OOO6CN", "China UnionPay"),
     ("ABOCCN", "Agricultural Bank of China"),
