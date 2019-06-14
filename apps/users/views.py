@@ -1339,3 +1339,13 @@ class ChangePassword(APIView):
             return Response('Success')
         except:
             return Response('Failed')
+
+class CheckUsernameExist(View):
+    def get(self, request, *args, **kwargs):
+        username = self.request.GET['username']
+        user = get_user_model().objects.filter(username=username)
+        if user:
+            return HttpResponse('Exist')
+        return HttpResponse('Valid')
+
+
