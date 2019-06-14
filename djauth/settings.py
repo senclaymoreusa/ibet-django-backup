@@ -81,9 +81,7 @@ ACCOUNT_EMAIL_REQUIRED = False                # Stephen
 ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
 ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
-AUTH_USER_MODEL = 'users.CustomUser' # new
-
-
+AUTH_USER_MODEL = 'users.CustomUser' # new???
 
 DOMAIN = 'http://localhost:8000/'
 HOST_URL = 'http://localhost:3000/'
@@ -292,7 +290,8 @@ STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
 #qaicash-payment
-QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
+QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
+# QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
 MERCHANTID = '1'
 CURRENCY = 'IDR'
 MERCHANTAPIKEY = 'secret'
@@ -302,7 +301,6 @@ DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
 
 #paypal-payment
-
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'

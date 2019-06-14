@@ -1124,6 +1124,7 @@ class AgentDetailView(CommAdminView):
         context = super().get_context()
         return render(request,"users/agent_detail.html", context)
      
+from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
 from django.db.models import Sum
@@ -1133,8 +1134,6 @@ import boto3
 from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
-
-
 
 
 class UserDetailView(CommAdminView):

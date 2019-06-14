@@ -1,10 +1,9 @@
 from rest_framework import serializers
-from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel, CURRENCY_CHOICES
+from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel, CURRENCY_CHOICES, CHANNEL_CHOICES, DEPOSIT_METHOD_CHOICES
 
 class depositMethodSerialize(serializers.Serializer):
     # specify what fields are required when we save object into database
-    thridParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
-    # currency = serializers.IntegerField(required=True, min_value=0, max_value=3)
+    thridParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.CharField(required=True)
     min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
@@ -18,15 +17,12 @@ class depositMethodSerialize(serializers.Serializer):
         return p
 
 class bankListSerialize(serializers.Serializer):
-    currency         = serializers.CharField(required=True)
-    method         = serializers.CharField(required=True)
-    
-    def create(self, validated_data):
-        return DepositChannel.objects.get_or_create(**validated_data)
+    currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
+    method = serializers.ChoiceField(choices=DEPOSIT_METHOD_CHOICES, default=0)
 
 
 class bankLimitsSerialize(serializers.Serializer):
-    bank           = serializers.CharField(required=True)
+    bank = serializers.CharField(required=True)
     thridParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
     currency = serializers.CharField(required=True)
     method = serializers.CharField(required=True)
@@ -43,24 +39,10 @@ class submitDepositSerialize(serializers.Serializer):
     language       = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
     method            = serializers.CharField(required=True)
-    
-    
-   
+
     def create(self, validated_data):
-        return Transaction.objects.create(**validated_data)
+        return Transaction.objects.get_or_create(**validated_data)
 
-    def update(self, instance, validated_data):
-
-        instance.order_id = validated_data.get('order_id', instance.order_id)
-        instance.amount = validated_data.get('amount', instance.amount)
-        instance.currency = validated_data.get('currency', instance.currency)
-        instance.language = validated_data.get('language', instance.language)
-        instance.user_id = validated_data.get('user_id', instance.user_id)
-        instance.method = validated_data.get('method', instance.method)
-        
-        
-        instance.save() 
-        return instance
 
 class submitPayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
@@ -73,16 +55,6 @@ class submitPayoutSerialize(serializers.Serializer):
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
-    def update(self, instance, validated_data):
-        instance.order_id = validated_data.get('order_id', instance.order_id)
-        instance.amount = validated_data.get('amount', instance.amount)
-        instance.currency = validated_data.get('currency', instance.currency)
-        instance.language = validated_data.get('language', instance.language)
-        instance.user_id = validated_data.get('user_id', instance.user_id)
-        instance.method = validated_data.get('method', instance.method)
-        
-        instance.save() 
-        return instance
    
 class payoutTransactionSerialize(serializers.ModelSerializer):
     class Meta:
