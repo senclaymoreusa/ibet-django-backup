@@ -1,7 +1,6 @@
 from rest_framework import serializers, exceptions
 from .models import NoticeMessage, Notification, NotificationLog, NotificationUsers
 
-from drf_model_pusher.backends import PusherBackend
 
 class LanguageCodeSerializer(serializers.Serializer):
     languageCode = serializers.CharField()
@@ -16,7 +15,7 @@ class NoticeMessageSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('pk', 'content', 'create_on', 'publish_on')
+        fields = ('pk', 'content', 'notification_method', 'notification_type', 'notifiers', 'create_on', 'publish_on')
 
 
 class NotificationLogSerializer(serializers.ModelSerializer):

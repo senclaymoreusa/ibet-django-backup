@@ -20,8 +20,8 @@ class NoticeMessageView(ListAPIView):
         from pusher_push_notifications import PushNotifications
 
         pn_client = PushNotifications(
-            instance_id='ef508469-c603-445e-bdfe-c0cd010f138d',
-            secret_key='8E3BF7231A817D2870315B23C7E593428B54A1776DE749E96AEE90DD8326589D',
+            instance_id='',
+            secret_key='',
         )
 
         #msg = NoticeMessage.objects.all() # SELECT * FROM NoticeMessage

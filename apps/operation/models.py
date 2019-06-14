@@ -25,34 +25,52 @@ class NoticeMessage(models.Model):
 
     def __str__(self):
         """
-        String for representing the Model object (in Admin site etc.)
+        # String for representing the Model object (in Admin site etc.)
         """
         return self.message
 
 
 class Notification(models.Model):
-    content = models.CharField(max_length=100, default='')
-    notification_type = models.IntegerField()
-    #admin_id = models.CharField(max_length=50, default='')
-    #user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    NOTIFICATION_CHOICE = (
+        ('U', _('Unicast')),
+        # ('M', 'Multicast'),
+        ('B', _('Broadcast')),
+    )
+
+    NOTIFICATION_TYPE = (
+        (1, _('ALERT')),
+        # (2, 'GAME'),
+        # (3, 'REFERRAL')
+    )
+
+    content = models.CharField(max_length=200, default='')
+
+    notification_method = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
+    notification_type = models.IntegerField(default=1, choices=NOTIFICATION_TYPE)
+    notifiers = models.ForeignKey(CustomUser, blank=True, on_delete=models.CASCADE)
     create_on = models.DateTimeField('Create Time', blank=False)
     publish_on = models.DateTimeField('Publish Time', blank=False)
 
-    # pusher_client = Pusher("798093", "38f4171aa9ce43f0b1bf", "f4babe8983a71c89b268", "us3")
+    # pusher_client = Pusher("", "", "", "")
 
-    # class Meta:
-        # pusher_client
-        #verbose_name_plural = _('Push Notice Message')
+    class Meta:
+        verbose_name_plural = _('Notification')
 
     def __str__(self):
         return self.content
 
 
 class NotificationLog(models.Model):
+    ACTION_TYPE = (
+        ('C', _('CREATE')),
+        ('U', _('UPDATE')),
+        ('D', _('DELETE')),
+    )
     notification_id = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    # actor_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     actor_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    action = models.CharField(max_length=30, default='')
-    act_on = models.DateTimeField('Action Time')
+    action = models.CharField(max_length=1, choices=ACTION_TYPE)
+    act_on = models.DateTimeField('Action Time', blank=False)
 
 
 class NotificationUsers(models.Model):
