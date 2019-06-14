@@ -112,8 +112,8 @@ BANK_LIST_CHOICES = (
 
 #qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
-MERCHANTID = '1'
-MERCHANTAPIKEY = 'secret'
+MERCHANTID = '39'
+MERCHANTAPIKEY = '70PsPAH!Z7l18ZuVo8^c'
 APIVERSION = 'v2.0'
 DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
