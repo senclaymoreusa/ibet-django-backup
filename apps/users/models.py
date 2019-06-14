@@ -367,12 +367,9 @@ class ReferLink(models.Model):
     refer_link_name = models.CharField(max_length=50, default="Default")
     ## time of this link was created
     genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
-    ## the frequences downline clicked
-    click_freq = models.IntegerField(_('User Click Frequence', default=0))
-    ## the frequences downline use this link to register
-    register_freq = models.IntegerField(_('User Register Frequence', default=0))
+
     
-# Mapping between Users and ReferLink
+# Mapping between User and ReferLinks
 # This is a 1:n relationship, a user can have at most 10 refer links
 class UserReferLink(models.Model):
 
