@@ -117,11 +117,11 @@ class CustomUser(AbstractBaseUser):
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
-    ftd_time = models.DateTimeField(_('Time of FTD'), default=None, null=True)      # first time deposit
-    verfication_time = models.DateTimeField(_('Time of Verification'), default=None, null=True)
+    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
+    verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
-    last_login_time = models.DateTimeField(_('Last Login Time'), default=None, null=True)
-    last_betting_time = models.DateTimeField(_('Last Betting Time'), default=None, null=True)
+    last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
+    last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
 
     # balance = main_wallet + other_game_wallet
@@ -367,3 +367,29 @@ class UserBonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     is_successful = models.BooleanField(default=False)
 
+
+class ReferLink(models.Model):
+
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    refer_link_url = models.URLField(max_length=200, unique=True)
+    refer_link_name = models.CharField(max_length=50, default="Default")
+    ## time of this link was created
+    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    
+# Mapping between User and ReferLinks
+# This is a 1:n relationship, a user can have at most 10 refer links
+class UserReferLink(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+
+
+class LinkHistory(models.Model):
+
+    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+    ## time of this link was clicked
+    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
+    ## click by ip
+    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
