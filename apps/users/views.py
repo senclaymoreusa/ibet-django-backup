@@ -1122,6 +1122,97 @@ class AgentView(CommAdminView):
 class AgentDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
         context = super().get_context()
+        agent = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+        title = "Affiliate " + agent.username
+        downline = CustomUser.objects.all().filter(referred_by_id=agent.id).values_list('id')
+        affiliates_list = CustomUser.objects.all().filter(agent_level='Premium')
+        active_downline = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(request_time__gte=(datetime.date.today().replace(day=1))))
+        # get transaction type 
+        tran_type = Transaction._meta.get_field('transaction_type').choices
+        deposit_type_number = None
+        withdraw_type_number = None
+        bonus_type_number = None
+        adjustment_type_number = None
+        for key, value in tran_type:
+            if value is 'Deposit':
+                deposit_type_number = key
+            elif value is 'Withdrawal':
+                withdraw_type_number = key
+            elif value is 'Bonus':
+                bonus_type_number = key
+            elif value is 'Adjustment':
+                adjustment_type_number = key
+            elif value is 'Commission':
+                commission_type_number = key
+
+        if deposit_type_number is None:
+            raise ValueError('No Deposit Type Here!!!') 
+        if withdraw_type_number is None:
+            raise ValueError('No Withdraw Type Here!!!') 
+        if bonus_type_number is None:
+            raise ValueError('No Bouns Type Here!!!') 
+        if adjustment_type_number is None:
+            raise ValueError('No Adjustment Type Here!!!')
+        if commission_type_number is None:
+            raise ValueError('No Commission Type Here!!!')  
+        downline_deposit = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(transaction_type=deposit_type_number)).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+        commission_tran = Transaction.objects.all().filter(Q(transaction_type=commission_type_number) & Q(user_id=agent.id))
+        current_affiliate_ip = UserAction.objects.all().filter(user=agent.pk).values('ip_addr')
+        related_affiliates = UserAction.objects.all().filter(Q(user__in=affiliates_list.values_list('pk')) & Q(ip_addr__in=current_affiliate_ip.values_list('ip_addr'))).values('user').distinct()
+        
+        
+        context["title"] = title
+        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
+        # affiliate details
+        context["agent"] = agent
+        context["name"] = agent.username
+        context["id"] = agent.id
+        context["level"] = agent.agent_level
+        context["status"] = agent.agent_status
+        context["balance"] = agent.main_wallet
+        # commission
+        context["commission_this_month"] = commission_tran.filter(request_time__gte=(datetime.date.today().replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        context["commission_last_month"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1))) & Q(request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        context["commission_before_last"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1)+relativedelta(months=-1))) & Q(request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-2))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        # downline status
+        context["downline_number"] = downline.aggregate(total_users=Count('id'))
+        context["active_users"] = active_downline.values('user_id').distinct().count()
+        context["downline_deposit"] = downline_deposit
+        context["promition_link"] = agent.referral_id
+        
+        # related affiliates
+        related_affiliates_data = []
+        for related_affiliate in related_affiliates:
+            related_affiliates_info = {}
+            related_affiliates_info['member_id'] = related_affiliate['user']
+            related_affiliates_info['balance'] = CustomUser.objects.all().get(pk=related_affiliate['user']).main_wallet
+            related_affiliates_data.append(related_affiliates_info)
+
+        context["related_affiliates"] = related_affiliates_data
+
+        # downline list
+        downline_list = []
+        for i in agent.referees.all():
+            downline_info = {}
+            agent_tran = Transaction.objects.all().filter(user_id_id=i.pk)
+            # print(agent_tran)
+            downline_info['agent_id'] = i.pk
+            downline_info['username'] = i.username
+            downline_info['time_of_registration'] = i.time_of_registration
+            downline_info['last_login_time'] = i.last_login_time
+            downline_info['ftd_time'] = i.ftd_time
+            downline_info['deposit'] = agent_tran.filter(transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
+            downline_info['withdraw'] = agent_tran.filter(transaction_type=1).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
+            downline_info['bouns'] = agent_tran.filter(transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
+            downline_info['adjustment'] = agent_tran.filter(transaction_type=7).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
+            downline_info['balance'] = i.main_wallet
+            downline_list.append(downline_info)
+        
+        context["downline_list"] = downline_list
+        
+        context["agent_referee"] = agent.referees.all()
+
+
         return render(request,"users/agent_detail.html", context)
      
 from django.core import serializers

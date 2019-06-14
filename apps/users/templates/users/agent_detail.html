@@ -1,1 +1,485 @@
-<h1>agent detail</h1>
+{% extends "xadmin/base_site.html" %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+<div class="row cancel_row_style">
+
+    <div class="col-md-4 cancel_col_style panel panel-default top_panel">
+        <div class="panel-heading panel-heading-custom_affiliate_detail">
+            <h2 class="panel-title">
+                <strong>Affiliate Detail</strong>
+            </h2>
+        </div>
+        <div class="panel-body">
+            <div class="row cancel_row_style">
+                <div class="col-md-2 cancel_col_style" style="width: 48%;">
+                    <p class="affiliate_details_title">AFFILIATE DETAILS</p>
+                    <div class="affiliates_detail_commission">
+                        <p><strong>Affiliate ID </strong> {{ id }}</p>
+                        <p><strong>Username </strong> <a href="{% url 'xadmin:user_detail' id %}">{{ name }}</a></p>
+                        <p><strong>Level </strong> {{ level }}</p>
+                        <p><strong>Status </strong> {{ status }}</p>
+                        <p><strong>Balance </strong> ${{ balance }}</p>
+                    </div>
+                </div>
+                <div class="col-md-2 cancel_col_style" style="width: 48%; margin-left: 3.5%">
+                    <p class="affiliate_details_title">COMMISSION</p>
+                    <div class=" affiliates_detail_commission">
+                        <p><strong>This month </strong> {{ commission_this_month.comm }}</p>
+                        <p><strong>Last month </strong> {{ commission_last_month.comm }}</a></p>
+                        <p><strong>Month before last </strong> {{ commission_before_last.comm }}</p>
+                        <p><strong>Commssion set </strong> {{ status }}</p>
+                        <p><strong>Transfer between levels </strong> ${{ balance }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <strong>
+                <p style="font-size: 13px; margin-top: 20px">COMMISSION LEVELS</p>
+            </strong>
+
+            <div class="row cancel_row_style" style="margin-top: 20px">
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 10%">
+                    LEVEL
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 15%">
+                    COMMISSION RATE
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 20%">
+                    DOWNLINE COMMISSION RATE
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 15%">
+                    ACTIVE DOWNLINE
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 25%">
+                    DOWNLINE MONTHLY FIRST DEPOSIT COUNTS
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 10%">
+                    NET PROFIT
+                </div>
+            </div>
+
+            <div class="line"></div>
+
+            <strong>
+                <p style="font-size: 13px; margin-top: 20px">DOWNLINE STATUS</p>
+            </strong>
+
+            <div class="row cancel_row_style" style="margin-top: 20px">
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    <strong>Total users</strong>
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    <strong>Active users</strong>
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    <strong>Downline deposit</strong>
+                </div>
+            </div>
+            <div class="row cancel_row_style">
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    {{ downline_number.total_users }}
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    {{ active_users }}
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    {{ downline_deposit.total_deposit }}
+                </div>
+            </div>
+            <div class="row cancel_row_style" style="margin-top: 20px">
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    <strong>Turnover</strong>
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    <strong>Current click number</strong>
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    <strong>Downline GGR</strong>
+                </div>
+            </div>
+            <div class="row cancel_row_style">
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    0
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    0
+                </div>
+                <div class="col-md-2 cancel_col_style dowline_col_style" style="width: 32%">
+                    0
+                </div>
+            </div>
+
+            <div class="line"></div>
+
+            <strong>
+                <p style="font-size: 13px; margin-top: 20px">RELATED AFFILIATES</p>
+            </strong>
+            <table class="table-striped" style="width: 100%">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 48%; font-weight: normal; font-size: 11px">MEMBER ID</th>
+                        <th scope="col" style="width: 48%; font-weight: normal; font-size: 11px">BALANCE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for afffiliate in related_affiliates %}
+                    <tr>
+                        <td style="margin-right: 2px;">{{ afffiliate.member_id }}</td>
+                        <td>{{ afffiliate.balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p style="margin-top: 20px">Promotion link</p>
+            <div class="row" style="background-color: #f3f3f3; width: 60%; height: 30px; margin-left: 1px;">
+                <div class="col-md-5" id='copyTarget' style="margin-top: 4px; float: left;">{{ promition_link }}</div>
+                <a class="col-md-5" onclick="copyToClipboard('copyTarget')"
+                    style="float: right; margin-left: 10px; margin-top: 4px; float: right;">Copy link</a>
+            </div>
+
+            <div class='row' style="margin-top: 25px;">
+                <div class='col-md-3 '>
+                    <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
+                        data-target="#edit_details">View as affiliate</button>
+                </div>
+                <div class='col-md-3 '>
+                    <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
+                        data-target="#edit_details">Edit details</button>
+                </div>
+                <div class='col-md-3 '>
+                    <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
+                        data-target="#login_history">Make adjustment</button>
+                </div>
+                <div class='col-md-3 '>
+                    <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
+                        data-target="#login_history">Block affiliate</button>
+                </div>
+            </div>
+            <div class="modal fade" id="edit_details" role="dialog">
+                <div class="modal-dialog">
+
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Edit affiliate details</h4>
+                            <!-- <h6 style="float: right;">Update Time:</h6> -->
+                        </div>
+                        <div class="modal-body">
+                            <div class='row'>
+                                <form action="{% url 'xadmin:agent_detail' %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class='col-md-6'>
+                                        <input type="hidden" name="type" value="edit_agent_detail"></input>
+                                        <input type="hidden" name="user_id" value="{{ agent.pk }}"></input>
+                                        <div class="form-group">
+                                            <label for="affiliate_manager">Affiliate Manager</label>
+                                            <!-- needs to be changed -->
+                                            <input class="form-control" name="member_id" value="{{ agent.pk }}"> 
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="username">Affiliate Level</label>
+                                            <input class="form-control" name="username"
+                                                value="{{ customuser.username }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="first_name">FIRST NAME</label>
+                                            <input class="form-control" name="first_name"
+                                                value="{{ customuser.first_name }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="last_name">LAST NAME</label>
+                                            <input class="form-control" name="last_name"
+                                                value="{{ customuser.last_name }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">EMAIL</label>
+                                            <input type='email' class="form-control" name="email"
+                                                value="{{ customuser.email }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="phone">PHONE</label>
+                                            <input class="form-control" name="phone" value="{{ customuser.phone }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="birthday">BIRTHDAY</label>
+                                            <input class="form-control" name="birthday"
+                                                value="{{ customuser.date_of_birth }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="address">ADDRESS</label>
+                                            <input class="form-control" name="address"
+                                                value="{{ customuser.street_address_1 }}">
+                                            <input class="form-control" name="city" value="{{ customuser.city }}">
+                                            <input class="form-control" name="zipcode" value="{{ customuser.zipcode }}">
+                                            <input class="form-control" name="country" value="{{ customuser.country }}">
+                                        </div>
+                                        <div>&nbsp;</div>
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        <button type="button" class="btn btn-primary"
+                                            data-dismiss="modal">Cancel</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input id='hidden_input_img' type='file' accept='image/*' style='display: none;'
+                                            onchange="chooseFile(event);">
+                                        {% if userPhotoId %}
+                                        <img id="user_photo_img" src="{{ userPhotoId }}">
+                                        {% else %}
+                                        <img id="user_photo_img" src="http://placehold.it/200" alt="User ID Photo">
+                                        {% endif %}
+                                        <input type="hidden" name='user_id_img' id="hidden_user_id_url">
+                                        <div>&nbsp;</div>
+                                        <div class="row">
+                                            <div class='col-md-8'>
+                                                <button type="button" class="btn btn-primary"
+                                                    onclick="clickUploadImg();">Upload new document</button>
+                                            </div>
+                                            <div class='col-md-4'>
+                                                <button type="button" class="btn btn-default"
+                                                    style="background-color:rgb(199, 89, 82)" onclick="clearImg();">
+                                                    <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div> -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            var aux = document.createElement("input");
+            aux.setAttribute("value", document.getElementById(elementId).innerHTML);
+            document.body.appendChild(aux);
+            aux.select();
+            document.execCommand("copy");
+            document.body.removeChild(aux);
+        }
+    </script>
+
+    <div class="col-md-4 cancel_col_style panel panel-default top_panel" style="margin-left: 3%">
+        <div class="panel-heading panel-heading-custom_activity">
+            <h2 class="panel-title">
+                <strong>Activity</strong>
+            </h2>
+        </div>
+        <div class="activity_type">
+            <p style="font-size: 11px">ACTIVITY TYPE</p>
+            <div class="dropdown">
+                <button class="btn dropdown-toggle activity_dropdown_style" type="button" data-toggle="dropdown">All
+                    activity
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Chat</a></li>
+                    <li><a href="#">Operation</a></li>
+                    <li><a href="#">Note</a></li>
+                    <li><a href="#">Remark</a></li>
+                    <li><a href="#">Fund</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="panel-body">
+
+        </div>
+    </div>
+
+</div>
+
+
+<div class="panel panel-default" style="width: 100%">
+    <div class="panel-heading panel-heading-custom_perfomance">
+        <h2 class="panel-title">
+            <strong>Performance</strong>
+        </h2>
+    </div>
+
+    <div style="margin-top: 10px">
+        <ul class="nav nav-tabs" style="padding-left: 10px">
+            <li class="active"><a data-toggle="tab" href="#home">DOWNLINE LIST</a></li>
+            <li><a data-toggle="tab" href="#menu1">OPERATION REPORT</a></li>
+            <li><a data-toggle="tab" href="#menu2">PROMOTION REPORT</a></li>
+            <li><a data-toggle="tab" href="#menu3">CHANNEL REPORT</a></li>
+        </ul>
+
+
+
+        <div class="row">
+            <div class='col-md-8' style="width: 600px; float: right; margin-right: -80px; margin-bottom: 10px;">
+                <!-- {% block time_search %} -->
+                <label>Date Range</label>
+                <div class="row">
+                    <div class='col-md-4'>
+                        <!-- <input class="form-control" placeholder="From" id="search-from" name='search-from'></input> -->
+                        <div class='input-group date' id='user_list_time_from'>
+                            <input type='text' class="form-control" placeholder="From" id='user_list_time_from_input' />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class='col-md-4'>
+                        <!-- <input class="form-control" placeholder="To" id='search-to' name='search-from'></input> -->
+                        <div class='input-group date' id='user_list_time_to'>
+                            <input type='text' class="form-control" placeholder="To" id='user_list_time_to_input' />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class='col-md-4'>
+                        <button id="user_list_time_submit" type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+                <!-- {% endblock %} -->
+            </div>
+        </div>
+
+
+
+
+        <div class="tab-content">
+            <div id="home" class="tab-pane fade in active">
+                <div style="overflow-x: scroll;">
+                    <table id="affiliates" class="table table-striped" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">MEMBER ID</th>
+                                <th scope="col">REGISTRATION DATE</th>
+                                <th scope="col">LAST LOGIN</th>
+                                <th scope="col">CHANNEL</th>
+                                <th scope="col">FTD</th>
+                                <th scope="col">DEPOSIT</th>
+                                <th scope="col">WITHDRAW</th>
+                                <th scope="col">BOUNS</th>
+                                <th scope="col">ADJUSTMENT</th>
+                                <th scope="col">BALANCE</th>
+                                <th scope="col">TURNOVER</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for downline in downline_list %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><a href="{% url 'xadmin:agent_detail' downline.agent_id %}">
+                                        {{ downline.username }}</a>
+                                </td>
+                                <td>{{ downline.time_of_registration }}</td>
+                                <td>{{ downline.last_login_time }}</td>
+                                <td>CHANNEL</td>
+                                <td>{{ downline.ftd_time }}</td>
+                                <td>{{ downline.deposit.sum_deposit }}</td>
+                                <td>{{ downline.withdraw.sum_withdraw }}</td>
+                                <td>{{ downline.bouns.sum_bouns }}</td>
+                                <td>{{ downline.adjustment.sum_adjustment }}</td>
+                                <td>{{ downline.balance }}</td>
+                                <td>Turnover haimei suan</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="menu1" class="tab-pane fade">
+            </div>
+            <div id="menu2" class="tab-pane fade">
+            </div>
+            <div id="menu3" class="tab-pane fade">
+            </div>
+        </div>
+    </div>
+</div>
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css"
+    rel="stylesheet" />
+<script
+    src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script>
+
+
+
+    // $('#datetimepicker1').datetimepicker();
+
+    $(document).ready(function () {
+        var csrftoken = $.cookie("csrftoken");
+        // console.log(csrftoken);
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+        $(function () {
+            $('#user_list_time_from').datetimepicker();
+            $('#user_list_time_to').datetimepicker();
+        });
+
+        $('#user_list_time_submit').click(function (e) {
+            e.preventDefault();
+            var time_from = $('#user_list_time_from_input').val();
+            // console.log(time_from);
+            time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+            // time_from = time_from.format('YYYY-MM-DD HH:mm');
+            var time_to = $('#user_list_time_to_input').val();
+            // console.log(time_to);
+            time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+            // time_to = time_to.format('YYYY-MM-DD HH:mm');
+            // console.log(time_from);
+
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'xadmin:user_list' %}",
+                data: {
+                    'type': 'user_list_time_range_filter',
+                    'from': time_from,
+                    'to': time_to
+                },
+                success: function (data) {
+
+                    data.forEach(i => console.log("data: " + i.login_times));
+                    // console.log("!!!!!" + data);
+                    for (var i = 0; i < data.length; i++) {
+                        $("#user_login_times_" + (i + 1)).empty(); $("#user_bettin_times_" + (i +
+                            1)).empty(); $("#user_deposit_times_" + (i + 1)).empty(); $("#user_deposit_amount_" + (i + 1)).empty();
+                        $("#user_withdrawal_times_" + (i + 1)).empty(); $("#user_withdrawal_amount_" + (i + 1)).empty(); //
+                        console.log(data[i].deposit_amount.amount__sum); var content = "<td id='user_login_times_" + (i + 1) + "'>" +
+                            data[i].login_times + "</td>"; $("#user_login_times_" + (i + 1)).append(content);
+                        content = "<td id='user_bettin_times_" + (i + 1) + "'>" + data[i].betting_times + "</td>"; $("#user_bettin_times_" +
+                            (i + 1)).append(content); content = "<td id='user_deposit_times_" + (i + 1) + "'>" + data[i].deposit_times + "</td>";
+                        $("#user_deposit_times_" + (i + 1)).append(content); content = "<td id='user_deposit_amount_" + (i + 1) + "'>" +
+                            cleanField(data[i].deposit_amount.amount__sum) + "</td>"; $("#user_deposit_amount_" + (i + 1)).append(content);
+                        content = "<td id='user_withdrawal_times_" + (i + 1) + "'>" + data[i].withdrawal_times + "</td>";
+                        $("#user_withdrawal_times_" + (i + 1)).append(content); content = "<td id='user_withdrawal_amount_" + (i + 1) + "'>" +
+                            cleanField(data[i].withdrawal_amount.amount__sum) + "</td>"; $("#user_withdrawal_amount_" + (i +
+                                1)).append(content);
+                    }
+                }
+            });
+        }); function cleanField(field) {
+            if (field === null || field === undefined) { return ""; }
+            return cleanFloatField(field);
+        } function cleanFloatField(field) { return field.toFixed(2); }
+    }); </script>
+{% endblock %}
