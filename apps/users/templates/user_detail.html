@@ -258,6 +258,7 @@
                         </div>
                         <div class="col-md-4" style="margin-right: -19px;">
                             <div class="user-detail-content-title">DEPOSIT</div>
+                            {% for lastDeposit in lastDeposits %}
                             <div class="user-info-block">
                                 <div id="member-input-container">
                                     <div>
@@ -287,9 +288,11 @@
                                 </div>
                                 <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
+                            {% endfor %}
                         </div>
                         <div class="col-md-4">
                             <div class="user-detail-content-title">WITHDRAWAL</div>
+                            {% for lastWithdraw in lastWithdraws %}
                             <div class="user-info-block">
                                 <div id="member-input-container">
                                     <div>
@@ -317,8 +320,9 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                <button class="popup-btn" data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
+                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraw }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
+                            {% endfor %}
                         </div>                       
                         <!-- </div> -->
                 </div>
@@ -1577,14 +1581,19 @@ $(document).ready(function() {
             content += "<p>" + trans.transactionId + "</p>";
             content += "<p>" + time + "</p>";
             content += "<p>" + time + "</p>";
-            content += "<p>/</p>";
             content += "<p>" + trans.channel + "</p><p>" + trans.method + "</p>";
             content += "<p>/</p>";
+            content += "<p>/</p>";
+            content += "<p>/</p>";
+            content += "<p>" + trans.channel + "</p>";
             content += "<p>" + trans.amount + "</p>";
             content += "<p>" + trans.amount + "</p>";
+            content += "<p>fee</p>"
+            content += "<p>/</p>";
+            content += "<p>/</p>";
+            content += "<p>/</p>";
             content += "<p>" + trans.status + "</p>";
             $("#withdraw-detail").append(content);
-
         }
         
     }

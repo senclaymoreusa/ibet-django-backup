@@ -1001,31 +1001,35 @@ class UserDetailView(CommAdminView):
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
+
+
+        statusMap = {}
+        for t in Transaction._meta.get_field('status').choices:
+            statusMap[t[0]] = t[1]
+
+        transTypeMap = {}
+        for t in Transaction._meta.get_field('transaction_type').choices:
+            transTypeMap[t[0]] = t[1]
+        
+        productMap = {}
+        for t in Transaction._meta.get_field('product').choices:
+            productMap[t[0]] = t[1]
+
+        currencyMap = {}
+        for t in Transaction._meta.get_field('currency').choices:
+            currencyMap[t[0]] = t[1]
+        
+        channelMap = {}
+        for t in Transaction._meta.get_field('channel').choices:
+            channelMap[t[0]] = t[1]
+
+
         if Transaction.objects.filter(user_id=customUser).count() == 0:
             context['userTransactions'] = ''
         else:
             transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
             transactions = serializers.serialize('json', transactions)
             transactions = json.loads(transactions)
-            statusMap = {}
-            for t in Transaction._meta.get_field('status').choices:
-                statusMap[t[0]] = t[1]
-
-            transTypeMap = {}
-            for t in Transaction._meta.get_field('transaction_type').choices:
-                transTypeMap[t[0]] = t[1]
-            
-            productMap = {}
-            for t in Transaction._meta.get_field('product').choices:
-                productMap[t[0]] = t[1]
-
-            currencyMap = {}
-            for t in Transaction._meta.get_field('currency').choices:
-                currencyMap[t[0]] = t[1]
-            
-            channelMap = {}
-            for t in Transaction._meta.get_field('channel').choices:
-                channelMap[t[0]] = t[1]
 
             trans = []
             for tran in transactions:
@@ -1098,28 +1102,67 @@ class UserDetailView(CommAdminView):
             context['relativeAccount'] = self.account_by_ip(userLastLogin.ip_addr, userLastLogin.user)
         # print(str(context['relativeAccount']))
 
-        deposit = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first() 
-        if deposit:
-            # deposit = serializers.serialize('json', transactions)
-            depositDict = {
-                'time': deposit.request_time,
-                'amount': deposit.amount,
-                'status': deposit.get_status_display,
-            }
-            context['lastDeposit'] = depositDict
+        deposits = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first()
+        if deposits:
+            deposits = serializers.serialize('json', [deposits])
+            deposits = json.loads(deposits)
+            lastDeposit = []
+            for deposit in deposits:
+                try:
+                    time = datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                depositDict = {
+                    'transactionId': str(deposit['pk']),
+                    'category': str(transTypeMap[deposit['fields']['transaction_type']]),
+                    'transType': transTypeMap[deposit['fields']['transaction_type']],
+                    'transTypeCode': deposit['fields']['transaction_type'],
+                    'product': productMap[deposit['fields']['product']],
+                    'toWhichWallet': str(deposit['fields']['transfer_to']),
+                    'currency': currencyMap[deposit['fields']['currency']],
+                    'time': time,
+                    'amount': deposit['fields']['amount'],
+                    'status': statusMap[deposit['fields']['status']],
+                    'bank': str(deposit['fields']['bank']),
+                    'channel': channelMap[deposit['fields']['channel']],
+                    'method': deposit['fields']['method'],
+                }
+                lastDeposit.append(depositDict)
+            context['lastDeposits'] = lastDeposit[:1]
         else:
-            context['lastDeposit'] = ''
+            context['lastDeposits'] = ''
 
-        withdraw = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
-        if withdraw:
-            withdrawDict = {
-                'time': withdraw.request_time,
-                'amount': withdraw.amount,
-                'status': withdraw.get_status_display,
-            }
-            context['lastWithdraw'] = withdrawDict
+        withdraws = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
+        if withdraws:
+            withdraws = serializers.serialize('json', [withdraws])
+            withdraws = json.loads(withdraws)
+            lastWithdraw = []
+            for withdraw in withdraws:
+                try:
+                    time = datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                withdrawDict = {
+                    'transactionId': str(withdraw['pk']),
+                    'category': withdraw['fields']['transaction_type'],
+                    'transType': transTypeMap[withdraw['fields']['transaction_type']],
+                    'transTypeCode': withdraw['fields']['transaction_type'],
+                    'product': productMap[withdraw['fields']['product']],
+                    'toWhichWallet': str(withdraw['fields']['transfer_to']),
+                    'currency': currencyMap[withdraw['fields']['currency']],
+                    'time': time,
+                    'amount': withdraw['fields']['amount'],
+                    'status': statusMap[withdraw['fields']['status']],
+                    'bank': str(withdraw['fields']['bank']),
+                    'channel': channelMap[withdraw['fields']['channel']],
+                    'method': withdraw['fields']['method'],
+                }
+                lastWithdraw.append(withdrawDict)
+            context['lastWithdraws'] = lastWithdraw[:1]
         else:
-            context['lastWithdraw'] = ''
+            context['lastWithdraws'] = ''
 
 
         activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
