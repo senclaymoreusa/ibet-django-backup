@@ -23,8 +23,8 @@ USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 CHANNEL_CHOICES = (
     (0, 'Alipay'),
-    (1, 'Wechat'),
-    (2, 'Card'),
+    (1, 'LINEpay'),
+    (2, 'Astropay'),
     (3, 'Qaicash'),
     (4, 'Asia Pay'),
     (5, 'Paypal')
@@ -109,3 +109,29 @@ BANK_LIST_CHOICES = (
     ("CMBCCN", "China Merchants Bank"),
     ("CN01CN", "Zhongshan Rural Credit Union"),
 )
+
+#qaicash-payment
+QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
+MERCHANTID = '1'
+MERCHANTAPIKEY = 'secret'
+APIVERSION = 'v2.0'
+DEPOSIT_URL = '/deposit/routing/'
+PAYOUT_URL = '/payout/routing/'
+
+#paypal-payment
+PAYPAL_MODE = 'sandbox'   # sandbox or live
+PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
+PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
+PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
+#astroPay sandbox urls
+ASTROPAY_URL = 'https://sandbox.astropaycard.com/api_curl/streamline/newinvoice'
+ASTROPAY_WPS = 'https://sandbox.astropaycard.com/apd/webpaystatus'
+ASTROPAY_WCE = 'https://sandbox.astropaycard.com/apd/webcurrencyexchange'
+ASTROPAY_GBC = 'https://sandbox.astropaycard.com/api_curl/apd/get_banks_by_country'
+#astroPay sandbox key:
+ASTROPAY_X_LOGIN = '32db4899eb' 
+ASTROPAY_X_TRANS_KEY = '92afc1561b'
+ASTROPAY_SECREATE = 'dc2c63c426412128fc6e3c3ef74876f26'
+#astroPay sandbod WEBPAYSTATUS:
+ASTROPAY_WP_LOGIN = 'f1b1d639c5'
+ASTROPAY_WP_TRANS_KEY = '738e34417a'

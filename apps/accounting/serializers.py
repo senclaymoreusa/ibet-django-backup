@@ -56,10 +56,13 @@ class submitPayoutSerialize(serializers.Serializer):
         return Transaction.objects.create(**validated_data)
 
    
-class payoutTransactionSerialize(serializers.ModelSerializer):
-    class Meta:
-        model = Transaction
-        fields = ('order_id','method', 'request_time','amount', 'currency', 'status', 'user_id')
+class payoutTransactionSerialize(serializers.Serializer):
+    
+    order_id         = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
+
+
 
 class approvePayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
@@ -119,7 +122,7 @@ class payoutBanklistSerialize(serializers.Serializer):
         instance.save() 
         return instance
 class payoutBanklimitsSerialize(serializers.Serializer):
-     
+    
     currency         = serializers.CharField(required=True)
     method         = serializers.CharField(required=True)
     bank           = serializers.CharField(required=True)
@@ -136,22 +139,13 @@ class payoutBanklimitsSerialize(serializers.Serializer):
 
 class paypalCreatePaymentSerialize(serializers.Serializer):
     
-    
     currency         = serializers.CharField(required=True)
     amount           = serializers.CharField(required=True)
     user             = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
-    def update(self, instance, validated_data):
-
-        instance.currency = validated_data.get('currency', instance.currency)
-        instance.method = validated_data.get('method', instance.method)
-        
-        instance.amount = validated_data.get('amount', instance.amount)
-        instance.user = validated_data.get('user', instance.user)
-        instance.save() 
-        return instance
+    
 class paypalgetOrderSerialize(serializers.Serializer):
     order_id  = serializers.CharField(required=True)
     user             = serializers.CharField(required=True)
@@ -174,4 +168,9 @@ class paypalExecutePaymentSerialize(serializers.Serializer):
         instance.user = validated_data.get('user', instance.user)
         instance.save()
         return instance
-    
+
+class astroPaymentStatusSerialize(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ('order_id', 'user_id', 'amount', 'bank', 'currency', 'channel','status')
+

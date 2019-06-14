@@ -15,7 +15,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
-
+from utils.constants import *
 
 from ..serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from django.conf import settings
@@ -31,14 +31,12 @@ from time import sleep
 QAICASH_NAME = 3
 
 #payment
-merchantId = settings.MERCHANTID
-currency = settings.CURRENCY
-merchantApiKey = settings.MERCHANTAPIKEY
-apiVersion = settings.APIVERSION
-method = settings.METHOD
-api = settings.QAICASH_URL 
-deposit_url = settings.DEPOSIT_URL
-payout_url = settings.PAYOUT_URL
+merchantId = MERCHANTID
+merchantApiKey = MERCHANTAPIKEY
+apiVersion = APIVERSION
+api = QAICASH_URL 
+deposit_url = DEPOSIT_URL
+payout_url = PAYOUT_URL
 logger = logging.getLogger('django')
 
 # currency conversion dictionary for supported currencies
@@ -283,9 +281,8 @@ class submitDeposit(generics.GenericAPIView):
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        print(url)
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
-        
+        currency = self.request.POST['currency']
         orderId = self.request.POST.get('order_id')
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
@@ -371,7 +368,7 @@ class submitPayout(generics.GenericAPIView):
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        print(url)
+        currency = self.request.POST['currency']
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
         
         orderId = self.request.POST.get('order_id')

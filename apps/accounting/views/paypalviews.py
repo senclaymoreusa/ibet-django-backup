@@ -15,23 +15,26 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
-
+from utils.constants import *
 
 from ..serializers import paypalCreatePaymentSerialize,paypalgetOrderSerialize,paypalExecutePaymentSerialize
 from django.conf import settings
 import requests,json
 import logging
 import time
+from time import sleep
+
 logger = logging.getLogger('django')
+currencyConversion = {
+    "CNY": 0,
+    "USD": 1,
+    "PHP": 2,
+    "IDR": 3
+}
 
-# paypalrestsdk.configure({
-#   "mode": settings.PAYPAL_MODE, 
-#   "client_id": settings.PAYPAL_CLIENT_ID,
-#   "client_secret": settings.PAYPAL_CLIENT_SECRET })
-
-username = settings.PAYPAL_CLIENT_ID
-password = settings.PAYPAL_CLIENT_SECRET
-url = settings.PAYPAL_SANDBOX_URL
+username = PAYPAL_CLIENT_ID
+password = PAYPAL_CLIENT_SECRET
+url = PAYPAL_SANDBOX_URL
 host_url = settings.HOST_URL
 
 def getAccessToken():
@@ -59,6 +62,7 @@ class paypalCreatePayment(generics.GenericAPIView):
         #orderId = self.request.POST['order_id']
         amount = self.request.POST.get('amount')
         currency = self.request.POST.get('currency')
+        print(currency)
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + getAccessToken()
@@ -88,26 +92,28 @@ class paypalCreatePayment(generics.GenericAPIView):
         }
         success = False
         for x in range(3):
-            try:
-                r = requests.post(url + 'v1/payments/payment', headers=headers, data = json.dumps(body))
-                if r.status_code == 201:
-                    success = True
-                    break
-            except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
-        rdata = r.json()
-        if r.status_code == 201:
-            
-            userId = CustomUser.objects.get(username=self.request.POST.get('user'))
-            if rdata["state"] == 'created':  
-                for x in Transaction._meta.get_field('currency').choices:
-
+            r = requests.post(url + 'v1/payments/payment', headers=headers, data = json.dumps(body))
+            rdata = r.json()
+            if r.status_code == 200:
+                break
+            elif r.status_code == 500:
+                print("Request failed {} time(s)'.format(x+1)")
+                print("Waiting for %s seconds before retrying again")
+                sleep(delay)
+            elif r.status_code == 400:
+                # Handle error
+                print("There was something wrong with the result")
+                print(rdata)
+                logger.info('Failed to complete a request for retrieving available deposit methods..')
+                return Response(rdata) 
+        
+        userId = CustomUser.objects.get(username=self.request.POST.get('user'))
+        
+        if rdata["state"] == 'created':    
+            for x in Transaction._meta.get_field('currency').choices:
                     if currency == x[1]:
                         cur_val = x[0]
-            if rdata["state"] == 'created':    
-                create = Transaction.objects.get_or_create(
+            create = Transaction.objects.get_or_create(
                     user_id=userId,
                     #order_id= rdata["id"],
                     amount=amount,
@@ -117,15 +123,14 @@ class paypalCreatePayment(generics.GenericAPIView):
                     channel=5,
                     status=2,
                 )
-                print("Payment[%s] created successfully" % (rdata['id']))
-                for link in rdata["links"]:
-                   if link["rel"] == "approval_url": 
-                       approval_url = str(link["href"])
-                       token = approval_url.split("token=")[1]
-                       print("Redirect for approval: %s" % (token))
 
-        else:
-            logger.error('The request information is nor correct, please try again')
+            print("Payment[%s] created successfully" % (rdata['id']))
+            for link in rdata["links"]:
+                if link["rel"] == "approval_url": 
+                    approval_url = str(link["href"])
+                    token = approval_url.split("token=")[1]
+                    print("Redirect for approval: %s" % (token))
+        
         return Response(rdata)
 
 class paypalGetOrder(APIView):
@@ -141,17 +146,21 @@ class paypalGetOrder(APIView):
         }
         success = False
         for x in range(3):
-            try:
-                r = requests.post(url + 'v2/checkout/orders/' + order_id + '/capture', headers=headers)
-                if r.status_code == 201:
-                    success = True
-                    break
-            except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+            r = requests.post(url + 'v2/checkout/orders/' + order_id + '/capture', headers=headers)
+            rdata = r.json()
+            if r.status_code == 200:
+                break
+            elif r.status_code == 500:
+                print("Request failed {} time(s)'.format(x+1)")
+                print("Waiting for %s seconds before retrying again")
+                sleep(delay)
+            elif r.status_code == 400:
+                # Handle error
+                print("There was something wrong with the result")
+                print(rdata)
+                logger.info('Failed to complete a request for retrieving available deposit methods..')
+                return Response(rdata) 
         
-        rdata = r.json()
         if r.status_code == 201:
             userId = CustomUser.objects.get(username=self.request.POST.get('user'))
             if rdata["status"] == 'COMPLETED':    
@@ -191,18 +200,24 @@ class paypalExecutePayment(APIView):
         }
         success = False
         for x in range(3):
-            try:
-                r = requests.post(url + 'v1/payments/payment/' + payment_id + '/execute', headers=headers, data={
-                    'payer_id': payer_id,
-                })
-                if r.status_code == 201:
-                    success = True
-                    break
-            except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
-        rdata = r.json()
+            
+            r = requests.post(url + 'v1/payments/payment/' + payment_id + '/execute', headers=headers, data={
+                'payer_id': payer_id,
+            })
+            rdata = r.json()
+            if r.status_code == 200:
+                break
+            elif r.status_code == 500:
+                print("Request failed {} time(s)'.format(x+1)")
+                print("Waiting for %s seconds before retrying again")
+                sleep(delay)
+            elif r.status_code == 400:
+                # Handle error
+                print("There was something wrong with the result")
+                print(rdata)
+                logger.info('Failed to complete a request for retrieving available deposit methods..')
+                return Response(rdata) 
+            
         if r.status_code == 201:
             userId = CustomUser.objects.get(username=self.request.POST.get('user'))
             if rdata["state"] == 'approved':    
