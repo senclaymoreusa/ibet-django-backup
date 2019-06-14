@@ -93,7 +93,7 @@ COUNTRY_CHOICES = (
     ('JP', 'Japan'),
 )
 
-<<<<<<< HEAD
+
 AGENT_LEVEL = (
     ('Premium', 'Premium'),
     ('Invalid', 'Invalid'),
@@ -104,8 +104,9 @@ AGENT_LEVEL = (
 AGENT_STATUS = (
     ('Normal', 'Normal'),
     ('Block', 'Block'),
-=======
+)
 
+   
 BANK_LIST_CHOICES = (
     ("OOO6CN", "China UnionPay"),
     ("ABOCCN", "Agricultural Bank of China"),
@@ -121,5 +122,4 @@ BANK_LIST_CHOICES = (
     ("CIBKCN", "China Citic Bank"),
     ("CMBCCN", "China Merchants Bank"),
     ("CN01CN", "Zhongshan Rural Credit Union"),
->>>>>>> 3a6490857efb8e6abe2c25d1d185f92c43f6cfe3
 )
