@@ -359,3 +359,14 @@ class UserBonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     is_successful = models.BooleanField(default=False)
 
+
+class UserActivity(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
+    admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="admin")
+    message = models.CharField(max_length=250)
+    activity_type = models.SmallIntegerField(choices=ACTIVITY_TYPE, default=0)
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        auto_now_add=True,
+        editable=False,
+    )

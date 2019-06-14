@@ -114,7 +114,7 @@
                     <span class="detail-title">Member details</span>
                 </div>
                 <!-- <div class="section-body"> -->
-                <div class="row" style="margin-top:20px">
+                <div class="row" style="margin-top:20px; min-height: 380px;">
                     <div class='col-md-5' style="margin-left:20px; padding-bottom: 30px;">
                         <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
                         <div class="row">
@@ -188,9 +188,9 @@
                             <div class="col-md-6" style="margin-left:-40px;">
                                 <div><span class="detail-info">{{ customuser.street_address_1 }}</span></div>
                                 <div><span class="detail-info">{{ customuser.street_address_2 }}</span></div>
-                                <div><span class="detail-info">{{ customuser.city}}</span></div>
-                                <div><span class="detail-info">{{ customuser.zipcode}}</span></div>
-                                <div><span class="detail-info">{{ customuser.country}}</span></div>
+                                <div><span class="detail-info">{{ customuser.city }}</span></div>
+                                <div><span class="detail-info">{{ customuser.zipcode }}</span></div>
+                                <div><span class="detail-info">{{ customuser.country }}</span></div>
                             </div>
                         </div>
                     </div>
@@ -253,7 +253,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                <button class="popup-btn"><i class="glyphicon glyphicon-search"></i></button>
+                                <button class="popup-btn" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
                         </div>
                         <div class="col-md-4" style="margin-right: -19px;">
@@ -285,7 +285,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                <button class="popup-btn"><i class="glyphicon glyphicon-search"></i></button>
+                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -317,7 +317,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                <button class="popup-btn"><i class="glyphicon glyphicon-search"></i></button>
+                                <button class="popup-btn" data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
                         </div>                       
                         <!-- </div> -->
@@ -328,7 +328,36 @@
                 <div class="row">
                     <div class="user-detail-subtitle">ACCOUNT CREATION</div>
                     <div id="account-creation-rect">
-                        NONE
+                        <div class="col-md-4">
+                            <div style="margin-top:28px;">
+                                <div class="block-title">Time</div>
+                                <div class="block-text">{{ customuser.time_of_registration }}</div>
+                            </div>
+                            <div style="margin-top:28px;">
+                                <div class="block-title">Verification time</div>
+                                <div class="block-text">{{ customuser.verfication_time }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div style="margin-top:28px;">
+                                <div class="block-title">Location</div>
+                                {% if customuser.id_location %}
+                                    <div class="block-text">{{ customuser.id_location }}</div>
+                                {% else %}
+                                    <div class="block-text">None</div>
+                                {% endif %}
+                            </div>
+                            <div style="margin-top:28px;">
+                                <div class="block-title">First deposit</div>
+                                <div class="block-text">{{ customuser.ftd_time }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div style="margin-top:28px;">
+                                <div class="block-title">Source</div>
+                                <div class="block-text">{{ customuser.get_user_attribute_display }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                         
@@ -475,8 +504,12 @@
                         </select>
                     </div>
                 </div>
-                <div style="border-top: 1px solid; overflow-y: auto; height:807px;">
-                    <div class="note-author">Martin Sandstrom</div>
+                <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:807px;">
+                    {% for act in activity %}
+                        <div class="note-author">{{ act.admin }}</div>
+                        <div class="note-block">{{ act.message }}</div>
+                    {% endfor %}
+                    <!-- <div class="note-author">Martin Sandstrom</div>
                     <div class="note-block">note</div>
                     <div class="note-author">Martin Sandstrom</div>
                     <div class="note-block">note</div>
@@ -491,9 +524,7 @@
                     <div class="note-author">Martin Sandstrom</div>
                     <div class="note-block">note</div>
                     <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
+                    <div class="note-block">note</div> -->
                 </div>
                 <div id="note-input-container">
                     <button id="note-btn"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
@@ -581,11 +612,11 @@
                         <div class="row">
                             <div class='col-md-6'>
                                 <div class="block-title">PRODUCT</div>
-                                    <select class="form-control" id="transaction_product_select">
-                                        <option value="all">All products</option>
-                                        <option value="0">0</option>
-                                        <option value="1">1</option>
-                                    </select>
+                                <select class="form-control" id="transaction_product_select">
+                                    <option value="all">All products</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                </select>
                             </div>
                             <div class='col-md-6'>
                                 <div class="block-title">CATEGORY</div>
@@ -646,31 +677,35 @@
                         {% for trans in userTransactions %} 
                         <tr>
                             <td scope="row">{{ forloop.counter }}</td>
-                            <td>{{ trans.get_transaction_type_display }}</td>
-                            <td>{{ trans.get_transaction_type_display }}</td>
-                            <td>{{ trans.get_product_display }}</td>
-                            <td>{{ trans.transaction_id }}</td>
-                            <td>{{ trans.transfer_to }}</td>
-                            <td>{{ trans.get_currency_display }}</td>
-                            <td>{{ trans.request_time }}</td>
+                            <td>{{ trans.category }}</td>
+                            <td>{{ trans.transType }}</td>
+                            <td>{{ trans.product }}</td>
+                            <td>{{ trans.transactionId }}</td>
+                            {% if trans.transfer_to %}
+                                <td>{{ trans.transfer_to }}</td>
+                            {% else %}
+                                <td>None</td>
+                            {% endif %}
+                            <td>{{ trans.currency }}</td>
+                            <td id="requestTime">{{ trans.time }}</td>
                             <td>{{ trans.amount }}</td>
                             <td>{{ trans.amount }}</td>
-                            <td>{{ trans.get_status_display }}</td>
-                            {% if trans.transaction_type == 0 %}
-                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 1 %}
-                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 2 %}
+                            <td>{{ trans.status }}</td>
+                            {% if trans.transTypeCode == 0 %}
+                            <td><button type="button" class="btn btn-primary" onclick='showInitialTransaction("{{ customuser.username }}", "{{ trans }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transTypeCode == 1 %}
+                            <td><button type="button" class="btn btn-primary" onclick='showInitialTransaction("{{ customuser.username }}", "{{ trans }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>
+                            {% elif trans.transTypeCode == 2 %}
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_placed_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 3 %}
+                            {% elif trans.transTypeCode == 3 %}
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_settled_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 4 %}
+                            {% elif trans.transTypeCode == 4 %}
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_in_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 5 %}
+                            {% elif trans.transTypeCode == 5 %}
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_trans_out_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 6 %}
+                            {% elif trans.transTypeCode == 6 %}
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bonus_detail"><span class="glyphicon glyphicon-search"></span></button></td>
-                            {% elif trans.transaction_type == 7 %}
+                            {% elif trans.transTypeCode == 7 %}
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_adjustment_detail"><span class="glyphicon glyphicon-search"></span></button></td>
                             {% endif %}
                         </tr>
@@ -696,17 +731,17 @@
                                                 <p>Arrive amount </p>
                                                 <p>Status </p>
                                             </div>
-                                            <div class="col-md-7">
+                                            <div class="col-md-7" id="deposit-detail">
                                                 <p>{{ customuser.username }}</p>
-                                                <p>{{ trans.transaction_id }}</p>
-                                                <p>{{ trans.request_time }}</p>
-                                                <p>{{ trans.request_time }}</p>
+                                                <p>{{ trans.transactionId }}</p>
+                                                <p>{{ trans.time }}</p>
+                                                <p>{{ trans.time }}</p>
                                                 <p>/</p>
                                                 <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
                                                 <p>/</p>
                                                 <p>{{ trans.amount }}</p>
                                                 <p>{{ trans.amount }}</p>
-                                                <p>{{ trans.get_status_display }}</p>
+                                                <p>{{ trans.status }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -741,11 +776,11 @@
                                                 <p>Audi Memo </p>
                                                 <p>Status </p>
                                             </div>
-                                            <div class="col-md-7">
+                                            <div class="col-md-7" id="withdraw-detail">
                                                 <p>{{ customuser.username }}</p>
-                                                <p>{{ trans.transaction_id }}</p>
-                                                <p>{{ trans.request_time }}</p>
-                                                <p>{{ trans.request_time }}</p>
+                                                <p>{{ trans.transactionId }}</p>
+                                                <p>{{ trans.time }}</p>
+                                                <p>{{ trans.time }}</p>
                                                 <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
                                                 <p>/</p>
                                                 <p>/</p>
@@ -757,7 +792,7 @@
                                                 <p>/</p>
                                                 <p>/</p>
                                                 <p>/</p>
-                                                <p>{{ trans.get_status_display }}</p>
+                                                <p>{{ trans.status }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -788,15 +823,15 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <p>{{ customuser.username }}</p>
-                                                    <p>{{ trans.transaction_id }}</p>
-                                                    <p>{{ trans.request_time }}</p>
-                                                    <p>{{ trans.request_time }}</p>
+                                                    <p>{{ trans.transactionId }}</p>
+                                                    <p>{{ trans.time }}</p>
+                                                    <p>{{ trans.time }}</p>
                                                     <p></p>
                                                     <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
                                                     <p>/</p>
                                                     <p>{{ trans.amount }}</p>
                                                     <p>{{ trans.amount }}</p>
-                                                    <p>{{ trans.get_status_display }}</p>
+                                                    <p>{{ trans.status }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -827,15 +862,15 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <p>{{ customuser.username }}</p>
-                                                    <p>{{ trans.transaction_id }}</p>
-                                                    <p>{{ trans.request_time }}</p>
-                                                    <p>{{ trans.request_time }}</p>
+                                                    <p>{{ trans.transactionId }}</p>
+                                                    <p>{{ trans.time }}</p>
+                                                    <p>{{ trans.time }}</p>
                                                     <p></p>
                                                     <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
                                                     <p>/</p>
                                                     <p>{{ trans.amount }}</p>
                                                     <p>{{ trans.amount }}</p>
-                                                    <p>{{ trans.get_status_display }}</p>
+                                                    <p>{{ trans.status }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -925,6 +960,36 @@
                                 {% endif %}
                             </tbody>
                         </table>
+                        <div class="row">
+                            <div class='col-md-1'>
+                                <button class="btn btn-primary"><span>Export</span></button>
+                            </div>
+                            <div class="transaction-control-group col-md-9"></div>
+                            <div>
+                                <div class='col-md-1'>
+                                <!-- <div class='col-md-1'> -->
+                                    <input type="hidden" id="hidden_row" value="0"></input>
+                                    <select id="pagination_value"  class="form-control">
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="250">250</option>
+                                    </select>
+                                </div>
+                                <div class='col-md-1'>
+                                    <ul class="pagination" style="margin:0px;">
+                                        <li class="page-item disabled" id='previousPage'>
+                                        <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                        </li>
+                                        {% if isLastPage is True %}
+                                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% else %}
+                                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="related-device" class="tab-pane fade">
                         <table class="table table-striped table-bordered">
@@ -949,6 +1014,36 @@
                                 <!-- {% endfor %} -->
                             </tbody>
                         </table>
+                        <div class="row">
+                            <div class='col-md-1'>
+                                <button class="btn btn-primary"><span>Export</span></button>
+                            </div>
+                            <div class="transaction-control-group col-md-9"></div>
+                            <div>
+                                <div class='col-md-1'>
+                                <!-- <div class='col-md-1'> -->
+                                    <input type="hidden" id="hidden_row" value="0"></input>
+                                    <select id="pagination_value"  class="form-control">
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="250">250</option>
+                                    </select>
+                                </div>
+                                <div class='col-md-1'>
+                                    <ul class="pagination" style="margin:0px;">
+                                        <li class="page-item disabled" id='previousPage'>
+                                        <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                        </li>
+                                        {% if isLastPage is True %}
+                                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% else %}
+                                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="deposit-withdraw" class="tab-pane fade">
                         <canvas id="deposit-withdraw-chart"></canvas>
@@ -959,6 +1054,303 @@
                 </div>
             </div>
         </div>
+
+        <!-- bonus section -->
+
+        <div class="row" id="bonus-control-rectangle">
+            <div class="detail-title-block" style="background-color: #e26a6b;">
+                <span class="detail-title">Bonus history</span>
+            </div>
+            <div class="container nav-bar">
+                <ul class="nav nav-tabs ">
+                    <li class="active"><a data-toggle="tab" href="#bonus-active">ACTIVE</a></li>
+                    <li><a data-toggle="tab" href="#bonus-complete">COMPLETED</a></li>
+                    <li><a data-toggle="tab" href="#bonus-cancelled">CANCELLED</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div id="bonus-active" class="tab-pane fade in active">
+                        <div class="row" style="margin-top:30px;">
+                            <div class="col-md-2">
+                                <div class="block-title">BONUS TYPE</div>
+                                <select class="form-control" id="transaction_product_select">
+                                    <option value="all">All bonuses</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">BONUS NAME</th>
+                                <th scope="col">BONUS TYPE</th>
+                                <th scope="col">TIME OF APPLICATION</th>
+                                <th scope="col">TIME RECEIVED</th>
+                                <th scope="col">AMOUNT</th>
+                                <th scope="col">WITHDRAW LIMITATION</th>
+                                <th scope="col">COMPLETION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if relativeAccount%}
+                                    {% for account in relativeAccount %}
+                                    <tr>
+                                        <td scope="row">{{ forloop.counter }}</td>
+                                        <td><a href="{% url 'xadmin:user_detail' account.id %}">{{ account.username }}</td>
+                                        <td>{{ account.source }}</td>
+                                        <td>{{ account.channel }}</td>
+                                        <td>{{ account.deposit }}</td>
+                                        <td>{{ account.turnover }}</td>
+                                        <td>{{ account.withdrawal }}</td>
+                                        <td>{{ account.contribution }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        <div class="row">
+                            <div class='col-md-1'>
+                                <button class="btn btn-primary"><span>Export</span></button>
+                            </div>
+                            <div class="transaction-control-group col-md-9"></div>
+                            <div>
+                                <div class='col-md-1'>
+                                <!-- <div class='col-md-1'> -->
+                                    <input type="hidden" id="hidden_row" value="0"></input>
+                                    <select id="pagination_value"  class="form-control">
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="250">250</option>
+                                    </select>
+                                </div>
+                                <div class='col-md-1'>
+                                    <ul class="pagination" style="margin:0px;">
+                                        <li class="page-item disabled" id='previousPage'>
+                                        <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                        </li>
+                                        {% if isLastPage is True %}
+                                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% else %}
+                                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bonus-complete" class="tab-pane fade">
+                        <div class="row" style="margin-top:30px;">
+                            <div class="col-md-2">
+                                <div class="block-title">BONUS TYPE</div>
+                                <select class="form-control" id="transaction_product_select">
+                                    <option value="all">All bonuses</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                    <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">BONUS NAME</th>
+                                    <th scope="col">BONUS TYPE</th>
+                                    <th scope="col">TIME OF APPLICATION</th>
+                                    <th scope="col">TIME RECEIVED</th>
+                                    <th scope="col">AMOUNT</th>
+                                    <th scope="col">WITHDRAW LIMITATION</th>
+                                    <th scope="col">COMPLETION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if relativeAccount%}
+                                        {% for account in relativeAccount %}
+                                        <tr>
+                                            <td scope="row">{{ forloop.counter }}</td>
+                                            <td><a href="{% url 'xadmin:user_detail' account.id %}">{{ account.username }}</td>
+                                            <td>{{ account.source }}</td>
+                                            <td>{{ account.channel }}</td>
+                                            <td>{{ account.deposit }}</td>
+                                            <td>{{ account.turnover }}</td>
+                                            <td>{{ account.withdrawal }}</td>
+                                            <td>{{ account.contribution }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                    {% endif %}
+                                </tbody>
+                            </thead>
+                        </table>
+                        <div class="row">
+                            <div class='col-md-1'>
+                                <button class="btn btn-primary"><span>Export</span></button>
+                            </div>
+                            <div class="transaction-control-group col-md-9"></div>
+                            <div>
+                                <div class='col-md-1'>
+                                <!-- <div class='col-md-1'> -->
+                                    <input type="hidden" id="hidden_row" value="0"></input>
+                                    <select id="pagination_value"  class="form-control">
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="250">250</option>
+                                    </select>
+                                </div>
+                                <div class='col-md-1'>
+                                    <ul class="pagination" style="margin:0px;">
+                                        <li class="page-item disabled" id='previousPage'>
+                                        <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                        </li>
+                                        {% if isLastPage is True %}
+                                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% else %}
+                                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bonus-cancelled" class="tab-pane fade">
+                        <div class="row" style="margin-top:30px;">
+                            <div class="col-md-2">
+                                <div class="block-title">BONUS TYPE</div>
+                                <select class="form-control" id="transaction_product_select">
+                                    <option value="all">All bonuses</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">BONUS NAME</th>
+                                <th scope="col">BONUS TYPE</th>
+                                <th scope="col">TIME OF APPLICATION</th>
+                                <th scope="col">TIME RECEIVED</th>
+                                <th scope="col">AMOUNT</th>
+                                <th scope="col">WITHDRAW LIMITATION</th>
+                                <th scope="col">COMPLETION</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if relativeAccount%}
+                                    {% for account in relativeAccount %}
+                                    <tr>
+                                        <td scope="row">{{ forloop.counter }}</td>
+                                        <td><a href="{% url 'xadmin:user_detail' account.id %}">{{ account.username }}</td>
+                                        <td>{{ account.source }}</td>
+                                        <td>{{ account.channel }}</td>
+                                        <td>{{ account.deposit }}</td>
+                                        <td>{{ account.turnover }}</td>
+                                        <td>{{ account.withdrawal }}</td>
+                                        <td>{{ account.contribution }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                {% endif %}
+                                </tbody>
+                            </thead>
+                        </table>
+                        <div class="row">
+                            <div class='col-md-1'>
+                                <button class="btn btn-primary"><span>Export</span></button>
+                            </div>
+                            <div class="transaction-control-group col-md-9"></div>
+                            <div>
+                                <div class='col-md-1'>
+                                <!-- <div class='col-md-1'> -->
+                                    <input type="hidden" id="hidden_row" value="0"></input>
+                                    <select id="pagination_value"  class="form-control">
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="250">250</option>
+                                    </select>
+                                </div>
+                                <div class='col-md-1'>
+                                    <ul class="pagination" style="margin:0px;">
+                                        <li class="page-item disabled" id='previousPage'>
+                                        <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                        </li>
+                                        {% if isLastPage is True %}
+                                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% else %}
+                                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- payment and member limitations section -->
+        <div class="row" style="margin-top:20px; margin-left:3px;">
+                <div class="payment-detail-rectangle col-md-5">  
+                    <div class="half-title-block" style="background-color: #4f7c1a;">
+                        <span class="detail-title">Payment</span>
+                        <div style="margin: 30px 15px 30px 15px;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="payment-block-title">PAYMENT PERMISSION LEVEL</div>
+                                    <div id="payment-block">
+                                       <div id="payment-text">Normal</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-block-title">BANK ACCOUNT DETAILS</div>
+                                    <div class="col-md-6" style="padding-left:0px;">
+                                        <div class="payment-info">Bank name</div>
+                                        <div class="payment-info">Account number</div>
+                                        <div class="payment-info">Sort code</div>
+                                    </div>
+                                    <div class="col-md-6" style="padding-left:0px;">
+                                        <div class="payment-text">Bank name</div>
+                                        <div class="payment-text">Account number</div>
+                                        <div class="payment-text">Sort code</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-left:0px;">
+                                <div class="payment-deposit">DEPOSIT METHODS</div>
+                                <div class="label">
+                                    METHOD
+                                </div>
+                                <div class="deposit-table-first">
+                                    <div class="deposit-text">Bank card</div>
+                                </div>
+                                <div class="deposit-table-first" style="background-color: #ffffff">
+                                    <div class="deposit-text">Paypal</div>
+                                </div>
+                                <div class="deposit-table-first">
+                                    <div class="deposit-text">Netteller</div>
+                                </div>
+                                <div class="deposit-table-first" style="background-color: #ffffff">
+                                    <div class="deposit-text">Bank transfer</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="member-limitations-rectangle col-md-5">  
+                    <div class="half-title-block" style="background-color: #8b572a;">
+                        <span class="detail-title">Member limitations</span>
+                    </div>
+                </div>
+            </div>
+
+
 
         <div>&nbsp;</div>
         <div class="row">
@@ -1038,12 +1430,6 @@ $(document).ready(function() {
 
     $("#member_id").prop("readonly", true);
 
-    // $('#username').blur(function() {
-    //     if( $(this).val().trim() == '' ) {
-    //         alert('Input can not be left blank');
-    //     }
-    // });
-
     $('#username').blur(function() {                   
         if( !$(this).val().trim() ) {    
             $('#errorMessage').text('Username cannot be empty'); 
@@ -1122,6 +1508,19 @@ $(document).ready(function() {
         getTransactions(0);
     });
 
+
+    $('#post-btn').click( function(e) {
+        e.preventDefault();
+        var message = $('#notes-input').val();
+        updateNote(message);
+    });
+
+
+    $('#activity-select').change(function() {
+        var activity = $('#activity-select').val();
+        getActivityfilter(activity);
+    });
+
     getNext = function() {
         if ($('#nextPage').hasClass('disabled')) {
             return;
@@ -1145,6 +1544,51 @@ $(document).ready(function() {
         getTransactions(newFromItem);
     }
 
+    showInitialTransaction = function (username, trans, type) {
+        trans = JSON.parse(trans.replace(/'/g, '"'));
+        showTransaction(username, trans, type);
+    }
+
+    showTransaction = function (username, trans, type) {
+        // var trans = JSON.parse(trans.replace(/'/g, '"'));
+        // console.log(JSON.parse(trans));
+        var time = moment(trans.time).format('MMMM, D, YYYY h:mm a');
+        if (type === "deposit") {
+
+            $("#deposit-detail").empty();
+            var content = "";
+            content += "<p>" + username + "</p>";
+            content += "<p>" + trans.transactionId + "</p>";
+            content += "<p>" + time + "</p>";
+            content += "<p>" + time + "</p>";
+            content += "<p>/</p>";
+            content += "<p>" + trans.channel + "</p><p>" + trans.method + "</p>";
+            content += "<p>/</p>";
+            content += "<p>" + trans.amount + "</p>";
+            content += "<p>" + trans.amount + "</p>";
+            content += "<p>" + trans.status + "</p>";
+            $("#deposit-detail").append(content);
+
+        } else if (type == "withdraw") {
+
+            $("#withdraw-detail").empty();
+            var content = "";
+            content += "<p>" + username + "</p>";
+            content += "<p>" + trans.transactionId + "</p>";
+            content += "<p>" + time + "</p>";
+            content += "<p>" + time + "</p>";
+            content += "<p>/</p>";
+            content += "<p>" + trans.channel + "</p><p>" + trans.method + "</p>";
+            content += "<p>/</p>";
+            content += "<p>" + trans.amount + "</p>";
+            content += "<p>" + trans.amount + "</p>";
+            content += "<p>" + trans.status + "</p>";
+            $("#withdraw-detail").append(content);
+
+        }
+        
+    }
+
 
     var ctx = document.getElementById('deposit-withdraw-chart');
     var chart = new Chart(ctx, {
@@ -1165,6 +1609,56 @@ $(document).ready(function() {
         options: {}
     });
 });
+
+function updateNote(message) {
+
+    var user_id = $('#hidden_user_id').val();
+    var admin_user = "{{ user.username }}";
+    $.ajax({
+        type:'POST',
+        url:"{% url 'xadmin:user_detail' %}",
+        data:{ 
+            'type': 'update_message',
+            'user_id': user_id,
+            'admin_user': admin_user,
+            'message': message,
+        },
+        success:function(data) {
+            location.reload();
+        }
+    });
+}
+
+function getActivityfilter(activity) {
+
+    var user_id = $('#hidden_user_id').val();
+    $.ajax({
+        type:'POST',
+        url:"{% url 'xadmin:user_detail' %}",
+        data:{ 
+            'type': 'activity_filter',
+            'user_id': user_id,
+            'activity_type': activity
+        },
+        success:function(data) {
+            // console.log(data);
+            getActivityData(data);
+        }
+    });
+    
+
+}
+
+function getActivityData(data) {
+
+    $("#select-filter").empty();
+    content = "";
+    for(var i = 0; i < data.length; i++) {
+        content += '<div class="note-author">' + data[i].adminUser + '</div>';
+        content += '<div class="note-block">' + data[i].message + '</div>';
+    }
+    $("#select-filter").append(content);
+}
 
 function getTransactions(fromItem) {
 
@@ -1257,10 +1751,11 @@ function getTransData(data) {
         content += '<td>' + fields.amount + '</td>';
         content += '<td>' + fields.amount + '</td>';
         content += '<td>' + fields.status + '</td>';
+        var trans = JSON.stringify(fields);
         if (fields.transaction_type == 0) {
-                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+                content += '<td><button type="button" onclick=\'showTransaction(\"{{ customuser.username }}\", ' + trans + ', \"deposit\")\' class="btn btn-primary" data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
             } else if (fields.transaction_type == 1) {
-                content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
+                content += '<td><button type="button" onclick=\'showTransaction(\"{{ customuser.username }}\", ' + trans + ', \"withdraw\")\' class="btn btn-primary" data-toggle="modal" data-target="#trans_withdrawal_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
             } else if (fields.transaction_type == 2) { 
                 content += '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_bet_placed_detail"><span class="glyphicon glyphicon-search"></span></button></td>';
             } else if (fields.transaction_type == 3) {

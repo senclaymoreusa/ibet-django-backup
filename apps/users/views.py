@@ -30,7 +30,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity
 
 from accounting.models import Transaction
 
@@ -986,8 +986,7 @@ import boto3
 from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
-
-
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class UserDetailView(CommAdminView):
@@ -1005,7 +1004,56 @@ class UserDetailView(CommAdminView):
         if Transaction.objects.filter(user_id=customUser).count() == 0:
             context['userTransactions'] = ''
         else:
-            context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
+            transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
+            transactions = serializers.serialize('json', transactions)
+            transactions = json.loads(transactions)
+            statusMap = {}
+            for t in Transaction._meta.get_field('status').choices:
+                statusMap[t[0]] = t[1]
+
+            transTypeMap = {}
+            for t in Transaction._meta.get_field('transaction_type').choices:
+                transTypeMap[t[0]] = t[1]
+            
+            productMap = {}
+            for t in Transaction._meta.get_field('product').choices:
+                productMap[t[0]] = t[1]
+
+            currencyMap = {}
+            for t in Transaction._meta.get_field('currency').choices:
+                currencyMap[t[0]] = t[1]
+            
+            channelMap = {}
+            for t in Transaction._meta.get_field('channel').choices:
+                channelMap[t[0]] = t[1]
+
+            trans = []
+            for tran in transactions:
+                try:
+                    time = datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                transDict = {
+                    'transactionId': str(tran['pk']),
+                    'category': str(transTypeMap[tran['fields']['transaction_type']]),
+                    'transType': transTypeMap[tran['fields']['transaction_type']],
+                    'transTypeCode': tran['fields']['transaction_type'],
+                    'product': productMap[tran['fields']['product']],
+                    'toWhichWallet': str(tran['fields']['transfer_to']),
+                    'currency': currencyMap[tran['fields']['currency']],
+                    'time': time,
+                    'amount': tran['fields']['amount'],
+                    'balance': tran['fields']['amount'],
+                    'status': statusMap[tran['fields']['status']],
+                    'bank': str(tran['fields']['bank']),
+                    'channel': channelMap[tran['fields']['channel']],
+                    'method': tran['fields']['method'],
+                }
+                # transDict = serializers.serialize('json')
+                trans.append(transDict)
+            context['userTransactions'] = trans
+            
 
         userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
         context['userLastIpAddr'] = userLastLogin
@@ -1051,21 +1099,34 @@ class UserDetailView(CommAdminView):
         # print(str(context['relativeAccount']))
 
         deposit = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first() 
-        depositDict = {
-            'time': deposit.request_time,
-            'amount': deposit.amount,
-            'status': deposit.get_status_display,
-        }
-        context['lastDeposit'] = depositDict
+        if deposit:
+            # deposit = serializers.serialize('json', transactions)
+            depositDict = {
+                'time': deposit.request_time,
+                'amount': deposit.amount,
+                'status': deposit.get_status_display,
+            }
+            context['lastDeposit'] = depositDict
+        else:
+            context['lastDeposit'] = ''
 
         withdraw = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
-        withdrawDict = {
-            'time': withdraw.request_time,
-            'amount': withdraw.amount,
-            'status': withdraw.get_status_display,
-        }
-        context['lastWithdraw'] = withdrawDict
-          
+        if withdraw:
+            withdrawDict = {
+                'time': withdraw.request_time,
+                'amount': withdraw.amount,
+                'status': withdraw.get_status_display,
+            }
+            context['lastWithdraw'] = withdrawDict
+        else:
+            context['lastWithdraw'] = ''
+
+
+        activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
+        if activity:
+            context['activity'] = activity
+        else:
+            context['activity'] = ''
 
 
         return render(request, 'user_detail.html', context)
@@ -1101,6 +1162,50 @@ class UserDetailView(CommAdminView):
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+        
+        elif post_type == 'update_message':
+            admin_user = request.POST.get('admin_user')
+            message = request.POST.get('message')
+
+            UserActivity.objects.create(
+                user = CustomUser.objects.filter(pk=user_id).first(),
+                admin = CustomUser.objects.filter(username=admin_user).first(),
+                message = message,
+                activity_type = 3,
+            )
+
+            logger.info('Finished create activity to DB')
+            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+
+        elif post_type == 'activity_filter':
+            activity_type = request.POST.get('activity_type')
+
+            user = CustomUser.objects.get(pk=user_id)
+            # print(str(activity_type))
+            
+            if activity_type == 'all':
+                activitys = UserActivity.objects.filter(user=user).order_by('-created_time')
+            else:
+                activitys = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
+            
+            activitys = serializers.serialize('json', activitys)
+            activitys = json.loads(activitys)
+            response = []
+            for act in activitys:
+                actDict = {}
+                try:
+                    time = datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                actDict['time'] = time
+                adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
+                actDict['adminUser'] = str(adminUser.username)
+                actDict['message'] = act['fields']['message']
+                response.append(actDict)
+            # print(str(response))
+
+            return HttpResponse(json.dumps(response), content_type='application/json')
 
         elif post_type == 'get_user_transactions':
             time_from = request.POST.get('from')
@@ -1122,12 +1227,12 @@ class UserDetailView(CommAdminView):
             if category == 'all':
                 transactions = Transaction.objects.filter(
                     Q(user_id=user) & Q(request_time__range=[time_from, time_to])
-                )[fromItem:endItem]
+                ).order_by('-request_time')[fromItem:endItem]
                 count = Transaction.objects.filter(Q(user_id=user) & Q(request_time__range=[time_from, time_to])).count()
             else:
                 transactions = Transaction.objects.filter(
                     Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])
-                )[fromItem:endItem]
+                ).order_by('-request_time')[fromItem:endItem]
                 count = Transaction.objects.filter(Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])).count()
 
             response = {}
