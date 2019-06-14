@@ -22,6 +22,6 @@ urlpatterns = [
     path('api/paypal/get_order', views.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
     path('api/paypal/execute_payment', views.paypalExecutePayment.as_view(), name = 'paypal_Execute_Payment'),
     path('api/linepay/reserve_payment', views.reservePayment, name = "LINEpay_reserve_payment"),
-    path('api/astro_new_invoice', views.astroNewInvoice, name = 'AstroPay_new_invoice'),
-    path('api/astro_payment_status', views.astroPaymentStatus, name = 'AstroPay_Payment_Status'),
+    path('api/astropay/new_invoice', views.astroNewInvoice, name = 'AstroPay_new_invoice'),
+    path('api/astropay/payment_status', views.astroPaymentStatus, name = 'AstroPay_Payment_Status'),
 ]
