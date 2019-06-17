@@ -1496,6 +1496,9 @@ $(document).ready(function() {
     var csrftoken = $.cookie("csrftoken");
     // console.log(csrftoken);
 
+    var imgUrl = $('#user-photo-img').prop('src');
+    $('#hidden_user_id_url').attr('value', imgUrl);
+
     var previousURL = document.referrer;
 
     $("#back-btn").attr("href", previousURL);
@@ -1543,6 +1546,7 @@ $(document).ready(function() {
     });
 
     $("#member_id").prop("readonly", true);
+    $("#username").prop("readonly", true);
 
     $('#username').blur(function() {                   
         if( !$(this).val().trim() ) {    
