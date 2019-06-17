@@ -59,6 +59,30 @@ hr {
 }
 
 
+.table_block {
+    background-color: rgb(243, 243, 243); 
+    margin-left:12px;
+    margin-bottom: 20px;
+    height: 80px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.block_style {
+    background-color: rgb(243, 243, 243);
+    height: 80px;
+    margin-left: 5px;
+    line-height: 75px; 
+    text-align: center; 
+    overflow: hidden;
+}
+
+.agent_detail {
+    padding-left: 15px;
+    padding-top: 20px;
+}
+
+
 .table-striped>tbody>tr:nth-child(odd)>td, 
 .table-striped>tbody>tr:nth-child(odd)>th {
    background-color: #f3f3f3;
