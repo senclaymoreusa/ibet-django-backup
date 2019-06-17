@@ -67,38 +67,48 @@
             </div>
 
             <div class="row" style="margin-top:15px;margin-left: 0px;">
-                <div class="col-md-2">
-                    <label>ACTIVE DAYS</label>
+                <div class="col-md-1" style="width: 12.955%; padding-right: 0px;">
+                    <div class="live-time-value-text">TOTAL GGR</div>
                     <div class="active-block">
                     </div>
                 </div>
-                <div class="col-md-2" style="padding: 0px;">
-                    <label>DEPOSIT COUNT</label>
+                <div class="col-md-1" style="width: 12.955%; padding-right:0px;">
+                    <div class="live-time-value-text">TOTAL NGR</div>
+                    <div class="active-block">
+                    </div>
+                </div>
+                <div class="col-md-1" style="width: 12.955%;">
+                    <div class="live-time-value-text">ACTIVE DAYS</div>
+                    <div class="active-block">
+                    </div>
+                </div>
+                <div class="col-md-1" style="width: 12.955%; padding-left:0px; padding-right: 30px;">
+                    <div class="live-time-value-text">DEPOSIT COUNT</div>
                     <div class="active-block">
                         <div class="account-detail">{{ depositCount }}</div>
                     </div>
                 </div>
-                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
-                    <label>WITHDRAWAL COUNT</label>
+                <div class="col-md-1" style="width: 12.955%; margin-left: -30px;margin-right: 15px;">
+                    <div class="live-time-value-text">WITHDRAWAL COUNT</div>
                     <div class="active-block">
                         <div class="account-detail">{{ withdrawCount }}</div>
                     </div>
                 </div>
-                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
-                    <label>LOGIN COUNT</label>
+                <div class="col-md-1" style="width: 12.955%; margin-left: -30px;margin-right: 15px;">
+                    <div class="live-time-value-text">LOGIN COUNT</div>
                     <div class="active-block">
                         <div class="account-detail" style="float:left;">{{ loginCount }}</div>
                         <button id="login-btn" type="button" class="btn btn-default" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
                     </div>
                 </div>
-                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
-                    <label>DEPOSTI AMOUNT</label>
+                <div class="col-md-1" style="width: 12.955%; margin-left: -30px;margin-right: 15px;">
+                    <div class="live-time-value-text">DEPOSTI AMOUNT</div>
                     <div class="active-block">
                         <div class="account-detail">${{ depositAmount }}</div>
                     </div>
                 </div>
-                <div class="col-md-2" style="padding: 0px; margin-left: -15px;">
-                    <label>WITHDRAWAL AMOUNT</label>
+                <div class="col-md-1" style="width: 12.955%; margin-left: -30px;margin-right: 15px;">
+                    <div class="live-time-value-text">WITHDRAWAL AMOUNT</div>
                     <div class="active-block">
                         <div class="account-detail">${{ withdrawAmount }}</div>
                     </div>
@@ -113,7 +123,6 @@
                 <div class="half-title-block" style="background-color: #ffa313;">
                     <span class="detail-title">Member details</span>
                 </div>
-                <!-- <div class="section-body"> -->
                 <div class="row" style="margin-top:20px; min-height: 380px;">
                     <div class='col-md-5' style="margin-left:20px; padding-bottom: 30px;">
                         <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
@@ -203,7 +212,6 @@
                         {% endif %}
                         <button id="zoom-btn" class="zoom-btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
                     </div>
-                    <!-- </div> -->
                     <div id="myModal" class="modal fade" role="dialog" style="width:600px;">
                         <div class="modal-dialog">
                             <div class="modal-content">
@@ -513,22 +521,6 @@
                         <div class="note-author">{{ act.admin }}</div>
                         <div class="note-block">{{ act.message }}</div>
                     {% endfor %}
-                    <!-- <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div>
-                    <div class="note-author">Martin Sandstrom</div>
-                    <div class="note-block">note</div> -->
                 </div>
                 <div id="note-input-container">
                     <button id="note-btn"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
@@ -633,7 +625,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-5" style="margin-right: -112px; float: right;">
+                <div class="col-md-5" style="margin-right: -8%; float: right;">
                     <div class="block-title">DATE RANGE</div>
                     <div class="row">
                         <div class='col-md-4' style="padding-right: 0px;">
@@ -659,7 +651,7 @@
                 </div>
             </div>
             <!-- <label style="margin:15px">TRNASACTION LAST 7 DAYS</label> -->
-            <div class="row" style="margin:20px 15px 15px 15px">
+            <div class="row" style="margin:2% 1% 2% 1%;">
                 <table class="table table-striped table-bordered">
                     <thead>
                         <tr>
@@ -1300,36 +1292,36 @@
         
         <!-- payment and member limitations section -->
         <div class="row" style="margin-top:20px; margin-left:3px;">
-                <div class="payment-detail-rectangle col-md-5">  
-                    <div class="half-title-block" style="background-color: #4f7c1a;">
-                        <span class="detail-title">Payment</span>
-                        <div style="margin: 30px 15px 30px 15px;">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="payment-block-title">PAYMENT PERMISSION LEVEL</div>
-                                    <div id="payment-block">
-                                       <div id="payment-text">Normal</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="payment-block-title">BANK ACCOUNT DETAILS</div>
-                                    <div class="col-md-6" style="padding-left:0px;">
-                                        <div class="payment-info">Bank name</div>
-                                        <div class="payment-info">Account number</div>
-                                        <div class="payment-info">Sort code</div>
-                                    </div>
-                                    <div class="col-md-6" style="padding-left:0px;">
-                                        <div class="payment-text">Bank name</div>
-                                        <div class="payment-text">Account number</div>
-                                        <div class="payment-text">Sort code</div>
-                                    </div>
+            <div class="payment-detail-rectangle col-md-5">  
+                <div class="half-title-block" style="background-color: #4f7c1a;">
+                    <span class="detail-title">Payment</span>
+                    <div style="margin: 30px 15px 30px 15px;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="payment-block-title">PAYMENT PERMISSION LEVEL</div>
+                                <div id="payment-block">
+                                    <div id="payment-text">Normal</div>
                                 </div>
                             </div>
-                            <div class="row" style="margin-left:0px;">
-                                <div class="payment-deposit">DEPOSIT METHODS</div>
-                                <div class="label">
-                                    METHOD
+                            <div class="col-md-6">
+                                <div class="payment-block-title">BANK ACCOUNT DETAILS</div>
+                                <div class="col-md-6" style="padding-left:0px;">
+                                    <div class="payment-info">Bank name</div>
+                                    <div class="payment-info">Account number</div>
+                                    <div class="payment-info">Sort code</div>
                                 </div>
+                                <div class="col-md-6" style="padding-left:0px;">
+                                    <div class="payment-text">Bank name</div>
+                                    <div class="payment-text">Account number</div>
+                                    <div class="payment-text">Sort code</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-left:0px;">
+                            
+                            <div class="payment-deposit">DEPOSIT METHODS</div>
+                            <div class="col-md-3" style="padding:0px;">
+                                <div class="label-text">METHOD</div>
                                 <div class="deposit-table-first">
                                     <div class="deposit-text">Bank card</div>
                                 </div>
@@ -1343,18 +1335,136 @@
                                     <div class="deposit-text">Bank transfer</div>
                                 </div>
                             </div>
-
+                            <div class="col-md-3" style="padding:0px;">
+                                <div class="label-text" style="margin-left:-20px">DETAILS</div>
+                                <div class="deposit-table-second">
+                                    <div class="deposit-text">Bank card</div>
+                                </div>
+                                <div class="deposit-table-second" style="background-color: #ffffff">
+                                    <div class="deposit-text">Paypal</div>
+                                </div>
+                                <div class="deposit-table-second">
+                                    <div class="deposit-text">Netteller</div>
+                                </div>
+                                <div class="deposit-table-second" style="background-color: #ffffff">
+                                    <div class="deposit-text">Bank transfer</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="padding:0px;">
+                                <div class="label-text" style="margin-left:20%">TIMES USED</div>
+                                <div class="deposit-table-third">
+                                    <div class="deposit-text">Bank card</div>
+                                </div>
+                                <div class="deposit-table-third" style="background-color: #ffffff">
+                                    <div class="deposit-text">Paypal</div>
+                                </div>
+                                <div class="deposit-table-third">
+                                    <div class="deposit-text">Netteller</div>
+                                </div>
+                                <div class="deposit-table-third" style="background-color: #ffffff">
+                                    <div class="deposit-text">Bank transfer</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="padding:0px;">
+                                <div class="label-text" style="margin-left:8%">BLOCKED</div>
+                                <div class="deposit-table-forth">
+                                    <div class="deposit-text">Bank card</div>
+                                </div>
+                                <div class="deposit-table-forth" style="background-color: #ffffff">
+                                    <div class="deposit-text">Paypal</div>
+                                </div>
+                                <div class="deposit-table-forth">
+                                    <div class="deposit-text">Netteller</div>
+                                </div>
+                                <div class="deposit-table-forth" style="background-color: #ffffff">
+                                    <div class="deposit-text">Bank transfer</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="member-limitations-rectangle col-md-5">  
-                    <div class="half-title-block" style="background-color: #8b572a;">
-                        <span class="detail-title">Member limitations</span>
+                        <button class="set-permission-btn">Set permissions</button>
                     </div>
                 </div>
             </div>
-
-
+            <div class="member-limitations-rectangle col-md-5">  
+                <div class="half-title-block" style="background-color: #8b572a;">
+                    <span class="detail-title">Member limitations</span>
+                    <div style="margin: 30px 15px 30px 15px;">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="member-limitation-title">LIMITS</div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="payment-info">Bet limit 1</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="payment-text">Done</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="member-limit-info">Bet limit 2</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="member-limit-text">Done</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="member-limit-info">Loss limit</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="member-limit-text">Done</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="member-limit-info">Deposit limit</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="member-limit-text">Done</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="member-limit-info">Withdraw limit</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="member-limit-text">Done</div>
+                                    </div>
+                                </div>
+                                <div style="margin:55px 0px 30px 0px;">
+                                    <div class="row">
+                                        <div class="member-limitation-title" style="margin-left:15px;">EXCLUSIONS</div>
+                                        <div class="col-md-4">
+                                            <div class="payment-info">Time-out</div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="payment-text">Done</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="payment-info">Self-exclusion</div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="payment-text">Done</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="set-permission-btn" style="margin-top: 20px;">Set limitations</button>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="vl">
+                                    <div style="margin: 0px 15px;">
+                                        <div class="member-limitation-title">PRODUCT ACCESS DENIED</div>
+                                        <div id="deny-block"><div class="block-text" style="line-height: 43px; padding-left: 7px;">Live Casino</div></div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div>&nbsp;</div>
         <div class="row">

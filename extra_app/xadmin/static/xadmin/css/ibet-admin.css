@@ -1,47 +1,3 @@
-.user-detail-section {
-    /* border: 0.5px solid grey; */
-    /* border-left: 0.5px solid grey;
-    border-right: 0.5px solid grey;
-    border-bottom: 0.5px solid grey; */
-    padding: 0%;
-    /* /* margin: 5px; */
-    /* margin: 5px; */
-    /* width:48%; */
-    /* margin: 5%; */
-    /* margin-left: 15px;
-    margin-right: 20px; */
-}
-
-.user-detail-section-title {
-    background-color: coral; 
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    padding: 5px;
-}
-
-.notes-section-title {
-    background-color: lightskyblue; 
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    padding: 5px;
-}
-
-.trans-section-title {
-    background-color: green; 
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    padding: 5px;
-}
-
 hr {
     width: 85%;
     font-family: Helvetica;
@@ -54,13 +10,6 @@ hr {
     color: #4a4a4a;
   
 }   
-
-.detail-title-block {
-    width: 1380px;
-    height: 30px;
-    border-radius: 4px;
-    border: solid 1px #bdbdbd;
-}
 
 .detail-title {
     width: 410px;
@@ -90,61 +39,13 @@ hr {
     color: #4a4a4a;
 }
 
-.funds-section-title {
-    background-color: lightgreen; 
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    padding: 5px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-}
-
-.user-detail-block {
-    background-color: rgb(243, 243, 243); 
-    width:95%;
-    padding:5%;
-    /* display: flex;
-    justify-content: center;
-    align-items: center; */
-    /* display:table-cell; */
-    vertical-align:middle;
-    text-align:center;
-}
-
 #user-photo-img {
     max-width: 250px;
     max-height: 200px;
 }
 
-.rcorners {
-    border-radius: 5px;
-    /* border: 2px solid grey; */
-    /* padding: 20px;  */
-}
-
-.module-title {
-    color: white;
-    font-weight:900;
-}
-
-.module-half-width {
-    width:48%;
-
-}
-
-.left-margin {
-    margin-left: 15px;
-}
-
-.section-body {
-    border: 0.5px solid grey;
-    border-bottom-left-radius: 3px; 
-    border-bottom-right-radius: 3px;
-}
-
 #user-photo-id {
-    width: 300px;
+    width: 107%;
     height: 180px;
 }
 
@@ -188,20 +89,12 @@ table.table-bordered > tbody > tr > td{
     background-color: white;
 }
 
-
-#select-row {
-    margin-top: 20px;
-    position: absolute;
-    left:70%;
-    width:10%;
-}
-
 .user-list-control-group {
     margin-top: 20px;
 }
 
 #life-time-rectangle {
-    width: 1380px;
+    width: 100%;
     height: 280px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
@@ -210,7 +103,7 @@ table.table-bordered > tbody > tr > td{
 }
 
 #fund-rectangle {
-    width: 1380px;
+    width: 100%;
     height: 280px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
@@ -221,7 +114,7 @@ table.table-bordered > tbody > tr > td{
 
 
 #transaction-rectangle {
-    width: 1380px;
+    width: 100%;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -245,7 +138,7 @@ table.table-bordered > tbody > tr > td{
 }
 
 .life-time-value-block, .fund-block{
-    width: 160px;
+    width: 115%;
     height: 105px;
     background-color: #f3f3f3;
 }
@@ -301,7 +194,7 @@ table.table-bordered > tbody > tr > td{
 
 
 .active-block {
-    width: 210px;
+    width: 103%;
     height: 33px;
     background-color: #f3f3f3;
 }
@@ -314,8 +207,21 @@ table.table-bordered > tbody > tr > td{
     background-color: #428bca;
 }
 
-label {
+/* label {
     width: 174px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+} */
+
+.live-time-value-text {
+    width: 100%;
     height: 13px;
     font-family: Helvetica;
     font-size: 11px;
@@ -330,7 +236,7 @@ label {
 
 #login-btn {
     float:right;
-    width: 33px;
+    width: 20%;
     height: 33px;
     background-color: #428bca;
 }
@@ -341,7 +247,7 @@ label {
 }
 
 .account-detail {
-    width: 163px;
+    width: 70%;
     height: 16px;
     font-family: Helvetica;
     font-size: 15px;
@@ -351,22 +257,22 @@ label {
     letter-spacing: normal;
     color: #4a4a4a;
     line-height: 34px;
-    padding-left:10px;
+    padding-left:7%;
 }
 
 
 .member-detail-rectangle {
-    width: 682px;
+    width: 49%;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
     padding:0px;
-    margin-right: 8px;
+    margin-right: 0.5%;
     min-height: 1030px;
 }
 
 .activity-rectangle {
-    width: 682px;
+    width: 49%;
     height: 1030px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
@@ -398,7 +304,7 @@ label {
 
 
 .note-block {
-    width: 650px;
+    width: 95%;
     height: 66px;
     border-radius: 5px;
     background-color: #f1f1f1;
@@ -434,8 +340,8 @@ label {
 }
 
 #post-btn{
-    margin-left: 8px;
-    width:65px;
+    margin-left: 5px;
+    width:9%;
 }
 
 #note-btn {
@@ -447,7 +353,7 @@ label {
 }
 
 #risk-control-rectangle {
-    width: 1380px;
+    width: 100%;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -458,7 +364,7 @@ label {
 
 
 #bonus-control-rectangle {
-    width: 1380px;
+    width: 100%;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -513,7 +419,7 @@ label {
 
 
 .user-info-block {
-    width: 210px;
+    width: 101%;
     height: 175px;
     background-color: #f3f3f3;
 }
@@ -533,7 +439,7 @@ label {
 }
 
 .block-text {
-    width: 206px;
+    width: 100%;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -568,35 +474,35 @@ label {
 
 
 #account-creation-rect {
-    width: 645px;
+    width: 90%;
     height: 155px;
     background-color: #f3f3f3;
-    margin-left:30px;
+    margin-left:5%;
     margin-top:20px;
 
 }
 
 #edit-detail-btn {
-    margin-left: 30px;
+    margin-left: 5%;
     margin-top: 20px;
     margin-bottom: 20px;
 }
 
 
 .payment-detail-rectangle {
-    width: 682px;
-    height: 398px;
+    width: 49%;
+    height: 460px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
     padding:0px;
-    margin-right: 8px;
+    margin-right: 0.5%;
 }
 
 
 .member-limitations-rectangle {
-    width: 682px;
-    height: 398px;
+    width: 49%;
+    height: 460px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -605,8 +511,8 @@ label {
 }
 
 
-.payment-block-title {
-    width: 250px;
+.payment-block-title, .member-limitation-title {
+    width: 100%;
     height: 13px;
     font-family: Helvetica;
     font-size: 12px;
@@ -619,7 +525,7 @@ label {
 }
 
 #payment-block {
-    width: 325px;
+    width: 100%;
     height: 110px;
     background-color: #f3f3f3;
     margin-top:5px;
@@ -627,7 +533,7 @@ label {
 }
 
 #payment-text {
-    width: 325px;
+    width: 100%;
     height: 24px;
     font-family: Helvetica;
     font-size: 25px;
@@ -684,8 +590,8 @@ label {
     margin-bottom:10px;
 }
 
-.label {
-    width: 137px;
+.label-text {
+    width: 100%;
     height: 12px;
     font-family: Helvetica;
     font-size: 12px;
@@ -700,10 +606,36 @@ label {
 }
 
 .deposit-table-first {
-    width: 137px;
+    width: 85%;
     height: 26px;
     background-color: #f3f3f3;
     margin-top:5px;
+}
+
+.deposit-table-second {
+    width: 130%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+    margin-left:-20px;
+}
+
+.deposit-table-third {
+    width: 85%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+    margin-left: 21%;
+}
+
+
+.deposit-table-forth {
+    width: 85%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+    margin-left: 8%;
+
 }
 
 .deposit-text {
@@ -719,4 +651,59 @@ label {
     color: #4a4a4a;
     margin-left: 5px;
     padding-top:5px;
+}
+
+
+.vl {
+    border-left: 1px solid #bdbdbd;
+    height: 300px;
+}
+
+
+#deny-block {
+    width: 100%;
+    height: 40px;
+    background-color: #ffb7b5;
+    margin: 20px 0px;
+}
+
+
+.member-limit-info {
+    width: 115px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top:35px;
+}
+
+.member-limit-text {
+    width: 106px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top:35px;
+}
+
+
+
+.set-permission-btn {
+    width: 171px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+    color:white;
+    margin-top:20px;
 }
