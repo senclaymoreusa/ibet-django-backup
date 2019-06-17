@@ -6,3 +6,6 @@ __pycache__/
 djauth/.DS_Store
 /.pydevproject
 logs/
+
+apps/accounting/views/testview.py
+djauth/third_party_keys.py

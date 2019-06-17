@@ -32,20 +32,31 @@ CHANNEL_CHOICES = (
 CURRENCY_CHOICES = (
     (0, 'CNY'),
     (1, 'USD'),
-    (2, 'PHP'),
+    (2, 'THB'),
     (3, 'IDR'),
 )
 STATE_CHOICES = (
-    (0, 'SUCCESS'),
+    (0, 'SUCCESS'), 
     (1, 'FAILED'),
-    (2, 'PENDING'),
-    (3, 'APPROVED'),
-    (4, 'REJECTED'),
+    (2, 'CREATED'),
+    (3, 'PENDING'),
+    (4, 'APPROVED'),
+    (5, 'REJECTED'),
+    (6, 'COMPLETED')
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),
     (1, 'Pending'),
     (2, 'Rejected'),
+)
+
+DEPOSIT_METHOD_CHOICES = (
+    (0, "LBT_ONLINE"),
+    (1, "LBT_ATM"),
+    (2, "LBT_OTC"),
+    (3, "DIRECT_PAYMENT"),
+    (4, "BANK_TRANSFER"),
+    (5, "IBT")
 )
 
 TRANSACTION_TYPE_CHOICES = (
@@ -57,6 +68,7 @@ TRANSACTION_TYPE_CHOICES = (
     (5, 'Transfer Out'),
     (6, 'Bonus'),
     (7, 'Adjustment'),
+    (8, 'Commission')
 )
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
@@ -86,4 +98,34 @@ ACTIVITY_TYPE = (
     (1, 'Remark'),
     (2, 'Chat'),
     (3, 'Note'),
+)
+
+AGENT_LEVEL = (
+    ('Premium', 'Premium'),
+    ('Invalid', 'Invalid'),
+    ('Normal', 'Normal'),
+    ('Negative', 'Negative'),
+)
+
+AGENT_STATUS = (
+    ('Normal', 'Normal'),
+    ('Block', 'Block'),
+)
+
+   
+BANK_LIST_CHOICES = (
+    ("OOO6CN", "China UnionPay"),
+    ("ABOCCN", "Agricultural Bank of China"),
+    ("BEASCN", "Bank of East Asia"),
+    ("BJCNCN", "Bank of Beijing"),
+    ("BKCHCN", "Bank of China"),
+    ("BKNBCN", "Bank of Ningbo"),
+    ("BKSHCN", "Bank Of Hebei"),
+    ("BOSHCN", "Bank of Shanghai"),
+    ("BRCBCN", "Beijing Rural Commercial Bank"),
+    ("CBOCCN", "Bank of Chengdu"),
+    ("CHBHCN", "China Bohai Bank"),
+    ("CIBKCN", "China Citic Bank"),
+    ("CMBCCN", "China Merchants Bank"),
+    ("CN01CN", "Zhongshan Rural Credit Union"),
 )

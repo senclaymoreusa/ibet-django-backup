@@ -22,7 +22,6 @@ from django.urls import path, include
 from django.views.generic.base import TemplateView
 from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
-
 import xadmin
 xadmin.autodiscover()
 

@@ -128,6 +128,14 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
+    # agent
+    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
+    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    commision_status = models.BooleanField(default=False)
+    user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
+    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
+    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AGENT_STATUS, default='Normal')
+
     id_image = models.CharField(max_length=250, blank=True)
 
     created_time = models.DateTimeField(
@@ -370,3 +378,28 @@ class UserActivity(models.Model):
         auto_now_add=True,
         editable=False,
     )
+class ReferLink(models.Model):
+
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    refer_link_url = models.URLField(max_length=200, unique=True)
+    refer_link_name = models.CharField(max_length=50, default="Default")
+    ## time of this link was created
+    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    
+# Mapping between User and ReferLinks
+# This is a 1:n relationship, a user can have at most 10 refer links
+class UserReferLink(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+
+
+class LinkHistory(models.Model):
+
+    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+    ## time of this link was clicked
+    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
+    ## click by ip
+    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)

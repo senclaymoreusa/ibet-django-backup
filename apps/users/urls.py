@@ -43,5 +43,7 @@ urlpatterns += [
     path('api/generatepasswordcode/', csrf_exempt(views.GenerateForgetPasswordCode.as_view()), name='generate_code'),
     path('api/sendresetpasswordcode/', csrf_exempt(views.SendResetPasswordCode.as_view()), name='send_code'),
     path('api/verifyresetpasswordcode/', csrf_exempt(views.VerifyResetPasswordCode.as_view()), name='verify_resetpassword_code'),
-    path('api/changeandresetpassword/', csrf_exempt(views.ChangeAndResetPassword.as_view()),name='change_reset_password')
+    path('api/changeandresetpassword/', csrf_exempt(views.ChangeAndResetPassword.as_view()),name='change_reset_password'),
+    path('api/changepassword/', views.ChangePassword.as_view(), name='change_password'),
+    path('api/checkusernameexist/', views.CheckUsernameExist.as_view(), name='check_username_exist')
 ]

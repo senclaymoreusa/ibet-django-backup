@@ -64,6 +64,14 @@ hr {
    background-color: #f3f3f3;
 }
 
+.panel-default > .panel-heading-custom {
+    background: #ffa313; color: #fff; 
+}
+.panel-default > .panel-heading-custom_perfomance {
+    background: #bc6ccc; color: #fff; 
+}
+
+
 table.table-bordered{
     border:2px solid white;
     margin-top:20px;
