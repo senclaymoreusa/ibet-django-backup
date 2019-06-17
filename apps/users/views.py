@@ -1128,7 +1128,7 @@ from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
 from django.db.models import Sum
-from datetime import timedelta, datetime
+from datetime import timedelta
 from django.db.models import Q
 import boto3
 from botocore.exceptions import ClientError
@@ -1181,9 +1181,9 @@ class UserDetailView(CommAdminView):
             trans = []
             for tran in transactions:
                 try:
-                    time = datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except:
-                    time = datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
                 time = time.strftime("%B %d, %Y, %I:%M %p")
                 transDict = {
                     'transactionId': str(tran['pk']),
@@ -1256,9 +1256,9 @@ class UserDetailView(CommAdminView):
             lastDeposit = []
             for deposit in deposits:
                 try:
-                    time = datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except:
-                    time = datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
                 time = time.strftime("%B %d, %Y, %I:%M %p")
                 depositDict = {
                     'transactionId': str(deposit['pk']),
@@ -1287,9 +1287,9 @@ class UserDetailView(CommAdminView):
             lastWithdraw = []
             for withdraw in withdraws:
                 try:
-                    time = datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    time = datetime.datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except:
-                    time = datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = datetime.datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
                 time = time.strftime("%B %d, %Y, %I:%M %p")
                 withdrawDict = {
                     'transactionId': str(withdraw['pk']),
@@ -1384,9 +1384,9 @@ class UserDetailView(CommAdminView):
             for act in activitys:
                 actDict = {}
                 try:
-                    time = datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except:
-                    time = datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
                 time = time.strftime("%B %d, %Y, %I:%M %p")
                 actDict['time'] = time
                 adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
@@ -1407,9 +1407,9 @@ class UserDetailView(CommAdminView):
             user = CustomUser.objects.get(pk=user_id)
 
             if time_from == 'Invalid date':
-                time_from = datetime(2000, 1, 1)
+                time_from = datetime.datetime(2000, 1, 1)
             if time_to == 'Invalid date':
-                time_to = datetime(2400, 1, 1)
+                time_to = datetime.datetime(2400, 1, 1)
 
             logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
             logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
@@ -1644,9 +1644,9 @@ class UserListView(CommAdminView):
             endItem = fromItem + pageSize
 
             if time_from == 'Invalid date':
-                time_from = datetime(2000, 1, 1)
+                time_from = datetime.datetime(2000, 1, 1)
             if time_to == 'Invalid date':
-                time_to = datetime(2400, 1, 1)
+                time_to = datetime.datetime(2400, 1, 1)
 
             # print('fromItem: ' + str(fromItem))
             # print('endItem: ' + str(endItem))
