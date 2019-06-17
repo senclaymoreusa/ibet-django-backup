@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework import routers
+
 import accounting.views.qaicashviews as qaicash
 import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
-
+import accounting.views.astropayviews as astropay
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name = 'deposit_method'),
@@ -22,5 +23,7 @@ urlpatterns = [
     path('api/paypal/create_payment', paypal.paypalCreatePayment.as_view(), name = 'paypal_Create_Payment'),
     path('api/paypal/get_order', paypal.paypalGetOrder.as_view(), name = 'paypal_Get_Order'),
     path('api/paypal/execute_payment', paypal.paypalExecutePayment.as_view(), name = 'paypal_Execute_Payment'),
-    path('api/linepay/reserve_payment', linepay.reservePayment, name = "LINEpay_reserve_payment")
+    path('api/linepay/reserve_payment', linepay.reservePayment, name = "LINEpay_reserve_payment"),
+    path('api/astropay/new_invoice', astropay.astroNewInvoice, name = 'AstroPay_new_invoice'),
+    path('api/astropay/payment_status', astropay.astroPaymentStatus, name = 'AstroPay_Payment_Status'),
 ]
