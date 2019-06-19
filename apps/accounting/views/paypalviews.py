@@ -91,7 +91,7 @@ class paypalCreatePayment(generics.GenericAPIView):
             }]
         }
         success = False
-        for x in range(3):
+        for x in range(1):
             r = requests.post(url + 'v1/payments/payment', headers=headers, data = json.dumps(body))
             rdata = r.json()
             if r.status_code == 200:
@@ -113,7 +113,7 @@ class paypalCreatePayment(generics.GenericAPIView):
             for x in Transaction._meta.get_field('currency').choices:
                     if currency == x[1]:
                         cur_val = x[0]
-            create = Transaction.objects.get_or_create(
+            create = Transaction.objects.update_or_create(
                     user_id=userId,
                     #order_id= rdata["id"],
                     amount=amount,
@@ -148,7 +148,7 @@ class paypalGetOrder(APIView):
         for x in range(3):
             r = requests.post(url + 'v2/checkout/orders/' + order_id + '/capture', headers=headers)
             rdata = r.json()
-            if r.status_code == 200:
+            if r.status_code == 201:
                 break
             elif r.status_code == 500:
                 print("Request failed {} time(s)'.format(x+1)")
@@ -205,7 +205,7 @@ class paypalExecutePayment(APIView):
                 'payer_id': payer_id,
             })
             rdata = r.json()
-            if r.status_code == 200:
+            if r.status_code == 201:
                 break
             elif r.status_code == 500:
                 print("Request failed {} time(s)'.format(x+1)")

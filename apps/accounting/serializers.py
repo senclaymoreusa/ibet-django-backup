@@ -144,7 +144,7 @@ class paypalCreatePaymentSerialize(serializers.Serializer):
     amount           = serializers.CharField(required=True)
     user             = serializers.CharField(required=True)
     def create(self, validated_data):
-        return Transaction.objects.create(**validated_data)
+        return Transaction.objects.get_or_create(**validated_data)
 
     
 class paypalgetOrderSerialize(serializers.Serializer):
@@ -152,26 +152,30 @@ class paypalgetOrderSerialize(serializers.Serializer):
     user             = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
-    def update(self, instance, validated_data):
-        instance.order_id = validated_data.get('order_id', instance.order_id)
-        instance.user = validated_data.get('user', instance.user)
-        instance.save()
-        return instance
+    
 class paypalExecutePaymentSerialize(serializers.Serializer):
     payer_id = serializers.CharField(required=True)
     payment_id = serializers.CharField(required=True)
     user             = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
-    def update(self, instance, validated_data):
-        instance.payer_id = validated_data.get('payer_id', instance.payer_id)
-        instance.payment_id = validated_data.get('payment_id', instance.payment_id)
-        instance.user = validated_data.get('user', instance.user)
-        instance.save()
-        return instance
+    
 
 class astroPaymentStatusSerialize(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = ('order_id', 'user_id', 'amount', 'bank', 'currency', 'channel','status')
+
+
+class asiapayDepositSerialize(serializers.Serializer):
+    TraceID = serializers.CharField(required=True)
+    OrderID = serializers.CharField(required=True)
+    userid             = serializers.CharField(required=True)
+    UserIP             = serializers.CharField(required=True)
+    BankID          = serializers.ChoiceField(choices=ASIAPAY_BANK_CHOICES)
+    PayWay          = serializers.ChoiceField(choices=ASIAPAY_PAYWAY_CHOICES)
+    amount          = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
+    
 

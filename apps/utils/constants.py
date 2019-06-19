@@ -124,6 +124,30 @@ BANK_LIST_CHOICES = (
     ("CN01CN", "Zhongshan Rural Credit Union"),
 )
 
+ASIAPAY_BANK_CHOICES = (
+    ('1','工商银行'),
+    ('2','建设银行'),
+    ('3','农业银行'),
+    ('4','招商银行'),
+    ('6','广发银行'),
+    ('7','中国银行'),
+    ('9','中国邮政储蓄银行'),
+    ('10','中信银行'),
+    ('11','光大银行'),
+    ('12','民生银行'),
+    ('16','兴业银行'),
+    ('17','华夏银行'),
+    ('23','平安银行'),
+    ('49','京东支付'),
+    ('201', '比特币')
+)
+ASIAPAY_PAYWAY_CHOICES = (
+    ('90','比特币'),
+    ('42', 'QRCode'),
+    ('44', '收银台'),
+    ('30', '在线支付'),
+
+)
 #qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
@@ -149,3 +173,16 @@ ASTROPAY_SECREATE = 'dc2c63c426412128fc6e3c3ef74876f26'
 #astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
+
+#aisa-pay
+ASIAPAY_API_URL = "http://gw.wave-pay.com"
+
+
+#asiapay
+ASIAPAY_CID = "BRANDCQNGHUA3"
+COMDEPOSITKET = "A49E448121886D7C857B39C3467EC117"
+ASIAPAY_KEY1 = "f6b451943fb44a38"
+ASIAPAY_UNITEKEY = "Ki3CgDAz"
+ASIAPAY_R1 = "randomStr"
+ASIAPAY_R2 = "randomStr"
+
