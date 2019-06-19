@@ -51,6 +51,15 @@ class UserTag(models.Model):
     def __str__(self):
         return self.name
 
+class Commission(models.Model):
+    
+    commission_set = models.CharField(_('Commission_set'), max_length=50, choices=COMMISSION_SET, default='System')
+    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commision_percentage = models.DecimalField(_('Downline Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    commission_level = models.IntegerField(default=1)
+    active_downline_needed = models.IntegerField(default=6)
+    monthly_downline_ftd_needed = models.IntegerField(default=6)
+
 class CustomUser(AbstractBaseUser):
 
     USER_ATTRIBUTE = (
@@ -129,14 +138,19 @@ class CustomUser(AbstractBaseUser):
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
     # agent
-    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
-    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, null=True)
     commision_status = models.BooleanField(default=False)
     user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
-    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AGENT_STATUS, default='Normal')
+    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AFFILIATE_STATUS, default='Enabled')
 
+    affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
+    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, default='Enabled')
+    transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
+
+    #commission
+    commission_id = models.ForeignKey(Commission, on_delete=models.CASCADE, default=1, verbose_name=_('Commission'))
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -195,7 +209,7 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
-    
+
 
 class UserWithTag(models.Model):
 

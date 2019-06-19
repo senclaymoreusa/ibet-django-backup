@@ -52,7 +52,7 @@ class GlobalSettings(object):
                         'icon': 'fa fa-cny'
                     },
                 )
-            }
+            },
         ]
                     
 from django.contrib import admin

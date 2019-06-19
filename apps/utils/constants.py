@@ -83,13 +83,25 @@ COUNTRY_CHOICES = (
 )
 
 AGENT_LEVEL = (
-    ('Premium', 'Premium'),
-    ('Invalid', 'Invalid'),
-    ('Normal', 'Normal'),
+    ('Affiliates', 'Affiliates'),
+    ('Deactivated', 'Deactivated'),
+    ('Refer a friend', 'Refer a friend'),
     ('Negative', 'Negative'),
+    ('Internal affiliates', 'Internal affiliates'),
 )
 
-AGENT_STATUS = (
+
+AFFILIATE_LEVEL = (
     ('Normal', 'Normal'),
-    ('Block', 'Block'),
+    ('VIP', 'VIP'),
+)
+
+AFFILIATE_STATUS = (
+    ('Enabled', 'Enabled'),
+    ('Disabled', 'Disabled'),
+)
+
+COMMISSION_SET = (
+    ('System', 'System'),
+    ('Personal', 'Personal'),
 )

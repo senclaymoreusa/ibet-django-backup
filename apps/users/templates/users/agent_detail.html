@@ -61,6 +61,28 @@
                 </div>
             </div>
 
+
+            <div class="row cancel_row_style" style="margin-top: 20px">
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 10%">
+                    {{ commission_type.commission_level }}
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 15%">
+                    {{ commission_type.commision_percentage }}
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 20%">
+                    {{ commission_type.downline_commision_percentage }}
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 15%">
+                    {{ commission_type.active_downline_needed }}
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 25%">
+                    {{ commission_type.monthly_downline_ftd_needed }}
+                </div>
+                <div class="col-md-2 cancel_col_style commission_col_style" style="width: 10%">
+                    NET PROFIT
+                </div>
+            </div>
+
             <div class="line"></div>
 
             <strong>
@@ -144,7 +166,7 @@
             <div class='row' style="margin-top: 25px;">
                 <div class='col-md-3 '>
                     <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
-                        data-target="#edit_details">View as affiliate</button>
+                        data-target="#view_as_affiliate">View as affiliate</button>
                 </div>
                 <div class='col-md-3 '>
                     <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
@@ -152,11 +174,7 @@
                 </div>
                 <div class='col-md-3 '>
                     <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
-                        data-target="#login_history">Make adjustment</button>
-                </div>
-                <div class='col-md-3 '>
-                    <button type="button" class="btn btn-primary affiliate_bottom_button" data-toggle="modal"
-                        data-target="#login_history">Block affiliate</button>
+                        data-target="#make_adjustment">Make adjustment</button>
                 </div>
             </div>
             <div class="modal fade" id="edit_details" role="dialog">
@@ -164,91 +182,208 @@
 
                     <!-- Modal content-->
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            <h4 class="modal-title">Edit affiliate details</h4>
-                            <!-- <h6 style="float: right;">Update Time:</h6> -->
-                        </div>
-                        <div class="modal-body">
-                            <div class='row'>
-                                <form action="{% url 'xadmin:agent_detail' %}" method="POST">
-                                    {% csrf_token %}
-                                    <div class='col-md-6'>
-                                        <input type="hidden" name="type" value="edit_agent_detail"></input>
-                                        <input type="hidden" name="user_id" value="{{ agent.pk }}"></input>
-                                        <div class="form-group">
-                                            <label for="affiliate_manager">Affiliate Manager</label>
-                                            <!-- needs to be changed -->
-                                            <input class="form-control" name="member_id" value="{{ agent.pk }}"> 
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="username">Affiliate Level</label>
-                                            <input class="form-control" name="username"
-                                                value="{{ customuser.username }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="first_name">FIRST NAME</label>
-                                            <input class="form-control" name="first_name"
-                                                value="{{ customuser.first_name }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="last_name">LAST NAME</label>
-                                            <input class="form-control" name="last_name"
-                                                value="{{ customuser.last_name }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="email">EMAIL</label>
-                                            <input type='email' class="form-control" name="email"
-                                                value="{{ customuser.email }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="phone">PHONE</label>
-                                            <input class="form-control" name="phone" value="{{ customuser.phone }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="birthday">BIRTHDAY</label>
-                                            <input class="form-control" name="birthday"
-                                                value="{{ customuser.date_of_birth }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="address">ADDRESS</label>
-                                            <input class="form-control" name="address"
-                                                value="{{ customuser.street_address_1 }}">
-                                            <input class="form-control" name="city" value="{{ customuser.city }}">
-                                            <input class="form-control" name="zipcode" value="{{ customuser.zipcode }}">
-                                            <input class="form-control" name="country" value="{{ customuser.country }}">
-                                        </div>
-                                        <div>&nbsp;</div>
-                                        <button type="submit" class="btn btn-primary">Submit</button>
-                                        <button type="button" class="btn btn-primary"
-                                            data-dismiss="modal">Cancel</button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <input id='hidden_input_img' type='file' accept='image/*' style='display: none;'
-                                            onchange="chooseFile(event);">
-                                        {% if userPhotoId %}
-                                        <img id="user_photo_img" src="{{ userPhotoId }}">
-                                        {% else %}
-                                        <img id="user_photo_img" src="http://placehold.it/200" alt="User ID Photo">
-                                        {% endif %}
-                                        <input type="hidden" name='user_id_img' id="hidden_user_id_url">
-                                        <div>&nbsp;</div>
-                                        <div class="row">
-                                            <div class='col-md-8'>
-                                                <button type="button" class="btn btn-primary"
-                                                    onclick="clickUploadImg();">Upload new document</button>
-                                            </div>
-                                            <div class='col-md-4'>
-                                                <button type="button" class="btn btn-default"
-                                                    style="background-color:rgb(199, 89, 82)" onclick="clearImg();">
-                                                    <span class="glyphicon glyphicon-trash" style='color:white'></span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
+                        <!-- header and close button -->
+                        <div class="modal-header edit-affiliate-detail-title">
+                            <div class="model-text-style">
+                                <button type="button" class="close" data-dismiss="modal"
+                                    style="color: white">&times;</button>
+                                <h4 class="modal-title">Edit affiliate details</h4>
                             </div>
                         </div>
+
+
+                        <div class="modal-body">
+                            <form action="{% url 'xadmin:agent_detail' %}" method="POST">
+                                {% csrf_token %}
+
+                                <div class='row'>
+                                    <div class="col-md-4"><strong>Affiliate Manager</strong></div>
+                                    <!-- search input here -->
+                                    <input class="form-control col-md-4" id='member_id' name="member_id" value=""
+                                        style="width:300px; height:30px;margin-bottom: 20px;">
+                                </div>
+
+                                <!-- <div class='row'>
+                                    {% for choice in agent.affiliate_level %}
+                                    {{ choice.choice_label }}
+                                    <span class="radio">{{ choice.tag }}</span>
+                                    {{ choice }}
+                                    {% endfor %}
+                                </div> -->
+
+
+                                <fieldset id="group1">
+                                    <div class='row'>
+                                        <div class="col-md-4"><strong>Affiliate Level</strong></div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group1" id="inlineRadio1"
+                                                value="{{ agent.affiliate_level }}">
+                                            <label class="form-check-label" for="inlineRadio1"
+                                                style="font-weight: normal;">Normal</label>
+                                        </div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group1" id="inlineRadio2"
+                                                value="{{ agent.affiliate_level }}">
+                                            <label class="form-check-label" for="inlineRadio2"
+                                                style="font-weight: normal;">VIP</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset id="group2">
+                                    <div class='row'>
+                                        <div class="col-md-4"><strong>Affiliate Status</strong></div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group2" id="inlineRadio1"
+                                                value="{{ agent.afffiliate_status }}">
+                                            <label class="form-check-label" for="inlineRadio1"
+                                                style="font-weight: normal;">Enabled</label>
+                                        </div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group2" id="inlineRadio2"
+                                                value="{{ agent.afffiliate_status }}">
+                                            <label class="form-check-label" for="inlineRadio2"
+                                                style="font-weight: normal;">Disabled</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset id="group3">
+                                    <div class='row'>
+                                        <div class="col-md-4"><strong>Commission Set </strong></div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group3" id="inlineRadio1"
+                                                value="{{ commission_type.commission_set }}">
+                                            <label class="form-check-label" for="inlineRadio1"
+                                                style="font-weight: normal;">System</label>
+                                        </div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group3" id="inlineRadio2"
+                                                value="{{ commission_type.commission_set }}">
+                                            <label class="form-check-label" for="inlineRadio2"
+                                                style="font-weight: normal;">Personal</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset id="group4">
+                                    <div class='row'>
+                                        <div class="col-md-4"><strong>Transfer Commission Between Levels</strong></div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group4" id="inlineRadio1"
+                                                value="{{ agent.transerfer_between_levels }}">
+                                            <label class="form-check-label" for="inlineRadio1"
+                                                style="font-weight: normal;">Yes</label>
+                                        </div>
+                                        <div class="col-md-3 form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="group4" id="inlineRadio2"
+                                                value="{{ agent.transerfer_between_levels }}">
+                                            <label class="form-check-label" for="inlineRadio2"
+                                                style="font-weight: normal;">No</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <p style="margin-top:20px;"><strong>COMMISSION LEVELS</strong></p>
+                                <div class="commission_levels">
+                                    <div class="row cancel_row_style" style="margin-top: 20px; width: 93%;">
+                                        <div class="col-md-2 cancel_col_style commission_col_style" style="width: 10%">
+                                            LEVEL
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style" style="width: 15%">
+                                            COMMISSION RATE
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style"
+                                            style="width: 20%; margin-right: 2%">
+                                            DOWNLINE COMMISSION RATE
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style" style="width: 15%">
+                                            ACTIVE DOWNLINE
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style" style="width: 25%">
+                                            DOWNLINE MONTHLY FIRST DEPOSIT COUNTS
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style" style="width: 10%">
+                                            NET PROFIT
+                                        </div>
+                                    </div>
+                                    <div class="row cancel_row_style" style="margin-top: 20px; width: 101%;">
+                                        <div class="col-md-2 cancel_col_style commission_col_style"
+                                            style="width: 8%; margin-right: 3%;">
+                                            <input class="form-control col-md-4" id='member_id' name="member_id"
+                                                value="{{ commission_type.commission_level }}"
+                                                style="height:30px;margin-bottom: 20px;">
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style"
+                                            style="width: 13%; margin-right: 3%;">
+                                            <input class="form-control col-md-4" id='member_id' name="member_id"
+                                                value="{{ commission_type.commision_percentage }}"
+                                                style="height:30px;margin-bottom: 20px;">
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style"
+                                            style="width: 16%; margin-right: 3%;">
+                                            <input class="form-control col-md-4" id='member_id' name="member_id"
+                                                value="{{ commission_type.downline_commision_percentage }}"
+                                                style="height:30px;margin-bottom: 20px;">
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style"
+                                            style="width: 13%; margin-right: 3%;">
+                                            <input class="form-control col-md-4" id='member_id' name="member_id"
+                                                value="{{ commission_type.active_downline_needed }}"
+                                                style="height:30px;margin-bottom: 20px;">
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style"
+                                            style="width: 16%; margin-right: 3%;">
+                                            <input class="form-control col-md-4" id='member_id' name="member_id"
+                                                value="{{ commission_type.monthly_downline_ftd_needed }}"
+                                                style="height:30px;margin-bottom: 20px;">
+                                        </div>
+                                        <div class="col-md-2 cancel_col_style commission_col_style" style="width: 8%">
+                                            <input class="form-control col-md-4" id='member_id' name="member_id"
+                                                value="" style="height:30px;margin-bottom: 20px;">
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <button type="button" class="btn btn-danger delete" title="Delete"
+                                                data-toggle="tooltip" style="height: 30px">
+                                                <i class="glyphicon glyphicon-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-4">
+                                                <button type="button" class="btn btn-info add-new"><i
+                                                        class="fa fa-plus"></i>
+                                                    Add</button>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <p>REASON FOR CHANGES</p>
+                                        <input type="text" style="width: 50%;height: 20%;"
+                                            placeholder="Please provide a brief explaination.">
+                                        <div class='row'>
+                                            <button id="affiliates_detail_submit" type="submit"
+                                                class="btn btn-primary">Save</button>
+                                            <button id="affiliates_detail_calcel" type="cancel"
+                                                class="btn btn-primary">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+
+                        <!-- submit form -->
+                        <script>
+                            // $('#affiliates_detail_submit').
+
+                        </script>
+
+                        <script>// Delete row on delete button click
+                            $(document).on("click", ".delete", function () {
+                                $(this).parents(".commission_levels").remove();
+                                $(".add-new").removeAttr("disabled");
+                            });
+                        </script>
+
+
                         <!-- <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                             </div> -->
@@ -394,92 +529,119 @@
                 </div>
             </div>
             <div id="menu1" class="tab-pane fade">
-            </div>
-            <div id="menu2" class="tab-pane fade">
-            </div>
-            <div id="menu3" class="tab-pane fade">
+                <div class="tab-content">
+                    <div id="home" class="tab-pane fade in active">
+                        <div style="overflow-x: scroll;">
+                            <table id="opeartion_report" class="table table-striped" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">DATE</th>
+                                        <th scope="col">CUMULATIVE DEPOSIT</th>
+                                        <th scope="col">CUMULATIVE WITHDRAWAL</th>
+                                        <th scope="col">SYSTEM BOUNS</th>
+                                        <th scope="col">DOWNLINE TRANSFER</th>
+                                        <th scope="col">TURNOVER</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tran_data in opeartion_report %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ tran_data.date }}</td>
+                                        <td>{{ tran_data.cumulative_deposit }}</td>
+                                        <td>{{ tran_data.cumulative_withdrawal }}</td>
+                                        <td>{{ tran_data.system_bouns }}</td>
+                                        <td>{{ tran_data.downline_transfer }}</td>
+                                        <td>{{ tran_data.turnover }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="menu2" class="tab-pane fade">
+                </div>
+                <div id="menu3" class="tab-pane fade">
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css"
-    rel="stylesheet" />
-<script
-    src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css"
+        rel="stylesheet" />
+    <script
+        src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script>
 
 
 
-    // $('#datetimepicker1').datetimepicker();
+        // $('#datetimepicker1').datetimepicker();
 
-    $(document).ready(function () {
-        var csrftoken = $.cookie("csrftoken");
-        // console.log(csrftoken);
+        $(document).ready(function () {
+            var csrftoken = $.cookie("csrftoken");
+            // console.log(csrftoken);
 
-        function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
-
-        $.ajaxSetup({
-            beforeSend: function (xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
             }
-        });
 
-        $(function () {
-            $('#user_list_time_from').datetimepicker();
-            $('#user_list_time_to').datetimepicker();
-        });
-
-        $('#user_list_time_submit').click(function (e) {
-            e.preventDefault();
-            var time_from = $('#user_list_time_from_input').val();
-            // console.log(time_from);
-            time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
-            // time_from = time_from.format('YYYY-MM-DD HH:mm');
-            var time_to = $('#user_list_time_to_input').val();
-            // console.log(time_to);
-            time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
-            // time_to = time_to.format('YYYY-MM-DD HH:mm');
-            // console.log(time_from);
-
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'xadmin:user_list' %}",
-                data: {
-                    'type': 'user_list_time_range_filter',
-                    'from': time_from,
-                    'to': time_to
-                },
-                success: function (data) {
-
-                    data.forEach(i => console.log("data: " + i.login_times));
-                    // console.log("!!!!!" + data);
-                    for (var i = 0; i < data.length; i++) {
-                        $("#user_login_times_" + (i + 1)).empty(); $("#user_bettin_times_" + (i +
-                            1)).empty(); $("#user_deposit_times_" + (i + 1)).empty(); $("#user_deposit_amount_" + (i + 1)).empty();
-                        $("#user_withdrawal_times_" + (i + 1)).empty(); $("#user_withdrawal_amount_" + (i + 1)).empty(); //
-                        console.log(data[i].deposit_amount.amount__sum); var content = "<td id='user_login_times_" + (i + 1) + "'>" +
-                            data[i].login_times + "</td>"; $("#user_login_times_" + (i + 1)).append(content);
-                        content = "<td id='user_bettin_times_" + (i + 1) + "'>" + data[i].betting_times + "</td>"; $("#user_bettin_times_" +
-                            (i + 1)).append(content); content = "<td id='user_deposit_times_" + (i + 1) + "'>" + data[i].deposit_times + "</td>";
-                        $("#user_deposit_times_" + (i + 1)).append(content); content = "<td id='user_deposit_amount_" + (i + 1) + "'>" +
-                            cleanField(data[i].deposit_amount.amount__sum) + "</td>"; $("#user_deposit_amount_" + (i + 1)).append(content);
-                        content = "<td id='user_withdrawal_times_" + (i + 1) + "'>" + data[i].withdrawal_times + "</td>";
-                        $("#user_withdrawal_times_" + (i + 1)).append(content); content = "<td id='user_withdrawal_amount_" + (i + 1) + "'>" +
-                            cleanField(data[i].withdrawal_amount.amount__sum) + "</td>"; $("#user_withdrawal_amount_" + (i +
-                                1)).append(content);
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
                     }
                 }
             });
-        }); function cleanField(field) {
-            if (field === null || field === undefined) { return ""; }
-            return cleanFloatField(field);
-        } function cleanFloatField(field) { return field.toFixed(2); }
-    }); </script>
-{% endblock %}
+
+            $('#affiliates_detail_submit').click(function (e) {
+                e.preventDefault();
+                var affiliate_level = $('')
+                var time_from = $('#user_list_time_from_input').val();
+                // console.log(time_from);
+                time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+                // time_from = time_from.format('YYYY-MM-DD HH:mm');
+                var time_to = $('#user_list_time_to_input').val();
+                // console.log(time_to);
+                time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+                // time_to = time_to.format('YYYY-MM-DD HH:mm');
+                // console.log(time_from);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'xadmin:user_list' %}",
+                    data: {
+                        'type': 'user_list_time_range_filter',
+                        'from': time_from,
+                        'to': time_to
+                    },
+                    success: function (data) {
+
+                        data.forEach(i => console.log("data: " + i.login_times));
+                        // console.log("!!!!!" + data);
+                        for (var i = 0; i < data.length; i++) {
+                            $("#user_login_times_" + (i + 1)).empty(); $("#user_bettin_times_" + (i +
+                                1)).empty(); $("#user_deposit_times_" + (i + 1)).empty(); $("#user_deposit_amount_" + (i + 1)).empty();
+                            $("#user_withdrawal_times_" + (i + 1)).empty(); $("#user_withdrawal_amount_" + (i + 1)).empty(); //
+                            console.log(data[i].deposit_amount.amount__sum); var content = "<td id='user_login_times_" + (i + 1) + "'>" +
+                                data[i].login_times + "</td>"; $("#user_login_times_" + (i + 1)).append(content);
+                            content = "<td id='user_bettin_times_" + (i + 1) + "'>" + data[i].betting_times + "</td>"; $("#user_bettin_times_" +
+                                (i + 1)).append(content); content = "<td id='user_deposit_times_" + (i + 1) + "'>" + data[i].deposit_times + "</td>";
+                            $("#user_deposit_times_" + (i + 1)).append(content); content = "<td id='user_deposit_amount_" + (i + 1) + "'>" +
+                                cleanField(data[i].deposit_amount.amount__sum) + "</td>"; $("#user_deposit_amount_" + (i + 1)).append(content);
+                            content = "<td id='user_withdrawal_times_" + (i + 1) + "'>" + data[i].withdrawal_times + "</td>";
+                            $("#user_withdrawal_times_" + (i + 1)).append(content); content = "<td id='user_withdrawal_amount_" + (i + 1) + "'>" +
+                                cleanField(data[i].withdrawal_amount.amount__sum) + "</td>"; $("#user_withdrawal_amount_" + (i +
+                                    1)).append(content);
+                        }
+                    }
+                });
+            }); function cleanField(field) {
+                if (field === null || field === undefined) { return ""; }
+                return cleanFloatField(field);
+            } function cleanFloatField(field) { return field.toFixed(2); }
+        }); </script>
+    {% endblock %}

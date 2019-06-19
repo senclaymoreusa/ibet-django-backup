@@ -21,7 +21,7 @@ from django.conf import settings
 from django.views import View
 from django.utils.timezone import timedelta
 from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncMonth, Coalesce
+from django.db.models.functions import TruncMonth, TruncDate, Coalesce
 from django.contrib import messages
 from dateutil.relativedelta import relativedelta
 
@@ -35,7 +35,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, Commission
 
 from accounting.models import Transaction
 
@@ -980,240 +980,6 @@ class ChangeAndResetPassword(View):
         return HttpResponse('Success')
 
 
-
-
-
-class AgentView(CommAdminView):
-    def get(self, request):
-        context = super().get_context()
-        users = get_user_model().objects.all()
-        agents = get_user_model().objects.exclude(agent_level='Normal')
-        agents_has_referred = agents.filter(referred_by_id__isnull=False)
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        today = datetime.date.today()
-        last_month = datetime.date.today().replace(day=1) + relativedelta(months=-1)
-        before_last_month = datetime.date.today().replace(day=1) + relativedelta(months=-2)
-        this_month = datetime.date.today().replace(day=1)
-
-        # get transaction type 
-        tran_type = Transaction._meta.get_field('transaction_type').choices
-        commission_number = None
-        for key, value in tran_type:
-            if value is 'Commission':
-                commission_number = key
-
-        if commission_number is None:
-            raise ValueError('No Commission Type Here!!!')      
-        tran_commission = Transaction.objects.filter(transaction_type=commission_number)
-        tran_with_commission_this_month = tran_commission.filter(Q(request_time__gte=last_month) & Q(request_time__lte=this_month))
-        tran_with_commission_month_before = tran_commission.filter(Q(request_time__gte=before_last_month) & Q(request_time__lte=last_month))
-
-
-        title = "Agent Overview"
-        context["breadcrumbs"].append({'url': '/agent_overview/', 'title': title})
-        context["title"] = title
-        context["agents"] = agents
-        context["premium_number"] = users.filter(agent_level='Premium').count()
-        context["invalid_number"] = users.filter(agent_level='Invalid').count()
-        context["normal_number"] = users.filter(agent_level='Normal').count()
-        context["negative_number"] = users.filter(agent_level='Negative').count()
-        context["new_ftd"] = agents.filter(ftd_time__range=[yesterday, today]).count()
-        context["most_new_player"] = agents_has_referred.values("referred_by_id").annotate(downline_number=Count("referred_by_id")).order_by("-referred_by_id")
-
-
-        # active user
-        @register.filter(name='lookup')
-        def lookup(dict, index):
-            if index in dict:
-                return dict[index]
-            return '0'
-
-        active_user_dict = {}
-        for user, agent in agents.values_list('id', 'referred_by'):
-            if agent is None:
-                continue
-            elif (Transaction.objects.all().filter(Q(user_id=user) & Q(request_time__gte=last_month)).exists()):
-                active_user_dict.update({agent: active_user_dict.get(agent, 0) + 1})
-        context["active_user_dict"] = active_user_dict
-
-        # downline deposit
-        downline_deposit = {}
-        for user, agent, balance in agents.values_list('id', 'referred_by', 'main_wallet'):
-            if agent is not None:
-                downline_deposit.update({agent: downline_deposit.get(agent, 0) + balance})                
-        context["downline_deposit"] = downline_deposit
-
-        # commission system
-        commision_transaction = tran_commission.annotate(month=TruncMonth('request_time')).values('month').annotate(total_commission=Sum('amount')).order_by('-month')
-        
-        commission = []
-
-        for tran in commision_transaction:
-            commission_dict = {}
-            commission_dict['month'] = tran['month']
-            commission_dict['total_commission'] = tran['total_commission']
-            commission_dict['agent_number'] = agents.exclude(user_to_agent=None).filter(user_to_agent__lte=tran['month']+relativedelta(months=1)).count()
-            # add a condition referred_by_id is none
-            commission_dict['active_downline'] = Transaction.objects.filter(Q(request_time__gte=tran['month']) & Q(request_time__lte=tran['month']+relativedelta(months=1))).values('user_id').distinct().count()
-            commission.append(commission_dict)
-        
-        context["commision_transaction"] = commission
-        
-        
-        commission_last_month = {}
-        commission_month_before = {}
-        for agent_name,agent_id in agents.values_list('username','id'):
-            try:
-                cur = tran_with_commission_this_month.get(user_id_id=agent_id)
-                commission_last_month.update({agent_name: cur.amount})
-            except:
-                commission_last_month.update({agent_name: '0'})
-            
-
-        for agent_name,agent_id in agents.values_list('username','id'):
-            try:
-                last = tran_with_commission_month_before.get(user_id_id=agent_id)
-                commission_month_before.update({agent_name: last.amount})
-            except:
-                commission_month_before.update({agent_name: '0'})
-        
-        context["commission_last_month"] = commission_last_month
-        context["commission_month_before"] = commission_month_before
-
-        # premium application
-        users_with_application_to_premium = users.exclude(user_application_time=None).order_by('-user_application_time')
-        context["users_with_application_to_premium"] = users_with_application_to_premium
-
-        return render(request, 'users/agent_list.html', context) 
-    
-    # post for new affiliate
-    # def post(self, request, *args, **kwargs):
-    #     username = generate_username()
-    #     check_duplicate = CustomUser.objects.filter(username=username)
-    #     while check_duplicate:
-    #         username = generate_username
-    #         check_duplicate = CustomUser.objects.filter(username=username)
-
-    #     email = get_random_string(length=8)
-    #     check_duplicate = CustomUser.objects.filter(email=email)
-    #     while check_duplicate:
-    #         email = get_random_string(length=8)
-    #         check_duplicate = CustomUser.objects.filter(email=email)
-
-    #     phone = ''.join([str(random.randint(0,10)) for i in range(10)])
-    #     check_duplicate = CustomUser.objects.filter(phone=phone)
-    #     while check_duplicate:
-    #         phone = ''.join([str(random.randint(0,10)) for i in range(10)])
-    #         check_duplicate = CustomUser.objects.filter(phone=phone)
-
-    #     password = get_random_string(length=10)
-    #     email = email + '@gmail.com'
-
-    #     CustomUser.objects.create_user(username, email, phone, password)
-    #     user = CustomUser.objects.filter(username=username)
-    #     user.update(active=True, modified_time=timezone.now())
-
-    #     context = super().get_context()
-    #     agent_name = request.POST.get('username')
-    #     args = {'agent_name':username, 'agent_password':password, 'user':user}
-        
-    #     return render(request,"users/agent_list.html",args)
-
-class AgentDetailView(CommAdminView):
-    def get(self, request, *args, **kwargs):
-        context = super().get_context()
-        agent = CustomUser.objects.get(pk=self.kwargs.get('pk'))
-        title = "Affiliate " + agent.username
-        downline = CustomUser.objects.all().filter(referred_by_id=agent.id).values_list('id')
-        affiliates_list = CustomUser.objects.all().filter(agent_level='Premium')
-        active_downline = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(request_time__gte=(datetime.date.today().replace(day=1))))
-        # get transaction type 
-        tran_type = Transaction._meta.get_field('transaction_type').choices
-        deposit_type_number = None
-        withdraw_type_number = None
-        bonus_type_number = None
-        adjustment_type_number = None
-        for key, value in tran_type:
-            if value is 'Deposit':
-                deposit_type_number = key
-            elif value is 'Withdrawal':
-                withdraw_type_number = key
-            elif value is 'Bonus':
-                bonus_type_number = key
-            elif value is 'Adjustment':
-                adjustment_type_number = key
-            elif value is 'Commission':
-                commission_type_number = key
-
-        if deposit_type_number is None:
-            raise ValueError('No Deposit Type Here!!!') 
-        if withdraw_type_number is None:
-            raise ValueError('No Withdraw Type Here!!!') 
-        if bonus_type_number is None:
-            raise ValueError('No Bouns Type Here!!!') 
-        if adjustment_type_number is None:
-            raise ValueError('No Adjustment Type Here!!!')
-        if commission_type_number is None:
-            raise ValueError('No Commission Type Here!!!')  
-        downline_deposit = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(transaction_type=deposit_type_number)).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
-        commission_tran = Transaction.objects.all().filter(Q(transaction_type=commission_type_number) & Q(user_id=agent.id))
-        current_affiliate_ip = UserAction.objects.all().filter(user=agent.pk).values('ip_addr')
-        related_affiliates = UserAction.objects.all().filter(Q(user__in=affiliates_list.values_list('pk')) & Q(ip_addr__in=current_affiliate_ip.values_list('ip_addr'))).values('user').distinct()
-        
-        
-        context["title"] = title
-        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
-        # affiliate details
-        context["agent"] = agent
-        context["name"] = agent.username
-        context["id"] = agent.id
-        context["level"] = agent.agent_level
-        context["status"] = agent.agent_status
-        context["balance"] = agent.main_wallet
-        # commission
-        context["commission_this_month"] = commission_tran.filter(request_time__gte=(datetime.date.today().replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-        context["commission_last_month"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1))) & Q(request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-        context["commission_before_last"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1)+relativedelta(months=-1))) & Q(request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-2))).aggregate(comm=Coalesce(Sum('amount'), 0))
-        # downline status
-        context["downline_number"] = downline.aggregate(total_users=Count('id'))
-        context["active_users"] = active_downline.values('user_id').distinct().count()
-        context["downline_deposit"] = downline_deposit
-        context["promition_link"] = agent.referral_id
-        
-        # related affiliates
-        related_affiliates_data = []
-        for related_affiliate in related_affiliates:
-            related_affiliates_info = {}
-            related_affiliates_info['member_id'] = related_affiliate['user']
-            related_affiliates_info['balance'] = CustomUser.objects.all().get(pk=related_affiliate['user']).main_wallet
-            related_affiliates_data.append(related_affiliates_info)
-
-        context["related_affiliates"] = related_affiliates_data
-
-        # downline list
-        downline_list = []
-        for i in agent.referees.all():
-            downline_info = {}
-            agent_tran = Transaction.objects.all().filter(user_id_id=i.pk)
-            # print(agent_tran)
-            downline_info['agent_id'] = i.pk
-            downline_info['username'] = i.username
-            downline_info['time_of_registration'] = i.time_of_registration
-            downline_info['last_login_time'] = i.last_login_time
-            downline_info['ftd_time'] = i.ftd_time
-            downline_info['deposit'] = agent_tran.filter(transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
-            downline_info['withdraw'] = agent_tran.filter(transaction_type=1).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
-            downline_info['bouns'] = agent_tran.filter(transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
-            downline_info['adjustment'] = agent_tran.filter(transaction_type=7).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-            downline_info['balance'] = i.main_wallet
-            downline_list.append(downline_info)
-        
-        context["downline_list"] = downline_list
-        
-        context["agent_referee"] = agent.referees.all()
-
-
-        return render(request,"users/agent_detail.html", context)
      
 from django.core import serializers
 from django.http import HttpResponse
@@ -1587,3 +1353,245 @@ class CheckUsernameExist(View):
         return HttpResponse('Valid')
 
 
+class AgentView(CommAdminView):
+    def get(self, request):
+        context = super().get_context()
+        users = get_user_model().objects.all()
+        agents = get_user_model().objects.filter(agent_level='Affiliates')
+        agents_has_referred = agents.filter(referred_by_id__isnull=False)
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        today = datetime.date.today()
+        last_month = datetime.date.today().replace(day=1) + relativedelta(months=-1)
+        before_last_month = datetime.date.today().replace(day=1) + relativedelta(months=-2)
+        this_month = datetime.date.today().replace(day=1)
+        downline_list = users.filter(referred_by_id__isnull=False)
+
+        # get transaction type 
+        tran_type = Transaction._meta.get_field('transaction_type').choices
+        commission_number = None
+        for key, value in tran_type:
+            if value is 'Commission':
+                commission_number = key
+
+        if commission_number is None:
+            raise ValueError('No Commission Type Here!!!')      
+        tran_commission = Transaction.objects.filter(transaction_type=commission_number)
+        tran_with_commission_this_month = tran_commission.filter(Q(request_time__gte=last_month) & Q(request_time__lte=this_month))
+        tran_with_commission_month_before = tran_commission.filter(Q(request_time__gte=before_last_month) & Q(request_time__lte=last_month))
+
+
+        title = "Agent Overview"
+        context["breadcrumbs"].append({'url': '/agent_overview/', 'title': title})
+        context["title"] = title
+        context["agents"] = agents
+        context["affiliates_number"] = users.filter(agent_level='Affiliates').count()
+        context["deactivated_number"] = users.filter(agent_level='Deactivated').count()
+        context["refer_a_friend_number"] = users.filter(agent_level='Refer a friend').count()
+        context["negative_number"] = users.filter(agent_level='Negative').count()
+        context["internal_affiliates_number"] = users.filter(agent_level='Internal affiliates').count()
+        context["new_ftd"] = agents.filter(ftd_time__range=[yesterday, today]).count()
+        context["most_new_player"] = agents_has_referred.values("referred_by_id").annotate(downline_number=Count("referred_by_id")).order_by("-referred_by_id")
+
+        # new data
+        context["ftd_this_month"] = agents.filter(ftd_time__gte=last_month).count()
+        # get the specific definition
+        context["actives_this_month"] = Transaction.objects.filter(Q(request_time__gte=last_month) & Q(user_id__in=agents)).values_list('user_id').distinct().count()
+        context["affiliates_acquired_this_month"] = agents.filter(user_application_time__gte=last_month).count()
+
+
+        # active user
+        @register.filter(name='lookup')
+        def lookup(dict, index):
+            if index in dict:
+                return dict[index]
+            return '0'
+
+        active_user_dict = {}
+        for user, agent in agents.values_list('id', 'referred_by'):
+            if agent is None:
+                continue
+            elif (Transaction.objects.all().filter(Q(user_id=user) & Q(request_time__gte=last_month)).exists()):
+                active_user_dict.update({agent: active_user_dict.get(agent, 0) + 1})
+        context["active_user_dict"] = active_user_dict
+
+        # downline deposit
+        downline_deposit = {}
+        for user, agent, balance in agents.values_list('id', 'referred_by', 'main_wallet'):
+            if agent is not None:
+                downline_deposit.update({agent: downline_deposit.get(agent, 0) + balance})                
+        context["downline_deposit"] = downline_deposit
+
+        # commission system
+        commision_transaction = tran_commission.annotate(month=TruncMonth('request_time')).values('month').annotate(total_commission=Sum('amount')).order_by('-month')
+        
+        commission = []
+
+        for tran in commision_transaction:
+            commission_dict = {}
+            commission_dict['month'] = tran['month']
+            commission_dict['total_commission'] = tran['total_commission']
+            commission_dict['agent_number'] = agents.exclude(user_to_agent=None).filter(user_to_agent__lte=tran['month']+relativedelta(months=1)).count()
+            # add a condition referred_by_id is none
+            commission_dict['active_downline'] = Transaction.objects.filter(Q(request_time__gte=tran['month']) & Q(request_time__lte=tran['month']+relativedelta(months=1))).values('user_id').distinct().count()
+            commission.append(commission_dict)
+        
+        context["commision_transaction"] = commission
+        
+        
+        commission_last_month = {}
+        commission_month_before = {}
+        for agent_name,agent_id in agents.values_list('username','id'):
+            try:
+                cur = tran_with_commission_this_month.get(user_id_id=agent_id)
+                commission_last_month.update({agent_name: cur.amount})
+            except:
+                commission_last_month.update({agent_name: '0'})
+            
+
+        for agent_name,agent_id in agents.values_list('username','id'):
+            try:
+                last = tran_with_commission_month_before.get(user_id_id=agent_id)
+                commission_month_before.update({agent_name: last.amount})
+            except:
+                commission_month_before.update({agent_name: '0'})
+        
+        context["commission_last_month"] = commission_last_month
+        context["commission_month_before"] = commission_month_before
+
+        # premium application
+        users_with_application_to_premium = users.exclude(user_application_time=None).order_by('-user_application_time')
+        context["users_with_application_to_premium"] = users_with_application_to_premium
+
+        return render(request, 'users/agent_list.html', context) 
+    
+    
+
+class AgentDetailView(CommAdminView):
+    def get(self, request, *args, **kwargs):
+        context = super().get_context()
+        agent = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+        title = "Affiliate " + agent.username
+        downline = CustomUser.objects.all().filter(referred_by_id=agent.id).values_list('id')
+        affiliates_list = CustomUser.objects.all().filter(agent_level='Affiliates')
+        active_downline = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(request_time__gte=(datetime.date.today().replace(day=1))))
+        downline_current_month_ftd_number = 0
+        
+        # get transaction type 
+        tran_type = Transaction._meta.get_field('transaction_type').choices
+        deposit_type_number = None
+        withdraw_type_number = None
+        bonus_type_number = None
+        adjustment_type_number = None
+        for key, value in tran_type:
+            if value is 'Deposit':
+                deposit_type_number = key
+            elif value is 'Withdrawal':
+                withdraw_type_number = key
+            elif value is 'Bonus':
+                bonus_type_number = key
+            elif value is 'Adjustment':
+                adjustment_type_number = key
+            elif value is 'Commission':
+                commission_type_number = key
+
+        if deposit_type_number is None:
+            raise ValueError('No Deposit Type Here!!!') 
+        if withdraw_type_number is None:
+            raise ValueError('No Withdraw Type Here!!!') 
+        if bonus_type_number is None:
+            raise ValueError('No Bouns Type Here!!!') 
+        if adjustment_type_number is None:
+            raise ValueError('No Adjustment Type Here!!!')
+        if commission_type_number is None:
+            raise ValueError('No Commission Type Here!!!')  
+        downline_deposit = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(transaction_type=deposit_type_number)).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+        commission_tran = Transaction.objects.all().filter(Q(transaction_type=commission_type_number) & Q(user_id=agent.id))
+        current_affiliate_ip = UserAction.objects.all().filter(user=agent.pk).values('ip_addr')
+        
+        
+        context["title"] = title
+        context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
+        # affiliate details
+        context["agent"] = agent
+        context["name"] = agent.username
+        context["id"] = agent.id
+        context["level"] = agent.agent_level
+        context["status"] = agent.agent_status
+        context["balance"] = agent.main_wallet
+        # commission
+        context["commission_this_month"] = commission_tran.filter(request_time__gte=(datetime.date.today().replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        context["commission_last_month"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1))) & Q(request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        context["commission_before_last"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1)+relativedelta(months=-1))) & Q(request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-2))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        # downline status
+        context["downline_number"] = downline.aggregate(total_users=Count('id'))
+        context["active_users"] = active_downline.values('user_id').distinct().count()
+        context["downline_deposit"] = downline_deposit
+        context["promition_link"] = agent.referral_id
+        
+        # related affiliates
+        #get this agent's all ip addresses
+        #filer other agents who have use these addresses before
+        agent_ip_list = UserAction.objects.filter(user=agent.pk).values_list('ip_addr').distinct()
+        related_agents_list = UserAction.objects.filter(ip_addr__in=agent_ip_list).values('user').exclude(user=agent.pk).distinct()
+        related_affiliates_data = []
+        for related_affiliate in related_agents_list:
+            related_affiliates_info = {}
+            related_affiliates_info['member_id'] = related_affiliate['user']
+            related_affiliates_info['balance'] = CustomUser.objects.all().get(pk=related_affiliate['user']).main_wallet
+            related_affiliates_data.append(related_affiliates_info)
+        context["related_affiliates"] = related_affiliates_data
+
+        # downline list
+        downline_list = []
+        for i in agent.referees.all():
+            downline_info = {}
+            agent_tran = Transaction.objects.all().filter(user_id_id=i.pk)
+            # print(agent_tran)
+            downline_info['agent_id'] = i.pk
+            downline_info['username'] = i.username
+            downline_info['time_of_registration'] = i.time_of_registration
+            downline_info['last_login_time'] = i.last_login_time
+            downline_info['ftd_time'] = i.ftd_time
+            downline_info['deposit'] = agent_tran.filter(transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
+            downline_info['withdraw'] = agent_tran.filter(transaction_type=1).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
+            downline_info['bouns'] = agent_tran.filter(transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
+            downline_info['adjustment'] = agent_tran.filter(transaction_type=7).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
+            downline_info['balance'] = i.main_wallet
+            downline_list.append(downline_info)
+        
+        context["downline_list"] = downline_list
+        context["agent_referee"] = agent.referees.all()
+
+        # edit detail top
+        context["agent_level"] = agent.affiliate_level
+        context["agent_status"] = agent.agent_status
+        context["transerfer_between_levels"] = agent.transerfer_between_levels
+
+        #edit detail bottom
+        context["commission_type"] = Commission.objects.all().get(pk=agent.commission_id_id)
+
+        # opeartion report
+        # get current agent's transaction and sort by date
+        agent_tran_list = Transaction.objects.filter(user_id=agent.pk).annotate(operation_date=TruncDate('arrive_time')).order_by('-operation_date').values('operation_date').distinct()
+
+        opeartion_report = []
+        for tran in agent_tran_list:
+            
+            opeartion_info = {}
+            cur_operation_data = Transaction.objects.filter(user_id=agent.pk).filter(arrive_time__lte=tran['operation_date'])
+            opeartion_info['date'] = tran['operation_date']
+            opeartion_info['cumulative_deposit'] = cur_operation_data.filter(transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))['sum_deposit']
+            opeartion_info['cumulative_withdrawal'] = cur_operation_data.filter(transaction_type=1).aggregate(sum_withdrawal=Coalesce(Sum('amount'), 0))['sum_withdrawal']
+            opeartion_info['system_bouns'] = cur_operation_data.filter(transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))['sum_bouns']
+            # need calculate
+            opeartion_info['downline_transfer'] = 0
+            opeartion_info['turnover'] = 0
+            opeartion_report.append(opeartion_info)
+        context["opeartion_report"] = opeartion_report
+
+
+        # promotion report
+
+
+
+        return render(request,"users/agent_detail.html", context)
