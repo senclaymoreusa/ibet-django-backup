@@ -52,6 +52,27 @@ class GlobalSettings(object):
                         'icon': 'fa fa-cny'
                     },
                 )
+            },
+            {
+                'title': 'Finance',
+                'icon': 'fa fa-credit-card',
+                'menus': (
+                    {
+                        'title': 'Deposits',
+                        'url': '/xadmin/deposit',
+                        'icon': 'fa fa-sign-in'
+                    },
+                    {
+                        'title': 'Withdrawals',
+                        'url': '/xadmin/withdraw',
+                        'icon': 'fa fa-sign-out'
+                    },
+                    {
+                        'title': 'Settings',
+                        'url': '/xadmin/deposit',
+                        'icon': 'fa fa-cog'
+                    },
+                )
             }
         ]
                     
