@@ -18,7 +18,7 @@
                         <div class="block-title"><span>MEMBER LEVEL</span></div>
                         <div class="life-time-value-block">
                             <div class="block-content">
-                                None
+                                VIP
                             </div>
                         </div>
                     </div>
@@ -26,8 +26,8 @@
                         <div class="block-title"><span>&nbsp;</span></div>
                         <div class="block-title"><span>RISK LEVEL</span></div>
                         <div class="life-time-value-block">
-                            <div class="block-content">
-                                None
+                            <div class="block-content" id="risk_level_input">
+                                A
                             </div>
                         </div>
                     </div>
@@ -212,127 +212,126 @@
                         {% endif %}
                         <button id="zoom-btn" class="zoom-btn btn-lg" data-toggle="modal" data-target="#myModal"><i class="fas fa-search-plus"></i></button>
                     </div>
-                    <div id="myModal" class="modal fade" role="dialog" style="width:600px;">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                    <h4 class="modal-title">USER PHOTO ID</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <img class="showimage img-responsive" src="" />
-                                </div>
+                    <div class="modal fade" id="myModal" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background-color: #ffa313; color:white;">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">USER PHOTO ID</h4>
+                            </div>
+                            <div class="modal-body">
+                                <img class="showimage img-responsive" src="" />
                             </div>
                         </div>
+                        
                     </div>
+                </div>
                 </div>
                 <div class="row">
                         <hr>
                 </div>
                 <div class="row">
-                    <!-- <div class='col-md-6'> -->
-                        <div class="user-detail-subtitle">LAST ACTIVITY</div>
-                        <div class="col-md-4" style="margin-left: 15px;margin-right: -20px;">
-                            <div class="user-detail-content-title">LOGIN</div>
-                            <div class="user-info-block">
-                                <div id="member-input-container">
-                                    <div>
-                                        <div class="block-title">Time</div>
-                                        {% if customuser.last_login_time %}
-                                            <div class="block-text">{{ customuser.last_login_time }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Location</div>
-                                        {% if customuser.id_location %}
-                                            <div class="block-text">{{ customuser.id_location }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">IP address</div>
-                                        {% if userLastIpAddr.ip_addr %}
-                                            <div class="block-text">{{ userLastIpAddr.ip_addr }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
+                    <div class="user-detail-subtitle">LAST ACTIVITY</div>
+                    <div class="col-md-4" style="margin-left: 15px;margin-right: -20px;">
+                        <div class="user-detail-content-title">LOGIN</div>
+                        <div class="user-info-block">
+                            <div id="member-input-container">
+                                <div>
+                                    <div class="block-title">Time</div>
+                                    {% if customuser.last_login_time %}
+                                        <div class="block-text">{{ customuser.last_login_time }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
                                 </div>
-                                <button class="popup-btn" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Location</div>
+                                    {% if customuser.id_location %}
+                                        <div class="block-text">{{ customuser.id_location }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">IP address</div>
+                                    {% if userLastIpAddr.ip_addr %}
+                                        <div class="block-text">{{ userLastIpAddr.ip_addr }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
                             </div>
+                            <button class="popup-btn" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
                         </div>
-                        <div class="col-md-4" style="margin-right: -19px;">
-                            <div class="user-detail-content-title">DEPOSIT</div>
-                            {% for lastDeposit in lastDeposits %}
-                            <div class="user-info-block">
-                                <div id="member-input-container">
-                                    <div>
-                                        <div class="block-title">Time</div>
-                                        {% if lastDeposit.time %}
-                                            <div class="block-text">{{ lastDeposit.time }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Amount</div>
-                                        {% if lastDeposit.amount %}
-                                            <div class="block-text">{{ lastDeposit.amount }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Status</div>
-                                        {% if lastDeposit.status %}
-                                            <div class="block-text">{{ lastDeposit.status }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
+                    </div>
+                    <div class="col-md-4" style="margin-right: -19px;">
+                        <div class="user-detail-content-title">DEPOSIT</div>
+                        {% for lastDeposit in lastDeposits %}
+                        <div class="user-info-block">
+                            <div id="member-input-container">
+                                <div>
+                                    <div class="block-title">Time</div>
+                                    {% if lastDeposit.time %}
+                                        <div class="block-text">{{ lastDeposit.time }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
                                 </div>
-                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Amount</div>
+                                    {% if lastDeposit.amount %}
+                                        <div class="block-text">{{ lastDeposit.amount }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Status</div>
+                                    {% if lastDeposit.status %}
+                                        <div class="block-text">{{ lastDeposit.status }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% endfor %}
+                            <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
                         </div>
-                        <div class="col-md-4">
-                            <div class="user-detail-content-title">WITHDRAWAL</div>
-                            {% for lastWithdraw in lastWithdraws %}
-                            <div class="user-info-block">
-                                <div id="member-input-container">
-                                    <div>
-                                        <div class="block-title">Time</div>
-                                        {% if lastWithdraw.time %}
-                                            <div class="block-text">{{ lastWithdraw.time }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Amount</div>
-                                        {% if lastWithdraw.amount %}
-                                            <div class="block-text">{{ lastWithdraw.amount }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Status</div>
-                                        {% if lastWithdraw.status %}
-                                            <div class="block-text">{{ lastWithdraw.status }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="user-detail-content-title">WITHDRAWAL</div>
+                        {% for lastWithdraw in lastWithdraws %}
+                        <div class="user-info-block">
+                            <div id="member-input-container">
+                                <div>
+                                    <div class="block-title">Time</div>
+                                    {% if lastWithdraw.time %}
+                                        <div class="block-text">{{ lastWithdraw.time }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
                                 </div>
-                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraw }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Amount</div>
+                                    {% if lastWithdraw.amount %}
+                                        <div class="block-text">{{ lastWithdraw.amount }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Status</div>
+                                    {% if lastWithdraw.status %}
+                                        <div class="block-text">{{ lastWithdraw.status }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% endfor %}
-                        </div>                       
-                        <!-- </div> -->
+                            <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraw }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                        {% endfor %}
+                    </div>                       
                 </div>
                 <div class="row">
                     <hr>
@@ -382,7 +381,7 @@
                     
                         <!-- Modal content-->
                         <div class="modal-content">
-                            <div class="modal-header">
+                            <div class="modal-header" style="background-color: #ffa313; color:white">
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                                 <h4 class="modal-title">Edit member details</h4>
                                 <!-- <h6 style="float: right;">Update Time:</h6> -->
@@ -402,6 +401,25 @@
                                                 <label for="username">USERNAME</label>
                                                 <input class="form-control" id='username' name="username" value="{{ customuser.username }}">
                                             </div>
+                                            <div class="form-group">
+                                                <label for="member_level">MEMBER LEVEL</label>
+                                                <select class="form-control">
+                                                    <option value="VIP">VIP</option>
+                                                    <option value="0">Operation</option>
+                                                    <option value="1">Remark</option>
+                                                    <option value="2">Chat</option>
+                                                    <option value="3">Note</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="risk_level">RISK LEVEL</label>
+                                                <select class="form-control">
+                                                    <option value="A">A</option>
+                                                    <option value="E1">E1</option>
+                                                    <option value="E2">E2</option>
+                                                    <option value="F">F</option>
+                                                </select>
+                                                </div>
                                             <div class="form-group">
                                                 <label for="first_name">FIRST NAME</label>
                                                 <input class="form-control" name="first_name" value="{{ customuser.first_name }}">
@@ -501,7 +519,7 @@
                             </div> 
                         </div>
                 </div>
-                </div>
+            </div>
             <div class="activity-rectangle col-md-5">  
                 <div class="half-title-block" style="background-color: #588ebd;">
                     <span class="detail-title">Activity</span>
@@ -653,21 +671,21 @@
             </div>
             <!-- <label style="margin:15px">TRNASACTION LAST 7 DAYS</label> -->
             <div class="row" style="margin:2% 1% 2% 1%;">
-                <table class="table table-striped table-bordered">
-                    <thead>
+                <table id="transaction-table">
+                    <thead class="thead-dark">
                         <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">CATEGORY</th>
-                            <th scope="col">TRANSACTION TYPE</th>
-                            <th scope="col">PRODUCT</th>
+                            <th style="width:3%;">#</th>
+                            <th style="width:8%;">CATEGORY</th>
+                            <th style="width:13%;">TRANSACTION TYPE</th>
+                            <th style="width:8%;">PRODUCT</th>
                             <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">WALLET</th>
-                            <th scope="col">CURRENCY</th>
-                            <th scope="col">TIME</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col">BALANCE</th>
-                            <th scope="col">STATUS</th>
-                            <th scope="col"></th>
+                            <th style="width:6%;">WALLET</th>
+                            <th style="width:6%;">CURRENCY</th>
+                            <th style="width:14%;">TIME</th>
+                            <th style="width:6%;">AMOUNT</th>
+                            <th style="width:6%;">BALANCE</th>
+                            <th style="width:7%;">STATUS</th>
+                            <th style="width:3%;"></th>
                         </tr>
                     </thead>
                     <tbody id="transaction_tbody">
@@ -1452,15 +1470,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button class="set-permission-btn" style="margin-top: 20px;">Set limitations</button>
+                                <button class="set-permission-btn" style="margin-top: 20px;" data-toggle="modal" data-target="#set_limitaions">Set limitations</button>
                             </div>
                             <div class="col-md-5">
                                 <div class="vl">
                                     <div style="margin: 0px 15px;">
                                         <div class="member-limitation-title">PRODUCT ACCESS DENIED</div>
                                         <div id="deny-block"><div class="block-text" style="line-height: 43px; padding-left: 7px;">Live Casino</div></div>
-                                    </div>
-                                    
+                                    </div> 
                                 </div>
                             </div>
                         </div>
@@ -1477,6 +1494,89 @@
             </div>
         </div>
 
+        <div class="modal fade" id="set_limitaions" role="dialog">
+            <div class="modal-dialog">
+            
+            <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header" style="background-color: #8b572a; color:white;">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Edit member limitations</h4>
+                        <div class="update-time">Updated {{ time }}</div>
+                    </div>
+                    <div class="modal-body">
+                        <!-- <div style="padding:8%;"> -->
+                            <div id="bet-container">
+                                <div class="row">
+                                    <div style="margin:2.5%"><label>BET LIMITS</label></div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">BET LIMITS</div>
+                                        <input class="form-control" id="bet_limit" name="bet_limit" value="">
+                                    </div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">BET INTERVAL</div>
+                                        <select class="form-control" id="bet_interval">
+                                            <option value="bet">per bet</option>
+                                            <option value="week">per week</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">PRODUCT</div>
+                                        <select class="form-control" id="game_type">
+                                            <option value="GB">GB Sports</option>
+                                            <option value="EZ">EZ Sports</option>
+                                            <option value="games">Games</option>
+                                            <option value="lotto">Lotto</option>
+                                            <option value="live">Live Casino</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="bet-limit-text">&nbsp;</div>
+                                        <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)">
+                                            <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="add_bet_field btn btn-primary">Add New Field</button>
+                            
+
+                            <div id="loss-container">
+                                <div class="row" style="margin-top:20px;">
+                                    <div style="margin:2.5%"><label>LOSS LIMITS</label></div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">LOSS LIMIT</div>
+                                        <input class="form-control" id="loss_limit" name="loss_limit" value="">
+                                    </div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">LOSS LIMIT INTERVAL</div>
+                                        <select class="form-control" id="loss_interval">
+                                            <option value="bet">per bet</option>
+                                            <option value="week">per week</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="bet-limit-text">&nbsp;</div>
+                                        <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)">
+                                            <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="add_loss_field btn btn-primary">Add New Field</button>
+
+                        <!-- </div> -->
+                    </div>
+                    <!-- <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div> -->
+                </div> 
+            </div>
+        </div>
         
     <!-- </div> -->
 
@@ -1629,6 +1729,8 @@ $(document).ready(function() {
         getTransactions(0);
     });
 
+    var risk_level = $("#risk_level_input").val();
+    $("#risk_level_select").val(risk_level).change();
 
     $('#post-btn').click( function(e) {
         e.preventDefault();
@@ -1641,6 +1743,46 @@ $(document).ready(function() {
         var activity = $('#activity-select').val();
         getActivityfilter(activity);
     });
+
+    $('.add_bet_field').click(function(e){
+        e.preventDefault();
+        var x = $('#bet-container').find('button').length;
+        console.log(x);
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET LIMIT</div><input class="form-control" name="bet_limit_' + x + '" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET INTERVAL</div><select class="form-control" id="bet_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">PRODUCT</div><select class="form-control" id="game_type_' + x + '"><option value="GB">GB Sports</option><option value="EZ">EZ Sports</option><option value="games">Games</option><option value="lotto">Lotto</option><option value="live">Live Casino</option></select></div>';
+        content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
+        $("#bet-container").append(content);
+        x++;
+
+    });
+
+    $("#bet-container").on("click",".delete", function(e){
+        var x = $('#bet-container').find('button').length;
+        e.preventDefault(); 
+        $('#bet-container .row:last-child').remove();
+        x--;
+    })
+
+
+    $('.add_loss_field').click(function(e){
+        e.preventDefault();
+        var x = $('#loss-container').find('button').length;
+        console.log(x);
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT</div><input class="form-control" name="loss_limit' + x + '" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT INTERVAL</div><select class="form-control" id="loss_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
+        $("#loss-container").append(content);
+        x++;
+
+    });
+
+    $("#loss-container").on("click",".delete", function(e){
+        var x = $('#loss-container').find('button').length;
+        e.preventDefault(); 
+        $('#loss-container .row:last-child').remove();
+        x--;
+    })
 
     getNext = function() {
         if ($('#nextPage').hasClass('disabled')) {

@@ -107,11 +107,6 @@ table.table-bordered > tbody > tr > td{
     border:4px solid white;
 }
 
-#user-list-table>tbody>tr:nth-child(odd)>td, 
-#user-list-table>tbody>tr:nth-child(odd)>th {
-   background-color: #f3f3f3;
-}
-
 #refresh-btn {
     display: inline-block; 
     border:1px solid grey; 
@@ -764,7 +759,36 @@ table.table-bordered > tbody > tr > td{
 }
 
 
+#transaction-table>tbody>tr:nth-child(odd)>td, 
+#transaction-table>tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+#transaction-table {
+    margin-bottom: 3%;
+}
+
+
+#transaction-table th {
+    height: 12px;
+    font-family: Helvetica;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+
+}
+
+
 /* user list page css */
+#user-list-table>tbody>tr:nth-child(odd)>td, 
+#user-list-table>tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
 #user-list-table th {
     height: 12px;
     font-family: Helvetica;
@@ -779,7 +803,7 @@ table.table-bordered > tbody > tr > td{
 }
 
 
-#user-list-table td {  
+#user-list-table td, #transaction-table td {  
     border: 4px solid white;
     text-align: left;
     height: 40px;
@@ -806,3 +830,24 @@ table.table-bordered > tbody > tr > td{
     font-size: 10px;
 }
 
+
+.bet-limit-block {
+    width: 25%;
+    padding-right: 0px;
+}
+
+.bet-limit-text {
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.add_bet_field, .add_loss_field {
+    margin-top: 20px;
+}

@@ -1599,7 +1599,7 @@ class UserListView(CommAdminView):
             userDict['deposit_amount'] = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
             userDict['withdrawal'] = Transaction.objects.filter(user_id=user, transaction_type=1).count()
             userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
-            userDict['last_logint_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+            userDict['last_login_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
             # print("object: " + str(userDict))
             user_data.append(userDict)
         
