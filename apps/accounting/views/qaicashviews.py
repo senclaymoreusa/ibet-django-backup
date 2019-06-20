@@ -27,6 +27,8 @@ import hashlib
 import base64
 import logging
 from time import sleep
+from time import gmtime, strftime
+import uuid
 
 QAICASH_NAME = 3
 
@@ -53,6 +55,16 @@ methodConversion = {
     "3": "DIRECT_PAYMENT",
     "4": "BANK_TRANSFER",
     "5": "IBT"
+}
+
+statusConversion = {
+    "SUCCESS":0,
+    "FAILED":1,
+    "CREATED":2,
+    "PENDING":3,
+    "APPROVED":4,
+    "REJECTED":5,
+    "COMPLETED":6,
 }
 
 def generateHash(key, message):
@@ -282,8 +294,9 @@ class submitDeposit(generics.GenericAPIView):
             'Content-Type': 'application/x-www-form-urlencoded',
         }
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
-        currency = self.request.POST['currency']
-        orderId = self.request.POST.get('order_id')
+        curr = self.request.POST.get('currency')
+        currency = currencyConversion[curr]
+        orderId = "ibet" + strftime("%Y%m%d%H%M%S", gmtime())
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
@@ -316,31 +329,19 @@ class submitDeposit(generics.GenericAPIView):
         })
         
         rdata = r.json()
-
-        if rdata.get("ok"):
-            user = CustomUser.objects.get(username=rdata['depositTransaction']['depositorUserId'])
-            for x in Transaction._meta.get_field('currency').choices:
-                if rdata["depositTransaction"]["currency"] == x[1]:
-                    cur_val = x[0]
-
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                #transaction_id=rdata["depositTransaction"]["transactionId"],
-                request_time=rdata["depositTransaction"]["dateCreated"],
-                amount=rdata["depositTransaction"]["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["depositTransaction"]["depositMethod"],
-                currency= cur_val,
-                transaction_type=0,
-            )
-        else:
-            logger.error("Please check the data you input, something is wrong.")
-        
         print(rdata)
+        
+        create = Transaction.objects.get_or_create(
+            order_id= rdata['depositTransaction']['orderId'],
+            #request_time=rdata["depositTransaction"]["dateCreated"],
+            amount=rdata["depositTransaction"]["amount"],
+            status=statusConversion[rdata["depositTransaction"]["status"]],
+            user_id=CustomUser.objects.get(pk=userId),
+            method= rdata["depositTransaction"]["depositMethod"],
+            currency= curr,
+            transaction_type=0,
+            channel=3,
+        )
         
         return Response(rdata)
  

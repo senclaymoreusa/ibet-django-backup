@@ -43,7 +43,7 @@ def Create_RandomKey(r1, key, r2):
 
 def CreateMsgStr(ParamList):
     print(ParamList.values())
-    msgStr = ",".join(str(x) for x in ParamList.values())
+    msgStr = ",".join(str(x) for x in ParamList.values())+ ","
     print("msgStr:" + msgStr)
     return msgStr
 
@@ -60,12 +60,11 @@ class submitDeposit(generics.GenericAPIView):
         uID = "n" + userid
         UserIP= self.request.POST.get("UserIP")
         TraceID = self.request.POST.get("TraceID")
-        OrderID = self.request.POST.get("OrderID")
+        OrderID = 'D' + self.request.POST.get("OrderID")
         NoticeUrl = ""
         BankID = self.request.POST.get("BankID")
         PayWay = self.request.POST.get("PayWay")
-        # DesTime = strftime("%Y%m%d%H%M%S", gmtime())
-        DesTime = "2019-06-19 19:07:31"
+        DesTime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         amount = self.request.POST.get("amount")
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + COMDEPOSITKET
         user =  CustomUser.objects.get(pk=userid)
@@ -75,7 +74,7 @@ class submitDeposit(generics.GenericAPIView):
         ParamList_Msg ={
             "rStr" : "",
             "TraceID" : TraceID,
-            "C_OrderID":OrderID ,
+            "C_OrderID": OrderID,
             "cID": ASIAPAY_CID,
             "uID": uID,
             "UserIP": UserIP,
@@ -95,14 +94,14 @@ class submitDeposit(generics.GenericAPIView):
             "SafeLevel": "0",
             "ProcessLevel": "0",
             "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
-            "tempparam" : "",
+            "tempparam1" : "",
+            "tempparam2" : "",
+            "tempparam3" : "",
+            "tempparam4" : "",
+            "tempparam5" : "",
+            "tempparam6" : "",
+            "tempparam7" : "",
+            "tempparam8" : "",
         }
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
@@ -111,15 +110,28 @@ class submitDeposit(generics.GenericAPIView):
         print(encryptDES(eString, sign_encryptKey, myIv))
         print(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
         for x in range(3):   
-            r = requests.post(url, data={
+            r = requests.post(url + "/standard/getway/depositiface", data={
                 'Sign': encryptDES(eString, sign_encryptKey, myIv),
                 'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
-                'TraceID': TraceID
+                'TraceID': TraceID,
+                'OrderID':OrderID,
+                'cID':ASIAPAY_CID,
+                'uID':uID,
+                'UserIP':UserIP,
+                'DesTime':DesTime,
+                'BankID':BankID,
+                'PayWay':PayWay,
+                'PayType':0,
+                'PayMoney':amount,
+                'ResType':'xml',
+                'RealName':user.last_name + user.first_name,
+                'SafeLevel':0,
+                'ProcessLevel':0,
+                'SignCode':MD5(SignCode),
+                'PayCardUserChName':user.last_name + user.first_name,
             })
             rdata = r.text
             print(rdata)
-            tree = ET.fromstring(rdata)
-            redirect_url = tree.find('RedirectUrl').text
             if r.status_code == 201:
                 break
             elif r.status_code == 500:
@@ -131,15 +143,15 @@ class submitDeposit(generics.GenericAPIView):
                 print("There was something wrong with the result")
                 print(rdata)
                 return Response(rdata)
-        depositData = {
-            "order_id": invoice, 
-            "amount": data[3],
-            "user_id":  data[1],
-            "bank": data[7],
-            "currency": currencyConversion[data[10]],
-            "channel": 2,
-            "status": statusConversion[data[0]]
-        }
+        # depositData = {
+        #     "order_id": OrderID, 
+        #     "amount": data[3],
+        #     "user_id":  data[1],
+        #     "bank": data[7],
+        #     "currency": currencyConversion[data[10]],
+        #     "channel": 2,
+        #     "status": statusConversion[data[0]]
+        # }
         return Response(rdata)
 
 
