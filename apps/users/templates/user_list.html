@@ -1,5 +1,5 @@
 {% extends 'xadmin/base_site.html' %}
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 {% block content-nav %}
 {% endblock %}
 
@@ -161,11 +161,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
 
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script> -->
-<!-- <script src="https://cdn.jsdelivr.net/gh/xcash/bootstrap-autocomplete@v2.2.1/dist/latest/bootstrap-autocomplete.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
-
-
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
@@ -175,8 +170,6 @@
 
 
 <script>
-
-// $('#datetimepicker1').datetimepicker();
 
 $(document).ready(function() {
 
@@ -225,7 +218,7 @@ $(document).ready(function() {
 
 
     $("#search").on('keyup', function () {
-        // if( this.value.length < 2 ) return;
+        if( this.value.length < 2 ) return;
         searchOpen();
     });
 

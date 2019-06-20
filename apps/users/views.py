@@ -1569,8 +1569,6 @@ class UserListView(CommAdminView):
         else:
             context['isLastPage'] = False
 
-        # customUser = CustomUser.objects.all()[offset:offset+pageSize]
-        # context['customuser'] = Customuser
         user_data = []
         for user in customUser:
             userDict = {}
