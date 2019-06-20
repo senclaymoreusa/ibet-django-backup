@@ -35,7 +35,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity
 
 from accounting.models import Transaction
 
@@ -1148,18 +1148,176 @@ class UserDetailView(CommAdminView):
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
+
+
+        statusMap = {}
+        for t in Transaction._meta.get_field('status').choices:
+            statusMap[t[0]] = t[1]
+
+        transTypeMap = {}
+        for t in Transaction._meta.get_field('transaction_type').choices:
+            transTypeMap[t[0]] = t[1]
+        
+        productMap = {}
+        for t in Transaction._meta.get_field('product').choices:
+            productMap[t[0]] = t[1]
+
+        currencyMap = {}
+        for t in Transaction._meta.get_field('currency').choices:
+            currencyMap[t[0]] = t[1]
+        
+        channelMap = {}
+        for t in Transaction._meta.get_field('channel').choices:
+            channelMap[t[0]] = t[1]
+
+
         if Transaction.objects.filter(user_id=customUser).count() == 0:
             context['userTransactions'] = ''
         else:
-            context['userTransactions'] = Transaction.objects.filter(user_id=customUser)[:20]
-        context['userLastIpAddr'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+            transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
+            transactions = serializers.serialize('json', transactions)
+            transactions = json.loads(transactions)
+
+            trans = []
+            for tran in transactions:
+                try:
+                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                transDict = {
+                    'transactionId': str(tran['pk']),
+                    'category': str(transTypeMap[tran['fields']['transaction_type']]),
+                    'transType': transTypeMap[tran['fields']['transaction_type']],
+                    'transTypeCode': tran['fields']['transaction_type'],
+                    'product': productMap[tran['fields']['product']],
+                    'toWhichWallet': str(tran['fields']['transfer_to']),
+                    'currency': currencyMap[tran['fields']['currency']],
+                    'time': time,
+                    'amount': tran['fields']['amount'],
+                    'balance': tran['fields']['amount'],
+                    'status': statusMap[tran['fields']['status']],
+                    'bank': str(tran['fields']['bank']),
+                    'channel': channelMap[tran['fields']['channel']],
+                    'method': tran['fields']['method'],
+                }
+                # transDict = serializers.serialize('json')
+                trans.append(transDict)
+            context['userTransactions'] = trans
+            
+
+        userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
+        context['userLastIpAddr'] = userLastLogin
+        context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
             context['isLastPage'] = True
         else:
             context['isLastPage'] = False
+
+        depositAmount = Transaction.objects.filter(user_id=customUser, transaction_type=0).aggregate(Sum('amount'))
+        withdrawAmount = Transaction.objects.filter(user_id=customUser, transaction_type=1).aggregate(Sum('amount'))
+        depositCount = Transaction.objects.filter(user_id=customUser, transaction_type=0).count()
+        withdrawCount = Transaction.objects.filter(user_id=customUser, transaction_type=1).count()
+        bonusAmount = Transaction.objects.filter(user_id=customUser, transaction_type=6).aggregate(Sum('amount'))
+
+        if bonusAmount['amount__sum'] is None:
+            bonusAmount['amount__sum'] = 0
+        if withdrawAmount['amount__sum'] is None:
+            withdrawAmount['amount__sum'] = 0
+        if depositAmount['amount__sum'] is None:
+            depositAmount['amount__sum'] = 0
+
+        if depositAmount['amount__sum'] == 0:
+            withdrawRate = 0
+            bonusRate = 0
+        else:
+            withdrawRate = withdrawAmount['amount__sum']/depositAmount['amount__sum']
+            bonusRate = bonusAmount['amount__sum']/depositAmount['amount__sum']
         
+        context['withdrawDepositRate'] = "%.2f" % withdrawRate
+        context['bonusDepositRate'] = "%.2f" % bonusRate
+        context['depositCount'] = depositCount
+        context['withdrawCount'] = withdrawCount
+        context['depositAmount'] = depositAmount['amount__sum']
+        context['withdrawAmount'] = withdrawAmount['amount__sum']
+        
+        if userLastLogin is None:
+            context['relativeAccount'] = ''
+        else:
+            context['relativeAccount'] = self.account_by_ip(userLastLogin.ip_addr, userLastLogin.user)
+        # print(str(context['relativeAccount']))
+
+        deposits = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first()
+        if deposits:
+            deposits = serializers.serialize('json', [deposits])
+            deposits = json.loads(deposits)
+            lastDeposit = []
+            for deposit in deposits:
+                try:
+                    time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                depositDict = {
+                    'transactionId': str(deposit['pk']),
+                    'category': str(transTypeMap[deposit['fields']['transaction_type']]),
+                    'transType': transTypeMap[deposit['fields']['transaction_type']],
+                    'transTypeCode': deposit['fields']['transaction_type'],
+                    'product': productMap[deposit['fields']['product']],
+                    'toWhichWallet': str(deposit['fields']['transfer_to']),
+                    'currency': currencyMap[deposit['fields']['currency']],
+                    'time': time,
+                    'amount': deposit['fields']['amount'],
+                    'status': statusMap[deposit['fields']['status']],
+                    'bank': str(deposit['fields']['bank']),
+                    'channel': channelMap[deposit['fields']['channel']],
+                    'method': deposit['fields']['method'],
+                }
+                lastDeposit.append(depositDict)
+            context['lastDeposits'] = lastDeposit[:1]
+        else:
+            context['lastDeposits'] = ''
+
+        withdraws = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
+        if withdraws:
+            withdraws = serializers.serialize('json', [withdraws])
+            withdraws = json.loads(withdraws)
+            lastWithdraw = []
+            for withdraw in withdraws:
+                try:
+                    time = datetime.datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(withdraw['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                withdrawDict = {
+                    'transactionId': str(withdraw['pk']),
+                    'category': withdraw['fields']['transaction_type'],
+                    'transType': transTypeMap[withdraw['fields']['transaction_type']],
+                    'transTypeCode': withdraw['fields']['transaction_type'],
+                    'product': productMap[withdraw['fields']['product']],
+                    'toWhichWallet': str(withdraw['fields']['transfer_to']),
+                    'currency': currencyMap[withdraw['fields']['currency']],
+                    'time': time,
+                    'amount': withdraw['fields']['amount'],
+                    'status': statusMap[withdraw['fields']['status']],
+                    'bank': str(withdraw['fields']['bank']),
+                    'channel': channelMap[withdraw['fields']['channel']],
+                    'method': withdraw['fields']['method'],
+                }
+                lastWithdraw.append(withdrawDict)
+            context['lastWithdraws'] = lastWithdraw[:1]
+        else:
+            context['lastWithdraws'] = ''
+
+
+        activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
+        if activity:
+            context['activity'] = activity
+        else:
+            context['activity'] = ''
+
 
         return render(request, 'user_detail.html', context)
 
@@ -1194,6 +1352,50 @@ class UserDetailView(CommAdminView):
             # print(CustomUser.objects.get(pk=user_id).id_image)
 
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+        
+        elif post_type == 'update_message':
+            admin_user = request.POST.get('admin_user')
+            message = request.POST.get('message')
+
+            UserActivity.objects.create(
+                user = CustomUser.objects.filter(pk=user_id).first(),
+                admin = CustomUser.objects.filter(username=admin_user).first(),
+                message = message,
+                activity_type = 3,
+            )
+
+            logger.info('Finished create activity to DB')
+            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+
+        elif post_type == 'activity_filter':
+            activity_type = request.POST.get('activity_type')
+
+            user = CustomUser.objects.get(pk=user_id)
+            # print(str(activity_type))
+            
+            if activity_type == 'all':
+                activitys = UserActivity.objects.filter(user=user).order_by('-created_time')
+            else:
+                activitys = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
+            
+            activitys = serializers.serialize('json', activitys)
+            activitys = json.loads(activitys)
+            response = []
+            for act in activitys:
+                actDict = {}
+                try:
+                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                actDict['time'] = time
+                adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
+                actDict['adminUser'] = str(adminUser.username)
+                actDict['message'] = act['fields']['message']
+                response.append(actDict)
+            # print(str(response))
+
+            return HttpResponse(json.dumps(response), content_type='application/json')
 
         elif post_type == 'get_user_transactions':
             time_from = request.POST.get('from')
@@ -1205,9 +1407,9 @@ class UserDetailView(CommAdminView):
             user = CustomUser.objects.get(pk=user_id)
 
             if time_from == 'Invalid date':
-                time_from = datetime(2000, 1, 1)
+                time_from = datetime.datetime(2000, 1, 1)
             if time_to == 'Invalid date':
-                time_to = datetime(2400, 1, 1)
+                time_to = datetime.datetime(2400, 1, 1)
 
             logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
             logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
@@ -1215,12 +1417,12 @@ class UserDetailView(CommAdminView):
             if category == 'all':
                 transactions = Transaction.objects.filter(
                     Q(user_id=user) & Q(request_time__range=[time_from, time_to])
-                )[fromItem:endItem]
+                ).order_by('-request_time')[fromItem:endItem]
                 count = Transaction.objects.filter(Q(user_id=user) & Q(request_time__range=[time_from, time_to])).count()
             else:
                 transactions = Transaction.objects.filter(
                     Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])
-                )[fromItem:endItem]
+                ).order_by('-request_time')[fromItem:endItem]
                 count = Transaction.objects.filter(Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])).count()
 
             response = {}
@@ -1249,6 +1451,35 @@ class UserDetailView(CommAdminView):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
     
+    def account_by_ip(self, userIp, username):
+        relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
+        # print(relative_account)
+
+        accounts = []
+        for item in relative_account:
+            userDict = {}
+            # user = CustomUser.objects.get(username=i.user)
+            user = CustomUser.objects.get(pk=item['user_id'])
+            userDict['id'] = user.pk
+            userDict['username'] = user.username
+            userDict['source'] = user.get_user_attribute_display
+            userDict['channel'] = user.get_user_attribute_display
+            depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
+            depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
+            userDict['turnover'] = ''
+            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+            if withdrawAmount['amount__sum'] is None:
+                withdrawAmount['amount__sum'] = 0
+            userDict['withdrawal'] = withdrawAmount['amount__sum']
+            userDict['contribution'] = ''
+            userDict['riskLevel'] = 'A'
+            accounts.append(userDict)
+        return accounts
+
+
+
+
     def download_user_photo_id(self, username):
         aws_session = boto3.Session()
         s3_client = aws_session.client('s3')
@@ -1368,7 +1599,7 @@ class UserListView(CommAdminView):
             userDict['deposit_amount'] = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
             userDict['withdrawal'] = Transaction.objects.filter(user_id=user, transaction_type=1).count()
             userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
-            userDict['last_logint_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+            userDict['last_login_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
             # print("object: " + str(userDict))
             user_data.append(userDict)
         
@@ -1413,9 +1644,9 @@ class UserListView(CommAdminView):
             endItem = fromItem + pageSize
 
             if time_from == 'Invalid date':
-                time_from = datetime(2000, 1, 1)
+                time_from = datetime.datetime(2000, 1, 1)
             if time_to == 'Invalid date':
-                time_to = datetime(2400, 1, 1)
+                time_to = datetime.datetime(2400, 1, 1)
 
             # print('fromItem: ' + str(fromItem))
             # print('endItem: ' + str(endItem))

@@ -93,6 +93,12 @@ COUNTRY_CHOICES = (
     ('JP', 'Japan'),
 )
 
+ACTIVITY_TYPE = (
+    (0, 'Operation'),
+    (1, 'Remark'),
+    (2, 'Chat'),
+    (3, 'Note'),
+)
 
 AGENT_LEVEL = (
     ('Premium', 'Premium'),
