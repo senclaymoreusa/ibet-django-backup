@@ -15,8 +15,17 @@ class NoticeMessageSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('pk', 'content', 'notification_method', 'notification_type', 'notifiers', 'create_on', 'publish_on')
+        fields = ('pk',  'content', 'notification_choice', 'notification_type', 'notification_method', 'notifiers', 'create_on', 'publish_on')
+        read_only_fields = ['pk', 'publish_on']
 
+
+'''
+class NotificationSerializer(serializers.Serializer):
+    content = serializers.CharField(required=True)
+    
+    def create(self, validated_data):
+        return Notification.objects.get_or_create(**validated_data)
+'''
 
 class NotificationLogSerializer(serializers.ModelSerializer):
     class Meta:

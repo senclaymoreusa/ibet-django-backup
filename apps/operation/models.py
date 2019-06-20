@@ -7,11 +7,13 @@ from django.contrib.auth.models import User
 import base64
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
-
 from users.models import CustomUser
 # Create your models here.
 
 
+'''
+The NoticeMessage Class will depricate soon, please ignore this function
+'''
 class NoticeMessage(models.Model): 
 
     start_time = models.DateTimeField('Start Time', blank=False)
@@ -43,13 +45,19 @@ class Notification(models.Model):
         # (3, 'REFERRAL')
     )
 
-    content = models.CharField(max_length=200, default='')
+    NOTIFICATION_METHOD = (
+        ('P', _('push')),
+        ('S', _('sms')),
+        ('E', _('email'))
+    )
 
-    notification_method = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
+    content = models.CharField(max_length=200, default='')
+    notification_choice = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
     notification_type = models.IntegerField(default=1, choices=NOTIFICATION_TYPE)
-    notifiers = models.ForeignKey(CustomUser, blank=True, on_delete=models.CASCADE)
-    create_on = models.DateTimeField('Create Time', blank=False)
-    publish_on = models.DateTimeField('Publish Time', blank=False)
+    notification_method = models.CharField(max_length=3, default='P', choices=NOTIFICATION_METHOD)
+    notifiers = models.ForeignKey(CustomUser, blank=False, on_delete=models.CASCADE)
+    create_on = models.DateTimeField('Create Time', auto_now_add=True, blank=False)
+    publish_on = models.DateTimeField('Publish Time', auto_now_add=True, blank=False)
 
     # pusher_client = Pusher("", "", "", "")
 
