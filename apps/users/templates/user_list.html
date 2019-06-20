@@ -224,7 +224,7 @@ $(document).ready(function() {
 
     function searchOpen() {
         var search = $('#search').val();
-        var url = "{% url 'auto_user' %}" + "?search=" + search;
+        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search;
         $.ajax({
             url: url,
             type: 'GET',
