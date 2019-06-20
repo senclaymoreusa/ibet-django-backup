@@ -1553,12 +1553,8 @@ class UserListView(CommAdminView):
         context['title'] = title
         context['time'] = timezone.now()
         if search:
-            try:
-                count = CustomUser.objects.filter(username__contains=search).count()
-                customUser = CustomUser.objects.filter(username__contains=search)[offset:offset+pageSize]
-            except:
-                count = CustomUser.objects.filter(email__contains=search).count()
-                customUser = CustomUser.objects.filter(email__contains=search)[offset:offset+pageSize]
+            count = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)).count()
+            customUser = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))[offset:offset+pageSize]
         else:
             count = CustomUser.objects.all().count()
             customUser = CustomUser.objects.all()[offset:offset+pageSize]
