@@ -22,7 +22,7 @@ from django.conf import settings
 import requests,json
 import logging
 import time
-from time import sleep
+from time import sleep,gmtime, strftime
 
 logger = logging.getLogger('django')
 currencyConversion = {
@@ -91,7 +91,7 @@ class paypalCreatePayment(generics.GenericAPIView):
             }]
         }
         success = False
-        for x in range(3):
+        for x in range(1):
             r = requests.post(url + 'v1/payments/payment', headers=headers, data = json.dumps(body))
             rdata = r.json()
             if r.status_code == 200:
@@ -113,9 +113,9 @@ class paypalCreatePayment(generics.GenericAPIView):
             for x in Transaction._meta.get_field('currency').choices:
                     if currency == x[1]:
                         cur_val = x[0]
-            create = Transaction.objects.get_or_create(
+            create = Transaction.objects.update_or_create(
                     user_id=userId,
-                    #order_id= rdata["id"],
+                    transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
                     amount=amount,
                     method= rdata["payer"]["payment_method"],
                     currency= cur_val,
@@ -148,7 +148,7 @@ class paypalGetOrder(APIView):
         for x in range(3):
             r = requests.post(url + 'v2/checkout/orders/' + order_id + '/capture', headers=headers)
             rdata = r.json()
-            if r.status_code == 200:
+            if r.status_code == 201:
                 break
             elif r.status_code == 500:
                 print("Request failed {} time(s)'.format(x+1)")
@@ -168,18 +168,27 @@ class paypalGetOrder(APIView):
                     if rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["currency_code"] == x[1]:
                         cur_val = x[0]
             if rdata["status"] == 'COMPLETED': 
-                create = Transaction.objects.update_or_create(
-                    user_id=userId,
-                    payer_id=rdata["payer"]["payer_id"],
-                    order_id= rdata["id"],
-                    request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
-                    arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
-                    amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
-                    currency= cur_val,
-                    transaction_type=0, 
-                    channel=5,
-                    status=6,
-                )
+                update_data = Transaction.objects.get(user_id=userId,
+                                                    amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
+                                                    method="paypal",
+                                                    status=2)
+                update_data.status=6
+                update_data.order_id=rdata["id"]
+                update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
+                update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
+                update_data.save()
+                # create = Transaction.objects.update_or_create(
+                #     user_id=userId,
+                #     payer_id=rdata["payer"]["payer_id"],
+                #     order_id= rdata["id"],
+                #     request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
+                #     arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
+                #     amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
+                #     currency= cur_val,
+                #     transaction_type=0, 
+                #     channel=5,
+                #     status=6,
+                # )
                 print("Payment[%s] capture successfully" % (rdata['id']))
 
         else:
@@ -205,7 +214,7 @@ class paypalExecutePayment(APIView):
                 'payer_id': payer_id,
             })
             rdata = r.json()
-            if r.status_code == 200:
+            if r.status_code == 201:
                 break
             elif r.status_code == 500:
                 print("Request failed {} time(s)'.format(x+1)")
