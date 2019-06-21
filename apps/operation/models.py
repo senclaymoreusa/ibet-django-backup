@@ -36,7 +36,7 @@ class Notification(models.Model):
     NOTIFICATION_CHOICE = (
         ('U', _('Unicast')),
         # ('M', 'Multicast'),
-        ('B', _('Broadcast')),
+        # ('B', _('Broadcast')),
     )
 
     NOTIFICATION_TYPE = (

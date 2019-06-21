@@ -9,6 +9,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView,
 from .serializers import NoticeMessageSerializer, NotificationSerializer
 from .models import NoticeMessage, Notification
 from users.models import CustomUser
+from djauth import third_party_keys
 
 # from drf_model_pusher.views import ModelPusherViewMixin
 
@@ -60,12 +61,6 @@ class NoticeMessageView(ListAPIView):
         return NoticeMessage.objects.all()
     '''
 
-'''
-class NotificationView(ListAPIView):
-    serializer_class = NotificationSerializer
-    queryset = Notification.objects.all()
-'''
-
 
 class NotificationView(GenericAPIView):
     lookup_field = 'pk'
@@ -89,23 +84,45 @@ class NotificationView(GenericAPIView):
         notifiers = self.request.POST['notifiers']
 
 
-        if serializer.is_valid():
-            client = boto3.client('sns', 'us-west-2')
-            # if notification_choice == 'B':
-            #     notifiers = CustomUser.objects.all()
-            #     for notifier in notifiers:
-            #         print(notifier.phone)
-            #         client.publish(PhoneNumber=notifier.phone, Message=content)
-            if notification_method == 'P':
-                pass
+        if serializer.is_valid():            
+            # AWS SNS Client
+            sns = boto3.resource('sns')
+            # client = boto3.client('sns', 'us-west-2')
+            client = boto3.client(
+                'sns',
+                aws_access_key_id = third_party_keys.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key = third_party_keys.AWS_SECRET_ACCESS_KEY,
+                region_name = third_party_keys.AWS_REGION_NAME
+            )
 
-            if notification_method == 'S':
-                # AWS SNS Client
-                notifier = CustomUser.objects.get(pk=notifiers)
-                phone = notifier.phone
-                print(phone)
-                # client.publish(PhoneNumber=Notification.notifiers.objects.get('phone')))
-                client.publish(PhoneNumber=phone, Message=content)
+            # Push Notification
+            if notification_method == 'P':
+                platform_endpoint = sns.PlatformEndpoint(third_party_keys.SNS_PLATFORM_ENDPOINT_ARN)
+
+                platform_endpoint.publish(
+                    Message=content,
+                )
+                # print(content)
+
+            try:
+                # SMS Notification
+                if notification_method == 'S':
+                    notifier = CustomUser.objects.get(pk=notifiers)
+                    phone = notifier.phone
+                    # print(phone)
+                    client.publish(PhoneNumber=phone, Message=content)
+            except Exception as e:
+                print("Unexpected error: %s" % e)
+                return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
+
+            # Email Notification
+            if notification_method == 'E':
+                # AWS SNS Topic
+                topic = sns.Topic(third_party_keys.SNS_TOPIC_ARN)
+                topic.publish(
+                    Message=content,
+                    Subject='iBet Notification',
+                )
 
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
