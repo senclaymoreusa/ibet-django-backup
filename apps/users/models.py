@@ -64,6 +64,14 @@ class CustomUser(AbstractBaseUser):
         (1, _('Inactive')),
         (2, _('Blocked'))
     )
+
+    LANGUAGE = (
+        ('English', 'English'),
+        ('Chinese', 'Chinese'),
+        ('French', 'French')
+    )
+
+    language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     # add additional fields in here
     username = models.CharField(
 					max_length=255,
@@ -84,14 +92,15 @@ class CustomUser(AbstractBaseUser):
     user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20, unique=True)
+    phone = models.CharField(max_length=25)
     country = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
     street_address_1 = models.CharField(max_length=100, blank=True)
     street_address_2 = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
+    language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
@@ -102,7 +111,7 @@ class CustomUser(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
         
-    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True)
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
     title = models.CharField(max_length=10, blank=True)
     over_eighteen = models.BooleanField(default=False)
     odds_display = models.FloatField(default=0, blank=True)
