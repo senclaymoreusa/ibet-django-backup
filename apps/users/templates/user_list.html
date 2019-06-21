@@ -18,7 +18,12 @@
             </div>
         </div>
     </div>
-    <div class='col-md-8'>
+    <div class="col-md-3">
+        {% if searchError %}
+            <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
+        {% endif %}
+    </div>
+    <!-- <div class='col-md-8'> -->
         <!-- {% block time_search %} -->
         <!-- <label>Date Range</label>
         <div class="row">
@@ -43,7 +48,7 @@
             </div>
         </div> -->
         <!-- {% endblock %} -->
-    </div>
+    <!-- </div> -->
 </div>
 
 <div style="margin-top:40px;">

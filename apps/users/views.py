@@ -1555,6 +1555,12 @@ class UserListView(CommAdminView):
         if search:
             count = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)).count()
             customUser = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))[offset:offset+pageSize]
+
+            if count == 0:
+                count = CustomUser.objects.all().count()
+                customUser = CustomUser.objects.all()[offset:offset+pageSize]
+                context['searchError'] = _("No search data")
+
         else:
             count = CustomUser.objects.all().count()
             customUser = CustomUser.objects.all()[offset:offset+pageSize]
