@@ -849,9 +849,11 @@ def generate_username():
     return username_1 + username_2
 
 
-class OneclickRegister(View):
-    def post(self, request, *args, **kwargs):
-        
+class OneclickRegister(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
@@ -877,7 +879,7 @@ class OneclickRegister(View):
         user = CustomUser.objects.filter(username=username)
         user.update(active=True, modified_time=timezone.now())
 
-        return HttpResponse(username + '-' + password)
+        return Response({'username': username, 'password': password})
 
 
 class UpdateEmail(View):
@@ -1724,5 +1726,30 @@ class CheckUsernameExist(View):
         if user:
             return HttpResponse('Exist')
         return HttpResponse('Valid')
+
+class GenerateActivationCode(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        username = request.data['username']
+        user = get_user_model().objects.filter(username=username)
+        random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+        user.update(activation_code=random_num)
+        return Response(status=status.HTTP_200_OK)
+
+class VerifyActivationCode(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        username = request.data['username']
+        code = request.data['code']
+        user = get_user_model().objects.filter(username=username)
+        if user[0].activation_code == code:
+            user.update(active=True)
+            return Response({'status': 'Success'})
+        return Response({'status': 'Failed'})
+
 
 
