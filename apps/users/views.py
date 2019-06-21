@@ -631,11 +631,11 @@ class AddOrWithdrawBalance(APIView):
                 current_points = reward_points + data.Referee_add_balance_reward
                 referr_object.update(reward_points=current_points, modified_time=timezone.now())
 
-            create = Transaction.objects.create(
-                user_id=CustomUser.objects.filter(username=username).first(), 
-                amount=balance, 
-                transaction_type=0
-            )
+            # create = Transaction.objects.create(
+            #     user_id=CustomUser.objects.filter(username=username).first(), 
+            #     amount=balance, 
+            #     transaction_type=0
+            # )
 
             # action = UserAction(
             #     user= CustomUser.objects.filter(username=username).first(),

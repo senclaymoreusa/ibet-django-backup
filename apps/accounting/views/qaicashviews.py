@@ -331,11 +331,11 @@ class submitDeposit(generics.GenericAPIView):
         rdata = r.json()
         print(rdata)
         
-        create = Transaction.objects.get_or_create(
+        create = Transaction.objects.create(
             order_id= rdata['depositTransaction']['orderId'],
-            #request_time=rdata["depositTransaction"]["dateCreated"],
+            transaction_id=rdata["depositTransaction"]["transactionId"],
             amount=rdata["depositTransaction"]["amount"],
-            status=statusConversion[rdata["depositTransaction"]["status"]],
+            status=2,
             user_id=CustomUser.objects.get(pk=userId),
             method= rdata["depositTransaction"]["depositMethod"],
             currency= curr,
@@ -670,32 +670,17 @@ class getDepositTransaction(generics.GenericAPIView):
 
         rdata = r.json()
         print(rdata)
-        if r.status_code == 201:  
-            
-            for x in Transaction._meta.get_field('currency').choices:
-
-                if rdata['currency'] == x[1]:
-                    cur_val = x[0]
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
-
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                request_time=rdata["dateCreated"],
-                amount=rdata["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["payoutMethod"],
-                currency= cur_val,
-                transaction_type=0,
-                
-            )
-        else:
-            logger.error('The request information is nor correct, please try again')
         
+        for x in Transaction._meta.get_field('currency').choices:
+
+            if rdata['currency'] == x[1]:
+                cur_val = x[0]
         
+        update_data = Transaction.objects.get(order_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
+        update_data.status=6
+        update_data.request_time=rdata["dateCreated"]
+        update_data.save()
+      
         return Response(rdata)
 
 class transactionStatusUpdate(generics.GenericAPIView):

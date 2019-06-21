@@ -144,6 +144,9 @@ ASIAPAY_BANK_CHOICES = (
     ('16','兴业银行'),
     ('17','华夏银行'),
     ('23','平安银行'),
+    ('38','微信支付'),
+    ('39','快捷支付'),
+    ('41','支付宝'),
     ('49','京东支付'),
     ('201', '比特币')
 )
@@ -182,9 +185,6 @@ ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
 #aisa-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
-
-
-#asiapay
 ASIAPAY_CID = "BRANDCQNGHUA3"
 COMDEPOSITKET = "A49E448121886D7C857B39C3467EC117"
 ASIAPAY_KEY1 = "f6b451943fb44a38"

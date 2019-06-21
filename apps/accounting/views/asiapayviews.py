@@ -25,7 +25,26 @@ from time import sleep
 from des import DesKey
 import base64
 from time import gmtime, strftime
-
+bankidConversion = {
+    '1':'工商银行',
+    '2':'建设银行',
+    '3':'农业银行',
+    '4':'招商银行',
+    '6':'广发银行',
+    '7':'中国银行',
+    '9':'中国邮政储蓄银行',
+    '10':'中信银行',
+    '11':'光大银行',
+    '12':'民生银行',
+    '16':'兴业银行',
+    '17':'华夏银行',
+    '23':'平安银行',
+    '38':'微信支付',
+    '39':'快捷支付',
+    '41':'支付宝',
+    '49':'京东支付',
+    '201': '比特币',
+}
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
@@ -52,15 +71,15 @@ class submitDeposit(generics.GenericAPIView):
     serializer_class = asiapayDepositSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
-        serializer = asiapayDepositSerialize(self.queryset, many=True)
+        
         eString = ASIAPAY_R1 + "," + ASIAPAY_CID + "," + ASIAPAY_R2
         myIv = bytearray(b'\x32\xCD\x13\x58\x21\xAB\xBC\xEF')
         
         userid = self.request.POST.get("userid")
         uID = "n" + userid
         UserIP= self.request.POST.get("UserIP")
-        TraceID = self.request.POST.get("TraceID")
-        OrderID = 'D' + self.request.POST.get("OrderID")
+        TraceID = strftime("%Y%m%d%H%M%S", gmtime())
+        OrderID = 'D' + "_ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
         BankID = self.request.POST.get("BankID")
         PayWay = self.request.POST.get("PayWay")
@@ -68,7 +87,7 @@ class submitDeposit(generics.GenericAPIView):
         amount = self.request.POST.get("amount")
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + COMDEPOSITKET
         user =  CustomUser.objects.get(pk=userid)
-        
+        currency = self.request.POST.get("currency")
         print(SignCode)
         print(MD5(SignCode))
         ParamList_Msg ={
@@ -143,15 +162,21 @@ class submitDeposit(generics.GenericAPIView):
                 print("There was something wrong with the result")
                 print(rdata)
                 return Response(rdata)
-        # depositData = {
-        #     "order_id": OrderID, 
-        #     "amount": data[3],
-        #     "user_id":  data[1],
-        #     "bank": data[7],
-        #     "currency": currencyConversion[data[10]],
-        #     "channel": 2,
-        #     "status": statusConversion[data[0]]
-        # }
+        depositData = {
+            "order_id": OrderID, 
+            "amount": amount,
+            "user_id":  userid,
+            "method": bankidConversion[BankID],
+            "currency": currency,
+            "channel": 4,
+            "status": 3,
+        }
+        print(depositData)
+        serializer = asiapayDepositSerialize(data=depositData)
+        if (serializer.is_valid()):
+            serializer.save()
+        else:
+            return Response({"error": "Invalid data passed into serializer"})
         return Response(rdata)
 
 
