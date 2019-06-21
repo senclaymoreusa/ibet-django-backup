@@ -22,7 +22,7 @@ CURRENCY_TYPES = (
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 CHANNEL_CHOICES = (
-    (0, 'Alipay'),
+    (0, 'Xpay'),
     (1, 'LINEpay'),
     (2, 'Astropay'),
     (3, 'Qaicash'),

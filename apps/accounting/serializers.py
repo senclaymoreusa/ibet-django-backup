@@ -170,7 +170,6 @@ class astroPaymentStatusSerialize(serializers.ModelSerializer):
 class asiapayDepositSerialize(serializers.Serializer):
     order_id           = serializers.CharField(required=True)
     userid             = serializers.CharField(required=True)
-    UserIP             = serializers.CharField(required=True)
     currency           = serializers.ChoiceField(choices=CURRENCY_CHOICES,default=0)           
     channel            = serializers.ChoiceField(choices=CHANNEL_CHOICES,default=4) 
     status             = serializers.ChoiceField(choices=STATE_CHOICES, default=3)

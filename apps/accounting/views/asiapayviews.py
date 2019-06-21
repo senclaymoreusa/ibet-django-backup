@@ -25,6 +25,7 @@ from time import sleep
 from des import DesKey
 import base64
 from time import gmtime, strftime
+
 bankidConversion = {
     '1':'工商银行',
     '2':'建设银行',
@@ -45,6 +46,15 @@ bankidConversion = {
     '49':'京东支付',
     '201': '比特币',
 }
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
@@ -77,11 +87,11 @@ class submitDeposit(generics.GenericAPIView):
         
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= self.request.POST.get("UserIP")
+        UserIP= get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID = 'D' + "_ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
-        BankID = self.request.POST.get("BankID")
+        BankID = self.request.POST.get("method")
         PayWay = self.request.POST.get("PayWay")
         DesTime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         amount = self.request.POST.get("amount")
@@ -162,21 +172,19 @@ class submitDeposit(generics.GenericAPIView):
                 print("There was something wrong with the result")
                 print(rdata)
                 return Response(rdata)
-        depositData = {
-            "order_id": OrderID, 
-            "amount": amount,
-            "user_id":  userid,
-            "method": bankidConversion[BankID],
-            "currency": currency,
-            "channel": 4,
-            "status": 3,
-        }
-        print(depositData)
-        serializer = asiapayDepositSerialize(data=depositData)
-        if (serializer.is_valid()):
-            serializer.save()
-        else:
-            return Response({"error": "Invalid data passed into serializer"})
+        tree = ET.fromstring(rdata)
+        StatusCode = tree.find('StatusCode').text
+        if StatusCode == '100503' or StatusMsg == 'OK':
+            create = Transaction.objects.create(
+                order_id=OrderID,
+                amount=amount,
+                user_id=CustomUser.objects.get(pk=userid),
+                currency= int(currency),
+                transaction_type=0, 
+                channel=4,
+                status=2,
+                method=bankidConversion[BankID],
+            )
         return Response(rdata)
 
 
