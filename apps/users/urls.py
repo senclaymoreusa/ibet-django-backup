@@ -14,6 +14,7 @@ urlpatterns += [
     path('games/', views.GameListView.as_view(), name='games'),
     path('all_search_list_view/', views.AllSearchListView.as_view(), name='all_search_list_view'),
     path('profile', views.profile, name='profile'),
+    path('fsearch', views.fsearch, name='fsearch')
 ]
 
 urlpatterns += [
@@ -45,5 +46,5 @@ urlpatterns += [
     path('api/verifyresetpasswordcode/', csrf_exempt(views.VerifyResetPasswordCode.as_view()), name='verify_resetpassword_code'),
     path('api/changeandresetpassword/', csrf_exempt(views.ChangeAndResetPassword.as_view()),name='change_reset_password'),
     path('api/changepassword/', views.ChangePassword.as_view(), name='change_password'),
-    path('api/checkusernameexist/', views.CheckUsernameExist.as_view(), name='check_username_exist')
+    path('api/checkusernameexist/', views.CheckUsernameExist.as_view(), name='check_username_exist'),
 ]

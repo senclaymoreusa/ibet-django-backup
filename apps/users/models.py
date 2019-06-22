@@ -148,6 +148,7 @@ class CustomUser(AbstractBaseUser):
     affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, default='Enabled')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
+    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
 
     #commission
     commission_id = models.ForeignKey(Commission, on_delete=models.CASCADE, default=1, verbose_name=_('Commission'))

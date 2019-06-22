@@ -195,15 +195,14 @@
 
 
                         <div class="modal-body">
-                            <input type="text" id="auto_material" name="material" class="campo" style="width:99%;" />
-                            <input type="hidden" id="id_material" />
-
-                            <form action="{% url 'xadmin:agent_detail' %}" method="POST">
+                            <form action="{% url 'xadmin:agent_detail' %}" method="POST" style="margin-top: 100px" autocomplete="off">
                                 {% csrf_token %}
-                                <!-- <div class="col-md-4"><strong>Affiliate Manager</strong>
-                                    <input type="text" id="auto_material" name="material" class="campo" style="width:99%;" />
-                                    <input type="hidden" id="id_material" />
-                                </div> -->
+                                
+                                <div class="col-md-4">
+                                    <strong>Affiliate Manager</strong>
+                                    <input autocomplete="xiaxiede" disableautocomplete type="text" id="search-text" name="managerName"/>
+                                    <input disableautocomplete type="hidden" name="search-result" id="search-result" value="" />
+                                </div>
 
                                 <fieldset id="group1">
                                     <div class='row'>
@@ -362,10 +361,6 @@
 
                             </form>
                         </div>
-
-                        <!-- <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div> -->
                     </div>
 
                 </div>
@@ -546,16 +541,14 @@
     <script
         src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.4.9/jquery.autocomplete.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script>
         $(document).ready(function () {
-            $('#auto_material').keyup(function () {
-                var q = $('#auto_material').val();
-                $("#auto_material").autocomplete({
+            $('#search-text').keyup(function () {
+                var q = $('#search-text').val();
+                $("#search-text").autocomplete({
                     source: function (request, response) {
                         $.ajax({
                             url: "{% url 'fsearch' %}",
@@ -563,7 +556,6 @@
                             type: 'GET',
                             data: { 'q': q },
                             success: function (data) {
-                                console.log(data)
                                 response(data);
                             }
                         });
@@ -571,14 +563,14 @@
                     minLength: 1,
                     //select
                     select: function (e, ui) {
-                        alert(ui.item.value);
+                        // alert(ui.item.value);
                     },
-                    // open: function () {
-                    //     $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
-                    // },
-                    // close: function () {
-                    //     $(this).removeClass("ui-corner-top").addClass("ui-corner-all");
-                    // }
+                    open: function () {
+                        $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
+                    },
+                    close: function () {
+                        $(this).removeClass("ui-corner-top").addClass("ui-corner-all");
+                    }
                 });
             });
 

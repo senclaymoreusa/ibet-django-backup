@@ -1365,6 +1365,7 @@ class AgentView(CommAdminView):
         before_last_month = datetime.date.today().replace(day=1) + relativedelta(months=-2)
         this_month = datetime.date.today().replace(day=1)
         downline_list = users.filter(referred_by_id__isnull=False)
+        tran_for_active_user = Transaction.objects.filter(Q(transaction_type=0) & Q(transaction_type=2))
 
         # get transaction type 
         tran_type = Transaction._meta.get_field('transaction_type').choices
@@ -1395,7 +1396,7 @@ class AgentView(CommAdminView):
         # new data
         context["ftd_this_month"] = agents.filter(ftd_time__gte=last_month).count()
         # get the specific definition
-        context["actives_this_month"] = Transaction.objects.filter(Q(request_time__gte=last_month) & Q(user_id__in=agents)).values_list('user_id').distinct().count()
+        context["actives_this_month"] = tran_for_active_user.filter(Q(request_time__gte=last_month) & Q(user_id__in=agents)).values_list('user_id').distinct().count()
         context["affiliates_acquired_this_month"] = agents.filter(user_application_time__gte=last_month).count()
 
 
@@ -1462,11 +1463,13 @@ class AgentView(CommAdminView):
         users_with_application_to_premium = users.exclude(user_application_time=None).order_by('-user_application_time')
         context["users_with_application_to_premium"] = users_with_application_to_premium
 
-        return render(request, 'users/agent_list.html', context) 
-    
+        return render(request, 'agents/agent_list.html', context) 
     
 
+ 
+
 class AgentDetailView(CommAdminView):
+
     def get(self, request, *args, **kwargs):
         context = super().get_context()
         agent = CustomUser.objects.get(pk=self.kwargs.get('pk'))
@@ -1589,9 +1592,19 @@ class AgentDetailView(CommAdminView):
             opeartion_report.append(opeartion_info)
         context["opeartion_report"] = opeartion_report
 
+        # get manager list and search for name
+        # global variable
+        manager_id_list = CustomUser.objects.values('managed_by').distinct()
+        manager_name_list = CustomUser.objects.filter(pk__in=manager_id_list).values('username')
 
-        # promotion report
+        return render(request,"agents/agent_detail.html", context)
 
-
-
-        return render(request,"users/agent_detail.html", context)
+def fsearch(request):
+    q = request.GET['q']
+    manager_id_list = CustomUser.objects.values('managed_by').distinct()
+    manager_name_list = CustomUser.objects.filter(pk__in=manager_id_list).values('username')
+    recontents = CustomUser.objects.filter(pk__in=manager_id_list).filter(username__startswith=q)
+    rejson = []
+    for recontent in recontents:
+        rejson.append(recontent.username)
+    return HttpResponse(json.dumps(rejson), content_type='application/json') 

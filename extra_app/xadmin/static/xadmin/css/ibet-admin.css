@@ -298,3 +298,7 @@ table.table-bordered > tbody > tr > td{
     text-align: center; 
     overflow: hidden;
 }
+
+ul.ui-autocomplete {
+    z-index: 1100;
+}

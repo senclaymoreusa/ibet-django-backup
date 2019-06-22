@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
+    'table',
 ]
 
 SITE_ID = 1                        # Stephen
