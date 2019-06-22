@@ -178,5 +178,16 @@ class asiapayDepositSerialize(serializers.Serializer):
     amount          = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
+class asiapayCashoutSerialize(serializers.Serializer):
+    order_id           = serializers.CharField(required=True)
+    userid             = serializers.CharField(required=True)
+    currency           = serializers.ChoiceField(choices=CURRENCY_CHOICES,default=0)           
+    channel            = serializers.ChoiceField(choices=CHANNEL_CHOICES,default=4) 
+    status             = serializers.ChoiceField(choices=STATE_CHOICES, default=3)
+    method          = serializers.ChoiceField(choices=ASIAPAY_BANK_CHOICES)
+    PayWay          = serializers.ChoiceField(choices=ASIAPAY_PAYWAY_CHOICES)
+    amount          = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
     
 
