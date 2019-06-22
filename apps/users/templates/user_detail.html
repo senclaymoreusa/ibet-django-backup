@@ -266,71 +266,111 @@
                     </div>
                     <div class="col-md-4" style="margin-right: -19px;">
                         <div class="user-detail-content-title">DEPOSIT</div>
-                        {% for lastDeposit in lastDeposits %}
-                        <div class="user-info-block">
-                            <div id="member-input-container">
-                                <div>
-                                    <div class="block-title">Time</div>
-                                    {% if lastDeposit.time %}
-                                        <div class="block-text">{{ lastDeposit.time }}</div>
-                                    {% else %}
+                        {% if lastDeposits|length == 0 %}
+                            <div class="user-info-block">
+                                <div id="member-input-container">
+                                    <div>
+                                        <div class="block-title">Time</div>
                                         <div class="block-text">None</div>
-                                    {% endif %}
-                                </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Amount</div>
-                                    {% if lastDeposit.amount %}
-                                        <div class="block-text">{{ lastDeposit.amount }}</div>
-                                    {% else %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Amount</div>
                                         <div class="block-text">None</div>
-                                    {% endif %}
-                                </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Status</div>
-                                    {% if lastDeposit.status %}
-                                        <div class="block-text">{{ lastDeposit.status }}</div>
-                                    {% else %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Status</div>
                                         <div class="block-text">None</div>
-                                    {% endif %}
+                                    </div>
                                 </div>
+                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposits }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
-                            <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
-                        </div>
-                        {% endfor %}
+                        {% else %}
+                            {% for lastDeposit in lastDeposits %}
+                            <div class="user-info-block">
+                                <div id="member-input-container">
+                                    <div>
+                                        <div class="block-title">Time</div>
+                                        {% if lastDeposit.time %}
+                                            <div class="block-text">{{ lastDeposit.time }}</div>
+                                        {% else %}
+                                            <div class="block-text">None</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Amount</div>
+                                        {% if lastDeposit.amount %}
+                                            <div class="block-text">{{ lastDeposit.amount }}</div>
+                                        {% else %}
+                                            <div class="block-text">None</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Status</div>
+                                        {% if lastDeposit.status %}
+                                            <div class="block-text">{{ lastDeposit.status }}</div>
+                                        {% else %}
+                                            <div class="block-text">None</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                     <div class="col-md-4">
                         <div class="user-detail-content-title">WITHDRAWAL</div>
-                        {% for lastWithdraw in lastWithdraws %}
-                        <div class="user-info-block">
-                            <div id="member-input-container">
-                                <div>
-                                    <div class="block-title">Time</div>
-                                    {% if lastWithdraw.time %}
-                                        <div class="block-text">{{ lastWithdraw.time }}</div>
-                                    {% else %}
+                        {% if lastWithdraws|length == 0 %}
+                            <div class="user-info-block">
+                                <div id="member-input-container">
+                                    <div>
+                                        <div class="block-title">Time</div>
                                         <div class="block-text">None</div>
-                                    {% endif %}
-                                </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Amount</div>
-                                    {% if lastWithdraw.amount %}
-                                        <div class="block-text">{{ lastWithdraw.amount }}</div>
-                                    {% else %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Amount</div>
                                         <div class="block-text">None</div>
-                                    {% endif %}
-                                </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Status</div>
-                                    {% if lastWithdraw.status %}
-                                        <div class="block-text">{{ lastWithdraw.status }}</div>
-                                    {% else %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Status</div>
                                         <div class="block-text">None</div>
-                                    {% endif %}
+                                    </div>
                                 </div>
+                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraws }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
-                            <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraw }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
-                        </div>
-                        {% endfor %}
+                        {% else %}
+                            {% for lastWithdraw in lastWithdraws %}
+                            <div class="user-info-block">
+                                <div id="member-input-container">
+                                    <div>
+                                        <div class="block-title">Time</div>
+                                        {% if lastWithdraw.time %}
+                                            <div class="block-text">{{ lastWithdraw.time }}</div>
+                                        {% else %}
+                                            <div class="block-text">None</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Amount</div>
+                                        {% if lastWithdraw.amount %}
+                                            <div class="block-text">{{ lastWithdraw.amount }}</div>
+                                        {% else %}
+                                            <div class="block-text">None</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin-top:12px;">
+                                        <div class="block-title">Status</div>
+                                        {% if lastWithdraw.status %}
+                                            <div class="block-text">{{ lastWithdraw.status }}</div>
+                                        {% else %}
+                                            <div class="block-text">None</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraws }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>                       
                 </div>
                 <div class="row">
@@ -1817,7 +1857,6 @@ $(document).ready(function() {
         // console.log(JSON.parse(trans));
         var time = moment(trans.time).format('MMMM, D, YYYY h:mm a');
         if (type === "deposit") {
-
             $("#deposit-detail").empty();
             var content = "";
             content += "<p>" + username + "</p>";

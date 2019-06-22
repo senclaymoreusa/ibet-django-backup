@@ -1278,7 +1278,7 @@ class UserDetailView(CommAdminView):
                 lastDeposit.append(depositDict)
             context['lastDeposits'] = lastDeposit[:1]
         else:
-            context['lastDeposits'] = ''
+            context['lastDeposits'] = {}
 
         withdraws = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
         if withdraws:
@@ -1309,7 +1309,7 @@ class UserDetailView(CommAdminView):
                 lastWithdraw.append(withdrawDict)
             context['lastWithdraws'] = lastWithdraw[:1]
         else:
-            context['lastWithdraws'] = ''
+            context['lastWithdraws'] = {}
 
 
         activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
