@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'xadmin',
     'crispy_forms',
+    'apps',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -176,6 +177,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
+
 }
 
 

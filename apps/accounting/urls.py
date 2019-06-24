@@ -1,10 +1,14 @@
 from django.urls import path, include
+from django.conf.urls import url
 from rest_framework import routers
 
 import accounting.views.qaicashviews as qaicash
 import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
+import accounting.views.asiapayviews as asiapay
+
+from .views.adminviews import DepositView
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name = 'deposit_method'),
@@ -26,4 +30,12 @@ urlpatterns = [
     path('api/linepay/reserve_payment', linepay.reservePayment, name = "LINEpay_reserve_payment"),
     path('api/astropay/new_invoice', astropay.astroNewInvoice, name = 'AstroPay_new_invoice'),
     path('api/astropay/payment_status', astropay.astroPaymentStatus, name = 'AstroPay_Payment_Status'),
+    path('api/asiapay/deposit', asiapay.submitDeposit.as_view(), name = 'AsiaPay_deposit'),
+]
+
+
+# for tables
+
+urlpatterns = [
+    url(r'^test', DepositView.as_view(), name='table_data'),
 ]

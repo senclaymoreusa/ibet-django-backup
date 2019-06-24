@@ -245,13 +245,11 @@ class UserActionAdmin(object):
 
 
 
-#注册你上面填写的url
-from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+from .views import UserDetailView, UserListView
 xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'users/', UserListView, name='user_list')
 
-#注册GlobalSetting
 from xadmin.views import CommAdminView
 # xadmin.site.register(CommAdminView, GlobalSettings)
 
