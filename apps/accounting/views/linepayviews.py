@@ -1,8 +1,9 @@
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from djauth.third_party_keys import LINE_CHANNEL_ID, LINE_CHANNEL_SECRET
+from django.utils import timezone
 from ..models import Transaction
 from users.models import CustomUser
-import os, requests, datetime, json
+import os, requests, json, random
 
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 
@@ -29,7 +30,7 @@ def reserve_payment(request):
         amount = body.get("amount")
         
         # generate unique orderID
-        orderId = (datetime.date.today().isoformat()+"-orion-web-payment-1")
+        orderId = (timezone.datetime.today().isoformat()+"-orion-web-payment-"+str(random.randint(0,10)))
         # orderId = "test-order"
         print("amount: " + amount + ", order-id: " + orderId)
         payload = {
@@ -57,7 +58,7 @@ def reserve_payment(request):
                     transaction_type = DEPOSIT, # 0 = deposit
                     channel = LINE_PAY, # 1 = LINEpay
                     status = CREATED, # 2 = created
-                    last_updated = datetime.datetime.now()
+                    last_updated = timezone.now()
                 )
                 print(obj, created)
         return JsonResponse(responseJSON)
@@ -78,9 +79,10 @@ def confirm_payment(request):
 
         # find matching transaction
         transactionId = body.get("transactionId")
-        matchedTrans = Transaction.objects.get(order_id=transactionId)
+        print("matching on transaction ID: " + transactionId)
+        matchedTrans = Transaction.objects.get(transaction_id=transactionId)
         matchedTrans.status = 3 # set deposit transaction status to pending
-        matchedTrans.last_updated = datetime.datetime.now()
+        matchedTrans.last_updated = timezone.now()
         matchedTrans.save()
         amount = matchedTrans.amount
 
@@ -95,7 +97,7 @@ def confirm_payment(request):
 
         if (response.status_code == 200):
             matchedTrans.status = 0
-            matchedTrans.last_updated = datetime.datetime.now()
+            matchedTrans.last_updated = timezone.now()
             matchedTrans.save()
 
         return JsonResponse(response.json())
