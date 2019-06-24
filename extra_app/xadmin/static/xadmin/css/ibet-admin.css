@@ -851,3 +851,35 @@ table.table-bordered > tbody > tr > td{
 .add_bet_field, .add_loss_field {
     margin-top: 20px;
 }
+
+
+.ui-menu .ui-menu-item a{
+    color: #428bca;
+}
+
+.ui-menu .ui-menu-item a i {
+    color: black;
+}
+
+#search-btn {
+    cursor:pointer;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.member-search-result {
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
