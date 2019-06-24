@@ -64,6 +64,14 @@ class CustomUser(AbstractBaseUser):
         (1, _('Inactive')),
         (2, _('Blocked'))
     )
+
+    LANGUAGE = (
+        ('English', 'English'),
+        ('Chinese', 'Chinese'),
+        ('French', 'French')
+    )
+
+    language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     # add additional fields in here
     username = models.CharField(
 					max_length=255,
@@ -84,14 +92,15 @@ class CustomUser(AbstractBaseUser):
     user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20, unique=True)
+    phone = models.CharField(max_length=25)
     country = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
     street_address_1 = models.CharField(max_length=100, blank=True)
     street_address_2 = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
+    language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
@@ -102,7 +111,7 @@ class CustomUser(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
         
-    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True)
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
     title = models.CharField(max_length=10, blank=True)
     over_eighteen = models.BooleanField(default=False)
     odds_display = models.FloatField(default=0, blank=True)
@@ -127,6 +136,14 @@ class CustomUser(AbstractBaseUser):
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
+
+    # agent
+    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
+    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    commision_status = models.BooleanField(default=False)
+    user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
+    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
+    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AGENT_STATUS, default='Normal')
 
     id_image = models.CharField(max_length=250, blank=True)
 
@@ -359,3 +376,39 @@ class UserBonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     is_successful = models.BooleanField(default=False)
 
+
+class UserActivity(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
+    admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="admin")
+    message = models.CharField(max_length=250)
+    activity_type = models.SmallIntegerField(choices=ACTIVITY_TYPE, default=0)
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        auto_now_add=True,
+        editable=False,
+    )
+class ReferLink(models.Model):
+
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    refer_link_url = models.URLField(max_length=200, unique=True)
+    refer_link_name = models.CharField(max_length=50, default="Default")
+    ## time of this link was created
+    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    
+# Mapping between User and ReferLinks
+# This is a 1:n relationship, a user can have at most 10 refer links
+class UserReferLink(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+
+
+class LinkHistory(models.Model):
+
+    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
+    ## time of this link was clicked
+    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
+    ## click by ip
+    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)

@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db import IntegrityError
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
+#from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -15,7 +15,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
-
+from utils.constants import *
 
 from ..serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from django.conf import settings
@@ -27,26 +27,44 @@ import hashlib
 import base64
 import logging
 from time import sleep
+from time import gmtime, strftime
+import uuid
 
 QAICASH_NAME = 3
 
 #payment
-merchantId = settings.MERCHANTID
-currency = settings.CURRENCY
-merchantApiKey = settings.MERCHANTAPIKEY
-apiVersion = settings.APIVERSION
-method = settings.METHOD
-api = settings.QAICASH_URL 
-deposit_url = settings.DEPOSIT_URL
-payout_url = settings.PAYOUT_URL
+merchantId = MERCHANTID
+merchantApiKey = MERCHANTAPIKEY
+apiVersion = APIVERSION
+api = QAICASH_URL 
+deposit_url = DEPOSIT_URL
+payout_url = PAYOUT_URL
 logger = logging.getLogger('django')
 
 # currency conversion dictionary for supported currencies
 currencyConversion = {
-    "CNY": 0,
-    "USD": 1,
-    "PHP": 2,
-    "IDR": 3
+    "0": "CNY",
+    "1": "USD",
+    "2": "PHP",
+    "3": "IDR",
+}
+methodConversion = {
+    "0": "LBT_ONLINE",
+    "1": "LBT_ATM",
+    "2": "LBT_OTC",
+    "3": "DIRECT_PAYMENT",
+    "4": "BANK_TRANSFER",
+    "5": "IBT"
+}
+
+statusConversion = {
+    "SUCCESS":0,
+    "FAILED":1,
+    "CREATED":2,
+    "PENDING":3,
+    "APPROVED":4,
+    "REJECTED":5,
+    "COMPLETED":6,
 }
 
 def generateHash(key, message):
@@ -61,17 +79,23 @@ class getDepositMethod(generics.GenericAPIView):
     permission_classes = (AllowAny,)
     
     def post(self, request, *args, **kwargs):
-        currency = self.request.POST['currency']
-        url = api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods'
+        currency = self.request.POST['currency'] # should come in as a number ("0", "1", "2", etc.)
+        try:
+            currency_long = currencyConversion[currency] # convert number to international currency format
+        except KeyError:
+            return Response({"error" : "Unsupported currency format"})
+        url = api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods'
         headers = {'Accept': 'application/json'}
+
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
 
-        message = bytes(merchantId + '|' + currency, 'utf-8')
+        message = bytes(merchantId + '|' + currency_long, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         
         my_hmac = generateHash(secret, message)
         delay = kwargs.get("delay", 5)
+        success = False
         #retry
         for x in range(3):
             r = requests.get(url, headers=headers, params = {
@@ -79,140 +103,170 @@ class getDepositMethod(generics.GenericAPIView):
                 'hmac' : my_hmac,
                 'deviceType' : 'PC',
             })
-            data = r.json()
+            responseJson = r.json()
             if r.status_code == 200:
+                success = True
                 break
-            elif r.status_code == 500:
+            if r.status_code == 400 or r.status_code == 401:
+                success = True
+                # Handle error
+                logger.info("Failed to complete a request for getDepositMethod...")
+                logger.error(responseJson)
+                return Response(responseJson)
+            if r.status_code == 500:
                 print("Request failed {} time(s)'.format(x+1)")
                 print("Waiting for %s seconds before retrying again")
                 sleep(delay)
-            elif r.status_code == 400:
-                # Handle error
-                print("There was something wrong with the result")
-                print(data)
-                logger.info('Failed to complete a request for retrieving available deposit methods..')
-                return Response(data)
-
-        print("Response received from Qaicash API: ")
-        print(r.text)
-        print(data)
-        for x in data:
+        if not success:
+            return Response(responseJson)
+        for x in responseJson:
             print(x)
             depositData = {
                 "thridParty_name": QAICASH_NAME, # third party name is hard-fixed to match the channel choice in models
                 "method": x['method'],
-                "currency": currencyConversion[currency],
+                "currency": currency,
                 "min_amount": x['limits'].get('minTransactionAmount'),
                 "max_amount": x['limits'].get('maxTransactionAmount'),
             }
-            serializer = depositMethodSerialize(data=depositData)
-            if (serializer.is_valid()):
-                serializer.save()
+            data = depositMethodSerialize(data=depositData)
+            if (data.is_valid()):
+                data.save()
             else:
-                return Response({"error": "Invalid data passed into serializer"})
-        return Response(data)
+                return Response({"error": "Invalid data passed into serializer", "description": data.errors})
+        return Response(responseJson)
 
+# fetch supported bank list for the specified currency + deposit method from qaicash API
 class getBankList(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
-    serializer_class = bankListSerialize
+    serializer_class = bankListSerialize # appears that we need to override this attribute for every GenericAPIView
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         currency = self.request.POST['currency']
         method = self.request.POST['method']
-        url = api + apiVersion +'/' + merchantId + deposit_url +currency + '/methods/' + method + '/banks'
-        headers = {'Accept': 'application/json'}
-        # username = self.request.GET.get('username')
-        # userId = CustomUser.objects.filter(username=username)
-        message = bytes(merchantId + '|' + currency, 'utf-8')
-        secret = bytes(merchantApiKey, 'utf-8')
-        my_hmac = generateHash(secret, message)
-        delay = kwargs.get("delay", 5)
-        #retry
-        success = False
-        for x in range(3):
-            try:
+
+        serializer = bankListSerialize(data={ # validate POST data
+            "currency": currency,
+            "method": method
+        }) 
+
+        if (serializer.is_valid()):
+            currency_long = currencyConversion[currency]
+            method_long = methodConversion[method]
+            print("currency: " + currency_long + ", method: " + method_long)
+            url = api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods/' + method_long + '/banks'
+            print(url)
+            headers = {'Accept': 'application/json'}
+
+            # username = self.request.GET.get('username')
+            # userId = CustomUser.objects.filter(username=username)
+
+            message = bytes(merchantId + '|' + currency_long, 'utf-8')
+            secret = bytes(merchantApiKey, 'utf-8')
+
+            my_hmac = generateHash(secret, message) # hmac format for qaicash api
+
+            delay = kwargs.get("delay", 5)
+
+            for x in range(3):
                 r = requests.get(url, headers=headers, params = {
                     # 'userId' : userId,
                     'hmac' : my_hmac,
                     'deviceType' : 'PC',
                 })
+                data = r.json() # r.json() converts the string/byte return of the response into a JSON object
                 if r.status_code == 200:
-                    success = True
-                    break
-            except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
-        if not success:
-            logger.info('Failed to complete a request for...')
-        # Handle error
-
-            data = r.json()
+                    return Response(data)            
+                if r.status_code == 400 or r.status_code == 401:
+                    logger.info("Failed to complete a request for retrieving available bank lists (getBankList())")
+                    logger.error(data)
+                    return Response(data)
+                if r.status_code == 500:
+                    logger.info('Request failed {} time(s)'.format(x+1))
+                    logger.debug("wating for %s seconds before retrying again")
+                    sleep(delay) 
             return Response(data)
         else:
             return Response({"error": "Invalid data passed into serializer", "description": serializer.errors})
 
+
+# get the specific min/max amounts for a specific bank and for a specific currency
 class getBankLimits(generics.GenericAPIView):
     queryset = DepositChannel.objects.all()
     serializer_class = bankLimitsSerialize
-
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        serializer = bankLimitsSerialize(self.queryset, many=True)
+        # POST params:
+        # bank - bank code, sandbox 
+        # currency - currency ISO code
+        # method - deposit method
+
         bank = self.request.POST['bank']
         currency = self.request.POST['currency']
         method = self.request.POST['method']
-        url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits'
+
+        # currency_long = currencyConversion[currency]
+        # method_long = methodConversion[method]
+        print(bank, currency, method)
+        url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits/'
         headers = {'Accept': 'application/json'}
+
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
-        message = bytes(merchantId + '|' + currency, 'utf-8')
+
         secret = bytes(merchantApiKey, 'utf-8')
+        message = bytes(merchantId + '|' + currency, 'utf-8')
+
         my_hmac = generateHash(secret, message)
         delay = kwargs.get("delay", 5)
 
          #retry
         success = False
         for x in range(3):
-            try:
-                r = requests.get(url, headers=headers, params = {
-                    # 'userId' : userId,
-                    'hmac' : my_hmac,
-                    'deviceType' : 'PC',
-                })
-                if r.status_code == 200:
-                    success = True
-                    break
-            except ValueError:
+            r = requests.get(url, headers=headers, params = {
+                # 'userId' : userId,
+                'hmac' : my_hmac,
+                'deviceType' : 'PC',
+            })
+            print("bank limits response: ")
+            print(r)
+            if r.status_code == 200:
+                success = True
+                break
+            if r.status_code == 400 or r.status_code == 401:
+                print("There was something wrong with the result")
+                print(r.text)
+                logger.info("Failed to complete a request for retrieving available deposit methods..")
+                logger.error(r.text)
+                return Response(data)
+            if r.status_code == 500:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                sleep(delay) 
+
         if not success:
-            logger.info('Failed to complete a request for...')
-        # Handle error
-        if r.status_code == 500:
-            print('Response content is not in JSON format.')
-            data = '500 Internal Error'    
+            logger.info("Failed to complete a request for getBankLimits()")
+            return Response({"error" : "Qaicash API returned a status code of 500", "message": r.text})
         else:
             data = r.json()
-        
+            
+        # save a single bank limit into the database...?
         depositData = {
-            "thridParty_name": 3,
+            "thridParty_name": QAICASH_NAME,
             "method": method,
-            "currency": currencyConversion[currency],
+            "currency": currency,
             "min_amount":data["minTransactionAmount"],
             "max_amount":data["maxTransactionAmount"],
         }
-        serializer = depositMethodSerialize(data=depositData)
+        # serializer = depositMethodSerialize(data=depositData)
 
-        print("have the following data for serializer:")
-        if (serializer.is_valid()):
-            print(serializer.validated_data)
-            serializer.save()
-        else:
-            return Response({"error": "Invalid data passed into serializer"})
+        # print("have the following data for serializer:")
+        # if (serializer.is_valid()):
+        #     print(serializer.validated_data)
+        #     serializer.save()
+        # else:
+        #     return Response({"error": "Invalid data passed into serializer"})
         return Response(data)
 
 class submitDeposit(generics.GenericAPIView):
@@ -239,10 +293,10 @@ class submitDeposit(generics.GenericAPIView):
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        print(url)
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
-        
-        orderId = self.request.POST.get('order_id')
+        curr = self.request.POST.get('currency')
+        currency = currencyConversion[curr]
+        orderId = "ibet" + strftime("%Y%m%d%H%M%S", gmtime())
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
@@ -275,31 +329,19 @@ class submitDeposit(generics.GenericAPIView):
         })
         
         rdata = r.json()
-
-        if rdata.get("ok"):
-            user = CustomUser.objects.get(username=rdata['depositTransaction']['depositorUserId'])
-            for x in Transaction._meta.get_field('currency').choices:
-                if rdata["depositTransaction"]["currency"] == x[1]:
-                    cur_val = x[0]
-
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                #transaction_id=rdata["depositTransaction"]["transactionId"],
-                request_time=rdata["depositTransaction"]["dateCreated"],
-                amount=rdata["depositTransaction"]["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["depositTransaction"]["depositMethod"],
-                currency= cur_val,
-                transaction_type=0,
-            )
-        else:
-            logger.error("Please check the data you input, something is wrong.")
-        
         print(rdata)
+        
+        create = Transaction.objects.create(
+            order_id= rdata['depositTransaction']['orderId'],
+            transaction_id=rdata["depositTransaction"]["transactionId"],
+            amount=rdata["depositTransaction"]["amount"],
+            status=2,
+            user_id=CustomUser.objects.get(pk=userId),
+            method= rdata["depositTransaction"]["depositMethod"],
+            currency= curr,
+            transaction_type=0,
+            channel=3,
+        )
         
         return Response(rdata)
  
@@ -327,7 +369,7 @@ class submitPayout(generics.GenericAPIView):
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        print(url)
+        currency = self.request.POST['currency']
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
         
         orderId = self.request.POST.get('order_id')
@@ -408,15 +450,14 @@ class getPayoutTransaction(generics.GenericAPIView):
          #retry
         success = False
         for x in range(3):
-            try:
-                r = requests.get(url, headers=headers)
-                if r.status_code == 200:
-                    success = True
-                    break
-            except ValueError:
+            r = requests.get(url, headers=headers)
+            if r.status_code == 200:
+                success = True
+                break
+            if r.status_code == 500:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -485,7 +526,7 @@ class approvePayout(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -543,6 +584,8 @@ class rejectPayout(generics.GenericAPIView):
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
+        delay = kwargs.get("delay", 5)
+
          #retry
         success = False
         for x in range(3):
@@ -558,7 +601,7 @@ class rejectPayout(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay)  
+                sleep(delay)  
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -620,39 +663,24 @@ class getDepositTransaction(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
 
         rdata = r.json()
         print(rdata)
-        if r.status_code == 201:  
-            
-            for x in Transaction._meta.get_field('currency').choices:
-
-                if rdata['currency'] == x[1]:
-                    cur_val = x[0]
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
-
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                request_time=rdata["dateCreated"],
-                amount=rdata["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["payoutMethod"],
-                currency= cur_val,
-                transaction_type=0,
-                
-            )
-        else:
-            logger.error('The request information is nor correct, please try again')
         
+        for x in Transaction._meta.get_field('currency').choices:
+
+            if rdata['currency'] == x[1]:
+                cur_val = x[0]
         
+        update_data = Transaction.objects.get(order_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
+        update_data.status=6
+        update_data.request_time=rdata["dateCreated"]
+        update_data.save()
+      
         return Response(rdata)
 
 class transactionStatusUpdate(generics.GenericAPIView):
@@ -719,7 +747,7 @@ class payoutMethod(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')
         # Handle error
@@ -769,7 +797,7 @@ class getPayoutBankList(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay) 
+                sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for...')   
         data = r.json()
@@ -804,7 +832,7 @@ class getPayoutBankLimits(generics.GenericAPIView):
             except ValueError:
                 logger.info('Request failed {} time(s)'.format(x+1))
                 logger.debug("wating for %s seconds before retrying again")
-                time.sleep(delay)  
+                sleep(delay)  
         if not success:
             logger.info('Failed to complete a request for...')
         if r.status_code == 500:

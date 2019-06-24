@@ -5,6 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
+from .views import AgentView, AgentDetailView, OneclickRegister 
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -24,12 +25,11 @@ class BaseSetting(object):
 
 # 全局设置
 class GlobalSettings(object):
-    site_title = _('IBET Administration')  # 标题
-    site_footer = 'Ibet'  # 页尾
+    site_title = _('iBet Administration') 
+    site_footer = 'iBet'  
     site_url = '/'
-    menu_style = 'accordion'
-    
-    def get_site_menu(self):
+    menu_style = 'accordion'  
+    def get_site_menu(self): 
         return [
             {
                 'title': 'Members',
@@ -41,9 +41,20 @@ class GlobalSettings(object):
                         'icon': 'fa fa-user'
                     },
                 )
+            },
+            {
+                'title': 'Affiliate',
+                'icon': 'fa fa-bar-chart-o',
+                'menus': (
+                    {
+                        'title': 'Affiliate Overview',
+                        'url': '/xadmin/agent_view',
+                        'icon': 'fa fa-cny'
+                    },
+                )
             }
         ]
-
+                    
 from django.contrib import admin
 class UserWithTagInline(object):
     model = UserWithTag
@@ -213,13 +224,11 @@ class UserActionAdmin(object):
 
 
 
-#注册你上面填写的url
-from .views import UserDetailView, UserListView   #从你的app的view里引入你将要写的view，你也可以另外写一个py文件，把后台的view集中在一起方便管理
+from .views import UserDetailView, UserListView
 xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'users/', UserListView, name='user_list')
 
-#注册GlobalSetting
 from xadmin.views import CommAdminView
 # xadmin.site.register(CommAdminView, GlobalSettings)
 
@@ -233,3 +242,6 @@ xadmin.site.register(UserTag,TagAdmin)
 xadmin.site.register(UserWithTag,UserWithTagAdmin)
 xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
+xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
+xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')

@@ -37,12 +37,15 @@ urlpatterns += [
     path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify'),
     path('api/facebooksignup/', views.FacebookRegister.as_view(), name='facebook_signup'),
     path('api/facebooklogin/', csrf_exempt(views.FacebookLoginView.as_view()), name='facebook_login'),
-    path('api/oneclicksignup/', csrf_exempt(views.OneclickRegister.as_view()), name='one_click'),
+    path('api/oneclicksignup/', views.OneclickRegister.as_view(), name='one_click'),
     path('api/updateemail/', csrf_exempt(views.UpdateEmail.as_view()), name='update_email'),
     path('api/checkemailexist/', views.CheckEmailExixted.as_view(), name='email_exist'),
     path('api/generatepasswordcode/', csrf_exempt(views.GenerateForgetPasswordCode.as_view()), name='generate_code'),
     path('api/sendresetpasswordcode/', csrf_exempt(views.SendResetPasswordCode.as_view()), name='send_code'),
     path('api/verifyresetpasswordcode/', csrf_exempt(views.VerifyResetPasswordCode.as_view()), name='verify_resetpassword_code'),
     path('api/changeandresetpassword/', csrf_exempt(views.ChangeAndResetPassword.as_view()),name='change_reset_password'),
-    path('api/changepassword/', views.ChangePassword.as_view(), name='change_password')
+    path('api/changepassword/', views.ChangePassword.as_view(), name='change_password'),
+    path('api/checkusernameexist/', views.CheckUsernameExist.as_view(), name='check_username_exist'),
+    path('api/generateactivationcode/', views.GenerateActivationCode.as_view(), name='generate_activation_code'),
+    path('api/verifyactivationcode/', views.VerifyActivationCode.as_view(), name='verify_activation_code')
 ]
