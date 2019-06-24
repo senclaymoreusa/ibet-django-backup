@@ -138,6 +138,10 @@ class CustomUser(AbstractBaseUser):
 
     id_image = models.CharField(max_length=250, blank=True)
 
+    # temporary_block_time = models.DateTimeField(null=True, blank=True)
+    # block_timespan = models.DurationField(null=True, blank=True)
+
+    
     created_time = models.DateTimeField(
         _('Created Time'),
         auto_now_add=True,

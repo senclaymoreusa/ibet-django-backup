@@ -1307,7 +1307,7 @@ class UserDetailView(CommAdminView):
                     'method': withdraw['fields']['method'],
                 }
                 lastWithdraw.append(withdrawDict)
-            context['lastWithdraws'] = lastWithdraw[:1]
+            context['lastWithdraws'] = lastWithdraw[0]
         else:
             context['lastWithdraws'] = {}
 

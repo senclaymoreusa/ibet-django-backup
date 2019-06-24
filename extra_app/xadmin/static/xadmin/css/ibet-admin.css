@@ -848,6 +848,6 @@ table.table-bordered > tbody > tr > td{
     color: #4a4a4a;
 }
 
-.add_bet_field, .add_loss_field {
+.add_bet_field, .add_loss_field, .add_deposit_field, .add_withdraw_field {
     margin-top: 20px;
 }

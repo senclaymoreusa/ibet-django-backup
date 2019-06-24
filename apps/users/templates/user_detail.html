@@ -266,102 +266,60 @@
                     </div>
                     <div class="col-md-4" style="margin-right: -19px;">
                         <div class="user-detail-content-title">DEPOSIT</div>
-                        {% if lastDeposits|length == 0 %}
-                            <div class="user-info-block">
-                                <div id="member-input-container">
-                                    <div>
-                                        <div class="block-title">Time</div>
+                        <div class="user-info-block">
+                            <div id="member-input-container">
+                                <div>
+                                    <div class="block-title">Time</div>
+                                    {% if lastDeposits.time %}
+                                        <div class="block-text">{{ lastDeposits.time }}</div>
+                                    {% else %}
                                         <div class="block-text">None</div>
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Amount</div>
-                                        <div class="block-text">None</div>
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Status</div>
-                                        <div class="block-text">None</div>
-                                    </div>
+                                    {% endif %}
                                 </div>
-                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposits }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
-                            </div>
-                        {% else %}
-                            {% for lastDeposit in lastDeposits %}
-                            <div class="user-info-block">
-                                <div id="member-input-container">
-                                    <div>
-                                        <div class="block-title">Time</div>
-                                        {% if lastDeposit.time %}
-                                            <div class="block-text">{{ lastDeposit.time }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Amount</div>
-                                        {% if lastDeposit.amount %}
-                                            <div class="block-text">{{ lastDeposit.amount }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Status</div>
-                                        {% if lastDeposit.status %}
-                                            <div class="block-text">{{ lastDeposit.status }}</div>
-                                        {% else %}
-                                            <div class="block-text">None</div>
-                                        {% endif %}
-                                    </div>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Amount</div>
+                                    {% if lastDeposits.amount %}
+                                        <div class="block-text">{{ lastDeposits.amount }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
                                 </div>
-                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposit }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
+                                <div style="margin-top:12px;">
+                                    <div class="block-title">Status</div>
+                                    {% if lastDeposits.status %}
+                                        <div class="block-text">{{ lastDeposits.status }}</div>
+                                    {% else %}
+                                        <div class="block-text">None</div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% endfor %}
-                        {% endif %}
+                            <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastDeposits }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <div class="user-detail-content-title">WITHDRAWAL</div>
-                        {% if lastWithdraws|length == 0 %}
                             <div class="user-info-block">
                                 <div id="member-input-container">
                                     <div>
                                         <div class="block-title">Time</div>
-                                        <div class="block-text">None</div>
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Amount</div>
-                                        <div class="block-text">None</div>
-                                    </div>
-                                    <div style="margin-top:12px;">
-                                        <div class="block-title">Status</div>
-                                        <div class="block-text">None</div>
-                                    </div>
-                                </div>
-                                <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraws }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
-                            </div>
-                        {% else %}
-                            {% for lastWithdraw in lastWithdraws %}
-                            <div class="user-info-block">
-                                <div id="member-input-container">
-                                    <div>
-                                        <div class="block-title">Time</div>
-                                        {% if lastWithdraw.time %}
-                                            <div class="block-text">{{ lastWithdraw.time }}</div>
+                                        {% if lastWithdraws.time %}
+                                            <div class="block-text">{{ lastWithdraws.time }}</div>
                                         {% else %}
                                             <div class="block-text">None</div>
                                         {% endif %}
                                     </div>
                                     <div style="margin-top:12px;">
                                         <div class="block-title">Amount</div>
-                                        {% if lastWithdraw.amount %}
-                                            <div class="block-text">{{ lastWithdraw.amount }}</div>
+                                        {% if lastWithdraws.amount %}
+                                            <div class="block-text">{{ lastWithdraws.amount }}</div>
                                         {% else %}
                                             <div class="block-text">None</div>
                                         {% endif %}
                                     </div>
                                     <div style="margin-top:12px;">
                                         <div class="block-title">Status</div>
-                                        {% if lastWithdraw.status %}
-                                            <div class="block-text">{{ lastWithdraw.status }}</div>
+                                        {% if lastWithdraws.status %}
+                                            <div class="block-text">{{ lastWithdraws.status }}</div>
                                         {% else %}
                                             <div class="block-text">None</div>
                                         {% endif %}
@@ -369,8 +327,6 @@
                                 </div>
                                 <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraws }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
                             </div>
-                            {% endfor %}
-                        {% endif %}
                     </div>                       
                 </div>
                 <div class="row">
@@ -415,7 +371,8 @@
                 <div class='row'>
                     <button id="edit-detail-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit details</button>
                 </div>
-        
+                
+                <!-- edit member detail window -->
                 <div class="modal fade" id="edit_details" role="dialog">
                     <div class="modal-dialog">
                     
@@ -523,6 +480,7 @@
                     </div>
                 </div>
     
+                <!-- login history window -->
                 <div class="modal fade" id="login_history" role="dialog">
                         <div class="modal-dialog">
                         
@@ -559,6 +517,104 @@
                             </div> 
                         </div>
                 </div>
+
+                <!-- deposit popup window -->
+                <div class="modal fade" id="trans_deposit_detail" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header" style="background-color: #489e24; color:white;">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Deposit Detail</h4>
+                                <div class="update-time">Updated {{ time }}</div>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <p>Client Name </p>
+                                        <p>Transaction Number </p>
+                                        <p>Time of application </p>
+                                        <p>Account Time </p>
+                                        <p>Approver </p>
+                                        <p>Bank/Branch </p>
+                                        <p>Receive Bank </p>
+                                        <p>Apply amount </p>
+                                        <p>Arrive amount </p>
+                                        <p>Status </p>
+                                    </div>
+                                    <div class="col-md-7" id="deposit-detail">
+                                        <p>{{ customuser.username }}</p>
+                                        <p>{{ trans.transactionId }}</p>
+                                        <p>{{ trans.time }}</p>
+                                        <p>{{ trans.time }}</p>
+                                        <p>/</p>
+                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                        <p>/</p>
+                                        <p>{{ trans.amount }}</p>
+                                        <p>{{ trans.amount }}</p>
+                                        <p>{{ trans.status }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+
+                <!-- withdraw popup window -->
+                <div class="modal fade" id="trans_withdrawal_detail" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header" style="background-color: #489e24; color:white;">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Withdrawal Detail</h4>
+                                <div class="update-time">Updated {{ time }}</div>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <p>Client Name </p>
+                                        <p>Transaction Number </p>
+                                        <p>Time of application </p>
+                                        <p>Account Time </p>
+                                        <p>Bank/Branch </p>
+                                        <p>Receive Bank </p>
+                                        <p>Assignment error</p>
+                                        <p>Bank Account</p>
+                                        <p>Channel Name</p>
+                                        <p>Apply amount </p>
+                                        <p>Arrive amount </p>
+                                        <p>Surcharge </p>
+                                        <p>Time of Audit </p>
+                                        <p>Auditor </p>
+                                        <p>Audi Memo </p>
+                                        <p>Status </p>
+                                    </div>
+                                    <div class="col-md-7" id="withdraw-detail">
+                                        <p>{{ customuser.username }}</p>
+                                        <p>{{ trans.transactionId }}</p>
+                                        <p>{{ trans.time }}</p>
+                                        <p>{{ trans.time }}</p>
+                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                        <p>/</p>
+                                        <p>/</p>
+                                        <p>/</p>
+                                        <p>{{ trans.channel }} </p>
+                                        <p>{{ trans.amount }}</p>
+                                        <p>{{ trans.amount }}</p>
+                                        <p>fee</p>
+                                        <p>/</p>
+                                        <p>/</p>
+                                        <p>/</p>
+                                        <p>{{ trans.status }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+
+                
             </div>
             <div class="activity-rectangle col-md-5">  
                 <div class="half-title-block" style="background-color: #588ebd;">
@@ -764,98 +820,7 @@
                             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#trans_adjustment_detail"><span class="glyphicon glyphicon-search"></span></button></td>
                             {% endif %}
                         </tr>
-                        <div class="modal fade" id="trans_deposit_detail" role="dialog">
-                            <div class="modal-dialog">
-                                <!-- Modal content-->
-                                <div class="modal-content">
-                                    <div class="modal-header" style="background-color: #489e24; color:white;">
-                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                        <h4 class="modal-title">Deposit Detail</h4>
-                                        <div class="update-time">Updated {{ time }}</div>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row">
-                                            <div class="col-md-5">
-                                                <p>Client Name </p>
-                                                <p>Transaction Number </p>
-                                                <p>Time of application </p>
-                                                <p>Account Time </p>
-                                                <p>Approver </p>
-                                                <p>Bank/Branch </p>
-                                                <p>Receive Bank </p>
-                                                <p>Apply amount </p>
-                                                <p>Arrive amount </p>
-                                                <p>Status </p>
-                                            </div>
-                                            <div class="col-md-7" id="deposit-detail">
-                                                <p>{{ customuser.username }}</p>
-                                                <p>{{ trans.transactionId }}</p>
-                                                <p>{{ trans.time }}</p>
-                                                <p>{{ trans.time }}</p>
-                                                <p>/</p>
-                                                <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
-                                                <p>/</p>
-                                                <p>{{ trans.amount }}</p>
-                                                <p>{{ trans.amount }}</p>
-                                                <p>{{ trans.status }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> 
-                            </div>
-                        </div>
-                        <div class="modal fade" id="trans_withdrawal_detail" role="dialog">
-                            <div class="modal-dialog">
-                                <!-- Modal content-->
-                                <div class="modal-content">
-                                    <div class="modal-header" style="background-color: #489e24; color:white;">
-                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                        <h4 class="modal-title">Withdrawal Detail</h4>
-                                        <div class="update-time">Updated {{ time }}</div>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row">
-                                            <div class="col-md-5">
-                                                <p>Client Name </p>
-                                                <p>Transaction Number </p>
-                                                <p>Time of application </p>
-                                                <p>Account Time </p>
-                                                <p>Bank/Branch </p>
-                                                <p>Receive Bank </p>
-                                                <p>Assignment error</p>
-                                                <p>Bank Account</p>
-                                                <p>Channel Name</p>
-                                                <p>Apply amount </p>
-                                                <p>Arrive amount </p>
-                                                <p>Surcharge </p>
-                                                <p>Time of Audit </p>
-                                                <p>Auditor </p>
-                                                <p>Audi Memo </p>
-                                                <p>Status </p>
-                                            </div>
-                                            <div class="col-md-7" id="withdraw-detail">
-                                                <p>{{ customuser.username }}</p>
-                                                <p>{{ trans.transactionId }}</p>
-                                                <p>{{ trans.time }}</p>
-                                                <p>{{ trans.time }}</p>
-                                                <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
-                                                <p>/</p>
-                                                <p>/</p>
-                                                <p>/</p>
-                                                <p>{{ trans.channel }} </p>
-                                                <p>{{ trans.amount }}</p>
-                                                <p>{{ trans.amount }}</p>
-                                                <p>fee</p>
-                                                <p>/</p>
-                                                <p>/</p>
-                                                <p>/</p>
-                                                <p>{{ trans.status }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> 
-                            </div>
-                        </div>
+    
                         <div class="modal fade" id="trans_bet_placed_detail" role="dialog">
                                 <div class="modal-dialog">
                                     <!-- Modal content-->
@@ -1547,8 +1512,8 @@
                     <div class="modal-body">
                         <!-- <div style="padding:8%;"> -->
                             <div id="bet-container">
+                                <div style="margin-bottom:2.5%"><label>BET LIMITS</label></div>
                                 <div class="row">
-                                    <div style="margin:2.5%"><label>BET LIMITS</label></div>
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">BET LIMITS</div>
                                         <input class="form-control" id="bet_limit" name="bet_limit" value="">
@@ -1574,7 +1539,7 @@
                                     </div>
                                     <div class="col-md-2">
                                         <div class="bet-limit-text">&nbsp;</div>
-                                        <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)">
+                                        <button type="button" class="btn btn-defaul delete" style="background-color:rgb(199, 89, 82)">
                                             <span class="glyphicon glyphicon-trash" style='color:white'></span>
                                         </button>
                                     </div>
@@ -1584,8 +1549,8 @@
                             
 
                             <div id="loss-container">
-                                <div class="row" style="margin-top:20px;">
-                                    <div style="margin:2.5%"><label>LOSS LIMITS</label></div>
+                                <div style="margin-bottom:2.5%; margin-top:6%;"><label>LOSS LIMITS</label></div>
+                                <div class="row">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">LOSS LIMIT</div>
                                         <input class="form-control" id="loss_limit" name="loss_limit" value="">
@@ -1601,13 +1566,67 @@
                                     </div>
                                     <div class="col-md-2">
                                         <div class="bet-limit-text">&nbsp;</div>
-                                        <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)">
+                                        <button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)">
                                             <span class="glyphicon glyphicon-trash" style='color:white'></span>
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             <button class="add_loss_field btn btn-primary">Add New Field</button>
+
+
+                            <div id="deposit-container">
+                                <div style="margin-bottom:2.5%; margin-top:6%;"><label>DEPOSIT LIMITS</label></div>
+                                <div class="row">
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">DEPOSIT LIMIT</div>
+                                        <input class="form-control" id="deposit_limit" name="deposit_limit" value="">
+                                    </div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">DEPOSIT INTERVAL</div>
+                                        <select class="form-control" id="deposit_interval">
+                                            <option value="bet">per bet</option>
+                                            <option value="week">per week</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="bet-limit-text">&nbsp;</div>
+                                        <button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)">
+                                            <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="add_deposit_field btn btn-primary">Add New Field</button>
+
+
+                            <div id="withdraw-container">
+                                <div style="margin-bottom:2.5%; margin-top:6%;"><label>WITHDRAW LIMITS</label></div>
+                                <div class="row">
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">WITHDRAW LIMIT</div>
+                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit" value="">
+                                    </div>
+                                    <div class="col-md-3 bet-limit-block">
+                                        <div class="bet-limit-text">WITHDRAW INTERVAL</div>
+                                        <select class="form-control" id="withdraw_interval">
+                                            <option value="bet">per bet</option>
+                                            <option value="week">per week</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="bet-limit-text">&nbsp;</div>
+                                        <button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)">
+                                            <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="add_withdraw_field btn btn-primary">Add New Field</button>
 
                         <!-- </div> -->
                     </div>
@@ -1787,29 +1806,31 @@ $(document).ready(function() {
     $('.add_bet_field').click(function(e){
         e.preventDefault();
         var x = $('#bet-container').find('button').length;
-        console.log(x);
         var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET LIMIT</div><input class="form-control" name="bet_limit_' + x + '" value=""></div>';
         content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET INTERVAL</div><select class="form-control" id="bet_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
         content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">PRODUCT</div><select class="form-control" id="game_type_' + x + '"><option value="GB">GB Sports</option><option value="EZ">EZ Sports</option><option value="games">Games</option><option value="lotto">Lotto</option><option value="live">Live Casino</option></select></div>';
-        content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
+        content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete limit-delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#bet-container").append(content);
         x++;
 
     });
 
     $("#bet-container").on("click",".delete", function(e){
-        var x = $('#bet-container').find('button').length;
         e.preventDefault(); 
-        $('#bet-container .row:last-child').remove();
-        x--;
-    })
-
+        var target = $( e.target );
+        if ( target.is( 'span' ) ) {
+            var row = e.target.parentElement.parentElement.parentElement;
+        } else {
+            var row = e.target.parentElement.parentElement;
+        }
+        row = $(row);
+        row.remove();
+    });
 
     $('.add_loss_field').click(function(e){
         e.preventDefault();
         var x = $('#loss-container').find('button').length;
-        console.log(x);
-        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT</div><input class="form-control" name="loss_limit' + x + '" value=""></div>';
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT</div><input class="form-control" name="loss_limit_' + x + '" value=""></div>';
         content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT INTERVAL</div><select class="form-control" id="loss_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#loss-container").append(content);
@@ -1818,11 +1839,62 @@ $(document).ready(function() {
     });
 
     $("#loss-container").on("click",".delete", function(e){
-        var x = $('#loss-container').find('button').length;
         e.preventDefault(); 
-        $('#loss-container .row:last-child').remove();
-        x--;
-    })
+        var target = $( e.target );
+        if ( target.is( 'span' ) ) {
+            var row = e.target.parentElement.parentElement.parentElement;
+        } else {
+            var row = e.target.parentElement.parentElement;
+        }
+        row = $(row);
+        row.remove();
+    });
+
+    $('.add_deposit_field').click(function(e){
+        e.preventDefault();
+        var x = $('#deposit-container').find('button').length;
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT LIMIT</div><input class="form-control" name="deposit_limit_' + x + '" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT INTERVAL</div><select class="form-control" id="deposit_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
+        $("#deposit-container").append(content);
+        x++;
+
+    });
+
+    $("#deposit-container").on("click",".delete", function(e){
+        e.preventDefault(); 
+        var target = $( e.target );
+        if ( target.is( 'span' ) ) {
+            var row = e.target.parentElement.parentElement.parentElement;
+        } else {
+            var row = e.target.parentElement.parentElement;
+        }
+        row = $(row);
+        row.remove();
+    });
+
+    $('.add_withdraw_field').click(function(e){
+        e.preventDefault();
+        var x = $('#withdraw-container').find('button').length;
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW LIMIT</div><input class="form-control" name="withdraw_limit_' + x + '" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW INTERVAL</div><select class="form-control" id="withdraw_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
+        $("#withdraw-container").append(content);
+        x++;
+
+    });
+
+    $("#withdraw-container").on("click",".delete", function(e){
+        e.preventDefault(); 
+        var target = $( e.target );
+        if ( target.is( 'span' ) ) {
+            var row = e.target.parentElement.parentElement.parentElement;
+        } else {
+            var row = e.target.parentElement.parentElement;
+        }
+        row = $(row);
+        row.remove();
+    });
 
     getNext = function() {
         if ($('#nextPage').hasClass('disabled')) {
@@ -1853,49 +1925,59 @@ $(document).ready(function() {
     }
 
     showTransaction = function (username, trans, type) {
+        console.log(trans);
+        console.log(type);
         // var trans = JSON.parse(trans.replace(/'/g, '"'));
         // console.log(JSON.parse(trans));
-        var time = moment(trans.time).format('MMMM, D, YYYY h:mm a');
+        var time = 'N/A';
+        if (trans.time) {
+            var time = moment(trans.time).format('MMMM, D, YYYY h:mm a');
+        } 
+        
         if (type === "deposit") {
             $("#deposit-detail").empty();
             var content = "";
             content += "<p>" + username + "</p>";
-            content += "<p>" + trans.transactionId + "</p>";
+            content += "<p>" + getField(trans, 'transactionId') + "</p>";
             content += "<p>" + time + "</p>";
             content += "<p>" + time + "</p>";
             content += "<p>/</p>";
-            content += "<p>" + trans.channel + "</p><p>" + trans.method + "</p>";
+            content += "<p>" + getField(trans, 'channel') + "</p><p>" + getField(trans, 'method') + "</p>";
             content += "<p>/</p>";
-            content += "<p>" + trans.amount + "</p>";
-            content += "<p>" + trans.amount + "</p>";
-            content += "<p>" + trans.status + "</p>";
+            content += "<p>" + getField(trans, 'amount') + "</p>";
+            content += "<p>" + getField(trans, 'amount') + "</p>";
+            content += "<p>" + getField(trans, 'status') + "</p>";
             $("#deposit-detail").append(content);
 
         } else if (type == "withdraw") {
-
             $("#withdraw-detail").empty();
             var content = "";
             content += "<p>" + username + "</p>";
-            content += "<p>" + trans.transactionId + "</p>";
+            content += "<p>" + getField(trans, 'transactionId') + "</p>";
             content += "<p>" + time + "</p>";
             content += "<p>" + time + "</p>";
-            content += "<p>" + trans.channel + "</p><p>" + trans.method + "</p>";
+            content += "<p>" + getField(trans, 'channel') + "</p><p>" + getField(trans, 'method') + "</p>";
             content += "<p>/</p>";
             content += "<p>/</p>";
             content += "<p>/</p>";
-            content += "<p>" + trans.channel + "</p>";
-            content += "<p>" + trans.amount + "</p>";
-            content += "<p>" + trans.amount + "</p>";
+            content += "<p>" + getField(trans, 'channel') + "</p>";
+            content += "<p>" + getField(trans, 'amount') + "</p>";
+            content += "<p>" + getField(trans, 'amount') + "</p>";
             content += "<p>fee</p>"
             content += "<p>/</p>";
             content += "<p>/</p>";
             content += "<p>/</p>";
-            content += "<p>" + trans.status + "</p>";
+            content += "<p>" + getField(trans, 'status') + "</p>";
             $("#withdraw-detail").append(content);
         }
-        
     }
 
+    getField = function(object, field) {
+        if (object[field]) {
+            return object[field];
+        } 
+        return 'N/A';
+    }
 
     var ctx = document.getElementById('deposit-withdraw-chart');
     var chart = new Chart(ctx, {
