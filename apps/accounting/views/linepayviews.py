@@ -27,12 +27,13 @@ def reserve_payment(request):
 
         # parse POST payload
         body = json.loads(request.body)
-        amount = body.get("amount")
-        
+        amount = float(body.get("amount"))
+        if (amount < 200) or (amount > 30000):
+            return JsonResponse({"errorMsg": "Amount not within maximum or minimum"})
         # generate unique orderID
         orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10)))
         # orderId = "test-order"
-        print("amount: " + amount + ", order-id: " + orderId)
+        print("amount: " + str(amount) + ", order-id: " + orderId)
         payload = {
             "productName": "iBet-Orion-Test",
             "productImageUrl": "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg",
