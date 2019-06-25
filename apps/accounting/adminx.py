@@ -3,6 +3,7 @@ from xadmin.layout import Main, Side, Fieldset
 
 from .models import Transaction, DepositAccessManagement, DepositChannel, WithdrawAccessManagement, WithdrawChannel
 from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
+from .views.deposit_views import DepositView
 
 class TransactionAdmin(object):
     list_display = ('user_id', 'order_id','transaction_id','transaction_type', 'amount', 'status', 'method','channel', 'request_time', 'arrive_time', 'review_status', 'remark')
@@ -122,3 +123,4 @@ xadmin.site.register(DepositAccessManagement,DepositAccessManagementAdmin)
 xadmin.site.register(WithdrawAccessManagement,WithdrawAccessManagementAdmin)
 
 
+xadmin.site.register_view(r'deposit/$', DepositView, name='deposit_view')

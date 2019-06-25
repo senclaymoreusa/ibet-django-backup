@@ -8,7 +8,7 @@ import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
 
-from .views.adminviews import DepositView
+from .views.deposit_views import DepositView
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name = 'deposit_method'),
@@ -34,8 +34,3 @@ urlpatterns = [
 ]
 
 
-# for tables
-
-urlpatterns = [
-    url(r'^test', DepositView.as_view(), name='table_data'),
-]
