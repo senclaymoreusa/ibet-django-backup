@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transaction',
             name='id',
-            field=models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, verbose_name='ID'),
+            field=models.AutoField(auto_created=True, unique=True, primary_key=True, serialize=False, verbose_name='ID'),
+            # field=models.CharField(max_length=200, auto_generated=True, unique=True, editable=False, primary_key=True, serialize=False, verbose_name='ID', ),
         ),
         migrations.AlterField(
             model_name='transaction',
