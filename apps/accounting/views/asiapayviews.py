@@ -189,6 +189,7 @@ class submitDeposit(generics.GenericAPIView):
                         "oid":OrderID
                     })
                 rrdata = rr.json()
+                print(rrdata)
                 Response(rrdata)
             else:
                 print("There was something wrong with the result")
