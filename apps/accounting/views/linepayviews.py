@@ -30,7 +30,7 @@ def reserve_payment(request):
         amount = body.get("amount")
         
         # generate unique orderID
-        orderId = (timezone.datetime.today().isoformat()+"-orion-web-payment-"+str(random.randint(0,10)))
+        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10)))
         # orderId = "test-order"
         print("amount: " + amount + ", order-id: " + orderId)
         payload = {
