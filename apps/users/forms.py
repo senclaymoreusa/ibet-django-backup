@@ -6,6 +6,8 @@ from django.forms import ModelForm
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
+from utils.constants import *
+
 User = get_user_model()
 
 class UserCreationForm(forms.ModelForm):
@@ -132,3 +134,11 @@ class IdImageForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ('id_image', )
+
+
+class EditAffiliateForm(forms.ModelForm):
+    level = forms.ChoiceField(choices=AFFILIATE_LEVEL, widget=forms.RadioSelect)
+    status = forms.ChoiceField(choices=AFFILIATE_STATUS, widget=forms.RadioSelect)
+    commission_set = forms.ChoiceField(choices=COMMISSION_SET, widget=forms.RadioSelect)
+
+
