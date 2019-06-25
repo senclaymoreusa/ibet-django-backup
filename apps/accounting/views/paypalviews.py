@@ -172,11 +172,13 @@ class paypalGetOrder(APIView):
                                                     amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
                                                     method="paypal",
                                                     status=2)
+                
                 update_data.status=6
                 update_data.order_id=rdata["id"]
-                update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
-                update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
+                #update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
+                #update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
                 update_data.save()
+                print(update_data)
                 # create = Transaction.objects.update_or_create(
                 #     user_id=userId,
                 #     payer_id=rdata["payer"]["payer_id"],
