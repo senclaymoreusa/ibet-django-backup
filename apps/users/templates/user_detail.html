@@ -548,7 +548,7 @@
                                         <p>{{ trans.time }}</p>
                                         <p>{{ trans.time }}</p>
                                         <p>/</p>
-                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                        <span>{{ trans.channel }} </span><span>{{ trans.method }}</span>
                                         <p>/</p>
                                         <p>{{ trans.amount }}</p>
                                         <p>{{ trans.amount }}</p>
@@ -595,7 +595,7 @@
                                         <p>{{ trans.transactionId }}</p>
                                         <p>{{ trans.time }}</p>
                                         <p>{{ trans.time }}</p>
-                                        <p>{{ trans.channel }} </p><p>{{ trans.method }}</p>
+                                        <span>{{ trans.channel }} </span><span>{{ trans.method }}</span>
                                         <p>/</p>
                                         <p>/</p>
                                         <p>/</p>
@@ -2045,7 +2045,7 @@ $(document).ready(function() {
             content += "<p>" + time + "</p>";
             content += "<p>" + time + "</p>";
             content += "<p>/</p>";
-            content += "<p>" + getField(trans, 'channel') + "</p><p>" + getField(trans, 'method') + "</p>";
+            content += "<p><span>" + getField(trans, 'channel') + "</span>&nbsp;/&nbsp;<span>" + getField(trans, 'method') + "</span></p>";
             content += "<p>/</p>";
             content += "<p>" + getField(trans, 'amount') + "</p>";
             content += "<p>" + getField(trans, 'amount') + "</p>";
@@ -2059,7 +2059,7 @@ $(document).ready(function() {
             content += "<p>" + getField(trans, 'transactionId') + "</p>";
             content += "<p>" + time + "</p>";
             content += "<p>" + time + "</p>";
-            content += "<p>" + getField(trans, 'channel') + "</p><p>" + getField(trans, 'method') + "</p>";
+            content += "<p><span>" + getField(trans, 'channel') + "</span>&nbsp;/&nbsp;<span>" + getField(trans, 'method') + "</span></p>";
             content += "<p>/</p>";
             content += "<p>/</p>";
             content += "<p>/</p>";
