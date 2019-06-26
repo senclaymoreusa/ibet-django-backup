@@ -123,6 +123,7 @@ class CustomUser(AbstractBaseUser):
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+    risk_level = models.SmallIntegerField(choices=RISK_LEVLE, default=0)
 
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)

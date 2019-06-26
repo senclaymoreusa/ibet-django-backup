@@ -1151,6 +1151,11 @@ class UserDetailView(CommAdminView):
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
 
+        riskLevelMap = {}
+        for t in CustomUser._meta.get_field('risk_level').choices:
+            riskLevelMap[t[0]] = t[1]
+
+        context['riskLevel'] = riskLevelMap[int(customUser.risk_level)]
 
         statusMap = {}
         for t in Transaction._meta.get_field('status').choices:

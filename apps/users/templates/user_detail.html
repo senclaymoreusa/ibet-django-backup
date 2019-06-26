@@ -27,7 +27,7 @@
                         <div class="block-title"><span>RISK LEVEL</span></div>
                         <div class="life-time-value-block">
                             <div class="block-content" id="risk_level_input">
-                                A
+                                {{ riskLevel }}    
                             </div>
                         </div>
                     </div>
@@ -411,10 +411,10 @@
                                             <div class="form-group">
                                                 <label for="risk_level">RISK LEVEL</label>
                                                 <select class="form-control">
-                                                    <option value="A">A</option>
-                                                    <option value="E1">E1</option>
-                                                    <option value="E2">E2</option>
-                                                    <option value="F">F</option>
+                                                    <option value="0" {% if customuser.risk_level == 0 %} selected=“selected”{% endif %}>A</option>
+                                                    <option value="1" {% if customuser.risk_level == 1 %} selected=“selected”{% endif %}>E1</option>
+                                                    <option value="2" {% if customuser.risk_level == 2 %} selected=“selected”{% endif %}>E2</option>
+                                                    <option value="3" {% if customuser.risk_level == 3 %} selected=“selected”{% endif %}>F</option>
                                                 </select>
                                                 </div>
                                             <div class="form-group">
