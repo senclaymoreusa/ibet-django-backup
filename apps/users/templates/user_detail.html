@@ -1418,28 +1418,30 @@
                         <div class="row">
                             <div class="col-md-7">
                                 <div class="member-limitation-title">LIMITS</div>
+                                {% for limit in limitation.bet %}
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <div class="payment-info">Bet limit 1</div>
+                                        <div class="member-limit-info">Bet limit {{ forloop.counter }}</div>
                                     </div>
                                     <div class="col-md-8">
-                                        <div class="payment-text">Done</div>
+                                        <div class="member-limit-text">$ {{ limit.amount }} on {{ limit.product }}</div>
                                     </div>
                                 </div>
-                                <div class="row">
+                                {% endfor %}
+                                <!-- <div class="row">
                                     <div class="col-md-4">
                                         <div class="member-limit-info">Bet limit 2</div>
                                     </div>
                                     <div class="col-md-8">
                                         <div class="member-limit-text">Done</div>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="member-limit-info">Loss limit</div>
                                     </div>
                                     <div class="col-md-8">
-                                        <div class="member-limit-text">Done</div>
+                                        <div class="member-limit-text">$ {{ limitation.loss }}</div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -1447,7 +1449,7 @@
                                         <div class="member-limit-info">Deposit limit</div>
                                     </div>
                                     <div class="col-md-8">
-                                        <div class="member-limit-text">Done</div>
+                                        <div class="member-limit-text">$ {{ limitation.deposit }}</div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -1455,7 +1457,7 @@
                                         <div class="member-limit-info">Withdraw limit</div>
                                     </div>
                                     <div class="col-md-8">
-                                        <div class="member-limit-text">Done</div>
+                                        <div class="member-limit-text">$ {{ limitation.withdraw }}</div>
                                     </div>
                                 </div>
                                 <div style="margin:55px 0px 30px 0px;">
@@ -1481,7 +1483,9 @@
                                 <div class="vl">
                                     <div style="margin: 0px 15px;">
                                         <div class="member-limitation-title">PRODUCT ACCESS DENIED</div>
-                                        <div id="deny-block"><div class="block-text" style="line-height: 43px; padding-left: 7px;">Live Casino</div></div>
+                                        {% for access in accessDenyObj %}
+                                            <div id="deny-block"><div class="block-text" style="line-height: 43px; padding-left: 7px;">{{ access.product }}</div></div>
+                                        {% endfor %}
                                     </div> 
                                 </div>
                             </div>
@@ -1536,12 +1540,12 @@
                                         </div> -->
                                         <div class="col-md-3 bet-limit-block">
                                             <div class="bet-limit-text">PRODUCT</div>
-                                            <select class="form-control" id="game_type[0]" name="game_type[]" value="{{ limit.product }}">
-                                                <option value="0" {% if limit.product == 0 %} selected="selected"{% endif %}>GB Sports</option>
-                                                <option value="1" {% if limit.product == 1 %} selected="selected"{% endif %}>EZ Sports</option>
-                                                <option value="2" {% if limit.product == 2 %} selected="selected"{% endif %}>Games</option>
-                                                <option value="3" {% if limit.product == 3 %} selected="selected"{% endif %}>Lotto</option>
-                                                <option value="4" {% if limit.product == 4 %} selected="selected"{% endif %}>Live Casino</option>
+                                            <select class="form-control" id="game_type[0]" name="game_type[]" value="{{ limit.productValue }}">
+                                                <option value="0" {% if limit.productValue == 0 %} selected="selected"{% endif %}>GB Sports</option>
+                                                <option value="1" {% if limit.productValue == 1 %} selected="selected"{% endif %}>EZ Sports</option>
+                                                <option value="2" {% if limit.productValue == 2 %} selected="selected"{% endif %}>Games</option>
+                                                <option value="3" {% if limit.productValue == 3 %} selected="selected"{% endif %}>Lotto</option>
+                                                <option value="4" {% if limit.productValue == 4 %} selected="selected"{% endif %}>Live Casino</option>
                                             </select>
                                         </div>
                                         <div class="col-md-2">
@@ -1916,10 +1920,10 @@ $(document).ready(function() {
         if ( target.is( 'span' ) ) {
             var row = e.target.parentElement.parentElement.parentElement;
             var input = row.getElementsByTagName("input")[0];
-            console.log(input.getAttribute("id"));
+            // console.log(input.getAttribute("id"));
         } else {
             var row = e.target.parentElement.parentElement;
-            console.log(row);
+            // console.log(row);
         }
         row = $(row);
         row.remove();

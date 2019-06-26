@@ -595,7 +595,6 @@ table.table-bordered > tbody > tr > td{
 }
 
 .payment-text {
-    width: 106px;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -702,7 +701,6 @@ table.table-bordered > tbody > tr > td{
 
 
 .member-limit-info {
-    width: 115px;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -712,11 +710,10 @@ table.table-bordered > tbody > tr > td{
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
-    padding-top:35px;
+    padding-top:30px;
 }
 
 .member-limit-text {
-    width: 106px;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -726,7 +723,7 @@ table.table-bordered > tbody > tr > td{
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
-    padding-top:35px;
+    padding-top:30px;
 }
 
 

@@ -1341,7 +1341,8 @@ class UserDetailView(CommAdminView):
             if limitation.limit_type == 0:
                 betLimit = {
                     'amount': limitation.amount,
-                    'product': limitation.product
+                    'productValue': limitation.product,
+                    'product':  productMap[limitation.product]
                 }
                 limitationDict['bet'].append(betLimit)
             elif limitation.limit_type == 1:
@@ -1362,6 +1363,7 @@ class UserDetailView(CommAdminView):
         # print(limitationDict)
         context['limitation'] = limitationDict
         context['productAccess'] = json.dumps(productAccessArr)
+        context['accessDenyObj'] = productAccessArr
         
         return render(request, 'user_detail.html', context)
 
