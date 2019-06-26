@@ -1759,6 +1759,7 @@ class VerifyActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         if user[0].activation_code == code:
             user.update(active=True)
+            user.update(activation_code='')
             return Response({'status': 'Success'})
         return Response({'status': 'Failed'})
 
@@ -1841,3 +1842,20 @@ class UserSearchAutocomplete(View):
         # print(str(response))
         logger.info('Search response: ' + json.dumps(response))
         return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+class ValidateAndResetPassowrd(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        username = request.data['username']
+        current = request.data['current_password']
+        new = request.data['new_password']
+
+        user = CustomUser.objects.get(username=username)
+        if not user.check_password(current):
+            return Response({'status': 'Failed'})
+        user.set_password(new)
+        user.save()
+        return Response({'status': 'Success'})
