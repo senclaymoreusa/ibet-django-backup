@@ -633,11 +633,11 @@ class AddOrWithdrawBalance(APIView):
                 current_points = reward_points + data.Referee_add_balance_reward
                 referr_object.update(reward_points=current_points, modified_time=timezone.now())
 
-            create = Transaction.objects.create(
-                user_id=CustomUser.objects.filter(username=username).first(), 
-                amount=balance, 
-                transaction_type=0
-            )
+            # create = Transaction.objects.create(
+            #     user_id=CustomUser.objects.filter(username=username).first(), 
+            #     amount=balance, 
+            #     transaction_type=0
+            # )
 
             # action = UserAction(
             #     user= CustomUser.objects.filter(username=username).first(),
@@ -851,9 +851,11 @@ def generate_username():
     return username_1 + username_2
 
 
-class OneclickRegister(View):
-    def post(self, request, *args, **kwargs):
-        
+class OneclickRegister(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
@@ -879,7 +881,7 @@ class OneclickRegister(View):
         user = CustomUser.objects.filter(username=username)
         user.update(active=True, modified_time=timezone.now())
 
-        return HttpResponse(username + '-' + password)
+        return Response({'username': username, 'password': password})
 
 
 class UpdateEmail(View):
@@ -1698,6 +1700,8 @@ class UserListView(CommAdminView):
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
 
+        # print("search: " + str(search))
+
         if pageSize is None:
             pageSize = 20
         else: 
@@ -1713,20 +1717,29 @@ class UserListView(CommAdminView):
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
-        customUser = CustomUser.objects.all()
+        if search:
+            count = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)).count()
+            customUser = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))[offset:offset+pageSize]
+
+            if count == 0:
+                count = CustomUser.objects.all().count()
+                customUser = CustomUser.objects.all()[offset:offset+pageSize]
+                context['searchError'] = _("No search data")
+
+        else:
+            count = CustomUser.objects.all().count()
+            customUser = CustomUser.objects.all()[offset:offset+pageSize]
 
         if offset == 0:
             context['isFirstPage'] = True
         else:
             context['isFirstPage'] = False
         
-        if customUser.count() <= offset+pageSize:
+        if count <= offset+pageSize:
             context['isLastPage'] = True
         else:
             context['isLastPage'] = False
 
-        customUser = CustomUser.objects.all()[offset:offset+pageSize]
-        # context['customuser'] = Customuser
         user_data = []
         for user in customUser:
             userDict = {}
@@ -1888,4 +1901,124 @@ class CheckUsernameExist(View):
             return HttpResponse('Exist')
         return HttpResponse('Valid')
 
+class GenerateActivationCode(APIView):
 
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        username = request.data['username']
+        user = get_user_model().objects.filter(username=username)
+        random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+        user.update(activation_code=random_num)
+        return Response(status=status.HTTP_200_OK)
+
+class VerifyActivationCode(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        username = request.data['username']
+        code = request.data['code']
+        user = get_user_model().objects.filter(username=username)
+        if user[0].activation_code == code:
+            user.update(active=True)
+            user.update(activation_code='')
+            return Response({'status': 'Success'})
+        return Response({'status': 'Failed'})
+
+
+
+
+class UserSearchAutocomplete(View):
+    def get(self, request, *args, **kwargs):
+        search = request.GET['search']
+
+        logger.info('Search user, key: ' + search)
+        search_id = CustomUser.objects.filter(pk__contains=search)
+        search_username = CustomUser.objects.filter(username__contains=search)
+        search_email = CustomUser.objects.filter(email__contains=search)
+        search_phone = CustomUser.objects.filter(phone__contains=search)
+        search_first_name = CustomUser.objects.filter(first_name__contains=search)
+        search_last_name = CustomUser.objects.filter(last_name__contains=search)
+
+        search_id = serializers.serialize('json', search_id)
+        search_username = serializers.serialize('json', search_username)
+        search_email = serializers.serialize('json', search_email)
+        search_phone = serializers.serialize('json', search_phone)
+        search_first_name = serializers.serialize('json', search_first_name)
+        search_last_name = serializers.serialize('json', search_last_name)
+
+        search_id = json.loads(search_id)
+        search_username = json.loads(search_username)
+        search_email = json.loads(search_email)
+        search_phone = json.loads(search_phone)
+        search_first_name = json.loads(search_first_name)
+        search_last_name = json.loads(search_last_name)
+        response = {}
+
+        id_data = []
+        for user in search_id:
+            userMap = {}
+            userMap['id'] = user['pk']
+            id_data.append(userMap)
+        response['id'] = id_data
+
+        username_data = []
+        for user in search_username:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['username'] = user['fields']['username']
+            username_data.append(userMap)
+        response['username'] = username_data
+
+        email_data = []
+        for user in search_email:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['email'] = user['fields']['email']
+            email_data.append(userMap)
+        response['email'] = email_data
+
+        phone_data = []
+        for user in search_phone:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['phone'] = user['fields']['phone']
+            phone_data.append(userMap)
+        response['phone'] = phone_data
+
+        first_name_data = []
+        for user in search_first_name:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['firstName'] = user['fields']['first_name']
+            first_name_data.append(userMap)
+        response['firstName'] = first_name_data
+
+        last_name_data = []
+        for user in search_last_name:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['lastName'] = user['fields']['last_name']
+            last_name_data.append(userMap)
+        response['lastName'] = last_name_data
+        # print(str(response))
+        logger.info('Search response: ' + json.dumps(response))
+        return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+class ValidateAndResetPassowrd(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        username = request.data['username']
+        current = request.data['current_password']
+        new = request.data['new_password']
+
+        user = CustomUser.objects.get(username=username)
+        if not user.check_password(current):
+            return Response({'status': 'Failed'})
+        user.set_password(new)
+        user.save()
+        return Response({'status': 'Success'})

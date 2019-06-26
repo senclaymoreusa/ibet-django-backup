@@ -13,12 +13,17 @@
         <div>
             <div style="font-size: 0.9em; padding-bottom:5px;padding-top:10px;">FIND A MEMBER</div>
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Enter member ID, name, phone or email">
-                <span class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+                <input type="text" id="search" class="form-control" placeholder="Enter member ID, name, phone or email" >
+                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
             </div>
         </div>
     </div>
-    <div class='col-md-8'>
+    <div class="col-md-3">
+        {% if searchError %}
+            <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
+        {% endif %}
+    </div>
+    <!-- <div class='col-md-8'> -->
         <!-- {% block time_search %} -->
         <!-- <label>Date Range</label>
         <div class="row">
@@ -43,7 +48,7 @@
             </div>
         </div> -->
         <!-- {% endblock %} -->
-    </div>
+    <!-- </div> -->
 </div>
 
 <div style="margin-top:40px;">
@@ -158,6 +163,8 @@
     <!-- </div> -->
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
 
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
@@ -169,9 +176,12 @@
 
 <script>
 
-// $('#datetimepicker1').datetimepicker();
-
 $(document).ready(function() {
+
+    var previousURL = document.referrer;
+
+    $("#back-btn").attr("href", previousURL);
+
     var csrftoken = $.cookie("csrftoken");
     // console.log(csrftoken);
 
@@ -210,6 +220,155 @@ $(document).ready(function() {
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
     });
+
+
+    $("#search").on('keyup', function () {
+        if( this.value.length < 2 ) return;
+        searchOpen();
+    });
+
+    function searchOpen() {
+        var search = $('#search').val();
+        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search;
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data) {
+                // console.log(data);
+                searchResult(data, search);
+            },
+            error: function () {
+                // console.log('error');
+            }
+
+        });
+    }
+
+    function searchResult(data, term) {
+        
+        var ids = data['id'];
+        var usernames = data['username'];
+        var emails = data['email'];
+        var phones = data['phone'];
+        var firstNames = data['firstName'];
+        var lastNames = data['lastName'];
+        
+        var sourceList = [];
+        if ($.isNumeric(term)) {
+            if (ids.length > 0) {
+                sourceList.push({
+                    'type': 'category',
+                    'label': term,
+                    'value': 'MEMBER RESULTS'
+                });
+                for (var i = 0; i < ids.length; i++) {
+                    sourceList.push({
+                        'type': 'username',
+                        'label': term,
+                        'value': ids[i]['id'],
+                        'id': ids[i]['id']
+                    });
+                }
+            }
+        } else {
+            if (usernames.length > 0) {
+                sourceList.push({
+                    'type': 'category',
+                    'label': term,
+                    'value': 'MEMBER RESULTS'
+                });
+
+                for (var i = 0; i < usernames.length; i++) {
+                    sourceList.push({
+                        'type': 'username',
+                        'label': term,
+                        'value': usernames[i]['username'],
+                        'id': usernames[i]['id'],
+                    });
+                }
+            }
+        }
+        if (emails.length > 0 || phones.length > 0 || firstNames.length > 0 || lastNames.length > 0) {
+            sourceList.push({
+                'type': 'category',
+                'label': term,
+                'value': 'MEMBER DETAILS RESULTS'
+            });
+        }
+        if (emails.length > 0) {
+            for (var i = 0; i < emails.length; i++) {
+                sourceList.push({
+                    'type': 'email',
+                    'label': term,
+                    'value': emails[i]['email'],
+                    'id': emails[i]['id'],
+                });
+            }
+        }
+        if (phones.length > 0) {
+            for (var i = 0; i < phones.length; i++) {
+                sourceList.push({
+                    'type': 'phone',
+                    'label': term,
+                    'value': phones[i]['phone'],
+                    'id': phones[i]['id'],
+                });
+            }  
+        }
+        if (firstNames.length > 0) {
+            for (var i = 0; i < firstNames.length; i++) {
+                sourceList.push({
+                    'type': 'name',
+                    'label': term,
+                    'value': firstNames[i]['firstName'],
+                    'id': firstNames[i]['id'],
+                });
+            }
+        }
+        if (lastNames.length > 0) {
+            for (var i = 0; i < lastNames.length; i++) {
+                sourceList.push({
+                    'type': 'name',
+                    'label': term,
+                    'value': lastNames[i]['lastName'],
+                    'id': lastNames[i]['id'],
+                });
+            }
+        }
+        // console.log(sourceList);
+        $( "#search" ).autocomplete({
+            source: sourceList,
+            create: function () {
+                $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+                    if (item.type === 'category') {
+                        return $('<li class="ui-state-disabled member-search-result" style="margin: 0px 13px;">')
+                        .append(item.value)
+                        .appendTo(ul);
+                        // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
+                    } else {
+                        var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
+                        if (item.type == 'username') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-user" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        } else if (item.type == 'email') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-envelope"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        } else if (item.type == 'phone') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-phone"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        } else if (item.type == 'name') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-id-card"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        }
+                    }
+                };
+            }
+        });
+    }
 
 
     // $('#search_btn').click(function(e) {
@@ -274,6 +433,13 @@ $(document).ready(function() {
         window.location.href = getUserListRedirectUrl(pageSize, 0, "");
     });
 
+    $("#search-btn").click(function(){
+        var pageSize = $("#pagination_value").val();;
+        // var oldFromItem = paramsMap['offset'];
+        var search = $('#search').val();
+        window.location.href = getUserListRedirectUrl(pageSize, 0, search);
+    });
+
     getNext = function() {
         if ($('#nextPage').hasClass('disabled')) {
             return;
@@ -311,15 +477,15 @@ function cleanFloatField(field) {
 
 function getUserListRedirectUrl(pageSize, offset, search) {
     var curUrl = window.location.href;
-    console.log(curUrl);
+    // console.log(curUrl);
     var parts = curUrl.split('?');
-    console.log(parts);
+    // console.log(parts);
     
     var redirectUrl = parts[0]; 
     redirectUrl += '?search=' + search;
     redirectUrl += "&pageSize=" + pageSize;
     redirectUrl += '&offset=' + offset;
-    console.log(redirectUrl);
+    // console.log(redirectUrl);
     return redirectUrl;
 }
 

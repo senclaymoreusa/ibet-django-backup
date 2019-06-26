@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'xadmin',
     'crispy_forms',
+    'apps',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -175,6 +176,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
+
 }
 
 
@@ -289,22 +291,6 @@ STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
-#qaicash-payment
-QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
-# QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
-MERCHANTID = '1'
-CURRENCY = 'IDR'
-MERCHANTAPIKEY = 'secret'
-APIVERSION = 'v2.0'
-METHOD = 'LBT_ONLINE'
-DEPOSIT_URL = '/deposit/routing/'
-PAYOUT_URL = '/payout/routing/'
-
-#paypal-payment
-PAYPAL_MODE = 'sandbox'   # sandbox or live
-PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
-PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
-PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
-
 
 AWS_S3_ADMIN_BUCKET = 'ibet-admin'
+
