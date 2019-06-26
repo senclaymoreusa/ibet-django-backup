@@ -1475,7 +1475,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button class="set-permission-btn" style="margin-top: 20px;" data-toggle="modal" data-target="#set_limitaions">Set limitations</button>
+                                <button class="set-permission-btn" style="margin-top: 20px;" data-toggle="modal" data-target="#set_limitations">Set limitations</button>
                             </div>
                             <div class="col-md-5">
                                 <div class="vl">
@@ -1499,7 +1499,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="set_limitaions" role="dialog">
+        <div class="modal fade" id="set_limitations" role="dialog">
             <div class="modal-dialog">
             
             <!-- Modal content-->
@@ -1511,39 +1511,80 @@
                     </div>
                     <div class="modal-body">
                         <!-- <div style="padding:8%;"> -->
+                        <form action="{% url 'xadmin:user_detail' %}" method="POST">
+                            {% csrf_token %}
                             <div id="bet-container">
+                                <input type="hidden" name="user_id" value="{{ customuser.pk }}"></input>
+                                <input type="hidden" name="type" value="bet_limitation_setting"></input>
+                                <input type="hidden" name="bet_option_id[]" id="bet_option_id" value="">
                                 <div style="margin-bottom:2.5%"><label>BET LIMITS</label></div>
-                                <div class="row">
-                                    <div class="col-md-3 bet-limit-block">
-                                        <div class="bet-limit-text">BET LIMITS</div>
-                                        <input class="form-control" id="bet_limit" name="bet_limit" value="">
+                                {% if limitation.bet %}
+                                    {% for limit in limitation.bet %}
+                                    <div class="row" style="margin-top:20px;">
+                                        <div class="col-md-3 bet-limit-block">
+                                            <div class="bet-limit-text">BET LIMITS</div>
+                                            <input class="form-control" id="bet_limit[0]" name="bet_limit[]" value="{{ limit.amount }}">
+                                        </div>
+                                        <!-- <div class="col-md-3 bet-limit-block">
+                                            <div class="bet-limit-text">BET INTERVAL</div>
+                                            <select class="form-control" id="bet_interval">
+                                                <option value="bet">per bet</option>
+                                                <option value="week">per week</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                            </select>
+                                        </div> -->
+                                        <div class="col-md-3 bet-limit-block">
+                                            <div class="bet-limit-text">PRODUCT</div>
+                                            <select class="form-control" id="game_type[0]" name="game_type[]" value="{{ limit.product }}">
+                                                <option value="0" {% if limit.product == 0 %} selected="selected"{% endif %}>GB Sports</option>
+                                                <option value="1" {% if limit.product == 1 %} selected="selected"{% endif %}>EZ Sports</option>
+                                                <option value="2" {% if limit.product == 2 %} selected="selected"{% endif %}>Games</option>
+                                                <option value="3" {% if limit.product == 3 %} selected="selected"{% endif %}>Lotto</option>
+                                                <option value="4" {% if limit.product == 4 %} selected="selected"{% endif %}>Live Casino</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="bet-limit-text">&nbsp;</div>
+                                            <button type="button" class="btn btn-defaul delete" style="background-color:rgb(199, 89, 82)">
+                                                <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3 bet-limit-block">
-                                        <div class="bet-limit-text">BET INTERVAL</div>
-                                        <select class="form-control" id="bet_interval">
-                                            <option value="bet">per bet</option>
-                                            <option value="week">per week</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 bet-limit-block">
-                                        <div class="bet-limit-text">PRODUCT</div>
-                                        <select class="form-control" id="game_type">
-                                            <option value="GB">GB Sports</option>
-                                            <option value="EZ">EZ Sports</option>
-                                            <option value="games">Games</option>
-                                            <option value="lotto">Lotto</option>
-                                            <option value="live">Live Casino</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <div class="bet-limit-text">&nbsp;</div>
-                                        <button type="button" class="btn btn-defaul delete" style="background-color:rgb(199, 89, 82)">
-                                            <span class="glyphicon glyphicon-trash" style='color:white'></span>
-                                        </button>
-                                    </div>
-                                </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="row" style="margin-top:20px;">
+                                            <div class="col-md-3 bet-limit-block">
+                                                <div class="bet-limit-text">BET LIMITS</div>
+                                                <input class="form-control" id="bet_limit[]" name="bet_limit[]" value="">
+                                            </div>
+                                            <!-- <div class="col-md-3 bet-limit-block">
+                                                <div class="bet-limit-text">BET INTERVAL</div>
+                                                <select class="form-control" id="bet_interval">
+                                                    <option value="bet">per bet</option>
+                                                    <option value="week">per week</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                </select>
+                                            </div> -->
+                                            <div class="col-md-3 bet-limit-block">
+                                                <div class="bet-limit-text">PRODUCT</div>
+                                                <select class="form-control" id="game_type[]" name="game_type[]" value="">
+                                                    <option value="0">GB Sports</option>
+                                                    <option value="1">EZ Sports</option>
+                                                    <option value="2">Games</option>
+                                                    <option value="3">Lotto</option>
+                                                    <option value="4">Live Casino</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="bet-limit-text">&nbsp;</div>
+                                                <button type="button" class="btn btn-defaul delete" style="background-color:rgb(199, 89, 82)">
+                                                    <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                {% endif %}
                             </div>
                             <button class="add_bet_field btn btn-primary">Add New Field</button>
                             
@@ -1553,9 +1594,9 @@
                                 <div class="row">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">LOSS LIMIT</div>
-                                        <input class="form-control" id="loss_limit" name="loss_limit" value="">
+                                        <input class="form-control" id="loss_limit" name="loss_limit" value="{{ limitation.loss }}">
                                     </div>
-                                    <div class="col-md-3 bet-limit-block">
+                                    <!-- <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">LOSS LIMIT INTERVAL</div>
                                         <select class="form-control" id="loss_interval">
                                             <option value="bet">per bet</option>
@@ -1563,7 +1604,7 @@
                                             <option value="2">2</option>
                                             <option value="3">3</option>
                                         </select>
-                                    </div>
+                                    </div> -->
                                     <div class="col-md-2">
                                         <div class="bet-limit-text">&nbsp;</div>
                                         <button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)">
@@ -1580,9 +1621,9 @@
                                 <div class="row">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">DEPOSIT LIMIT</div>
-                                        <input class="form-control" id="deposit_limit" name="deposit_limit" value="">
+                                        <input class="form-control" id="deposit_limit" name="deposit_limit" value="{{ limitation.deposit }}">
                                     </div>
-                                    <div class="col-md-3 bet-limit-block">
+                                    <!-- <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">DEPOSIT INTERVAL</div>
                                         <select class="form-control" id="deposit_interval">
                                             <option value="bet">per bet</option>
@@ -1590,7 +1631,7 @@
                                             <option value="2">2</option>
                                             <option value="3">3</option>
                                         </select>
-                                    </div>
+                                    </div> -->
                                     <div class="col-md-2">
                                         <div class="bet-limit-text">&nbsp;</div>
                                         <button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)">
@@ -1607,9 +1648,9 @@
                                 <div class="row">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">WITHDRAW LIMIT</div>
-                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit" value="">
+                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit" value="{{ limitation.withdraw }}">
                                     </div>
-                                    <div class="col-md-3 bet-limit-block">
+                                    <!-- <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">WITHDRAW INTERVAL</div>
                                         <select class="form-control" id="withdraw_interval">
                                             <option value="bet">per bet</option>
@@ -1617,7 +1658,7 @@
                                             <option value="2">2</option>
                                             <option value="3">3</option>
                                         </select>
-                                    </div>
+                                    </div> -->
                                     <div class="col-md-2">
                                         <div class="bet-limit-text">&nbsp;</div>
                                         <button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)">
@@ -1626,8 +1667,53 @@
                                     </div>
                                 </div>
                             </div>
-                            <button class="add_withdraw_field btn btn-primary">Add New Field</button>
-
+                            <div>
+                                <button class="add_withdraw_field btn btn-primary">Add New Field</button>
+                            </div>
+                            
+                            <div>
+                                <div style="margin-bottom:2.5%; margin-top:6%;"><label>PRODUCT ACCESS DENIED</label></div>
+                                <input type="text" id="tag1" class="form-control" />
+                                <input type="hidden" id="hidden_tags" name="tags-input" value="[]"></input>
+                            </div>
+                            <div>
+                                <div style="margin-bottom:2.5%; margin-top:6%;"><label>EXCLUSTIONS</label></div>
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="bet-limit-text">TIME-OUT</div>
+                                        <select class="form-control">
+                                            <option value="all">Select....</option>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-md-5">
+                                        <div class="bet-limit-text">SELF-EXCLUSTION</div>
+                                        <input class="form-control" id="self-exculstion" value="" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if customuser.block == False %}
+                            <div>
+                                <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
+                                    <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
+                                </button>
+                            </div>
+                            {% else %}
+                            <div>
+                                <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
+                                    Open account
+                                </button>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px;">Submit</button>
+                            </div>
+                        </form>
                         <!-- </div> -->
                     </div>
                     <!-- <div class="modal-footer">
@@ -1649,6 +1735,10 @@
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-typeahead/2.10.6/jquery.typeahead.min.css" /> -->
 
 <script>
 
@@ -1803,16 +1893,21 @@ $(document).ready(function() {
         getActivityfilter(activity);
     });
 
+    var limit_options = ["bet_limit"];
+    $('#bet_option_id').val(limit_options); 
+
     $('.add_bet_field').click(function(e){
         e.preventDefault();
         var x = $('#bet-container').find('button').length;
-        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET LIMIT</div><input class="form-control" name="bet_limit_' + x + '" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET INTERVAL</div><select class="form-control" id="bet_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">PRODUCT</div><select class="form-control" id="game_type_' + x + '"><option value="GB">GB Sports</option><option value="EZ">EZ Sports</option><option value="games">Games</option><option value="lotto">Lotto</option><option value="live">Live Casino</option></select></div>';
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET LIMIT</div><input class="form-control" id="bet_limit[]" name="bet_limit[]" value=""></div>';
+        // content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">BET INTERVAL</div><select class="form-control" id="bet_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">PRODUCT</div><select class="form-control" id="game_type[]" name="game_type[]"><option value="0">GB Sports</option><option value="1">EZ Sports</option><option value="2">Games</option><option value="3">Lotto</option><option value="4">Live Casino</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete limit-delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#bet-container").append(content);
-        x++;
 
+        var bet_limit = "#bet_limit_" + x;
+        var temp = $("#bet_option_id").val();
+        x++;
     });
 
     $("#bet-container").on("click",".delete", function(e){
@@ -1820,8 +1915,11 @@ $(document).ready(function() {
         var target = $( e.target );
         if ( target.is( 'span' ) ) {
             var row = e.target.parentElement.parentElement.parentElement;
+            var input = row.getElementsByTagName("input")[0];
+            console.log(input.getAttribute("id"));
         } else {
             var row = e.target.parentElement.parentElement;
+            console.log(row);
         }
         row = $(row);
         row.remove();
@@ -1831,7 +1929,7 @@ $(document).ready(function() {
         e.preventDefault();
         var x = $('#loss-container').find('button').length;
         var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT</div><input class="form-control" name="loss_limit_' + x + '" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT INTERVAL</div><select class="form-control" id="loss_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        // content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT INTERVAL</div><select class="form-control" id="loss_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#loss-container").append(content);
         x++;
@@ -1854,7 +1952,7 @@ $(document).ready(function() {
         e.preventDefault();
         var x = $('#deposit-container').find('button').length;
         var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT LIMIT</div><input class="form-control" name="deposit_limit_' + x + '" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT INTERVAL</div><select class="form-control" id="deposit_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        // content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT INTERVAL</div><select class="form-control" id="deposit_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#deposit-container").append(content);
         x++;
@@ -1877,7 +1975,7 @@ $(document).ready(function() {
         e.preventDefault();
         var x = $('#withdraw-container').find('button').length;
         var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW LIMIT</div><input class="form-control" name="withdraw_limit_' + x + '" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW INTERVAL</div><select class="form-control" id="withdraw_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
+        // content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW INTERVAL</div><select class="form-control" id="withdraw_interval_' + x + '"><option value="bet">per bet</option> <option value="week">per week</option><option value="2">2</option> <option value="3">3</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#withdraw-container").append(content);
         x++;
@@ -1925,8 +2023,6 @@ $(document).ready(function() {
     }
 
     showTransaction = function (username, trans, type) {
-        console.log(trans);
-        console.log(type);
         // var trans = JSON.parse(trans.replace(/'/g, '"'));
         // console.log(JSON.parse(trans));
         var time = 'N/A';
@@ -1997,7 +2093,101 @@ $(document).ready(function() {
         // Configuration options go here
         options: {}
     });
+
+
+    var data = '[{ "value": 0, "text": "GB SPORTS", "continent": "PRODUCT" }, { "value": 1, "text": "EZ SPORTS", "continent": "PRODUCT" }, { "value": 2, "text": "GAMES", "continent": "PRODUCT" }, { "value": 3, "text": "LOTTO", "continent": "PRODUCT" }, { "value": 4, "text": "LIVE CASINO", "continent": "PRODUCT" }]';
+
+    //get data pass to json
+    var task = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: jQuery.parseJSON(data) //your can use json type
+    });
+
+    task.initialize();
+
+    var elt = $("#tag1");
+    elt.tagsinput({
+        allowDuplicates: false,
+        itemValue: "value",
+        itemText: "text",
+        typeaheadjs: {
+            name: "task",
+            displayKey: "text",
+            source: task.ttAdapter()
+        }
+    });
+
+    var accessDeny = '{{ productAccess|safe }}';
+    if (accessDeny) {
+
+        accessDeny = JSON.parse(accessDeny);
+        var tagsArray = $('#hidden_tags').val();
+        // console.log("tagsArray: " + tagsArray);
+        tagsArray = JSON.parse(tagsArray);
+    
+        for (var i = 0; i < accessDeny.length; i++) {
+            elt.tagsinput('add', { "value": accessDeny[i].productValue , "text": accessDeny[i].product , "continent": "PRODUCT" });
+            tagsArray.push(accessDeny[i].productValue);
+        }
+        $('#hidden_tags').val(JSON.stringify(tagsArray));
+    }
+    
+    
+    $('#tag1').on('beforeItemAdd', function(event) {
+        // console.log(event.item.text);
+        var tags = $('#hidden_tags').val();
+        tags = JSON.parse(tags);
+        tags.push(event.item.value);
+
+        $('#hidden_tags').val(JSON.stringify(tags));
+    });
+
+
+    $('#tag1').on('itemRemoved', function(event) {
+        var tags = $('#hidden_tags').val();
+        tags = JSON.parse(tags);
+        array = removeByIndex(tags, event.item.value);
+        $('#hidden_tags').val(JSON.stringify(array));
+        // console.log($('#hidden_tags').val());
+    });
+
+    $('#close-account-btn').on('click', function () {
+        $('#close-account-btn').html('Click to Close account');
+        $('#close-account-btn').attr('id', 'close-account');
+        $('#close-account').attr('onclick', 'userBlockAction("block")');
+    });
+
 });
+
+function removeByIndex(array, index){
+    return array.filter(function(elem, _index){
+        return index != elem;
+    });
+}
+
+function userBlockAction(type) {
+    console.log("open account");
+    var user_id = $('#hidden_user_id').val();
+    $.ajax({
+        type:'POST',
+        url:"{% url 'xadmin:user_detail' %}",
+        data:{ 
+            'type': 'block_user',
+            'user_id': user_id,
+            'action': type,
+        },
+        success:function(data) {
+            location.reload();
+            // $('#set_limitations').show();
+            // $("#myModal .modal-body").load(target, function() { 
+            //     $("#set_limitations").modal("show"); 
+            // });
+            // $("#set_limitations").modal("show"); 
+            // $('#set_limitations').modal({'backdrop': 'static'});
+        }
+    });
+}
 
 function updateNote(message) {
 

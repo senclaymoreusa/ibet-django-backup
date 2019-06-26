@@ -138,8 +138,8 @@ class CustomUser(AbstractBaseUser):
 
     id_image = models.CharField(max_length=250, blank=True)
 
-    # temporary_block_time = models.DateTimeField(null=True, blank=True)
-    # block_timespan = models.DurationField(null=True, blank=True)
+    temporary_block_time = models.DateTimeField(null=True, blank=True)
+    block_timespan = models.DurationField(null=True, blank=True)
 
     
     created_time = models.DateTimeField(
@@ -407,3 +407,21 @@ class LinkHistory(models.Model):
     timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
     ## click by ip
     user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
+
+class Limitation(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
+    amount = models.DecimalField(decimal_places=2, max_digits=20)
+    product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
+
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        auto_now_add=True,
+        editable=False,
+    )
+    modified_time = models.DateTimeField(
+        _('Modified Time'),
+        auto_now_add=True,
+        editable=False,
+    )
