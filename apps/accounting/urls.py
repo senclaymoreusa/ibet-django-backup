@@ -29,4 +29,8 @@ urlpatterns = [
     path('api/astropay/payment_status', astropay.astroPaymentStatus, name = 'AstroPay_Payment_Status'),
     path('api/asiapay/deposit', asiapay.submitDeposit.as_view(), name = 'AsiaPay_deposit'),
     path('api/asiapay/cashout', asiapay.submitCashout.as_view(), name = 'AsiaPay_cashout'),
+    path('api/asiapay/depositFinish', asiapay.depositfinish.as_view(), name = 'AsiaPay_deposit_finish'),
+    path('api/asiapay/orderStatus', asiapay.orderStatus.as_view(), name = 'AsiaPay_Order_Status'),
+    path('api/asiapay/exchangeRate', asiapay.exchangeRate.as_view(), name = 'AsiaPay_Exchange_Rate'),
+    path('api/asiapay/depositArrive', asiapay.depositArrive.as_view(), name = 'AsiaPay_deposit_Arrive'),
 ]

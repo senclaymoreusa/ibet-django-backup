@@ -10,21 +10,23 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework_xml.parsers import XMLParser
+from rest_framework_xml.renderers import XMLRenderer
 from utils.constants import *
-from djauth.third_party_keys import *
+#from djauth.third_party_keys import *
 from rest_framework import generics
-from ..serializers import asiapayDepositSerialize, asiapayCashoutSerialize
+from ..serializers import asiapayDepositSerialize, asiapayCashoutSerialize,asiapayDepositFinishSerialize,asiapayOrderStatusFinishSerialize,asiapayExchangeRateFinishSerialize,asiapayDepositArriveSerialize
 from django.conf import settings
 import requests,json
 import logging
-import time
+import time,datetime
 import struct
 import hashlib 
 import xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
 import base64
-from time import gmtime, strftime
+from time import gmtime, strftime, strptime
 
 bankidConversion = {
     '1':'工商银行',
@@ -84,6 +86,7 @@ def decryptDES(decryptString, decryptKey, myIv):
 
 eString = ASIAPAY_R1 + "," + ASIAPAY_CID + "," + ASIAPAY_R2
 myIv = bytearray(b'\x32\xCD\x13\x58\x21\xAB\xBC\xEF')
+url = ASIAPAY_API_URL
 class submitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayDepositSerialize
@@ -92,23 +95,24 @@ class submitDeposit(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
+        # uID = "nTEST2"
         UserIP= get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
-        OrderID = 'D' + "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+        OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
         BankID = self.request.POST.get("method")
         PayWay = self.request.POST.get("PayWay")
         DesTime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         amount = self.request.POST.get("amount")
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
-        user =  CustomUser.objects.get(pk=userid)
+        #user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
         print(SignCode)
         print(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "TraceID" : TraceID,
-            "C_OrderID": OrderID,
+            "C_OrderID": 'D' + OrderID,
             "cID": ASIAPAY_CID,
             "uID": uID,
             "UserIP": UserIP,
@@ -120,10 +124,11 @@ class submitDeposit(generics.GenericAPIView):
             "PayType": 0,
             "PayCardPro": "",
             "PayCardCity": "",
-            "PayCardUserChName": user.last_name + user.first_name,
+            # "PayCardUserChName": user.last_name + user.first_name,
+            "PayCardUserChName": "测试",
             "PayMoney": amount,
             "ResType": "xml",
-            "C_RealName": user.last_name + user.first_name,
+            "C_RealName": "测试",
             "UserRealID": "",
             "SafeLevel": "0",
             "ProcessLevel": "0",
@@ -140,7 +145,6 @@ class submitDeposit(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        url = ASIAPAY_API_URL
         print(encryptDES(eString, sign_encryptKey, myIv))
         print(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
       
@@ -148,7 +152,7 @@ class submitDeposit(generics.GenericAPIView):
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
             'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
             'TraceID': TraceID,
-            'OrderID':OrderID,
+            'OrderID':'D' + OrderID,
             'cID':ASIAPAY_CID,
             'uID':uID,
             'UserIP':UserIP,
@@ -158,11 +162,11 @@ class submitDeposit(generics.GenericAPIView):
             'PayType':0,
             'PayMoney':amount,
             'ResType':'xml',
-            'RealName':user.last_name + user.first_name,
+            'RealName':"测试",
             'SafeLevel':0,
             'ProcessLevel':0,
             'SignCode':MD5(SignCode),
-            'PayCardUserChName':user.last_name + user.first_name,
+            'PayCardUserChName':"测试",
         })
         rdata = r.text
         print(rdata)
@@ -188,7 +192,7 @@ class submitDeposit(generics.GenericAPIView):
                         "cid":ASIAPAY_CID,
                         "oid":OrderID
                     })
-                rrdata = rr.json()
+                rrdata = rr.text
                 print(rrdata)
                 Response(rrdata)
             else:
@@ -211,35 +215,44 @@ class submitCashout(generics.GenericAPIView):
         uID = "n" + userid
         UserIP= get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
-        OrderID = 'D' + "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+        OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
-        BankID = self.request.POST.get("method")
+        #BankID = self.request.POST.get("method")
         PayWay = self.request.POST.get("PayWay")
-        DesTime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        DesTime = "2019-06-21 10:00:00"
+        #strftime("%Y-%m-%d %H:%M:%S", gmtime())
         amount = self.request.POST.get("amount")
-        SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
+        CashBankName =""
+        CashCardNumber = "6222022000000000000"
+        CashCardChName = "务必填写真实姓名"
+        CashBankPro = ""
+        CashBankCity = ""
+        CashBankDetailName = "北京支行"
+        SignCode = str(uID)+ ASIAPAY_CID + ASIAPAY_CPASS + amount+ CashBankName+ CashCardNumber+ CashCardChName+CashBankPro+CashBankCity+CashBankDetailName+ UserIP + TraceID + "W" + OrderID + NoticeUrl + DesTime + ASIAPAY_CASHKEY
+        print(SignCode)
         user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
+        cashoutMethod = self.request.POST.get("cashoutMethod")
         # print(SignCode)
         # print(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "cID": ASIAPAY_CID,
-            "uID": "ntest001",
+            "uID": uID,
             "cPass": ASIAPAY_CPASS,
-            "TraceID" : "2148923489",
-            "OrderID": "W" + "111231234564",
-            "CashMoney":"10",
-            "CashBankName":"BTC",
-            "CashCardNumber":"6222022000000000000",
-            "CashCardChName":"务必填写真实姓名",
-            "CashBankPro":"",
-            "CashBankCity":"",
-            "CashBankDetailName":"北京支行",
-            "UserIP": "127.0.0.1",
+            "TraceID" : TraceID,
+            "OrderID": "W" + OrderID,
+            "CashMoney":amount,
+            "CashBankName":CashBankName,
+            "CashCardNumber":CashCardNumber,
+            "CashCardChName":CashCardChName,
+            "CashBankPro":CashBankPro,
+            "CashBankCity":CashBankCity,
+            "CashBankDetailName":CashBankDetailName,
+            "UserIP": UserIP,
             "NoticeUrl": "",
-            "DesTime": "2019-06-21 10:00:",
-            "SingCode": MD5(SignCode),
+            "DesTime": "2019-06-21 10:00:00",
+            "SignCode": MD5(SignCode),
             "CashMobile": "",
             "CashType":"1",
             "SafeLevel": "0",
@@ -251,72 +264,164 @@ class submitCashout(generics.GenericAPIView):
             "tempparam3" : "",
             "tempparam4" : "",
             "tempparam5" : "",
+            "tempparam6" : "",
+            "tempparam7" : "",
         }
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        url = ASIAPAY_API_URL
         print("sign:" + encryptDES(eString, sign_encryptKey, myIv))
         print("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
-        for x in range(3):   
-            r = requests.post(url + "/standard/getway/depositiface", data={
-                'rStr':'',
-                'Sign': encryptDES(eString, sign_encryptKey, myIv),
-                'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
-                'TraceID': "2148923489",
-                'OrderID':"W" + "111231234564",
-                'cID':ASIAPAY_CID,
-                'uID':"ntest001",
-                'cPass': ASIAPAY_CPASS,
-                'UserIP':"127.0.0.1",
-                'DesTime':"2019-06-21 10:00:",
-                'CashCardNumber':'6222022000000000000',
-                'CashCardChName':'务必填写真实姓名',
-                'CashBankPro':'CashBankPro',
-                'CashBankName':'BTC',
-                'CashBankCity':'',
-                'CashBankDetailName':'北京支行',
-                'NoticeUrl':'',
-                'CashMoney':'10',
-                'CashMobile':'',
-                'CashType':'1',
-                'RealID':'',
-                'ResType':'xml',
-                'SafeLevel':0,
-                'SignCode':MD5(SignCode),
-                'tempparam':''
-            })
-            rdata = r.text
-            print(rdata)
-            if r.status_code == 201:
-                break
-            elif r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
-                sleep(delay)
-            elif r.status_code == 400:
-                # Handle error
-                print("There was something wrong with the result")
-                print(rdata)
-                return Response(rdata)
+        r = requests.post(url + "/standard/getway/" + cashoutMethod, data={
+            'rStr':'',
+            'Sign': encryptDES(eString, sign_encryptKey, myIv),
+            'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
+            'TraceID': TraceID,
+            'OrderID':"W" + OrderID,
+            'cID':ASIAPAY_CID,
+            'uID':uID,
+            'cPass': ASIAPAY_CPASS,
+            'UserIP':UserIP,
+            'DesTime':"2019-06-21 10:00:",
+            'CashCardNumber':CashCardNumber,
+            'CashCardChName':CashCardChName,
+            'CashBankPro':CashBankPro,
+            'CashBankName':CashBankName,
+            'CashBankCity':CashBankCity,
+            'CashBankDetailName':CashBankDetailName,
+            'NoticeUrl':'',
+            'CashMoney':amount,
+            'CashMobile':'',
+            'CashType':'1',
+            'RealID':'',
+            'ResType':'xml',
+            'SafeLevel':0,
+            'SignCode':MD5(SignCode),
+            'tempparam':''
+        })
+        rdata = r.text
+        print(rdata)
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text
         print(StatusMsg)
-        if StatusCode == '100503' or StatusMsg == 'OK':
+        if StatusCode == '50001':
             create = Transaction.objects.create(
                 order_id=OrderID,
                 amount=amount,
                 user_id=CustomUser.objects.get(pk=userid),
                 currency= int(currency),
-                transaction_type=0, 
+                transaction_type=1, 
                 channel=4,
                 status=2,
-                method=bankidConversion[BankID],
+                method=cashoutMethod,
             )
         else:
             print(StatusMsg)
+        
         return Response(rdata)
+
+class depositfinish(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = asiapayDepositFinishSerialize
+    permission_classes = [AllowAny, ]
+    def post(self, request, *args, **kwargs):
+        userid = self.request.POST.get("userid")
+        OrderID = self.request.POST.get("order_id")
+        uID = "n" + userid
+        r = requests.post(url + '/standard/getway/depositfinish', data={
+            "cID":ASIAPAY_CID,
+            "uID":uID,
+            "CmdType":"02",
+            "OrderID":OrderID,
+        })
+        rdata = r.text
+        tree = ET.fromstring(rdata)
+        StatusCode = tree.find('StatusCode').text
+        if StatusCode == "00001":
+            orderData = Transaction.objects.get(user_id=CustomUser.objects.get(pk=userid),
+            order_id=OrderID)
+            orderData.status = 3
+            orderData.save()
+        else:
+            print('The request information is nor correct, please try again')
+        print(rdata)
+        return Response(rdata)
+
+class orderStatus(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = asiapayOrderStatusFinishSerialize
+    permission_classes = [AllowAny, ]
+    def post(self, request, *args, **kwargs):
+        userid = self.request.POST.get("userid")
+        OrderID = self.request.POST.get("order_id")
+        CmdType = self.request.POST.get("CmdType")
+        uID = "n" + userid
+        r = requests.post(url + '/standard/getway/orderstatus', data={
+            "cID":ASIAPAY_CID,
+            "uID":uID,
+            "CmdType": CmdType,
+            "OrderID":OrderID,
+        })
+        rdata = r.text
+        print(rdata)
+        return Response(rdata)
+class exchangeRate(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = asiapayExchangeRateFinishSerialize
+    permission_classes = [AllowAny, ]
+    def post(self, request, *args, **kwargs):
+        Amount = self.request.POST.get("Amount")
+        r = requests.post(url + '/standard/getway/ticker', data={
+            "cID":ASIAPAY_CID,
+            "ModeType":"BTC",
+            "Amount": Amount,
+        })
+        rdata = r.json()
+        print(rdata)
+        return Response(rdata)
+class depositArrive(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = asiapayDepositArriveSerialize
+    permission_classes = [AllowAny, ]
+    parser_classes = (XMLParser,)
+    renderer_classes = (XMLRenderer,)
+    def post(self, request, *args, **kwargs):
+        StatusCode = self.request.POST.get("StatusCode")
+        RevCardNumber = self.request.POST.get("RevCardNumber")
+        RevMoney = self.request.POST.get("amount")
+        order_id = self.request.POST.get("order_id")
+        OrderID = order_id[1:]
+        print(OrderID)
+        uID = self.request.POST.get("uID")
+        userid = uID.strip('n')
+        print(userid)
+        serializer = self.serializer_class(data=request.data)
+        print(serializer)
+        datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        print(serializer.is_valid())
+        if serializer.is_valid() and StatusCode == '001':  
+            saveData = Transaction.objects.get(user_id=userid, order_id=order_id) 
+            saveData.status = 6
+            saveData.save()
+            root = ET.Element("ProcessStatus")
+            tr1 = ET.SubElement(root, "StatusCode")
+            tr1.text = "001"
+            tr2 = ET.SubElement(root, "StatusMsg")
+            tr2.text = "操作成功"
+            tr3 = ET.SubElement(root, "ProcessTime")
+            tr3.text = datetime
+            sucessTree = ET.ElementTree(root) 
+
+            return Response({"StatusCode": "003", "StatusMsg": "请再次发起通知", "ProcessTime": datetime},status=status.HTTP_200_OK)
+        else:
+            return HttpResponse(sucessTree, content_type = "application/xml",status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response({"StatusCode": "003", "StatusMsg": "请再次发起通知", "ProcessTime": datetime}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
 
 
 
