@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from utils.constants import *
+from users.models import CustomUser
 
 # Create your models here.
 # permission code data will be hardcode in the codebase.
