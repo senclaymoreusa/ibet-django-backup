@@ -1531,16 +1531,16 @@ class UserDetailView(CommAdminView):
                 # delete
                 for productType in oldLimitMap[LIMIT_TYPE_BET]:
                     if productType not in bet_product:
-                        logger.info('Deleting bet limit for product type ' + str(productType))
+                        logger.info('Deleting bet limit for product type' + str(productType))
                         Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=productType).delete()
 
                 # insert or update
                 for i in range(len(bet_limitation)):
                     if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).exists():
-                        logger.info('Update bet limit for product type ' + str(productType))
+                        logger.info('Update bet limit for product type for' + str(user))
                         Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).update(amount=bet_limitation[i])
                     else:
-                        logger.info('Create new bet limit for product type ' + str(productType))
+                        logger.info('Create new bet limit for product type for' + str(user))
                         limitation = Limitation(
                             user= user,
                             limit_type=0,
@@ -1559,7 +1559,7 @@ class UserDetailView(CommAdminView):
                     if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=access_deny_tags[i]).exists():
                         pass
                     else:
-                        logger.info('Create new access deny for product type ' + str(productType))
+                        logger.info('Create new access deny for product type for' + str(user))
                         limitation = Limitation(
                             user= user,
                             limit_type=LIMIT_TYPE_ACCESS_DENY,
