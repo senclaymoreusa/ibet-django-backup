@@ -10,8 +10,6 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework_xml.parsers import XMLParser
-from rest_framework_xml.renderers import XMLRenderer
 from utils.constants import *
 #from djauth.third_party_keys import *
 from rest_framework import generics
@@ -95,7 +93,6 @@ class submitDeposit(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        # uID = "nTEST2"
         UserIP= get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
@@ -104,7 +101,7 @@ class submitDeposit(generics.GenericAPIView):
         PayWay = self.request.POST.get("PayWay")
         DesTime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         amount = self.request.POST.get("amount")
-        SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
+        SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + "D" + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
         #user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
         print(SignCode)
@@ -190,9 +187,9 @@ class submitDeposit(generics.GenericAPIView):
                 )
                 rr = requests.get(paymentAPIURL, params={
                         "cid":ASIAPAY_CID,
-                        "oid":OrderID
+                        "oid":"D" + OrderID
                     })
-                rrdata = rr.text
+                rrdata = rr.json()
                 print(rrdata)
                 Response(rrdata)
             else:
@@ -384,8 +381,8 @@ class depositArrive(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayDepositArriveSerialize
     permission_classes = [AllowAny, ]
-    parser_classes = (XMLParser,)
-    renderer_classes = (XMLRenderer,)
+    # parser_classes = (XMLParser,)
+    # renderer_classes = (XMLRenderer,)
     def post(self, request, *args, **kwargs):
         StatusCode = self.request.POST.get("StatusCode")
         RevCardNumber = self.request.POST.get("RevCardNumber")
@@ -400,25 +397,42 @@ class depositArrive(generics.GenericAPIView):
         print(serializer)
         datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         print(serializer.is_valid())
+        
+        root = ET.Element("ProcessStatus")
+        tr1 = ET.SubElement(root, "StatusCode")
+        tr1.text = "001"
+        tr2 = ET.SubElement(root, "StatusMsg")
+        tr2.text = "success"
+        tr3 = ET.SubElement(root, "ProcessTime")
+        tr3.text = datetime
+        
+        root1 = ET.Element("ProcessStatus")
+        tr1 = ET.SubElement(root1, "StatusCode")
+        tr1.text = "002"
+        tr2 = ET.SubElement(root1, "StatusMsg")
+        tr2.text = "Parameter is not correct"
+        tr3 = ET.SubElement(root1, "ProcessTime")
+        tr3.text = datetime
+
+        root2 = ET.Element("ProcessStatus")
+        tr1 = ET.SubElement(root2, "StatusCode")
+        tr1.text = "003"
+        tr2 = ET.SubElement(root2, "StatusMsg")
+        tr2.text = "Please send it again"
+        tr3 = ET.SubElement(root2, "ProcessTime")
+        tr3.text = datetime
+
         if serializer.is_valid() and StatusCode == '001':  
             saveData = Transaction.objects.get(user_id=userid, order_id=order_id) 
             saveData.status = 6
             saveData.save()
-            root = ET.Element("ProcessStatus")
-            tr1 = ET.SubElement(root, "StatusCode")
-            tr1.text = "001"
-            tr2 = ET.SubElement(root, "StatusMsg")
-            tr2.text = "操作成功"
-            tr3 = ET.SubElement(root, "ProcessTime")
-            tr3.text = datetime
-            sucessTree = ET.ElementTree(root) 
-
-            return Response({"StatusCode": "003", "StatusMsg": "请再次发起通知", "ProcessTime": datetime},status=status.HTTP_200_OK)
+            
+            return Response(ET.tostring(root),status=status.HTTP_200_OK)
+        elif not serializer.is_valid():
+            return Response(ET.tostring(root1), status=status.HTTP_400_BAD_REQUEST)
         else:
-            return HttpResponse(sucessTree, content_type = "application/xml",status=status.HTTP_400_BAD_REQUEST)
-        # else:
-        #     return Response({"StatusCode": "003", "StatusMsg": "请再次发起通知", "ProcessTime": datetime}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response(ET.tostring(root2), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
 
 
