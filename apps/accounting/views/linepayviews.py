@@ -67,7 +67,8 @@ def reserve_payment(request):
                         status = CREATED,
                         last_updated = timezone.now()
                     )
-                    logger.info(obj, created)
+                    logger.info("created?: " + str(created))
+                    logger.info("transaction data: " + str(obj))
                 break
             else:
                 time.sleep(5)
