@@ -16,15 +16,13 @@ from rest_framework import generics
 from ..serializers import asiapayDepositSerialize, asiapayCashoutSerialize
 from django.conf import settings
 import requests,json
-import logging
-import time
-import struct
-import hashlib 
-import xml.etree.ElementTree as ET
+import logging, time, struct, hashlib, xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
 import base64
 from time import gmtime, strftime
+
+logger = logging.getLogger("django")
 
 bankidConversion = {
     '1':'工商银行',
@@ -71,9 +69,9 @@ def Create_RandomKey(r1, key, r2):
     return TPass
 
 def CreateMsgStr(ParamList):
-    print(ParamList.values())
+    logger(ParamList.values())
     msgStr = ",".join(str(x) for x in ParamList.values())+ ","
-    print("msgStr:" + msgStr)
+    logger("msgStr:" + msgStr)
     return msgStr
 
 def decryptDES(decryptString, decryptKey, myIv):
@@ -103,8 +101,8 @@ class submitDeposit(generics.GenericAPIView):
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
         user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
-        print(SignCode)
-        print(MD5(SignCode))
+        logger(SignCode)
+        logger(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "TraceID" : TraceID,
@@ -141,8 +139,8 @@ class submitDeposit(generics.GenericAPIView):
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
         url = ASIAPAY_API_URL
-        print(encryptDES(eString, sign_encryptKey, myIv))
-        print(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        logger(encryptDES(eString, sign_encryptKey, myIv))
+        logger(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
       
         r = requests.post(url + "/standard/getway/depositiface", data={
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
@@ -165,14 +163,14 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':user.last_name + user.first_name,
         })
         rdata = r.text
-        print(rdata)
+        logger(rdata)
         if r.status_code == 200:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
             StatusMsg = tree.find('StatusMsg').text
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-            print(paymentAPIURL)
+            logger(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
                     order_id=OrderID,
@@ -191,11 +189,11 @@ class submitDeposit(generics.GenericAPIView):
                 rrdata = rr.json()
                 Response(rrdata)
             else:
-                print("There was something wrong with the result")
+                logger("There was something wrong with the result")
         else:
             # Handle error
-            print("There was something wrong with the result")
-            print(rdata)
+            logger("There was something wrong with the result")
+            logger(rdata)
             return Response(rdata)
         return Response(rrdata)
 
@@ -219,8 +217,8 @@ class submitCashout(generics.GenericAPIView):
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
         user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
-        # print(SignCode)
-        # print(MD5(SignCode))
+        # logger(SignCode)
+        # logger(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "cID": ASIAPAY_CID,
@@ -255,8 +253,8 @@ class submitCashout(generics.GenericAPIView):
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
         url = ASIAPAY_API_URL
-        print("sign:" + encryptDES(eString, sign_encryptKey, myIv))
-        print("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        logger("sign:" + encryptDES(eString, sign_encryptKey, myIv))
+        logger("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
         for x in range(3):   
             r = requests.post(url + "/standard/getway/depositiface", data={
                 'rStr':'',
@@ -286,22 +284,22 @@ class submitCashout(generics.GenericAPIView):
                 'tempparam':''
             })
             rdata = r.text
-            print(rdata)
+            logger(rdata)
             if r.status_code == 201:
                 break
             elif r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
+                logger("Request failed {} time(s)'.format(x+1)")
+                logger("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                print("There was something wrong with the result")
-                print(rdata)
+                logger("There was something wrong with the result")
+                logger(rdata)
                 return Response(rdata)
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text
-        print(StatusMsg)
+        logger(StatusMsg)
         if StatusCode == '100503' or StatusMsg == 'OK':
             create = Transaction.objects.create(
                 order_id=OrderID,
@@ -314,7 +312,7 @@ class submitCashout(generics.GenericAPIView):
                 method=bankidConversion[BankID],
             )
         else:
-            print(StatusMsg)
+            logger(StatusMsg)
         return Response(rdata)
 
 

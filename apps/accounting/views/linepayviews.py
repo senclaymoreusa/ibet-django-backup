@@ -3,7 +3,9 @@ from djauth.third_party_keys import LINE_CHANNEL_ID, LINE_CHANNEL_SECRET
 from django.utils import timezone
 from ..models import Transaction
 from users.models import CustomUser
-import os, requests, json, random
+import os, requests, json, random, logging, time
+
+logger = logging.getLogger('django')
 
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 
@@ -14,12 +16,13 @@ CREATED = 2
 
 
 def reserve_payment(request):
-    print(request)
+    logger(request)
+
     if request.method == "GET":
         return HttpResponse("You are at the endpoint for LINEpay reserve payment.")
+    
     if request.method == "POST": # can only allow post requests
-        # prepare headers + request to LINE pay server
-        requestURL = LINE_PAYMENTS_SANDBOX_URL + "request"
+        requestURL = LINE_PAYMENTS_SANDBOX_URL + "request" # prepare headers + request to LINE pay server
         headers = {
             "X-LINE-ChannelId": LINE_CHANNEL_ID,
             "X-LINE-ChannelSecret": LINE_CHANNEL_SECRET
@@ -30,10 +33,10 @@ def reserve_payment(request):
         amount = float(body.get("amount"))
         if (amount < 200) or (amount > 30000):
             return JsonResponse({"errorMsg": "Amount not within maximum or minimum"})
+
         # generate unique orderID
-        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10)))
-        # orderId = "test-order"
-        print("amount: " + str(amount) + ", order-id: " + orderId)
+        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
+        logger("amount: " + str(amount) + ", order-id: " + orderId)
         payload = {
             "productName": "iBet-Orion-Test",
             "productImageUrl": "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg",
@@ -43,31 +46,34 @@ def reserve_payment(request):
             # "confirmUrl": "http://www.google.com",
             "orderId": orderId,
         }
-        
-        response = requests.post(requestURL, json=payload, headers=headers)
-        responseJSON = response.json()
-        if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
-            if (responseJSON["returnCode"] == "0000"):
-                userId = CustomUser.objects.get(username=request.user.username)
-                obj, created = Transaction.objects.get_or_create(
-                    user_id = userId,
-                    transaction_id = responseJSON["info"]["transactionId"],
-                    order_id = orderId,
-                    amount = float(amount),
-                    method = "LINEpay",
-                    currency = THB,
-                    transaction_type = DEPOSIT, # 0 = deposit
-                    channel = LINE_PAY, # 1 = LINEpay
-                    status = CREATED, # 2 = created
-                    last_updated = timezone.now()
-                )
-                print(obj, created)
+        for attempt in range(3):
+            response = requests.post(requestURL, json=payload, headers=headers)
+            responseJSON = response.json()
+            if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
+                if (responseJSON["returnCode"] == "0000"):
+                    userId = CustomUser.objects.get(username=request.user.username)
+                    obj, created = Transaction.objects.get_or_create(
+                        user_id = userId,
+                        transaction_id = responseJSON["info"]["transactionId"],
+                        order_id = orderId,
+                        amount = float(amount),
+                        method = "LINEpay",
+                        currency = THB,
+                        transaction_type = DEPOSIT,
+                        channel = LINE_PAY,
+                        status = CREATED,
+                        last_updated = timezone.now()
+                    )
+                    logger(obj, created)
+                break
+            else:
+                time.sleep(5)
         return JsonResponse(responseJSON)
         
 
 def confirm_payment(request):
-    print("In confirm payment API call")
-    print(request)
+    logger("In confirm payment API call")
+    logger(request)
     if (request.method == "GET"):
         return HttpResponse("You are at the endpoint for LINEpay confirm payment.")
     if (request.method == "POST"):
@@ -80,7 +86,7 @@ def confirm_payment(request):
 
         # find matching transaction
         transactionId = body.get("transactionId")
-        print("matching on transaction ID: " + transactionId)
+        logger("matching on transaction ID: " + transactionId)
         matchedTrans = Transaction.objects.get(transaction_id=transactionId)
         matchedTrans.status = 3 # set deposit transaction status to pending
         matchedTrans.last_updated = timezone.now()
@@ -88,17 +94,19 @@ def confirm_payment(request):
         amount = matchedTrans.amount
 
         requestURL = LINE_PAYMENTS_SANDBOX_URL + transactionId + "/confirm"
-
+        
         payload = {
             "amount": amount,
             "currency": "THB",
         }
-
-        response = requests.post(requestURL, json=payload, headers=headers)
-
-        if (response.status_code == 200):
-            matchedTrans.status = 0
-            matchedTrans.last_updated = timezone.now()
-            matchedTrans.save()
-
+        for attempt in range(3):
+            response = requests.post(requestURL, json=payload, headers=headers)
+            if (response.status_code == 200):
+                matchedTrans.status = 0
+                matchedTrans.last_updated = timezone.now()
+                matchedTrans.save()
+                break
+            else:
+                time.sleep(5)
+        
         return JsonResponse(response.json())
