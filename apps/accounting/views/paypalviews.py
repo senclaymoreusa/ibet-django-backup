@@ -115,12 +115,12 @@ class paypalCreatePayment(generics.GenericAPIView):
                         cur_val = x[0]
             
 
-            print("Payment[%s] created successfully" % (rdata['id']))
+            logger.info("Payment[%s] created successfully" % (rdata['id']))
             for link in rdata["links"]:
                 if link["rel"] == "approval_url": 
                     approval_url = str(link["href"])
                     token = approval_url.split("token=")[1]
-                    print("Redirect for approval: %s" % (token))
+                    logger.info("Redirect for approval: %s" % (token))
                     create = Transaction.objects.update_or_create(
                         user_id=userId,
                         order_id=token,
@@ -181,7 +181,7 @@ class paypalGetOrder(APIView):
                 #update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
                 #update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
                 update_data.save()
-                print(update_data)
+                logger.info(update_data)
                 # create = Transaction.objects.update_or_create(
                 #     user_id=userId,
                 #     payer_id=rdata["payer"]["payer_id"],
