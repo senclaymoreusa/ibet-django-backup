@@ -8,6 +8,10 @@ import os, requests, json, random, logging, time
 logger = logging.getLogger('django')
 
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
+# HOMEPAGE_URL = "https://ibet-web-dev.claymoreusa.net" || http://localhost:3000" use ibet-web
+HOMEPAGE_URL = "http://localhost:3000"
+CONFIRM_URL = "/deposit/success" # will be changed later
+PRODUCT_IMG_URL = "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg" # dummy image, will be replaced with actual company URL later
 
 DEPOSIT = 0
 THB = 2
@@ -39,11 +43,10 @@ def reserve_payment(request):
         logger.info("amount: " + str(amount) + ", order-id: " + orderId)
         payload = {
             "productName": "iBet-Orion-Test",
-            "productImageUrl": "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg",
+            "productImageUrl": PRODUCT_IMG_URL,
             "amount": amount,
             "currency": "THB",
-            "confirmUrl": "http://localhost:3000/deposit/success",
-            # "confirmUrl": "http://www.google.com",
+            "confirmUrl": HOMEPAGE_URL + CONFIRM_URL,
             "orderId": orderId,
         }
         for attempt in range(3):
