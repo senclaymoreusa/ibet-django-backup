@@ -16,7 +16,7 @@ CREATED = 2
 
 
 def reserve_payment(request):
-    logger(request)
+    logger.info(request)
 
     if request.method == "GET":
         return HttpResponse("You are at the endpoint for LINEpay reserve payment.")
@@ -36,7 +36,7 @@ def reserve_payment(request):
 
         # generate unique orderID
         orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
-        logger("amount: " + str(amount) + ", order-id: " + orderId)
+        logger.info("amount: " + str(amount) + ", order-id: " + orderId)
         payload = {
             "productName": "iBet-Orion-Test",
             "productImageUrl": "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg",
@@ -64,7 +64,7 @@ def reserve_payment(request):
                         status = CREATED,
                         last_updated = timezone.now()
                     )
-                    logger(obj, created)
+                    logger.info(obj, created)
                 break
             else:
                 time.sleep(5)
@@ -72,8 +72,8 @@ def reserve_payment(request):
         
 
 def confirm_payment(request):
-    logger("In confirm payment API call")
-    logger(request)
+    logger.info("In confirm payment API call")
+    logger.info(request)
     if (request.method == "GET"):
         return HttpResponse("You are at the endpoint for LINEpay confirm payment.")
     if (request.method == "POST"):
@@ -86,7 +86,7 @@ def confirm_payment(request):
 
         # find matching transaction
         transactionId = body.get("transactionId")
-        logger("matching on transaction ID: " + transactionId)
+        logger.info("matching on transaction ID: " + transactionId)
         matchedTrans = Transaction.objects.get(transaction_id=transactionId)
         matchedTrans.status = 3 # set deposit transaction status to pending
         matchedTrans.last_updated = timezone.now()
@@ -108,5 +108,5 @@ def confirm_payment(request):
                 break
             else:
                 time.sleep(5)
-        
+
         return JsonResponse(response.json())

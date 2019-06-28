@@ -62,7 +62,7 @@ class paypalCreatePayment(generics.GenericAPIView):
         #orderId = self.request.POST['order_id']
         amount = self.request.POST.get('amount')
         currency = self.request.POST.get('currency')
-        logger(currency)
+        logger.info(currency)
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + getAccessToken()
@@ -97,13 +97,13 @@ class paypalCreatePayment(generics.GenericAPIView):
             if r.status_code == 200:
                 break
             elif r.status_code == 500:
-                logger("Request failed {} time(s)'.format(x+1)")
-                logger("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                logger("There was something wrong with the result")
-                logger(rdata)
+                logger.info("There was something wrong with the result")
+                logger.info(rdata)
                 logger.info('Failed to complete a request for retrieving available deposit methods..')
                 return Response(rdata) 
         
@@ -124,12 +124,12 @@ class paypalCreatePayment(generics.GenericAPIView):
                     status=2,
                 )
 
-            logger("Payment[%s] created successfully" % (rdata['id']))
+            logger.info("Payment[%s] created successfully" % (rdata['id']))
             for link in rdata["links"]:
                 if link["rel"] == "approval_url": 
                     approval_url = str(link["href"])
                     token = approval_url.split("token=")[1]
-                    logger("Redirect for approval: %s" % (token))
+                    logger.info("Redirect for approval: %s" % (token))
         
         return Response(rdata)
 
@@ -151,13 +151,13 @@ class paypalGetOrder(APIView):
             if r.status_code == 201:
                 break
             elif r.status_code == 500:
-                logger("Request failed {} time(s)'.format(x+1)")
-                logger("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                logger("There was something wrong with the result")
-                logger(rdata)
+                logger.info("There was something wrong with the result")
+                logger.info(rdata)
                 logger.info('Failed to complete a request for retrieving available deposit methods..')
                 return Response(rdata) 
         
@@ -189,7 +189,7 @@ class paypalGetOrder(APIView):
                 #     channel=5,
                 #     status=6,
                 # )
-                logger("Payment[%s] capture successfully" % (rdata['id']))
+                logger.info("Payment[%s] capture successfully" % (rdata['id']))
 
         else:
             logger.error('The request information is nor correct, please try again')
@@ -217,13 +217,13 @@ class paypalExecutePayment(APIView):
             if r.status_code == 201:
                 break
             elif r.status_code == 500:
-                logger("Request failed {} time(s)'.format(x+1)")
-                logger("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                logger("There was something wrong with the result")
-                logger(rdata)
+                logger.info("There was something wrong with the result")
+                logger.info(rdata)
                 logger.info('Failed to complete a request for retrieving available deposit methods..')
                 return Response(rdata) 
             
@@ -246,7 +246,7 @@ class paypalExecutePayment(APIView):
                     channel=5,
                     status=4,
                 )
-                logger("Payment[%s] execute successfully" % (rdata['id']))
+                logger.info("Payment[%s] execute successfully" % (rdata['id']))
 
         else:
             logger.error('The request information is nor correct, please try again')
