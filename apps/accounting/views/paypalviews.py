@@ -122,16 +122,16 @@ class paypalCreatePayment(generics.GenericAPIView):
                     token = approval_url.split("token=")[1]
                     print("Redirect for approval: %s" % (token))
                     create = Transaction.objects.update_or_create(
-                        user_id=userId,
-                        order_id=token,
-                        transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
-                        amount=amount,
-                        method= rdata["payer"]["payment_method"],
-                        currency= cur_val,
-                        transaction_type=0, 
-                        channel=5,
-                        status=2,
-                    )
+                    order_id = token,
+                    user_id=userId,
+                    transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
+                    amount=amount,
+                    method= rdata["payer"]["payment_method"],
+                    currency= cur_val,
+                    transaction_type=0, 
+                    channel=5,
+                    status=2,
+                )
         
         return Response(rdata)
 

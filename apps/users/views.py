@@ -68,6 +68,8 @@ import random
 import simplejson as json
 import decimal
 
+import requests
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -1747,6 +1749,15 @@ class GenerateActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
+    
+        DOMAIN = settings.DOMAIN
+        r = requests.post(DOMAIN + 'operation/api/notification', {
+            'content':               random_num, 
+            'notification_choice':   'U',
+            'notification_method':   'S',
+            'notifiers':             user[0].pk
+        })
+        
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):
@@ -1759,6 +1770,7 @@ class VerifyActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         if user[0].activation_code == code:
             user.update(active=True)
+            user.update(activation_code='')
             return Response({'status': 'Success'})
         return Response({'status': 'Failed'})
 
@@ -1841,3 +1853,33 @@ class UserSearchAutocomplete(View):
         # print(str(response))
         logger.info('Search response: ' + json.dumps(response))
         return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+class ValidateAndResetPassowrd(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        username = request.data['username']
+        current = request.data['current_password']
+        new = request.data['new_password']
+
+        user = CustomUser.objects.get(username=username)
+        if not user.check_password(current):
+            return Response({'status': 'Failed'})
+        user.set_password(new)
+        user.save()
+        return Response({'status': 'Success'})
+
+class CancelRegistration(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+        username = request.data['username']
+        user = CustomUser.objects.get(username=username)
+        user.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
