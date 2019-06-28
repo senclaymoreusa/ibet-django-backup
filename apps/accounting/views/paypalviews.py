@@ -122,16 +122,16 @@ class paypalCreatePayment(generics.GenericAPIView):
                     token = approval_url.split("token=")[1]
                     print("Redirect for approval: %s" % (token))
                     create = Transaction.objects.update_or_create(
-                    order_id = token,
-                    user_id=userId,
-                    transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
-                    amount=amount,
-                    method= rdata["payer"]["payment_method"],
-                    currency= cur_val,
-                    transaction_type=0, 
-                    channel=5,
-                    status=2,
-                )
+                        user_id=userId,
+                        order_id=token,
+                        transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
+                        amount=amount,
+                        method= rdata["payer"]["payment_method"],
+                        currency= cur_val,
+                        transaction_type=0, 
+                        channel=5,
+                        status=2,
+                    )
         
         return Response(rdata)
 
@@ -175,11 +175,13 @@ class paypalGetOrder(APIView):
                                                     amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
                                                     method="paypal",
                                                     status=2)
+                
                 update_data.status=6
                 update_data.order_id=rdata["id"]
                 #update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
                 #update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
                 update_data.save()
+                print(update_data)
                 # create = Transaction.objects.update_or_create(
                 #     user_id=userId,
                 #     payer_id=rdata["payer"]["payer_id"],
