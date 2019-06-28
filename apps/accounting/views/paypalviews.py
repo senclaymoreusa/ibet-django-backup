@@ -113,7 +113,16 @@ class paypalCreatePayment(generics.GenericAPIView):
             for x in Transaction._meta.get_field('currency').choices:
                     if currency == x[1]:
                         cur_val = x[0]
-            create = Transaction.objects.update_or_create(
+            
+
+            print("Payment[%s] created successfully" % (rdata['id']))
+            for link in rdata["links"]:
+                if link["rel"] == "approval_url": 
+                    approval_url = str(link["href"])
+                    token = approval_url.split("token=")[1]
+                    print("Redirect for approval: %s" % (token))
+                    create = Transaction.objects.update_or_create(
+                    order_id = token,
                     user_id=userId,
                     transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
                     amount=amount,
@@ -123,13 +132,6 @@ class paypalCreatePayment(generics.GenericAPIView):
                     channel=5,
                     status=2,
                 )
-
-            logger.info("Payment[%s] created successfully" % (rdata['id']))
-            for link in rdata["links"]:
-                if link["rel"] == "approval_url": 
-                    approval_url = str(link["href"])
-                    token = approval_url.split("token=")[1]
-                    logger.info("Redirect for approval: %s" % (token))
         
         return Response(rdata)
 
@@ -169,13 +171,14 @@ class paypalGetOrder(APIView):
                         cur_val = x[0]
             if rdata["status"] == 'COMPLETED': 
                 update_data = Transaction.objects.get(user_id=userId,
+                                                    order_id=order_id,
                                                     amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
                                                     method="paypal",
                                                     status=2)
                 update_data.status=6
                 update_data.order_id=rdata["id"]
-                update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
-                update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
+                #update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
+                #update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
                 update_data.save()
                 # create = Transaction.objects.update_or_create(
                 #     user_id=userId,

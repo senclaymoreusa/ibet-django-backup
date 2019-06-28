@@ -78,10 +78,12 @@ class NotificationView(GenericAPIView):
 
     def post(self, request, *arg, **kwargs):
         serializer = NotificationSerializer(data=request.data)
-        content = self.request.POST['content']
-        notification_choice = self.request.POST['notification_choice']
-        notification_method = self.request.POST['notification_method']
-        notifiers = self.request.POST['notifiers']
+        content             = request.POST.get('content')
+        notification_choice = request.POST.get('notification_choice')
+        notification_method = request.POST.get('notification_method')
+        notifiers           = request.POST.get('notifiers')
+
+        print(content, notification_choice, notification_method, notifiers)
 
 
         if serializer.is_valid():            
@@ -92,7 +94,7 @@ class NotificationView(GenericAPIView):
                 'sns',
                 aws_access_key_id = third_party_keys.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key = third_party_keys.AWS_SECRET_ACCESS_KEY,
-                region_name = third_party_keys.AWS_REGION_NAME
+                #region_name = third_party_keys.AWS_REGION_NAME
             )
 
             # Push Notification

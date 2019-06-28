@@ -49,5 +49,6 @@ urlpatterns += [
     path('api/userSearch/', views.UserSearchAutocomplete.as_view(), name='user_autocomplete_search'),
     path('api/generateactivationcode/', views.GenerateActivationCode.as_view(), name='generate_activation_code'),
     path('api/verifyactivationcode/', views.VerifyActivationCode.as_view(), name='verify_activation_code'),
-    path('api/validateandresetpassword/', views.ValidateAndResetPassowrd.as_view(), name='validate_and_reset_password')
+    path('api/validateandresetpassword/', views.ValidateAndResetPassowrd.as_view(), name='validate_and_reset_password'),
+    path('api/cancelregistration/', views.CancelRegistration.as_view(), name='cancel_registration')
 ]
