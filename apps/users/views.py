@@ -68,6 +68,8 @@ import random
 import simplejson as json
 import decimal
 
+import requests
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -1747,6 +1749,15 @@ class GenerateActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
+    
+        DOMAIN = settings.DOMAIN
+        r = requests.post(DOMAIN + 'operation/api/notification', {
+            'content':               random_num, 
+            'notification_choice':   'U',
+            'notification_method':   'S',
+            'notifiers':             user[0].pk
+        })
+        
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):
@@ -1859,3 +1870,16 @@ class ValidateAndResetPassowrd(APIView):
         user.set_password(new)
         user.save()
         return Response({'status': 'Success'})
+
+class CancelRegistration(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+        username = request.data['username']
+        user = CustomUser.objects.get(username=username)
+        user.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
