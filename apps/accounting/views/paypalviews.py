@@ -62,7 +62,7 @@ class paypalCreatePayment(generics.GenericAPIView):
         #orderId = self.request.POST['order_id']
         amount = self.request.POST.get('amount')
         currency = self.request.POST.get('currency')
-        print(currency)
+        logger.info(currency)
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + getAccessToken()
@@ -97,13 +97,13 @@ class paypalCreatePayment(generics.GenericAPIView):
             if r.status_code == 200:
                 break
             elif r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                print("There was something wrong with the result")
-                print(rdata)
+                logger.info("There was something wrong with the result")
+                logger.info(rdata)
                 logger.info('Failed to complete a request for retrieving available deposit methods..')
                 return Response(rdata) 
         
@@ -113,23 +113,25 @@ class paypalCreatePayment(generics.GenericAPIView):
             for x in Transaction._meta.get_field('currency').choices:
                     if currency == x[1]:
                         cur_val = x[0]
-            create = Transaction.objects.update_or_create(
-                    user_id=userId,
-                    transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
-                    amount=amount,
-                    method= rdata["payer"]["payment_method"],
-                    currency= cur_val,
-                    transaction_type=0, 
-                    channel=5,
-                    status=2,
-                )
+            
 
-            print("Payment[%s] created successfully" % (rdata['id']))
+            logger.info("Payment[%s] created successfully" % (rdata['id']))
             for link in rdata["links"]:
                 if link["rel"] == "approval_url": 
                     approval_url = str(link["href"])
                     token = approval_url.split("token=")[1]
-                    print("Redirect for approval: %s" % (token))
+                    logger.info("Redirect for approval: %s" % (token))
+                    create = Transaction.objects.update_or_create(
+                        user_id=userId,
+                        order_id=token,
+                        transaction_id="ibet" +strftime("%Y%m%d%H%M%S", gmtime()),
+                        amount=amount,
+                        method= rdata["payer"]["payment_method"],
+                        currency= cur_val,
+                        transaction_type=0, 
+                        channel=5,
+                        status=2,
+                    )
         
         return Response(rdata)
 
@@ -151,13 +153,13 @@ class paypalGetOrder(APIView):
             if r.status_code == 201:
                 break
             elif r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                print("There was something wrong with the result")
-                print(rdata)
+                logger.info("There was something wrong with the result")
+                logger.info(rdata)
                 logger.info('Failed to complete a request for retrieving available deposit methods..')
                 return Response(rdata) 
         
@@ -169,14 +171,17 @@ class paypalGetOrder(APIView):
                         cur_val = x[0]
             if rdata["status"] == 'COMPLETED': 
                 update_data = Transaction.objects.get(user_id=userId,
+                                                    order_id=order_id,
                                                     amount=rdata["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"],
                                                     method="paypal",
                                                     status=2)
+                
                 update_data.status=6
                 update_data.order_id=rdata["id"]
-                update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
-                update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
+                #update_data.request_time= rdata["purchase_units"][0]["payments"]["captures"][0]["create_time"],
+                #update_data.arrive_time= rdata["purchase_units"][0]["payments"]["captures"][0]["update_time"],
                 update_data.save()
+                logger.info(update_data)
                 # create = Transaction.objects.update_or_create(
                 #     user_id=userId,
                 #     payer_id=rdata["payer"]["payer_id"],
@@ -189,7 +194,7 @@ class paypalGetOrder(APIView):
                 #     channel=5,
                 #     status=6,
                 # )
-                print("Payment[%s] capture successfully" % (rdata['id']))
+                logger.info("Payment[%s] capture successfully" % (rdata['id']))
 
         else:
             logger.error('The request information is nor correct, please try again')
@@ -217,13 +222,13 @@ class paypalExecutePayment(APIView):
             if r.status_code == 201:
                 break
             elif r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
             elif r.status_code == 400:
                 # Handle error
-                print("There was something wrong with the result")
-                print(rdata)
+                logger.info("There was something wrong with the result")
+                logger.info(rdata)
                 logger.info('Failed to complete a request for retrieving available deposit methods..')
                 return Response(rdata) 
             
@@ -246,7 +251,7 @@ class paypalExecutePayment(APIView):
                     channel=5,
                     status=4,
                 )
-                print("Payment[%s] execute successfully" % (rdata['id']))
+                logger.info("Payment[%s] execute successfully" % (rdata['id']))
 
         else:
             logger.error('The request information is nor correct, please try again')
