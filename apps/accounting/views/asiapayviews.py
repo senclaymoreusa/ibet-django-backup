@@ -16,15 +16,13 @@ from rest_framework import generics
 from ..serializers import asiapayDepositSerialize, asiapayCashoutSerialize,asiapayDepositFinishSerialize,asiapayOrderStatusFinishSerialize,asiapayExchangeRateFinishSerialize,asiapayDepositArriveSerialize
 from django.conf import settings
 import requests,json
-import logging
-import time,datetime
-import struct
-import hashlib 
-import xml.etree.ElementTree as ET
+import logging, time, struct, hashlib, xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
 import base64
 from time import gmtime, strftime, strptime
+
+logger = logging.getLogger("django")
 
 bankidConversion = {
     '1':'工商银行',
@@ -71,9 +69,9 @@ def Create_RandomKey(r1, key, r2):
     return TPass
 
 def CreateMsgStr(ParamList):
-    print(ParamList.values())
+    logger.info(ParamList.values())
     msgStr = ",".join(str(x) for x in ParamList.values())+ ","
-    print("msgStr:" + msgStr)
+    logger.info("msgStr:" + msgStr)
     return msgStr
 
 def decryptDES(decryptString, decryptKey, myIv):
@@ -104,8 +102,8 @@ class submitDeposit(generics.GenericAPIView):
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + "D" + OrderID + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
         #user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
-        print(SignCode)
-        print(MD5(SignCode))
+        logger.info(SignCode)
+        logger.info(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "TraceID" : TraceID,
@@ -142,8 +140,8 @@ class submitDeposit(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        print(encryptDES(eString, sign_encryptKey, myIv))
-        print(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        logger.info(encryptDES(eString, sign_encryptKey, myIv))
+        logger.info(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
       
         r = requests.post(url + "/standard/getway/depositiface", data={
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
@@ -166,14 +164,14 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':"测试",
         })
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 200:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
             StatusMsg = tree.find('StatusMsg').text
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-            print(paymentAPIURL)
+            logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
                     order_id=OrderID,
@@ -190,14 +188,14 @@ class submitDeposit(generics.GenericAPIView):
                         "oid":"D" + OrderID
                     })
                 rrdata = rr.json()
-                print(rrdata)
+                logger.info(rrdata)
                 Response(rrdata)
             else:
-                print("There was something wrong with the result")
+                logger.info("There was something wrong with the result")
         else:
             # Handle error
-            print("There was something wrong with the result")
-            print(rdata)
+            logger.info("There was something wrong with the result")
+            logger.info(rdata)
             return Response(rdata)
         return Response(rrdata)
 
@@ -223,12 +221,12 @@ class submitCashout(generics.GenericAPIView):
         CashBankCity = ""
         CashBankDetailName = self.request.POST.get("CashBankDetailName")
         SignCode = str(uID)+ ASIAPAY_CID + ASIAPAY_CPASS + amount+ CashBankName+ CashCardNumber+ CashCardChName+CashBankPro+CashBankCity+CashBankDetailName+ UserIP + TraceID + "W" + OrderID + NoticeUrl + DesTime + ASIAPAY_CASHKEY
-        print(SignCode)
+        logger.info(SignCode)
         user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
         cashoutMethod = self.request.POST.get("cashoutMethod")
-        # print(SignCode)
-        # print(MD5(SignCode))
+        # logger.info(SignCode)
+        # logger.info(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "cID": ASIAPAY_CID,
@@ -264,8 +262,8 @@ class submitCashout(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        print("sign:" + encryptDES(eString, sign_encryptKey, myIv))
-        print("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        logger.info("sign:" + encryptDES(eString, sign_encryptKey, myIv))
+        logger.info("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
         r = requests.post(url + "/standard/getway/" + cashoutMethod, data={
             'rStr':'',
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
@@ -294,11 +292,11 @@ class submitCashout(generics.GenericAPIView):
             'tempparam':''
         })
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text
-        print(StatusMsg)
+        logger.info(StatusMsg)
         if StatusCode == '50001':
             create = Transaction.objects.create(
                 order_id=OrderID,
@@ -312,7 +310,7 @@ class submitCashout(generics.GenericAPIView):
             )
             return Response(StatusCode)
         else:
-            print(StatusMsg)
+            logger.info(StatusMsg)
         
         return Response(StatusCode)
 
@@ -339,8 +337,8 @@ class depositfinish(generics.GenericAPIView):
             orderData.status = 3
             orderData.save()
         else:
-            print('The request information is nor correct, please try again')
-        print(rdata)
+            logger.info('The request information is nor correct, please try again')
+        logger.info(rdata)
         return Response(rdata)
 
 class orderStatus(generics.GenericAPIView):
@@ -359,7 +357,7 @@ class orderStatus(generics.GenericAPIView):
             "OrderID":OrderID,
         })
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
         return Response(rdata)
 class exchangeRate(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -373,7 +371,7 @@ class exchangeRate(generics.GenericAPIView):
             "Amount": Amount,
         })
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         return Response(rdata)
 class depositArrive(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -387,14 +385,14 @@ class depositArrive(generics.GenericAPIView):
         RevMoney = self.request.POST.get("amount")
         order_id = self.request.POST.get("order_id")
         OrderID = order_id[1:]
-        print(OrderID)
+        logger.info(OrderID)
         uID = self.request.POST.get("uID")
         userid = uID.strip('n')
-        print(userid)
+        logger.info(userid)
         serializer = self.serializer_class(data=request.data)
-        print(serializer)
+        logger.info(serializer)
         datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        print(serializer.is_valid())
+        logger.info(serializer.is_valid())
         
         root = ET.Element("ProcessStatus")
         tr1 = ET.SubElement(root, "StatusCode")
