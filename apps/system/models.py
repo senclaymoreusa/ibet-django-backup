@@ -9,6 +9,7 @@ from users.models import CustomUser
 # user group entity model
 class UserGroup(models.Model):
 
+    name = models.CharField(_('name'), max_length=50)
     description = models.CharField(_('Description'), max_length=200, blank=True, null=True)
     groupType = models.SmallIntegerField(_('Group Type'), blank=True, null=True, choices=GROUP_TYPE)
     created_time = models.DateTimeField(
