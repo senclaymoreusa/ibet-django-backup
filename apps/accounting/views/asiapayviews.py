@@ -212,17 +212,14 @@ class submitCashout(generics.GenericAPIView):
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
-        #BankID = self.request.POST.get("method")
-        PayWay = self.request.POST.get("PayWay")
-        DesTime = "2019-06-21 10:00:00"
-        #strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        DesTime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         amount = self.request.POST.get("amount")
         CashBankName =""
-        CashCardNumber = "6222022000000000000"
-        CashCardChName = "务必填写真实姓名"
+        CashCardNumber = self.request.POST.get("CashCardNumber")
+        CashCardChName = self.request.POST.get("CashCardChName")
         CashBankPro = ""
         CashBankCity = ""
-        CashBankDetailName = "北京支行"
+        CashBankDetailName = self.request.POST.get("CashBankDetailName")
         SignCode = str(uID)+ ASIAPAY_CID + ASIAPAY_CPASS + amount+ CashBankName+ CashCardNumber+ CashCardChName+CashBankPro+CashBankCity+CashBankDetailName+ UserIP + TraceID + "W" + OrderID + NoticeUrl + DesTime + ASIAPAY_CASHKEY
         logger.info(SignCode)
         user =  CustomUser.objects.get(pk=userid)
@@ -245,8 +242,8 @@ class submitCashout(generics.GenericAPIView):
             "CashBankCity":CashBankCity,
             "CashBankDetailName":CashBankDetailName,
             "UserIP": UserIP,
-            "NoticeUrl": "",
-            "DesTime": "2019-06-21 10:00:00",
+            "NoticeUrl": NoticeUrl,
+            "DesTime": DesTime,
             "SignCode": MD5(SignCode),
             "CashMobile": "",
             "CashType":"1",
@@ -277,7 +274,7 @@ class submitCashout(generics.GenericAPIView):
             'uID':uID,
             'cPass': ASIAPAY_CPASS,
             'UserIP':UserIP,
-            'DesTime':"2019-06-21 10:00:",
+            'DesTime':DesTime,
             'CashCardNumber':CashCardNumber,
             'CashCardChName':CashCardChName,
             'CashBankPro':CashBankPro,
@@ -311,10 +308,11 @@ class submitCashout(generics.GenericAPIView):
                 status=2,
                 method=cashoutMethod,
             )
+            return Response(StatusCode)
         else:
             logger.info(StatusMsg)
         
-        return Response(rdata)
+        return Response(StatusCode)
 
 class depositfinish(generics.GenericAPIView):
     queryset = Transaction.objects.all()

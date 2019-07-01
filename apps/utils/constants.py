@@ -155,21 +155,24 @@ ASIAPAY_BANK_CHOICES = (
     ('38','微信支付'),
     ('39','快捷支付'),
     ('41','支付宝'),
+    ('47','银联支付'),
     ('49','京东支付'),
     ('201', '比特币')
 )
 ASIAPAY_PAYWAY_CHOICES = (
     ('90','比特币'),
+    ('41', '仅支持固定存入金额'),
     ('42', 'QRCode'),
     ('44', '收银台'),
     ('30', '在线支付'),
+    ('31','另开视窗'),
 
 )
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
 )
-CASHOUTMETHOD_CHOICES = (
+ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('CashSCBatch', '加密货币'),
     ('cashifacebatch', '代付'),
 )
