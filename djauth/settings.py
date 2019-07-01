@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'operation.apps.OperationConfig',
     'games.apps.GamesConfig',
     'accounting.apps.AccountingConfig',
+    'system.apps.SystemConfig',
     'rest_framework',              # Stephen
     'corsheaders',                 # Stephen
     'rest_auth',                   # Stephen
