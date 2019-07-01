@@ -41,7 +41,7 @@ STATE_CHOICES = (
     (2, 'CREATED'),
     (3, 'PENDING'),
     (4, 'APPROVED'),
-    (5, 'REJECTED'),
+    (5, 'CANCELED'),
     (6, 'COMPLETED')
 )
 REVIEW_STATE_CHOICES = (
@@ -157,6 +157,14 @@ ASIAPAY_PAYWAY_CHOICES = (
     ('30', '在线支付'),
 
 )
+ASIAPAY_CMDTYPE = (
+    ('01', '查询存款订单'),
+    ('02', '查询提款订单'),
+)
+CASHOUTMETHOD_CHOICES = (
+    ('CashSCBatch', '加密货币'),
+    ('cashifacebatch', '代付'),
+)
 #qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
@@ -186,9 +194,11 @@ ASTROPAY_WP_TRANS_KEY = '738e34417a'
 #aisa-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
 ASIAPAY_CID = "BRANDCQNGHUA3"
-COMDEPOSITKET = "A49E448121886D7C857B39C3467EC117"
+ASIAPAY_DEPOSITKEY = "A49E448121886D7C857B39C3467EC117"
+ASIAPAY_CASHKEY = "C0076184165A61B3B0CCA4BDC21DE0D9"
+ASIAPAY_CPASS = "6aC3a873Qp2cCGpQ7pDgTg58CH57cQS6"
 ASIAPAY_KEY1 = "f6b451943fb44a38"
 ASIAPAY_UNITEKEY = "Ki3CgDAz"
-ASIAPAY_R1 = "randomStr"
-ASIAPAY_R2 = "randomStr"
+ASIAPAY_R1 = "C1aym0re"
+ASIAPAY_R2 = "C1aym0re"
 
