@@ -159,16 +159,16 @@ GAME_PRODUCT = (
 )
 
 
-RISK_LEVLE_A = 0
-RISK_LEVLE_E1 = 1
-RISK_LEVLE_E2 = 2
-RISK_LEVLE_F = 3
+RISK_LEVEL_A = 0
+RISK_LEVEL_E1 = 1
+RISK_LEVEL_E2 = 2
+RISK_LEVEL_F = 3
 
-RISK_LEVLE = (
-    (RISK_LEVLE_A, 'A'),
-    (RISK_LEVLE_E1, 'E1'),
-    (RISK_LEVLE_E2, 'E2'),
-    (RISK_LEVLE_F, 'F'),
+RISK_LEVEL = (
+    (RISK_LEVEL_A, 'A'),
+    (RISK_LEVEL_E1, 'E1'),
+    (RISK_LEVEL_E2, 'E2'),
+    (RISK_LEVEL_F, 'F'),
 )
 ASIAPAY_BANK_CHOICES = (
     ('1','工商银行'),
