@@ -112,6 +112,14 @@ AGENT_STATUS = (
     ('Block', 'Block'),
 )
 
+PERMISSION_GROUP = 0
+OTHER_GROUP = 1
+
+GROUP_TYPE = (
+    (PERMISSION_GROUP, 'Permission'),
+    (OTHER_GROUP, 'other')
+)
+
    
 BANK_LIST_CHOICES = (
     ("OOO6CN", "China UnionPay"),
