@@ -132,6 +132,7 @@ class CustomUser(AbstractBaseUser):
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+    risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
@@ -147,6 +148,10 @@ class CustomUser(AbstractBaseUser):
 
     id_image = models.CharField(max_length=250, blank=True)
 
+    temporary_block_time = models.DateTimeField(null=True, blank=True)
+    block_timespan = models.DurationField(null=True, blank=True)
+
+    
     created_time = models.DateTimeField(
         _('Created Time'),
         auto_now_add=True,
@@ -412,3 +417,21 @@ class LinkHistory(models.Model):
     timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
     ## click by ip
     user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
+
+class Limitation(models.Model):
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
+    amount = models.DecimalField(decimal_places=2, max_digits=20)
+    product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
+
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        auto_now_add=True,
+        editable=False,
+    )
+    modified_time = models.DateTimeField(
+        _('Modified Time'),
+        auto_now_add=True,
+        editable=False,
+    )
