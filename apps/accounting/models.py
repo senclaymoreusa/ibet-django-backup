@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from django.urls import reverse
 from utils.constants import *
 
 import uuid
@@ -44,7 +45,8 @@ class ThirdParty(models.Model):
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
     switch = models.BooleanField(default=True, verbose_name=_('Active'))
-    
+    transaction_fee = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True, verbose_name=_('Transaction Fee'))
+
     class Meta:
         abstract = True
 
@@ -72,7 +74,6 @@ class DepositChannel(ThirdParty):
 
 
 class WithdrawChannel(ThirdParty):
-    transaction_fee = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True, verbose_name=_('Transaction Fee'))
     
     class Meta:
         verbose_name = 'Withdraw Channel'

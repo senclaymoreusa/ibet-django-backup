@@ -465,7 +465,7 @@
                                                 <div class='col-md-8'>
                                                     <button type="button" class="btn btn-primary" onclick="clickUploadImg();">Upload new document</button>
                                                 </div>
-                                                <div class='col-md-4'>
+                                                <div class="col-md-4">
                                                     <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)" onclick="clearImg();">
                                                         <span class="glyphicon glyphicon-trash" style='color:white'></span>
                                                     </button>
@@ -647,7 +647,7 @@
                 <div class="col-md-5" style="margin-right: -8%; float: right;">
                     <div class="block-title">DATE RANGE</div>
                     <div class="row">
-                        <div class='col-md-4' style="padding-right: 0px;">
+                        <div class="col-md-4" style="padding-right: 0px;">
                             <div class='input-group date' id='transaction_time_from'>
                                 <input type='text' class="form-control" placeholder="From" id='transaction_time_from_input' />
                                 <span class="input-group-addon">
@@ -655,7 +655,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div class='col-md-4'>
+                        <div class="col-md-4">
                             <div class='input-group date' id='transaction_time_to'>
                                 <input type='text' class="form-control" placeholder="To"  id='transaction_time_to_input'/>
                                 <span class="input-group-addon">
@@ -1807,11 +1807,11 @@ $(document).ready(function() {
         getTransactions(newFromItem);
     }
 
-    showInitialTransaction = function (username, trans, type) {
+    showInitialTransaction = function (username, showInitialTransaction, type) {
         trans = JSON.parse(trans.replace(/'/g, '"'));
         showTransaction(username, trans, type);
     }
-
+  
     showTransaction = function (username, trans, type) {
         // var trans = JSON.parse(trans.replace(/'/g, '"'));
         // console.log(JSON.parse(trans));

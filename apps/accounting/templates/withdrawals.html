@@ -1,0 +1,210 @@
+{% extends "xadmin/base_site.html" %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Withdrawal Channels
+        </h2>
+    </div>
+    <div class="panel-body">
+        <table id="deposit_channels">
+            <thead class="thead-dark">
+                <tr>
+                    <th>CHANNEL</th>
+                    <th>MIN DEPOSIT</th>
+                    <th>MAX DEPOSIT</th>
+                    <th>FEE</th>
+                    <th>VOLUME</th>
+                    <th>NEW USERS VOLUMN</th>
+                    <th>BLOCKED RISK LEVEL</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for channel in channel_data %}
+                <tr>
+                    <td>{{ channel.channel_name }}</td>
+                    <td>{{ channel.min_deposit }}</td>
+                    <td>{{ channel.max_deposit }}</td>
+                    <td>{{ channel.fee }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{ channel.status }}</td>
+                    <td> <button id="edit-detail-btn" type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                            data-target="#edit_details">Edit</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Withdrawal
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="input-group col-md-4">
+                <input type="text" id="search" class="form-control"
+                    placeholder="Enter user ID, username or transaction number">
+                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
+                        class="glyphicon glyphicon-search"></span></span>
+            </div>
+            <div class='col-md-2'>
+                <div class='input-group date' id='deposit_time_from'>
+                    <input type='text' class="form-control" placeholder="From" id='deposit_time_from_input' />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class='col-md-2'>
+                <div class='input-group date' id='deposit_time_to'>
+                    <input type='text' class="form-control" placeholder="To" id='deposit_time_to_input' />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class='col-md-1' style="padding-left: 0px;">
+                <button id="transaction_time_submit" type="submit" class="btn btn-primary"><span
+                        class="glyphicon glyphicon-search"></span></button>
+            </div>
+        </div>
+
+
+        <div class="container nav-bar" style="width:99%">
+            <nav>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#pending" role="tab"
+                            aria-controls="home" aria-selected="true">PENDING</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="profile-tab" data-toggle="tab" href="#success" role="tab"
+                            aria-controls="profile" aria-selected="false">APPROVED</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#failed" role="tab"
+                            aria-controls="contact" aria-selected="false">REJECTED</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#cancelled" role="tab"
+                            aria-controls="contact" aria-selected="false">SUCCESSFUL</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#cancelled" role="tab"
+                            aria-controls="contact" aria-selected="false">FAILED</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#cancelled" role="tab"
+                            aria-controls="contact" aria-selected="false">RESEND</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">USERNAME</th>
+                            <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">VIP LEVEL</th>
+                            <th scope="col">RISK LEVEL</th>
+                            <th scope="col">BANK</th>
+                            <th scope="col">MEMBER BALANCE</th>
+                            <th scope="col">AMOUNT</th>
+                            <th scope="col">APPLICATION TIME</th>
+                            <th scope="col">WITHDRAWAL TODAY</th>
+                            <th scope="col">WITHDRAWAL COUNT TODAY</th>
+                            <th scope="col">CHANNEL</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tran in pending_tran %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ tran.id }}</td>
+                            <td>{{ tran.username }}</td>
+                            <td>{{ tran.tran_no }}</td>
+                            <!-- vip level -->
+                            <td>Nomal</td>
+                            <!-- risk level -->
+                            <td>A</td>
+                            <td>{{ tran.bank }}</td>
+                            <td>{{ tran.balance }}</td>
+                            <td>{{ tran.amount }}</td>
+                            <td>{{ tran.app_time }}</td>
+                            <td>{{ tran.withdrawal_today }}</td>
+                            <td>{{ tran.withdrawal_count_today }}</td>
+                            <td>{{ tran.channel }}</td>
+                            <td></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="success" role="tabpanel" aria-labelledby="profile-tab">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">USERNAME</th>
+                            <th scope="col">PAYMENT</th>
+                            <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">APPLICATION TIME</th>
+                            <th scope="col">BANK</th>
+                            <th scope="col">BRANCH</th>
+                            <th scope="col">CITY</th>
+                            <th scope="col">NAME</th>
+                            <th scope="col">ACCOUNT</th>
+                            <th scope="col">TRANSACTION CODE</th>
+                            <th scope="col">APPLY AMOUNT</th>
+                            <th scope="col">NOTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tran in success_tran %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ tran.id }}</td>
+                            <td>{{ tran.username }}</td>
+                            <td>{{ tran.payment }}</td>
+                            <td>{{ tran.tran_no }}</td>
+                            <td>{{ tran.app_time }}</td>
+                            <td>{{ tran.bank }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ tran.amount }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="profile-tab">...</div>
+            <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="contact-tab">...</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

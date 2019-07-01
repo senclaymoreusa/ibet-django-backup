@@ -7,6 +7,7 @@ import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
+import accounting.views.deposit_views as deposit
 
 from .views.deposit_views import DepositView
 
@@ -31,6 +32,9 @@ urlpatterns = [
     path('api/astropay/new_invoice', astropay.astroNewInvoice, name = 'AstroPay_new_invoice'),
     path('api/astropay/payment_status', astropay.astroPaymentStatus, name = 'AstroPay_Payment_Status'),
     path('api/asiapay/deposit', asiapay.submitDeposit.as_view(), name = 'AsiaPay_deposit'),
+
+    # admin view
+    url(r'deposit/channel/(?P<slug>[-\w]+)/edit/$', deposit.edit_deposit_channel, name='edit_deposit_channel'),
 ]
 
 

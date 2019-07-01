@@ -64,13 +64,8 @@ class GlobalSettings(object):
                     },
                     {
                         'title': 'Withdrawals',
-                        'url': '/xadmin/withdraw',
+                        'url': '/xadmin/withdrawal',
                         'icon': 'fa fa-sign-out'
-                    },
-                    {
-                        'title': 'Settings',
-                        'url': '/xadmin/deposit',
-                        'icon': 'fa fa-cog'
                     },
                 )
             }
