@@ -187,7 +187,8 @@ class submitDeposit(generics.GenericAPIView):
                     status=2,
                     method=bankidConversion[BankID],
                 )
-                if PayWay == 42:
+                print(PayWay)
+                if PayWay == '42':
                     rr = requests.get(paymentAPIURL, params={
                             "cid":ASIAPAY_CID,
                             "oid":"D" + OrderID
@@ -196,7 +197,7 @@ class submitDeposit(generics.GenericAPIView):
                     rrdata = rr.json()
                     print(rrdata)
                     logger.info(rrdata)
-                    Response(rrdata)
+                    return Response(rrdata)
                 
             else:
                 logger.info("There was something wrong with the result")
@@ -205,7 +206,6 @@ class submitDeposit(generics.GenericAPIView):
             logger.info("There was something wrong with the result")
             logger.info(rdata)
             return Response(rdata)
-        return Response({"order_id": "D" + OrderID, "url": paymentAPIURL})
 
 
 class submitCashout(generics.GenericAPIView):
