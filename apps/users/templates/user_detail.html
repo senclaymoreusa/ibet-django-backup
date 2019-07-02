@@ -1518,7 +1518,7 @@
                     </div>
                     <div class="modal-body">
                         <!-- <div style="padding:8%;"> -->
-                        <form action="{% url 'xadmin:user_detail' %}" method="POST">
+                        <form action="{% url 'xadmin:user_detail' %}" method="POST" id="limitForm">
                             {% csrf_token %}
                             <div id="bet-container">
                                 <input type="hidden" name="user_id" value="{{ customuser.pk }}"></input>
@@ -2165,7 +2165,39 @@ $(document).ready(function() {
         $('#close-account').attr('onclick', 'userBlockAction("block")');
     });
 
+    $('#limitForm').on('submit', function(e) {
+        $(this).find('input[name="bet_limit[]"]').each(function() {
+            var regex = /[0-9]|\./;
+            if (!regex.test(this.value)) {
+                this.focus();             
+                alert("cannot be text this field");
+                e.preventDefault();      
+                return false;
+            }
+            e.preventDefault();     
+        });
+        // var isValid = limitFormValid();
+        // console.log("!!!!!!" + isValid);
+        // if (!isValid) {
+        //     console.log("no valid");
+        //     return false;
+        // }
+        // console.log("is valid");
+        // return true;
+    });
+
 });
+
+function limitFormValid(value) {
+    var isValid = true;
+    var regex = /[0-9]|\./;
+    $('#limitForm input').each(function() {
+        if( !regex.test(value) ) {
+            isValid = false;
+        }
+    });
+    return isValid;
+}
 
 function removeByIndex(array, index){
     return array.filter(function(elem, _index){
