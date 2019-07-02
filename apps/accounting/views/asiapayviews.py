@@ -206,6 +206,7 @@ class submitDeposit(generics.GenericAPIView):
             logger.info("There was something wrong with the result")
             logger.info(rdata)
             return Response(rdata)
+        return Response({"order_id": "D"+OrderID, "url": paymentAPIURL})
 
 
 class submitCashout(generics.GenericAPIView):
