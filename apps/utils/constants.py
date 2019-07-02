@@ -42,7 +42,11 @@ STATE_CHOICES = (
     (3, 'PENDING'),
     (4, 'APPROVED'),
     (5, 'CANCELED'),
-    (6, 'COMPLETED')
+    (6, 'COMPLETED'),
+    (7, 'RESEND'),
+    (8, 'REJECTED'),
+    (9, 'SUCCESS'),
+
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),

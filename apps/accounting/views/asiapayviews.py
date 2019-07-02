@@ -41,6 +41,7 @@ bankidConversion = {
     '38':'微信支付',
     '39':'快捷支付',
     '41':'支付宝',
+    '47':'银联支付',
     '49':'京东支付',
     '201': '比特币',
 }
@@ -164,13 +165,16 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':"测试",
         })
         rdata = r.text
+        print(rdata)
         logger.info(rdata)
-        if r.status_code == 200:
+        if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
             StatusMsg = tree.find('StatusMsg').text
+            print(StatusMsg)
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
+            print(paymentAPIURL)
             logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
@@ -183,13 +187,17 @@ class submitDeposit(generics.GenericAPIView):
                     status=2,
                     method=bankidConversion[BankID],
                 )
-                rr = requests.get(paymentAPIURL, params={
-                        "cid":ASIAPAY_CID,
-                        "oid":"D" + OrderID
-                    })
-                rrdata = rr.json()
-                logger.info(rrdata)
-                Response(rrdata)
+                if PayWay == 42:
+                    rr = requests.get(paymentAPIURL, params={
+                            "cid":ASIAPAY_CID,
+                            "oid":"D" + OrderID
+                        })
+                    
+                    rrdata = rr.json()
+                    print(rrdata)
+                    logger.info(rrdata)
+                    Response(rrdata)
+                
             else:
                 logger.info("There was something wrong with the result")
         else:
@@ -197,7 +205,7 @@ class submitDeposit(generics.GenericAPIView):
             logger.info("There was something wrong with the result")
             logger.info(rdata)
             return Response(rdata)
-        return Response(rrdata)
+        return Response({"order_id": "D" + OrderID, "url": paymentAPIURL})
 
 
 class submitCashout(generics.GenericAPIView):
