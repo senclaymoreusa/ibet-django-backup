@@ -671,12 +671,13 @@ class AddOrWithdrawBalance(APIView):
             # action.save()
             return HttpResponse('Withdraw Success')
 
-class Activation(View):
-    def post(self, request, *args, **kwargs):
+class Activation(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
         
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+        email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
         user.update(verfication_time=timezone.now(), modified_time=timezone.now())
@@ -701,7 +702,7 @@ class Activation(View):
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         #print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Email has been sent!')
 
 class ActivationVerify(APIView):
 
