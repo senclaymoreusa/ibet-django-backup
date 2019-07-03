@@ -1,6 +1,6 @@
 import requests, json, logging, hmac, struct, hashlib, xml.etree.ElementTree as ET
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View, generic
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 
@@ -32,6 +32,12 @@ def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
     return hash.hexdigest()
+
+# generate SHA1 control message
+def generateControl(message):
+    encodeStr = ASTROPAY_SECRET + message
+    x_control = hashlib.sha1(encodeStr.encode()).hexdigest()
+    return x_control
 
 #new invoice api which will return an url for users to rediract
 @api_view(['POST'])
@@ -148,7 +154,6 @@ def astroPaymentStatus(request):
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def sendCardToMobile(request):
-    
     amount = request.data.get('amount')
     currency = request.data.get('currency')
     mobile = request.data.get('mobile')
@@ -162,6 +167,7 @@ def sendCardToMobile(request):
     message = str(secretkey) + str(amount) + str(currency) + str(mobile)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
     OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+
     params = {
         "x_login":ASTROPAY_X_LOGIN,
         "x_trans_key":ASTROPAY_X_TRANS_KEY,
@@ -239,7 +245,6 @@ def checkUser(request):
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def sendCardToMobileWithAppId(request):
-
     amount = request.data.get('amount')
     currency = request.data.get('currency')
     curtomer_id = request.data.get('curtomer_id')
@@ -324,6 +329,56 @@ def verif_transtatus(request):
 
 
 
+def cancel_cashout_card(request):
+    if (request.method == "POST"):
+        astroPayEndpoint = ASTROPAY_URL + "/cancelCashoutCard"
+        requestBody = json.loads(request.body)
+
+        cashoutId = requestBody.get("id_cashout")
+        controlStr = generateControl(cashoutId)
+
+        params = {
+            "x_login": ASTROPAY_X_LOGIN,
+            "x_trans_key": ASTROPAY_X_TRANS_KEY,
+            "id_cashout": cashoutId,
+            "x_control": controlStr
+        }
+
+        for attempt in range(3):
+            response = requests.post(requestURL, json=params)
+            # responseJSON = response.json()
+            print(response)
+            if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
+                logger.info("created?: " + str(created))
+                logger.info("transaction data: " + str(obj))
+                break
+            else:
+                time.sleep(5)
+        return JsonResponse(responseJSON)
+
+def capture_transaction(request):
+    if (request.method == "POST"):
+        requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
 
 
-    
+        # need to parse card num, code, exp date, amount, and currency from POST body
+        body = json.loads(request.body)
+        # card_num = body.get("card_num")
+        # etc.
+        
+        params = {
+            "x_login": ASTROPAY_X_LOGIN,
+            "x_trans_key": ASTROPAY_X_TRANS_KEY,
+            "x_type": "AUTH_CAPTURE",
+            "x_card_num": "1615596647857871",
+            "x_card_code": "3825",
+            "x_exp_date": "09/2019",
+            "x_amount": "1000",
+            "x_currency": "RMB",
+            "x_unique_id": "1a2a3a4a",
+            "x_invoice_num": "test-order-123",
+        }
+
+        r = requests.post(requestURL, data=params)
+        print(r.status_code)
+        return JsonResponse({"response_msg": r.text})
