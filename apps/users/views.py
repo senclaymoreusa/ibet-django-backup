@@ -35,7 +35,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
 
 from accounting.models import Transaction
 
@@ -68,6 +68,7 @@ import random
 import simplejson as json
 import decimal
 
+from utils.constants import *
 import requests
 
 logger = logging.getLogger('django')
@@ -670,12 +671,13 @@ class AddOrWithdrawBalance(APIView):
             # action.save()
             return HttpResponse('Withdraw Success')
 
-class Activation(View):
-    def post(self, request, *args, **kwargs):
+class Activation(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
         
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+        email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
         user.update(verfication_time=timezone.now(), modified_time=timezone.now())
@@ -700,21 +702,22 @@ class Activation(View):
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         #print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Email has been sent!')
 
-class ActivationVerify(View):
-    def post(self, request, *args, **kwargs):
+class ActivationVerify(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        token = body['token']
+    permission_classes = (AllowAny,)
+    
+    def post(self, request):
+
+        token = request.data['token']
 
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
             user.update(activation_code='', modified_time=timezone.now())
-            return HttpResponse('Success')
-        return HttpResponse('The link has expired')
+            return Response('Success')
+        return Response('The link has expired')
 
 
 class FacebookRegister(CreateAPIView):
@@ -884,24 +887,22 @@ class OneclickRegister(APIView):
         return Response({'username': username, 'password': password})
 
 
-class UpdateEmail(View):
-    def post(self, request, *args, **kwargs):
+class UpdateEmail(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        old_email = body['old_email']
+    permission_classes = (IsAuthenticated, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        new_email = body['new_email']
+    def post(self, request):
+
+        old_email = request.data['old_email']
+        new_email = request.data['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
-            return HttpResponse('Duplicate')
+            return Response('Duplicate')
             
         user = CustomUser.objects.filter(email=old_email)
         user.update(email=new_email, modified_time=timezone.now())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
 class CheckEmailExixted(View):
@@ -914,26 +915,28 @@ class CheckEmailExixted(View):
         return HttpResponse('Invalid')
 
 
-class GenerateForgetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class GenerateForgetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+
+        email = request.data['email']
         user = get_user_model().objects.filter(email__iexact=email)
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
             user.update(reset_password_code=code)
-            return HttpResponse('Success')
-        return HttpResponse('Failed')
+            return Response('Success')
+        return Response('Failed')
 
 
-class SendResetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class SendResetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+
+        email = request.data['email']
         user = get_user_model().objects.filter(email=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
@@ -944,47 +947,42 @@ class SendResetPasswordCode(View):
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
-class VerifyResetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class VerifyResetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        code = body['code']
+    def post(self, request):
+
+        email = request.data['email']
+
+        code = request.data['code']
 
         user = get_user_model().objects.filter(email=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
-            return HttpResponse('Success')
+            return Response('Success')
         else:
-            return HttpResponse('Failed')
+            return Response('Failed')
 
 
-class ChangeAndResetPassword(View):
-    def post(self, request, *args, **kwargs):
+class ChangeAndResetPassword(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        password = body['password']
+    def post(self, request):
+
+        email = request.data['email']
+
+        password = request.data['password']
 
         user = get_user_model().objects.get(email=email)
         user.set_password(password)
         user.save()
-        return HttpResponse('Success')
-
-
-
+        return Response('Success')
 
 
 class AgentView(CommAdminView):
@@ -1153,6 +1151,11 @@ class UserDetailView(CommAdminView):
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
 
+        riskLevelMap = {}
+        for t in CustomUser._meta.get_field('risk_level').choices:
+            riskLevelMap[t[0]] = t[1]
+
+        context['riskLevel'] = riskLevelMap[int(customUser.risk_level)]
 
         statusMap = {}
         for t in Transaction._meta.get_field('status').choices:
@@ -1282,7 +1285,7 @@ class UserDetailView(CommAdminView):
                 lastDeposit.append(depositDict)
             context['lastDeposits'] = lastDeposit[:1]
         else:
-            context['lastDeposits'] = ''
+            context['lastDeposits'] = {}
 
         withdraws = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
         if withdraws:
@@ -1311,9 +1314,9 @@ class UserDetailView(CommAdminView):
                     'method': withdraw['fields']['method'],
                 }
                 lastWithdraw.append(withdrawDict)
-            context['lastWithdraws'] = lastWithdraw[:1]
+            context['lastWithdraws'] = lastWithdraw[0]
         else:
-            context['lastWithdraws'] = ''
+            context['lastWithdraws'] = {}
 
 
         activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
@@ -1322,7 +1325,44 @@ class UserDetailView(CommAdminView):
         else:
             context['activity'] = ''
 
+        limitations = Limitation.objects.filter(user=customUser)
 
+        productMap = {}
+        for t in Limitation._meta.get_field('product').choices:
+            productMap[t[0]] = t[1]
+
+        limitationDict = {
+            'bet': []
+        }
+        productAccessArr = []
+        for limitation in limitations:
+            if limitation.limit_type == 0:
+                betLimit = {
+                    'amount': limitation.amount,
+                    'productValue': limitation.product,
+                    'product':  productMap[limitation.product]
+                }
+                limitationDict['bet'].append(betLimit)
+            elif limitation.limit_type == 1:
+                limitationDict['loss'] = limitation.amount
+            elif limitation.limit_type == 2:
+                limitationDict['deposit'] = limitation.amount
+            elif limitation.limit_type == 3:
+                limitationDict['withdraw'] = limitation.amount
+            elif limitation.limit_type == 4:
+                value = limitation.product
+                productAccessMap = {
+                    'productValue': value,
+                    'product':  productMap[value]
+                }
+                productAccessArr.append(productAccessMap)
+
+
+        # print(limitationDict)
+        context['limitation'] = limitationDict
+        context['productAccess'] = json.dumps(productAccessArr)
+        context['accessDenyObj'] = productAccessArr
+        
         return render(request, 'user_detail.html', context)
 
 
@@ -1454,6 +1494,127 @@ class UserDetailView(CommAdminView):
 
             return HttpResponse(json.dumps(response), content_type='application/json')
 
+        elif post_type == 'bet_limitation_setting':
+            
+            bet_limitation = request.POST.getlist('bet_limit[]')
+            bet_product = request.POST.getlist('game_type[]')
+            bet_product = list(map(lambda x : int(x), bet_product))
+            loss_limitation = request.POST.get('loss_limit')
+            deposit_limitation = request.POST.get('deposit_limit')
+            withdraw_limitation = request.POST.get('withdraw_limit')
+            access_deny_tags = request.POST.get('tags-input')
+            access_deny_tags = json.loads(access_deny_tags)
+            # print(str(access_deny_tags))
+            user = CustomUser.objects.get(pk=user_id)
+
+            oldLimitMap = {
+                LIMIT_TYPE_BET: {},
+                LIMIT_TYPE_LOSS: {},
+                LIMIT_TYPE_DEPOSIT: {},
+                LIMIT_TYPE_WITHDRAW: {},
+                LIMIT_TYPE_ACCESS_DENY: {}
+            }
+
+            limitations = Limitation.objects.filter(user=user)
+            for limit in limitations:
+                limitType = limit.limit_type
+                if limitType in [LIMIT_TYPE_BET, LIMIT_TYPE_ACCESS_DENY]:
+                    oldLimitMap[limitType][limit.product] = limit.amount
+                else:
+                    oldLimitMap[limitType] = limit.amount
+
+            # print("oldLimitMap: " + str(oldLimitMap))
+            if bet_limitation:
+
+                # delete
+                for productType in oldLimitMap[LIMIT_TYPE_BET]:
+                    if productType not in bet_product:
+                        logger.info('Deleting bet limit for product type' + str(productType))
+                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=productType).delete()
+
+                # insert or update
+                for i in range(len(bet_limitation)):
+                    if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).exists():
+                        logger.info('Update bet limit for product type for' + str(user))
+                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).update(amount=bet_limitation[i])
+                    else:
+                        logger.info('Create new bet limit for product type for' + str(user))
+                        limitation = Limitation(
+                            user= user,
+                            limit_type=0,
+                            amount=bet_limitation[i],
+                            product=bet_product[i],
+                        )
+                        limitation.save()
+
+            if access_deny_tags:
+                for productType in oldLimitMap[LIMIT_TYPE_ACCESS_DENY]:
+                    if productType not in access_deny_tags:
+                        logger.info('Deleting access deny limit for product type ' + str(productType))
+                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=productType).delete()
+
+                for i in range(len(access_deny_tags)):
+                    if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=access_deny_tags[i]).exists():
+                        pass
+                    else:
+                        logger.info('Create new access deny for product type for' + str(user))
+                        limitation = Limitation(
+                            user= user,
+                            limit_type=LIMIT_TYPE_ACCESS_DENY,
+                            amount=0,
+                            product=access_deny_tags[i],
+                        )
+                        limitation.save()
+
+            if loss_limitation:
+                if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).exists():
+                    logger.info('Update loss limitation')
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=loss_limitation)
+                else:
+                    logger.info('Create a loss limitation')
+                    limitation = Limitation(
+                            user= user,
+                            limit_type=LIMIT_TYPE_LOSS,
+                            amount=loss_limitation,
+                        )
+                    limitation.save()
+
+            if deposit_limitation:
+                logger.info('Update deposit limitation')
+                if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).exists():
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=deposit_limitation)
+                else:
+                    logger.info('Create deposit limitation')
+                    limitation = Limitation(
+                            user= user,
+                            limit_type=LIMIT_TYPE_DEPOSIT,
+                            amount=deposit_limitation,
+                        )
+                    limitation.save()
+
+            if withdraw_limitation:
+                if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).exists():
+                    logger.info('Update withdraw limitation')
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).update(amount=withdraw_limitation)
+                else:
+                    logger.info('Create withdraw limitation')
+                    limitation = Limitation(
+                            user= user,
+                            limit_type=LIMIT_TYPE_WITHDRAW,
+                            amount=withdraw_limitation,
+                        )
+                    limitation.save()
+
+            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+
+        elif post_type == 'block_user':
+            action = request.POST.get('action')
+            if action == 'block':
+                user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
+            else:
+                user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
+
+            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
     
     def account_by_ip(self, userIp, username):
         relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
