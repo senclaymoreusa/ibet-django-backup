@@ -245,7 +245,6 @@ def checkUser(request):
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def sendCardToMobileWithAppId(request):
-
     amount = request.data.get('amount')
     currency = request.data.get('currency')
     curtomer_id = request.data.get('curtomer_id')
@@ -317,7 +316,7 @@ def cancel_cashout_card(request):
         }
 
         for attempt in range(3):
-            response = requests.post(requestURL, json=payload)
+            response = requests.post(requestURL, json=params)
             # responseJSON = response.json()
             print(response)
             if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
@@ -330,5 +329,27 @@ def cancel_cashout_card(request):
 
 def capture_transaction(request):
     if (request.method == "POST"):
+        requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
+
+
+        # need to parse card num, code, exp date, amount, and currency from POST body
+        body = json.loads(request.body)
+        # card_num = body.get("card_num")
+        # etc.
         
-        return JsonResponse(responseJSON)
+        params = {
+            "x_login": ASTROPAY_X_LOGIN,
+            "x_trans_key": ASTROPAY_X_TRANS_KEY,
+            "x_type": "AUTH_CAPTURE",
+            "x_card_num": "1615596647857871",
+            "x_card_code": "3825",
+            "x_exp_date": "09/2019",
+            "x_amount": "1000",
+            "x_currency": "RMB",
+            "x_unique_id": "1a2a3a4a",
+            "x_invoice_num": "test-order-123",
+        }
+
+        r = requests.post(requestURL, data=params)
+        print(r.status_code)
+        return JsonResponse({"response_msg": r.text})
