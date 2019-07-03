@@ -883,26 +883,24 @@ class OneclickRegister(APIView):
         user.update(active=True, modified_time=timezone.now())
 
         return Response({'username': username, 'password': password})
+        
 
+class UpdateEmail(APIView):
 
-class UpdateEmail(View):
+    permission_classes = (IsAuthenticated, )
+
     def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        old_email = body['old_email']
-
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        new_email = body['new_email']
+        old_email = request.data['old_email']
+        new_email =request.data['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
-            return HttpResponse('Duplicate')
+            return Response('Duplicate')
             
         user = CustomUser.objects.filter(email=old_email)
         user.update(email=new_email, modified_time=timezone.now())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
 class CheckEmailExixted(View):
