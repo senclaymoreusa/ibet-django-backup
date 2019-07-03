@@ -671,12 +671,13 @@ class AddOrWithdrawBalance(APIView):
             # action.save()
             return HttpResponse('Withdraw Success')
 
-class Activation(View):
-    def post(self, request, *args, **kwargs):
+class Activation(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
         
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+        email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
         user.update(verfication_time=timezone.now(), modified_time=timezone.now())
@@ -701,21 +702,22 @@ class Activation(View):
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         #print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Email has been sent!')
 
-class ActivationVerify(View):
-    def post(self, request, *args, **kwargs):
+class ActivationVerify(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        token = body['token']
+    permission_classes = (AllowAny,)
+    
+    def post(self, request):
+
+        token = request.data['token']
 
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
             user.update(activation_code='', modified_time=timezone.now())
-            return HttpResponse('Success')
-        return HttpResponse('The link has expired')
+            return Response('Success')
+        return Response('The link has expired')
 
 
 class FacebookRegister(CreateAPIView):
@@ -885,24 +887,22 @@ class OneclickRegister(APIView):
         return Response({'username': username, 'password': password})
 
 
-class UpdateEmail(View):
-    def post(self, request, *args, **kwargs):
+class UpdateEmail(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        old_email = body['old_email']
+    permission_classes = (IsAuthenticated, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        new_email = body['new_email']
+    def post(self, request):
+
+        old_email = request.data['old_email']
+        new_email = request.data['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
-            return HttpResponse('Duplicate')
+            return Response('Duplicate')
             
         user = CustomUser.objects.filter(email=old_email)
         user.update(email=new_email, modified_time=timezone.now())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
 class CheckEmailExixted(View):
@@ -915,26 +915,28 @@ class CheckEmailExixted(View):
         return HttpResponse('Invalid')
 
 
-class GenerateForgetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class GenerateForgetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+
+        email = request.data['email']
         user = get_user_model().objects.filter(email__iexact=email)
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
             user.update(reset_password_code=code)
-            return HttpResponse('Success')
-        return HttpResponse('Failed')
+            return Response('Success')
+        return Response('Failed')
 
 
-class SendResetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class SendResetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+
+        email = request.data['email']
         user = get_user_model().objects.filter(email=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
@@ -945,47 +947,42 @@ class SendResetPasswordCode(View):
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
-class VerifyResetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class VerifyResetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        code = body['code']
+    def post(self, request):
+
+        email = request.data['email']
+
+        code = request.data['code']
 
         user = get_user_model().objects.filter(email=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
-            return HttpResponse('Success')
+            return Response('Success')
         else:
-            return HttpResponse('Failed')
+            return Response('Failed')
 
 
-class ChangeAndResetPassword(View):
-    def post(self, request, *args, **kwargs):
+class ChangeAndResetPassword(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        password = body['password']
+    def post(self, request):
+
+        email = request.data['email']
+
+        password = request.data['password']
 
         user = get_user_model().objects.get(email=email)
         user.set_password(password)
         user.save()
-        return HttpResponse('Success')
-
-
-
+        return Response('Success')
 
 
 class AgentView(CommAdminView):
