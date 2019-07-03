@@ -969,7 +969,7 @@ class VerifyResetPasswordCode(APIView):
             return Response('Failed')
 
 
-class ChangeAndResetPassword(View):
+class ChangeAndResetPassword(APIView):
 
     permission_classes = (AllowAny, )
 
