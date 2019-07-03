@@ -387,8 +387,10 @@ class depositArrive(generics.GenericAPIView):
     serializer_class = asiapayDepositArriveSerialize
     permission_classes = [AllowAny, ]
     # parser_classes = (XMLParser,)
-    # renderer_classes = (XMLRenderer,)
+    # rendere9r_classes = (XMLRenderer,)
     def post(self, request, *args, **kwargs):
+        print("hi")
+        print(request)
         StatusCode = self.request.POST.get("StatusCode")
         RevCardNumber = self.request.POST.get("RevCardNumber")
         RevMoney = self.request.POST.get("amount")

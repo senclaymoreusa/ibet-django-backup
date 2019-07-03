@@ -197,11 +197,9 @@ PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87Dc
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
-#astroPay sandbox urls
-ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/cashOut/'
-ASTROPAY_WPS = 'https://sandbox.astropaycard.com/apd/webpaystatus'
-ASTROPAY_WCE = 'https://sandbox.astropaycard.com/apd/webcurrencyexchange'
-ASTROPAY_GBC = 'https://sandbox.astropaycard.com/api_curl/apd/get_banks_by_country'
+#astroPay sandbox url
+ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'
+
 
 #astroPay sandbox key:
 ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 

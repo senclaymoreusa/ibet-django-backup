@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/astropay/sendCardToMobile_mobile', astropay.sendCardToMobile, name = 'AstroPay_Send_Card_To_Mobile'),
     path('api/astropay/checkUser', astropay.checkUser, name = 'AstroPay_Check_User'),
     path('api/astropay/sendCardToMobile_appid', astropay.sendCardToMobileWithAppId, name = 'AstroPay_Send_Card_To_Mobile_Appid'),
+    path('api/astropay/verif_transtatus', astropay.verif_transtatus, name = 'AstroPay_verif_transtatus'),
     path('api/asiapay/deposit', asiapay.submitDeposit.as_view(), name = 'AsiaPay_deposit'),
     path('api/asiapay/cashout', asiapay.submitCashout.as_view(), name = 'AsiaPay_cashout'),
     path('api/asiapay/depositFinish', asiapay.depositfinish.as_view(), name = 'AsiaPay_deposit_finish'),

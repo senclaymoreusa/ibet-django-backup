@@ -177,7 +177,7 @@ def sendCardToMobile(request):
     
     url = ASTROPAY_URL
     for x in range(3):
-        r = requests.post(url + '/sendCardToMobile', data=params)
+        r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
         rdata = r.json()
         print(rdata)
         if r.status_code == 200 :
@@ -221,7 +221,7 @@ def checkUser(request):
         "x_control":my_hmac,
     }
     for x in range(3):
-        r = requests.post(url + '/checkUser', data=params)
+        r = requests.post(url + 'cashOut/checkUser', data=params)
         rdata = r.json()
         print(rdata)
         if r.status_code == 200 :
@@ -269,7 +269,7 @@ def sendCardToMobileWithAppId(request):
     
     url = ASTROPAY_URL
     for x in range(3):
-        r = requests.post(url + '/sendCardToMobile', data=params)
+        r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
         rdata = r.json()
         print(rdata)
         if r.status_code == 200 :
@@ -294,6 +294,35 @@ def sendCardToMobileWithAppId(request):
             logger.info(rdata)
             return Response(rdata)
     return Response(rdata)
+
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def verif_transtatus(request):
+    invoice_num = request.data.get("invoice_num")
+    params = {
+        "x_login":ASTROPAY_X_LOGIN,
+        "x_trans_key":ASTROPAY_X_TRANS_KEY,
+        "x_invoice_num":invoice_num,
+    }
+    url = ASTROPAY_URL
+    print(url)
+    for x in range(3):
+        r = requests.post(url + 'verif/transtatus', data=params)
+        rdata = r.text
+        print(rdata)
+        if r.status_code == 200 :
+            break
+        elif r.status_code == 500:
+            logger.info("Request failed {} time(s)'.format(x+1)")
+            logger.info("Waiting for %s seconds before retrying again")
+            time.sleep("5")
+        else:
+            logger.info("There was something wrong with the result")
+            logger.info(rdata)
+            return Response(rdata)
+    return Response(rdata)
+
+
 
 
 
