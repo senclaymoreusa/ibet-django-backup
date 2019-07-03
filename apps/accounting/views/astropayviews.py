@@ -23,7 +23,7 @@ import struct
 import hashlib 
 import xml.etree.ElementTree as ET
 from time import sleep
-
+from time import gmtime, strftime
 logger = logging.getLogger('django')
 secretkey = ASTROPAY_SECREATE
 currencyConversion = {
@@ -36,7 +36,7 @@ currencyConversion = {
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
-    return hash.hexdigest().upper()
+    return hash.hexdigest()
 
 #new invoice api which will return an url for users to rediract
 @api_view(['POST'])
@@ -149,4 +149,66 @@ def astroPaymentStatus(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def sendCardToMobile(request):
+    
+    amount = request.data.get('amount')
+    currency = request.data.get('currency')
+    mobile = request.data.get('mobile')
+    userid = request.data.get('userid')
+    user_fn = CustomUser.objects.get(pk=userid).first_name
+    user_ln = CustomUser.objects.get(pk=userid).last_name
+    name = user_fn + " " + user_ln
+    doc_id = request.data.get('doc_id')
+    country = request.data.get('country')
+    notification_url = request.data.get('notification_url')
+    message = str(secretkey) + str(amount) + str(currency) + str(mobile)
+    my_hmac = hashlib.sha1(message.encode()).hexdigest()
+    OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+    params = {
+        "x_login":ASTROPAY_X_LOGIN,
+        "x_trans_key":ASTROPAY_X_TRANS_KEY,
+        "x_amount":amount,
+        "x_currency": currency,
+        "x_mobile_number":mobile,
+        "x_name":name,
+        "x_document":doc_id,
+        "x_country":country,
+        "x_control":my_hmac,
+        "notification_url": notification_url,
+    }
+    
+    url = ASTROPAY_URL
+    for x in range(3):
+        r = requests.post(url + '/sendCardToMobile', data=params)
+        rdata = r.json()
+        print(rdata)
+        if r.status_code == 200 :
+            break
+        elif r.status_code == 500:
+            logger.info("Request failed {} time(s)'.format(x+1)")
+            logger.info("Waiting for %s seconds before retrying again")
+            time.sleep("5")
+        else:
+            logger.info("There was something wrong with the result")
+            logger.info(rdata)
+            return Response(rdata)
+    if rdata["response"] == "SUCCESS":
+        create = Transaction.objects.create(
+                    order_id=OrderID,
+                    transaction_id=rdata["id_cashout"],
+                    amount=rdata["amount"],
+                    user_id=CustomUser.objects.get(pk=userid),
+                    currency= currencyConversion[rdata["currency"]],
+                    transaction_type=1, 
+                    channel=2,
+                    status=0,
+                    method="AstroPay Cashout Card",
+                )
+    else:
+        logger.info("There was something wrong with the result")
+    return Response(rdata)
+
     
