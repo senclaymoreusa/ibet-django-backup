@@ -211,4 +211,6 @@ def sendCardToMobile(request):
         logger.info("There was something wrong with the result")
     return Response(rdata)
 
+
+
     
