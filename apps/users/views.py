@@ -883,16 +883,16 @@ class OneclickRegister(APIView):
         user.update(active=True, modified_time=timezone.now())
 
         return Response({'username': username, 'password': password})
-        
+
 
 class UpdateEmail(APIView):
 
     permission_classes = (IsAuthenticated, )
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
 
         old_email = request.data['old_email']
-        new_email =request.data['new_email']
+        new_email = request.data['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
@@ -913,26 +913,28 @@ class CheckEmailExixted(View):
         return HttpResponse('Invalid')
 
 
-class GenerateForgetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class GenerateForgetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+
+        email = request.data['email']
         user = get_user_model().objects.filter(email__iexact=email)
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
             user.update(reset_password_code=code)
-            return HttpResponse('Success')
-        return HttpResponse('Failed')
+            return Response('Success')
+        return Response('Failed')
 
 
-class SendResetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class SendResetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+
+        email = request.data['email']
         user = get_user_model().objects.filter(email=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
@@ -943,27 +945,26 @@ class SendResetPasswordCode(View):
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
-class VerifyResetPasswordCode(View):
-    def post(self, request, *args, **kwargs):
+class VerifyResetPasswordCode(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        code = body['code']
+    def post(self, request):
+
+        email = request.data['email']
+
+        code = request.data['code']
 
         user = get_user_model().objects.filter(email=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
-            return HttpResponse('Success')
+            return Response('Success')
         else:
-            return HttpResponse('Failed')
+            return Response('Failed')
 
 
 class ChangeAndResetPassword(View):
