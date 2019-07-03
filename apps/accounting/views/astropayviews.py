@@ -19,7 +19,7 @@ from utils.constants import *
 from time import sleep, gmtime, strftime
 
 logger = logging.getLogger('django')
-secretkey = ASTROPAY_SECREATE
+secretkey = ASTROPAY_SECRET
 currencyConversion = {
     "CNY": 0,
     "USD": 1,
