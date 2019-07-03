@@ -968,23 +968,19 @@ class VerifyResetPasswordCode(APIView):
 
 
 class ChangeAndResetPassword(View):
-    def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+    permission_classes = (AllowAny, )
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        password = body['password']
+    def post(self, request):
+
+        email = request.data['email']
+
+        password = request.data['password']
 
         user = get_user_model().objects.get(email=email)
         user.set_password(password)
         user.save()
-        return HttpResponse('Success')
-
-
-
+        return Response('Success')
 
 
 class AgentView(CommAdminView):
