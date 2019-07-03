@@ -182,6 +182,7 @@ ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('CashSCBatch', '加密货币'),
     ('cashifacebatch', '代付'),
 )
+
 #qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
@@ -195,15 +196,18 @@ PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
+
 #astroPay sandbox urls
 ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/cashOut/'
 ASTROPAY_WPS = 'https://sandbox.astropaycard.com/apd/webpaystatus'
 ASTROPAY_WCE = 'https://sandbox.astropaycard.com/apd/webcurrencyexchange'
 ASTROPAY_GBC = 'https://sandbox.astropaycard.com/api_curl/apd/get_banks_by_country'
+
 #astroPay sandbox key:
 ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 
 ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
-ASTROPAY_SECREATE = 'RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH'
+ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+
 #astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'

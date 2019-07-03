@@ -1,37 +1,32 @@
+import requests, json, logging, hmac, struct, hashlib, xml.etree.ElementTree as ET
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
-from users.models import CustomUser
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+
+from rest_framework import parsers, renderers, status
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
-from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
-from utils.constants import *
 
+from users.models import CustomUser
 from ..serializers import astroPaymentStatusSerialize
 from django.conf import settings
-import requests,json
-import logging
-import time
-import hmac
-import struct
-import hashlib 
-import xml.etree.ElementTree as ET
-from time import sleep
-from time import gmtime, strftime
+from utils.constants import *
+from time import sleep, gmtime, strftime
+
 logger = logging.getLogger('django')
-secretkey = ASTROPAY_SECREATE
+secretkey = ASTROPAY_SECRET
 currencyConversion = {
     "CNY": 0,
     "USD": 1,
     "PHP": 2,
     "IDR": 3
 }
+
 #get hash code 
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
