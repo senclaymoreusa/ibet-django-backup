@@ -703,19 +703,20 @@ class Activation(View):
         #print(response.status_code)
         return HttpResponse('Email has been sent!')
 
-class ActivationVerify(View):
-    def post(self, request, *args, **kwargs):
+class ActivationVerify(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        token = body['token']
+    permission_classes = (AllowAny,)
+    
+    def post(self, request):
+
+        token = request.data['token']
 
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
             user.update(activation_code='', modified_time=timezone.now())
-            return HttpResponse('Success')
-        return HttpResponse('The link has expired')
+            return Response('Success')
+        return Response('The link has expired')
 
 
 class FacebookRegister(CreateAPIView):
