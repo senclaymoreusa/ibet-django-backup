@@ -2021,11 +2021,11 @@ class ValidateAndResetPassowrd(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        username = request.data['username']
+        
         current = request.data['current_password']
         new = request.data['new_password']
+        user = self.request.user
 
-        user = CustomUser.objects.get(username=username)
         if not user.check_password(current):
             return Response({'status': 'Failed'})
         user.set_password(new)
