@@ -905,14 +905,17 @@ class UpdateEmail(APIView):
         return Response('Success')
 
 
-class CheckEmailExixted(View):
+class CheckEmailExixted(APIView):
+
+    permission_classes = (AllowAny, )
+
     def get(self, request, *args, **kwargs):
         
-        email = self.request.GET['email']
+        email = request.GET.get('email')
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
-            return HttpResponse('Exist')
-        return HttpResponse('Invalid')
+            return Response('Success')
+        return Response('Failed')
 
 
 class GenerateForgetPasswordCode(APIView):
@@ -934,10 +937,10 @@ class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
-        user = get_user_model().objects.filter(email=email)
+        user = get_user_model().objects.filter(email__iexact=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email('ibet@ibet.com')
