@@ -960,13 +960,15 @@ class VerifyResetPasswordCode(APIView):
     def post(self, request):
 
         email = request.data['email']
-
         code = request.data['code']
-
+        password = request.data['password']
         user = get_user_model().objects.filter(email=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
+            user = get_user_model().objects.get(email=email)
+            user.set_password(password)
+            user.save()
             return Response('Success')
         else:
             return Response('Failed')
