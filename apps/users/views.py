@@ -859,6 +859,7 @@ class OneclickRegister(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
+
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
@@ -962,11 +963,11 @@ class VerifyResetPasswordCode(APIView):
         email = request.data['email']
         code = request.data['code']
         password = request.data['password']
-        user = get_user_model().objects.filter(email=email)
+        user = get_user_model().objects.filter(email__iexact=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
-            user = get_user_model().objects.get(email=email)
+            user = get_user_model().objects.get(email__iexact=email)
             user.set_password(password)
             user.save()
             return Response('Success')
@@ -984,7 +985,7 @@ class ChangeAndResetPassword(APIView):
 
         password = request.data['password']
 
-        user = get_user_model().objects.get(email=email)
+        user = get_user_model().objects.get(email__iexact=email)
         user.set_password(password)
         user.save()
         return Response('Success')
@@ -1898,6 +1899,7 @@ class ChangePassword(APIView):
         except:
             return Response('Failed')
 
+
 class CheckUsernameExist(View):
     def get(self, request, *args, **kwargs):
         username = self.request.GET['username']
@@ -1905,6 +1907,7 @@ class CheckUsernameExist(View):
         if user:
             return HttpResponse('Exist')
         return HttpResponse('Valid')
+
 
 class GenerateActivationCode(APIView):
 
@@ -1939,8 +1942,6 @@ class VerifyActivationCode(APIView):
             user.update(activation_code='')
             return Response({'status': 'Success'})
         return Response({'status': 'Failed'})
-
-
 
 
 class UserSearchAutocomplete(View):
@@ -2042,6 +2043,7 @@ class CancelRegistration(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request):
+
         username = request.data['username']
         user = CustomUser.objects.get(username=username)
         user.delete()
