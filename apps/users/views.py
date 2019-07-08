@@ -1,29 +1,28 @@
-from django.shortcuts import render
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login as django_login, logout as django_logout
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
-from django.contrib.auth.decorators import permission_required
+
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as django_login, logout as django_logout
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext_lazy as _
 from django.views import generic
-from django.dispatch import receiver
-from django_rest_passwordreset.signals import reset_password_token_created
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.conf import settings
 from django.views import View
+
+from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import timedelta
-from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncMonth, Coalesce
-from django.contrib import messages
-from dateutil.relativedelta import relativedelta
+from django.utils.crypto import get_random_string
+
+from django_rest_passwordreset.signals import reset_password_token_created
+from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
@@ -33,27 +32,34 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMultiAlternatives
+
+from django.shortcuts import render
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.db.models import Count, Sum, Q
+from django.db.models.functions import TruncMonth, Coalesce
+from dateutil.relativedelta import relativedelta
+
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
 from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
 
 from accounting.models import Transaction
-
 from rest_auth.models import TokenModel
+
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
 
 from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
-from django_rest_passwordreset.models import ResetPasswordToken
-from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 from django.template.defaulttags import register
 
 import datetime
 import logging
 import os
-
-from django.contrib.auth import get_user_model
 
 import base64
 import uuid
@@ -61,7 +67,6 @@ import csv
 
 from threading import Timer
 
-from django.utils.crypto import get_random_string
 from xadmin.views import CommAdminView
 import random
 
@@ -849,6 +854,7 @@ class FacebookLoginView(GenericAPIView):
         return self.login()
 
 def generate_username():
+    
     name_list = [ 'Stephen', 'Mike', 'Tom', 'Luke', 'James', 'Kevin', 'Stephan', 'Wilson', 'Alice', 'Sunny', 'Cloris', 'Jack', 
         'Leo', 'Shaw', 'Peter', 'Ben', 'Ross', 'Rachel', 'Michael', 'Jordan', 'Oliver', 'Harry', 'John', 'William', 'David', 'Richard', 'Joseph',
         'Charles', 'Thomas', 'Joe', 'George', 'Oscar', 'Amelia', 'Margaret', 'Megan', 'Jennifer', 'Bethany', 'Isla', 'Lauren', 'Samantha', 'Emma',
@@ -950,7 +956,6 @@ class GenerateForgetPasswordCode(APIView):
         return Response('Failed')
 
 
-
 class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
@@ -967,7 +972,7 @@ class SendResetPasswordCode(APIView):
         content_text = str(_('Use this code to reset your password '))
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
+        response = sg.client.mail.send.post(request_body = mail.get())
         return Response('Success')
 
 
@@ -1903,6 +1908,7 @@ class UserListView(CommAdminView):
             
 
 class ChangePassword(APIView):
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -1918,6 +1924,7 @@ class ChangePassword(APIView):
 
 
 class CheckUsernameExist(View):
+
     def get(self, request, *args, **kwargs):
         username = self.request.GET['username']
         user = get_user_model().objects.filter(username=username)
