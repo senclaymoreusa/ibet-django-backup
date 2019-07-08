@@ -387,7 +387,10 @@ import sendgrid
 from sendgrid.helpers.mail import *
 
 
-class SendEmail(View):
+class SendEmail(APIView):
+
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
         case = self.request.GET['case']
         from_email_address = 'claymore@claymoreusa.com'
@@ -402,7 +405,7 @@ class SendEmail(View):
         elif case == 'referral':
             to_email_address = self.request.GET['to_email_address']
             email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
-            email_content = _('Please use the referral link to register your new account: ') + 'http://localhost:3000/signup/' + self.request.GET['referralid']
+            email_content = _('Please use the referral link to register your new account: ') + 'http://localhost:3000/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -411,8 +414,7 @@ class SendEmail(View):
         content = Content("text/plain", email_content)
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Success')
 
 
 class CustomPasswordResetView:
