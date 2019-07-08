@@ -191,7 +191,7 @@ def sendCardToMobile(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -235,7 +235,7 @@ def checkUser(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -293,7 +293,7 @@ def sendCardToMobileWithAppId(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -320,7 +320,7 @@ def verif_transtatus(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -351,13 +351,12 @@ def cancel_cashout_card(request):
                 logger.info("transaction data: " + str(obj))
                 break
             else:
-                time.sleep(5)
+                sleep(5)
         return JsonResponse(responseJSON)
 
 def capture_transaction(request):
     if (request.method == "POST"):
         requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
-
 
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
@@ -366,10 +365,8 @@ def capture_transaction(request):
         card_code = body.get("card_code")
         exp_date = body.get("exp_date")
         amount = body.get("amount")
-        currency = "THB"
 
         orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
-
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
