@@ -537,8 +537,8 @@ class ReferralAward(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        referral_id = request.GET.get['referral_id']
-        current_referred = request.GET.get['referred']
+        referral_id = request.GET.get('referral_id')
+        current_referred = request.GET.get('referred')
         user          = get_user_model().objects.filter(referral_id=referral_id)
         referred_user = get_user_model().objects.filter(username=current_referred)
         
