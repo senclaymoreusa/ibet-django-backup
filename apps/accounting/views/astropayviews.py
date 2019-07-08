@@ -1,20 +1,17 @@
-import requests, json, logging, hmac, struct, hashlib, xml.etree.ElementTree as ET
+import requests, json, logging, random, hmac, struct, hashlib, xml.etree.ElementTree as ET
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from django.views import View, generic
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from django.conf import settings
+from django.utils import timezone
 
 from rest_framework import parsers, renderers, status
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 
 from users.models import CustomUser
+from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from ..serializers import astroPaymentStatusSerialize
-from django.conf import settings
 from utils.constants import *
 from time import sleep, gmtime, strftime
 
@@ -354,6 +351,7 @@ def cancel_cashout_card(request):
                 sleep(5)
         return JsonResponse(responseJSON)
 
+# create money order with astropay card
 def capture_transaction(request):
     if (request.method == "POST"):
         requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
@@ -376,8 +374,8 @@ def capture_transaction(request):
             "x_exp_date": exp_date,
             "x_amount": amount,
             "x_currency": "THB", # we are only using this API for thailand
-            "x_unique_id": orderId,
-            "x_invoice_num": "test-order-123",
+            "x_unique_id": "user_id_123",
+            "x_invoice_num": orderId,
         }
 
         r = requests.post(requestURL, data=params)
