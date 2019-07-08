@@ -34,45 +34,37 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMultiAlternatives
-
 from django.shortcuts import render
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth, Coalesce
-from dateutil.relativedelta import relativedelta
+from django.template.defaulttags import register
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
-from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
-
-from accounting.models import Transaction
 from rest_auth.models import TokenModel
-
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
 
 from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
-from django.template.defaulttags import register
+from dateutil.relativedelta import relativedelta
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from .forms import RenewBookForm, CustomUserCreationForm
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
+from accounting.models import Transaction
+from threading import Timer
+from xadmin.views import CommAdminView
 
 import datetime
 import logging
 import os
-
 import base64
 import uuid
 import csv
-
-from threading import Timer
-
-from xadmin.views import CommAdminView
 import random
-
 import simplejson as json
 import decimal
-
 from utils.constants import *
 import requests
 
