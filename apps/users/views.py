@@ -859,6 +859,7 @@ class OneclickRegister(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
+
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
@@ -905,14 +906,17 @@ class UpdateEmail(APIView):
         return Response('Success')
 
 
-class CheckEmailExixted(View):
+class CheckEmailExixted(APIView):
+
+    permission_classes = (AllowAny, )
+
     def get(self, request, *args, **kwargs):
         
-        email = self.request.GET['email']
+        email = request.GET.get('email')
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
-            return HttpResponse('Exist')
-        return HttpResponse('Invalid')
+            return Response('Success')
+        return Response('Failed')
 
 
 class GenerateForgetPasswordCode(APIView):
@@ -934,10 +938,10 @@ class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
-        user = get_user_model().objects.filter(email=email)
+        user = get_user_model().objects.filter(email__iexact=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email('ibet@ibet.com')
@@ -957,13 +961,15 @@ class VerifyResetPasswordCode(APIView):
     def post(self, request):
 
         email = request.data['email']
-
         code = request.data['code']
-
-        user = get_user_model().objects.filter(email=email)
+        password = request.data['password']
+        user = get_user_model().objects.filter(email__iexact=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
+            user = get_user_model().objects.get(email__iexact=email)
+            user.set_password(password)
+            user.save()
             return Response('Success')
         else:
             return Response('Failed')
@@ -979,7 +985,7 @@ class ChangeAndResetPassword(APIView):
 
         password = request.data['password']
 
-        user = get_user_model().objects.get(email=email)
+        user = get_user_model().objects.get(email__iexact=email)
         user.set_password(password)
         user.save()
         return Response('Success')
@@ -1893,6 +1899,7 @@ class ChangePassword(APIView):
         except:
             return Response('Failed')
 
+
 class CheckUsernameExist(View):
     def get(self, request, *args, **kwargs):
         username = self.request.GET['username']
@@ -1900,6 +1907,7 @@ class CheckUsernameExist(View):
         if user:
             return HttpResponse('Exist')
         return HttpResponse('Valid')
+
 
 class GenerateActivationCode(APIView):
 
@@ -1934,8 +1942,6 @@ class VerifyActivationCode(APIView):
             user.update(activation_code='')
             return Response({'status': 'Success'})
         return Response({'status': 'Failed'})
-
-
 
 
 class UserSearchAutocomplete(View):
@@ -2021,11 +2027,11 @@ class ValidateAndResetPassowrd(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        username = request.data['username']
+        
         current = request.data['current_password']
         new = request.data['new_password']
+        user = self.request.user
 
-        user = CustomUser.objects.get(username=username)
         if not user.check_password(current):
             return Response({'status': 'Failed'})
         user.set_password(new)
@@ -2037,6 +2043,7 @@ class CancelRegistration(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request):
+
         username = request.data['username']
         user = CustomUser.objects.get(username=username)
         user.delete()
