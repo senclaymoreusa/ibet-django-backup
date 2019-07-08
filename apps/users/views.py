@@ -863,7 +863,7 @@ class OneclickRegister(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
@@ -897,7 +897,7 @@ class UpdateEmail(APIView):
 
     permission_classes = (IsAuthenticated, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         old_email = request.data['old_email']
         new_email = request.data['new_email']
@@ -939,7 +939,7 @@ class GenerateForgetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
         user = get_user_model().objects.filter(email__iexact=email)
@@ -975,7 +975,7 @@ class VerifyResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
         code = request.data['code']
@@ -996,7 +996,7 @@ class ChangeAndResetPassword(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
 
@@ -1930,7 +1930,7 @@ class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         username = request.data['username']
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
@@ -1950,7 +1950,7 @@ class VerifyActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         username = request.data['username']
         code = request.data['code']
         user = get_user_model().objects.filter(username=username)
@@ -2043,7 +2043,7 @@ class ValidateAndResetPassowrd(APIView):
 
     permission_classes = (IsAuthenticated, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         
         current = request.data['current_password']
         new = request.data['new_password']
@@ -2059,7 +2059,7 @@ class CancelRegistration(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         username = request.data['username']
         user = CustomUser.objects.get(username=username)
