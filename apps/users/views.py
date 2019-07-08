@@ -921,6 +921,17 @@ class CheckEmailExixted(APIView):
         return Response('Failed')
 
 
+class GetUsernameByReferid(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        refer_id = request.GET.get('referid')
+        user = get_user_model().objects.filter(referral_id=refer_id)
+        if user:
+            return Response(user[0].username)
+        return Response('Failed')
+
 class GenerateForgetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
@@ -934,6 +945,7 @@ class GenerateForgetPasswordCode(APIView):
             user.update(reset_password_code=code)
             return Response('Success')
         return Response('Failed')
+
 
 
 class SendResetPasswordCode(APIView):
@@ -2050,6 +2062,7 @@ class CancelRegistration(APIView):
         user = CustomUser.objects.get(username=username)
         user.delete()
         return Response(status=status.HTTP_200_OK)
+
 
 
 
