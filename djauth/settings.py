@@ -294,4 +294,3 @@ STATICFILES_DIRS = [
 ]
 
 AWS_S3_ADMIN_BUCKET = 'ibet-admin'
-

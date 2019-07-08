@@ -1,9 +1,8 @@
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
-from djauth.third_party_keys import LINE_CHANNEL_ID, LINE_CHANNEL_SECRET
 from django.utils import timezone
 from ..models import Transaction
 from users.models import CustomUser
-import os, requests, json, random, logging, time
+import os, requests, json, random, logging, time, boto3
 
 logger = logging.getLogger('django')
 
@@ -18,18 +17,25 @@ THB = 2
 LINE_PAY = 1
 CREATED = 2
 
+def getThirdPartyKeys(bucket, file):
+    s3client = boto3.client("s3")
+    config_obj = s3client.get_object(Bucket=bucket, Key=file)
+    config = json.loads(config_obj['Body'].read())
+    return config
+
+config = getThirdPartyKeys("ibet-admin-dev", "config/thirdPartyKeys.json")
 
 def reserve_payment(request):
     logger.info(request)
-
+    
     if request.method == "GET":
         return HttpResponse("You are at the endpoint for LINEpay reserve payment.")
     
     if request.method == "POST": # can only allow post requests
         requestURL = LINE_PAYMENTS_SANDBOX_URL + "request" # prepare headers + request to LINE pay server
         headers = {
-            "X-LINE-ChannelId": LINE_CHANNEL_ID,
-            "X-LINE-ChannelSecret": LINE_CHANNEL_SECRET
+            "X-LINE-ChannelId": config["LINE_CHANNEL_ID"],
+            "X-LINE-ChannelSecret": config["LINE_CHANNEL_SECRET"]
         }
 
         # parse POST payload
@@ -82,8 +88,8 @@ def confirm_payment(request):
         return HttpResponse("You are at the endpoint for LINEpay confirm payment.")
     if (request.method == "POST"):
         headers = {
-            "X-LINE-ChannelId": LINE_CHANNEL_ID,
-            "X-LINE-ChannelSecret": LINE_CHANNEL_SECRET
+            "X-LINE-ChannelId": config["LINE_CHANNEL_ID"],
+            "X-LINE-ChannelSecret": config["LINE_CHANNEL_SECRET"]
         }
 
         body = json.loads(request.body)

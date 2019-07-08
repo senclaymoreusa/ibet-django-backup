@@ -355,9 +355,10 @@ def cancel_cashout_card(request):
 def capture_transaction(request):
     if (request.method == "POST"):
         requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
-
+        
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
+
         # etc.
         card_num = body.get("card_num")
         card_code = body.get("card_code")
@@ -379,4 +380,4 @@ def capture_transaction(request):
         }
 
         r = requests.post(requestURL, data=params)
-        return JsonResponse({"response_msg": r.text})
+        return JsonResponse({"request_body": body, "response_msg": r.text})
