@@ -379,5 +379,4 @@ def capture_transaction(request):
         }
 
         r = requests.post(requestURL, data=params)
-        print(r.status_code)
         return JsonResponse({"response_msg": r.text})
