@@ -327,8 +327,6 @@ def verif_transtatus(request):
             return Response(rdata)
     return Response(rdata)
 
-
-
 def cancel_cashout_card(request):
     if (request.method == "POST"):
         astroPayEndpoint = ASTROPAY_URL + "/cancelCashoutCard"
@@ -363,19 +361,25 @@ def capture_transaction(request):
 
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
-        # card_num = body.get("card_num")
         # etc.
-        
+        card_num = body.get("card_num")
+        card_code = body.get("card_code")
+        exp_date = body.get("exp_date")
+        amount = body.get("amount")
+        currency = "THB"
+
+        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
+
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
             "x_type": "AUTH_CAPTURE",
-            "x_card_num": "1615596647857871",
-            "x_card_code": "3825",
-            "x_exp_date": "09/2019",
-            "x_amount": "1000",
-            "x_currency": "RMB",
-            "x_unique_id": "1a2a3a4a",
+            "x_card_num": card_num,
+            "x_card_code": card_code,
+            "x_exp_date": exp_date,
+            "x_amount": amount,
+            "x_currency": "THB", # we are only using this API for thailand
+            "x_unique_id": orderId,
             "x_invoice_num": "test-order-123",
         }
 
