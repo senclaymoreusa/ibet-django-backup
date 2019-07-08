@@ -532,10 +532,13 @@ class NoticeMessageView(ListAPIView):
     serializer_class = NoticeMessageSerializer
     queryset = NoticeMessage.objects.all()
 
-class ReferralAward(View):
+class ReferralAward(APIView):
+
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
-        referral_id = self.request.GET['referral_id']
-        current_referred = self.request.GET['referred']
+        referral_id = request.GET.get['referral_id']
+        current_referred = request.GET.get['referred']
         user          = get_user_model().objects.filter(referral_id=referral_id)
         referred_user = get_user_model().objects.filter(username=current_referred)
         
@@ -555,7 +558,7 @@ class ReferralAward(View):
    
         referred_user.update(referred_by=user[0], modified_time=timezone.now())
         
-        return HttpResponse('Update successful')
+        return Response('Update successful')
 
 
 class CheckReferral(View):
