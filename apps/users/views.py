@@ -2079,16 +2079,16 @@ class WalletGeneralAPI(APIView):
         ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
         MemberID = data['ThirdParty']['MemberID']
         try:
-            user = CustomUser.objects.get(username=MemberID)
+            #user = CustomUser.objects.get(username=MemberID)
             return Response({
                 "Success"  : "1",
                 "TransType": "Balance",
-                "TransData": user.main_wallet,
+                "TransData": 10,
                 "ErrorCode": "0",
                 "ErrorDesc": "No_Error" 
                 })
         except:
-            return Response({"Success":"1"})
+            return Response({"Success":"0"})
 
 
 class WalletBetAPIURL(APIView):
@@ -2096,7 +2096,73 @@ class WalletBetAPIURL(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
-        pass
+
+        data = json.loads(request.body)
+
+        try:
+            return Response({
+                {
+                "GB": {
+                    "Result": {
+                    "Method": "GetGamingBetting",
+                    "Success": "1",
+                    "ReturnSet": {
+                    "TransType": "Bet",
+                    "BetTotalCnt": "1",
+                    "BetTotalAmt": "200",
+                    "BettingList": {
+                    "BetID": "5606714" ,
+                    "BetGrpNO": "2015122915440044573528" ,
+                    "TPCode": "99999",
+                    "GBSN": "1193141",
+                    "MemberID": "wantbet",
+                    "CurCode": "cny",
+                    "BetDT": "2015-12-29 15:44:05",
+                    "BetType": "1",
+                    "BetTypeParam1": "1",
+                    "BetTypeParam2": "1",
+                    "Wintype": "1",
+                    "HxMGUID": "0",
+                    "InitBetAmt": "200",
+                    "RealBetAmt": "200",
+                    "HoldingAmt": "200",
+                    "InitBetRate": "25100",
+                    "RealBetRate": "0",
+                    "PreWinAmt": "50200",
+                    "KenoList": {
+                    "DetailID": "3761343",
+                    "SrcCode": "00021",
+                    "DrawNo": "94836",
+                    "OptCode": "001",
+                    "OptParam1": "5",
+                    "MaxRate": "25100",
+                    "KenoBalls": [
+                    {
+                    "BallID": "244060",
+                    "BallNum": "1"
+                    },
+                    {
+                    "BallID": "244061",
+                    "BallNum": "11"
+                    },
+                    {
+                    "BallID": "244062",
+                    "BallNum": "21"
+                    },
+                    {
+                    "BallID": "244063",
+                    "BallNum": "31"
+                    },
+                    {
+                    "BallID": "244064",
+                    "BallNum": "41"
+                    }]}}}}
+                    }
+                }
+            })
+        except:
+            return Response({"Success":"0"})
+
 
 
 
