@@ -2054,6 +2054,7 @@ class ValidateAndResetPassowrd(APIView):
         user.save()
         return Response({'status': 'Success'})
 
+
 class CancelRegistration(APIView):
 
     permission_classes = (AllowAny, )
@@ -2064,6 +2065,7 @@ class CancelRegistration(APIView):
         user = CustomUser.objects.get(username=username)
         user.delete()
         return Response(status=status.HTTP_200_OK)
+
 
 class WalletGeneralAPI(APIView):
 
@@ -2077,6 +2079,15 @@ class WalletGeneralAPI(APIView):
 
         user = CustomUser.objects.get(username=MemberID)
 
-        return user[0].main_wallet
+        return Response({'Balance': user.main_wallet})
+
+
+class WalletBetAPIURL(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        pass
+
 
 
