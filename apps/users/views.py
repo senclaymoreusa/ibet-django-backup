@@ -1,29 +1,28 @@
-from django.shortcuts import render
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login as django_login, logout as django_logout
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
-from django.contrib.auth.decorators import permission_required
+
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as django_login, logout as django_logout
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext_lazy as _
 from django.views import generic
-from django.dispatch import receiver
-from django_rest_passwordreset.signals import reset_password_token_created
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.conf import settings
 from django.views import View
+
+from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import timedelta
-from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncMonth, Coalesce
-from django.contrib import messages
-from dateutil.relativedelta import relativedelta
+from django.utils.crypto import get_random_string
+
+from django_rest_passwordreset.signals import reset_password_token_created
+from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
@@ -33,11 +32,15 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
-from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
-
-from accounting.models import Transaction
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMultiAlternatives
+from django.shortcuts import render
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.db.models import Count, Sum, Q
+from django.db.models.functions import TruncMonth, Coalesce
+from django.template.defaulttags import register
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -45,29 +48,23 @@ from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
 from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
-from django_rest_passwordreset.models import ResetPasswordToken
-from django_rest_passwordreset.views import get_password_reset_token_expiry_time
-from django.template.defaulttags import register
+from dateutil.relativedelta import relativedelta
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from .forms import RenewBookForm, CustomUserCreationForm
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
+from accounting.models import Transaction
+from threading import Timer
+from xadmin.views import CommAdminView
 
 import datetime
 import logging
 import os
-
-from django.contrib.auth import get_user_model
-
 import base64
 import uuid
 import csv
-
-from threading import Timer
-
-from django.utils.crypto import get_random_string
-from xadmin.views import CommAdminView
 import random
-
 import simplejson as json
 import decimal
-
 from utils.constants import *
 import requests
 
@@ -387,7 +384,10 @@ import sendgrid
 from sendgrid.helpers.mail import *
 
 
-class SendEmail(View):
+class SendEmail(APIView):
+
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
         case = self.request.GET['case']
         from_email_address = 'claymore@claymoreusa.com'
@@ -402,7 +402,7 @@ class SendEmail(View):
         elif case == 'referral':
             to_email_address = self.request.GET['to_email_address']
             email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
-            email_content = _('Please use the referral link to register your new account: ') + 'http://localhost:3000/signup/' + self.request.GET['referralid']
+            email_content = _('Please use the referral link to register your new account: ') + settings.HOST_URL + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -411,8 +411,7 @@ class SendEmail(View):
         content = Content("text/plain", email_content)
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Success')
 
 
 class CustomPasswordResetView:
@@ -530,10 +529,13 @@ class NoticeMessageView(ListAPIView):
     serializer_class = NoticeMessageSerializer
     queryset = NoticeMessage.objects.all()
 
-class ReferralAward(View):
+class ReferralAward(APIView):
+
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
-        referral_id = self.request.GET['referral_id']
-        current_referred = self.request.GET['referred']
+        referral_id = request.GET.get('referral_id')
+        current_referred = request.GET.get('referred')
         user          = get_user_model().objects.filter(referral_id=referral_id)
         referred_user = get_user_model().objects.filter(username=current_referred)
         
@@ -553,7 +555,7 @@ class ReferralAward(View):
    
         referred_user.update(referred_by=user[0], modified_time=timezone.now())
         
-        return HttpResponse('Update successful')
+        return Response('Update successful')
 
 
 class CheckReferral(View):
@@ -844,6 +846,7 @@ class FacebookLoginView(GenericAPIView):
         return self.login()
 
 def generate_username():
+    
     name_list = [ 'Stephen', 'Mike', 'Tom', 'Luke', 'James', 'Kevin', 'Stephan', 'Wilson', 'Alice', 'Sunny', 'Cloris', 'Jack', 
         'Leo', 'Shaw', 'Peter', 'Ben', 'Ross', 'Rachel', 'Michael', 'Jordan', 'Oliver', 'Harry', 'John', 'William', 'David', 'Richard', 'Joseph',
         'Charles', 'Thomas', 'Joe', 'George', 'Oscar', 'Amelia', 'Margaret', 'Megan', 'Jennifer', 'Bethany', 'Isla', 'Lauren', 'Samantha', 'Emma',
@@ -858,7 +861,8 @@ class OneclickRegister(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
@@ -891,7 +895,7 @@ class UpdateEmail(APIView):
 
     permission_classes = (IsAuthenticated, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         old_email = request.data['old_email']
         new_email = request.data['new_email']
@@ -905,21 +909,35 @@ class UpdateEmail(APIView):
         return Response('Success')
 
 
-class CheckEmailExixted(View):
+class CheckEmailExixted(APIView):
+
+    permission_classes = (AllowAny, )
+
     def get(self, request, *args, **kwargs):
         
-        email = self.request.GET['email']
+        email = request.GET.get('email')
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
-            return HttpResponse('Exist')
-        return HttpResponse('Invalid')
+            return Response('Success')
+        return Response('Failed')
 
+
+class GetUsernameByReferid(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        refer_id = request.GET.get('referid')
+        user = get_user_model().objects.filter(referral_id=refer_id)
+        if user:
+            return Response(user[0].username)
+        return Response('Failed')
 
 class GenerateForgetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
         user = get_user_model().objects.filter(email__iexact=email)
@@ -934,10 +952,10 @@ class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
-        user = get_user_model().objects.filter(email=email)
+        user = get_user_model().objects.filter(email__iexact=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email('ibet@ibet.com')
@@ -946,7 +964,7 @@ class SendResetPasswordCode(APIView):
         content_text = str(_('Use this code to reset your password '))
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
+        response = sg.client.mail.send.post(request_body = mail.get())
         return Response('Success')
 
 
@@ -954,16 +972,18 @@ class VerifyResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
-
         code = request.data['code']
-
-        user = get_user_model().objects.filter(email=email)
+        password = request.data['password']
+        user = get_user_model().objects.filter(email__iexact=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
+            user = get_user_model().objects.get(email__iexact=email)
+            user.set_password(password)
+            user.save()
             return Response('Success')
         else:
             return Response('Failed')
@@ -973,13 +993,13 @@ class ChangeAndResetPassword(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         email = request.data['email']
 
         password = request.data['password']
 
-        user = get_user_model().objects.get(email=email)
+        user = get_user_model().objects.get(email__iexact=email)
         user.set_password(password)
         user.save()
         return Response('Success')
@@ -1880,6 +1900,7 @@ class UserListView(CommAdminView):
             
 
 class ChangePassword(APIView):
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -1893,7 +1914,9 @@ class ChangePassword(APIView):
         except:
             return Response('Failed')
 
+
 class CheckUsernameExist(View):
+
     def get(self, request, *args, **kwargs):
         username = self.request.GET['username']
         user = get_user_model().objects.filter(username=username)
@@ -1901,11 +1924,12 @@ class CheckUsernameExist(View):
             return HttpResponse('Exist')
         return HttpResponse('Valid')
 
+
 class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         username = request.data['username']
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
@@ -1925,7 +1949,7 @@ class VerifyActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         username = request.data['username']
         code = request.data['code']
         user = get_user_model().objects.filter(username=username)
@@ -1934,8 +1958,6 @@ class VerifyActivationCode(APIView):
             user.update(activation_code='')
             return Response({'status': 'Success'})
         return Response({'status': 'Failed'})
-
-
 
 
 class UserSearchAutocomplete(View):
@@ -2020,12 +2042,12 @@ class ValidateAndResetPassowrd(APIView):
 
     permission_classes = (IsAuthenticated, )
 
-    def post(self, request):
-        username = request.data['username']
+    def post(self, request, *args, **kwargs):
+        
         current = request.data['current_password']
         new = request.data['new_password']
+        user = self.request.user
 
-        user = CustomUser.objects.get(username=username)
         if not user.check_password(current):
             return Response({'status': 'Failed'})
         user.set_password(new)
@@ -2036,11 +2058,13 @@ class CancelRegistration(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+
         username = request.data['username']
         user = CustomUser.objects.get(username=username)
         user.delete()
         return Response(status=status.HTTP_200_OK)
+
 
 
 
