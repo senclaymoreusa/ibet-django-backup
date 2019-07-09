@@ -73,19 +73,19 @@ def astroNewInvoice(request):
     for x in range(3):   
         r = requests.post(url, data=params)
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
         tree = ET.fromstring(rdata)
         redirect_url = tree.find('link').text
         if r.status_code == 200:
             break
         elif r.status_code == 500:
-            print("Request failed {} time(s)'.format(x+1)")
-            print("Waiting for %s seconds before retrying again")
+            logger.info("Request failed {} time(s)'.format(x+1)")
+            logger.info("Waiting for %s seconds before retrying again")
             sleep(delay)
         elif r.status_code == 400:
             # Handle error
-            print("There was something wrong with the result")
-            print(rdata)
+            logger.info("There was something wrong with the result")
+            logger.info(rdata)
             return Response(rdata) 
     create = Transaction.objects.get_or_create(
         order_id=invoice,
@@ -119,17 +119,17 @@ def astroPaymentStatus(request):
         r = requests.post(url, data=params)
         rdata = r.text
         data = rdata.split('|')
-        print(data)
+        logger.info(data)
         if r.status_code == 200:
             break
         elif r.status_code == 500:
-            print("Request failed {} time(s)'.format(x+1)")
-            print("Waiting for %s seconds before retrying again")
+            logger.info("Request failed {} time(s)'.format(x+1)")
+            logger.info("Waiting for %s seconds before retrying again")
             sleep(delay)
         elif r.status_code == 400:
             # Handle error
-            print("There was something wrong with the result")
-            print(rdata)
+            logger.info("There was something wrong with the result")
+            logger.info(rdata)
             return Response(rdata)
     depositData = {
         "order_id": invoice, 
@@ -141,7 +141,7 @@ def astroPaymentStatus(request):
         "status": statusConversion[data[0]]
     }
     serializer = astroPaymentStatusSerialize(data=depositData)
-    #print(serializer)
+    #logger.info(serializer)
     if (serializer.is_valid()):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -182,7 +182,7 @@ def sendCardToMobile(request):
     for x in range(3):
         r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 200 :
             break
         elif r.status_code == 500:
@@ -216,7 +216,7 @@ def checkUser(request):
     curtomer_id = request.data.get('curtomer_id')
     message = str(secretkey) + str(curtomer_id)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
-    print(my_hmac)
+    logger.info(my_hmac)
     params = {
         "x_login":ASTROPAY_X_LOGIN,
         "x_trans_key":ASTROPAY_X_TRANS_KEY,
@@ -226,7 +226,7 @@ def checkUser(request):
     for x in range(3):
         r = requests.post(url + 'cashOut/checkUser', data=params)
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 200 :
             break
         elif r.status_code == 500:
@@ -254,7 +254,7 @@ def sendCardToMobileWithAppId(request):
     notification_url = request.data.get('notification_url')
     message = str(secretkey) + str(amount) + str(currency) + str(curtomer_id)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
-    print(my_hmac)
+    logger.info(my_hmac)
     OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
     params = {
         "x_login":ASTROPAY_X_LOGIN,
@@ -273,7 +273,7 @@ def sendCardToMobileWithAppId(request):
     for x in range(3):
         r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 200 :
             create = Transaction.objects.create(
                     order_id=OrderID,
@@ -307,11 +307,11 @@ def verif_transtatus(request):
         "x_invoice_num":invoice_num,
     }
     url = ASTROPAY_URL
-    print(url)
+    logger.info(url)
     for x in range(3):
         r = requests.post(url + 'verif/transtatus', data=params)
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 200 :
             break
         elif r.status_code == 500:
@@ -342,7 +342,7 @@ def cancel_cashout_card(request):
         for attempt in range(3):
             response = requests.post(requestURL, json=params)
             # responseJSON = response.json()
-            print(response)
+            logger.info(response)
             if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
                 logger.info("created?: " + str(created))
                 logger.info("transaction data: " + str(obj))

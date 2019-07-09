@@ -165,16 +165,13 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':"测试",
         })
         rdata = r.text
-        print(rdata)
         logger.info(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
             StatusMsg = tree.find('StatusMsg').text
-            print(StatusMsg)
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-            print(paymentAPIURL)
             logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
@@ -187,7 +184,6 @@ class submitDeposit(generics.GenericAPIView):
                     status=2,
                     method=bankidConversion[BankID],
                 )
-                print(PayWay)
                 if PayWay == '42':
                     rr = requests.get(paymentAPIURL, params={
                             "cid":ASIAPAY_CID,
@@ -195,7 +191,6 @@ class submitDeposit(generics.GenericAPIView):
                         })
                     
                     rrdata = rr.json()
-                    print(rrdata)
                     logger.info(rrdata)
                     return Response(rrdata)
                 
@@ -390,8 +385,6 @@ class depositArrive(generics.GenericAPIView):
     # parser_classes = (XMLParser,)
     # rendere9r_classes = (XMLRenderer,)
     def post(self, request, *args, **kwargs):
-        print("hi")
-        print(request)
         StatusCode = self.request.POST.get("StatusCode")
         RevCardNumber = self.request.POST.get("RevCardNumber")
         RevMoney = self.request.POST.get("amount")
