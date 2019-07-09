@@ -50,5 +50,6 @@ urlpatterns += [
     path('api/generateactivationcode/', views.GenerateActivationCode.as_view(), name='generate_activation_code'),
     path('api/verifyactivationcode/', views.VerifyActivationCode.as_view(), name='verify_activation_code'),
     path('api/validateandresetpassword/', views.ValidateAndResetPassowrd.as_view(), name='validate_and_reset_password'),
-    path('api/cancelregistration/', views.CancelRegistration.as_view(), name='cancel_registration')
+    path('api/cancelregistration/', views.CancelRegistration.as_view(), name='cancel_registration'),
+    path('api/getusernamebyreferid/', views.GetUsernameByReferid.as_view(), name = 'get_user')
 ]
