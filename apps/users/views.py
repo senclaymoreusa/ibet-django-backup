@@ -2065,7 +2065,7 @@ class CancelRegistration(APIView):
         user.delete()
         return Response(status=status.HTTP_200_OK)
 
-class WalletGeneralAPIURL(APIView):
+class WalletGeneralAPI(APIView):
 
     permission_classes = (AllowAny, )
 
