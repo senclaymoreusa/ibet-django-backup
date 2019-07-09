@@ -358,12 +358,15 @@ def capture_transaction(request):
         
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
+        userid = request.user.username
+
 
         # etc.
         card_num = body.get("card_num")
         card_code = body.get("card_code")
         exp_date = body.get("exp_date")
         amount = body.get("amount")
+        currency = "USD"
 
         orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
         params = {
@@ -374,23 +377,26 @@ def capture_transaction(request):
             "x_card_code": card_code,
             "x_exp_date": exp_date,
             "x_amount": amount,
-            "x_currency": "THB", # we are only using this API for thailand
+            "x_currency": currency, # we are only using this API for thailand
             "x_unique_id": "user_id_123",
             "x_invoice_num": orderId,
         }
 
         r = requests.post(requestURL, data=params)
-        # if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
-        #     object, created = Transaction.objects.create(
-        #         order_id=orderId,
-        #         transaction_id=unique_id,
-        #         amount=rdata["amount"],
-        #         user_id=CustomUser.objects.get(pk=userid),
-        #         currency= currencyConversion[rdata["currency"]],
-        #         transaction_type=1, 
-        #         channel=2,
-        #         status=0,
-        #         method="AstroPay Cashout Card",
-        #     )
-        # "response_json": r.json()
-        return JsonResponse({"request_body": body, "response_msg": r.text})
+        responseData = r.text.split("|")
+        print(responseData)
+        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
+            print("success!")
+            create = Transaction.objects.create(
+                order_id=(orderId)[0:20],
+                transaction_id=userid,
+                amount=amount,
+                user_id=CustomUser.objects.get(username=userid),
+                currency=currencyConversion[currency],
+                transaction_type=0, 
+                channel=2,
+                status=0,
+                method="AstroPay",
+            )
+
+        return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
