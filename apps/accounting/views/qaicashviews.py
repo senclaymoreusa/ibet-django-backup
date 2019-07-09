@@ -372,7 +372,7 @@ class submitPayout(generics.GenericAPIView):
         currency = self.request.POST['currency']
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
         
-        orderId = self.request.POST.get('order_id')
+        orderId = "ibet" + strftime("%Y%m%d%H%M%S", gmtime())
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
@@ -424,6 +424,7 @@ class submitPayout(generics.GenericAPIView):
                 method= rdata["payoutTransaction"]["payoutMethod"],
                 currency= cur_val,
                 transaction_type=1,
+                channel=3,
             )
         else:
             logger.error('post information is not correct, please try again')
@@ -464,28 +465,26 @@ class getPayoutTransaction(generics.GenericAPIView):
 
         rdata = r.json()
         print(rdata)
-        if r.status_code == 201:  
-            
-            for x in Transaction._meta.get_field('currency').choices:
-
-                if rdata['currency'] == x[1]:
-                    cur_val = x[0]
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
-
+        if r.status_code == 200:  
             user = CustomUser.objects.get(username=rdata['userId'])   
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                request_time=rdata["dateCreated"],
-                amount=rdata["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["payoutMethod"],
-                currency= cur_val,
-                transaction_type=1,
-                
+            update_data = Transaction.objects.get(order_id=rdata['orderId'],
+                                                method=rdata["payoutMethod"],                                                                      
             )
+            update_data.transaction_id=rdata['transactionId']
+            update_data.request_time=rdata["dateCreated"]
+            update_data.status=6
+            update_data.save()
+            # create = Transaction.objects.get_or_create(
+            #     order_id= rdata['orderId'],
+            #     request_time=rdata["dateCreated"],
+            #     amount=rdata["amount"],
+            #     status=cur_status,
+            #     user_id=user,
+            #     method= rdata["payoutMethod"],
+            #     currency= cur_val,
+            #     transaction_type=1,
+            #     channel=3,
+            # )
         else:
             logger.error('The request information is nor correct, please try again')
         
@@ -502,8 +501,7 @@ class approvePayout(generics.GenericAPIView):
         
         orderId = self.request.POST['order_id']
         userId = self.request.POST['user_id']
-        notes = self.request.POST['remark']
-        list = [merchantId, orderId, userId, notes]
+        list = [merchantId, orderId, userId]
         message = '|'.join(str(x) for x in list)
         mymessage = bytes(message, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
@@ -533,29 +531,16 @@ class approvePayout(generics.GenericAPIView):
 
         rdata = r.json()
         print(rdata)
-        if r.status_code == 201:  
-            
-            for x in Transaction._meta.get_field('currency').choices:
-
-                if rdata['currency'] == x[1]:
-                    cur_val = x[0]
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
+        if r.status_code == 200:  
 
             user = CustomUser.objects.get(username=rdata['userId'])   
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                request_time=rdata["dateCreated"],
-                amount=rdata["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["payoutMethod"],
-                currency= cur_val,
-                transaction_type=1,
-                review_status=0,
-                
+            update_data = Transaction.objects.get(order_id=rdata['orderId'],
+                                                method=rdata["payoutMethod"],                                                                      
             )
+            update_data.transaction_id=rdata['transactionId']
+            update_data.request_time=rdata["dateUpdated"]
+            update_data.status=4
+            update_data.save()
         else:
             logger.error('The request information is nor correct, please try again')
         
@@ -629,7 +614,7 @@ class rejectPayout(generics.GenericAPIView):
                 currency= cur_val,
                 transaction_type=1,
                 review_status=2,
-                
+                channel=3,
             )
         else:
             logger.error('The request information is nor correct, please try again')

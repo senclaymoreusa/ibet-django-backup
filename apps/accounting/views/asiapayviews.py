@@ -302,6 +302,7 @@ class submitCashout(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
+        print(rdata)
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text
