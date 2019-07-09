@@ -13,12 +13,17 @@
         <div>
             <div style="font-size: 0.9em; padding-bottom:5px;padding-top:10px;">FIND A MEMBER</div>
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Enter member ID, name, phone or email">
-                <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                <input type="text" id="search" class="form-control" placeholder="Enter member ID, name, phone or email" >
+                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
             </div>
         </div>
     </div>
-    <div class='col-md-8'>
+    <div class="col-md-3">
+        {% if searchError %}
+            <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
+        {% endif %}
+    </div>
+    <!-- <div class='col-md-8'> -->
         <!-- {% block time_search %} -->
         <!-- <label>Date Range</label>
         <div class="row">
@@ -43,44 +48,33 @@
             </div>
         </div> -->
         <!-- {% endblock %} -->
-    </div>
+    <!-- </div> -->
 </div>
 
-<div style='overflow-x: scroll;'>
-<table class="table user_list_table table-striped table-bordered">
+<div style="margin-top:40px;">
+<table id="user-list-table">
 <!-- <table style='overflow-x: scroll;'> -->
     <thead class="thead-dark">
         <tr>
-            <th scope="col">#</th>
-            <th scope="col">MEMBER ID</th>
-            <th scope="col">USERNAME</th>
-            <th scope="col">SOURCE</th>
-            <th scope="col">REGISTRATION DATE</th>
-            <th scope="col">FTD DATE</th>
-            <th scope="col">BALANCE($)</th>
-            <th scope="col">4 CODE ADDRESS</th>
-            <th scope="col">DEPOSIT/TURNOVER</th>
-            <th scope="col">BONUS/TURNOVER</th>
-            <th scope="col">COUNTRIBUTION</th>
-            <th scope="col">ACTIVE DAYS</th>
-            <th scope="col">BET PLATFORM</th>
-            <!-- <th scope="col">LOGIN COUNTS</th>
-            <th scope="col">BETTING COUNTS</th>
-            <th scope="col">TURNOVER AMOUNT</th>
-            <th scope="col">DEPOSIT COUNTS</th>
-            <th scope="col">DEPOSIT AMOUNT</th>
-            <th scope="col">WITHDRAWAL COUNTS</th>
-            <th scope="col">WITHDRAWAL AMOUNT</th>
-            <th scope="col">GGR AMOUNT</th>
-            <th scope="col">COUNTRIBUTION</th>
-            <th scope="col">LAST LOGIN IP</th> -->
-            
+            <th style="width: 3%;">#</th>
+            <th style="width: 6%;">MEMBER ID</th>
+            <th style="width: 8%;">USERNAME</th>
+            <th style="width: 7%;">SOURCE</th>
+            <th style="width: 11.5%;">REGISTRATION DATE</th>
+            <th style="width: 11.5%;">FTD DATE</th>
+            <th >BALANCE($)</th>
+            <th >4 CODE ADDRESS</th>
+            <th style="word-break: break-all; width:6%;">DEPOSIT/<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
+            <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
+            <th >COUNTRIBUTION ($)</th>
+            <th >ACTIVE DAYS</th>
+            <th >BET PLATFORM</th>
         </tr>
     </thead>
-    <tbody id="transaction_tbody" id='user_list_tbody'>
+    <tbody id='user_list_tbody'>
         {% for user in user_data %} 
         <tr>
-            <td scope="row">{{ forloop.counter }}</td>
+            <td>{{ forloop.counter }}</td>
             <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.id }}</a></td>
             <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
             <!-- <td>{{ trans }}</td> -->
@@ -96,36 +90,48 @@
                 <td></td>
             {% endif %}
             <td>{{ user.balance|floatformat:2 }}</td>
-            <td>。。。。</td>
+            <td>
+                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                <i class="fa fa-phone" style="margin-left: -3px;"></i>
+                </button>
+                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                <i class="fa fa-bank" style="margin-left: -3px;"></i>
+                </button>
+                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                <i class="fa fa-id-card-o" style="margin-left: -4px;"></i>
+                </button>
+                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                <i class="fa fa-globe" style="margin-left: -3px;"></i>
+                </button>
+            </td>
             <td>{{ user.deposit_turnover }}</td>
             <td>{{ user.bonus_turnover }}</td>
             <td>{{ user.contribution }}</td>
             <td>{{ user.active_days }}</td>
-            <td>{{ user.bet_platform }}</td>
-            <!-- <td>{{ user.ftd_time }}</td> -->
-            <!-- <td>{{ user.verfication_time }}</td>
-            <td>{{ user.id_location }}</td>
-            <td>{{ user.last_login_time }}</td>
-            <td>{{ user.last_betting_time }}</td>
-            <td id='user_login_times_{{ forloop.counter }}'>{{ user.login }}</td>
-            <td id='user_bettin_times_{{ forloop.counter }}'>{{ user.betting }}</td>
-            <td>{{ user.turnover }}</td>
-            <td id='user_deposit_times_{{ forloop.counter }}'>{{ user.deposit }}</td>
-            <td id='user_deposit_amount_{{ forloop.counter }}'>{{ user.deposit_amount.amount__sum|floatformat:2 }}</td>
-            <td id='user_withdrawal_times_{{ forloop.counter }}'>{{ user.withdrawal }}</td>
-            <td id='user_withdrawal_amount_{{ forloop.counter }}'>{{ user.withdrawal_amount.amount__sum|floatformat:2 }}</td>
-            <td>{{ trans.status }}</td>
-            <td>{{ trans.status }}</td>
-            <td>{{ user.last_logint_ip.ip_addr }}</td> -->
+            <td>
+                <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
+                <span style="margin-left: -3px;">W</span>
+                </a>
+                <a href="#" class="btn btn-info btn-sm" style="background-color:#6666ff; border-color: #6666ff;">
+                <span style="margin-left: -3px;">M</span>
+                </a>
+                <a href="#" class="btn btn-info btn-sm" style="background-color:#4884b5; border-color: #4884b5;">
+                <span style="margin-left: -2px;">P</span>
+                </a>
+                <a href="#" class="btn btn-info btn-sm" style="background-color:#556b2f; border-color: #556b2f;">
+                <span style="margin-left: -1px;">T</span>
+                </a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 </div>
 
-<div class="row">
-    <div class="bottom-align-text">
-    <div class='col-md-1' id="select-row">
+<div class="row user-list-control-group">
+    <!-- <div class="bottom-align-text"> -->
+    <div class='col-md-9' style="margin-right: 70px"></div>
+    <div class='col-md-1' style="width:10%">
         <div>SHOW ROWS</div>
         <select id="pagination_value"  class="form-control">
             <option value="20">20</option>
@@ -134,13 +140,9 @@
             <option value="250">250</option>
         </select>
     </div>
-    <!-- <div class='col-md-1' style="margin-top: 20px;">
-        <div>GO TO:</div>
-        <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
-    </div> -->
-    <div class='col-md-4' id="pagination-btn">
+    <div class='col-md-1'>
         <div>&nbsp;</div>
-        <ul class="pagination">
+        <ul class="pagination" style="margin:0px;">
             {% if isFirstPage is True %}
                 <li class="page-item disabled" id='perviousPage'>
                 <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
@@ -158,22 +160,28 @@
         </ul>
     </div>
         
-    </div>
+    <!-- </div> -->
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
 
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 
 <script>
 
-// $('#datetimepicker1').datetimepicker();
-
 $(document).ready(function() {
+
+    var previousURL = document.referrer;
+
+    $("#back-btn").attr("href", previousURL);
+
     var csrftoken = $.cookie("csrftoken");
     // console.log(csrftoken);
 
@@ -208,6 +216,160 @@ $(document).ready(function() {
             }
         }
     });
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+
+    $("#search").on('keyup', function () {
+        if( this.value.length < 2 ) return;
+        searchOpen();
+    });
+
+    function searchOpen() {
+        var search = $('#search').val();
+        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search;
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data) {
+                // console.log(data);
+                searchResult(data, search);
+            },
+            error: function () {
+                // console.log('error');
+            }
+
+        });
+    }
+
+    function searchResult(data, term) {
+        
+        var ids = data['id'];
+        var usernames = data['username'];
+        var emails = data['email'];
+        var phones = data['phone'];
+        var firstNames = data['firstName'];
+        var lastNames = data['lastName'];
+        
+        var sourceList = [];
+        if ($.isNumeric(term)) {
+            if (ids.length > 0) {
+                sourceList.push({
+                    'type': 'category',
+                    'label': term,
+                    'value': 'MEMBER RESULTS'
+                });
+                for (var i = 0; i < ids.length; i++) {
+                    sourceList.push({
+                        'type': 'username',
+                        'label': term,
+                        'value': ids[i]['id'],
+                        'id': ids[i]['id']
+                    });
+                }
+            }
+        } else {
+            if (usernames.length > 0) {
+                sourceList.push({
+                    'type': 'category',
+                    'label': term,
+                    'value': 'MEMBER RESULTS'
+                });
+
+                for (var i = 0; i < usernames.length; i++) {
+                    sourceList.push({
+                        'type': 'username',
+                        'label': term,
+                        'value': usernames[i]['username'],
+                        'id': usernames[i]['id'],
+                    });
+                }
+            }
+        }
+        if (emails.length > 0 || phones.length > 0 || firstNames.length > 0 || lastNames.length > 0) {
+            sourceList.push({
+                'type': 'category',
+                'label': term,
+                'value': 'MEMBER DETAILS RESULTS'
+            });
+        }
+        if (emails.length > 0) {
+            for (var i = 0; i < emails.length; i++) {
+                sourceList.push({
+                    'type': 'email',
+                    'label': term,
+                    'value': emails[i]['email'],
+                    'id': emails[i]['id'],
+                });
+            }
+        }
+        if (phones.length > 0) {
+            for (var i = 0; i < phones.length; i++) {
+                sourceList.push({
+                    'type': 'phone',
+                    'label': term,
+                    'value': phones[i]['phone'],
+                    'id': phones[i]['id'],
+                });
+            }  
+        }
+        if (firstNames.length > 0) {
+            for (var i = 0; i < firstNames.length; i++) {
+                sourceList.push({
+                    'type': 'name',
+                    'label': term,
+                    'value': firstNames[i]['firstName'],
+                    'id': firstNames[i]['id'],
+                });
+            }
+        }
+        if (lastNames.length > 0) {
+            for (var i = 0; i < lastNames.length; i++) {
+                sourceList.push({
+                    'type': 'name',
+                    'label': term,
+                    'value': lastNames[i]['lastName'],
+                    'id': lastNames[i]['id'],
+                });
+            }
+        }
+        // console.log(sourceList);
+        $( "#search" ).autocomplete({
+            source: sourceList,
+            create: function () {
+                $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+                    if (item.type === 'category') {
+                        return $('<li class="ui-state-disabled member-search-result" style="margin: 0px 13px;">')
+                        .append(item.value)
+                        .appendTo(ul);
+                        // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
+                    } else {
+                        var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
+                        if (item.type == 'username') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-user" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        } else if (item.type == 'email') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-envelope"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        } else if (item.type == 'phone') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-phone"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        } else if (item.type == 'name') {
+                            return $('<li>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-id-card"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .appendTo(ul);
+                        }
+                    }
+                };
+            }
+        });
+    }
+
 
     // $('#search_btn').click(function(e) {
     //     e.preventDefault();
@@ -271,6 +433,13 @@ $(document).ready(function() {
         window.location.href = getUserListRedirectUrl(pageSize, 0, "");
     });
 
+    $("#search-btn").click(function(){
+        var pageSize = $("#pagination_value").val();;
+        // var oldFromItem = paramsMap['offset'];
+        var search = $('#search').val();
+        window.location.href = getUserListRedirectUrl(pageSize, 0, search);
+    });
+
     getNext = function() {
         if ($('#nextPage').hasClass('disabled')) {
             return;
@@ -308,15 +477,15 @@ function cleanFloatField(field) {
 
 function getUserListRedirectUrl(pageSize, offset, search) {
     var curUrl = window.location.href;
-    console.log(curUrl);
+    // console.log(curUrl);
     var parts = curUrl.split('?');
-    console.log(parts);
+    // console.log(parts);
     
     var redirectUrl = parts[0]; 
     redirectUrl += '?search=' + search;
     redirectUrl += "&pageSize=" + pageSize;
     redirectUrl += '&offset=' + offset;
-    console.log(redirectUrl);
+    // console.log(redirectUrl);
     return redirectUrl;
 }
 

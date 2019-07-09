@@ -1,83 +1,42 @@
-.user-detail-section {
-    /* border: 0.5px solid grey; */
-    /* border-left: 0.5px solid grey;
-    border-right: 0.5px solid grey;
-    border-bottom: 0.5px solid grey; */
-    padding: 0%;
-    /* /* margin: 5px; */
-    /* margin: 5px; */
-    /* width:48%; */
-    /* margin: 5%; */
-    /* margin-left: 15px;
-    margin-right: 20px; */
-}
-
-.user-detail-section-title {
-    background-color: coral; 
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    padding: 5px;
-}
-
-.notes-section-title {
-    background-color: lightskyblue; 
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    padding: 5px;
-}
-
-.trans-section-title {
-    background-color: green; 
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    padding: 5px;
-}
-
 hr {
-    width:90%;
-    /* border-color: gray; */
-    /* border:1px solid grey; */
-    border: 0; 
-    border-top: 2px solid rgb(204, 204, 204);
+    width: 85%;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+  
 }   
 
 .detail-title {
-    line-height: 2
+    width: 410px;
+    height: 22px;
+    font-family: Helvetica;
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 27px;
+    letter-spacing: normal;
+    color: #ffffff;
+    padding-left:20px;
+
 }
 
 .detail-info {
-    margin-left:50px !important;
-}
-
-.funds-section-title {
-    background-color: lightgreen; 
-    border-right:0.5px solid gray;
-    border-left:0.5px solid gray;
-    border-top:0.5px solid gray;
-    padding: 5px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-}
-
-.user-detail-block {
-    background-color: rgb(243, 243, 243); 
-    width:95%;
-    padding:5%;
-    /* display: flex;
-    justify-content: center;
-    align-items: center; */
-    /* display:table-cell; */
-    vertical-align:middle;
-    text-align:center;
+    width: 192px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 28px;
+    letter-spacing: normal;
+    color: #4a4a4a;
 }
 
 #user-photo-img {
@@ -85,31 +44,20 @@ hr {
     max-height: 200px;
 }
 
-.rcorners {
-    border-radius: 5px;
-    /* border: 2px solid grey; */
-    /* padding: 20px;  */
+#user-photo-id {
+    width: 107%;
+    height: 180px;
 }
 
-.module-title {
-    color: white;
-    font-weight:900;
+.zoom-btn {
+    position: absolute;
+    top: 75%;
+    left: 85%;
+    background: transparent;
+    border: transparent;
+    color:white;
 }
 
-.module-half-width {
-    width:48%;
-
-}
-
-.left-margin {
-    margin-left: 15px;
-}
-
-.section-body {
-    border: 0.5px solid grey;
-    border-bottom-left-radius: 3px; 
-    border-bottom-right-radius: 3px;
-}
 
 .table_block {
     background-color: rgb(243, 243, 243); 
@@ -134,30 +82,10 @@ hr {
     padding-top: 20px;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td,
-.table-striped > tbody > tr:nth-child(odd) > th {
-  background-color: #f5f5f5;
-}
-
-
-#user-photo-id {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.zoom-btn {
-    position: absolute;
-    top: 75%;
-    left: 75%;
-    background: transparent;
-    border: transparent;
-    color:white;
-}
-
 
 .table-striped>tbody>tr:nth-child(odd)>td, 
 .table-striped>tbody>tr:nth-child(odd)>th {
-   background-color: rgb(230, 230, 230);
+   background-color: #f3f3f3;
 }
 
 .panel-default > .panel-heading-custom {
@@ -173,10 +101,10 @@ table.table-bordered{
     margin-top:20px;
   }
 table.table-bordered > thead > tr > th{
-    border:2px solid white;
+    border:4px solid white;
 }
 table.table-bordered > tbody > tr > td{
-    border:2px solid white;
+    border:4px solid white;
 }
 
 #refresh-btn {
@@ -193,15 +121,799 @@ table.table-bordered > tbody > tr > td{
     background-color: white;
 }
 
-
-#select-row {
+.user-list-control-group {
     margin-top: 20px;
-    position: absolute;
-    left:80%;
 }
 
-#pagination-btn {
-    position: relative;
-    left:90%;
+#life-time-rectangle {
+    width: 100%;
+    height: 280px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:3px;
 }
 
+#fund-rectangle {
+    width: 100%;
+    height: 280px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:0.3%;
+    margin-top:20px;
+}
+
+
+#transaction-rectangle {
+    width: 100%;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:0.3%;
+    margin-top:20px;
+    /* min-height: 300px; */
+}
+
+.block-title {
+    width: 127px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+
+}
+
+.life-time-value-block, .fund-block{
+    width: 115%;
+    height: 105px;
+    background-color: #f3f3f3;
+}
+
+.block-content {
+    height: 38px;
+    font-family: Helvetica;
+    font-size: 32px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: center;
+    color: #4a4a4a;
+    line-height: 100px;
+
+}
+
+.status-block-content {
+    height: 38px;
+    font-family: Helvetica;
+    font-size: 20px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: center;
+    color: #4a4a4a;
+    line-height: 100px;
+}
+
+
+.pie-chart {
+    background-color:#f3f3f3;
+    width:105px;
+    height:105px;
+
+}
+
+
+#contribution-title, #balance-wallet-title {
+    width: 191px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+
+.active-block {
+    width: 103%;
+    height: 33px;
+    background-color: #f3f3f3;
+}
+
+.status-btn {
+    width: 126px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+}
+
+/* label {
+    width: 174px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+} */
+
+.live-time-value-text {
+    width: 100%;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+
+#login-btn {
+    float:right;
+    width: 20%;
+    height: 33px;
+    background-color: #428bca;
+}
+
+.active-block i, #note-btn i{
+    color: white;
+    margin-left:-4px;
+}
+
+.account-detail {
+    width: 70%;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 15px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    line-height: 34px;
+    padding-left:7%;
+}
+
+
+.member-detail-rectangle {
+    width: 49%;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    padding:0px;
+    margin-right: 0.5%;
+    min-height: 1046px;
+    height: 1060px;
+}
+
+.activity-rectangle {
+    width: 49%;
+    height: 1060px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    padding:0px;
+    margin-left: 0.5%;
+}
+
+.half-title-block {
+    height: 30px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+}
+
+
+
+.memeber-detail-label {
+    width: 75px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 30px;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+
+.note-block {
+    width: 95%;
+    height: 66px;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    margin:0px 15px 20px 15px;
+}
+
+
+.note-author {
+    width: 249px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin:15px 15px 0px 15px;
+
+}
+
+#note-input-container {
+    margin-left: 3%;
+    margin-top: 6%;
+}
+
+#notes-input {
+    display: inline-block;
+    margin-left:5px;
+    width:80%;
+
+}
+
+#post-btn{
+    margin-left: 1%;
+    width:9%;
+}
+
+#note-btn {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    border-radius: 4px;
+    background-color: #428bca;
+}
+
+#risk-control-rectangle {
+    width: 100%;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:0.3%;
+    margin-top:20px;
+    min-height: 300px;
+}
+
+
+#bonus-control-rectangle {
+    width: 100%;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-left:0.3%;
+    margin-top:20px;
+    min-height: 380px;
+}
+
+
+.nav-bar {
+    margin-top:20px !important; 
+    margin-left:5px !important;
+    width:99% !important;
+}
+
+#deposit-withdraw-chart {
+    max-width:1800px;
+    max-height:500px;
+}
+
+.user-detail-subtitle {
+    width: 510px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-left: 30px;
+    margin-top:10px;
+    /* margin-bottom:5px; */
+
+}
+
+.user-detail-content-title {
+    width: 166px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top:20px;
+    margin-bottom:5px;
+}
+
+
+.user-info-block {
+    width: 101%;
+    height: 175px;
+    background-color: #f3f3f3;
+}
+
+
+.block-title {
+    width: 148px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.block-text {
+    width: 100%;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top:3px;
+
+}
+
+
+#member-input-container {
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.popup-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #428bca;
+    float: right;
+    margin-top:-5px;
+}
+
+
+.popup-btn i {
+    color:white;
+}
+
+
+#account-creation-rect {
+    width: 90%;
+    height: 155px;
+    background-color: #f3f3f3;
+    margin-left:5%;
+    margin-top:20px;
+
+}
+
+#edit-detail-btn {
+    margin-left: 5%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+.payment-detail-rectangle {
+    width: 49%;
+    height: 460px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    padding:0px;
+    margin-right: 0.5%;
+}
+
+
+.member-limitations-rectangle {
+    width: 49%;
+    height: 460px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    padding:0px;
+    margin-left: 0.5%;
+}
+
+
+.payment-block-title, .member-limitation-title {
+    width: 100%;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#payment-block {
+    width: 100%;
+    height: 110px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+
+}
+
+#payment-text {
+    width: 100%;
+    height: 24px;
+    font-family: Helvetica;
+    font-size: 25px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 106px;
+    letter-spacing: normal;
+    text-align: center;
+    color: #4a4a4a;
+}
+
+
+.payment-info {
+    width: 115px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top:25px;
+}
+
+.payment-text {
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top:25px;
+}
+
+.payment-deposit {
+    width: 254px;
+    height: 18px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top:20px;
+    margin-bottom:10px;
+}
+
+.label-text {
+    width: 100%;
+    height: 12px;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding:0px;
+    margin-top:15px;
+}
+
+.deposit-table-first {
+    width: 85%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+}
+
+.deposit-table-second {
+    width: 130%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+    margin-left:-20px;
+}
+
+.deposit-table-third {
+    width: 85%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+    margin-left: 21%;
+}
+
+
+.deposit-table-forth {
+    width: 85%;
+    height: 26px;
+    background-color: #f3f3f3;
+    margin-top:5px;
+    margin-left: 8%;
+
+}
+
+.deposit-text {
+    width: 127px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-left: 5px;
+    padding-top:5px;
+}
+
+
+.vl {
+    border-left: 1px solid #bdbdbd;
+    height: 300px;
+}
+
+
+#deny-block {
+    width: 100%;
+    height: 40px;
+    background-color: #ffb7b5;
+    margin: 20px 0px;
+}
+
+
+.member-limit-info {
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top:30px;
+}
+
+.member-limit-text {
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top:30px;
+}
+
+
+
+.set-permission-btn {
+    width: 171px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+    color:white;
+    margin-top:20px;
+}
+
+
+.modal-title {
+    margin: 0;
+    line-height: 0.428571;
+}
+
+
+.modal-header .close {
+    margin-top: -8px;
+}
+
+.update-time {
+    float: right;
+    margin-top: -14px;
+    margin-right: 15px;
+}
+
+
+#transaction-table>tbody>tr:nth-child(odd)>td, 
+#transaction-table>tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+#transaction-table {
+    margin-bottom: 3%;
+}
+
+
+#transaction-table th {
+    height: 12px;
+    font-family: Helvetica;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+
+}
+
+
+/* user list page css */
+#user-list-table>tbody>tr:nth-child(odd)>td, 
+#user-list-table>tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+#user-list-table th {
+    height: 12px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    vertical-align: bottom;
+}
+
+
+#user-list-table td, #transaction-table td {  
+    border: 4px solid white;
+    text-align: left;
+    height: 40px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-left: 0.5%;
+
+}
+
+#user-list-table td:first-child {
+    padding-left: 5px;
+}
+
+
+#user_list_tbody .btn-sm {
+    width: 20%;
+    height: 30px;
+    font-size: 10px;
+}
+
+
+.bet-limit-block {
+    width: 25%;
+    padding-right: 0px;
+}
+
+.bet-limit-text {
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.add_bet_field, .add_loss_field, .add_deposit_field, .add_withdraw_field {
+    margin-top: 20px;
+}
+
+.bootstrap-tagsinput {
+    width: 85%;
+}
+
+.tt-query { /* UPDATE: newer versions use tt-input instead of tt-query */
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.tt-hint {
+    color: #999;
+}
+
+.tt-menu { /* UPDATE: newer versions use tt-menu instead of tt-dropdown-menu */
+    width: 200px;
+    margin-top: 12px;
+    padding: 8px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tt-suggestion {
+    padding: 3px 20px;
+    font-size: 18px;
+    line-height: 24px;
+}
+
+
+.label-info {
+    background-color:#d9534f;
+}
+
+.bootstrap-tagsinput {
+    width: 100%;
+}
+
+.ui-menu .ui-menu-item a{
+    color: #428bca;
+}
+
+.ui-menu .ui-menu-item a i {
+    color: black;
+}
+
+#search-btn {
+    cursor:pointer;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.member-search-result {
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

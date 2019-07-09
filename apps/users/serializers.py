@@ -48,23 +48,18 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.Serializer):
     username         = serializers.CharField(required=True)
     email            = serializers.EmailField(required=True)
-    password1        = serializers.CharField(write_only=True)
-    password2        = serializers.CharField(write_only=True)
+    password         = serializers.CharField(write_only=True)
     first_name       = serializers.CharField(required=True)
     last_name        = serializers.CharField(required=True)
     date_of_birth    = serializers.CharField(required=True)
     phone            = serializers.CharField(required=True)
-    street_address_1 = serializers.CharField(required=False, allow_blank=True)
-    street_address_2 = serializers.CharField(required=False, allow_blank=True)
+    street_address_1 = serializers.CharField(required=True)
     city             = serializers.CharField(required=True)
     country          = serializers.CharField(required=True)
-    state            = serializers.CharField(required=True)
     zipcode          = serializers.CharField(required=True)
-    preferred_team   = serializers.CharField(required=False, allow_blank=True)
-    gender           = serializers.CharField(required=False, allow_blank=True)
     over_eighteen    = serializers.BooleanField(required=False)
-    contact_option   = serializers.CharField(required=False, allow_blank=True)
-    title            = serializers.CharField(required=False, allow_blank=True)
+    language         = serializers.CharField(required=False)
+
 
 
     def validate_username(self, username):
@@ -88,17 +83,11 @@ class RegisterSerializer(serializers.Serializer):
                     _("A user is already registered with this e-mail address."))
         return email
 
-    def validate_password1(self, password):
+    def validate_password(self, password):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
-        check_duplicate = CustomUser.objects.filter(phone=data['phone'])
-        if check_duplicate:
-            raise serializers.ValidationError(
-                    _("A user is already registered with this phone number."))
 
-        if data['password1'] != data['password2']:
-            raise serializers.ValidationError(_("The two password fields didn't match"))
         if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
             raise serializers.ValidationError(_("First name not valid"))
         if not data['last_name'] or len(data['last_name']) > 20 or not data['last_name'].isalpha():
@@ -111,14 +100,10 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(_("Date of birth not valid"))
         if not (1 <= int(date[0]) <= 12) or not ( 1 <= int(date[1]) <= 31) or not (1900 <= int(date[2]) <= int(str(datetime.datetime.now())[0:4])):
             raise serializers.ValidationError(_("Date of birth not valid"))
-        if not data['phone'] or not data['phone'].isdigit() or len(data['phone']) < 8 or len(data['phone']) > 20:
-            raise serializers.ValidationError(_("Phone not valid"))
         if not data['city'] or any(char.isdigit() for char in data['city']) or len(data['city']) > 25:
             raise serializers.ValidationError(_("City not valid"))
         if not data['country'] or any(char.isdigit() for char in data['country']) or len(data['country']) > 25:
             raise serializers.ValidationError(_("Country not valid"))
-        if not data['state'] or any(char.isdigit() for char in data['state']) or len(data['state']) > 25:
-            raise serializers.ValidationError(_("State not valid"))
         if not data['zipcode'] or not len(data['zipcode']) < 20 or not data['zipcode'].isdigit() :
             raise serializers.ValidationError(_("Zipcode not valid"))
         return data
@@ -129,23 +114,18 @@ class RegisterSerializer(serializers.Serializer):
     def get_cleaned_data(self):
         return {
             'username':         self.validated_data.get('username', ''),
-            'password1':        self.validated_data.get('password1', ''),
+            'password1':         self.validated_data.get('password', ''),
             'email':            self.validated_data.get('email', ''),
             'first_name':       self.validated_data.get('first_name', ''),
             'last_name':        self.validated_data.get('last_name', ''),
             'phone':            self.validated_data.get('phone', ''),
             'date_of_birth':    self.validated_data.get('date_of_birth', ''),
             'street_address_1': self.validated_data.get('street_address_1', ''),
-            'street_address_2': self.validated_data.get('street_address_2', ''),
             'city':             self.validated_data.get('city', ''),
             'country':          self.validated_data.get('country', ''),
-            'state':            self.validated_data.get('state', ''),
             'zipcode':          self.validated_data.get('zipcode', ''),
-            'preferred_team':   self.validated_data.get('preferred_team', ''),
-            'gender':           self.validated_data.get('gender', ''),
             'over_eighteen':    self.validated_data.get('over_eighteen', ''),
-            'contact_option':   self.validated_data.get('contact_option', ''),
-            'title':            self.validated_data.get('title', ''),
+            'language':         self.validated_data.get('language', ''),
         }
 
     def save(self, request):
@@ -159,64 +139,12 @@ class RegisterSerializer(serializers.Serializer):
         user.phone            = self.cleaned_data.get('phone')
         user.date_of_birth    = self.cleaned_data.get('date_of_birth')
         user.street_address_1 = self.cleaned_data.get('street_address_1')
-        user.street_address_2 = self.cleaned_data.get('street_address_2')
         user.city             = self.cleaned_data.get('city')
         user.country          = self.cleaned_data.get('country')
-        user.state            = self.cleaned_data.get('state')
         user.zipcode          = self.cleaned_data.get('zipcode')
-        user.preferred_team   = self.cleaned_data.get('preferred_team')
         user.gender           = self.cleaned_data.get('gender')
         user.over_eighteen    = self.cleaned_data.get('over_eighteen')
-        user.contact_option   = self.cleaned_data.get('contact_option')
-        user.title            = self.cleaned_data.get('title')
-
-        user.save()
-        return user
-
-
-class FacebookRegisterSerializer(serializers.Serializer):
-    
-    username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
-    
-    def validate_username(self, username):
-
-        user_model = get_user_model() # your way of getting the User
-        try:
-           user_model.objects.get(username__iexact=username)
-        except user_model.DoesNotExist:
-            return username
-        raise serializers.ValidationError(
-                    _("A user is already registered with this username."))
-
-    def validate_email(self, email):
-        email = get_adapter().clean_email(email)
-        if allauth_settings.UNIQUE_EMAIL:
-            if email and email_address_exists(email):
-                raise serializers.ValidationError(
-                    _("A user is already registered with this e-mail address."))
-        return email
-
-
-    def validate(self, data):
-        return data
-
-    def custom_signup(self, request, user):
-        pass
-
-    def get_cleaned_data(self):
-        return {
-            'username': self.validated_data.get('username', ''),
-            'email': self.validated_data.get('email', '')
-        }
-
-    def save(self, request):
-        adapter = get_adapter()
-        user = adapter.new_user(request)
-        self.cleaned_data = self.get_cleaned_data()
-        adapter.save_user(request, user, self)
-        self.custom_signup(request, user)
-        setup_user_email(request, user, [])
+        user.language         = self.cleaned_data.get('language')
 
         user.save()
         return user
