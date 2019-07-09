@@ -294,4 +294,4 @@ STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
 
-AWS_S3_ADMIN_BUCKET = 'ibet-admin'
+AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'

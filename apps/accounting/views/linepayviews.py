@@ -1,5 +1,7 @@
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.utils import timezone
+from django.conf import settings
+
 from ..models import Transaction
 from users.models import CustomUser
 import os, requests, json, random, logging, time, boto3
@@ -23,7 +25,7 @@ def getThirdPartyKeys(bucket, file):
     config = json.loads(config_obj['Body'].read())
     return config
 
-config = getThirdPartyKeys("ibet-admin-dev", "config/thirdPartyKeys.json")
+config = getThirdPartyKeys(settings.AWS_S3_ADMIN_BUCKET, "config/thirdPartyKeys.json")
 
 def reserve_payment(request):
     logger.info(request)
