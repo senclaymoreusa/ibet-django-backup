@@ -2065,6 +2065,18 @@ class CancelRegistration(APIView):
         user.delete()
         return Response(status=status.HTTP_200_OK)
 
+class WalletGeneralAPIURL(APIView):
 
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        
+        TransType = request.data['TransType']
+        ThirdPartyCode = request.data['ThirdPartyCode']
+        MemberID = request.data['MemberID']
+
+        user = CustomUser.objects.get(username=MemberID)
+
+        return user[0].main_wallet
 
 
