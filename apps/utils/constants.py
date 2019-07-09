@@ -42,7 +42,11 @@ STATE_CHOICES = (
     (3, 'PENDING'),
     (4, 'APPROVED'),
     (5, 'CANCELED'),
-    (6, 'COMPLETED')
+    (6, 'COMPLETED'),
+    (7, 'RESEND'),
+    (8, 'REJECTED'),
+    (9, 'SUCCESS'),
+
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),
@@ -206,6 +210,8 @@ ASIAPAY_PAYWAY_CHOICES = (
     ('44', '收银台'),
     ('30', '在线支付'),
     ('31','另开视窗'),
+    ('10', '工行网银转账'),
+    ('11', '工行手机支付'),
 
 )
 ASIAPAY_CMDTYPE = (
@@ -216,6 +222,7 @@ ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('CashSCBatch', '加密货币'),
     ('cashifacebatch', '代付'),
 )
+
 #qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
@@ -229,15 +236,16 @@ PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
-#astroPay sandbox urls
-ASTROPAY_URL = 'https://sandbox.astropaycard.com/api_curl/streamline/newinvoice'
-ASTROPAY_WPS = 'https://sandbox.astropaycard.com/apd/webpaystatus'
-ASTROPAY_WCE = 'https://sandbox.astropaycard.com/apd/webcurrencyexchange'
-ASTROPAY_GBC = 'https://sandbox.astropaycard.com/api_curl/apd/get_banks_by_country'
+
+#astroPay sandbox url
+ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'
+
+
 #astroPay sandbox key:
-ASTROPAY_X_LOGIN = '32db4899eb' 
-ASTROPAY_X_TRANS_KEY = '92afc1561b'
-ASTROPAY_SECREATE = 'dc2c63c426412128fc6e3c3ef74876f26'
+ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 
+ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
+ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+
 #astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
@@ -252,4 +260,4 @@ ASIAPAY_KEY1 = "f6b451943fb44a38"
 ASIAPAY_UNITEKEY = "Ki3CgDAz"
 ASIAPAY_R1 = "C1aym0re"
 ASIAPAY_R2 = "C1aym0re"
-
+ASIAPAY_QRPAYWAY = "42"
