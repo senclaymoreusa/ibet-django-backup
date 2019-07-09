@@ -276,16 +276,16 @@ def sendCardToMobileWithAppId(request):
         print(rdata)
         if r.status_code == 200 :
             create = Transaction.objects.create(
-                    order_id=OrderID,
-                    transaction_id=rdata["id_cashout"],
-                    amount=rdata["amount"],
-                    user_id=CustomUser.objects.get(pk=userid),
-                    currency= currencyConversion[rdata["currency"]],
-                    transaction_type=1, 
-                    channel=2,
-                    status=0,
-                    method="AstroPay Cashout Card",
-                )
+                order_id=OrderID,
+                transaction_id=rdata["id_cashout"],
+                amount=rdata["amount"],
+                user_id=CustomUser.objects.get(pk=userid),
+                currency= currencyConversion[rdata["currency"]],
+                transaction_type=1, 
+                channel=2,
+                status=0,
+                method="AstroPay Cashout Card",
+            )
             break
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
@@ -380,4 +380,17 @@ def capture_transaction(request):
         }
 
         r = requests.post(requestURL, data=params)
+        # if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
+        #     object, created = Transaction.objects.create(
+        #         order_id=orderId,
+        #         transaction_id=unique_id,
+        #         amount=rdata["amount"],
+        #         user_id=CustomUser.objects.get(pk=userid),
+        #         currency= currencyConversion[rdata["currency"]],
+        #         transaction_type=1, 
+        #         channel=2,
+        #         status=0,
+        #         method="AstroPay Cashout Card",
+        #     )
+        # "response_json": r.json()
         return JsonResponse({"request_body": body, "response_msg": r.text})
