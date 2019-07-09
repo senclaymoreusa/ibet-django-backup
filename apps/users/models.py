@@ -424,6 +424,7 @@ class Limitation(models.Model):
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
     amount = models.DecimalField(decimal_places=2, max_digits=20)
     product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
+    interval = models.SmallIntegerField(choices=INTERVAL, default=0, null=True)
 
     created_time = models.DateTimeField(
         _('Created Time'),

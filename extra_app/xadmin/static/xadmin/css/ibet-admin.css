@@ -524,6 +524,7 @@ table.table-bordered > tbody > tr > td{
 
 .payment-detail-rectangle {
     width: 49%;
+    height: 460px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -534,6 +535,7 @@ table.table-bordered > tbody > tr > td{
 
 .member-limitations-rectangle {
     width: 49%;
+    min-height: 460px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -733,10 +735,21 @@ table.table-bordered > tbody > tr > td{
     border: solid 1px #357ebd;
     background-color: #428bca;
     color:white;
-    margin-top:20px;
     margin-bottom:20px;
+    position:relative;
+    margin-top:20px;
 }
 
+.set-limitation-btn {
+    width: 171px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+    color:white;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
 
 .modal-title {
     margin: 0;
