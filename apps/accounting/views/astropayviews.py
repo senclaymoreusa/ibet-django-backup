@@ -1,20 +1,17 @@
-import requests, json, logging, hmac, struct, hashlib, xml.etree.ElementTree as ET
+import requests, json, logging, random, hmac, struct, hashlib, xml.etree.ElementTree as ET
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from django.views import View, generic
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from django.conf import settings
+from django.utils import timezone
 
 from rest_framework import parsers, renderers, status
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 
 from users.models import CustomUser
+from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from ..serializers import astroPaymentStatusSerialize
-from django.conf import settings
 from utils.constants import *
 from time import sleep, gmtime, strftime
 
@@ -191,7 +188,7 @@ def sendCardToMobile(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -235,7 +232,7 @@ def checkUser(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -293,7 +290,7 @@ def sendCardToMobileWithAppId(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
@@ -320,14 +317,12 @@ def verif_transtatus(request):
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
             logger.info("Waiting for %s seconds before retrying again")
-            time.sleep("5")
+            sleep(5)
         else:
             logger.info("There was something wrong with the result")
             logger.info(rdata)
             return Response(rdata)
     return Response(rdata)
-
-
 
 def cancel_cashout_card(request):
     if (request.method == "POST"):
@@ -353,32 +348,35 @@ def cancel_cashout_card(request):
                 logger.info("transaction data: " + str(obj))
                 break
             else:
-                time.sleep(5)
+                sleep(5)
         return JsonResponse(responseJSON)
 
+# create money order with astropay card
 def capture_transaction(request):
     if (request.method == "POST"):
         requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
 
-
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
-        # card_num = body.get("card_num")
         # etc.
-        
+        card_num = body.get("card_num")
+        card_code = body.get("card_code")
+        exp_date = body.get("exp_date")
+        amount = body.get("amount")
+
+        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
             "x_type": "AUTH_CAPTURE",
-            "x_card_num": "1615596647857871",
-            "x_card_code": "3825",
-            "x_exp_date": "09/2019",
-            "x_amount": "1000",
-            "x_currency": "RMB",
-            "x_unique_id": "1a2a3a4a",
-            "x_invoice_num": "test-order-123",
+            "x_card_num": card_num,
+            "x_card_code": card_code,
+            "x_exp_date": exp_date,
+            "x_amount": amount,
+            "x_currency": "THB", # we are only using this API for thailand
+            "x_unique_id": "user_id_123",
+            "x_invoice_num": orderId,
         }
 
         r = requests.post(requestURL, data=params)
-        print(r.status_code)
         return JsonResponse({"response_msg": r.text})
