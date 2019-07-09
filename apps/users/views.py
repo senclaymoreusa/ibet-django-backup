@@ -2097,20 +2097,17 @@ class WalletBetAPIURL(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        data = json.loads(request.body)
-
-        try:
-            return Response({
-                {
-                "GB": {
-                    "Result": {
+        return Response(
+            {
+            "GB": {
+                "Result": {
                     "Method": "GetGamingBetting",
                     "Success": "1",
-                    "ReturnSet": {
+                "ReturnSet": {
                     "TransType": "Bet",
                     "BetTotalCnt": "1",
                     "BetTotalAmt": "200",
-                    "BettingList": {
+                "BettingList": {
                     "BetID": "5606714" ,
                     "BetGrpNO": "2015122915440044573528" ,
                     "TPCode": "99999",
@@ -2124,44 +2121,42 @@ class WalletBetAPIURL(APIView):
                     "Wintype": "1",
                     "HxMGUID": "0",
                     "InitBetAmt": "200",
-                    "RealBetAmt": "200",
-                    "HoldingAmt": "200",
+                   "RealBetAmt": "200",
+                     "HoldingAmt": "200",
                     "InitBetRate": "25100",
                     "RealBetRate": "0",
                     "PreWinAmt": "50200",
-                    "KenoList": {
+                "KenoList": {
                     "DetailID": "3761343",
                     "SrcCode": "00021",
                     "DrawNo": "94836",
                     "OptCode": "001",
                     "OptParam1": "5",
                     "MaxRate": "25100",
-                    "KenoBalls": [
-                    {
+                "KenoBalls": [
+                {
                     "BallID": "244060",
                     "BallNum": "1"
-                    },
-                    {
-                    "BallID": "244061",
-                    "BallNum": "11"
-                    },
-                    {
-                    "BallID": "244062",
+                },
+                {
+                "BallID": "244061",
+                "BallNum": "11"
+                },
+                {
+                     "BallID": "244062",
                     "BallNum": "21"
-                    },
-                    {
+                },
+                {
                     "BallID": "244063",
                     "BallNum": "31"
-                    },
-                    {
+                },
+                {
                     "BallID": "244064",
                     "BallNum": "41"
-                    }]}}}}
-                    }
+                }]}}}}
                 }
-            })
-        except:
-            return Response({"Success":"0"})
+            }
+        )
 
 
 
