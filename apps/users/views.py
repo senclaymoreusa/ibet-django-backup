@@ -2073,22 +2073,13 @@ class WalletGeneralAPI(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        data = json.loads(request.body)
-
-        TransType = data['ThirdParty']['TransType']
-        ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
-        MemberID = data['ThirdParty']['MemberID']
-        try:
-            #user = CustomUser.objects.get(username=MemberID)
-            return Response({
-                "Success"  : "1",
-                "TransType": "Balance",
-                "TransData": 10,
-                "ErrorCode": "0",
-                "ErrorDesc": "No_Error" 
-                })
-        except:
-            return Response({"Success":"0"})
+        return Response({
+            "Success"  : "1",
+            "TransType": "Balance",
+            "TransData": 10,
+            "ErrorCode": "0",
+            "ErrorDesc": "No_Error" 
+            })
 
 
 class WalletBetAPIURL(APIView):
