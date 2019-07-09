@@ -2072,14 +2072,23 @@ class WalletGeneralAPI(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
-        
-        TransType = request.data['TransType']
-        ThirdPartyCode = request.data['ThirdPartyCode']
-        MemberID = request.data['MemberID']
 
-        user = CustomUser.objects.get(username=MemberID)
+        data = json.loads(request.body)
 
-        return Response({'Balance': user.main_wallet})
+        TransType = data['ThirdParty']['TransType']
+        ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
+        MemberID = data['ThirdParty']['MemberID']
+        try:
+            user = CustomUser.objects.get(username=MemberID)
+            return Response({
+                "Success"  : "1",
+                "TransType": "Balance",
+                "TransData": user.main_wallet,
+                "ErrorCode": "0",
+                "ErrorDesc": "No_Error" 
+                })
+        except:
+            return Response({"Success":"1"})
 
 
 class WalletBetAPIURL(APIView):
