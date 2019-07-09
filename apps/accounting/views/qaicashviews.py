@@ -501,7 +501,8 @@ class approvePayout(generics.GenericAPIView):
         
         orderId = self.request.POST['order_id']
         userId = self.request.POST['user_id']
-        list = [merchantId, orderId, userId]
+        notes = self.request.POST.get('remark')
+        list = [merchantId, orderId, userId, notes]
         message = '|'.join(str(x) for x in list)
         mymessage = bytes(message, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
@@ -531,19 +532,13 @@ class approvePayout(generics.GenericAPIView):
 
         rdata = r.json()
         print(rdata)
-        if r.status_code == 200:  
-
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            update_data = Transaction.objects.get(order_id=rdata['orderId'],
-                                                method=rdata["payoutMethod"],                                                                      
-            )
-            update_data.transaction_id=rdata['transactionId']
-            update_data.request_time=rdata["dateUpdated"]
-            update_data.status=4
-            update_data.save()
-        else:
-            logger.error('The request information is nor correct, please try again')
-        
+        user = CustomUser.objects.get(username=rdata['userId'])   
+        update_data = Transaction.objects.get(order_id=rdata['orderId']                                                                  
+        )
+        update_data.transaction_id=rdata['transactionId']
+        update_data.request_time=rdata["dateUpdated"]
+        update_data.status=4
+        update_data.save()
         
         return Response(rdata)
 class rejectPayout(generics.GenericAPIView):

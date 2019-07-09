@@ -68,9 +68,18 @@ class payoutTransactionSerialize(serializers.Serializer):
 class approvePayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
+    remark        = serializers.CharField(required=False)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
+    def update(self, instance, validated_data):
+
+        instance.order_id = validated_data.get('order_id', instance.order_id)
+        instance.user_id = validated_data.get('user_id', instance.user_id)
+        instance.remark = validated_data.get('remark', instance.remark)
+        
+        instance.save() 
+        return instance
 class depositThirdPartySerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
