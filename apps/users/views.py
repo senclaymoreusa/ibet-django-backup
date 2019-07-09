@@ -1547,6 +1547,9 @@ class UserDetailView(CommAdminView):
             withdraw_interval = request.POST.getlist('withdraw_limit_interval[]')
             withdraw_interval = [int(item) for item in withdraw_interval if int(item) >= 0]
 
+            reason = request.POST.get('reasonTextarea')
+            print(str(reason))
+
             # withdraw_interval = list(map(lambda x : int(x), withdraw_interval))
 
             # print("loss data.....")

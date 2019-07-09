@@ -855,6 +855,7 @@ table.table-bordered > tbody > tr > td{
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
+    margin-bottom: 5px;
 }
 
 .add_bet_field, .add_loss_field, .add_deposit_field, .add_withdraw_field {

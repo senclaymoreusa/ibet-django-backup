@@ -1837,7 +1837,7 @@
                                     </div>
                                 </div> -->
                             </div>
-                            {% if customuser.block == False %}
+                            <!-- {% if customuser.block == False %}
                             <div>
                                 <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
                                     <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
@@ -1849,9 +1849,20 @@
                                     Open account
                                 </button>
                             </div>
-                            {% endif %}
-                            <div>
-                                <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px;">Submit</button>
+                            {% endif %} -->
+                            <div style="margin-top: 20px;">
+                                <div class="form-group">
+                                    <div class="bet-limit-text">REASON FOR CHANGES</div>
+                                    <textarea class="form-control" id="reasonTextarea" name="reasonTextarea" rows="3" placeholder="Please provide a brief explanation."></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px; width:100%;">Save</button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal" style="margin-top: 20px; width:100%">Cancel</button>
+                                </div>
                             </div>
                         </form>
                         <!-- </div> -->
