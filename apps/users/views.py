@@ -2054,6 +2054,7 @@ class ValidateAndResetPassowrd(APIView):
         user.save()
         return Response({'status': 'Success'})
 
+
 class CancelRegistration(APIView):
 
     permission_classes = (AllowAny, )
@@ -2066,5 +2067,178 @@ class CancelRegistration(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class WalletGeneralAPI(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        return Response({
+            "Success"  : "1",
+            "TransType": "Balance",
+            "TransData": 10,
+            "ErrorCode": "0",
+            "ErrorDesc": "No_Error" 
+            })
 
 
+class WalletBetAPIURL(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        return Response(
+            {
+            "GB": {
+                "Result": {
+                    "Method": "GetGamingBetting",
+                    "Success": "1",
+                "ReturnSet": {
+                    "TransType": "Bet",
+                    "BetTotalCnt": "1",
+                    "BetTotalAmt": "200",
+                "BettingList": {
+                    "BetID": "5606714" ,
+                    "BetGrpNO": "2015122915440044573528" ,
+                    "TPCode": "99999",
+                    "GBSN": "1193141",
+                    "MemberID": "wantbet",
+                    "CurCode": "cny",
+                    "BetDT": "2015-12-29 15:44:05",
+                    "BetType": "1",
+                    "BetTypeParam1": "1",
+                    "BetTypeParam2": "1",
+                    "Wintype": "1",
+                    "HxMGUID": "0",
+                    "InitBetAmt": "200",
+                   "RealBetAmt": "200",
+                     "HoldingAmt": "200",
+                    "InitBetRate": "25100",
+                    "RealBetRate": "0",
+                    "PreWinAmt": "50200",
+                "KenoList": {
+                    "DetailID": "3761343",
+                    "SrcCode": "00021",
+                    "DrawNo": "94836",
+                    "OptCode": "001",
+                    "OptParam1": "5",
+                    "MaxRate": "25100",
+                "KenoBalls": [
+                {
+                    "BallID": "244060",
+                    "BallNum": "1"
+                },
+                {
+                "BallID": "244061",
+                "BallNum": "11"
+                },
+                {
+                     "BallID": "244062",
+                    "BallNum": "21"
+                },
+                {
+                    "BallID": "244063",
+                    "BallNum": "31"
+                },
+                {
+                    "BallID": "244064",
+                    "BallNum": "41"
+                }]}}}}
+                }
+            }
+        )
+
+
+class WalletSettleAPIURL(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        return Response(
+            {
+            "GB": {
+                "Result": {
+                    "Method": "GetGamingSettle",
+                    "Success": "1",
+                "ReturnSet": {
+                    "TransType": "Settle",
+                    "BetTotalCnt": "1",
+                    "BetTotalAmt": "200",
+                    "SettleList": {
+                        "SettleID": "5746847",
+                        "BetID": "5606714" ,
+                        "BetGrpNO": "2015122915440044573528" ,
+                        "TPCode": "99999",
+                        "GBSN": "1193141",
+                        "MemberID": "wantbet",
+                        "CurCode": "cny",
+                        "BetDT": "2015-12-29 15:44:05",
+                        "BetType": "1",
+                        "BetTypeParam1": "1",
+                        "BetTypeParam2": "1",
+                        "Wintype": "1",
+                        "HxMGUID": "0",
+                        "InitBetAmt": "200",
+                        "RealBetAmt": "200",
+                        "HoldingAmt": "200",
+                        "InitBetRate": "25100",
+                        "RealBetRate": "0",
+                        "PreWinAmt": "50200",
+                        "BetResult": "0",
+                        "WLAmt": "0",
+                        "RefundBetAmt": "0",
+                        "TicketBetAmt": "200",
+                        "TicketResult": "0",
+                        "TicketWLAmt": "0",
+                        "SettleDT": "2015-12-29 15:44:41",
+                    "KenoList": {
+                        "SettleOID": "3764386",
+                        "DetailID": "3761343",
+                        "SrcCode": "00021",
+                        "DrawNo": "94836",
+                        "OptCode": "001",
+                        "OptParam1": "5",
+                        "MaxRate": "25100",
+                        "RealRate": "0",
+                        "DrawDT": "2015-12-29 15:44:23",
+                        "OptResult": "0",
+                        "KenoBalls": [
+                            {
+                            "SettleODID": "239591",
+                            "BallID": "244060",
+                            "BallNum": "1",
+                            "OptResult": "0"
+                            },
+                            {
+                            "SettleODID": "239592",
+                            "BallID": "244061",
+                            "BallNum": "11",
+                            "OptResult": "0"
+                            },
+                            {
+                            "SettleODID": "239593",
+                            "BallID": "244062",
+                            "BallNum": "21",
+                            "OptResult": "0"
+                            },
+                            {
+                            "SettleODID": "239594",
+                            "BallID": "244063",
+                            "BallNum": "31",
+                            "OptResult": "0"
+                            },
+                            {
+                            "SettleODID": "239595",
+                            "BallID": "244064",
+                            "BallNum": "41",
+                            "OptResult": "0"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+    })
