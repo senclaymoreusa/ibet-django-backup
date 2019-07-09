@@ -184,7 +184,7 @@ class submitDeposit(generics.GenericAPIView):
                     status=2,
                     method=bankidConversion[BankID],
                 )
-                if PayWay == '42':
+                if PayWay == ASIAPAY_QRPAYWAY:
                     rr = requests.get(paymentAPIURL, params={
                             "cid":ASIAPAY_CID,
                             "oid":"D" + OrderID
