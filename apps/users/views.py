@@ -402,7 +402,7 @@ class SendEmail(APIView):
         elif case == 'referral':
             to_email_address = self.request.GET['to_email_address']
             email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
-            email_content = _('Please use the referral link to register your new account: ') + settings.HOST_URL + self.request.GET['referralid']
+            email_content = _('Please use the referral link to register your new account: ') + settings.HOST_URL +  'home/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -424,7 +424,7 @@ class CustomPasswordResetView:
         subject =  _('Hi %(username)s, You have requested to reset your password') % {'username': reset_password_token.user.username}
         # subject = _('Hi ' + reset_password_token.user.username + ', You have requested to reset your password')
         content_text = _('Click the link to reset your email password: ')
-        content = Content("text/plain", content_text + "{}reset_password/{}".format('http://localhost:3000/home/' + reset_password_token.key))
+        content = Content("text/plain", content_text + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
 
