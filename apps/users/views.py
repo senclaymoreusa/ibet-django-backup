@@ -402,7 +402,7 @@ class SendEmail(APIView):
         elif case == 'referral':
             to_email_address = self.request.GET['to_email_address']
             email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
-            email_content = _('Please use the referral link to register your new account: ') + settings.HOST_URL + self.request.GET['referralid']
+            email_content = _('Please use the referral link to register your new account: ') + settings.HOST_URL +  'home/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
