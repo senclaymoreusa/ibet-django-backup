@@ -424,7 +424,7 @@ class CustomPasswordResetView:
         subject =  _('Hi %(username)s, You have requested to reset your password') % {'username': reset_password_token.user.username}
         # subject = _('Hi ' + reset_password_token.user.username + ', You have requested to reset your password')
         content_text = _('Click the link to reset your email password: ')
-        content = Content("text/plain", content_text + "{}reset_password/{}".format('http://localhost:3000/', reset_password_token.key))
+        content = Content("text/plain", content_text + "{}reset_password/{}".format('http://localhost:3000/home/' + reset_password_token.key))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
 
