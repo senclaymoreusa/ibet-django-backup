@@ -14,9 +14,17 @@ import os, boto3, json
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
-    keys = s3.get_object(Bucket=bucket, Key=file)
-
-    return json.loads(keys['Body'].read())
+    try:
+        keys = s3.get_object(Bucket=bucket, Key=file)
+        config = json.loads(keys['Body'].read())
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+        return None
+    
+    return config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
