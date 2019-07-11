@@ -182,16 +182,16 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': '',
+            'NAME': 'orion',
             'USER': '',
-            'PASSWORD': '',
+            'PASSWORD': 'Claymore168',
             'HOST': '',
             'PORT': 5432,
         },
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
