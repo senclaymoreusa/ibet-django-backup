@@ -71,8 +71,7 @@ class submitDeposit(generics.GenericAPIView):
         bank = self.request.POST.get("bank")
         ip = get_client_ip(request)
         currency = self.request.POST.get("currency")
-        print(MD5(HELP2PAY_MERCHANT+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+HELP2PAY_SECURITY+ip))
-
+        
         data = {
             "Merchant":HELP2PAY_MERCHANT,
             "Customer":user_id,
@@ -88,7 +87,8 @@ class submitDeposit(generics.GenericAPIView):
             "ClientIP":ip,
         }
         print(data)
-        r = requests.post(HELP2PAY_URL, params=data)
+        r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
+        print(r.status_code)
         print(rdata)
         return Response(rdata)
