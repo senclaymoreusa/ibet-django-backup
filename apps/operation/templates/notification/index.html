@@ -16,7 +16,111 @@
 </div>  
 -->
 
-<h2>Dynamic content</h2>
+<h2>{{ current_user }}</h2>
+<!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form action="{% url 'xadmin:notification' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
+      {% csrf_token %}
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <input type="text" class="form-control" name="subject" placeholder="Subject">
+        </div>
+        <div class="form-group">
+          <label for="content_text">Content</label>
+          <textarea class="form-control" name="content_text" placeholder="Message..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="creator">Creator</label>
+          <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
+        </div>
+        <div class="form-group">
+          <label for="auditor">Auditor</label>
+          <select name="auditor" class="form-control">
+            <option selected disabled hidden>Choose an auditor...</option>
+            {% for auditor in auditors %}
+            <option value="{{ auditor }}">{{ auditor }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="notification_type">Notification Type</label>
+          <select id="notification_type" class="form-control">
+            <option selected disabled hidden>Choose a notification type...</option>
+            <option>ALTER</option>
+            <option>BONUS</option>
+            <option>COUPON</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="notification_choice">Notification Choice</label>
+          <select id="notification_choice" class="form-control" onchange="showUser()">
+            <option selected disabled hidden>Choose a notification range...</option>
+            <option value="U">Unicast</option>
+            <option value="M">Multicast</option>
+            <option value="B">Broadcast</option>
+          </select>
+        </div>
+        <div class="form-group" id="usrlist" hidden>
+          <label for="usrlist">User List</label>
+          <select id="usrList" class="form-control">
+            <option selected disabled hidden>Choose a notifier...</option>
+            {% for user in all_user %}
+            <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" id="topiclist" hidden>
+          <label for="topiclist">Group List</label>
+          <select id="topicList" class="form-control">
+            <option selected disabled hidden>Choose a notification type...</option>
+            {% for topic in topics %}
+            <option value="{{ topic }}">{{ topic }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="publishOn" class="col-2 col-form-label">Publish On</label>
+          <div class="col-10">
+            <input class="form-control" type="datetime-local" value="" id="publishOn">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="direct_check">
+            <label class="form-check-label" for="direct_check">
+                Direct Message
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="email_check">
+            <label class="form-check-label" for="email_check">
+                Email
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="SMS_check">
+            <label class="form-check-label" for="SMS_check">
+                SMS
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="push_check">
+            <label class="form-check-label" for="push_check">
+                Push Notification
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create User</button>
+      </form>
+    </div>
+  </div>
+</div>
 
 <table class="table table-bordered table-striped table-hover">
   <caption>Notication Messages</caption>
@@ -43,13 +147,28 @@
     </tr>
     <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
   {% endfor %}
-  <tr>
-    <td>February</td>
-    <td>$50</td>
-  </tr>
 </table>
 
+<script>
+function showUser() {
+  var nchoice = document.getElementById("notification_choice");
+  var userlist = document.getElementById("usrlist");
+  if(nchoice.value == "U") {
+    userlist.hidden = false;
+  } else {
+    document.getElementById("usrList").selectedIndex = "0";
+    userlist.hidden = true;
+  }
 
+  var topiclist = document.getElementById("topiclist");
+  if(nchoice.value == "M") {
+    topiclist.hidden = false;
+  } else {
+    document.getElementById("topicList").selectedIndex = "0";
+    topiclist.hidden = true;
+  }
+}
+</script>
 {% comment %} You have visited this page {{ num_visits }} times. {% endcomment %}
 
 {% endblock %}

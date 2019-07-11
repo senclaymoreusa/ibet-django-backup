@@ -21,6 +21,7 @@ class AWSTopicAdmin(object):
 # import urls
 from .views import NotificationView
 xadmin.site.register_view(r'notification/', NotificationView, name='notification')
+# xadmin.site.register_view('notidication/')
 # xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
 
 xadmin.site.register(NoticeMessage, NoticeAdmin)
