@@ -398,5 +398,5 @@ def capture_transaction(request):
                 status=0,
                 method="AstroPay",
             )
-
+        
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})

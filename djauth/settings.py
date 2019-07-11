@@ -153,16 +153,16 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 # 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'djangodev',
         'USER': 'ibetdevadmin',
         'PASSWORD': 'gooDLuck!dmin',
-        'HOST': 'ibetdjangodev.c2g10wlycrrs.us-west-2.rds.amazonaws.com',
-        'PORT': '3306',
+        'HOST': 'django-dev-psql.c2g10wlycrrs.us-west-2.rds.amazonaws.com',
+        'PORT': 3306,
     },
-    'OPTIONS': {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    }
+    # 'OPTIONS': {
+    #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    # }
 }
 
 
