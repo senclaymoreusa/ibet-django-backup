@@ -12,7 +12,7 @@ class Transaction(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
     order_id = models.CharField(max_length = 200, default=0,verbose_name=_('Order id'))
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Apply Amount'))
-    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, verbose_name=_('Currency'))
     language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='en-Us', verbose_name=_('Language'))
     depositorTier = models.SmallIntegerField(default=0, verbose_name=_('Depositor Tier'))
     method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 

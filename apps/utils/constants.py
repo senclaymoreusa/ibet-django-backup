@@ -16,7 +16,13 @@ CURRENCY_TYPES = (
     ('JPY', 'JPY'),
     ('CNY', 'CNY'),
     ('HKD', 'HKD'),
-    ('AUD', 'AUD')
+    ('AUD', 'AUD'),
+    ('THB','THB'),
+    ('MYR', 'MYR'),
+    ('VND', 'VND'),
+    ('MMK', 'MMK'),
+    ('XBT', 'XBT')
+
 )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -34,6 +40,13 @@ CURRENCY_CHOICES = (
     (1, 'USD'),
     (2, 'THB'),
     (3, 'IDR'),
+    (4, 'HKD'),
+    (5, 'AUD'),
+    (6,'THB'),
+    (7, 'MYR'),
+    (8, 'VND'),
+    (9, 'MMK'),
+    (10, 'XBT')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -261,3 +274,9 @@ ASIAPAY_UNITEKEY = "Ki3CgDAz"
 ASIAPAY_R1 = "C1aym0re"
 ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
+
+#help2pay
+
+HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+HELP2PAY_MERCHANT = "M0130"
+HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"

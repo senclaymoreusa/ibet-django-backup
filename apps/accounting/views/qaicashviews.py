@@ -66,7 +66,7 @@ statusConversion = {
     "REJECTED":5,
     "COMPLETED":6,
 }
-
+REDIRECTURL = "http://localhost:3000/withdraw/success/"
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
@@ -400,7 +400,7 @@ class submitPayout(generics.GenericAPIView):
             'payoutMethod':  mymethod,
             'withdrawerEmail': CustomUser.objects.filter(email=email),
             'withdrawerName': CustomUser.objects.filter(first_name=first_name),
-            'redirectUrl': 'https://www.google.com',
+            'redirectUrl': REDIRECTURL,
             'messageAuthenticationCode': my_hmac,
         })
         
