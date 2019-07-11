@@ -10,10 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os
+import os, boto3, json
+
+def getKeys(bucket, file):
+    s3 = boto3.client('s3')
+    keys = s3.get_object(Bucket=bucket, Key=file)
+
+    return json.loads(keys['Body'].read())
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
 
 
 # Quick-start development settings - unsuitable for production
@@ -147,19 +154,36 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #         }
 #     }
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'djangodev',
-        'USER': 'ibetdevadmin',
-        'PASSWORD': 'gooDLuck!dmin',
-        'HOST': 'django-dev-psql.c2g10wlycrrs.us-west-2.rds.amazonaws.com',
-        'PORT': 3306,
-    },
-    'OPTIONS': {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+
+db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+if db_data:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': '',
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': 5432,
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -306,5 +330,4 @@ STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
 
-AWS_S3_ADMIN_BUCKET = 'ibet-admin'
 
