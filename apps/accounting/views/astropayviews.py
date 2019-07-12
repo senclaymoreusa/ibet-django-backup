@@ -384,9 +384,9 @@ def capture_transaction(request):
 
         r = requests.post(requestURL, data=params)
         responseData = r.text.split("|")
-        print(responseData)
+        logger.info(responseData)
         if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
-            print("success!")
+            logger.info("success!")
             create = Transaction.objects.create(
                 order_id=(orderId)[0:20],
                 transaction_id=userid,
