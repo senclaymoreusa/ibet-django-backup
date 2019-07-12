@@ -2394,8 +2394,10 @@ function userBlockAction(actionType) {
             if (data.errorCode == "1001") {
                 $('#errorMessage').text(data.message); 
                 $('#errorMessage').css('color', 'red'); 
+            } else {
+                location.reload();
             }
-            location.reload();
+            
             // $('#set_limitations').show();
             // $("#myModal .modal-body").load(target, function() { 
             //     $("#set_limitations").modal("show"); 
