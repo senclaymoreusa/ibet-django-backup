@@ -435,3 +435,44 @@ class Limitation(models.Model):
         auto_now_add=True,
         editable=False,
     )
+
+class GBSportWalletBet(models.Model):
+
+    Success_Status = [
+        ('1', '1'),
+        ('0', '0'),
+    ]
+
+    Trans_Type = [
+        ('Bet', 'Bet'),
+        ('Discard', 'Discard'),
+        ('Settle', 'Settle'),
+        ('Balance', 'Balance')
+    ]
+
+    Method        = models.CharField(max_length=30)
+    Success       = models.CharField(choices=Success_Status, max_length=1)
+    TransType     = models.CharField(choices=Trans_Type, max_length=20)
+    BetTotalCnt   = models.CharField(max_length=30)
+    BetTotalAmt   = models.CharField(max_length=30)
+    BetID         = models.CharField(primary_key=True, max_length=20)
+    BetGrpNO      = models.CharField(max_length=50)
+    TPCode        = models.CharField(max_length=30)
+    GBSN          = models.CharField(max_length=30)
+    MemberID      = models.CharField(max_length=30)
+    CurCode       = models.CharField(max_length=30)
+    BetDT         = models.CharField(max_length=100)
+    BetType       = models.CharField(max_length=20)
+    BetTypeParam1 = models.CharField(max_length=20)
+    BetTypeParam2 = models.CharField(max_length=20)
+    Wintype       = models.CharField(max_length=20)
+    HxMGUID       = models.CharField(max_length=20)
+    InitBetAmt    = models.CharField(max_length=30)
+    RealBetAmt    = models.CharField(max_length=30)
+    HoldingAmt    = models.CharField(max_length=30)
+    InitBetRate   = models.CharField(max_length=30)
+    RealBetRate   = models.CharField(max_length=20)
+    PreWinAmt     = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.BetID
