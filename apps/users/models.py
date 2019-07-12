@@ -436,6 +436,7 @@ class Limitation(models.Model):
         editable=False,
     )
 
+
 class GBSportWalletBet(models.Model):
 
     Success_Status = [
@@ -548,7 +549,6 @@ class GBSportWalletSettle(models.Model):
     
     def __str__(self):
         return self.SettleID
-
 
 class SettleKenoList(models.Model):
     SettleOID = models.ForeignKey(GBSportWalletSettle, on_delete=models.CASCADE)
