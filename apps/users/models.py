@@ -477,6 +477,7 @@ class GBSportWalletBet(models.Model):
     def __str__(self):
         return self.BetID
 
+
 class BetKenoList(models.Model):
     BetID     = models.ForeignKey(GBSportWalletBet, on_delete=models.CASCADE)
     DetailID  = models.CharField(max_length=30)
@@ -488,3 +489,12 @@ class BetKenoList(models.Model):
 
     def __str__(self):
         return self.DetailID
+
+
+class BetKenoBalls(models.Model):
+    DetailID = models.ForeignKey(BetKenoList, on_delete=models.CASCADE)
+    BallID   = models.CharField(max_length=30)
+    BallNum  = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.BallID
