@@ -1153,6 +1153,13 @@ class UserDetailView(CommAdminView):
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
+        if customUser.block == True:
+            blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
+            data = {
+                'date': blockLimitationDeatil.created_time,
+                'admin': blockLimitationDeatil.admin,
+            }
+            context['blockDetail'] = data
 
         riskLevelMap = {}
         for t in CustomUser._meta.get_field('risk_level').choices:
@@ -1346,7 +1353,7 @@ class UserDetailView(CommAdminView):
         }
         productAccessArr = []
         for limitation in limitations:
-            if limitation.limit_type == 0:
+            if limitation.limit_type == LIMIT_TYPE_BET:
                 betLimit = {
                     'amount': limitation.amount,
                     'productValue': limitation.product,
@@ -1527,12 +1534,12 @@ class UserDetailView(CommAdminView):
             # bet_limitation = request.POST.getlist('bet_limit[]')
             # bet_product = request.POST.getlist('game_type[]')
             # bet_product = list(map(lambda x : int(x), bet_product))
-            print("passing data.....")
-            print("user: " + str(user_id))
+            # print("passing data.....")
+            # print("user: " + str(user_id))
             loss_limitation = request.POST.getlist('loss_limit[]')
             loss_limitation = [item for item in loss_limitation if len(item) > 0]
             # print("loss_limitation type: " + str(type(loss_limitation)))
-            print("origin loss_limitation: " + str(loss_limitation))
+            # print("origin loss_limitation: " + str(loss_limitation))
             loss_interval = request.POST.getlist('loss_limit_interval[]')
             # print("origin loss_interval: " + str(loss_interval))
             # loss_interval = list(map(lambda x : int(x) if x >= 0, loss_interval))
@@ -1548,7 +1555,7 @@ class UserDetailView(CommAdminView):
             withdraw_interval = [int(item) for item in withdraw_interval if int(item) >= 0]
 
             reason = request.POST.get('reasonTextarea')
-            print(str(reason))
+            # print(str(reason))
 
             # withdraw_interval = list(map(lambda x : int(x), withdraw_interval))
 
@@ -1587,7 +1594,7 @@ class UserDetailView(CommAdminView):
                     oldLimitMap[limitType][limit.interval] = limit.amount
 
 
-            print("oldLimitMap: " + str(oldLimitMap))
+            # print("oldLimitMap: " + str(oldLimitMap))
             # if bet_limitation:
 
             #     # delete
@@ -1746,10 +1753,36 @@ class UserDetailView(CommAdminView):
 
         elif post_type == 'block_user':
             action = request.POST.get('action')
+            adminUsername = request.POST.get('admin_user')
+            admin = CustomUser.objects.get(username=adminUsername)
+            adminId = admin.pk
+            user = CustomUser.objects.get(pk=user_id)
+                
             if action == 'block':
-                user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
+
+                if user.is_admin == True:
+                    message = _("Cannot block the admin user")
+                    logger.info("Cannot block the admin user")
+                    error = {
+                        'errorCode': '1001',
+                        'message': str(message)
+                    }
+                    print(json.dumps(error))
+                    return HttpResponse(json.dumps(error), content_type="application/json")
+
+                user.block = True
+                user.temporary_block_time = datetime.datetime.now()
+                # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
+                user.save()
+                limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
+                logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
             else:
-                user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
+                # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
+                user.block = False
+                user.temporary_block_time = None
+                user.save()
+                limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
+                logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
 
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
     
