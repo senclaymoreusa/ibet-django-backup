@@ -2116,71 +2116,135 @@ class WalletGeneralAPI(APIView):
 
 
 class WalletBetAPIURL(APIView):
-
+    
     permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
 
-        return Response(
-            {
-            "GB": {
-                "Result": {
-                    "Method": "GetGamingBetting",
-                    "Success": "1",
-                "ReturnSet": {
-                    "TransType": "Bet",
-                    "BetTotalCnt": "1",
-                    "BetTotalAmt": "200",
-                "BettingList": {
-                    "BetID": "5606714" ,
-                    "BetGrpNO": "2015122915440044573528" ,
-                    "TPCode": "99999",
-                    "GBSN": "1193141",
-                    "MemberID": "wantbet",
-                    "CurCode": "cny",
-                    "BetDT": "2015-12-29 15:44:05",
-                    "BetType": "1",
-                    "BetTypeParam1": "1",
-                    "BetTypeParam2": "1",
-                    "Wintype": "1",
-                    "HxMGUID": "0",
-                    "InitBetAmt": "200",
-                   "RealBetAmt": "200",
-                     "HoldingAmt": "200",
-                    "InitBetRate": "25100",
-                    "RealBetRate": "0",
-                    "PreWinAmt": "50200",
-                "KenoList": {
-                    "DetailID": "3761343",
-                    "SrcCode": "00021",
-                    "DrawNo": "94836",
-                    "OptCode": "001",
-                    "OptParam1": "5",
-                    "MaxRate": "25100",
-                "KenoBalls": [
-                {
-                    "BallID": "244060",
-                    "BallNum": "1"
-                },
-                {
-                "BallID": "244061",
-                "BallNum": "11"
-                },
-                {
-                     "BallID": "244062",
-                    "BallNum": "21"
-                },
-                {
-                    "BallID": "244063",
-                    "BallNum": "31"
-                },
-                {
-                    "BallID": "244064",
-                    "BallNum": "41"
-                }]}}}}
-                }
-            }
-        )
+        data = json.loads(request.body)
+
+        success = 0
+        TransType = None
+        TransData = None
+        TransDataExists = 0
+        error_code = -5
+        error = 'Missing_Input_Parameter'
+
+        
+        try:
+            Method        = data['GB']['Result']['Method']
+            Success       = data['GB']['Result']['Success']
+
+            TransType     = data['GB']['Result']['ReturnSet']['TransType']
+            BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+            BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+
+            BetID         = data['GB']['Result']['ReturnSet']['BettingList']['BetID']
+            BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList']['BetGrpNO']
+            TPCode        = data['GB']['Result']['ReturnSet']['BettingList']['TPCode']
+            GBSN          = data['GB']['Result']['ReturnSet']['BettingList']['GBSN']
+            MemberID      = data['GB']['Result']['ReturnSet']['BettingList']['MemberID']
+            CurCode       = data['GB']['Result']['ReturnSet']['BettingList']['CurCode']
+            BetDT         = data['GB']['Result']['ReturnSet']['BettingList']['BetDT']
+            BetType       = data['GB']['Result']['ReturnSet']['BettingList']['BetType']
+            BetTypeParam1 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam1']
+            BetTypeParam2 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam2']
+            Wintype       = data['GB']['Result']['ReturnSet']['BettingList']['Wintype']
+            HxMGUID       = data['GB']['Result']['ReturnSet']['BettingList']['HxMGUID']
+            InitBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['InitBetAmt']
+            RealBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['RealBetAmt']
+            HoldingAmt    = data['GB']['Result']['ReturnSet']['BettingList']['HoldingAmt']
+            InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['InitBetRate']
+            RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['RealBetRate']
+            PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList']['PreWinAmt']
+
+            DetailID      = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['DetailID']
+            SrcCode       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['SrcCode']
+            DrawNo        = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['DrawNo']
+            OptCode       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['OptCode']
+            OptParam1     = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['OptParam1']
+            MaxRate       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['MaxRate']
+
+            KenoBalls_list = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['KenoBalls']
+
+            try:
+                user = CustomUser.objects.get(username = MemberID)
+                temp = user.main_wallet
+                if temp >= int(BetTotalAmt):
+                    error      =  'No_Error'
+                    error_code =  0
+                    success    =  1
+
+                else:
+                    error      =  'Insufficient_Balance'
+                    error_code =  -4
+            
+
+                GBSportWalletBet.objects.create(
+                    Method        = Method,
+                    Success       = Success,
+
+                    TransType     = TransType,
+                    BetTotalCnt   = BetTotalCnt,
+                    BetTotalAmt   = BetTotalAmt,
+
+                    BetID         = BetID,
+                    BetGrpNO      = BetGrpNO,
+                    TPCode        = TPCode,
+                    GBSN          = GBSN,
+                    MemberID      = MemberID,
+                    CurCode       = CurCode,
+                    BetDT         = BetDT,
+                    BetType       = BetType,
+                    BetTypeParam1 = BetTypeParam1,
+                    BetTypeParam2 = BetTypeParam2,
+                    Wintype       = Wintype,
+                    HxMGUID       = HxMGUID,
+                    InitBetAmt    = InitBetAmt,
+                    RealBetAmt    = RealBetAmt,
+                    HoldingAmt    = HoldingAmt,
+                    InitBetRate   = InitBetRate,
+                    RealBetRate   = RealBetRate,
+                    PreWinAmt     = PreWinAmt
+                )
+
+                GBSports = GBSportWalletBet.objects.get(BetID=BetID)
+                
+                BetKenoList.objects.create(
+                    BetID     = GBSports,
+                    DetailID  = DetailID,
+                    SrcCode   = SrcCode,
+                    DrawNo    = DrawNo,
+                    OptCode   = OptCode,
+                    OptParam1 = OptParam1,
+                    MaxRate   = MaxRate
+                )
+
+                Keno = BetKenoList.objects.get(DetailID=DetailID)
+                for item in KenoBalls_list:
+                    BetKenoBalls.objects.create(
+                        DetailID = Keno,
+                        BallID   = item['BallID'],
+                        BallNum  = item['BallNum']
+                    )
+
+            except:
+                error = 'Member_Not_Found'
+                error_code = -2
+            
+        except:
+            
+            pass
+
+
+        return Response({
+            "Success"  :       success,
+            "TransType":       TransType,
+            "TransData":       TransData,
+            "TransDataExists": TransDataExists, 
+            "ErrorCode":       error_code,
+            "ErrorDesc":       error 
+        })
 
 
 class WalletSettleAPIURL(APIView):
@@ -2189,89 +2253,145 @@ class WalletSettleAPIURL(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        return Response(
-            {
-            "GB": {
-                "Result": {
-                    "Method": "GetGamingSettle",
-                    "Success": "1",
-                "ReturnSet": {
-                    "TransType": "Settle",
-                    "BetTotalCnt": "1",
-                    "BetTotalAmt": "200",
-                    "SettleList": {
-                        "SettleID": "5746847",
-                        "BetID": "5606714" ,
-                        "BetGrpNO": "2015122915440044573528" ,
-                        "TPCode": "99999",
-                        "GBSN": "1193141",
-                        "MemberID": "wantbet",
-                        "CurCode": "cny",
-                        "BetDT": "2015-12-29 15:44:05",
-                        "BetType": "1",
-                        "BetTypeParam1": "1",
-                        "BetTypeParam2": "1",
-                        "Wintype": "1",
-                        "HxMGUID": "0",
-                        "InitBetAmt": "200",
-                        "RealBetAmt": "200",
-                        "HoldingAmt": "200",
-                        "InitBetRate": "25100",
-                        "RealBetRate": "0",
-                        "PreWinAmt": "50200",
-                        "BetResult": "0",
-                        "WLAmt": "0",
-                        "RefundBetAmt": "0",
-                        "TicketBetAmt": "200",
-                        "TicketResult": "0",
-                        "TicketWLAmt": "0",
-                        "SettleDT": "2015-12-29 15:44:41",
-                    "KenoList": {
-                        "SettleOID": "3764386",
-                        "DetailID": "3761343",
-                        "SrcCode": "00021",
-                        "DrawNo": "94836",
-                        "OptCode": "001",
-                        "OptParam1": "5",
-                        "MaxRate": "25100",
-                        "RealRate": "0",
-                        "DrawDT": "2015-12-29 15:44:23",
-                        "OptResult": "0",
-                        "KenoBalls": [
-                            {
-                            "SettleODID": "239591",
-                            "BallID": "244060",
-                            "BallNum": "1",
-                            "OptResult": "0"
-                            },
-                            {
-                            "SettleODID": "239592",
-                            "BallID": "244061",
-                            "BallNum": "11",
-                            "OptResult": "0"
-                            },
-                            {
-                            "SettleODID": "239593",
-                            "BallID": "244062",
-                            "BallNum": "21",
-                            "OptResult": "0"
-                            },
-                            {
-                            "SettleODID": "239594",
-                            "BallID": "244063",
-                            "BallNum": "31",
-                            "OptResult": "0"
-                            },
-                            {
-                            "SettleODID": "239595",
-                            "BallID": "244064",
-                            "BallNum": "41",
-                            "OptResult": "0"
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-    }
-    })
+        data = json.loads(request.body)
+    
+        success = 0
+        TransType = None
+        TransData = None
+        TransDataExists = 0
+        error_code = -5
+        error = 'Missing_Input_Parameter'
+
+        try:
+            Method        = data['GB']['Result']['Method']
+            Success       = data['GB']['Result']['Success']
+
+            TransType     = data['GB']['Result']['ReturnSet']['TransType']
+            BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+            BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+         
+            SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
+            BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
+            BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
+            TPCode        = data['GB']['Result']['ReturnSet']['SettleList']['TPCode']
+            GBSN          = data['GB']['Result']['ReturnSet']['SettleList']['GBSN']
+            MemberID      = data['GB']['Result']['ReturnSet']['SettleList']['MemberID']
+            CurCode       = data['GB']['Result']['ReturnSet']['SettleList']['CurCode']
+            BetDT         = data['GB']['Result']['ReturnSet']['SettleList']['BetDT']
+            BetType       = data['GB']['Result']['ReturnSet']['SettleList']['BetType']
+            BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam1']
+            BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam2']
+            Wintype       = data['GB']['Result']['ReturnSet']['SettleList']['Wintype']
+            HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList']['HxMGUID']
+            InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['InitBetAmt']
+            RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['RealBetAmt']
+            HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList']['HoldingAmt']
+            InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['InitBetRate']
+            RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['RealBetRate']
+            PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
+            BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
+            WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
+            RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt']
+            TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
+            TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
+            TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
+            SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
+            
+            SettleOID     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['SettleOID']
+            DetailID      = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DetailID']
+            SrcCode       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['SrcCode']
+            DrawNo        = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DrawNo']
+            OptCode       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptCode']
+            OptParam1     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptParam1']
+            MaxRate       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['MaxRate']
+            RealRate      = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['RealRate']
+            DrawDT        = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DrawDT']
+            OptResult     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptResult']
+            
+            KenoBalls_list = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['KenoBalls']
+
+            try: 
+                user = CustomUser.objects.get(username = MemberID)
+
+                GBSportWalletSettle.objects.create(
+                    Method        = Method,
+                    Success       = Success,
+
+                    TransType     = TransType,
+                    BetTotalCnt   = BetTotalCnt,
+                    BetTotalAmt   = BetTotalAmt,
+
+                    SettleID      = SettleID,
+                    BetID         = BetID,
+                    BetGrpNO      = BetGrpNO,
+                    TPCode        = TPCode,
+                    GBSN          = GBSN,
+                    MemberID      = MemberID,
+                    CurCode       = CurCode,
+                    BetDT         = BetDT,
+                    BetType       = BetType,
+                    BetTypeParam1 = BetTypeParam1,
+                    BetTypeParam2 = BetTypeParam2,
+                    Wintype       = Wintype,
+                    HxMGUID       = HxMGUID,
+                    InitBetAmt    = InitBetAmt,
+                    RealBetAmt    = RealBetAmt,
+                    HoldingAmt    = HoldingAmt,
+                    InitBetRate   = InitBetRate,
+                    RealBetRate   = RealBetRate,
+                    PreWinAmt     = PreWinAmt,
+
+                    BetResult     = BetResult,
+                    WLAmt         = WLAmt,
+                    RefundBetAmt  = RefundBetAmt,
+                    TicketBetAmt  = TicketBetAmt,
+                    TicketResult  = TicketResult,
+                    TicketWLAmt   = TicketWLAmt,
+                    SettleDT      = SettleDT
+                )
+
+
+                GBSports = GBSportWalletSettle.objects.get(SettleID=SettleID)
+
+                SettleKenoList.objects.create(
+                    SettleOID = GBSports,
+                    DetailID  = DetailID,
+                    SrcCode   = SrcCode,
+                    DrawNo    = DrawNo,
+                    OptCode   = OptCode,
+                    OptParam1 = OptParam1,
+                    MaxRate   = MaxRate,
+                    RealRate  = RealRate,
+                    DrawDT    = DrawDT,
+                    OptResult = OptResult
+                )
+
+                Keno = SettleKenoList.objects.get(DetailID  = DetailID)
+
+                for item in KenoBalls_list:
+                    SettleKenoBalls.objects.create(
+                        DetailID  = Keno,
+                        BallID    = item['BallID'],
+                        BallNum   = item['BallNum'],
+                        OptResult = item['OptResult']
+                    )
+                
+                error      =  'No_Error'
+                error_code =  0
+                success    =  1
+
+            except: 
+                error = 'Member_Not_Found'
+                error_code = -2
+
+        except:
+            pass
+
+        return Response({
+            "Success"  :       success,
+            "TransType":       TransType,
+            "TransData":       TransData,
+            "TransDataExists": TransDataExists, 
+            "ErrorCode":       error_code,
+            "ErrorDesc":       error 
+        })
