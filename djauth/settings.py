@@ -163,7 +163,25 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #         }
 #     }
 
+# if os.environ["ENV"] == "PROD":
+#     AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
+#     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': db_data['RDS_DB_NAME'],
+#             'USER': db_data['RDS_USERNAME'],
+#             'PASSWORD': db_data['RDS_PASSWORD'],
+#             'HOST': db_data['RDS_HOSTNAME'],
+#             'PORT': db_data['RDS_PORT'],
+#         },
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         }
+#     }
+# elif os.environ["ENV"] == "DEV":
 db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+# AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
 if db_data:
     DATABASES = {
         'default': {
@@ -191,7 +209,7 @@ else:
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
-}
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
