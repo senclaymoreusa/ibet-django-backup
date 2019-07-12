@@ -498,3 +498,53 @@ class BetKenoBalls(models.Model):
 
     def __str__(self):
         return self.BallID
+
+
+class GBSportWalletSettle(models.Model):
+
+    Success_Status = [
+        ('1', '1'),
+        ('0', '0'),
+    ]
+
+    Trans_Type = [
+        ('Bet', 'Bet'),
+        ('Discard', 'Discard'),
+        ('Settle', 'Settle'),
+        ('Balance', 'Balance')
+    ]
+
+    Method        = models.CharField(max_length=30)
+    Success       = models.CharField(choices=Success_Status, max_length=1)
+    TransType     = models.CharField(choices=Trans_Type, max_length=20)
+    BetTotalCnt   = models.CharField(max_length=30)
+    BetTotalAmt   = models.CharField(max_length=30)
+    SettleID      = models.CharField(primary_key=True, max_length=20)
+    BetID         = models.CharField(max_length=20)
+    BetGrpNO      = models.CharField(max_length=50)
+    TPCode        = models.CharField(max_length=30)
+    GBSN          = models.CharField(max_length=30)
+    MemberID      = models.CharField(max_length=30)
+    CurCode       = models.CharField(max_length=30)
+    BetDT         = models.CharField(max_length=100)
+    BetType       = models.CharField(max_length=20)
+    BetTypeParam1 = models.CharField(max_length=20)
+    BetTypeParam2 = models.CharField(max_length=20)
+    Wintype       = models.CharField(max_length=20)
+    HxMGUID       = models.CharField(max_length=20)
+    InitBetAmt    = models.CharField(max_length=30)
+    RealBetAmt    = models.CharField(max_length=30)
+    HoldingAmt    = models.CharField(max_length=30)
+    InitBetRate   = models.CharField(max_length=30)
+    RealBetRate   = models.CharField(max_length=20)
+    PreWinAmt     = models.CharField(max_length=30)
+    BetResult     = models.CharField(max_length=30)
+    WLAmt         = models.CharField(max_length=30)
+    RefundBetAmt  = models.CharField(max_length=30)
+    TicketBetAmt  = models.CharField(max_length=30)
+    TicketResult  = models.CharField(max_length=30)
+    TicketWLAmt   = models.CharField(max_length=30)
+    SettleDT      = models.CharField(max_length=30)
+    
+    def __str__(self):
+        return self.SettleID
