@@ -548,3 +548,19 @@ class GBSportWalletSettle(models.Model):
     
     def __str__(self):
         return self.SettleID
+
+
+class SettleKenoList(models.Model):
+    SettleOID = models.ForeignKey(GBSportWalletSettle, on_delete=models.CASCADE)
+    DetailID  = models.CharField(max_length=30)
+    SrcCode   = models.CharField(max_length=30)
+    DrawNo    = models.CharField(max_length=30)
+    OptCode   = models.CharField(max_length=30)
+    OptParam1 = models.CharField(max_length=30)
+    MaxRate   = models.CharField(max_length=30)
+    RealRate  = models.CharField(max_length=30)
+    DrawDT    = models.CharField(max_length=30)
+    OptResult = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.DetailID
