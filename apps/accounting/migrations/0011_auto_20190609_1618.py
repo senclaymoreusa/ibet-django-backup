@@ -14,26 +14,26 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='transaction',
-            name='bank',
-            field=models.CharField(blank=True, max_length=200, null=True, verbose_name='Bank'),
-        ),
-        migrations.AddField(
-            model_name='transaction',
-            name='product',
-            field=models.SmallIntegerField(choices=[(0, 'Sports'), (1, 'Games'), (2, 'Live Casino'), (3, 'Financial'), (4, 'General')], default=4, verbose_name='Product'),
-        ),
-        migrations.AddField(
-            model_name='transaction',
-            name='transfer_from',
-            field=models.CharField(blank=True, max_length=200, null=True, verbose_name='From'),
-        ),
-        migrations.AddField(
-            model_name='transaction',
-            name='transfer_to',
-            field=models.CharField(blank=True, max_length=200, null=True, verbose_name='To'),
-        ),
+        # migrations.AddField(
+        #     model_name='transaction',
+        #     name='bank',
+        #     field=models.CharField(blank=True, max_length=200, null=True, verbose_name='Bank'),
+        # ),
+        # migrations.AddField(
+        #     model_name='transaction',
+        #     name='product',
+        #     field=models.SmallIntegerField(choices=[(0, 'Sports'), (1, 'Games'), (2, 'Live Casino'), (3, 'Financial'), (4, 'General')], default=4, verbose_name='Product'),
+        # ),
+        # migrations.AddField(
+        #     model_name='transaction',
+        #     name='transfer_from',
+        #     field=models.CharField(blank=True, max_length=200, null=True, verbose_name='From'),
+        # ),
+        # migrations.AddField(
+        #     model_name='transaction',
+        #     name='transfer_to',
+        #     field=models.CharField(blank=True, max_length=200, null=True, verbose_name='To'),
+        # ),
         migrations.AlterField(
             model_name='depositchannel',
             name='thridParty_name',
