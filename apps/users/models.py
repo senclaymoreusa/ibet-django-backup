@@ -564,3 +564,10 @@ class SettleKenoList(models.Model):
 
     def __str__(self):
         return self.DetailID
+
+class SettleKenoBalls(models.Model):
+    DetailID   = models.ForeignKey(SettleKenoList, on_delete=models.CASCADE)
+    SettleODID = models.CharField(max_length=30)
+    BallID     = models.CharField(max_length=30)
+    BallNum    = models.CharField(max_length=30)
+    OptResult  = models.CharField(max_length=30)
