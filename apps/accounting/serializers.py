@@ -68,7 +68,7 @@ class payoutTransactionSerialize(serializers.Serializer):
 class approvePayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
-    remark        = serializers.CharField(required=True)
+    remark        = serializers.CharField(required=False)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 

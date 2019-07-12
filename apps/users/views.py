@@ -1,29 +1,28 @@
-from django.shortcuts import render
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login as django_login, logout as django_logout
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
-from django.contrib.auth.decorators import permission_required
+
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as django_login, logout as django_logout
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext_lazy as _
 from django.views import generic
-from django.dispatch import receiver
-from django_rest_passwordreset.signals import reset_password_token_created
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.conf import settings
 from django.views import View
+
+from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import timedelta
-from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncMonth, Coalesce
-from django.contrib import messages
-from dateutil.relativedelta import relativedelta
+from django.utils.crypto import get_random_string
+
+from django_rest_passwordreset.signals import reset_password_token_created
+from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
@@ -33,11 +32,15 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
-from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
-
-from accounting.models import Transaction
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMultiAlternatives
+from django.shortcuts import render
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.db.models import Count, Sum, Q
+from django.db.models.functions import TruncMonth, Coalesce
+from django.template.defaulttags import register
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
@@ -45,29 +48,23 @@ from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
 from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
-from django_rest_passwordreset.models import ResetPasswordToken
-from django_rest_passwordreset.views import get_password_reset_token_expiry_time
-from django.template.defaulttags import register
+from dateutil.relativedelta import relativedelta
+from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from .forms import RenewBookForm, CustomUserCreationForm
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls
+from accounting.models import Transaction
+from threading import Timer
+from xadmin.views import CommAdminView
 
 import datetime
 import logging
 import os
-
-from django.contrib.auth import get_user_model
-
 import base64
 import uuid
 import csv
-
-from threading import Timer
-
-from django.utils.crypto import get_random_string
-from xadmin.views import CommAdminView
 import random
-
 import simplejson as json
 import decimal
-
 from utils.constants import *
 import requests
 
@@ -387,7 +384,10 @@ import sendgrid
 from sendgrid.helpers.mail import *
 
 
-class SendEmail(View):
+class SendEmail(APIView):
+
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
         case = self.request.GET['case']
         from_email_address = 'claymore@claymoreusa.com'
@@ -402,7 +402,7 @@ class SendEmail(View):
         elif case == 'referral':
             to_email_address = self.request.GET['to_email_address']
             email_subject = self.request.GET['username'] + str(_(' referred you to sign up an account with Claymore')) 
-            email_content = _('Please use the referral link to register your new account: ') + 'http://localhost:3000/signup/' + self.request.GET['referralid']
+            email_content = _('Please use the referral link to register your new account: ') + settings.HOST_URL +  'home/' + self.request.GET['referralid']
 
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(from_email_address)
@@ -411,8 +411,7 @@ class SendEmail(View):
         content = Content("text/plain", email_content)
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Success')
 
 
 class CustomPasswordResetView:
@@ -530,10 +529,13 @@ class NoticeMessageView(ListAPIView):
     serializer_class = NoticeMessageSerializer
     queryset = NoticeMessage.objects.all()
 
-class ReferralAward(View):
+class ReferralAward(APIView):
+
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
-        referral_id = self.request.GET['referral_id']
-        current_referred = self.request.GET['referred']
+        referral_id = request.GET.get('referral_id')
+        current_referred = request.GET.get('referred')
         user          = get_user_model().objects.filter(referral_id=referral_id)
         referred_user = get_user_model().objects.filter(username=current_referred)
         
@@ -553,7 +555,7 @@ class ReferralAward(View):
    
         referred_user.update(referred_by=user[0], modified_time=timezone.now())
         
-        return HttpResponse('Update successful')
+        return Response('Update successful')
 
 
 class CheckReferral(View):
@@ -671,12 +673,13 @@ class AddOrWithdrawBalance(APIView):
             # action.save()
             return HttpResponse('Withdraw Success')
 
-class Activation(View):
-    def post(self, request, *args, **kwargs):
+class Activation(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
         
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+        email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
         user.update(verfication_time=timezone.now(), modified_time=timezone.now())
@@ -701,21 +704,22 @@ class Activation(View):
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         #print(response.status_code)
-        return HttpResponse('Email has been sent!')
+        return Response('Email has been sent!')
 
-class ActivationVerify(View):
-    def post(self, request, *args, **kwargs):
+class ActivationVerify(APIView):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        token = body['token']
+    permission_classes = (AllowAny,)
+    
+    def post(self, request):
+
+        token = request.data['token']
 
         user = get_user_model().objects.filter(activation_code=token)
         if len(user) != 0:
             user.update(active=True)
             user.update(activation_code='', modified_time=timezone.now())
-            return HttpResponse('Success')
-        return HttpResponse('The link has expired')
+            return Response('Success')
+        return Response('The link has expired')
 
 
 class FacebookRegister(CreateAPIView):
@@ -842,6 +846,7 @@ class FacebookLoginView(GenericAPIView):
         return self.login()
 
 def generate_username():
+    
     name_list = [ 'Stephen', 'Mike', 'Tom', 'Luke', 'James', 'Kevin', 'Stephan', 'Wilson', 'Alice', 'Sunny', 'Cloris', 'Jack', 
         'Leo', 'Shaw', 'Peter', 'Ben', 'Ross', 'Rachel', 'Michael', 'Jordan', 'Oliver', 'Harry', 'John', 'William', 'David', 'Richard', 'Joseph',
         'Charles', 'Thomas', 'Joe', 'George', 'Oscar', 'Amelia', 'Margaret', 'Megan', 'Jennifer', 'Bethany', 'Isla', 'Lauren', 'Samantha', 'Emma',
@@ -856,7 +861,8 @@ class OneclickRegister(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+
         username = generate_username()
         check_duplicate = CustomUser.objects.filter(username=username)
         while check_duplicate:
@@ -885,57 +891,71 @@ class OneclickRegister(APIView):
         return Response({'username': username, 'password': password})
 
 
-class UpdateEmail(View):
+class UpdateEmail(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
     def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        old_email = body['old_email']
-
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        new_email = body['new_email']
+        old_email = request.data['old_email']
+        new_email = request.data['new_email']
 
         check_duplicate = get_user_model().objects.filter(email__iexact=new_email)
         if check_duplicate:
-            return HttpResponse('Duplicate')
+            return Response('Duplicate')
             
         user = CustomUser.objects.filter(email=old_email)
         user.update(email=new_email, modified_time=timezone.now())
-        return HttpResponse('Success')
+        return Response('Success')
 
 
-class CheckEmailExixted(View):
+class CheckEmailExixted(APIView):
+
+    permission_classes = (AllowAny, )
+
     def get(self, request, *args, **kwargs):
         
-        email = self.request.GET['email']
+        email = request.GET.get('email')
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
-            return HttpResponse('Exist')
-        return HttpResponse('Invalid')
+            return Response('Success')
+        return Response('Failed')
 
 
-class GenerateForgetPasswordCode(View):
+class GetUsernameByReferid(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        refer_id = request.GET.get('referid')
+        user = get_user_model().objects.filter(referral_id=refer_id)
+        if user:
+            return Response(user[0].username)
+        return Response('Failed')
+
+class GenerateForgetPasswordCode(APIView):
+
+    permission_classes = (AllowAny, )
+
     def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+        email = request.data['email']
         user = get_user_model().objects.filter(email__iexact=email)
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
             user.update(reset_password_code=code)
-            return HttpResponse('Success')
-        return HttpResponse('Failed')
+            return Response('Success')
+        return Response('Failed')
 
 
-class SendResetPasswordCode(View):
+class SendResetPasswordCode(APIView):
+
+    permission_classes = (AllowAny, )
+
     def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
-        user = get_user_model().objects.filter(email=email)
+        email = request.data['email']
+        user = get_user_model().objects.filter(email__iexact=email)
         reset_password_code = user[0].reset_password_code
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email('ibet@ibet.com')
@@ -944,48 +964,45 @@ class SendResetPasswordCode(View):
         content_text = str(_('Use this code to reset your password '))
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
-        return HttpResponse('Success')
+        response = sg.client.mail.send.post(request_body = mail.get())
+        return Response('Success')
 
 
-class VerifyResetPasswordCode(View):
+class VerifyResetPasswordCode(APIView):
+
+    permission_classes = (AllowAny, )
+
     def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
-
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        code = body['code']
-
-        user = get_user_model().objects.filter(email=email)
+        email = request.data['email']
+        code = request.data['code']
+        password = request.data['password']
+        user = get_user_model().objects.filter(email__iexact=email)
         verify = user[0].reset_password_code
         if code == verify:
             user.update(reset_password_code='')
-            return HttpResponse('Success')
+            user = get_user_model().objects.get(email__iexact=email)
+            user.set_password(password)
+            user.save()
+            return Response('Success')
         else:
-            return HttpResponse('Failed')
+            return Response('Failed')
 
 
-class ChangeAndResetPassword(View):
+class ChangeAndResetPassword(APIView):
+
+    permission_classes = (AllowAny, )
+
     def post(self, request, *args, **kwargs):
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        email = body['email']
+        email = request.data['email']
 
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        password = body['password']
+        password = request.data['password']
 
-        user = get_user_model().objects.get(email=email)
+        user = get_user_model().objects.get(email__iexact=email)
         user.set_password(password)
         user.save()
-        return HttpResponse('Success')
-
-
-
+        return Response('Success')
 
 
 class AgentView(CommAdminView):
@@ -2056,6 +2073,7 @@ class UserListView(CommAdminView):
             
 
 class ChangePassword(APIView):
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -2069,7 +2087,9 @@ class ChangePassword(APIView):
         except:
             return Response('Failed')
 
+
 class CheckUsernameExist(View):
+
     def get(self, request, *args, **kwargs):
         username = self.request.GET['username']
         user = get_user_model().objects.filter(username=username)
@@ -2077,11 +2097,12 @@ class CheckUsernameExist(View):
             return HttpResponse('Exist')
         return HttpResponse('Valid')
 
+
 class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         username = request.data['username']
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
@@ -2101,7 +2122,7 @@ class VerifyActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         username = request.data['username']
         code = request.data['code']
         user = get_user_model().objects.filter(username=username)
@@ -2110,8 +2131,6 @@ class VerifyActivationCode(APIView):
             user.update(activation_code='')
             return Response({'status': 'Success'})
         return Response({'status': 'Failed'})
-
-
 
 
 class UserSearchAutocomplete(View):
@@ -2197,27 +2216,356 @@ class ValidateAndResetPassowrd(APIView):
 
     permission_classes = (IsAuthenticated, )
 
-    def post(self, request):
-        username = request.data['username']
+    def post(self, request, *args, **kwargs):
+        
         current = request.data['current_password']
         new = request.data['new_password']
+        user = self.request.user
 
-        user = CustomUser.objects.get(username=username)
         if not user.check_password(current):
             return Response({'status': 'Failed'})
         user.set_password(new)
         user.save()
         return Response({'status': 'Success'})
 
+
 class CancelRegistration(APIView):
 
     permission_classes = (AllowAny, )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+
         username = request.data['username']
         user = CustomUser.objects.get(username=username)
         user.delete()
         return Response(status=status.HTTP_200_OK)
 
 
+class WalletGeneralAPI(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+
+        success = 0
+        TransType = None
+        TransData = None
+        TransDataExists = 0
+        error_code = -5
+        error = 'Missing_Input_Parameter'
+
+        try:
+
+            TransType      = data['ThirdParty']['TransType']
+            ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
+            MemberID       = data['ThirdParty']['MemberID']
+
+
+            try:
+                user       =  CustomUser.objects.get(username = MemberID)
+                TransData  =  user.main_wallet
+                error      =  'No_Error'
+                error_code =  0
+                success    =  1
+                TransDataExists = 1
+
+            except:
+                error      = 'Member_Not_Found'
+                error_code = -2
+
+        except:
+
+            pass
+
+        return Response({
+            "Success"  :        success,
+            "TransType":        TransType,
+            "TransData":        TransData,
+            "TransDataExists":  TransDataExists,
+            "ErrorCode":        error_code,
+            "ErrorDesc":        error  
+        })
+
+
+class WalletBetAPIURL(APIView):
+    
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+
+        success = 0
+        TransType = None
+        TransData = None
+        TransDataExists = 0
+        error_code = -5
+        error = 'Missing_Input_Parameter'
+
+        
+        try:
+            Method        = data['GB']['Result']['Method']
+            Success       = data['GB']['Result']['Success']
+
+            TransType     = data['GB']['Result']['ReturnSet']['TransType']
+            BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+            BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+
+            BetID         = data['GB']['Result']['ReturnSet']['BettingList']['BetID']
+            BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList']['BetGrpNO']
+            TPCode        = data['GB']['Result']['ReturnSet']['BettingList']['TPCode']
+            GBSN          = data['GB']['Result']['ReturnSet']['BettingList']['GBSN']
+            MemberID      = data['GB']['Result']['ReturnSet']['BettingList']['MemberID']
+            CurCode       = data['GB']['Result']['ReturnSet']['BettingList']['CurCode']
+            BetDT         = data['GB']['Result']['ReturnSet']['BettingList']['BetDT']
+            BetType       = data['GB']['Result']['ReturnSet']['BettingList']['BetType']
+            BetTypeParam1 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam1']
+            BetTypeParam2 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam2']
+            Wintype       = data['GB']['Result']['ReturnSet']['BettingList']['Wintype']
+            HxMGUID       = data['GB']['Result']['ReturnSet']['BettingList']['HxMGUID']
+            InitBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['InitBetAmt']
+            RealBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['RealBetAmt']
+            HoldingAmt    = data['GB']['Result']['ReturnSet']['BettingList']['HoldingAmt']
+            InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['InitBetRate']
+            RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['RealBetRate']
+            PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList']['PreWinAmt']
+
+            DetailID      = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['DetailID']
+            SrcCode       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['SrcCode']
+            DrawNo        = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['DrawNo']
+            OptCode       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['OptCode']
+            OptParam1     = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['OptParam1']
+            MaxRate       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['MaxRate']
+
+            KenoBalls_list = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['KenoBalls']
+
+            try:
+                user = CustomUser.objects.get(username = MemberID)
+                temp = user.main_wallet
+                if temp >= int(BetTotalAmt):
+                    error      =  'No_Error'
+                    error_code =  0
+                    success    =  1
+
+                else:
+                    error      =  'Insufficient_Balance'
+                    error_code =  -4
+            
+
+                GBSportWalletBet.objects.create(
+                    Method        = Method,
+                    Success       = Success,
+
+                    TransType     = TransType,
+                    BetTotalCnt   = BetTotalCnt,
+                    BetTotalAmt   = BetTotalAmt,
+
+                    BetID         = BetID,
+                    BetGrpNO      = BetGrpNO,
+                    TPCode        = TPCode,
+                    GBSN          = GBSN,
+                    MemberID      = MemberID,
+                    CurCode       = CurCode,
+                    BetDT         = BetDT,
+                    BetType       = BetType,
+                    BetTypeParam1 = BetTypeParam1,
+                    BetTypeParam2 = BetTypeParam2,
+                    Wintype       = Wintype,
+                    HxMGUID       = HxMGUID,
+                    InitBetAmt    = InitBetAmt,
+                    RealBetAmt    = RealBetAmt,
+                    HoldingAmt    = HoldingAmt,
+                    InitBetRate   = InitBetRate,
+                    RealBetRate   = RealBetRate,
+                    PreWinAmt     = PreWinAmt
+                )
+
+                GBSports = GBSportWalletBet.objects.get(BetID=BetID)
+                
+                BetKenoList.objects.create(
+                    BetID     = GBSports,
+                    DetailID  = DetailID,
+                    SrcCode   = SrcCode,
+                    DrawNo    = DrawNo,
+                    OptCode   = OptCode,
+                    OptParam1 = OptParam1,
+                    MaxRate   = MaxRate
+                )
+
+                Keno = BetKenoList.objects.get(DetailID=DetailID)
+                for item in KenoBalls_list:
+                    BetKenoBalls.objects.create(
+                        DetailID = Keno,
+                        BallID   = item['BallID'],
+                        BallNum  = item['BallNum']
+                    )
+
+            except:
+                error = 'Member_Not_Found'
+                error_code = -2
+            
+        except:
+            
+            pass
+
+
+        return Response({
+            "Success"  :       success,
+            "TransType":       TransType,
+            "TransData":       TransData,
+            "TransDataExists": TransDataExists, 
+            "ErrorCode":       error_code,
+            "ErrorDesc":       error 
+        })
+
+class WalletSettleAPIURL(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+    
+        success = 0
+        TransType = None
+        TransData = None
+        TransDataExists = 0
+        error_code = -5
+        error = 'Missing_Input_Parameter'
+
+        try:
+            Method        = data['GB']['Result']['Method']
+            Success       = data['GB']['Result']['Success']
+
+            TransType     = data['GB']['Result']['ReturnSet']['TransType']
+            BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+            BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+         
+            SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
+            BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
+            BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
+            TPCode        = data['GB']['Result']['ReturnSet']['SettleList']['TPCode']
+            GBSN          = data['GB']['Result']['ReturnSet']['SettleList']['GBSN']
+            MemberID      = data['GB']['Result']['ReturnSet']['SettleList']['MemberID']
+            CurCode       = data['GB']['Result']['ReturnSet']['SettleList']['CurCode']
+            BetDT         = data['GB']['Result']['ReturnSet']['SettleList']['BetDT']
+            BetType       = data['GB']['Result']['ReturnSet']['SettleList']['BetType']
+            BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam1']
+            BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam2']
+            Wintype       = data['GB']['Result']['ReturnSet']['SettleList']['Wintype']
+            HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList']['HxMGUID']
+            InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['InitBetAmt']
+            RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['RealBetAmt']
+            HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList']['HoldingAmt']
+            InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['InitBetRate']
+            RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['RealBetRate']
+            PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
+            BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
+            WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
+            RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt']
+            TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
+            TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
+            TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
+            SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
+            
+            SettleOID     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['SettleOID']
+            DetailID      = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DetailID']
+            SrcCode       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['SrcCode']
+            DrawNo        = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DrawNo']
+            OptCode       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptCode']
+            OptParam1     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptParam1']
+            MaxRate       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['MaxRate']
+            RealRate      = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['RealRate']
+            DrawDT        = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DrawDT']
+            OptResult     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptResult']
+            
+            KenoBalls_list = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['KenoBalls']
+
+            try: 
+                user = CustomUser.objects.get(username = MemberID)
+
+                GBSportWalletSettle.objects.create(
+                    Method        = Method,
+                    Success       = Success,
+
+                    TransType     = TransType,
+                    BetTotalCnt   = BetTotalCnt,
+                    BetTotalAmt   = BetTotalAmt,
+
+                    SettleID      = SettleID,
+                    BetID         = BetID,
+                    BetGrpNO      = BetGrpNO,
+                    TPCode        = TPCode,
+                    GBSN          = GBSN,
+                    MemberID      = MemberID,
+                    CurCode       = CurCode,
+                    BetDT         = BetDT,
+                    BetType       = BetType,
+                    BetTypeParam1 = BetTypeParam1,
+                    BetTypeParam2 = BetTypeParam2,
+                    Wintype       = Wintype,
+                    HxMGUID       = HxMGUID,
+                    InitBetAmt    = InitBetAmt,
+                    RealBetAmt    = RealBetAmt,
+                    HoldingAmt    = HoldingAmt,
+                    InitBetRate   = InitBetRate,
+                    RealBetRate   = RealBetRate,
+                    PreWinAmt     = PreWinAmt,
+
+                    BetResult     = BetResult,
+                    WLAmt         = WLAmt,
+                    RefundBetAmt  = RefundBetAmt,
+                    TicketBetAmt  = TicketBetAmt,
+                    TicketResult  = TicketResult,
+                    TicketWLAmt   = TicketWLAmt,
+                    SettleDT      = SettleDT
+                )
+
+
+                GBSports = GBSportWalletSettle.objects.get(SettleID=SettleID)
+
+                SettleKenoList.objects.create(
+                    SettleOID = GBSports,
+                    DetailID  = DetailID,
+                    SrcCode   = SrcCode,
+                    DrawNo    = DrawNo,
+                    OptCode   = OptCode,
+                    OptParam1 = OptParam1,
+                    MaxRate   = MaxRate,
+                    RealRate  = RealRate,
+                    DrawDT    = DrawDT,
+                    OptResult = OptResult
+                )
+
+                Keno = SettleKenoList.objects.get(DetailID  = DetailID)
+
+                for item in KenoBalls_list:
+                    SettleKenoBalls.objects.create(
+                        DetailID  = Keno,
+                        BallID    = item['BallID'],
+                        BallNum   = item['BallNum'],
+                        OptResult = item['OptResult']
+                    )
+                
+                error      =  'No_Error'
+                error_code =  0
+                success    =  1
+
+            except: 
+                error = 'Member_Not_Found'
+                error_code = -2
+
+        except:
+            pass
+
+        return Response({
+            "Success"  :       success,
+            "TransType":       TransType,
+            "TransData":       TransData,
+            "TransDataExists": TransDataExists, 
+            "ErrorCode":       error_code,
+            "ErrorDesc":       error 
+        })
 
