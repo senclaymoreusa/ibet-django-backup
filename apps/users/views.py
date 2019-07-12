@@ -1869,6 +1869,7 @@ class UserListView(CommAdminView):
         search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
+        block = request.GET.get('block') == 'true'
 
         # print("search: " + str(search))
 
@@ -1882,23 +1883,28 @@ class UserListView(CommAdminView):
         else:
             offset = int(offset)
 
+        if block is None or block is False:
+            block = False
+        else:
+            block = True
+
         context = super().get_context()
         title = 'Member List'
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
         if search:
-            count = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)).count()
-            customUser = CustomUser.objects.filter(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))[offset:offset+pageSize]
+            count = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))).count()
+            customUser = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)))[offset:offset+pageSize]
 
             if count == 0:
-                count = CustomUser.objects.all().count()
-                customUser = CustomUser.objects.all()[offset:offset+pageSize]
+                count = CustomUser.objects.filter(block=block).count()
+                customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
                 context['searchError'] = _("No search data")
 
         else:
-            count = CustomUser.objects.all().count()
-            customUser = CustomUser.objects.all()[offset:offset+pageSize]
+            count = CustomUser.objects.filter(block=block).count()
+            customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
 
         if offset == 0:
             context['isFirstPage'] = True
@@ -2111,14 +2117,15 @@ class VerifyActivationCode(APIView):
 class UserSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET['search']
+        block = request.GET['block'] == 'true'
 
         logger.info('Search user, key: ' + search)
-        search_id = CustomUser.objects.filter(pk__contains=search)
-        search_username = CustomUser.objects.filter(username__contains=search)
-        search_email = CustomUser.objects.filter(email__contains=search)
-        search_phone = CustomUser.objects.filter(phone__contains=search)
-        search_first_name = CustomUser.objects.filter(first_name__contains=search)
-        search_last_name = CustomUser.objects.filter(last_name__contains=search)
+        search_id = CustomUser.objects.filter(Q(pk__contains=search)&Q(block=block))
+        search_username = CustomUser.objects.filter(Q(username__contains=search)&Q(block=block))
+        search_email = CustomUser.objects.filter(Q(email__contains=search)&Q(block=block))
+        search_phone = CustomUser.objects.filter(Q(phone__contains=search)&Q(block=block))
+        search_first_name = CustomUser.objects.filter(Q(first_name__contains=search)&Q(block=block))
+        search_last_name = CustomUser.objects.filter(Q(last_name__contains=search)&Q(block=block))
 
         search_id = serializers.serialize('json', search_id)
         search_username = serializers.serialize('json', search_username)

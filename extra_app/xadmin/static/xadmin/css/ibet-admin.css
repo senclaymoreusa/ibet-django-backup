@@ -821,6 +821,18 @@ table.table-bordered > tbody > tr > td{
 
 
 /* user list page css */
+
+.tab-label {
+    width: 170px;
+    font-family: Helvetica;
+    font-weight: bold;
+    color: #4a4a4a;
+}
+
+#user-list-table {
+    margin-top:20px;
+}
+
 #user-list-table>tbody>tr:nth-child(odd)>td, 
 #user-list-table>tbody>tr:nth-child(odd)>th {
    background-color: #f3f3f3;

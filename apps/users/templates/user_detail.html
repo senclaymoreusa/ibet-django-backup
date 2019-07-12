@@ -2060,6 +2060,9 @@ $(document).ready(function() {
     $('#post-btn').click( function(e) {
         e.preventDefault();
         var message = $('#notes-input').val();
+        if (!message) {
+            alert("Input cannout be empty");
+        }
         updateNote(message);
     });
 

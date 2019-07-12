@@ -52,80 +52,88 @@
 </div>
 
 <div style="margin-top:40px;">
-<table id="user-list-table">
-<!-- <table style='overflow-x: scroll;'> -->
-    <thead class="thead-dark">
-        <tr>
-            <th style="width: 3%;">#</th>
-            <th style="width: 6%;">MEMBER ID</th>
-            <th style="width: 8%;">USERNAME</th>
-            <th style="width: 7%;">SOURCE</th>
-            <th style="width: 11.5%;">REGISTRATION DATE</th>
-            <th style="width: 11.5%;">FTD DATE</th>
-            <th >BALANCE($)</th>
-            <th >4 CODE ADDRESS</th>
-            <th style="word-break: break-all; width:6%;">DEPOSIT/<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
-            <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
-            <th >COUNTRIBUTION ($)</th>
-            <th >ACTIVE DAYS</th>
-            <th >BET PLATFORM</th>
-        </tr>
-    </thead>
-    <tbody id='user_list_tbody'>
-        {% for user in user_data %} 
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.id }}</a></td>
-            <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
-            <!-- <td>{{ trans }}</td> -->
-            <td>{{ user.source }}</td>
-            {% if user.time_of_registration %}
-                <td>{{ user.time_of_registration }}</td>
-            {% else %}
-                <td></td>
-            {% endif %}
-            {% if user.ftd_time %}
-                <td>{{ user.ftd_time }}</td>
-            {% else %}
-                <td></td>
-            {% endif %}
-            <td>{{ user.balance|floatformat:2 }}</td>
-            <td>
-                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                <i class="fa fa-phone" style="margin-left: -3px;"></i>
-                </button>
-                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                <i class="fa fa-bank" style="margin-left: -3px;"></i>
-                </button>
-                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                <i class="fa fa-id-card-o" style="margin-left: -4px;"></i>
-                </button>
-                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                <i class="fa fa-globe" style="margin-left: -3px;"></i>
-                </button>
-            </td>
-            <td>{{ user.deposit_turnover }}</td>
-            <td>{{ user.bonus_turnover }}</td>
-            <td>{{ user.contribution }}</td>
-            <td>{{ user.active_days }}</td>
-            <td>
-                <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
-                <span style="margin-left: -3px;">W</span>
-                </a>
-                <a href="#" class="btn btn-info btn-sm" style="background-color:#6666ff; border-color: #6666ff;">
-                <span style="margin-left: -3px;">M</span>
-                </a>
-                <a href="#" class="btn btn-info btn-sm" style="background-color:#4884b5; border-color: #4884b5;">
-                <span style="margin-left: -2px;">P</span>
-                </a>
-                <a href="#" class="btn btn-info btn-sm" style="background-color:#556b2f; border-color: #556b2f;">
-                <span style="margin-left: -1px;">T</span>
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <ul class="nav nav-tabs">
+        <li class="active" id="active-accounts"><a data-toggle="tab" class="tab-label" href="#active-account">ACTIVE ACCOUNTS</a></li>
+        <li id="close-accounts"><a data-toggle="tab"  class="tab-label" href="#close-account">CLOSE ACCOUNTS</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="active-account" class="tab-pane fade in active">
+            <table id="user-list-table">
+            <!-- <table style='overflow-x: scroll;'> -->
+                <thead class="thead-dark">
+                    <tr>
+                        <th style="width: 3%;">#</th>
+                        <th style="width: 6%;">MEMBER ID</th>
+                        <th style="width: 8%;">USERNAME</th>
+                        <th style="width: 7%;">SOURCE</th>
+                        <th style="width: 11.5%;">REGISTRATION DATE</th>
+                        <th style="width: 11.5%;">FTD DATE</th>
+                        <th >BALANCE($)</th>
+                        <th >4 CODE ADDRESS</th>
+                        <th style="word-break: break-all; width:6%;">DEPOSIT/<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
+                        <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
+                        <th >COUNTRIBUTION ($)</th>
+                        <th >ACTIVE DAYS</th>
+                        <th >BET PLATFORM</th>
+                    </tr>
+                </thead>
+                <tbody id='user_list_tbody'>
+                    {% for user in user_data %} 
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.id }}</a></td>
+                        <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
+                        <!-- <td>{{ trans }}</td> -->
+                        <td>{{ user.source }}</td>
+                        {% if user.time_of_registration %}
+                            <td>{{ user.time_of_registration }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        {% if user.ftd_time %}
+                            <td>{{ user.ftd_time }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td>{{ user.balance|floatformat:2 }}</td>
+                        <td>
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                            <i class="fa fa-phone" style="margin-left: -3px;"></i>
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                            <i class="fa fa-bank" style="margin-left: -3px;"></i>
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                            <i class="fa fa-id-card-o" style="margin-left: -4px;"></i>
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                            <i class="fa fa-globe" style="margin-left: -3px;"></i>
+                            </button>
+                        </td>
+                        <td>{{ user.deposit_turnover }}</td>
+                        <td>{{ user.bonus_turnover }}</td>
+                        <td>{{ user.contribution }}</td>
+                        <td>{{ user.active_days }}</td>
+                        <td>
+                            <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
+                            <span style="margin-left: -3px;">W</span>
+                            </a>
+                            <a href="#" class="btn btn-info btn-sm" style="background-color:#6666ff; border-color: #6666ff;">
+                            <span style="margin-left: -3px;">M</span>
+                            </a>
+                            <a href="#" class="btn btn-info btn-sm" style="background-color:#4884b5; border-color: #4884b5;">
+                            <span style="margin-left: -2px;">P</span>
+                            </a>
+                            <a href="#" class="btn btn-info btn-sm" style="background-color:#556b2f; border-color: #556b2f;">
+                            <span style="margin-left: -1px;">T</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <div class="row user-list-control-group">
@@ -189,7 +197,8 @@ $(document).ready(function() {
     paramsMap = {
         'search': '',
         'pageSize': 20,
-        'offset': 0
+        'offset': 0,
+        'block': false
     };
     var parsedUrl = new URL(window.location.href);
     if (parsedUrl.searchParams.get("search") !== null) {
@@ -201,6 +210,32 @@ $(document).ready(function() {
     if (parsedUrl.searchParams.get("offset") !== null) {
         paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
     }
+    if (parsedUrl.searchParams.get("block") !== null) {
+        paramsMap['block'] = parsedUrl.searchParams.get("block");
+    }
+
+    if (parsedUrl.searchParams.get("block") == 'true') {
+        $("#close-accounts").addClass('active');
+        $("#active-accounts").removeClass('active');
+    } else {
+        $("#active-accounts").addClass('active');
+        $("#close-accounts").removeClass('active');
+    }
+
+    $("a[data-toggle='tab']").click(function() {
+        var active = $(this).attr("href");
+        if (active == "#active-account") {
+            paramsMap['block'] = false;
+        } else {
+            paramsMap['block'] = true;
+        }
+        var pageSize = paramsMap['pageSize'];
+        // var oldFromItem = 0;
+        // var newFromItem = Number(oldFromItem) + Number(pageSize);
+        var block = paramsMap['block'];
+        
+        window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+    });
 
     $('#pagination_value').val(paramsMap['pageSize']);
 
@@ -229,7 +264,8 @@ $(document).ready(function() {
 
     function searchOpen() {
         var search = $('#search').val();
-        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search;
+        var block = paramsMap['block'];
+        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search + "&block=" + block;
         $.ajax({
             url: url,
             type: 'GET',
@@ -429,15 +465,17 @@ $(document).ready(function() {
     $('#pagination_value').on('change', function() {
         var pageSize = $("#pagination_value").val();;
         var oldFromItem = paramsMap['offset'];
+        var block = paramsMap['block'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, 0, "");
+        window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
     });
 
     $("#search-btn").click(function(){
         var pageSize = $("#pagination_value").val();;
         // var oldFromItem = paramsMap['offset'];
         var search = $('#search').val();
-        window.location.href = getUserListRedirectUrl(pageSize, 0, search);
+        var block = paramsMap['block'];
+        window.location.href = getUserListRedirectUrl(pageSize, 0, block, search);
     });
 
     getNext = function() {
@@ -447,8 +485,9 @@ $(document).ready(function() {
         var pageSize = paramsMap['pageSize'];
         var oldFromItem = paramsMap['offset'];
         var newFromItem = Number(oldFromItem) + Number(pageSize);
+        var block = paramsMap['block'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, "");
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
     }
 
     getPervious = function () {
@@ -458,8 +497,9 @@ $(document).ready(function() {
         var pageSize = paramsMap['pageSize'];
         var oldFromItem = paramsMap['offset'];
         var newFromItem = Number(oldFromItem) - Number(pageSize);
+        var block = paramsMap['block'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, "");
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
     }
 
 });
@@ -475,7 +515,7 @@ function cleanFloatField(field) {
     return field.toFixed(2);
 }
 
-function getUserListRedirectUrl(pageSize, offset, search) {
+function getUserListRedirectUrl(pageSize, offset, block, search) {
     var curUrl = window.location.href;
     // console.log(curUrl);
     var parts = curUrl.split('?');
@@ -485,6 +525,7 @@ function getUserListRedirectUrl(pageSize, offset, search) {
     redirectUrl += '?search=' + search;
     redirectUrl += "&pageSize=" + pageSize;
     redirectUrl += '&offset=' + offset;
+    redirectUrl += '&block=' + block;
     // console.log(redirectUrl);
     return redirectUrl;
 }
