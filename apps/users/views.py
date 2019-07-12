@@ -2073,13 +2073,46 @@ class WalletGeneralAPI(APIView):
 
     def post(self, request, *args, **kwargs):
 
+        data = json.loads(request.body)
+
+        success = 0
+        TransType = None
+        TransData = None
+        TransDataExists = 0
+        error_code = -5
+        error = 'Missing_Input_Parameter'
+
+        try:
+
+            TransType      = data['ThirdParty']['TransType']
+            ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
+            MemberID       = data['ThirdParty']['MemberID']
+
+
+            try:
+                user       =  CustomUser.objects.get(username = MemberID)
+                TransData  =  user.main_wallet
+                error      =  'No_Error'
+                error_code =  0
+                success    =  1
+                TransDataExists = 1
+
+            except:
+                error      = 'Member_Not_Found'
+                error_code = -2
+
+        except:
+
+            pass
+
         return Response({
-            "Success"  : "1",
-            "TransType": "Balance",
-            "TransData": 10,
-            "ErrorCode": "0",
-            "ErrorDesc": "No_Error" 
-            })
+            "Success"  :        success,
+            "TransType":        TransType,
+            "TransData":        TransData,
+            "TransDataExists":  TransDataExists,
+            "ErrorCode":        error_code,
+            "ErrorDesc":        error  
+        })
 
 
 class WalletBetAPIURL(APIView):
