@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os, boto3, json
+from botocore.exceptions import ClientError, NoCredentialsError
+
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
