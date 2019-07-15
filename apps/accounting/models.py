@@ -26,7 +26,7 @@ class Transaction(models.Model):
     remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
     transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))
     transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
-    bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
+    #bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
     product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
     payer_id = models.CharField(max_length = 100, default=0)
     class Meta:
