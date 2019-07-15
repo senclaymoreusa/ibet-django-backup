@@ -69,7 +69,7 @@ class NotificationSerializer(serializers.Serializer):
 class NotificationLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationLog
-        fields = ('pk', 'notification_id', 'actor_id', 'action', 'act_on')
+        fields = ('pk', 'notification_id', 'action')
         read_only_fields = ['pk', 'notification_id', 'actor_id', 'action', 'act_on']
 
 

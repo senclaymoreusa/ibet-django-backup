@@ -1,3 +1,5 @@
+from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.urls import reverse
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -10,7 +12,6 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView,
 from .serializers import AWSTopicSerializer, NoticeMessageSerializer, NotificationSerializer, NotificationLogSerializer, NotificationUsersSerializer, UserToAWSTopicSerializer
 from .models import AWSTopic, NoticeMessage, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
 from users.models import CustomUser
-# from djauth import third_party_keys
 from xadmin.views import CommAdminView
 from django.utils import timezone
 
@@ -146,102 +147,144 @@ class NotificationView(CommAdminView):
         return self.update(request, *arg, **kwargs)
 
     def post(self, request, *arg, **kwargs):
-        subject = request.POST.get('subject')
-        content_text = request.POST.get('content_text')
-        creator = self.user
-        auditor = request.POST.get('auditor')
-        notification_choice = request.POST.get('notification_choice')
-        notification_type = request.POST.get('notification_method')
-        # topic = request.POST.get('topic')
-        # notifiers = self.request.POST['notifiers']
+        # subject = request.POST.get('subject')
+        # content_text = request.POST.get('content_text')
+        # creator = self.user
+        # auditor = request.POST.get('auditor')
+        # notification_choice = request.POST.get('notification_choice')
+        # notification_type = request.POST.get('notification_type')
+        # # topic = request.POST.get('topic')
+        # # notifiers = self.request.POST['notifiers']
         direct_check = request.POST.get('direct_check')
         email_check = request.POST.get('email_check')
         SMS_check = request.POST.get('SMS_check')
         push_check = request.POST.get('push_check')
-        notification_method = [direct_check, email_check, SMS_check, push_check]
 
-        print(str(subject))
-        print(str(content_text))
-        print(str(auditor))
+        notification_method = ""
 
-        print(notification_method)
+        if direct_check != None:
+            notification_method += 'D'
 
-        third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-        print(third_party_keys)
-        
-        
-        serializer = NotificationSerializer(data=request.data)
+        if email_check != None:
+            notification_method += 'E'
+
+        if SMS_check != None:
+            notification_method += 'S'
+
+        if push_check != None:
+            notification_method += 'P'
+
+        # notification_method = {
+        #     "D": direct_check,
+        #     "E": email_check,
+        #     "S": SMS_check,
+        #     "P": push_check,
+        # }
+
+        # third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+        data = {
+            "subject": request.POST.get('subject'),
+            "content_text": request.POST.get('content_text'),
+            "creator": self.user.id,
+            "auditor": request.POST.get('auditor'),
+            "notification_choice": request.POST.get('notification_choice'),
+            "notification_type": request.POST.get('notification_type'),
+            "notification_method": notification_method,
+            "notifiers": request.POST.get("notifiers"),
+            "topic": request.POST.get("topic")
+        }
+        serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():
             # connect AWS S3
-            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "s3://ibet-admin-dev/config/sns.json")
-            print(third_party_keys)
+            # third_party_keys = getThirdPartyKeys("ibet-admin-dev", "s3://ibet-admin-dev/config/sns.json")
 
             # AWS SNS Client
-            sns = boto3.resource('sns')
+            # sns = boto3.resource('sns')
             # client = boto3.client('sns', 'us-west-2')
-            client = boto3.client(
-                'sns',
-                aws_access_key_id = third_party_keys.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key = third_party_keys.AWS_SECRET_ACCESS_KEY,
-                # region_name = third_party_keys.AWS_REGION_NAME
-            )
-            '''
+            # client = boto3.client(
+            #     'sns',
+            #     aws_access_key_id = third_party_keys.AWS_ACCESS_KEY_ID,
+            #     aws_secret_access_key = third_party_keys.AWS_SECRET_ACCESS_KEY,
+            #     # region_name = third_party_keys.AWS_REGION_NAME
+            # )
             
-            # Broadcast
-            if notification_choice == 'B':
-                notifiers = CustomUser.objects.all()
-
-            if notification_choice == 'M':
-                if(topic is not None):
-                    aws_topic = AWSTopic.objects.get(pk=topic)
-                    aws_topic = sns.Topic(aws_topic.topic_arn)
-                    aws_topic.publish(
-                        Message=content_text,
-                        Subject=subject,
-                    )
             # Push Notification
-            if notification_method[0] is not None:
-                # platform_endpoint = sns.PlatformEndpoint(third_party_keys.SNS_PLATFORM_ENDPOINT_ARN)
+            # if notification_method["P"] is not None:
+            #     print("Push")
+            #     platform_endpoint = sns.PlatformEndpoint(third_party_keys.SNS_PLATFORM_ENDPOINT_ARN)
                 
-                # platform_endpoint.publish(
-                #     Message=content_text,
-                # )
-                print("Direct Msg")
-            try:
-                # SMS Notification
-                if notification_method == 'S':
-                    notifier = CustomUser.objects.get(pk=notifiers)
-                    # for notifier in notifiers:
-                    #     phone = notifier.phone
-                    #     print(phone)
-                    #     client.publish(PhoneNumber=phone, Message=content_text)
-                    phone = notifier.phone
-                    client.publish(PhoneNumber=phone, Message=content_text)
-            except Exception as e:
-                print("Unexpected error: %s" % e)
-                return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
+            #     platform_endpoint.publish(
+            #         Message=data.content_text,
+            #     )
+            
+            # SMS Notification
+            # if notification_method["S"] is not None:
+            #     try:
+            #         print("S")
+            #         notifier = CustomUser.objects.get(pk=notifiers)
+            #         phone = notifier.phone
+            #         client.publish(PhoneNumber=phone, Message=data.content_text)
+            #     except Exception as e:
+            #         print("Unexpected error: %s" % e)
+            #         return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
             # Email Notification
-            if notification_method == 'E':
-                # AWS SNS Topic
-                topic = sns.Topic(third_party_keys.SNS_TOPIC_ARN)
-                topic.publish(
-                    Message=content_text,
-                    Subject='iBet Notification',
-                )
-            notification = serializer.save()
+            # if notification_method["E"] is not None:
+            #     print("e")
+            #     # AWS SNS Topic
+            #     topic = sns.Topic(third_party_keys.SNS_TOPIC_ARN)
+            #     topic.publish(
+            #         Message=data.content_text,
+            #         Subject='iBet Notification',
+            #     )
+            serializer.save()
+            # notification = serializer.save()
             # store notification data in NotificationLog
-            log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, action='C')
-            log.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, action='C')
+            # log.save()
+            return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # render(request, 'notification/index.html', {
+            #     'err_msg': serializer.errors,
+            # })
+            print(serializer.errors)
+            return HttpResponse(serializer.errors)
     
     def update(self, request, *arg, **kwargs):
         serializer = NotificationSerializer(queryset, many=True)
-        queryset = Notification.object.get(pk=1)
-    '''
+        queryset = Notification.objects.get(pk=1)
+
+
+def Detail(request, notification_id):
+    try:
+        notification = Notification.objects.get(pk=notification_id)
+    except Notification.DoesNotExist:
+        raise Http404("Not Exist")
+    return render(request, "operation/notification", notification)
+
+
+class NotificationDetailView(CommAdminView):
+    lookup_field = 'pk'
+    serializer_class = NotificationSerializer
+    permission_classes = [AllowAny, ]
+    # queryset = Notification.objects.all()
+
+    def get(self, request, notification_id):
+        context = super().get_context()
+        title = 'message'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context["title"] = title
+        context['time'] = timezone.now()
+        context['current_user'] = self.user
+        context['all_user'] = CustomUser.objects.all()
+        context['auditors'] = CustomUser.objects.filter(is_admin=True)
+        context['topics'] = AWSTopic.objects.all()
+        queryset = Notification.objects.get(pk=notification_id)
+        serializer = NotificationSerializer(queryset, many=False)
+        context["queryset"] = queryset
+        return render(request, 'notification/detail.html', context)
 
 
 class NotificationLogView(ListAPIView):
