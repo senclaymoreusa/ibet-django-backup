@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
 #from djauth.third_party_keys import *
 from rest_framework import generics
-from ..serializers import help2payDepositSerialize
+from ..serializers import help2payDepositSerialize,help2payDepositResultSerialize
 from django.conf import settings
 import requests,json
 import logging, time, struct, hashlib, xml.etree.ElementTree as ET
@@ -38,6 +38,19 @@ currencyConversion = {
     '9': 'MMK',
     '10': 'XBT',
 }
+convertCurrency = {
+    'CNY':'0',
+    'USD':'1',
+    'THB':'2',
+    'IDR':'3',
+    'HKD':'4',
+    'AUD':'5',
+    'THB':'6',
+    'MYR':'7',
+    'VND':'8',
+    'MMK':'9',
+    'XBT':'10',
+}
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -50,7 +63,7 @@ def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
-REDIRECTURL = "http://localhost:3000/withdraw/success/"
+
 class submitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
@@ -59,6 +72,7 @@ class submitDeposit(generics.GenericAPIView):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
         order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+        print(order_id)
         amount = int(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
         #print(amount)
@@ -81,14 +95,53 @@ class submitDeposit(generics.GenericAPIView):
             "Amount":amount,
             "Datetime":Datetime,
             "FrontURI":REDIRECTURL,
-            "BackURI":REDIRECTURL,
+            "BackURI":BackURI,
             "Bank":bank,
             "Language":language,
             "ClientIP":ip,
         }
-        print(data)
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
-        print(r.status_code)
         print(rdata)
         return Response(rdata)
+
+class depositResult(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = help2payDepositResultSerialize
+    permission_classes = [AllowAny, ]
+    def get(self, request, *args, **kwargs):
+        print
+        (
+
+            "hi"
+        )
+    def post(self, request, *args, **kwargs):
+        print("result")
+        serializer = self.serializer_class(self.get_queryset(), many=True)
+        # Status = self.request.POST.get('Status')
+        # create = Transaction.objects.create(
+        #     order_id= self.request.POST.get('Reference'),
+        #     amount=self.request.POST.get('Amount'),
+        #     #user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')),
+        #     method= 'Bank Transfer',
+        #     currency= convertCurrency[self.request.POST.get('Currency')],
+        #     transaction_type=0,
+        #     channel=0,
+        # )
+        # update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),)
+        #                                       user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
+        # if  Status == '000':  
+        #     update_data.status = 0
+        # elif Status == '001':
+        #     update_data.status = 1
+        # elif Status == '006':
+        #     update_data.status = 4
+        # elif Status == '007':
+        #     update_data.status = 8
+        # elif Status == '009':
+        #     update_data.status = 3
+
+        return Response({'details': 'result successful arrived'}, status=status.HTTP_200_OK)
+        
+    
+

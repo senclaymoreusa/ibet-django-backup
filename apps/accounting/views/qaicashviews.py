@@ -325,6 +325,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorEmail': CustomUser.objects.filter(email=email),
             'depositorName': CustomUser.objects.filter(first_name=first_name),
             'redirectUrl': 'https://www.google.com',
+            'callbackUrl': 'http://128dbbc7.ngrok.io/api/qaicash/transaction_status',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -669,6 +670,7 @@ class transactionStatusUpdate(generics.GenericAPIView):
     permission_classes = [AllowAny,]
      
     def post(self, request, *args, **kwargs):
+        print("result:")
         serializer = self.serializer_class(self.get_queryset(), many=True)
         mystatus = self.request.POST['status']
         method=self.request.POST['method']

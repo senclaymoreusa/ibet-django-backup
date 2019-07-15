@@ -28,7 +28,7 @@ CURRENCY_TYPES = (
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 CHANNEL_CHOICES = (
-    (0, 'Xpay'),
+    (0, 'Help2pay'),
     (1, 'LINEpay'),
     (2, 'Astropay'),
     (3, 'Qaicash'),
@@ -58,7 +58,6 @@ STATE_CHOICES = (
     (6, 'COMPLETED'),
     (7, 'RESEND'),
     (8, 'REJECTED'),
-    (9, 'SUCCESS'),
 
 )
 REVIEW_STATE_CHOICES = (
@@ -280,3 +279,5 @@ ASIAPAY_QRPAYWAY = "42"
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
+REDIRECTURL = "http://localhost:3000/withdraw/success/"
+BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
