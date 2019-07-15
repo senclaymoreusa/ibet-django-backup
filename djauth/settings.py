@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os, boto3, json
+import os, boto3, json, logging
 from botocore.exceptions import ClientError, NoCredentialsError
 
+logger = logging.getLogger('django')
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
