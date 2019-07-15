@@ -1153,8 +1153,7 @@ from django.db.models import Sum
 from datetime import timedelta
 from django.db.models import Q
 import boto3
-from botocore.exceptions import ClientError
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 from django.conf import settings
 
 

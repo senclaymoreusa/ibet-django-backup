@@ -5,6 +5,8 @@ from django.conf import settings
 from ..models import Transaction
 from users.models import CustomUser
 import os, requests, json, random, logging, time, boto3
+from botocore.exceptions import ClientError, NoCredentialsError
+
 
 logger = logging.getLogger('django')
 
