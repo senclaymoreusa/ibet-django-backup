@@ -157,6 +157,17 @@ ASIAPAY_PAYWAY_CHOICES = (
     ('30', '在线支付'),
 
 )
+
+GAME_PROVIDERS = (
+    (0, 'SPORTS_1'),
+    (1, 'SPORTS_2'),
+    (2, 'CASINO_1'),
+    (3, 'CASINO_2'),
+    (4, 'SLOT_1'),
+    (5, 'SLOT_2'),
+)
+
+
 #qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
