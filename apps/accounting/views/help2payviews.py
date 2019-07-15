@@ -11,6 +11,7 @@ from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
+#from djauth.third_party_keys import *
 from rest_framework import generics
 from ..serializers import help2payDepositSerialize,help2payDepositResultSerialize
 from django.conf import settings
@@ -101,39 +102,46 @@ class submitDeposit(generics.GenericAPIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
-        create = Transaction.objects.get_or_create(
-            order_id= str(order_id),
-            amount=amount,
-            user_id=CustomUser.objects.get(pk=self.request.POST.get('user_id')),
-            method= 'Bank Transfer',
-            currency= currency,
-            transaction_type=0,
-            channel=0,
-        )
-        return HttpResponse(rdata)
+        print(rdata)
+        return Response(rdata)
 
 class depositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
-    
+    def get(self, request, *args, **kwargs):
+        print
+        (
+
+            "hi"
+        )
     def post(self, request, *args, **kwargs):
+        print("result")
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        Status = self.request.POST.get('Status')
-        update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
-                                              user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
-        if  Status == '000':  
-            update_data.status = 0
-        elif Status == '001':
-            update_data.status = 1
-        elif Status == '006':
-            update_data.status = 4
-        elif Status == '007':
-            update_data.status = 8
-        elif Status == '009':
-            update_data.status = 3
-        update_data.save()
-        return Response({'status': Status}, status=status.HTTP_200_OK)
+        # Status = self.request.POST.get('Status')
+        # create = Transaction.objects.create(
+        #     order_id= self.request.POST.get('Reference'),
+        #     amount=self.request.POST.get('Amount'),
+        #     #user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')),
+        #     method= 'Bank Transfer',
+        #     currency= convertCurrency[self.request.POST.get('Currency')],
+        #     transaction_type=0,
+        #     channel=0,
+        # )
+        # update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),)
+        #                                       user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
+        # if  Status == '000':  
+        #     update_data.status = 0
+        # elif Status == '001':
+        #     update_data.status = 1
+        # elif Status == '006':
+        #     update_data.status = 4
+        # elif Status == '007':
+        #     update_data.status = 8
+        # elif Status == '009':
+        #     update_data.status = 3
+
+        return Response({'details': 'result successful arrived'}, status=status.HTTP_200_OK)
         
     
 
