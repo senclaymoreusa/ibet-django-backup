@@ -204,9 +204,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'orion',
+            'NAME': 'ibetlocal',
             'USER': '',
-            'PASSWORD': 'Claymore168',
+            'PASSWORD': '',
             'HOST': '',
             'PORT': 5432,
         },
