@@ -99,7 +99,7 @@ def confirm_payment(request):
         return HttpResponse("You are at the endpoint for LINEpay confirm payment.")
     if (request.method == "POST"):
         if not config:
-            return JsonResponse({"Error": "Missing LINEPay API keys")
+            return JsonResponse({"Error": "Missing LINEPay API keys"})
         headers = {
             "X-LINE-ChannelId": config["LINE_CHANNEL_ID"],
             "X-LINE-ChannelSecret": config["LINE_CHANNEL_SECRET"]
