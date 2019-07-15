@@ -357,9 +357,5 @@ STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
 
-<<<<<<< HEAD
 AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
 PATH_TO_KEYS = 'config/thirdPartyKeys.json'
-=======
-
->>>>>>> dev
