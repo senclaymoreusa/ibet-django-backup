@@ -219,20 +219,7 @@ elif os.getenv("ENV") == "local":
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'angelapan',
-            'USER': '',
-            'PASSWORD': 'Claymore168',
-            'HOST': '',
-            'PORT': 5432,
-        },
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
-    }
+
 
 
 # Password validation
