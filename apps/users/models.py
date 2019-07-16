@@ -420,10 +420,13 @@ class LinkHistory(models.Model):
 
 class Limitation(models.Model):
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
-    amount = models.DecimalField(decimal_places=2, max_digits=20)
+    amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
     product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
+    interval = models.SmallIntegerField(choices=INTERVAL, default=0, null=True)
+
+    admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name="limit_admin")
 
     created_time = models.DateTimeField(
         _('Created Time'),

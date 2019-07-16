@@ -159,13 +159,17 @@ LIMIT_TYPE_LOSS        = 1
 LIMIT_TYPE_DEPOSIT     = 2
 LIMIT_TYPE_WITHDRAW    = 3
 LIMIT_TYPE_ACCESS_DENY = 4
+LIMIT_TYPE_BLOCK = 5
+LIMIT_TYPE_UNBLOCK = 6
 
 LIMIT_TYPE = (
     (LIMIT_TYPE_BET, 'Bet'),
     (LIMIT_TYPE_LOSS, 'Loss'),
     (LIMIT_TYPE_DEPOSIT, 'Deposit'),
     (LIMIT_TYPE_WITHDRAW, 'Withdraw'),
-    (LIMIT_TYPE_ACCESS_DENY, 'Access Deny')
+    (LIMIT_TYPE_ACCESS_DENY, 'Access Deny'),
+    (LIMIT_TYPE_BLOCK, 'Block'),
+    (LIMIT_TYPE_UNBLOCK, 'Unblock')
 )
 
 GAME_PRODUCT_GB_SPORTS         = 0
@@ -194,6 +198,26 @@ RISK_LEVEL = (
     (RISK_LEVEL_E2, 'E2'),
     (RISK_LEVEL_F, 'F'),
 )
+
+INTERVAL_PER_DAY = 0
+INTERVAL_PER_WEEK = 1
+INTERVAL_PER_MONTH = 2
+INTERVAL_PER_SIX_MONTH = 3
+INTERVAL_PER_ONE_YEAR = 4
+INTERVAL_PER_THREE_YEAR = 5
+INTERVAL_PER_FIVE_YEAR = 6
+
+INTERVAL = (
+    (INTERVAL_PER_DAY, 'per day'),
+    (INTERVAL_PER_WEEK, 'per week'),
+    (INTERVAL_PER_MONTH, 'per month'),
+    (INTERVAL_PER_SIX_MONTH, 'per six months'),
+    (INTERVAL_PER_ONE_YEAR, 'per one year'),
+    (INTERVAL_PER_THREE_YEAR, 'per three years'),
+     (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+)
+
+
 ASIAPAY_BANK_CHOICES = (
     ('1','工商银行'),
     ('2','建设银行'),
