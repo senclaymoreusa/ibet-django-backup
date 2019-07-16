@@ -7,6 +7,7 @@ import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
+import accounting.views.help2payviews as help2pay
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name = 'deposit_method'),
@@ -41,4 +42,6 @@ urlpatterns = [
     path('api/asiapay/orderStatus', asiapay.orderStatus.as_view(), name = 'AsiaPay_Order_Status'),
     path('api/asiapay/exchangeRate', asiapay.exchangeRate.as_view(), name = 'AsiaPay_Exchange_Rate'),
     path('api/asiapay/depositArrive', asiapay.depositArrive.as_view(), name = 'AsiaPay_deposit_Arrive'),
+    path('api/help2pay/deposit', help2pay.submitDeposit.as_view(), name = 'Help2pay_Deposit'),
+    path('api/help2pay/deposit_result', help2pay.depositResult.as_view(), name = 'Help2pay_deposit_result'),
 ]
