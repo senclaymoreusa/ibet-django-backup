@@ -35,14 +35,24 @@ CURRENCY_CHOICES = (
     (2, 'THB'),
     (3, 'IDR'),
 )
+tran_success_type = 0
+tran_fail_type = 1
+tran_pending_type = 3
+tran_cancel_type = 5
+
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
     (2, 'CREATED'),
     (3, 'PENDING'),
     (4, 'APPROVED'),
-    (5, 'REJECTED'),
+    (5, 'CANCELED'),
     (6, 'COMPLETED')
+)
+
+STATUS_CHOICES = (
+    (0, 'Active'), 
+    (1, 'Disabled'),
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),

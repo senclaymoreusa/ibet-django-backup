@@ -67,6 +67,11 @@ class GlobalSettings(object):
                         'url': '/xadmin/withdrawal',
                         'icon': 'fa fa-sign-out'
                     },
+                    {
+                        'title': 'Settings',
+                        'url': '/xadmin/channel_list',
+                        'icon': 'fa fa-cog'
+                    },
                 )
             }
         ]

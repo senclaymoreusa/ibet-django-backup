@@ -46,14 +46,14 @@ class WithdrawalView(CommAdminView):
             pendingDict["username"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).username
             pendingDict["tran_no"] = pending_transaction.transaction_id
             pendingDict["app_time"] = pending_transaction.request_time
-            pendingDict["bank"] = pending_transaction.bank
+            # pendingDict["bank"] = pending_transaction.bank
             # pendingDict["branch"] =
             pendingDict["amount"] = pending_transaction.amount
             pendingDict["balance"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).main_wallet
             # withdrawal today 
             pendingDict["withdrawal_today"] = pending_trans.filter(Q(arrive_time__gte=datetime.date.today()) & Q(user_id_id=pending_transaction.user_id_id)).values("amount").aggregate(sum=Sum('amount'))
             pendingDict["withdrawal_count_today"] = pending_trans.filter(Q(arrive_time__gte=datetime.date.today()) & Q(user_id_id=pending_transaction.user_id_id)).aggregate(count=Count('amount'))
-            pendingDict["channel"] = pending_transaction.channel
+            pendingDict["channel"] = pending_transaction.withdraw_channel
             pending_tran.append(pendingDict)
         context['pending_tran'] = pending_tran
 
@@ -63,10 +63,10 @@ class WithdrawalView(CommAdminView):
             successDict = {}
             successDict["id"] = success_transaction.user_id_id
             successDict["username"] = CustomUser.objects.get(pk=success_transaction.user_id_id).username
-            successDict["payment"] = success_transaction.channel
+            successDict["payment"] = success_transaction.withdraw_channel
             successDict["tran_no"] = success_transaction.transaction_id
             successDict["app_time"] = success_transaction.request_time
-            successDict["bank"] = success_transaction.bank
+            # successDict["bank"] = success_transaction.bank
         #     # pendingDict["branch"] =
             successDict["amount"] = success_transaction.amount
             success_tran.append(successDict)

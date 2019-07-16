@@ -1,5 +1,6 @@
-#pending_table_filter {
+#pending_table_filter, #success_deposit_table_filter, #fail_deposit_table_filter, #cancelled_deposit_table_filter {
     float: left;
+    margin-top: -130px;
 }
 
 #pending_table_length {
@@ -31,4 +32,19 @@
     margin-left: 5%;
     margin-top: 0px;
     margin-bottom: 0px;
+}
+
+.nav-bar {
+    margin-top: 20px !important;
+    margin-left: 0px !important;
+    width: 99% !important;
+}
+
+table.dataTable {
+    border-collapse: initial;
+    border-spacing: 0;
+}
+
+#deposit_channel_detail .form-group{
+    background-color: #f3f3f3;
 }
