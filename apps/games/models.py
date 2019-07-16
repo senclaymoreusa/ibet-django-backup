@@ -11,7 +11,8 @@ class Category(models.Model):
     name = models.CharField(max_length=50)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
-    parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    # category_type = models.SmallIntegerField(choices=CATEGORY_TYPES, default=0)
+    # parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.CharField(max_length=200)
 
     class Meta:
@@ -19,7 +20,7 @@ class Category(models.Model):
 
 
     def __str__(self):
-        return '{0}, parent: {1}'.format(self.name, self.parent_id)
+        return '{0}'.format(self.name)
 
 
 class GameAttribute(models.Model):
@@ -50,9 +51,24 @@ class Game(models.Model):
     #category = models.CharField(max_length=20)
 
     imageURL = models.CharField(max_length=200, null=True, blank=True)
-    attribute = models.ForeignKey(GameAttribute, on_delete=models.CASCADE)
+    attribute = models.CharField(max_length=500, null=True, blank=True)
     provider = models.SmallIntegerField(choices=GAME_PROVIDERS, default=0)
-    popularity = models.DecimalField(max_digits=10, decimal_places=2)
+    popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    jackpot_size = models.IntegerField(null=True, blank=True)
+
+    created_time = models.DateTimeField(
+        _('Created Time'),
+        auto_now_add=True,
+        editable=False,
+        null=True
+    )
+
+    modifited_time = models.DateTimeField(
+        _('Modifited Time'),
+        auto_now_add=True,
+        editable=False,
+        null=True
+    )
 
     
     class Meta:
@@ -67,7 +83,8 @@ class Game(models.Model):
         Returns the url to access a particular game instance.
         """
         return reverse('game-detail', args=[str(self.id)])
-class GameWithAttribute(models.Model):
 
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    attribute = models.ForeignKey(GameAttribute, on_delete=models.CASCADE)
+# class GameWithAttribute(models.Model):
+
+#     game = models.ForeignKey(Game, on_delete=models.CASCADE,  related_name="game")
+#     attribute = models.ForeignKey(GameAttribute, on_delete=models.CASCADE, related_name="attribute")
