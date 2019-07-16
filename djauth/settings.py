@@ -10,12 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os, boto3, json, logging
+import os, boto3, json, logging, datetime
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
 
+print("[" + str(datetime.datetime.now()) + "] Loading env variables...")
 logger = logging.getLogger('django')
-load_dotenv()
+if load_dotenv(): print("[" + str(datetime.datetime.now()) + "] Successfully loaded env variables!")
+else: print("[" + str(datetime.datetime.now()) + "] No env file found!")
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
@@ -169,6 +171,7 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #     }
 
 if os.getenv("ENV") == "PROD":
+    print("[" + str(datetime.datetime.now()) + "] Using prod db")
     AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     DATABASES = {
@@ -185,6 +188,7 @@ if os.getenv("ENV") == "PROD":
         }
     }
 elif os.getenv("ENV") == "dev":
+    print("[" + str(datetime.datetime.now()) + "] Using dev db")
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     DATABASES = {
@@ -201,6 +205,7 @@ elif os.getenv("ENV") == "dev":
         }
     }
 elif os.getenv("ENV") == "local":
+    print("[" + str(datetime.datetime.now()) + "] Using local db")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
