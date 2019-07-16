@@ -10,10 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os
+import os, boto3, json
+from dotenv import load_dotenv
+load_dotenv()
+
+def getKeys(bucket, file):
+    s3 = boto3.client('s3')
+    try:
+        keys = s3.get_object(Bucket=bucket, Key=file)
+        config = json.loads(keys['Body'].read())
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+        return None
+    
+    return config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
 
 
 # Quick-start development settings - unsuitable for production
@@ -129,15 +146,69 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if 'RDS_DB_NAME' in os.environ:
+# if 'RDS_DB_NAME' in os.environ:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': os.environ['RDS_DB_NAME'],
+#             'USER': os.environ['RDS_USERNAME'],
+#             'PASSWORD': os.environ['RDS_PASSWORD'],
+#             'HOST': os.environ['RDS_HOSTNAME'],
+#             'PORT': os.environ['RDS_PORT'],
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         }
+#     }
+
+if os.getenv("ENV") == "PROD":
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+elif os.getenv("ENV") == "dev":
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+elif os.getenv("ENV") == "local":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'ibetlocal',
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': 5432,
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
 else:
@@ -294,5 +365,4 @@ STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
 
-AWS_S3_ADMIN_BUCKET = 'ibet-admin'
 

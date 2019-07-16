@@ -9,9 +9,22 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView,
 from .serializers import NoticeMessageSerializer, NotificationSerializer
 from .models import NoticeMessage, Notification
 from users.models import CustomUser
-from djauth import third_party_keys
 
 # from drf_model_pusher.views import ModelPusherViewMixin
+
+def getThirdPartyKeys(bucket, file):
+    s3client = boto3.client("s3")
+    try:
+        config_obj = s3client.get_object(Bucket=bucket, Key=file)
+        config = json.loads(config_obj['Body'].read())
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+        return None
+    
+    return config
 
 
 class NoticeMessageView(ListAPIView):
@@ -83,7 +96,7 @@ class NotificationView(GenericAPIView):
         notification_method = request.POST.get('notification_method')
         notifiers           = request.POST.get('notifiers')
 
-        print(content, notification_choice, notification_method, notifiers)
+        third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
 
         if serializer.is_valid():            
@@ -92,14 +105,14 @@ class NotificationView(GenericAPIView):
             # client = boto3.client('sns', 'us-west-2')
             client = boto3.client(
                 'sns',
-                aws_access_key_id = third_party_keys.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key = third_party_keys.AWS_SECRET_ACCESS_KEY,
+                aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
+                aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
                 #region_name = third_party_keys.AWS_REGION_NAME
             )
 
             # Push Notification
             if notification_method == 'P':
-                platform_endpoint = sns.PlatformEndpoint(third_party_keys.SNS_PLATFORM_ENDPOINT_ARN)
+                platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
 
                 platform_endpoint.publish(
                     Message=content,
@@ -120,7 +133,7 @@ class NotificationView(GenericAPIView):
             # Email Notification
             if notification_method == 'E':
                 # AWS SNS Topic
-                topic = sns.Topic(third_party_keys.SNS_TOPIC_ARN)
+                topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
                 topic.publish(
                     Message=content,
                     Subject='iBet Notification',
