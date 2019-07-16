@@ -33,7 +33,8 @@ CHANNEL_CHOICES = (
     (2, 'Astropay'),
     (3, 'Qaicash'),
     (4, 'Asia Pay'),
-    (5, 'Paypal')
+    (5, 'Paypal'),
+    (6,'fgate'),
 )
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -305,3 +306,8 @@ HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+
+#fgate
+FGATE_URL = "https://api.fgate247.com/charge_card/"
+FGATE_PARTNERID = "fgate123"
+FGATE_PARTNERKEY = "FGATE12"

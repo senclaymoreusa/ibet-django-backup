@@ -8,6 +8,8 @@ import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
 import accounting.views.help2payviews as help2pay
+import accounting.views.fgateviews as fgate
+
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name = 'deposit_method'),
@@ -44,4 +46,5 @@ urlpatterns = [
     path('api/asiapay/depositArrive', asiapay.depositArrive.as_view(), name = 'AsiaPay_deposit_Arrive'),
     path('api/help2pay/deposit', help2pay.submitDeposit.as_view(), name = 'Help2pay_Deposit'),
     path('api/help2pay/deposit_result', help2pay.depositResult.as_view(), name = 'Help2pay_deposit_result'),
+    path('api/fgate/chargeCard', fgate.chargeCard.as_view(), name = 'fgate_Charge_Card'),
 ]
