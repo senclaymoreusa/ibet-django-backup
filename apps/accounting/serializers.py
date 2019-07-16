@@ -214,5 +214,26 @@ class asiapayDepositArriveSerialize(serializers.Serializer):
     ProcessDate      = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
-    
+class help2payDepositSerialize(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ('user_id','amount', 'currency','language','bank')
+class help2payDepositResultSerialize(serializers.Serializer):
+    Merchant         = serializers.CharField(required=False)
+    Reference        = serializers.CharField(required=False)
+    Currency        = serializers.CharField(required=False)
+    Amount        = serializers.CharField(required=False)
+    Language        = serializers.CharField(required=False)
+    Customer        = serializers.CharField(required=False)
+    Datetime        = serializers.CharField(required=False)
+    StatementDate        = serializers.CharField(required=False)
+    Note        = serializers.CharField(required=False)
+    Key        = serializers.CharField(required=False)
+    Status     = serializers.CharField(required=False)
+    ID         = serializers.CharField(required=False)
+    ActualAmount  = serializers.CharField(required=False)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
 
+
+    
