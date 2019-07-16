@@ -12,8 +12,10 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os, boto3, json, logging
 from botocore.exceptions import ClientError, NoCredentialsError
+from dotenv import load_dotenv
 
 logger = logging.getLogger('django')
+load_dotenv()
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
@@ -166,27 +168,9 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #         }
 #     }
 
-
-# if os.environ["ENV"] == "PROD":
-#     AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
-#     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': db_data['RDS_DB_NAME'],
-#             'USER': db_data['RDS_USERNAME'],
-#             'PASSWORD': db_data['RDS_PASSWORD'],
-#             'HOST': db_data['RDS_HOSTNAME'],
-#             'PORT': db_data['RDS_PORT'],
-#         },
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#         }
-#     }
-# elif os.environ["ENV"] == "DEV":
-db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-# AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
-if db_data:
+if os.getenv("ENV") == "PROD":
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -200,7 +184,23 @@ if db_data:
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
-else:
+elif os.getenv("ENV") == "dev":
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+elif os.getenv("ENV") == "local":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -214,6 +214,14 @@ else:
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
