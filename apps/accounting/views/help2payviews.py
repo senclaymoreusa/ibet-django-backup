@@ -72,20 +72,14 @@ class submitDeposit(generics.GenericAPIView):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
         order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
-        print(order_id)
         amount = int(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
-        #print(amount)
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
-        #print(utc_datetime)
         Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
-        #print(Datetime)
         key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
-        #print(key_time)
         bank = self.request.POST.get("bank")
         ip = get_client_ip(request)
         currency = self.request.POST.get("currency")
-        
         data = {
             "Merchant":HELP2PAY_MERCHANT,
             "Customer":user_id,
@@ -118,7 +112,6 @@ class depositResult(generics.GenericAPIView):
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
-        print("result")
         serializer = self.serializer_class(self.get_queryset(), many=True)
         Status = self.request.POST.get('Status')
         
