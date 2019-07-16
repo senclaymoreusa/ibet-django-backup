@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
@@ -103,81 +102,40 @@ class submitDeposit(generics.GenericAPIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
-        print(rdata)
-        return Response(rdata)
+        create = Transaction.objects.create(
+            order_id= order_id,
+            amount=amount,
+            user_id=CustomUser.objects.get(pk=user_id),
+            method= 'Bank Transfer',
+            currency= currency,
+            transaction_type=0,
+            channel=0,
+        )
+        return HttpResponse(rdata)
 
 class depositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
-    def get(self, request, *args, **kwargs):
-        print
-        (
-
-            "hi"
-        )
     def post(self, request, *args, **kwargs):
         print("result")
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        # Status = self.request.POST.get('Status')
-        # create = Transaction.objects.create(
-        #     order_id= self.request.POST.get('Reference'),
-        #     amount=self.request.POST.get('Amount'),
-        #     #user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')),
-        #     method= 'Bank Transfer',
-        #     currency= convertCurrency[self.request.POST.get('Currency')],
-        #     transaction_type=0,
-        #     channel=0,
-        # )
-        # update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),)
-        #                                       user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
-        # if  Status == '000':  
-        #     update_data.status = 0
-        # elif Status == '001':
-        #     update_data.status = 1
-        # elif Status == '006':
-        #     update_data.status = 4
-        # elif Status == '007':
-        #     update_data.status = 8
-        # elif Status == '009':
-        #     update_data.status = 3
-
+        Status = self.request.POST.get('Status')
+        
+        update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
+                                              user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
+        if  Status == '000':  
+            update_data.status = 0
+        elif Status == '001':
+            update_data.status = 1
+        elif Status == '006':
+            update_data.status = 4
+        elif Status == '007':
+            update_data.status = 8
+        elif Status == '009':
+            update_data.status = 3
+        update_data.save()
         return Response({'details': 'result successful arrived'}, status=status.HTTP_200_OK)
         
     
 
-=======
-import requests, json, logging, random, hmac, struct, hashlib, boto3, xml.etree.ElementTree as ET
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.conf import settings
-from django.utils import timezone
-
-from rest_framework import parsers, renderers, status
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser
-from rest_framework.decorators import api_view, permission_classes
-
-from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
-from ..serializers import astroPaymentStatusSerialize
-from utils.constants import *
-from time import sleep, gmtime, strftime
-
-
-
-#get hash code 
-def generateHash(key, message):
-    hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
-    #hash.hexdigest()
-    return hash.hexdigest()
-
-# create money order with astropay card
-def create_deposit(request):
-    if (request.method == "POST"):
-        depositURL = "http://api.besthappylife.biz/MerchantTransfer"
-        merchantInfo = "M0130"
-        
-
-        return
->>>>>>> f067eb8ac7d8450197a8784ec8170121fe5a524d
