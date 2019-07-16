@@ -11,15 +11,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name='transaction',
+            name='transaction_id',
+            field=models.CharField(default=0, max_length=200, verbose_name='Transaction number'),
+        ),
         migrations.AddField(
             model_name='transaction',
             name='id',
             field=models.AutoField(auto_created=True, unique=True, primary_key=True, serialize=False, verbose_name='ID'),
             # field=models.CharField(max_length=200, auto_generated=True, unique=True, editable=False, primary_key=True, serialize=False, verbose_name='ID', ),
-        ),
-        migrations.AlterField(
-            model_name='transaction',
-            name='transaction_id',
-            field=models.CharField(default=0, max_length=200, verbose_name='Transaction number'),
         ),
     ]
