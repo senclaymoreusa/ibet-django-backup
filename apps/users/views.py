@@ -2889,69 +2889,24 @@ class PostTransferforRefund(APIView):
 
         data = str(request.body, 'utf-8')
 
-        idx_start = data.find('<ticketStatus>') + len('<ticketStatus>')
-        idx_end = data.find('</ticketStatus>')
-        ticketStatus = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
-        idx_end = data.find('</sessionToken>')
-        sessionToken = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<currency>') + len('<currency>')
-        idx_end = data.find('</currency>')
-        currency = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<value>') + len('<value>')
-        idx_end = data.find('</value>')
-        value = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<playname>') + len('<playname>')
-        idx_end = data.find('</playname>')
-        playname = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<agentCode>') + len('<agentCode>')
-        idx_end = data.find('</agentCode>')
-        agentCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<betTime>') + len('<betTime>')
-        idx_end = data.find('</betTime>')
-        betTime = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionID>') + len('<transactionID>')
-        idx_end = data.find('</transactionID>')
-        transactionID = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<platformType>') + len('<platformType>')
-        idx_end = data.find('</platformType>')
-        platformType = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<round>') + len('<round>')
-        idx_end = data.find('</round>')
-        Round = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<gametype>') + len('<gametype>')
-        idx_end = data.find('</gametype>')
-        gametype = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<gameCode>') + len('<gameCode>')
-        idx_end = data.find('</gameCode>')
-        gameCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<tableCode>') + len('<tableCode>')
-        idx_end = data.find('</tableCode>')
-        tableCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionType>') + len('<transactionType>')
-        idx_end = data.find('</transactionType>')
-        transactionType = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionCode>') + len('<transactionCode>')
-        idx_end = data.find('</transactionCode>')
-        transactionCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<playtype>') + len('<playtype>')
-        idx_end = data.find('</playtype>')
-        playtype = data[idx_start: idx_end].strip()
+        dic = xmltodict.parse(data)
+ 
+        ticketStatus    = dic['Data']['Record']['ticketStatus']
+        sessionToken    = dic['Data']['Record']['sessionToken']
+        currency        = dic['Data']['Record']['currency']
+        value           = dic['Data']['Record']['value']
+        playname        = dic['Data']['Record']['playname']
+        agentCode       = dic['Data']['Record']['agentCode']
+        betTime         = dic['Data']['Record']['betTime']
+        transactionID   = dic['Data']['Record']['transactionID']
+        platformType    = dic['Data']['Record']['platformType']
+        Round           = dic['Data']['Record']['round']
+        gametype        = dic['Data']['Record']['gametype']
+        gameCode        = dic['Data']['Record']['gameCode']
+        tableCode       = dic['Data']['Record']['tableCode']
+        transactionType = dic['Data']['Record']['transactionType']
+        transactionCode = dic['Data']['Record']['transactionCode']
+        playtype        = dic['Data']['Record']['playtype']
 
         #print(ticketStatus, sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, playtype)
 
