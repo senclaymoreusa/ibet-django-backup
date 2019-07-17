@@ -49,3 +49,6 @@ python-dateutil==2.8.0
 semantic-version==2.5.0
 sqlparse==0.3.0
 python-dotenv==0.10.3
+psycopg2==2.7.1
+xmltodict==0.12.0
+des==1.0.5

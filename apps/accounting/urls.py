@@ -8,7 +8,7 @@ import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
 import accounting.views.help2payviews as help2pay
-import accounting.views.help2payviews as circlepay
+import accounting.views.circlepayviews as circlepay
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name = 'deposit_method'),

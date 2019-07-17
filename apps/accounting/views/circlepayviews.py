@@ -14,3 +14,22 @@ from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, D
 from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
 from time import sleep, gmtime, strftime
+
+
+def create_deposit(request):
+    if request.method == "GET":
+        return HttpResponse("You are at the endpoint for LINEpay reserve payment.")
+    
+    if request.method == "POST": # can only allow post requests
+        userCode = ""
+        transId = ""
+        amount = ""
+        depositURL = "https://gateway.seasolutions.ph/payment/" + userCode + "/?partner_tran_id=" + transId + "&amount=" + amount
+
+        payload = {
+            "email": "",
+            "api_key": ""
+        }
+        # response = requests.post(depositURL, json=payload, headers=headers)
+
+        return JsonResponse({"message": "hi"})
