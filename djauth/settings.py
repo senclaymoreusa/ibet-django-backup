@@ -210,8 +210,8 @@ elif os.getenv("ENV") == "local":
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'ibetlocal',
-            'USER': 'postgres',
-            'PASSWORD': 'kevinkevin12',
+            'USER': '',
+            'PASSWORD': '',
             'HOST': '',
             'PORT': 5432,
         },
