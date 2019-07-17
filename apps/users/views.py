@@ -2962,18 +2962,12 @@ class PostTransferforGetBalance(APIView):
 
         data = str(request.body, 'utf-8')
 
-        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
-        idx_end = data.find('</sessionToken>')
-        sessionToken = data[idx_start: idx_end].strip()
+        dic = xmltodict.parse(data)
 
+        sessionToken     = dic['Data']['Record']['sessionToken']
+        playname         = dic['Data']['Record']['playname']
+        transactionType  = dic['Data']['Record']['transactionType']
 
-        idx_start = data.find('<playname>') + len('<playname>')
-        idx_end = data.find('</playname>')
-        playname = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionType>') + len('<transactionType>')
-        idx_end = data.find('</transactionType>')
-        transactionType = data[idx_start: idx_end].strip()
 
         i = 0
         while playname[i].isalpha():
