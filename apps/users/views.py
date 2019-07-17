@@ -2702,12 +2702,131 @@ class PostTransferforWin(APIView):
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
 
-        print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
+        #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
 
         AGGamemodels.objects.create(
             sessionToken    = sessionToken,
             currency        = currency,
             netAmount       = netAmount,
+            validBetAmount  = validBetAmount, 
+            playname        = playname, 
+            agentCode       = agentCode, 
+            settletime      = settletime, 
+            transactionID   = transactionID, 
+            billNo          = billNo, 
+            gametype        = gametype, 
+            gameCode        = gameCode, 
+            transactionType = transactionType, 
+            transactionCode = transactionCode, 
+            ticketStatus    = ticketStatus, 
+            gameResult      = gameResult, 
+            finish          = finish
+        )
+
+        response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
+
+        return Response(response_data, status=Status)
+
+
+forLose(APIView):
+    
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        ResponseCode = 'ERROR'
+        balance = None
+
+        data = str(request.body, 'utf-8')
+
+        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
+        idx_end = data.find('</sessionToken>')
+        sessionToken = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<currency>') + len('<currency>')
+        idx_end = data.find('</currency>')
+        currency = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<netAmount>') + len('<netAmount>')
+        idx_end = data.find('</netAmount>')
+        netAmount = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<validBetAmount>') + len('<validBetAmount>')
+        idx_end = data.find('</validBetAmount>')
+        validBetAmount = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<playname>') + len('<playname>')
+        idx_end = data.find('</playname>')
+        playname = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<agentCode>') + len('<agentCode>')
+        idx_end = data.find('</agentCode>')
+        agentCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<settletime>') + len('<settletime>')
+        idx_end = data.find('</settletime>')
+        settletime = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionID>') + len('<transactionID>')
+        idx_end = data.find('</transactionID>')
+        transactionID = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<billNo>') + len('<billNo>')
+        idx_end = data.find('</billNo>')
+        billNo = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<gametype>') + len('<gametype>')
+        idx_end = data.find('</gametype>')
+        gametype = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<gameCode>') + len('<gameCode>')
+        idx_end = data.find('</gameCode>')
+        gameCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionType>') + len('<transactionType>')
+        idx_end = data.find('</transactionType>')
+        transactionType = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionCode>') + len('<transactionCode>')
+        idx_end = data.find('</transactionCode>')
+        transactionCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<ticketStatus>') + len('<ticketStatus>')
+        idx_end = data.find('</ticketStatus>')
+        ticketStatus = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<gameResult>') + len('<gameResult>')
+        idx_end = data.find('</gameResult>')
+        gameResult = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<finish>') + len('<finish>')
+        idx_end = data.find('</finish>')
+        finish = data[idx_start: idx_end].strip()
+
+ 
+        #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
+
+        username = playname[len(agentCode):]
+
+        try:
+
+            user = CustomUser.objects.get(username = username)
+            balance = user.main_wallet
+
+            balance -= (int(validBetAmount) - int(netAmount))
+
+            ResponseCode = 'OK'
+            Status = status.HTTP_200_OK
+
+        except:
+
+            Status = status.HTTP_400_BAD_REQUEST
+            ResponseCode = 'INVALID_DATA'
+
+        AGGamemodels.objects.create(
+            sessionToken    = sessionToken, 
+            currency        = currency, 
+            netAmount       = netAmount, 
             validBetAmount  = validBetAmount, 
             playname        = playname, 
             agentCode       = agentCode, 
