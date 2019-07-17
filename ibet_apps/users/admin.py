@@ -8,7 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, Config, NoticeMessage, Bonus, BonusRequirement, UserBonus, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls
+from .models import Language, Category, Status, Game, Config, NoticeMessage, Bonus, BonusRequirement, UserBonus, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls, AGGamemodels
 from .forms import UserCreationForm
 
 class UserAdmin(BaseUserAdmin):
@@ -43,6 +43,7 @@ admin.site.register(BetKenoBalls)
 admin.site.register(GBSportWalletSettle)
 admin.site.register(SettleKenoList)
 admin.site.register(SettleKenoBalls)
+admin.site.register(AGGamemodels)
 
 
 class CustomUserAdmin(UserAdmin):
