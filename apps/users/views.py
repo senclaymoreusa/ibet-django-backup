@@ -2728,7 +2728,7 @@ class PostTransferforWin(APIView):
         return Response(response_data, status=Status)
 
 
-forLose(APIView):
+class PostTransferforLose(APIView):
     
     permission_classes = (AllowAny, )
 
