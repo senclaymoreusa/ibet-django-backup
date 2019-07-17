@@ -59,4 +59,5 @@ urlpatterns += [
     path('api/posttransferforwin/', views.PostTransferforWin.as_view(), name='post_transfer_for_win'),
     path('api/posttransferforlose/', views.PostTransferforLose.as_view(), name='post_transfer_for_lose'),
     path('api/posttransferfordraw/', views.PostTransferforDraw.as_view(), name='post_transfer_for_draw'),
+    path('api/posttransferforrefund/', views.PostTransferforRefund.as_view(), name='post_transfer_for_refund'),
 ]
