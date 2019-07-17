@@ -2948,3 +2948,59 @@ class PostTransferforRefund(APIView):
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
         return Response(response_data, status=Status)
+
+
+
+class PostTransferforGetBalance(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        ResponseCode = 'ERROR'
+        balance = None
+
+        data = str(request.body, 'utf-8')
+
+        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
+        idx_end = data.find('</sessionToken>')
+        sessionToken = data[idx_start: idx_end].strip()
+
+
+        idx_start = data.find('<playname>') + len('<playname>')
+        idx_end = data.find('</playname>')
+        playname = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionType>') + len('<transactionType>')
+        idx_end = data.find('</transactionType>')
+        transactionType = data[idx_start: idx_end].strip()
+
+        i = 0
+        while playname[i].isalpha():
+            i += 1
+        while playname[i].isnumeric():
+            i += 1
+    
+        username = playname[i:]
+
+        try:
+
+            user = CustomUser.objects.get(username = username)
+            balance = user.main_wallet
+            Status = status.HTTP_200_OK
+            ResponseCode = 'OK'
+
+        except:
+
+            Status = status.HTTP_400_BAD_REQUEST
+            ResponseCode = 'INVALID_DATA'
+
+        AGGamemodels.objects.create(
+            sessionToken = sessionToken,
+            playname     = playname,
+            transactionType = transactionType
+        )
+
+        response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
+
+        return Response(response_data, status=Status)
