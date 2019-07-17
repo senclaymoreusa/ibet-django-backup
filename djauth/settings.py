@@ -74,7 +74,6 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'xadmin',
     'crispy_forms',
-    'ibet_apps',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
