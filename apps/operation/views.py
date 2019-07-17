@@ -123,10 +123,6 @@ class NotificationView(CommAdminView):
     lookup_field = 'pk'
     serializer_class = NotificationSerializer
     permission_classes = [AllowAny, ]
-    # queryset = Notification.objects.all()
-
-    def get_queryset(self):
-        return Notification.objects.all()
 
     def get(self, request, *arg, **kwargs):
         context = super().get_context()
@@ -142,9 +138,6 @@ class NotificationView(CommAdminView):
         serializer = NotificationSerializer(queryset, many=True)
         context["queryset"] = queryset
         return render(request, 'notification/index.html', context)
-
-    def put(self, request, *arg, **kwargs):
-        return self.update(request, *arg, **kwargs)
 
     def post(self, request, *arg, **kwargs):
         # subject = request.POST.get('subject')
@@ -251,27 +244,23 @@ class NotificationView(CommAdminView):
             # })
             print(serializer.errors)
             return HttpResponse(serializer.errors)
-    
-    def update(self, request, *arg, **kwargs):
-        serializer = NotificationSerializer(queryset, many=True)
-        queryset = Notification.objects.get(pk=1)
 
-
-def Detail(request, notification_id):
+'''
+class NotificationDetailView(request, notification_id):
     try:
         notification = Notification.objects.get(pk=notification_id)
     except Notification.DoesNotExist:
         raise Http404("Not Exist")
     return render(request, "operation/notification", notification)
-
+'''
 
 class NotificationDetailView(CommAdminView):
-    lookup_field = 'pk'
-    serializer_class = NotificationSerializer
-    permission_classes = [AllowAny, ]
-    # queryset = Notification.objects.all()
+    # lookup_field = 'pk'
+    # serializer_class = NotificationSerializer
+    # permission_classes = [AllowAny, ]
 
-    def get(self, request, notification_id):
+    def get(self, request, *args, **kwargs):
+        notification_id = self.kwargs.get('pk')
         context = super().get_context()
         title = 'message'
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
@@ -281,6 +270,7 @@ class NotificationDetailView(CommAdminView):
         context['all_user'] = CustomUser.objects.all()
         context['auditors'] = CustomUser.objects.filter(is_admin=True)
         context['topics'] = AWSTopic.objects.all()
+        
         queryset = Notification.objects.get(pk=notification_id)
         serializer = NotificationSerializer(queryset, many=False)
         context["queryset"] = queryset
@@ -297,7 +287,39 @@ class NotificationUsersView(ListAPIView):
     queryset = NotificationUsers.objects.all()
 
 
-class AWSTopicView(GenericAPIView):
+class AWSTopicView(CommAdminView):
+    lookup_field = 'pk'
+    serializer_class = AWSTopicSerializer
+    permission_classes = [AllowAny, ]
+
+    def get_queryset(self):
+        return AWSTopic.objects.all()
+
+    def get(self, request, *arg, **kwargs):
+        context = super().get_context()
+        title = 'message'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context["title"] = title
+        context['time'] = timezone.now()
+        queryset = self.get_queryset()
+        serializer = AWSTopicSerializer(queryset, many=True)
+        context['queryset'] = AWSTopic.objects.all()
+
+        return render(request, 'notification/group.html', context)
+
+    def post(self, request, *arg, **kwargs):
+        topic_name = request.POST.get('topic_name')
+        valid_until = request.POST.get('valid_until')
+
+        serializer = AWSTopicSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AWSTopicAPIView(GenericAPIView):
     lookup_field = 'pk'
     serializer_class = AWSTopicSerializer
     permission_classes = [AllowAny, ]
