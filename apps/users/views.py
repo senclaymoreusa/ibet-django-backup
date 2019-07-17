@@ -68,6 +68,8 @@ import decimal
 from utils.constants import *
 import requests
 
+import xmltodict
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
