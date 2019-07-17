@@ -574,3 +574,37 @@ class SettleKenoBalls(models.Model):
     BallID     = models.CharField(max_length=30)
     BallNum    = models.CharField(max_length=30)
     OptResult  = models.CharField(max_length=30)
+
+
+class AGGamemodels(models.Model):
+    sessionToken    = models.CharField(max_length=100, blank=True)
+    currency        = models.CharField(max_length=100, blank=True)
+    value           = models.CharField(max_length=100, blank=True)
+    playname        = models.CharField(max_length=100, blank=True)
+    agentCode       = models.CharField(max_length=100, blank=True)
+    betTime         = models.CharField(max_length=100, blank=True)
+    transactionID   = models.CharField(max_length=100, blank=True)
+    platformType    = models.CharField(max_length=100, blank=True)
+    Round           = models.CharField(max_length=100, blank=True)
+    gametype        = models.CharField(max_length=100, blank=True)
+    gameCode        = models.CharField(max_length=100, blank=True)
+    tableCode       = models.CharField(max_length=100, blank=True)
+    transactionType = models.CharField(max_length=100, blank=True)
+    transactionCode = models.CharField(max_length=100, blank=True)
+    deviceType      = models.CharField(max_length=100, blank=True)
+    playtype        = models.CharField(max_length=100, blank=True)
+    netAmount       = models.CharField(max_length=100, blank=True)
+    validBetAmount  = models.CharField(max_length=100, blank=True)
+    settletime      = models.CharField(max_length=100, blank=True)
+    billNo          = models.CharField(max_length=100, blank=True)
+    ticketStatus    = models.CharField(max_length=100, blank=True)
+    gameResult      = models.CharField(max_length=100, blank=True)
+    finish          = models.CharField(max_length=100, blank=True)
+    remark          = models.CharField(max_length=100, blank=True)
+    amount          = models.CharField(max_length=100, blank=True)
+    gameId          = models.CharField(max_length=100, blank=True)
+    time            = models.CharField(max_length=100, blank=True)
+    roundId         = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.sessionToken

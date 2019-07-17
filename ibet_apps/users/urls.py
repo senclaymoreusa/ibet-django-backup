@@ -54,5 +54,14 @@ urlpatterns += [
     path('api/getusernamebyreferid/', views.GetUsernameByReferid.as_view(), name = 'get_user'),
     path('api/walletgeneral/', views.WalletGeneralAPI.as_view(), name='wallet_general'),
     path('api/walletbet/', views.WalletBetAPIURL.as_view(), name='wallet_bet'),
-    path('api/walletsettle/', views.WalletSettleAPIURL.as_view(), name='wallet_settle')
+    path('api/walletsettle/', views.WalletSettleAPIURL.as_view(), name='wallet_settle'),
+    path('api/posttransferforbet/', views.PostTransferforBet.as_view(), name='post_transfer_for_bet'),
+    path('api/posttransferforwin/', views.PostTransferforWin.as_view(), name='post_transfer_for_win'),
+    path('api/posttransferforlose/', views.PostTransferforLose.as_view(), name='post_transfer_for_lose'),
+    path('api/posttransferfordraw/', views.PostTransferforDraw.as_view(), name='post_transfer_for_draw'),
+    path('api/posttransferforrefund/', views.PostTransferforRefund.as_view(), name='post_transfer_for_refund'),
+    path('api/posttransferforbalance/', views.PostTransferforGetBalance.as_view(), name='post_transfer_for_balance'),
+    path('api/posttransferforwithdraw/', views.PostTransferforWithdraw.as_view(), name='post_transfer_for_widthdraw'),
+    path('api/posttransferfordeposit/', views.PostTransferforDeposit.as_view(), name='post_transfer_for_deposit'),
+    path('api/posttransferforrollback/', views.PostTransferforRollback.as_view(), name='post_transfer_for_rollback')
 ]
