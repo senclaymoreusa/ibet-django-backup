@@ -2591,63 +2591,69 @@ class PostTransferforBet(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken    = dic['Data']['Record']['sessionToken']
-        currency        = dic['Data']['Record']['currency']
-        value           = dic['Data']['Record']['value']
-        playname        = dic['Data']['Record']['playname']
-        agentCode       = dic['Data']['Record']['agentCode']
-        betTime         = dic['Data']['Record']['betTime']
-        transactionID   = dic['Data']['Record']['transactionID']
-        platformType    = dic['Data']['Record']['platformType']
-        Round           = dic['Data']['Record']['round']
-        gametype        = dic['Data']['Record']['gametype']
-        gameCode        = dic['Data']['Record']['gameCode']
-        tableCode       = dic['Data']['Record']['tableCode']
-        transactionType = dic['Data']['Record']['transactionType']
-        transactionCode = dic['Data']['Record']['transactionCode']
-        deviceType      = dic['Data']['Record']['deviceType']
-        playtype        = dic['Data']['Record']['playtype']
-
-        username = playname[len(agentCode):]
-
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
+            sessionToken    = dic['Data']['Record']['sessionToken']
+            currency        = dic['Data']['Record']['currency']
+            value           = dic['Data']['Record']['value']
+            playname        = dic['Data']['Record']['playname']
+            agentCode       = dic['Data']['Record']['agentCode']
+            betTime         = dic['Data']['Record']['betTime']
+            transactionID   = dic['Data']['Record']['transactionID']
+            platformType    = dic['Data']['Record']['platformType']
+            Round           = dic['Data']['Record']['round']
+            gametype        = dic['Data']['Record']['gametype']
+            gameCode        = dic['Data']['Record']['gameCode']
+            tableCode       = dic['Data']['Record']['tableCode']
+            transactionType = dic['Data']['Record']['transactionType']
+            transactionCode = dic['Data']['Record']['transactionCode']
+            deviceType      = dic['Data']['Record']['deviceType']
+            playtype        = dic['Data']['Record']['playtype']
 
-            if user.main_wallet >= int(value):
+            username = playname[len(agentCode):]
 
-                ResponseCode = 'OK'
-                Status = status.HTTP_200_OK
+            try:
 
-            else:
-                Status = status.HTTP_409_CONFLICT
-                ResponseCode = 'INSUFFICIENT_FUNDS'
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
 
+                if user.main_wallet >= int(value):
+
+                    ResponseCode = 'OK'
+                    Status = status.HTTP_200_OK
+
+                else:
+                    Status = status.HTTP_409_CONFLICT
+                    ResponseCode = 'INSUFFICIENT_FUNDS'
+
+            except:
+                    Status = status.HTTP_400_BAD_REQUEST
+                    ResponseCode = 'INVALID_DATA'
+
+            
+            #print(sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, deviceType, playtype )
+
+            AGGamemodels.objects.create(
+                sessionToken    = sessionToken,
+                currency        = currency,
+                playname        = playname,
+                agentCode       = agentCode,
+                betTime         = betTime,
+                transactionID   = transactionID,
+                platformType    = platformType,
+                Round           = Round,
+                gametype        = gametype,
+                gameCode        = gameCode,
+                tableCode       = tableCode,
+                transactionType = transactionType,
+                transactionCode = transactionCode,
+                deviceType      = deviceType, 
+                playtype        = playtype
+            )
+    
         except:
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        
-        #print(sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, deviceType, playtype )
-
-        AGGamemodels.objects.create(
-            sessionToken    = sessionToken,
-            currency        = currency,
-            playname        = playname,
-            agentCode       = agentCode,
-            betTime         = betTime,
-            transactionID   = transactionID,
-            platformType    = platformType,
-            Round           = Round,
-            gametype        = gametype,
-            gameCode        = gameCode,
-            tableCode       = tableCode,
-            transactionType = transactionType,
-            transactionCode = transactionCode,
-            deviceType      = deviceType, 
-            playtype        = playtype
-        )
+            Status = status.HTTP_400_BAD_REQUEST
+            ResponseCode = 'INVALID_DATA'
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
@@ -2668,60 +2674,67 @@ class PostTransferforWin(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken    = dic['Data']['Record']['sessionToken']
-        currency        = dic['Data']['Record']['currency']
-        netAmount       = dic['Data']['Record']['netAmount']
-        validBetAmount  = dic['Data']['Record']['validBetAmount']
-        playname        = dic['Data']['Record']['playname']
-        agentCode       = dic['Data']['Record']['agentCode']
-        settletime      = dic['Data']['Record']['settletime']
-        transactionID   = dic['Data']['Record']['transactionID']
-        billNo          = dic['Data']['Record']['billNo']
-        gametype        = dic['Data']['Record']['gametype']
-        gameCode        = dic['Data']['Record']['gameCode']
-        transactionType = dic['Data']['Record']['transactionType']
-        transactionCode = dic['Data']['Record']['transactionCode']
-        ticketStatus    = dic['Data']['Record']['ticketStatus']
-        gameResult      = dic['Data']['Record']['gameResult']
-        finish          = dic['Data']['Record']['finish']
-
-        username = playname[len(agentCode):]
-
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
+            sessionToken    = dic['Data']['Record']['sessionToken']
+            currency        = dic['Data']['Record']['currency']
+            netAmount       = dic['Data']['Record']['netAmount']
+            validBetAmount  = dic['Data']['Record']['validBetAmount']
+            playname        = dic['Data']['Record']['playname']
+            agentCode       = dic['Data']['Record']['agentCode']
+            settletime      = dic['Data']['Record']['settletime']
+            transactionID   = dic['Data']['Record']['transactionID']
+            billNo          = dic['Data']['Record']['billNo']
+            gametype        = dic['Data']['Record']['gametype']
+            gameCode        = dic['Data']['Record']['gameCode']
+            transactionType = dic['Data']['Record']['transactionType']
+            transactionCode = dic['Data']['Record']['transactionCode']
+            ticketStatus    = dic['Data']['Record']['ticketStatus']
+            gameResult      = dic['Data']['Record']['gameResult']
+            finish          = dic['Data']['Record']['finish']
 
-            balance += int(netAmount) + int(validBetAmount)
+            username = playname[len(agentCode):]
 
-            ResponseCode = 'OK'
-            Status = status.HTTP_200_OK
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+
+                balance += int(netAmount) + int(validBetAmount)
+
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
+
+            AGGamemodels.objects.create(
+                sessionToken    = sessionToken,
+                currency        = currency,
+                netAmount       = netAmount,
+                validBetAmount  = validBetAmount, 
+                playname        = playname, 
+                agentCode       = agentCode, 
+                settletime      = settletime, 
+                transactionID   = transactionID, 
+                billNo          = billNo, 
+                gametype        = gametype, 
+                gameCode        = gameCode, 
+                transactionType = transactionType, 
+                transactionCode = transactionCode, 
+                ticketStatus    = ticketStatus, 
+                gameResult      = gameResult, 
+                finish          = finish
+            )
 
         except:
 
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-        #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
-
-        AGGamemodels.objects.create(
-            sessionToken    = sessionToken,
-            currency        = currency,
-            netAmount       = netAmount,
-            validBetAmount  = validBetAmount, 
-            playname        = playname, 
-            agentCode       = agentCode, 
-            settletime      = settletime, 
-            transactionID   = transactionID, 
-            billNo          = billNo, 
-            gametype        = gametype, 
-            gameCode        = gameCode, 
-            transactionType = transactionType, 
-            transactionCode = transactionCode, 
-            ticketStatus    = ticketStatus, 
-            gameResult      = gameResult, 
-            finish          = finish
-        )
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
@@ -2741,60 +2754,68 @@ class PostTransferforLose(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken    = dic['Data']['Record']['sessionToken']
-        currency        = dic['Data']['Record']['currency']
-        netAmount       = dic['Data']['Record']['netAmount']
-        validBetAmount  = dic['Data']['Record']['validBetAmount']
-        playname        = dic['Data']['Record']['playname']
-        agentCode       = dic['Data']['Record']['agentCode']
-        settletime      = dic['Data']['Record']['settletime']
-        transactionID   = dic['Data']['Record']['transactionID']
-        billNo          = dic['Data']['Record']['billNo']
-        gametype        = dic['Data']['Record']['gametype']
-        gameCode        = dic['Data']['Record']['gameCode']
-        transactionType = dic['Data']['Record']['transactionType']
-        transactionCode = dic['Data']['Record']['transactionCode']
-        ticketStatus    = dic['Data']['Record']['ticketStatus']
-        gameResult      = dic['Data']['Record']['gameResult']
-        finish          = dic['Data']['Record']['finish']
-
-        #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
-
-        username = playname[len(agentCode):]
 
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
+            sessionToken    = dic['Data']['Record']['sessionToken']
+            currency        = dic['Data']['Record']['currency']
+            netAmount       = dic['Data']['Record']['netAmount']
+            validBetAmount  = dic['Data']['Record']['validBetAmount']
+            playname        = dic['Data']['Record']['playname']
+            agentCode       = dic['Data']['Record']['agentCode']
+            settletime      = dic['Data']['Record']['settletime']
+            transactionID   = dic['Data']['Record']['transactionID']
+            billNo          = dic['Data']['Record']['billNo']
+            gametype        = dic['Data']['Record']['gametype']
+            gameCode        = dic['Data']['Record']['gameCode']
+            transactionType = dic['Data']['Record']['transactionType']
+            transactionCode = dic['Data']['Record']['transactionCode']
+            ticketStatus    = dic['Data']['Record']['ticketStatus']
+            gameResult      = dic['Data']['Record']['gameResult']
+            finish          = dic['Data']['Record']['finish']
 
-            balance -= (int(validBetAmount) - int(netAmount))
+            #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
 
-            ResponseCode = 'OK'
-            Status = status.HTTP_200_OK
+            username = playname[len(agentCode):]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+
+                balance -= (int(validBetAmount) - int(netAmount))
+
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            AGGamemodels.objects.create(
+                sessionToken    = sessionToken, 
+                currency        = currency, 
+                netAmount       = netAmount, 
+                validBetAmount  = validBetAmount, 
+                playname        = playname, 
+                agentCode       = agentCode, 
+                settletime      = settletime, 
+                transactionID   = transactionID, 
+                billNo          = billNo, 
+                gametype        = gametype, 
+                gameCode        = gameCode, 
+                transactionType = transactionType, 
+                transactionCode = transactionCode, 
+                ticketStatus    = ticketStatus, 
+                gameResult      = gameResult, 
+                finish          = finish
+            )
 
         except:
 
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-        AGGamemodels.objects.create(
-            sessionToken    = sessionToken, 
-            currency        = currency, 
-            netAmount       = netAmount, 
-            validBetAmount  = validBetAmount, 
-            playname        = playname, 
-            agentCode       = agentCode, 
-            settletime      = settletime, 
-            transactionID   = transactionID, 
-            billNo          = billNo, 
-            gametype        = gametype, 
-            gameCode        = gameCode, 
-            transactionType = transactionType, 
-            transactionCode = transactionCode, 
-            ticketStatus    = ticketStatus, 
-            gameResult      = gameResult, 
-            finish          = finish
-        )
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
@@ -2814,60 +2835,68 @@ class PostTransferforDraw(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken    = dic['Data']['Record']['sessionToken']
-        currency        = dic['Data']['Record']['currency']
-        netAmount       = dic['Data']['Record']['netAmount']
-        validBetAmount  = dic['Data']['Record']['validBetAmount']
-        playname        = dic['Data']['Record']['playname']
-        agentCode       = dic['Data']['Record']['agentCode']
-        settletime      = dic['Data']['Record']['settletime']
-        transactionID   = dic['Data']['Record']['transactionID']
-        billNo          = dic['Data']['Record']['billNo']
-        gametype        = dic['Data']['Record']['gametype']
-        gameCode        = dic['Data']['Record']['gameCode']
-        transactionType = dic['Data']['Record']['transactionType']
-        transactionCode = dic['Data']['Record']['transactionCode']
-        ticketStatus    = dic['Data']['Record']['ticketStatus']
-        gameResult      = dic['Data']['Record']['gameResult']
-        finish          = dic['Data']['Record']['finish']
-
-        #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
-
-        username = playname[len(agentCode):]
-
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
-            balance += int(validBetAmount)
+            sessionToken    = dic['Data']['Record']['sessionToken']
+            currency        = dic['Data']['Record']['currency']
+            netAmount       = dic['Data']['Record']['netAmount']
+            validBetAmount  = dic['Data']['Record']['validBetAmount']
+            playname        = dic['Data']['Record']['playname']
+            agentCode       = dic['Data']['Record']['agentCode']
+            settletime      = dic['Data']['Record']['settletime']
+            transactionID   = dic['Data']['Record']['transactionID']
+            billNo          = dic['Data']['Record']['billNo']
+            gametype        = dic['Data']['Record']['gametype']
+            gameCode        = dic['Data']['Record']['gameCode']
+            transactionType = dic['Data']['Record']['transactionType']
+            transactionCode = dic['Data']['Record']['transactionCode']
+            ticketStatus    = dic['Data']['Record']['ticketStatus']
+            gameResult      = dic['Data']['Record']['gameResult']
+            finish          = dic['Data']['Record']['finish']
 
-            ResponseCode = 'OK'
-            Status = status.HTTP_200_OK
+            #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
+
+            username = playname[len(agentCode):]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+                balance += int(validBetAmount)
+
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+
+            AGGamemodels.objects.create(
+                sessionToken     = sessionToken, 
+                currency         = currency, 
+                netAmount        = netAmount, 
+                validBetAmount   =  validBetAmount, 
+                playname         =  playname, 
+                agentCode        =  agentCode, 
+                settletime       = settletime, 
+                transactionID    = transactionID, 
+                billNo           =  billNo, 
+                gametype         =  gametype, 
+                gameCode         =  gameCode, 
+                transactionType  =  transactionType, 
+                transactionCode  =  transactionCode, 
+                ticketStatus     =  ticketStatus, 
+                gameResult       =   gameResult, 
+                finish  =  finish
+            )
 
         except:
 
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
 
-
-        AGGamemodels.objects.create(
-            sessionToken     = sessionToken, 
-            currency         = currency, 
-            netAmount        = netAmount, 
-            validBetAmount   =  validBetAmount, 
-            playname         =  playname, 
-            agentCode        =  agentCode, 
-            settletime       = settletime, 
-            transactionID    = transactionID, 
-            billNo           =  billNo, 
-            gametype         =  gametype, 
-            gameCode         =  gameCode, 
-            transactionType  =  transactionType, 
-            transactionCode  =  transactionCode, 
-            ticketStatus     =  ticketStatus, 
-            gameResult       =   gameResult, 
-            finish  =  finish
-        )
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
         return Response(response_data, status=Status)
@@ -2891,59 +2920,68 @@ class PostTransferforRefund(APIView):
 
         dic = xmltodict.parse(data)
  
-        ticketStatus    = dic['Data']['Record']['ticketStatus']
-        sessionToken    = dic['Data']['Record']['sessionToken']
-        currency        = dic['Data']['Record']['currency']
-        value           = dic['Data']['Record']['value']
-        playname        = dic['Data']['Record']['playname']
-        agentCode       = dic['Data']['Record']['agentCode']
-        betTime         = dic['Data']['Record']['betTime']
-        transactionID   = dic['Data']['Record']['transactionID']
-        platformType    = dic['Data']['Record']['platformType']
-        Round           = dic['Data']['Record']['round']
-        gametype        = dic['Data']['Record']['gametype']
-        gameCode        = dic['Data']['Record']['gameCode']
-        tableCode       = dic['Data']['Record']['tableCode']
-        transactionType = dic['Data']['Record']['transactionType']
-        transactionCode = dic['Data']['Record']['transactionCode']
-        playtype        = dic['Data']['Record']['playtype']
-
-        #print(ticketStatus, sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, playtype)
-
-        username = playname[len(agentCode):]
 
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
-            balance += int(value)
-            ResponseCode = 'OK'
-            Status = status.HTTP_200_OK
+
+            ticketStatus    = dic['Data']['Record']['ticketStatus']
+            sessionToken    = dic['Data']['Record']['sessionToken']
+            currency        = dic['Data']['Record']['currency']
+            value           = dic['Data']['Record']['value']
+            playname        = dic['Data']['Record']['playname']
+            agentCode       = dic['Data']['Record']['agentCode']
+            betTime         = dic['Data']['Record']['betTime']
+            transactionID   = dic['Data']['Record']['transactionID']
+            platformType    = dic['Data']['Record']['platformType']
+            Round           = dic['Data']['Record']['round']
+            gametype        = dic['Data']['Record']['gametype']
+            gameCode        = dic['Data']['Record']['gameCode']
+            tableCode       = dic['Data']['Record']['tableCode']
+            transactionType = dic['Data']['Record']['transactionType']
+            transactionCode = dic['Data']['Record']['transactionCode']
+            playtype        = dic['Data']['Record']['playtype']
+
+            #print(ticketStatus, sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, playtype)
+
+            username = playname[len(agentCode):]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+                balance += int(value)
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+
+            AGGamemodels.objects.create(
+                ticketStatus = ticketStatus, 
+                sessionToken = sessionToken, 
+                currency     = currency, 
+                value        = value, 
+                playname     = playname, 
+                agentCode    = agentCode, 
+                betTime      = betTime, 
+                transactionID = transactionID, 
+                platformType  = platformType, 
+                Round         = Round, 
+                gametype      = gametype, 
+                gameCode      = gameCode, 
+                tableCode     = tableCode, 
+                transactionType = transactionType, 
+                transactionCode = transactionCode, 
+                playtype = playtype
+            )
 
         except:
 
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-
-        AGGamemodels.objects.create(
-            ticketStatus = ticketStatus, 
-            sessionToken = sessionToken, 
-            currency     = currency, 
-            value        = value, 
-            playname     = playname, 
-            agentCode    = agentCode, 
-            betTime      = betTime, 
-            transactionID = transactionID, 
-            platformType  = platformType, 
-            Round         = Round, 
-            gametype      = gametype, 
-            gameCode      = gameCode, 
-            tableCode     = tableCode, 
-            transactionType = transactionType, 
-            transactionCode = transactionCode, 
-            playtype = playtype
-        )
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
@@ -2964,36 +3002,43 @@ class PostTransferforGetBalance(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken     = dic['Data']['Record']['sessionToken']
-        playname         = dic['Data']['Record']['playname']
-        transactionType  = dic['Data']['Record']['transactionType']
-
-
-        i = 0
-        while playname[i].isalpha():
-            i += 1
-        while playname[i].isnumeric():
-            i += 1
-    
-        username = playname[i:]
-
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
-            Status = status.HTTP_200_OK
-            ResponseCode = 'OK'
+            sessionToken     = dic['Data']['Record']['sessionToken']
+            playname         = dic['Data']['Record']['playname']
+            transactionType  = dic['Data']['Record']['transactionType']
+
+
+            i = 0
+            while playname[i].isalpha():
+                i += 1
+            while playname[i].isnumeric():
+                i += 1
+        
+            username = playname[i:]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+                Status = status.HTTP_200_OK
+                ResponseCode = 'OK'
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            AGGamemodels.objects.create(
+                sessionToken = sessionToken,
+                playname     = playname,
+                transactionType = transactionType
+            )
 
         except:
 
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-        AGGamemodels.objects.create(
-            sessionToken = sessionToken,
-            playname     = playname,
-            transactionType = transactionType
-        )
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
@@ -3013,58 +3058,68 @@ class PostTransferforWithdraw(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken     = dic['Data']['Record']['sessionToken']
-        playname         = dic['Data']['Record']['playname']
-        transactionType  = dic['Data']['Record']['transactionType']
-        transactionID    = dic['Data']['Record']['transactionID']
-        currency         = dic['Data']['Record']['currency']
-        amount           = dic['Data']['Record']['amount']
-        gameId           = dic['Data']['Record']['gameId']
-        roundId          = dic['Data']['Record']['roundId']
-        time             = dic['Data']['Record']['time']
-        remark           = dic['Data']['Record']['remark']
-
-        #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
-
-        i = 0
-        while playname[i].isalpha():
-            i += 1
-        while playname[i].isnumeric():
-            i += 1
-    
-        username = playname[i:]
 
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
 
-            if float(balance) >= float(amount):
-                balance -= decimal.Decimal(amount)
-                ResponseCode = 'OK'
-                Status = status.HTTP_200_OK
+            sessionToken     = dic['Data']['Record']['sessionToken']
+            playname         = dic['Data']['Record']['playname']
+            transactionType  = dic['Data']['Record']['transactionType']
+            transactionID    = dic['Data']['Record']['transactionID']
+            currency         = dic['Data']['Record']['currency']
+            amount           = dic['Data']['Record']['amount']
+            gameId           = dic['Data']['Record']['gameId']
+            roundId          = dic['Data']['Record']['roundId']
+            time             = dic['Data']['Record']['time']
+            remark           = dic['Data']['Record']['remark']
 
-            else:
-                
-                Status = status.HTTP_409_CONFLICT
-                ResponseCode = 'INSUFFICIENT_FUNDS'
+            #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
 
+            i = 0
+            while playname[i].isalpha():
+                i += 1
+            while playname[i].isnumeric():
+                i += 1
+        
+            username = playname[i:]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+
+                if float(balance) >= float(amount):
+                    balance -= decimal.Decimal(amount)
+                    ResponseCode = 'OK'
+                    Status = status.HTTP_200_OK
+
+                else:
+                    
+                    Status = status.HTTP_409_CONFLICT
+                    ResponseCode = 'INSUFFICIENT_FUNDS'
+
+            except:
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            AGGamemodels.objects.create(
+                sessionToken     = sessionToken, 
+                playname         = playname, 
+                transactionType  = transactionType, 
+                transactionID    = transactionID, 
+                currency         = currency, 
+                amount           = amount, 
+                gameId           = gameId, 
+                roundId          = roundId, 
+                time             = time, 
+                remark           = remark,
+            )
+
+        
         except:
+
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-        AGGamemodels.objects.create(
-            sessionToken     = sessionToken, 
-            playname         = playname, 
-            transactionType  = transactionType, 
-            transactionID    = transactionID, 
-            currency         = currency, 
-            amount           = amount, 
-            gameId           = gameId, 
-            roundId          = roundId, 
-            time             = time, 
-            remark           = remark,
-        )
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
@@ -3084,52 +3139,59 @@ class PostTransferforDeposit(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken     = dic['Data']['Record']['sessionToken']
-        playname         = dic['Data']['Record']['playname']
-        transactionType  = dic['Data']['Record']['transactionType']
-        transactionID    = dic['Data']['Record']['transactionID']
-        currency         = dic['Data']['Record']['currency']
-        amount           = dic['Data']['Record']['amount']
-        gameId           = dic['Data']['Record']['gameId']
-        roundId          = dic['Data']['Record']['roundId']
-        time             = dic['Data']['Record']['time']
-        remark           = dic['Data']['Record']['remark']
-
-        #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
-
-        i = 0
-        while playname[i].isalpha():
-            i += 1
-        while playname[i].isnumeric():
-            i += 1
-    
-        username = playname[i:]
-
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
-            balance += decimal.Decimal(amount)
-            ResponseCode = 'OK'
-            Status = status.HTTP_200_OK
+            sessionToken     = dic['Data']['Record']['sessionToken']
+            playname         = dic['Data']['Record']['playname']
+            transactionType  = dic['Data']['Record']['transactionType']
+            transactionID    = dic['Data']['Record']['transactionID']
+            currency         = dic['Data']['Record']['currency']
+            amount           = dic['Data']['Record']['amount']
+            gameId           = dic['Data']['Record']['gameId']
+            roundId          = dic['Data']['Record']['roundId']
+            time             = dic['Data']['Record']['time']
+            remark           = dic['Data']['Record']['remark']
+
+            #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
+
+            i = 0
+            while playname[i].isalpha():
+                i += 1
+            while playname[i].isnumeric():
+                i += 1
+        
+            username = playname[i:]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+                balance += decimal.Decimal(amount)
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            except:
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            AGGamemodels.objects.create(
+                sessionToken     = sessionToken, 
+                playname         = playname, 
+                transactionType  = transactionType, 
+                transactionID    = transactionID, 
+                currency         = currency, 
+                amount           = amount, 
+                gameId           = gameId, 
+                roundId          = roundId, 
+                time             = time, 
+                remark           = remark,
+            )
 
         except:
+
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-        AGGamemodels.objects.create(
-            sessionToken     = sessionToken, 
-            playname         = playname, 
-            transactionType  = transactionType, 
-            transactionID    = transactionID, 
-            currency         = currency, 
-            amount           = amount, 
-            gameId           = gameId, 
-            roundId          = roundId, 
-            time             = time, 
-            remark           = remark,
-        )
-
+        
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
         return Response(response_data, status=Status)
@@ -3148,50 +3210,57 @@ class PostTransferforRollback(APIView):
 
         dic = xmltodict.parse(data)
 
-        sessionToken     = dic['Data']['Record']['sessionToken']
-        playname         = dic['Data']['Record']['playname']
-        transactionType  = dic['Data']['Record']['transactionType']
-        transactionID    = dic['Data']['Record']['transactionID']
-        currency         = dic['Data']['Record']['currency']
-        amount           = dic['Data']['Record']['amount']
-        gameId           = dic['Data']['Record']['gameId']
-        roundId          = dic['Data']['Record']['roundId']
-        time             = dic['Data']['Record']['time']
-        remark           = dic['Data']['Record']['remark']
-
-        #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
-
-        i = 0
-        while playname[i].isalpha():
-            i += 1
-        while playname[i].isnumeric():
-            i += 1
-    
-        username = playname[i:]
-
         try:
 
-            user = CustomUser.objects.get(username = username)
-            balance = user.main_wallet
-            Status = status.HTTP_200_OK
-            ResponseCode = 'OK'
+            sessionToken     = dic['Data']['Record']['sessionToken']
+            playname         = dic['Data']['Record']['playname']
+            transactionType  = dic['Data']['Record']['transactionType']
+            transactionID    = dic['Data']['Record']['transactionID']
+            currency         = dic['Data']['Record']['currency']
+            amount           = dic['Data']['Record']['amount']
+            gameId           = dic['Data']['Record']['gameId']
+            roundId          = dic['Data']['Record']['roundId']
+            time             = dic['Data']['Record']['time']
+            remark           = dic['Data']['Record']['remark']
+
+            #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
+
+            i = 0
+            while playname[i].isalpha():
+                i += 1
+            while playname[i].isnumeric():
+                i += 1
+        
+            username = playname[i:]
+
+            try:
+
+                user = CustomUser.objects.get(username = username)
+                balance = user.main_wallet
+                Status = status.HTTP_200_OK
+                ResponseCode = 'OK'
+
+            except:
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            AGGamemodels.objects.create(
+                sessionToken     = sessionToken, 
+                playname         = playname, 
+                transactionType  =  transactionType, 
+                transactionID    = transactionType, 
+                currency         = transactionType, 
+                amount           = amount, 
+                gameId           = gameId, 
+                roundId          = roundId, 
+                time             = time, 
+                remark           = remark,
+            )
 
         except:
+
             Status = status.HTTP_400_BAD_REQUEST
             ResponseCode = 'INVALID_DATA'
-
-        AGGamemodels.objects.create(
-            sessionToken     = sessionToken, 
-            playname         = playname, 
-            transactionType  =  transactionType, 
-            transactionID    = transactionType, 
-            currency         = transactionType, 
-            amount           = amount, 
-            gameId           = gameId, 
-            roundId          = roundId, 
-            time             = time, 
-            remark           = remark,
-        )
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
