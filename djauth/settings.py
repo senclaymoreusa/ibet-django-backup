@@ -65,7 +65,7 @@ import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
-sys.path.insert(0,os.path.join(BASE_DIR, 'ibet-apps'))
+sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
 # Application definition
 
@@ -74,7 +74,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'xadmin',
     'crispy_forms',
-    'ibet-apps',
+    'ibet_apps',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
