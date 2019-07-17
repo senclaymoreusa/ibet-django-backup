@@ -51,7 +51,7 @@ from allauth.account import app_settings as allauth_settings
 from dateutil.relativedelta import relativedelta
 from .serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from .forms import RenewBookForm, CustomUserCreationForm
-from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls
+from .models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls, AGGamemodels
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
@@ -2589,73 +2589,24 @@ class PostTransferforBet(APIView):
 
         data = str(request.body, 'utf-8')
 
-        temp = json.dumps(xmltodict.parse(data))
+        dic = xmltodict.parse(data)
 
-        print(temp)
-
-        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
-        idx_end = data.find('</sessionToken>')
-        sessionToken = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<currency>') + len('<currency>')
-        idx_end = data.find('</currency>')
-        currency = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<value>') + len('<value>')
-        idx_end = data.find('</value>')
-        value = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<playname>') + len('<playname>')
-        idx_end = data.find('</playname>')
-        playname = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<agentCode>') + len('<agentCode>')
-        idx_end = data.find('</agentCode>')
-        agentCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<betTime>') + len('<betTime>')
-        idx_end = data.find('</betTime>')
-        betTime = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionID>') + len('<transactionID>')
-        idx_end = data.find('</transactionID>')
-        transactionID = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<platformType>') + len('<platformType>')
-        idx_end = data.find('</platformType>')
-        platformType = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<round>') + len('<round>')
-        idx_end = data.find('</round>')
-        Round = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<gametype>') + len('<gametype>')
-        idx_end = data.find('</gametype>')
-        gametype = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<gameCode>') + len('<gameCode>')
-        idx_end = data.find('</gameCode>')
-        gameCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<tableCode>') + len('<tableCode>')
-        idx_end = data.find('</tableCode>')
-        tableCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionType>') + len('<transactionType>')
-        idx_end = data.find('</transactionType>')
-        transactionType = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionCode>') + len('<transactionCode>')
-        idx_end = data.find('</transactionCode>')
-        transactionCode = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<deviceType>') + len('<deviceType>')
-        idx_end = data.find('</deviceType>')
-        deviceType = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<playtype>') + len('<playtype>')
-        idx_end = data.find('</playtype>')
-        playtype = data[idx_start: idx_end].strip()
+        sessionToken    = dic['Data']['Record']['sessionToken']
+        currency        = dic['Data']['Record']['currency']
+        value           = dic['Data']['Record']['value']
+        playname        = dic['Data']['Record']['playname']
+        agentCode       = dic['Data']['Record']['agentCode']
+        betTime         = dic['Data']['Record']['betTime']
+        transactionID   = dic['Data']['Record']['transactionID']
+        platformType    = dic['Data']['Record']['platformType']
+        Round           = dic['Data']['Record']['round']
+        gametype        = dic['Data']['Record']['gametype']
+        gameCode        = dic['Data']['Record']['gameCode']
+        tableCode       = dic['Data']['Record']['tableCode']
+        transactionType = dic['Data']['Record']['transactionType']
+        transactionCode = dic['Data']['Record']['transactionCode']
+        deviceType      = dic['Data']['Record']['deviceType']
+        playtype        = dic['Data']['Record']['playtype']
 
         username = playname[len(agentCode):]
 
