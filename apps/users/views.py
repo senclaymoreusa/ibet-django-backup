@@ -2577,3 +2577,127 @@ class WalletSettleAPIURL(APIView):
             "ErrorDesc":       error 
         })
 
+
+class PostTransferforBet(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        ResponseCode = 'ERROR'
+        balance = None
+
+        data = str(request.body, 'utf-8')
+
+        temp = json.dumps(xmltodict.parse(data))
+
+        print(temp)
+
+        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
+        idx_end = data.find('</sessionToken>')
+        sessionToken = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<currency>') + len('<currency>')
+        idx_end = data.find('</currency>')
+        currency = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<value>') + len('<value>')
+        idx_end = data.find('</value>')
+        value = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<playname>') + len('<playname>')
+        idx_end = data.find('</playname>')
+        playname = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<agentCode>') + len('<agentCode>')
+        idx_end = data.find('</agentCode>')
+        agentCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<betTime>') + len('<betTime>')
+        idx_end = data.find('</betTime>')
+        betTime = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionID>') + len('<transactionID>')
+        idx_end = data.find('</transactionID>')
+        transactionID = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<platformType>') + len('<platformType>')
+        idx_end = data.find('</platformType>')
+        platformType = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<round>') + len('<round>')
+        idx_end = data.find('</round>')
+        Round = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<gametype>') + len('<gametype>')
+        idx_end = data.find('</gametype>')
+        gametype = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<gameCode>') + len('<gameCode>')
+        idx_end = data.find('</gameCode>')
+        gameCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<tableCode>') + len('<tableCode>')
+        idx_end = data.find('</tableCode>')
+        tableCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionType>') + len('<transactionType>')
+        idx_end = data.find('</transactionType>')
+        transactionType = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionCode>') + len('<transactionCode>')
+        idx_end = data.find('</transactionCode>')
+        transactionCode = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<deviceType>') + len('<deviceType>')
+        idx_end = data.find('</deviceType>')
+        deviceType = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<playtype>') + len('<playtype>')
+        idx_end = data.find('</playtype>')
+        playtype = data[idx_start: idx_end].strip()
+
+        username = playname[len(agentCode):]
+
+        try:
+
+            user = CustomUser.objects.get(username = username)
+            balance = user.main_wallet
+
+            if user.main_wallet >= int(value):
+
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            else:
+                Status = status.HTTP_409_CONFLICT
+                ResponseCode = 'INSUFFICIENT_FUNDS'
+
+        except:
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+        
+        #print(sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, deviceType, playtype )
+
+        AGGamemodels.objects.create(
+            sessionToken    = sessionToken,
+            currency        = currency,
+            playname        = playname,
+            agentCode       = agentCode,
+            betTime         = betTime,
+            transactionID   = transactionID,
+            platformType    = platformType,
+            Round           = Round,
+            gametype        = gametype,
+            gameCode        = gameCode,
+            tableCode       = tableCode,
+            transactionType = transactionType,
+            transactionCode = transactionCode,
+            deviceType      = deviceType, 
+            playtype        = playtype
+        )
+
+        response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
+
+        return Response(response_data, status=Status)
