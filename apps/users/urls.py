@@ -56,4 +56,5 @@ urlpatterns += [
     path('api/walletbet/', views.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', views.WalletSettleAPIURL.as_view(), name='wallet_settle'),
     path('api/posttransferforbet/', views.PostTransferforBet.as_view(), name='post_transfer_for_bet'),
+    path('api/posttransferforwin/', views.PostTransferforWin.as_view(), name='post_transfer_for_win'),
 ]
