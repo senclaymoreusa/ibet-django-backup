@@ -52,14 +52,14 @@ class GameSearchView(View):
         theme = request.GET.get('theme')
         sort = request.GET.get('sort')
 
-        print("q: " + str(q))
-        print("type: " + str(gameType))
-        print("category: " + str(category))
-        print("jackpot: " + str(jackpot))
-        print("provider: " + str(provider))
+        # print("q: " + str(q))
+        # print("type: " + str(gameType))
+        # print("category: " + str(category))
+        # print("jackpot: " + str(jackpot))
+        # print("provider: " + str(provider))
         attributeList = []
-        if gameType:
-            attributeList = attributeList + gameType.split()
+        # if gameType:
+        #     attributeList = attributeList + gameType.split()
         if category:
             attributeList = attributeList + category.split()
         if jackpot:
@@ -71,22 +71,26 @@ class GameSearchView(View):
         if theme:
             attributeList = attributeList + theme.split()
         
-        print(str(attributeList))
-        print("fearture: " + str(fearture))
-        print("theme: " + str(theme))
-        print("sort: " + str(sort))
+        # print(str(attributeList))
+        # print("fearture: " + str(fearture))
+        # print("theme: " + str(theme))
+        # print("sort: " + str(sort))
 
         filter = Q()
-        if len(q) > 0:
+        if q:
             filter |= (
                 Q(name__icontains=q)|Q(name_zh__icontains=q)|
                 Q(name_fr__icontains=q)|Q(description__icontains=q)|
                 Q(description_zh__icontains=q)|Q(description_fr__icontains=q)| 
                 Q(attribute__icontains=q)|Q(category_id__name__icontains=q)
             )
-        
+
+        if gameType:
+            print(str(gameType))
+            filter = filter & Q(category_id__name__icontains=gameType) 
+
         for attr in attributeList:
-            filter = filter | Q(attribute__icontains=attr)
+            filter = filter & Q(attribute__icontains=attr) 
 
         if sort == 'name':
             data = Game.objects.filter(filter).order_by('name')
