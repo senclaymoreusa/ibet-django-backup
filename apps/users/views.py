@@ -2998,3 +2998,101 @@ class PostTransferforGetBalance(APIView):
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
         return Response(response_data, status=Status)
+
+
+class PostTransferforWithdraw(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        ResponseCode = 'ERROR'
+        balance = None
+
+        data = str(request.body, 'utf-8')
+
+        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
+        idx_end = data.find('</sessionToken>')
+        sessionToken = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<playname>') + len('<playname>')
+        idx_end = data.find('</playname>')
+        playname = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionType>') + len('<transactionType>')
+        idx_end = data.find('</transactionType>')
+        transactionType = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<transactionID>') + len('<transactionID>')
+        idx_end = data.find('</transactionID>')
+        transactionID = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<currency>') + len('<currency>')
+        idx_end = data.find('</currency>')
+        currency = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<amount>') + len('<amount>')
+        idx_end = data.find('</amount>')
+        amount = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<gameId>') + len('<gameId>')
+        idx_end = data.find('</gameId>')
+        gameId = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<roundId>') + len('<roundId>')
+        idx_end = data.find('</roundId>')
+        roundId = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<time>') + len('<time>')
+        idx_end = data.find('</time>')
+        time = data[idx_start: idx_end].strip()
+
+        idx_start = data.find('<remark>') + len('<remark>')
+        idx_end = data.find('</remark>')
+        remark = data[idx_start: idx_end].strip()
+
+        #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
+
+        i = 0
+        while playname[i].isalpha():
+            i += 1
+        while playname[i].isnumeric():
+            i += 1
+    
+        username = playname[i:]
+
+        try:
+
+            user = CustomUser.objects.get(username = username)
+            balance = user.main_wallet
+
+            if float(balance) >= float(amount):
+                balance -= decimal.Decimal(amount)
+                ResponseCode = 'OK'
+                Status = status.HTTP_200_OK
+
+            else:
+                
+                Status = status.HTTP_409_CONFLICT
+                ResponseCode = 'INSUFFICIENT_FUNDS'
+
+        except:
+            Status = status.HTTP_400_BAD_REQUEST
+            ResponseCode = 'INVALID_DATA'
+
+        AGGamemodels.objects.create(
+            sessionToken     = sessionToken, 
+            playname         = playname, 
+            transactionType  =  transactionType, 
+            transactionID    = transactionType, 
+            currency         = transactionType, 
+            amount           = amount, 
+            gameId           = gameId, 
+            roundId          = roundId, 
+            time             = time, 
+            remark           = remark,
+        )
+
+        response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
+
+        return Response(response_data, status=Status)
