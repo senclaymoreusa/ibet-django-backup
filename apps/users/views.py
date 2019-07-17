@@ -3056,9 +3056,9 @@ class PostTransferforWithdraw(APIView):
         AGGamemodels.objects.create(
             sessionToken     = sessionToken, 
             playname         = playname, 
-            transactionType  =  transactionType, 
-            transactionID    = transactionType, 
-            currency         = transactionType, 
+            transactionType  = transactionType, 
+            transactionID    = transactionID, 
+            currency         = currency, 
             amount           = amount, 
             gameId           = gameId, 
             roundId          = roundId, 
@@ -3082,45 +3082,18 @@ class PostTransferforDeposit(APIView):
 
         data = str(request.body, 'utf-8')
 
-        idx_start = data.find('<sessionToken>') + len('<sessionToken>')
-        idx_end = data.find('</sessionToken>')
-        sessionToken = data[idx_start: idx_end].strip()
+        dic = xmltodict.parse(data)
 
-        idx_start = data.find('<playname>') + len('<playname>')
-        idx_end = data.find('</playname>')
-        playname = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionType>') + len('<transactionType>')
-        idx_end = data.find('</transactionType>')
-        transactionType = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<transactionID>') + len('<transactionID>')
-        idx_end = data.find('</transactionID>')
-        transactionID = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<currency>') + len('<currency>')
-        idx_end = data.find('</currency>')
-        currency = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<amount>') + len('<amount>')
-        idx_end = data.find('</amount>')
-        amount = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<gameId>') + len('<gameId>')
-        idx_end = data.find('</gameId>')
-        gameId = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<roundId>') + len('<roundId>')
-        idx_end = data.find('</roundId>')
-        roundId = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<time>') + len('<time>')
-        idx_end = data.find('</time>')
-        time = data[idx_start: idx_end].strip()
-
-        idx_start = data.find('<remark>') + len('<remark>')
-        idx_end = data.find('</remark>')
-        remark = data[idx_start: idx_end].strip()
+        sessionToken     = dic['Data']['Record']['sessionToken']
+        playname         = dic['Data']['Record']['playname']
+        transactionType  = dic['Data']['Record']['transactionType']
+        transactionID    = dic['Data']['Record']['transactionID']
+        currency         = dic['Data']['Record']['currency']
+        amount           = dic['Data']['Record']['amount']
+        gameId           = dic['Data']['Record']['gameId']
+        roundId          = dic['Data']['Record']['roundId']
+        time             = dic['Data']['Record']['time']
+        remark           = dic['Data']['Record']['remark']
 
         #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
 
@@ -3147,9 +3120,9 @@ class PostTransferforDeposit(APIView):
         AGGamemodels.objects.create(
             sessionToken     = sessionToken, 
             playname         = playname, 
-            transactionType  =  transactionType, 
-            transactionID    = transactionType, 
-            currency         = transactionType, 
+            transactionType  = transactionType, 
+            transactionID    = transactionID, 
+            currency         = currency, 
             amount           = amount, 
             gameId           = gameId, 
             roundId          = roundId, 
