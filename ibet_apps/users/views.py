@@ -2617,8 +2617,11 @@ class PostTransferforBet(APIView):
                 user = CustomUser.objects.get(username = username)
                 balance = user.main_wallet
 
-                if user.main_wallet >= int(value):
+                if user.main_wallet >= decimal.Decimal(value):
 
+                    balance -= decimal.Decimal(value)
+                    user = CustomUser.objects.filter(username = username)
+                    user.update(main_wallet=balance)
                     ResponseCode = 'OK'
                     Status = status.HTTP_200_OK
 
