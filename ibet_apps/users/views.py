@@ -2865,8 +2865,9 @@ class PostTransferforDraw(APIView):
 
                 user = CustomUser.objects.get(username = username)
                 balance = user.main_wallet
-                balance += int(validBetAmount)
-
+                balance += decimal.Decimal(validBetAmount) + decimal.Decimal(netAmount)
+                user = CustomUser.objects.filter(username = username)
+                user.update(main_wallet=balance)
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
