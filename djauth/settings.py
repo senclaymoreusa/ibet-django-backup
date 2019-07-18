@@ -14,10 +14,21 @@ import os, boto3, json, logging, datetime
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
 
-print("[" + str(datetime.datetime.now()) + "] Loading env variables...")
 logger = logging.getLogger('django')
-if load_dotenv(): print("[" + str(datetime.datetime.now()) + "] Successfully loaded env variables!")
-else: print("[" + str(datetime.datetime.now()) + "] No env file found!")
+
+
+print("[" + str(datetime.datetime.now()) + "] Trying to load environment variables...")
+if os.path.exists("/tmp/ibetenv/.env"):
+    print("[" + str(datetime.datetime.now()) + "] .env file found!")
+else:
+    print("[" + str(datetime.datetime.now()) + "] No .env file was found")
+
+load_dotenv()
+if "ENV" in os.environ:
+    print("[" + str(datetime.datetime.now()) + "] Environment is: " + os.getenv("ENV"))
+else:
+    print("[" + str(datetime.datetime.now()) + "] Environment not specified!")
+
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
@@ -169,7 +180,7 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #         }
 #     }
 
-if os.getenv("ENV") == "PROD":
+if os.getenv("ENV") == "production":
     print("[" + str(datetime.datetime.now()) + "] Using prod db")
     AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
