@@ -132,6 +132,7 @@ table.table-bordered > tbody > tr > td{
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
     margin-left:3px;
+    margin-top: 15px;
 }
 
 #fund-rectangle {
@@ -153,6 +154,11 @@ table.table-bordered > tbody > tr > td{
     margin-left:0.3%;
     margin-top:20px;
     /* min-height: 300px; */
+}
+
+.detail-title-block {
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;  
 }
 
 .block-title {
@@ -300,13 +306,13 @@ table.table-bordered > tbody > tr > td{
     background-color: #ffffff;
     padding:0px;
     margin-right: 0.5%;
-    min-height: 1046px;
-    height: 1060px;
+    min-height: 1030px;
+    height: 1035px;
 }
 
 .activity-rectangle {
     width: 49%;
-    height: 1060px;
+    height: 1035px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -333,6 +339,24 @@ table.table-bordered > tbody > tr > td{
     line-height: 30px;
     letter-spacing: normal;
     color: #4a4a4a;
+}
+
+.edit-member-info-label {
+    width: 219px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-bottom: 3px;
+    margin-top: 13px;
+}
+
+.form-group {
+    background-color: transparent;
 }
 
 
@@ -362,7 +386,7 @@ table.table-bordered > tbody > tr > td{
 
 #note-input-container {
     margin-left: 3%;
-    margin-top: 6%;
+    margin-top: 4.5%;
 }
 
 #notes-input {
@@ -507,10 +531,10 @@ table.table-bordered > tbody > tr > td{
 
 
 #account-creation-rect {
-    width: 90%;
+    width: 91%;
     height: 155px;
     background-color: #f3f3f3;
-    margin-left:5%;
+    margin-left:4%;
     margin-top:20px;
 
 }
@@ -535,7 +559,7 @@ table.table-bordered > tbody > tr > td{
 
 .member-limitations-rectangle {
     width: 49%;
-    height: 460px;
+    min-height: 460px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -595,7 +619,6 @@ table.table-bordered > tbody > tr > td{
 }
 
 .payment-text {
-    width: 106px;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -702,7 +725,6 @@ table.table-bordered > tbody > tr > td{
 
 
 .member-limit-info {
-    width: 115px;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -712,11 +734,10 @@ table.table-bordered > tbody > tr > td{
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
-    padding-top:35px;
+    padding-top:30px;
 }
 
 .member-limit-text {
-    width: 106px;
     height: 16px;
     font-family: Helvetica;
     font-size: 13px;
@@ -726,7 +747,7 @@ table.table-bordered > tbody > tr > td{
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
-    padding-top:35px;
+    padding-top:30px;
 }
 
 
@@ -738,9 +759,21 @@ table.table-bordered > tbody > tr > td{
     border: solid 1px #357ebd;
     background-color: #428bca;
     color:white;
+    margin-bottom:20px;
+    position:relative;
     margin-top:20px;
 }
 
+.set-limitation-btn {
+    width: 171px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+    color:white;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
 
 .modal-title {
     margin: 0;
@@ -756,6 +789,10 @@ table.table-bordered > tbody > tr > td{
     float: right;
     margin-top: -14px;
     margin-right: 15px;
+}
+
+#transaction-table {
+    width:100%;
 }
 
 
@@ -782,8 +819,24 @@ table.table-bordered > tbody > tr > td{
 
 }
 
+.submit-btn {
+    width: 26%;
+}
+
 
 /* user list page css */
+
+.tab-label {
+    width: 170px;
+    font-family: Helvetica;
+    font-weight: bold;
+    color: #4a4a4a;
+}
+
+#user-list-table {
+    margin-top:20px;
+}
+
 #user-list-table>tbody>tr:nth-child(odd)>td, 
 #user-list-table>tbody>tr:nth-child(odd)>th {
    background-color: #f3f3f3;
@@ -846,12 +899,50 @@ table.table-bordered > tbody > tr > td{
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
+    margin-bottom: 5px;
 }
 
-.add_bet_field, .add_loss_field {
+.add_bet_field, .add_loss_field, .add_deposit_field, .add_withdraw_field {
     margin-top: 20px;
 }
 
+.bootstrap-tagsinput {
+    width: 85%;
+}
+
+.tt-query { /* UPDATE: newer versions use tt-input instead of tt-query */
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.tt-hint {
+    color: #999;
+}
+
+.tt-menu { /* UPDATE: newer versions use tt-menu instead of tt-dropdown-menu */
+    width: 200px;
+    margin-top: 12px;
+    padding: 8px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tt-suggestion {
+    padding: 3px 20px;
+    font-size: 18px;
+    line-height: 24px;
+}
+
+
+.label-info {
+    background-color:#d9534f;
+}
+
+.bootstrap-tagsinput {
+    width: 100%;
+}
 
 .ui-menu .ui-menu-item a{
     color: #428bca;
