@@ -52,6 +52,7 @@ from dateutil.relativedelta import relativedelta
 from ..serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from ..forms import RenewBookForm, CustomUserCreationForm
 from ..models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls, AGGamemodels
+from games.models import Game as NewGame
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
@@ -156,7 +157,7 @@ class GameDetailAPIListView(ListAPIView):
     serializer_class = GameSerializer
     def get_queryset(self):
         id = self.request.GET['id']
-        data = Game.objects.filter(pk=id)
+        data = NewGame.objects.filter(pk=id)
         return data
 
 
