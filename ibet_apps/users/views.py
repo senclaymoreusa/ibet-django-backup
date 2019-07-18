@@ -2702,9 +2702,9 @@ class PostTransferforWin(APIView):
 
                 user = CustomUser.objects.get(username = username)
                 balance = user.main_wallet
-
-                balance += int(netAmount) + int(validBetAmount)
-
+                balance += decimal.Decimal(netAmount) + decimal.Decimal(validBetAmount)
+                user = CustomUser.objects.filter(username = username)
+                user.update(main_wallet=balance)
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
