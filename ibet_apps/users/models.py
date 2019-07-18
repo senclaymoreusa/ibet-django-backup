@@ -135,7 +135,7 @@ class CustomUser(AbstractBaseUser):
     risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
     # balance = main_wallet + other_game_wallet
-    main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=2, default=0)
+    main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
 
     # agent
