@@ -3067,7 +3067,6 @@ class PostTransferforWithdraw(APIView):
 
         try:
 
-
             sessionToken     = dic['Data']['Record']['sessionToken']
             playname         = dic['Data']['Record']['playname']
             transactionType  = dic['Data']['Record']['transactionType']
@@ -3094,8 +3093,10 @@ class PostTransferforWithdraw(APIView):
                 user = CustomUser.objects.get(username = username)
                 balance = user.main_wallet
 
-                if float(balance) >= float(amount):
+                if balance >= decimal.Decimal(amount):
                     balance -= decimal.Decimal(amount)
+                    user = CustomUser.objects.filter(username = username)
+                    user.update(main_wallet=balance)
                     ResponseCode = 'OK'
                     Status = status.HTTP_200_OK
 
