@@ -2619,7 +2619,7 @@ class PostTransferforBet(APIView):
 
                 if balance >= decimal.Decimal(value):
                     balance -= decimal.Decimal(value)
-                    user.update(main_wallet=balance)
+                    user.update(main_wallet=balance, modified_time=timezone.now())
                     ResponseCode = 'OK'
                     Status = status.HTTP_200_OK
 
@@ -2701,7 +2701,7 @@ class PostTransferforWin(APIView):
                 user = CustomUser.objects.filter(username = username)
                 balance = user[0].main_wallet
                 balance += decimal.Decimal(netAmount) + decimal.Decimal(validBetAmount)
-                user.update(main_wallet=balance)
+                user.update(main_wallet=balance, modified_time=timezone.now())
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
@@ -2783,7 +2783,7 @@ class PostTransferforLose(APIView):
                 user = CustomUser.objects.filter(username = username)
                 balance = user[0].main_wallet
                 balance += decimal.Decimal(validBetAmount) + decimal.Decimal(netAmount)
-                user.update(main_wallet=balance)
+                user.update(main_wallet=balance, modified_time=timezone.now())
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
@@ -2862,7 +2862,7 @@ class PostTransferforDraw(APIView):
                 user = CustomUser.objects.filter(username = username)
                 balance = user[0].main_wallet
                 balance += decimal.Decimal(validBetAmount) + decimal.Decimal(netAmount)
-                user.update(main_wallet=balance)
+                user.update(main_wallet=balance, modified_time=timezone.now())
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
@@ -2949,7 +2949,7 @@ class PostTransferforRefund(APIView):
                 user = CustomUser.objects.filter(username = username)
                 balance = user[0].main_wallet
                 balance += decimal.Decimal(value)
-                user.update(main_wallet=balance)
+                user.update(main_wallet=balance, modified_time=timezone.now())
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
@@ -3089,7 +3089,7 @@ class PostTransferforWithdraw(APIView):
 
                 if balance >= decimal.Decimal(amount):
                     balance -= decimal.Decimal(amount)
-                    user.update(main_wallet=balance)
+                    user.update(main_wallet=balance, modified_time=timezone.now())
                     ResponseCode = 'OK'
                     Status = status.HTTP_200_OK
 
@@ -3167,7 +3167,7 @@ class PostTransferforDeposit(APIView):
                 user = CustomUser.objects.filter(username = username)
                 balance = user[0].main_wallet
                 balance += decimal.Decimal(amount)
-                user.update(main_wallet=balance)
+                user.update(main_wallet=balance, modified_time=timezone.now())
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
