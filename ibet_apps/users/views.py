@@ -2953,7 +2953,9 @@ class PostTransferforRefund(APIView):
 
                 user = CustomUser.objects.get(username = username)
                 balance = user.main_wallet
-                balance += int(value)
+                balance += decimal.Decimal(value)
+                user = CustomUser.objects.filter(username = username)
+                user.update(main_wallet=balance)
                 ResponseCode = 'OK'
                 Status = status.HTTP_200_OK
 
