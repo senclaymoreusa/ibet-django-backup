@@ -190,15 +190,15 @@ if os.getenv("ENV") == "prod":
             'PASSWORD': db_data['RDS_PASSWORD'],
             'HOST': db_data['RDS_HOSTNAME'],
             'PORT': db_data['RDS_PORT'],
-        },
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
 elif os.getenv("ENV") == "dev":
     print("[" + str(datetime.datetime.now()) + "] Using dev db")
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    
+    print(db_data)
+    
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -207,9 +207,6 @@ elif os.getenv("ENV") == "dev":
             'PASSWORD': db_data['RDS_PASSWORD'],
             'HOST': db_data['RDS_HOSTNAME'],
             'PORT': db_data['RDS_PORT'],
-        },
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
 elif os.getenv("ENV") == "local":
@@ -219,12 +216,9 @@ elif os.getenv("ENV") == "local":
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'ibetlocal',
             'USER': 'postgres',
-            'PASSWORD': 'kevinkevin12',
+            'PASSWORD': '',
             'HOST': '',
             'PORT': 5432,
-        },
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
 
@@ -318,37 +312,66 @@ os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
 
 # Logging setup added by Stephen
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+if os.getenv("ENV") == "dev":
+    print("AWS Logging to sys.stderr")
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'stderr': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stderr,
+            }
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+        'loggers': {
+            'django': {
+                'handlers': ['stderr'],
+                'level': 'DEBUG',
+            }
+        }
+    }
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': 'logs/debug.log',
+                'when': 'midnight', # Log file rollover at midnight
+                'interval': 1, # Interval as 1 day
+                'backupCount': 10, # how many backup file to keep, 10 days
+                'formatter': 'verbose',
+            },
         },
-    }, 
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'logs/debug.log',
-            'when': 'midnight', # Log file rollover at midnight
-            'interval': 1, # Interval as 1 day
-            'backupCount': 10, # how many backup file to keep, 10 days
-            'formatter': 'verbose',
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
         },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+    }
 
 
 TIME_ZONE = 'America/Los_Angeles'
