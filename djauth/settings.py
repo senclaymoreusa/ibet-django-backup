@@ -10,10 +10,41 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os
+import os, boto3, json, logging, datetime
+from botocore.exceptions import ClientError, NoCredentialsError
+from dotenv import load_dotenv
+
+logger = logging.getLogger('django')
+
+print("[" + str(datetime.datetime.now()) + "] Trying to load environment variables...")
+if os.path.exists("/tmp/ibetenv/.env"):
+    print("[" + str(datetime.datetime.now()) + "] .env file found!")
+else:
+    print("[" + str(datetime.datetime.now()) + "] No .env file was found")
+
+load_dotenv()
+if "ENV" in os.environ:
+    print("[" + str(datetime.datetime.now()) + "] Environment is: " + os.getenv("ENV"))
+else:
+    print("[" + str(datetime.datetime.now()) + "] Environment not specified!")
+
+def getKeys(bucket, file):
+    s3 = boto3.client('s3')
+    try:
+        keys = s3.get_object(Bucket=bucket, Key=file)
+        config = json.loads(keys['Body'].read())
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+        return None
+    
+    return config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
 
 
 # Quick-start development settings - unsuitable for production
@@ -43,7 +74,7 @@ import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
-sys.path.insert(0,os.path.join(BASE_DIR, 'apps'))
+sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
 # Application definition
 
@@ -52,7 +83,6 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'xadmin',
     'crispy_forms',
-    'apps',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -62,6 +92,7 @@ INSTALLED_APPS = [
     'operation.apps.OperationConfig',
     'games.apps.GamesConfig',
     'accounting.apps.AccountingConfig',
+    'system.apps.SystemConfig',
     'rest_framework',              # Stephen
     'corsheaders',                 # Stephen
     'rest_auth',                   # Stephen
@@ -128,24 +159,75 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if 'RDS_DB_NAME' in os.environ:
+# if 'RDS_DB_NAME' in os.environ:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': os.environ['RDS_DB_NAME'],
+#             'USER': os.environ['RDS_USERNAME'],
+#             'PASSWORD': os.environ['RDS_PASSWORD'],
+#             'HOST': os.environ['RDS_HOSTNAME'],
+#             'PORT': os.environ['RDS_PORT'],
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         }
+#     }
+
+if os.getenv("ENV") == "prod":
+    print("[" + str(datetime.datetime.now()) + "] Using prod db")
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
-else:
+elif os.getenv("ENV") == "dev":
+    print("[" + str(datetime.datetime.now()) + "] Using dev db")
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
+elif os.getenv("ENV") == "local":
+    print("[" + str(datetime.datetime.now()) + "] Using local db")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'ibetlocal',
+            'USER': 'postgres',
+            'PASSWORD': 'kevinkevin12',
+            'HOST': '',
+            'PORT': 5432,
+        },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+
 
 
 # Password validation
@@ -268,6 +350,7 @@ LOGGING = {
     },
 }
 
+
 TIME_ZONE = 'America/Los_Angeles'
 
 MEDIA_URL = '/media/'
@@ -292,5 +375,5 @@ STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
 
-AWS_S3_ADMIN_BUCKET = 'ibet-admin'
-
+AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
+PATH_TO_KEYS = 'config/thirdPartyKeys.json'
