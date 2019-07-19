@@ -40,7 +40,7 @@ class AWSTopic(models.Model):
     topic_arn = models.CharField(max_length=500)
     create_on = models.DateField('Create Time', auto_now_add=True, blank=False)
     valid_until = models.DateField('Valid Until', blank=True, null=True)
-    # creator = models.ForeignKey(CustomUser, blank=False, on_delete=models.CASCADE)
+    creator = models.ForeignKey(CustomUser, blank=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.topic_name

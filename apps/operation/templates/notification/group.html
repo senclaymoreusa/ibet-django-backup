@@ -5,16 +5,70 @@
 
 <h1>New Message</h1>
 
-<div class="form-group">
-  <label for="subject">Email address</label>
-  <input type="email" class="form-control" id="subject" readonly>
+<h2>{{ current_user }}</h2>
+<h2 id="demo"></h2>
+<!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
+{% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New Group</button>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form action="{% url 'xadmin:awstopic' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
+      {% csrf_token %}
+        <div class="form-group">
+          <label for="topic_name">Name</label>
+          <input type="text" class="form-control" name="topic_name" placeholder="Group Name">
+        </div>
+        <div class="form-group">
+          <label for="creator">Creator</label>
+          <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
+        </div>
+        <div class="form-group">
+          <label for="valid_until" class="col-2 col-form-label">Valid Until</label>
+          <div class="col-10">
+            <input class="form-control" type="datetime-local" value="" id="valid_until" name="valid_un">
+          </div>
+        </div>
+        <!--<div class="form-group">
+          <label for="auditor">Auditor</label>
+          <select name="auditor" class="form-control">
+            <option selected disabled hidden>Choose an auditor...</option>
+            {% for auditor in auditors %}
+            <option value="{{ auditor.id }}">{{ auditor }}</option>
+            {% endfor %}
+          </select>
+        </div>-->
+        <hr/>
+        <button type="submit" class="btn btn-primary">Create Group</button>
+      </form>
+    </div>
+  </div>
 </div>
-<div class="form-group">
-  <label for="exampleFormControlInput1">Email address</label>
-  <input type="email" class="form-control" id="exampleFormControlInput1" readonly>
-</div>
-<div class="form-group">
-  <label for="exampleFormControlTextarea1">Example textarea</label>
-  <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-</div>
+
+<table class="table table-bordered table-striped table-hover">
+  <tr>
+    <th>NAME</th>
+    <th>MEMBERS</th>
+    <th>TIMES USED</th>
+    <th>CREATOR</th>
+    <th>OPEN RATE</th>
+    <th>EDIT</th>
+    <th>DETAILS</th>
+  </tr>
+  {% for group in queryset %}
+    <tr>
+      <td>{{ group.topic_name }}</td>
+      <td>TBD</td>
+      <td>TBD</td>
+      <td>{{ group.creator }}</td>
+      <td>66.67%</td>
+      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' group.pk %}" role="button">Edit</a></td>
+      <td><a class="btn btn-primary" href="#" role="button"><i class="fa fa-info"></i></a></td>
+      <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
+        <i class="fa fa-info"></i>
+      </button></td>-->
+    </tr>
+    <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
+  {% endfor %}
 {% endblock %}

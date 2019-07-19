@@ -3,8 +3,7 @@ import boto3
 from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
 from .models import AWSTopic, NoticeMessage, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
-from djauth import third_party_keys
-
+# from .views import getThirdPartyKeys
 
 class LanguageCodeSerializer(serializers.Serializer):
     languageCode = serializers.CharField()
@@ -15,7 +14,7 @@ class NoticeMessageSerializer(serializers.ModelSerializer):
         model = NoticeMessage
         fields = ('pk', 'start_time', 'end_time', 'message', 'message_zh', 'message_fr')
 
-
+'''
 class AWSTopicSerializer(serializers.ModelSerializer):
     topic_name = serializers.CharField()
     
@@ -40,7 +39,14 @@ class AWSTopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AWSTopic
-        fields = ('pk', 'topic_name', 'topic_arn', 'create_on', 'valid_until')
+        fields = ('pk', 'topic_name', 'topic_arn', 'create_on', 'valid_until', 'creator')
+        read_only_fields = ['pk', 'topic_arn', 'create_on']
+'''
+
+class AWSTopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AWSTopic
+        fields = ('pk', 'topic_name', 'topic_arn', 'create_on', 'valid_until', 'creator')
         read_only_fields = ['pk', 'topic_arn', 'create_on']
 
 

@@ -3,18 +3,37 @@
 {% endblock %}
 {% block content %}
 
-<h1>New Message</h1>
-
-<div class="form-group">
-  <label for="subject">Email address</label>
-  <input type="email" class="form-control" id="subject" readonly>
-</div>
-<div class="form-group">
-  <label for="exampleFormControlInput1">Email address</label>
-  <input type="email" class="form-control" id="exampleFormControlInput1" readonly>
-</div>
-<div class="form-group">
-  <label for="exampleFormControlTextarea1">Example textarea</label>
-  <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-</div>
+<h1>View Message</h1>
+<table class="table table-bordered table-striped table-hover">
+  <tr>
+    <td>Subject</td>
+    <td>{{ queryset.account_type }}</td>
+  </tr>
+  <tr>
+    <td>Subject</td>
+    <td>{{ queryset.subject }}</td>
+  </tr>
+  <tr>
+    <td>Author</td>
+    <td>{{ queryset.creator }}</td>
+  </tr>
+  <tr>
+    <td>Sent at</td>
+    <td>{{ queryset.publish_on }}</td>
+  </tr>
+  <tr>
+    <td>Sent to</td>
+    <td>{% if queryset.notifiers %}
+          {{ queryset.notifiers }}
+        {% elif queryset.topic %}
+          {{ queryset.topic }}
+        {% endif %}
+    </td>
+  </tr>
+</table>
+<hr/>
+<label>MESSAGE BODY</label>
+<textarea class="form-control" rows="10" readonly>
+  {{ queryset.content_text }}
+</textarea>
 {% endblock %}

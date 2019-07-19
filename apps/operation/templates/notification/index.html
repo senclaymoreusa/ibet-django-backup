@@ -21,7 +21,9 @@
 <!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
-
+<a role="button" class="btn btn-primary" href="/xadmin/audit">
+  Notifications <span class="badge badge-light">{{ waiting_list }}</span>
+</a>
 <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -193,10 +195,10 @@
             </select>
             </div>
             <div class="form-group">
-            <label for="publishOn" class="col-2 col-form-label">Publish On</label>
-            <div class="col-10">
+              <label for="publishOn" class="col-2 col-form-label">Publish On</label>
+              <div class="col-10">
                 <input class="form-control" type="datetime-local" value="" id="publishOn">
-            </div>
+              </div>
             </div>
             <div class="form-group">
             <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
@@ -265,8 +267,8 @@
       <td>{{ notification.creator }}</td>
       <td>{{ notification.auditor }}</td>
       <td>{{ notification.audit_date }}</td>
-      <td>{{ notification.publish_on }}</td>
-      <td><a class="btn btn-primary" href="/xadmin/notification-detail/{{ notification.id }}" role="button"><i class="fa fa-info"></i></a></td>
+      <td>66.67%</td>
+      <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-info"></i></a></td>
       <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
         <i class="fa fa-info"></i>
       </button></td>-->
