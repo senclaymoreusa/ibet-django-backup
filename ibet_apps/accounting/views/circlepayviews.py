@@ -21,15 +21,19 @@ def create_deposit(request):
         return HttpResponse("You are at the endpoint for LINEpay reserve payment.")
     
     if request.method == "POST": # can only allow post requests
-        userCode = ""
-        transId = ""
-        amount = ""
-        depositURL = "https://gateway.seasolutions.ph/payment/" + userCode + "/?partner_tran_id=" + transId + "&amount=" + amount
+        userCode = CIRCLEPAY_USERCODE
+        transId = "test-order-123"
+        amount = "123"
+        api_key = CIRCLEPAY_API_KEY
+        email = CIRCLEPAY_EMAIL
 
-        payload = {
-            "email": "",
-            "api_key": ""
-        }
-        # response = requests.post(depositURL, json=payload, headers=headers)
+        message = bytes(email + transId + amount, "utf-8")
+        token = hmac.new(bytes(api_key, "utf-8"), msg=message, digestmod=hashlib.sha256) 
+
+        depositURL = "https://gateway.seasolutions.ph/payment/" + userCode + "/?partner_tran_id=" + transId + "&amount=" + amount + "&token=" + token.hexdigest()
+
+        response = requests.post(depositURL)
+        print(response.status_code)
+        print(response.text)
 
         return JsonResponse({"message": "hi"})

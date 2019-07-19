@@ -305,3 +305,8 @@ HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+
+#circlepay
+CIRCLEPAY_USERCODE = "297802061195"
+CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
+CIRCLEPAY_EMAIL = "jenny@letou.com"
