@@ -3540,6 +3540,70 @@ class PostTransferforAG(APIView):
                 Status = status.HTTP_400_BAD_REQUEST
                 ResponseCode = 'INVALID_DATA'
 
+        elif transactionType == 'REFUND':
+
+            try:
+
+                ticketStatus    = dic['Data']['Record']['ticketStatus']
+                sessionToken    = dic['Data']['Record']['sessionToken']
+                currency        = dic['Data']['Record']['currency']
+                value           = dic['Data']['Record']['value']
+                playname        = dic['Data']['Record']['playname']
+                agentCode       = dic['Data']['Record']['agentCode']
+                betTime         = dic['Data']['Record']['betTime']
+                transactionID   = dic['Data']['Record']['transactionID']
+                platformType    = dic['Data']['Record']['platformType']
+                Round           = dic['Data']['Record']['round']
+                gametype        = dic['Data']['Record']['gametype']
+                gameCode        = dic['Data']['Record']['gameCode']
+                tableCode       = dic['Data']['Record']['tableCode']
+                transactionType = dic['Data']['Record']['transactionType']
+                transactionCode = dic['Data']['Record']['transactionCode']
+                playtype        = dic['Data']['Record']['playtype']
+
+                #print(ticketStatus, sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, playtype)
+
+                username = playname[len(agentCode):]
+
+                try:
+
+                    user = CustomUser.objects.filter(username = username)
+                    balance = user[0].main_wallet
+                    balance += decimal.Decimal(value)
+                    user.update(main_wallet=balance, modified_time=timezone.now())
+                    ResponseCode = 'OK'
+                    Status = status.HTTP_200_OK
+
+                except:
+
+                    Status = status.HTTP_400_BAD_REQUEST
+                    ResponseCode = 'INVALID_DATA'
+
+
+                AGGamemodels.objects.create(
+                    ticketStatus = ticketStatus, 
+                    sessionToken = sessionToken, 
+                    currency     = currency, 
+                    value        = value, 
+                    playname     = playname, 
+                    agentCode    = agentCode, 
+                    betTime      = betTime, 
+                    transactionID = transactionID, 
+                    platformType  = platformType, 
+                    Round         = Round, 
+                    gametype      = gametype, 
+                    gameCode      = gameCode, 
+                    tableCode     = tableCode, 
+                    transactionType = transactionType, 
+                    transactionCode = transactionCode, 
+                    playtype = playtype
+                )
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
