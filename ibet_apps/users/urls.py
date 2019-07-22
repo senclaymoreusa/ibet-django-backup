@@ -63,5 +63,6 @@ urlpatterns += [
     path('api/posttransferforbalance/', views.PostTransferforGetBalance.as_view(), name='post_transfer_for_balance'),
     path('api/posttransferforwithdraw/', views.PostTransferforWithdraw.as_view(), name='post_transfer_for_widthdraw'),
     path('api/posttransferfordeposit/', views.PostTransferforDeposit.as_view(), name='post_transfer_for_deposit'),
-    path('api/posttransferforrollback/', views.PostTransferforRollback.as_view(), name='post_transfer_for_rollback')
+    path('api/posttransferforrollback/', views.PostTransferforRollback.as_view(), name='post_transfer_for_rollback'),
+    path('api/posttransferforag/', views.PostTransferforAG.as_view(), name='post_transfer_for_ag')
 ]

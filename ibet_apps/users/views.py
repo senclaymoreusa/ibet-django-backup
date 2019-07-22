@@ -3266,3 +3266,97 @@ class PostTransferforRollback(APIView):
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
         return Response(response_data, status=Status )
+
+
+class PostTransferforAG(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        ResponseCode = 'ERROR'
+        balance = None
+
+        data = str(request.body, 'utf-8')
+
+        dic = xmltodict.parse(data)
+
+        try:
+            transactionType  = dic['Data']['Record']['transactionType']
+        except:
+            pass 
+
+        if transactionType == 'BET':
+
+            try:
+
+                sessionToken    = dic['Data']['Record']['sessionToken']
+                currency        = dic['Data']['Record']['currency']
+                value           = dic['Data']['Record']['value']
+                playname        = dic['Data']['Record']['playname']
+                agentCode       = dic['Data']['Record']['agentCode']
+                betTime         = dic['Data']['Record']['betTime']
+                transactionID   = dic['Data']['Record']['transactionID']
+                platformType    = dic['Data']['Record']['platformType']
+                Round           = dic['Data']['Record']['round']
+                gametype        = dic['Data']['Record']['gametype']
+                gameCode        = dic['Data']['Record']['gameCode']
+                tableCode       = dic['Data']['Record']['tableCode']
+                transactionCode = dic['Data']['Record']['transactionCode']
+                deviceType      = dic['Data']['Record']['deviceType']
+                playtype        = dic['Data']['Record']['playtype']
+
+                username = playname[len(agentCode):]
+                
+                try:
+
+                    user = CustomUser.objects.filter(username = username)
+                    balance = user[0].main_wallet
+
+                    if balance >= decimal.Decimal(value):
+
+                        balance -= decimal.Decimal(value)
+                        user.update(main_wallet=balance, modified_time=timezone.now())
+                        ResponseCode = 'OK'
+                        Status = status.HTTP_200_OK
+
+                    else:
+
+                        Status = status.HTTP_409_CONFLICT
+                        ResponseCode = 'INSUFFICIENT_FUNDS'
+
+                except:
+                        Status = status.HTTP_400_BAD_REQUEST
+                        ResponseCode = 'INVALID_DATA'
+
+                AGGamemodels.objects.create(
+                    sessionToken    = sessionToken,
+                    currency        = currency,
+                    playname        = playname,
+                    agentCode       = agentCode,
+                    betTime         = betTime,
+                    transactionID   = transactionID,
+                    platformType    = platformType,
+                    Round           = Round,
+                    gametype        = gametype,
+                    gameCode        = gameCode,
+                    tableCode       = tableCode,
+                    transactionType = transactionType,
+                    transactionCode = transactionCode,
+                    deviceType      = deviceType, 
+                    playtype        = playtype
+                )
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
+            #print(sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, deviceType, playtype )
+
+
+       
+
+        response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
+
+        return Response(response_data, status=Status)
