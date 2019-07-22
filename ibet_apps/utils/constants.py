@@ -309,4 +309,4 @@ BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 #circlepay
 CIRCLEPAY_USERCODE = "297802061195"
 CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
-CIRCLEPAY_EMAIL = "jenny@letou.com"
+CIRCLEPAY_EMAIL = "jennyto@ibet.com"
