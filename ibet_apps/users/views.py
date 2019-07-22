@@ -3767,7 +3767,6 @@ class PostTransferforAG(APIView):
 
                 sessionToken     = dic['Data']['Record']['sessionToken']
                 playname         = dic['Data']['Record']['playname']
-                transactionType  = dic['Data']['Record']['transactionType']
                 transactionID    = dic['Data']['Record']['transactionID']
                 currency         = dic['Data']['Record']['currency']
                 amount           = dic['Data']['Record']['amount']
