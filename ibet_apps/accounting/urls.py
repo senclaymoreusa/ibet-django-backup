@@ -46,4 +46,5 @@ urlpatterns = [
     path('api/help2pay/deposit', help2pay.submitDeposit.as_view(), name = 'Help2pay_Deposit'),
     path('api/help2pay/deposit_result', help2pay.depositResult.as_view(), name = 'Help2pay_deposit_result'),
     path('api/circlepay/deposit', csrf_exempt(circlepay.create_deposit), name = "CirclePay_create_deposit")
+    path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction(), name = "CirclePay_check_transaction")
 ]

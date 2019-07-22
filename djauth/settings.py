@@ -17,9 +17,8 @@ from dotenv import load_dotenv
 logger = logging.getLogger('django')
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 print("[" + str(datetime.datetime.now()) + "] Trying to load environment variables...")
-if os.path.exists("/tmp/ibetenv/.env") or os.path.exists(BASE_DIR+".env"):
+if os.path.exists("/tmp/ibetenv/.env") or os.path.exists(BASE_DIR+"/.env"):
     print("[" + str(datetime.datetime.now()) + "] .env file found!")
 else:
     print("[" + str(datetime.datetime.now()) + "] No .env file was found")
@@ -212,7 +211,7 @@ elif os.getenv("ENV") == "dev":
         }
     }
 elif os.getenv("ENV") == "local":
-    print("[" + str(datetime.datetime.now()) + "] Using local db")
+    print("[" + str(datetime.datetime.now()) + "] Using local db \n")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
