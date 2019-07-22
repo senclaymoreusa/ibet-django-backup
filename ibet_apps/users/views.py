@@ -3761,6 +3761,60 @@ class PostTransferforAG(APIView):
                 ResponseCode = 'INVALID_DATA'
 
 
+        elif transactionType == 'ROLLBACK':    # Does not do anything for now
+
+            try:
+
+                sessionToken     = dic['Data']['Record']['sessionToken']
+                playname         = dic['Data']['Record']['playname']
+                transactionType  = dic['Data']['Record']['transactionType']
+                transactionID    = dic['Data']['Record']['transactionID']
+                currency         = dic['Data']['Record']['currency']
+                amount           = dic['Data']['Record']['amount']
+                gameId           = dic['Data']['Record']['gameId']
+                roundId          = dic['Data']['Record']['roundId']
+                time             = dic['Data']['Record']['time']
+                remark           = dic['Data']['Record']['remark']
+
+                #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
+
+                i = 0
+                while playname[i].isalpha():
+                    i += 1
+                while playname[i].isnumeric():
+                    i += 1
+            
+                username = playname[i:]
+
+                try:
+
+                    user = CustomUser.objects.get(username = username)
+                    balance = user.main_wallet
+                    Status = status.HTTP_200_OK
+                    ResponseCode = 'OK'
+
+                except:
+                    Status = status.HTTP_400_BAD_REQUEST
+                    ResponseCode = 'INVALID_DATA'
+
+                AGGamemodels.objects.create(
+                    sessionToken     = sessionToken, 
+                    playname         = playname, 
+                    transactionType  =  transactionType, 
+                    transactionID    = transactionType, 
+                    currency         = transactionType, 
+                    amount           = amount, 
+                    gameId           = gameId, 
+                    roundId          = roundId, 
+                    time             = time, 
+                    remark           = remark,
+                )
+
+            except:
+
+                Status = status.HTTP_400_BAD_REQUEST
+                ResponseCode = 'INVALID_DATA'
+
 
         response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
 
