@@ -3,7 +3,6 @@
 {% endblock %}
 {% block content %}
 
-<h1>New Message</h1>
 
 <h2>{{ current_user }}</h2>
 <h2 id="demo"></h2>
@@ -17,11 +16,11 @@
       <form action="{% url 'xadmin:awstopic' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
       {% csrf_token %}
         <div class="form-group">
-          <label for="topic_name">Name</label>
+          <label for="topic_name">Group Name</label>
           <input type="text" class="form-control" name="topic_name" placeholder="Group Name">
         </div>
         <div class="form-group">
-          <label for="creator">Creator</label>
+          <label for="creator">Group Creator</label>
           <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
         </div>
         <div class="form-group">
@@ -30,15 +29,14 @@
             <input class="form-control" type="datetime-local" value="" id="valid_until" name="valid_un">
           </div>
         </div>
-        <!--<div class="form-group">
-          <label for="auditor">Auditor</label>
-          <select name="auditor" class="form-control">
-            <option selected disabled hidden>Choose an auditor...</option>
-            {% for auditor in auditors %}
-            <option value="{{ auditor.id }}">{{ auditor }}</option>
+        <div class="form-group">
+          <label for="usrs">Add Users</label>
+          <select name="usrs" class="form-control" multiple="multiple">
+            {% for user in users %}
+            <option value="{{ user.pk }}">{{ user }}</option>
             {% endfor %}
           </select>
-        </div>-->
+        </div>
         <hr/>
         <button type="submit" class="btn btn-primary">Create Group</button>
       </form>
@@ -54,21 +52,25 @@
     <th>CREATOR</th>
     <th>OPEN RATE</th>
     <th>EDIT</th>
-    <th>DETAILS</th>
+    <th>VIEW</th>
   </tr>
-  {% for group in queryset %}
+  {% for topic in queryset %}
     <tr>
-      <td>{{ group.topic_name }}</td>
+      <td>{{ topic }}</td>
       <td>TBD</td>
       <td>TBD</td>
-      <td>{{ group.creator }}</td>
+      <td>{{ topic.creator }}</td>
       <td>66.67%</td>
-      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' group.pk %}" role="button">Edit</a></td>
-      <td><a class="btn btn-primary" href="#" role="button"><i class="fa fa-info"></i></a></td>
+      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' topic.pk %}" role="button" disabled>Edit</a></td>
+      <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
       <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
         <i class="fa fa-info"></i>
       </button></td>-->
     </tr>
     <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
   {% endfor %}
+</table>
+<script>
+
+</script>
 {% endblock %}

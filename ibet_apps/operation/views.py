@@ -30,20 +30,19 @@ def getThirdPartyKeys(bucket, file):
     
     return config
 
-def getThirdPartyKeys(bucket, file):
-    s3client = boto3.client("s3")
-    try:
-        config_obj = s3client.get_object(Bucket=bucket, Key=file)
-        config = json.loads(config_obj['Body'].read())
-    except ClientError as e:
-        logger.error(e)
-        return None
-    except NoCredentialsError as e:
-        logger.error(e)
-        return None
-    
-    return config
+def getAWSClient():
+    # connect AWS S3
+    third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
+    # AWS SNS Client
+    sns = boto3.resource('sns')
+    client = boto3.client(
+        'sns',
+        aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
+    )
+
+    return client
 
 class NoticeMessageView(ListAPIView):
     serializer_class = NoticeMessageSerializer
@@ -56,82 +55,6 @@ class NotificationAPIView(GenericAPIView):
 
     def get(self):
         queryset = Notification.objects.all()
-
-    '''
-    def post(self, request, *arg, **kwargs):
-        serializer = NotificationSerializer(data=request.data)
-        content             = request.POST.get('content')
-        notification_choice = request.POST.get('notification_choice')
-        notification_method = request.POST.get('notification_method')
-        notifiers           = request.POST.get('notifiers')
-
-        third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-
-        serializer = NotificationSerializer(data=request.data)
-
-        if serializer.is_valid():            
-            # AWS SNS Client
-            sns = boto3.resource('sns')
-            # client = boto3.client('sns', 'us-west-2')
-            client = boto3.client(
-                'sns',
-                aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
-                aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
-                #region_name = third_party_keys.AWS_REGION_NAME
-            )
-
-            # Broadcast
-            if notification_choice == 'B':
-                notifiers = CustomUser.objects.all()
-
-            if notification_choice == 'M':
-                if(topic is not None):
-                    aws_topic = AWSTopic.objects.get(pk=topic)
-                    aws_topic = sns.Topic(aws_topic.topic_arn)
-                    aws_topic.publish(
-                        Message=content_text,
-                        Subject=subject,
-                    )
-
-            # Push Notification
-            if notification_method == 'P':
-                platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
-
-                platform_endpoint.publish(
-                    Message=content_text,
-                )
-
-            try:
-                # SMS Notification
-                if notification_method == 'S':
-                    notifier = CustomUser.objects.get(pk=notifiers)
-                    # for notifier in notifiers:
-                    #     phone = notifier.phone
-                    #     print(phone)
-                    #     client.publish(PhoneNumber=phone, Message=content_text)
-                    phone = notifier.phone
-                    client.publish(PhoneNumber=phone, Message=content_text)
-            except Exception as e:
-                print("Unexpected error: %s" % e)
-                return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
-
-            # Email Notification
-            if notification_method == 'E':
-                # AWS SNS Topic
-                topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
-                topic.publish(
-                    Message=content_text,
-                    Subject='iBet Notification',
-                )
-
-            notification = serializer.save()
-            # store notification data in NotificationLog
-            log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, action='C')
-            log.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    '''
 
 
 class NotificationView(CommAdminView):
@@ -373,9 +296,6 @@ class AWSTopicView(CommAdminView):
     lookup_field = 'pk'
     serializer_class = AWSTopicSerializer
 
-    def get_queryset(self):
-        return AWSTopic.objects.all()
-
     def get(self, request, *arg, **kwargs):
         context = super().get_context()
         title = 'message'
@@ -383,26 +303,32 @@ class AWSTopicView(CommAdminView):
         context["title"] = title
         context['time'] = timezone.now()
         context['current_user'] = self.user
-        queryset = self.get_queryset()
-        serializer = AWSTopicSerializer(queryset, many=True)
-        context['queryset'] = AWSTopic.objects.all()
-        
+        context['users'] = CustomUser.objects.all()
+        queryset = AWSTopic.objects.all()
+        context['queryset'] = queryset
+
         return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
         topic_name = request.POST.get('topic_name')
         # valid_until = request.POST.get('valid_until')
+        group_usrs = request.POST.getlist('usrs')
         
         # create AWS Topic
-        third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-        sns = boto3.resource('sns')
-        client = boto3.client(
-            'sns',
-            aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
-        )
+        client = getAWSClient()
         topicArn = client.create_topic(Name=topic_name)
         topic_arn = topicArn["TopicArn"]
+
+        sns = boto3.resource('sns')
+        topic = sns.Topic(topic_arn)
+
+        for usrs in group_usrs:
+            subscriber = CustomUser.objects.get(pk=usrs)
+            print(subscriber.email)
+            topic.subscribe(
+                Protocol="Email",
+                Endpoint=subscriber.email
+            )
 
         data = {
             "topic_name": topic_name,
