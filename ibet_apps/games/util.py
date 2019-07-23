@@ -22,4 +22,8 @@ GAME_FILTER_OPTION = [
         'data': ['Egypt', 'Oriental', 'Mythology', 'Animal', 'Adventure', 'Fruit', 'Western', 'Film / Tv', 'Music', 'Sports',
             'Space', 'Holidays', 'Dark/ Halloween', 'Vegas']
     },
+    {
+        'name': 'Sort by',
+        'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
+    },
 ]

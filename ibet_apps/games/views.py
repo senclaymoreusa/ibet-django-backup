@@ -12,7 +12,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from django.http import HttpResponseRedirect, HttpResponse
 import simplejson as json
-from django.db.models import Q
+from django.db.models import Q, F 
 from utils.constants import GAME_PROVIDERS
 from .util import *
 
@@ -60,6 +60,8 @@ class GamesSearchView(View):
         # print("filterCategory: " + str(filterCategory))
         # print("jackpot: " + str(jackpot))
         # print("provider: " + str(provider))
+        # print("sort: " + str(sort))
+
         attributeList = []
         # if gameType:
         #     attributeList = attributeList + gameType.split()
@@ -103,10 +105,10 @@ class GamesSearchView(View):
         #     data = Game.objects.filter(filter).order_by('name')
         if sort == 'popularity':
             data = Game.objects.filter(filter).order_by('-popularity')
-        elif sort == 'jackpot-size-asc-rank':
-            data = Game.objects.filter(filter).order_by('jackpot_size')
-        elif sort == 'jackpot-size-desc-rank':
-            data = Game.objects.filter(filter).order_by('-jackpot_size')
+        elif sort == 'jackpot-size-asc':
+            data = Game.objects.filter(filter).order_by(F('jackpot_size').asc(nulls_last=True))
+        elif sort == 'jackpot-size-desc':
+            data = Game.objects.filter(filter).order_by(F('jackpot_size').desc(nulls_last=True))
         else:
             data = Game.objects.filter(filter).order_by('name')
 
