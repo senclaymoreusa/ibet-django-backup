@@ -88,3 +88,23 @@ class Game(models.Model):
 
 #     game = models.ForeignKey(Game, on_delete=models.CASCADE,  related_name="game")
 #     attribute = models.ForeignKey(GameAttribute, on_delete=models.CASCADE, related_name="attribute")
+
+
+# class GameFilterMetaData(models.Model):
+#     filter_type = models.SmallIntegerField(choices=GAME_ATTRIBUTES)
+#     name = models.CharField(max_length=50)
+#     name_zh = models.CharField(max_length=50, null=True, blank=True)
+#     name_fr = models.CharField(max_length=50, null=True, blank=True)
+
+#     def __str__(self):
+#         return '{0}: {1}'.format(self.name, self.get_filter_type_display())
+
+
+# class GameSubcategory(models.Model):
+#     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+#     name = models.CharField(max_length=50)
+#     name_zh = models.CharField(max_length=50, null=True, blank=True)
+#     name_fr = models.CharField(max_length=50, null=True, blank=True)
+
+#     def __str__(self):
+#         return '{0}: {1}'.format(self.name, self.get_category_display())
