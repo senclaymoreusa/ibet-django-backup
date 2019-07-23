@@ -44,8 +44,6 @@ def getKeys(bucket, file):
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -196,8 +194,6 @@ elif os.getenv("ENV") == "dev":
     print("[" + str(datetime.datetime.now()) + "] Using dev db")
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-    
-    print(db_data)
     
     DATABASES = {
         'default': {
