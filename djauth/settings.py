@@ -178,47 +178,39 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #         }
 #     }
 
-if os.getenv("ENV") == "prod":
-    print("[" + str(datetime.datetime.now()) + "] Using prod db")
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
-    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_data['RDS_DB_NAME'],
-            'USER': db_data['RDS_USERNAME'],
-            'PASSWORD': db_data['RDS_PASSWORD'],
-            'HOST': db_data['RDS_HOSTNAME'],
-            'PORT': db_data['RDS_PORT'],
-        }
-    }
-elif os.getenv("ENV") == "dev":
-    print("[" + str(datetime.datetime.now()) + "] Using dev db")
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
-    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-    
-    print(db_data)
-    
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_data['RDS_DB_NAME'],
-            'USER': db_data['RDS_USERNAME'],
-            'PASSWORD': db_data['RDS_PASSWORD'],
-            'HOST': db_data['RDS_HOSTNAME'],
-            'PORT': db_data['RDS_PORT'],
-        }
-    }
-elif os.getenv("ENV") == "local":
+# To accommodate bucket names across all regions, need to remove hard-coded value
+# 
+# ENV: 
+#     USA: dev / prod
+#     EU:  eudev / euprod
+#
+if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ibetlocal',
-            'USER': '',
-            'PASSWORD': '',
-            'HOST': '',
+            'NAME': 'djangodev',
+            'USER': 'ibetadminlocal',
+            'PASSWORD': 'password',
+            'HOST': 'localhost',
             'PORT': 5432,
+        }
+    }
+else:
+    print("[" + str(datetime.datetime.now()) + "] Using db of " + os.getenv("ENV"))
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.getenv("ENV")
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    
+    print("DB HOST: " + db_data['RDS_HOSTNAME'])
+    
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
         }
     }
 
