@@ -2,6 +2,9 @@ from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirec
 from django.utils import timezone
 from django.conf import settings
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+
 from ..models import Transaction
 from users.models import CustomUser
 import os, requests, json, random, logging, time, boto3
@@ -14,12 +17,12 @@ LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 # HOMEPAGE_URL = "https://ibet-web-dev.claymoreusa.net" || http://localhost:3000" use ibet-web
 HOMEPAGE_URL = "http://localhost:3000"
 CONFIRM_URL = "/deposit/success" # will be changed later
-PRODUCT_IMG_URL = "https://ddowiki.com/images/Menace_of_the_Underdark_adpack_icon.jpg" # dummy image, will be replaced with actual company URL later
-
+PRODUCT_IMG_URL = "https://pathtoproductimage.jpg" # dummy image, will be replaced with actual company URL later
 DEPOSIT = 0
 THB = 2
 LINE_PAY = 1
 CREATED = 2
+
 
 def getThirdPartyKeys(bucket, file):
     s3client = boto3.client("s3")
@@ -38,6 +41,9 @@ def getThirdPartyKeys(bucket, file):
 
 config = getThirdPartyKeys(settings.AWS_S3_ADMIN_BUCKET, settings.PATH_TO_KEYS)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def reserve_payment(request):
     logger.info(request)
     
@@ -93,7 +99,8 @@ def reserve_payment(request):
                 time.sleep(5)
         return JsonResponse(responseJSON)
         
-
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def confirm_payment(request):
     logger.info("In confirm payment API call")
     logger.info(request)
