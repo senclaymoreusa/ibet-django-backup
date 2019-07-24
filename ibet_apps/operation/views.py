@@ -305,13 +305,18 @@ class AWSTopicView(CommAdminView):
         topicArn = client.create_topic(Name=topic_name)
         topic_arn = topicArn["TopicArn"]
 
-        sns = boto3.resource('sns')
-        topic = sns.Topic(topic_arn)
+        # sns = boto3.resource('sns')
+        # topic = sns.Topic(topic_arn)
 
         for usrs in group_usrs:
             subscriber = CustomUser.objects.get(pk=usrs)
             print(subscriber.email)
-            topic.subscribe(
+            # topic.subscribe(
+            #     Protocol="Email",
+            #     Endpoint=subscriber.email
+            # )
+            client.subscribe(
+                TopicArn=topic_arn,
                 Protocol="Email",
                 Endpoint=subscriber.email
             )
