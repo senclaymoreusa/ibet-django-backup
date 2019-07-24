@@ -12,8 +12,8 @@ class Category(models.Model):
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
     # category_type = models.SmallIntegerField(choices=CATEGORY_TYPES, default=0)
-    # parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    notes = models.CharField(max_length=200)
+    parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    notes = models.CharField(max_length=500)
 
     class Meta:
         verbose_name_plural = _('Game Category')

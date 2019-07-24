@@ -13,8 +13,7 @@ from rest_framework.response import Response
 from django.http import HttpResponseRedirect, HttpResponse
 import simplejson as json
 from django.db.models import Q, F 
-from utils.constants import GAME_PROVIDERS
-from .util import *
+from utils.constants import GAME_PROVIDERS, GAME_FILTER_OPTION
 
 logger = logging.getLogger('django')
 
@@ -92,7 +91,7 @@ class GamesSearchView(View):
             logger.info("Order list of games by: jackpot size desc") 
         else:
             data = Game.objects.filter(filter).order_by('name')
-            logger.info("Re-order list of games alphabetically by " + str(name)) 
+            logger.info("Re-order list of games alphabetically by name") 
 
         if not data:
             logger.info('Search q did not match any categories or token')
