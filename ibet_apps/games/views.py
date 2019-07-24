@@ -18,28 +18,7 @@ from .util import *
 
 logger = logging.getLogger('django')
 
-
-class GameAPIListView(ListAPIView):
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        term = self.request.GET['term']
-        # print("term:" + term)
-        data = oldGame.objects.filter(category_id__parent_id__name__icontains=term)
-
-        if not data:
-            data = oldGame.objects.filter(category_id__name__icontains=term)
-
-        if not data:
-            data = oldGame.objects.filter(name__icontains=term)
-
-        if not data:
-            logger.error('Search term did not match any categories or token')
-        return data
-
-
 class GamesSearchView(View):
-
-    # permission_classes = (AllowAny,)
 
     def get(self, request,  *args, **kwargs):
         q = request.GET.get('q')
@@ -48,9 +27,7 @@ class GamesSearchView(View):
         filterCategory = request.GET.get('filtercategory')
         jackpot = request.GET.get('jackpot')
         provider = request.GET.get('provider')
-        jackpot = request.GET.get('jackpot')
-        provider = request.GET.get('provider')
-        fearture = request.GET.get('feature')
+        feature = request.GET.get('feature')
         theme = request.GET.get('theme')
         sort = request.GET.get('sort')
 
@@ -73,13 +50,13 @@ class GamesSearchView(View):
             attributeList = attributeList + jackpot.split()
         if provider:
             attributeList = attributeList + provider.split()
-        if fearture:
-            attributeList = attributeList + fearture.split()
+        if feature:
+            attributeList = attributeList + feature.split()
         if theme:
             attributeList = attributeList + theme.split()
         
         # print(str(attributeList))
-        # print("fearture: " + str(fearture))
+        # print("feature: " + str(feature))
         # print("theme: " + str(theme))
         # print("sort: " + str(sort))
 
@@ -93,31 +70,36 @@ class GamesSearchView(View):
                 Q(name__icontains=q)|Q(name_zh__icontains=q)|
                 Q(name_fr__icontains=q)
             )
+            logger.info("Searching key word: " + str(q) + "from all games")
 
         if gameType:
             # print(str(gameType))
-            filter = filter & Q(category_id__name__icontains=gameType) 
+            filter = filter & Q(category_id__name__icontains=gameType)
+            logger.info("Filter by game category: " + str(gameType))
 
         for attr in attributeList:
-            filter = filter & Q(attribute__icontains=attr) 
+            filter = filter & Q(attribute__icontains=attr)
+            logger.info("Filter by attributes: " + str(attr)) 
 
-        # if sort == 'name':
-        #     data = Game.objects.filter(filter).order_by('name')
         if sort == 'popularity':
             data = Game.objects.filter(filter).order_by('-popularity')
+            logger.info("Order list of games by: popularity") 
         elif sort == 'jackpot-size-asc':
             data = Game.objects.filter(filter).order_by(F('jackpot_size').asc(nulls_last=True))
+            logger.info("Order list of games by: jackpot size asc") 
         elif sort == 'jackpot-size-desc':
             data = Game.objects.filter(filter).order_by(F('jackpot_size').desc(nulls_last=True))
+            logger.info("Order list of games by: jackpot size desc") 
         else:
             data = Game.objects.filter(filter).order_by('name')
+            logger.info("Re-order list of games alphabetically by " + str(name)) 
 
         if not data:
             logger.error('Search q did not match any categories or token')
         
-        # print("!!!!" + str(data))
         data = serializers.serialize('json', data)
         data = json.loads(data)
+        logger.info("Sending search game results response......... ")
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
@@ -125,6 +107,7 @@ class ProvidersSearchView(View):
 
     def get(self, request,  *args, **kwargs):
         q = request.GET.get('q').lower()
+        logger.info("Search providers by key word: " + str(q))
         res = []
         # print(str(q))
         for provider in GAME_PROVIDERS:
@@ -132,6 +115,7 @@ class ProvidersSearchView(View):
             if q in name.lower():
                 res.append(name)
 
+        logger.info("Sending game providers response......... ")
         return HttpResponse(json.dumps(res), content_type='application/json')
 
 
@@ -139,4 +123,5 @@ class FilterAPI(View):
 
     def get(self, request, *args, **kwargs):
         
+        logger.info("Sending filter options response......... ")
         return HttpResponse(json.dumps(GAME_FILTER_OPTION), content_type='application/json')
