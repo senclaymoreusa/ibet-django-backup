@@ -16,7 +16,6 @@ from users.models import CustomUser
 from xadmin.views import CommAdminView
 from django.utils import timezone
 
-logger_aws = logging.getLogger('operation.aws.error')
 logger = logging.getLogger('django')
 
 def getThirdPartyKeys(bucket, file):
@@ -25,10 +24,10 @@ def getThirdPartyKeys(bucket, file):
         config_obj = s3client.get_object(Bucket=bucket, Key=file)
         config = json.loads(config_obj['Body'].read())
     except ClientError as e:
-        logger_aws.error(e)
+        logger.error(e)
         return None
     except NoCredentialsError as e:
-        logger_aws.error(e)
+        logger.error(e)
         return None
     
     return config

@@ -1,7 +1,6 @@
 import boto3
 import logging
 
-logger_aws = logging.getLogger('operation.aws.error')
 logger = logging.getLogger('django')
 
 def getThirdPartyKeys(bucket, file):
@@ -18,6 +17,7 @@ def getThirdPartyKeys(bucket, file):
     
     return config
 
+'''
 def getAWSClient(service_name, third_party_keys):
     # AWS Client
     service = boto3.resource(service_name)
@@ -28,3 +28,4 @@ def getAWSClient(service_name, third_party_keys):
     )
 
     return client
+'''
