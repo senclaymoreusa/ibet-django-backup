@@ -173,6 +173,7 @@ class submitDeposit(generics.GenericAPIView):
             StatusMsg = tree.find('StatusMsg').text
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
+            print(paymentAPIURL)
             logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
@@ -192,10 +193,12 @@ class submitDeposit(generics.GenericAPIView):
                         })
                     
                     rrdata = rr.json()
+                    print(rrdata)
                     logger.info(rrdata)
                     return Response(rrdata)
-                
+               
             else:
+                return Response(StatusMsg)
                 logger.info("There was something wrong with the result")
         else:
             # Handle error

@@ -38,15 +38,15 @@ class chargeCard(generics.GenericAPIView):
         pin = self.request.POST.get("pin")
         serial = self.request.POST.get("serial")
         order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
-        message = bytes(order_id + pin + serial + "fgate", 'utf-8')
+        message = bytes(order_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
-        headers = {'Accept': 'multipart/form-data'}
+        headers = {'Content-type': 'multipart/form-data'}
         data = {
             "pin": pin,
             "serial": serial,
             "tran_id": order_id,
-            "type": "fgate",
+            "type": FGATE_TYPE,
             "token": token,
             "partner_id": FGATE_PARTNERID,
         }

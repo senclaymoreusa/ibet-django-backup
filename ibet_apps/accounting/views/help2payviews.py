@@ -96,6 +96,7 @@ class submitDeposit(generics.GenericAPIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
+        print(rdata)
         create = Transaction.objects.create(
             order_id= order_id,
             amount=amount,
@@ -113,7 +114,7 @@ class depositResult(generics.GenericAPIView):
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        Status = self.request.POST.get('Status')
+        Status = self.request.data.get('Status')
         
         update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
@@ -129,6 +130,22 @@ class depositResult(generics.GenericAPIView):
             update_data.status = 3
         update_data.save()
         return Response({'details': 'result successful arrived'}, status=status.HTTP_200_OK)
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def depositFrontResult(request):
+    if request.data.get('Status') == '000':
+        return HttpResponse("Sucess")
+    elif request.data.get('Status') == '001':
+        return HttpResponse("Failed")
+    elif request.data.get('Status') == '006':
+        return HttpResponse("Approved")
+    elif request.data.get('Status') == '007':
+        return HttpResponse("Rejected")
+    elif request.data.get('Status') == '009':
+        return HttpResponse("Pending")
+    
+    
+
         
     
 
