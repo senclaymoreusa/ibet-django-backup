@@ -20,9 +20,9 @@ def getThirdPartyKeys(bucket, file):
 
 def getAWSClient(service_name, third_party_keys):
     # AWS Client
-    sns = boto3.resource(service_name)
+    service = boto3.resource(service_name)
     client = boto3.client(
-        client_name,
+        service_name,
         aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
         aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
     )
