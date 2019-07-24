@@ -15,9 +15,11 @@ from .models import AWSTopic, Notification, NotificationLog, NotificationUsers, 
 from users.models import CustomUser
 from xadmin.views import CommAdminView
 from django.utils import timezone
+from utils.aws_helper import getThirdPartyKeys, getAWSClient
 
 logger = logging.getLogger('django')
 
+'''
 def getThirdPartyKeys(bucket, file):
     s3client = boto3.client("s3")
     try:
@@ -45,6 +47,7 @@ def getAWSClient():
     )
 
     return client
+'''
 
 class NotificationAPIView(GenericAPIView):
     serializer_class = NotificationSerializer
@@ -220,11 +223,7 @@ class AuditNotificationView(CommAdminView):
 
             # AWS SNS Client
             sns = boto3.resource('sns')
-            client = boto3.client(
-                'sns',
-                aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
-                aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
-            )
+            client = getAWSClient('sns', third_party_keys)
 
             # Push Notification
             if 'P' in notification_methods:
@@ -233,6 +232,7 @@ class AuditNotificationView(CommAdminView):
                 platform_endpoint.publish(
                     Message=message.content_text,
                 )
+                logger.info("Enabled Push Notification")
             
             # SMS Notification
             if 'S' in notification_methods:
@@ -240,8 +240,9 @@ class AuditNotificationView(CommAdminView):
                     notifier = CustomUser.objects.get(pk=message.notifiers.pk)
                     phone = notifier.phone
                     client.publish(PhoneNumber=phone, Message=message.content_text)
+                    logger.info("Enabled SMS Notification")
                 except Exception as e:
-                    print("Unexpected error: %s" % e)
+                    logger.error("Unexpected error: %s" % e)
                     return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
             # Email Notification
@@ -252,6 +253,7 @@ class AuditNotificationView(CommAdminView):
                     Message=message.content_text,
                     Subject='iBet Notification',
                 )
+                logger.info("Enabled Email Notification")
 
             # serializer.save()
             # notification = serializer.save()
@@ -300,20 +302,13 @@ class AWSTopicView(CommAdminView):
         group_usrs = request.POST.getlist('usrs')
         
         # create AWS Topic
-        client = getAWSClient()
+        third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+        client = getAWSClient("sns", third_party_keys)
         topicArn = client.create_topic(Name=topic_name)
         topic_arn = topicArn["TopicArn"]
 
-        # sns = boto3.resource('sns')
-        # topic = sns.Topic(topic_arn)
-
         for usrs in group_usrs:
             subscriber = CustomUser.objects.get(pk=usrs)
-            print(subscriber.email)
-            # topic.subscribe(
-            #     Protocol="Email",
-            #     Endpoint=subscriber.email
-            # )
             client.subscribe(
                 TopicArn=topic_arn,
                 Protocol="Email",
