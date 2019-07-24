@@ -95,7 +95,7 @@ class GamesSearchView(View):
             logger.info("Re-order list of games alphabetically by " + str(name)) 
 
         if not data:
-            logger.error('Search q did not match any categories or token')
+            logger.info('Search q did not match any categories or token')
         
         data = serializers.serialize('json', data)
         data = json.loads(data)
