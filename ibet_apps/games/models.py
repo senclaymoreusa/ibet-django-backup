@@ -25,7 +25,7 @@ class Category(models.Model):
 
 class GameAttribute(models.Model):
 
-    name = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=50)
     created_time = models.DateTimeField(
         _('Created Time'),
         auto_now_add=True,
