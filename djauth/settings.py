@@ -304,35 +304,7 @@ os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
 
 # Logging setup added by Stephen
-if os.getenv("ENV") == "dev":
-    print("AWS Logging to sys.stderr")
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
-            },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
-            },
-        }, 
-        'handlers': {
-            'stderr': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'stream': sys.stderr,
-            }
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['stderr'],
-                'level': 'DEBUG',
-            }
-        }
-    }
-else:
+if os.getenv("ENV") == "local":
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -363,6 +335,34 @@ else:
                 'propagate': True,
             },
         },
+    }
+else:
+    print("AWS Logging to sys.stderr")
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'stderr': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stderr,
+            }
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['stderr'],
+                'level': 'DEBUG',
+            }
+        }
     }
 
 
