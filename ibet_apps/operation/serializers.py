@@ -1,18 +1,15 @@
-import boto3
+import logging
 
 from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
-from .models import AWSTopic, NoticeMessage, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
+from .models import AWSTopic, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
 # from .views import getThirdPartyKeys
+
+logger = logging.getLogger("notification.create.error")
 
 class LanguageCodeSerializer(serializers.Serializer):
     languageCode = serializers.CharField()
 
-
-class NoticeMessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NoticeMessage
-        fields = ('pk', 'start_time', 'end_time', 'message', 'message_zh', 'message_fr')
 
 '''
 class AWSTopicSerializer(serializers.ModelSerializer):
@@ -59,18 +56,10 @@ class UserToAWSTopicSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('pk', 'account_type', 'subject', 'content_text', 'creator', 'create_date', 'auditor', 'audit_date',
+        fields = ('pk', 'account_type', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date',
          'notification_choice', 'notification_type', 'notification_method', 'topic', 'notifiers',  'publish_on')
-        read_only_fields = ['pk', 'create_date']
+        read_only_fields = ['pk', 'create_on']
 
-
-'''
-class NotificationSerializer(serializers.Serializer):
-    content = serializers.CharField(required=True)
-    
-    def create(self, validated_data):
-        return Notification.objects.get_or_create(**validated_data)
-'''
 
 class NotificationLogSerializer(serializers.ModelSerializer):
     class Meta:

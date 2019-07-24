@@ -7,14 +7,17 @@ from rest_framework import status
 from rest_framework.test import APIRequestFactory
 import boto3
 import json
+import logging
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
-from .serializers import AWSTopicSerializer, NoticeMessageSerializer, NotificationSerializer, NotificationLogSerializer, NotificationUsersSerializer, UserToAWSTopicSerializer
-from .models import AWSTopic, NoticeMessage, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
+from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationUsersSerializer, UserToAWSTopicSerializer
+from .models import AWSTopic, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
 from users.models import CustomUser
 from xadmin.views import CommAdminView
 from django.utils import timezone
 
+logger_aws = logging.getLogger('operation.aws.error')
+logger = logging.getLogger('django')
 
 def getThirdPartyKeys(bucket, file):
     s3client = boto3.client("s3")
@@ -22,10 +25,10 @@ def getThirdPartyKeys(bucket, file):
         config_obj = s3client.get_object(Bucket=bucket, Key=file)
         config = json.loads(config_obj['Body'].read())
     except ClientError as e:
-        logger.error(e)
+        logger_aws.error(e)
         return None
     except NoCredentialsError as e:
-        logger.error(e)
+        logger_aws.error(e)
         return None
     
     return config
@@ -44,11 +47,6 @@ def getAWSClient():
 
     return client
 
-class NoticeMessageView(ListAPIView):
-    serializer_class = NoticeMessageSerializer
-    queryset = NoticeMessage.objects.all()
-
-
 class NotificationAPIView(GenericAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [AllowAny, ]
@@ -60,7 +58,6 @@ class NotificationAPIView(GenericAPIView):
 class NotificationView(CommAdminView):
     lookup_field = 'pk'
     serializer_class = NotificationSerializer
-    permission_classes = [AllowAny, ]
 
     def get(self, request, *arg, **kwargs):
         context = super().get_context()
@@ -79,14 +76,6 @@ class NotificationView(CommAdminView):
         return render(request, 'notification/index.html', context)
 
     def post(self, request, *arg, **kwargs):
-        # subject = request.POST.get('subject')
-        # content_text = request.POST.get('content_text')
-        # creator = self.user
-        # auditor = request.POST.get('auditor')
-        # notification_choice = request.POST.get('notification_choice')
-        # notification_type = request.POST.get('notification_type')
-        # # topic = request.POST.get('topic')
-        # # notifiers = self.request.POST['notifiers']
         direct_check = request.POST.get('direct_check')
         email_check = request.POST.get('email_check')
         SMS_check = request.POST.get('SMS_check')
@@ -106,14 +95,6 @@ class NotificationView(CommAdminView):
         if push_check != None:
             notification_method += 'P'
 
-        # notification_method = {
-        #     "D": direct_check,
-        #     "E": email_check,
-        #     "S": SMS_check,
-        #     "P": push_check,
-        # }
-
-        # third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
         data = {
             "subject": request.POST.get('subject'),
@@ -181,6 +162,7 @@ class NotificationView(CommAdminView):
             # render(request, 'notification/index.html', {
             #     'err_msg': serializer.errors,
             # })
+            logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
 
@@ -205,7 +187,10 @@ class NotificationDetailView(CommAdminView):
         queryset = Notification.objects.get(pk=notification_id)
         serializer = NotificationSerializer(queryset, many=False)
         context["queryset"] = queryset
-        return render(request, 'notification/detail.html', context)
+        try:
+            return render(request, 'notification/detail.html', context)
+        except:
+            logger.error("can not reach notification detail")
 
 
 class AuditNotificationView(CommAdminView):
@@ -279,7 +264,8 @@ class AuditNotificationView(CommAdminView):
             # render(request, 'notification/index.html', {
             #     'err_msg': serializer.errors,
             # })
-            return HttpResponse("serializer.errors")
+            logger.error(serializer.errors)
+            return HttpResponse(serializer.errors)
 
 
 class NotificationLogView(ListAPIView):
@@ -342,6 +328,7 @@ class AWSTopicView(CommAdminView):
             serializer.save()
             return HttpResponseRedirect(reverse('xadmin:awstopic'))
         else:
+            logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
 

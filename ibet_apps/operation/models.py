@@ -11,30 +11,6 @@ from users.models import CustomUser
 # Create your models here.
 
 
-class NoticeMessage(models.Model): 
-
-    # title = models.CharField(max_length=1000, default='')
-    # account_type = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    # creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='creator')
-    # create_date = models.DateTimeField('Start Time', blank=False)
-    # audit = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='audit')
-    # audit_date = models.DateTimeField('End Time', blank=False)
-    # status = models.BooleanField('Status', default=False)
-
-    # message = models.CharField(max_length=200, default='')
-    # message_zh = models.CharField(max_length=200, default='')
-    # message_fr = models.CharField(max_length=200, default='')
-
-    class Meta:
-        verbose_name_plural = _('Notice Message')
-
-    def __str__(self):
-        """
-        # String for representing the Model object (in Admin site etc.)
-        """
-        return self.message
-
-
 class AWSTopic(models.Model):
     topic_name = models.CharField(max_length=256)
     topic_arn = models.CharField(max_length=500)
@@ -80,8 +56,8 @@ class Notification(models.Model):
     subject = models.CharField(max_length=200, default='')
     content_text = models.CharField(max_length=1000, default='')
     # content_image = models.ForeignKey(InLineImage, blank=False, on_delete=models.CASCADE)
-    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, related_name='creator')
-    create_date = models.DateTimeField('Create Date', auto_now_add=True, blank=False)
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='creator')
+    create_on = models.DateTimeField('Create Date', auto_now_add=True, blank=False)
     auditor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, related_name='auditor')
     audit_date = models.DateTimeField('Audit Date', null=True)
     notification_choice = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)

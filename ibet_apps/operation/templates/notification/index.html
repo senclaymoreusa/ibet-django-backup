@@ -82,7 +82,7 @@
           <select id="topic" name="topic" class="form-control">
             <option selected disabled hidden>Choose a notification type...</option>
             {% for topic in topics %}
-            <option value="{{ topic.pk}}">{{ topic.pk }}</option>
+            <option value="{{ topic.pk}}">{{ topic }}</option>
             {% endfor %}
           </select>
         </div>
@@ -119,7 +119,7 @@
             </label>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary">Create User</button>
+        <button type="submit" class="btn btn-primary">Create Message</button>
       </form>
     </div>
   </div>
@@ -263,7 +263,7 @@
         <td>{{ notification.topic }}</td>
       {% endif %}
       <td>{{ notification.notification_type }}</td>
-      <td>{{ notification.create_date }}</td>
+      <td>{{ notification.create_on }}</td>
       <td>{{ notification.creator }}</td>
       <td>{{ notification.auditor }}</td>
       <td>{{ notification.audit_date }}</td>

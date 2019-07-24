@@ -1,7 +1,7 @@
 from xadmin import views
 import xadmin
 
-from .models import NoticeMessage, Notification, AWSTopic
+from .models import Notification, AWSTopic
 from .views import NotificationView, NotificationDetailView, AWSTopicView, AuditNotificationView
 from django.utils.translation import ugettext_lazy as _
 
@@ -32,7 +32,6 @@ xadmin.site.register_view(r'notification/', NotificationView, name='notification
 xadmin.site.register_view(r'awstopic/(?P<pk>\d+)/$', AWSTopicView, name='awstopic')
 xadmin.site.register_view(r'awstopic/', AWSTopicView, name='awstopic')
 
-xadmin.site.register(NoticeMessage, NoticeAdmin)
 xadmin.site.register(Notification, NotificationAdmin)
 xadmin.site.register(AWSTopic, GroupAdmin)
 # xadmin.site.register(Notification, AuditAdmin)

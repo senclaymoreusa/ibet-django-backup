@@ -12,7 +12,6 @@ urlpatterns = [
     # path('api/reset-password/verify-token/', views.CustomPasswordTokenVerificationView.as_view(), name='password_reset_verify_token'),
     # path('api/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     # path('api/language/', views.LanguageView.as_view(), name='language'),
-    path('api/notice-message', views.NoticeMessageView.as_view(), name='notice_message'),
     path('api/notification', views.NotificationAPIView.as_view(), name='notification'),
     path('api/notification-log', views.NotificationLogView.as_view(), name='notification-log'),
     path('api/create-topic', views.AWSTopicView.as_view(), name='create-topic')
