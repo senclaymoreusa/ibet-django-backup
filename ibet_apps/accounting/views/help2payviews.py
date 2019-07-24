@@ -72,7 +72,9 @@ class submitDeposit(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
-        order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+        order_id = self.request.POST.get("order_id")
+        print(order_id)
+        #order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         amount = int(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
@@ -107,6 +109,7 @@ class submitDeposit(generics.GenericAPIView):
             transaction_type=0,
             channel=0,
         )
+        
         return HttpResponse(rdata)
 
 class depositResult(generics.GenericAPIView):
@@ -114,11 +117,13 @@ class depositResult(generics.GenericAPIView):
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
+        print(request.data)
         serializer = self.serializer_class(self.get_queryset(), many=True)
         Status = self.request.data.get('Status')
-        
+        depositID = self.request.data.get('ID')
         update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
+        update_data.transaction_id = depositID
         if  Status == '000':  
             update_data.status = 0
         elif Status == '001':
@@ -130,26 +135,30 @@ class depositResult(generics.GenericAPIView):
         elif Status == '009':
             update_data.status = 3
         update_data.save()
+        
         return Response({'details': 'result successful arrived'}, status=status.HTTP_200_OK)
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def depositFrontResult(request):
+    order_id = request.data.get('Reference')
     if request.data.get('Status') == '000':
-        return HttpResponse("Sucess")
+        return HttpResponse("Order[%s] is success." % (order_id))
     elif request.data.get('Status') == '001':
-        return HttpResponse("Failed")
+        return HttpResponse("Order[%s] is failed." % (order_id))
     elif request.data.get('Status') == '006':
-        return HttpResponse("Approved")
+        return HttpResponse("Order[%s] is approved." % (order_id))
     elif request.data.get('Status') == '007':
-        return HttpResponse("Rejected")
+        return HttpResponse("Order[%s] is rejected." % (order_id))
     elif request.data.get('Status') == '009':
-        return HttpResponse("Pending")
+        return HttpResponse("Order[%s] is pending." % (order_id))
+
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def depositStatus(request):
     order_id = request.data.get('order_id')
     getData = Transaction.objects.get(order_id=order_id)
     order_status = getData.status
+    print(order_status)
     return Response(order_status)
     
     
