@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/help2pay/deposit', help2pay.submitDeposit.as_view(), name = 'Help2pay_Deposit'),
     path('api/help2pay/deposit_result', help2pay.depositResult.as_view(), name = 'Help2pay_deposit_result'),
     path('api/help2pay/deposit_success', help2pay.depositFrontResult, name = 'Help2pay_deposit_sucess'),
+    path('api/help2pay/deposit_status', help2pay.depositStatus, name = 'Help2pay_deposit_status'),
     path('api/fgate/chargeCard', fgate.chargeCard.as_view(), name = 'fgate_Charge_Card'),
     
 ]

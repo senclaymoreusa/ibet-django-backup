@@ -46,13 +46,13 @@ bankidConversion = {
     '201': '比特币',
 }
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+def get_Host_name_IP(): 
+    try: 
+        host_name = socket.gethostname() 
+        host_ip = socket.gethostbyname(host_name) 
+        return host_ip
+    except: 
+        print("Unable to get Hostname and IP") 
 
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
@@ -92,7 +92,7 @@ class submitDeposit(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= get_client_ip(request)
+        UserIP= get_Host_name_IP()
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
@@ -216,7 +216,7 @@ class submitCashout(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= get_client_ip(request)
+        UserIP= get_Host_name_IP()
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
