@@ -112,20 +112,7 @@ class NotificationView(CommAdminView):
         }
         serializer = NotificationSerializer(data=data)
 
-        if serializer.is_valid():
-            # connect AWS S3
-            # third_party_keys = getThirdPartyKeys("ibet-admin-dev", "s3://ibet-admin-dev/config/sns.json")
-
-            # AWS SNS Client
-            # sns = boto3.resource('sns')
-            # client = boto3.client('sns', 'us-west-2')
-            # client = boto3.client(
-            #     'sns',
-            #     aws_access_key_id = third_party_keys.AWS_ACCESS_KEY_ID,
-            #     aws_secret_access_key = third_party_keys.AWS_SECRET_ACCESS_KEY,
-            #     # region_name = third_party_keys.AWS_REGION_NAME
-            # )
-            
+        if serializer.is_valid():           
             # Push Notification
             # if notification_method["P"] is not None:
             #     print("Push")
