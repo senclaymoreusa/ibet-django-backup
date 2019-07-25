@@ -88,16 +88,16 @@ class NotificationView(CommAdminView):
         notification_method = ""
 
         if direct_check != None:
-            notification_method += 'D'
+            notification_method += NOTIFICATION_DIRECT
 
         if email_check != None:
-            notification_method += 'E'
+            notification_method += NOTIFICATION_EMAIL
 
         if SMS_check != None:
-            notification_method += 'S'
+            notification_method += NOTIFICATION_SMS
 
         if push_check != None:
-            notification_method += 'P'
+            notification_method += NOTIFICATION_PUSH
 
         data = {
             "subject": request.POST.get('subject'),
