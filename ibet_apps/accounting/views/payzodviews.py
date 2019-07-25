@@ -35,8 +35,9 @@ def get_qr_code(request):
         amount = body.get("amount")
         url = PAYZOD_API_URL
         now = datetime.now()
-        ref_no = "test-order-1203" + str(random.randint(0, 1000))
+        ref_no = "test-payzod-order-" + request.user.username + str(random.randint(0, 1000))
         ref_date = now.strftime("%Y%m%d%H%M%S")
+
         payload = {
             "merchant_id": PAYZOD_MERCHANT_ID,
             "paytype": "QR",
@@ -77,17 +78,18 @@ def get_qr_code(request):
                 return HttpResponse(r.text)
             elif r.status_code == 500:
                 sleep(5)
+            return HttpResponse("Failed to reach Payzod servers")
 
 
-def check_trans_status(request):
-    if request.method == "POST":
-        body = json.loads(request.body)
-        ref_no = body["ref_no"]
-
-        logger.info("Attempting to check status of transaction...")
-        url = PAYZOD_API_URL + "inquiry.php"
-        payload = {
-            "merchant_id": PAYZOD_MERCHANT_ID,
-            "ref_no": ref_no
-        }
-        return
+# def check_trans_status(request):
+#     if request.method == "POST":
+#         body = json.loads(request.body)
+#         ref_no = body["ref_no"]
+#
+#         logger.info("Attempting to check status of transaction...")
+#         url = PAYZOD_API_URL + "inquiry.php"
+#         payload = {
+#             "merchant_id": PAYZOD_MERCHANT_ID,
+#             "ref_no": ref_no
+#         }
+#         return
