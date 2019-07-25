@@ -46,10 +46,10 @@ class Notification(models.Model):
     )
 
     NOTIFICATION_METHOD = (
-        ('D', _('direct')),
-        ('P', _('push')),
-        ('S', _('sms')),
-        ('E', _('email'))
+        (1, _('direct')),
+        (2, _('push')),
+        (3, _('sms')),
+        (4, _('email'))
     )
 
     account_type = models.CharField(max_length=200, default='Membership')
@@ -62,7 +62,7 @@ class Notification(models.Model):
     audit_date = models.DateTimeField('Audit Date', null=True)
     notification_choice = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
     notification_type = models.IntegerField(default=1, choices=NOTIFICATION_TYPE)
-    notification_method = models.CharField(max_length=4, blank=False)
+    notification_method = models.IntegerField(blank=False)
     topic = models.ForeignKey(AWSTopic, blank=True, null=True, on_delete=models.CASCADE)
     notifiers = models.ForeignKey(CustomUser, blank=False, null=True, on_delete=models.CASCADE)
     publish_on = models.DateTimeField('Publish Time', auto_now_add=True, blank=False)
