@@ -76,6 +76,7 @@ class NotificationView(CommAdminView):
         queryset = Notification.objects.all()
         serializer = NotificationSerializer(queryset, many=True)
         context["queryset"] = queryset
+        logger.info("GET NotificationView")
         return render(request, 'notification/index.html', context)
 
     def post(self, request, *arg, **kwargs):
@@ -84,20 +85,19 @@ class NotificationView(CommAdminView):
         SMS_check = request.POST.get('SMS_check')
         push_check = request.POST.get('push_check')
 
-        notification_method = []
+        notification_method = ""
 
         if direct_check != None:
-            notification_method.append(1)
+            notification_method += 'D'
 
         if email_check != None:
-            notification_method.append(2)
+            notification_method += 'E'
 
         if SMS_check != None:
-            notification_method.append(3)
+            notification_method += 'S'
 
         if push_check != None:
-            notification_method.append(4)
-
+            notification_method += 'P'
 
         data = {
             "subject": request.POST.get('subject'),
@@ -113,35 +113,6 @@ class NotificationView(CommAdminView):
         serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():           
-            # Push Notification
-            # if notification_method["P"] is not None:
-            #     print("Push")
-            #     platform_endpoint = sns.PlatformEndpoint(third_party_keys.SNS_PLATFORM_ENDPOINT_ARN)
-                
-            #     platform_endpoint.publish(
-            #         Message=data.content_text,
-            #     )
-            
-            # SMS Notification
-            # if notification_method["S"] is not None:
-            #     try:
-            #         print("S")
-            #         notifier = CustomUser.objects.get(pk=notifiers)
-            #         phone = notifier.phone
-            #         client.publish(PhoneNumber=phone, Message=data.content_text)
-            #     except Exception as e:
-            #         print("Unexpected error: %s" % e)
-            #         return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
-
-            # Email Notification
-            # if notification_method["E"] is not None:
-            #     print("e")
-            #     # AWS SNS Topic
-            #     topic = sns.Topic(third_party_keys.SNS_TOPIC_ARN)
-            #     topic.publish(
-            #         Message=data.content_text,
-            #         Subject='iBet Notification',
-            #     )
             serializer.save()
             # notification = serializer.save()
             # store notification data in NotificationLog
@@ -149,19 +120,12 @@ class NotificationView(CommAdminView):
             # log.save()
             return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
-            # render(request, 'notification/index.html', {
-            #     'err_msg': serializer.errors,
-            # })
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
 
 
 class NotificationDetailView(CommAdminView):
-    # lookup_field = 'pk'
-    # serializer_class = NotificationSerializer
-    # permission_classes = [AllowAny, ]
-
     def get(self, request, *args, **kwargs):
         notification_id = self.kwargs.get('pk')
         context = super().get_context()
@@ -178,6 +142,7 @@ class NotificationDetailView(CommAdminView):
         serializer = NotificationSerializer(queryset, many=False)
         context["queryset"] = queryset
         try:
+            logger.info("GET NotificationDetailView")
             return render(request, 'notification/detail.html', context)
         except:
             logger.error("can not reach notification detail")
@@ -282,7 +247,7 @@ class AWSTopicView(CommAdminView):
         context['users'] = CustomUser.objects.all()
         queryset = AWSTopic.objects.all()
         context['queryset'] = queryset
-
+        logger.info("GET AWSTopicView")
         return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):

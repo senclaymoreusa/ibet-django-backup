@@ -1,6 +1,6 @@
 from django.db import models
 from django.urls import reverse #Used to generate urls by reversing the URL patterns
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, int_list_validator
 import uuid
 from datetime import date
 from django.contrib.auth.models import User
@@ -45,13 +45,6 @@ class Notification(models.Model):
         # (3, 'REFERRAL')
     )
 
-    NOTIFICATION_METHOD = (
-        (NOTIFICATION_DIRECT, _('direct')),
-        (NOTIFICATION_PUSH, _('push')),
-        (NOTIFICATION_SMS, _('sms')),
-        (NOTIFICATION_EMAIL, _('email'))
-    )
-
     account_type = models.CharField(max_length=200, default='Membership')
     subject = models.CharField(max_length=200, default='')
     content_text = models.CharField(max_length=1000, default='')
@@ -62,7 +55,7 @@ class Notification(models.Model):
     audit_date = models.DateTimeField('Audit Date', null=True)
     notification_choice = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
     notification_type = models.IntegerField(default=1, choices=NOTIFICATION_TYPE)
-    notification_method = models.IntegerField(blank=False)
+    notification_method = models.CharField(max_length=4, blank=False)
     topic = models.ForeignKey(AWSTopic, blank=True, null=True, on_delete=models.CASCADE)
     notifiers = models.ForeignKey(CustomUser, blank=False, null=True, on_delete=models.CASCADE)
     publish_on = models.DateTimeField('Publish Time', auto_now_add=True, blank=False)
