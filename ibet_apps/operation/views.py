@@ -84,19 +84,19 @@ class NotificationView(CommAdminView):
         SMS_check = request.POST.get('SMS_check')
         push_check = request.POST.get('push_check')
 
-        notification_method = ""
+        notification_method = []]
 
         if direct_check != None:
-            notification_method += 'D'
+            notification_method.append(1)
 
         if email_check != None:
-            notification_method += 'E'
+            notification_method.append(2)
 
         if SMS_check != None:
-            notification_method += 'S'
+            notification_method.append(3)
 
         if push_check != None:
-            notification_method += 'P'
+            notification_method.append(4)
 
 
         data = {
