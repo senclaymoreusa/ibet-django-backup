@@ -305,3 +305,25 @@ HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+
+# Notification
+MESSAGE_ALERT  = 1
+MESSAGE_DIRECT = 2
+
+NOTIFICATION_TYPE = (
+    (MESSAGE_ALERT, 'ALERT'),
+    (MESSAGE_DIRECT, 'DIRECT'),
+    # (3, 'REFERRAL')
+)
+
+NOTIFICATION_DIRECT = 'D'
+NOTIFICATION_PUSH   = 'P'
+NOTIFICATION_SMS    = 'S'
+NOTIFICATION_EMAIL  = 'E' 
+
+NOTIFICATION_METHOD = (
+    (NOTIFICATION_DIRECT, 'direct'),
+    (NOTIFICATION_PUSH, 'push'),
+    (NOTIFICATION_SMS, 'sms'),
+    (NOTIFICATION_EMAIL, 'email')
+)
