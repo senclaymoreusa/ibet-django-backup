@@ -75,7 +75,8 @@ class GamesSearchView(View):
         if gameType:
             # print(str(gameType))
             filter = filter & Q(category_id__parent_id__name__iexact=gameType)
-            if category != 'all':
+            data = Game.objects.filter(filter)
+            if category != 'all' and category:
                 filter = filter & Q(category_id__name__iexact=category)
             logger.info("Filter by game category: " + str(gameType))
 
