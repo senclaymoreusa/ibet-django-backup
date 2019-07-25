@@ -8,7 +8,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from users.models import CustomUser
-# Create your models here.
+from utils.constants import *
 
 
 class AWSTopic(models.Model):
@@ -46,10 +46,10 @@ class Notification(models.Model):
     )
 
     NOTIFICATION_METHOD = (
-        (1, _('direct')),
-        (2, _('push')),
-        (3, _('sms')),
-        (4, _('email'))
+        (NOTIFICATION_DIRECT, _('direct')),
+        (NOTIFICATION_PUSH, _('push')),
+        (NOTIFICATION_SMS, _('sms')),
+        (NOTIFICATION_EMAIL, _('email'))
     )
 
     account_type = models.CharField(max_length=200, default='Membership')
