@@ -53,8 +53,8 @@ def reserve_payment(request):
     if request.method == "POST": # can only allow post requests
         requestURL = LINE_PAYMENTS_SANDBOX_URL + "request" # prepare headers + request to LINE pay server
         headers = {
-            "X-LINE-ChannelId": config["LINE_CHANNEL_ID"],
-            "X-LINE-ChannelSecret": config["LINE_CHANNEL_SECRET"]
+            "X-LINE-ChannelId": config["LINE"]["CHANNEL_ID"],
+            "X-LINE-ChannelSecret": config["LINE"]["CHANNEL_SECRET"]
         }
 
         # parse POST payload

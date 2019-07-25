@@ -32,7 +32,6 @@ def get_qr_code(request):
     if request.method =="POST":
         logger.info("Attempting to get QR Code to make deposit via Payzod...")
         body = json.loads(request.body)
-        print(body)
         amount = body.get("amount")
         url = PAYZOD_API_URL
         now = datetime.now()
@@ -57,14 +56,14 @@ def get_qr_code(request):
                     userId = CustomUser.objects.get(username=request.user.username)
                     obj, created = Transaction.objects.get_or_create(
                         user_id=userId,
-                        transaction_id = ref_no,
-                        amount = float(amount),
-                        method = "Payzod QR Code",
-                        currency = 2, # 2 = THB
-                        transaction_type = 0, # 0 = DEPOSIT
-                        channel = 6, # 6 = PAYZOD
-                        status = 2, # 2 = CREATED
-                        last_updated = timezone.now()
+                        transaction_id=ref_no,
+                        amount=float(amount),
+                        method="Payzod QR Code",
+                        currency=2,    # 2 = THB
+                        transaction_type=0,    # 0 = DEPOSIT
+                        channel=6,     # 6 = PAYZOD
+                        status=2,    # 2 = CREATED
+                        last_updated=timezone.now()
                     )
                     logger.info("created?: " + str(created))
                     logger.info("transaction data: " + str(obj))
@@ -78,3 +77,17 @@ def get_qr_code(request):
                 return HttpResponse(r.text)
             elif r.status_code == 500:
                 sleep(5)
+
+
+def check_trans_status(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        ref_no = body["ref_no"]
+
+        logger.info("Attempting to check status of transaction...")
+        url = PAYZOD_API_URL + "inquiry.php"
+        payload = {
+            "merchant_id": PAYZOD_MERCHANT_ID,
+            "ref_no": ref_no
+        }
+        return
