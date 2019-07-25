@@ -84,7 +84,7 @@ class NotificationView(CommAdminView):
         SMS_check = request.POST.get('SMS_check')
         push_check = request.POST.get('push_check')
 
-        notification_method = []]
+        notification_method = []
 
         if direct_check != None:
             notification_method.append(1)
