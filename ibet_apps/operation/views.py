@@ -15,6 +15,7 @@ from .models import AWSTopic, Notification, NotificationLog, NotificationUsers, 
 from users.models import CustomUser
 from xadmin.views import CommAdminView
 from django.utils import timezone
+from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys, getAWSClient
 
 logger = logging.getLogger('django')
@@ -226,7 +227,7 @@ class AuditNotificationView(CommAdminView):
             client = getAWSClient('sns', third_party_keys)
 
             # Push Notification
-            if 'P' in notification_methods:
+            if NOTIFICATION_PUSH in notification_methods:
                 platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
                 
                 platform_endpoint.publish(
@@ -235,7 +236,7 @@ class AuditNotificationView(CommAdminView):
                 logger.info("Enabled Push Notification")
             
             # SMS Notification
-            if 'S' in notification_methods:
+            if NOTIFICATION_SMS in notification_methods:
                 try:
                     notifier = CustomUser.objects.get(pk=message.notifiers.pk)
                     phone = notifier.phone
@@ -246,7 +247,7 @@ class AuditNotificationView(CommAdminView):
                     return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
             # Email Notification
-            if 'E' in notification_methods:
+            if NOTIFICATION_EMAIL in notification_methods:
                 # AWS SNS Topic
                 topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
                 topic.publish(
@@ -260,6 +261,7 @@ class AuditNotificationView(CommAdminView):
             # store notification data in NotificationLog
             # log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, action='C')
             # log.save()
+            logger.info('create notification message')
             return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
             # render(request, 'notification/index.html', {
