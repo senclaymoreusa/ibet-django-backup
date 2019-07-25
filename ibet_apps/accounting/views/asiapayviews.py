@@ -166,14 +166,12 @@ class submitDeposit(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
-        print(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
             StatusMsg = tree.find('StatusMsg').text
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-            print(paymentAPIURL)
             logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
@@ -193,7 +191,6 @@ class submitDeposit(generics.GenericAPIView):
                         })
                     
                     rrdata = rr.json()
-                    print(rrdata)
                     logger.info(rrdata)
                     return Response(rrdata)
                
@@ -301,7 +298,7 @@ class submitCashout(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
-        print(rdata)
+    
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text

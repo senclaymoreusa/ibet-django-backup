@@ -27,7 +27,6 @@ import xmltodict
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
-    #hash.hexdigest()
     return hash.hexdigest()
 
 class chargeCard(generics.GenericAPIView):
@@ -42,7 +41,6 @@ class chargeCard(generics.GenericAPIView):
         message = bytes(order_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
-        #headers = {'Content-type': 'multipart/form-data'}
         data = {
             "pin": pin,
             "serial": serial,
@@ -51,14 +49,13 @@ class chargeCard(generics.GenericAPIView):
             "token": token,
             "partner_id": FGATE_PARTNERID,
         }
-        print(data)
         delay = kwargs.get("delay", 5)
         success = False
         #retry
         for x in range(3):
             r = requests.post(FGATE_URL,  data=data)
             rdata = r.json()
-            print(rdata)
+            logger.info(rdata)
             if r.status_code == 200:
                 success = True
                 break
@@ -69,8 +66,8 @@ class chargeCard(generics.GenericAPIView):
                 logger.error(rdata)
                 return Response(rdata)
             if r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
         if rdata["error_code"] == '00' and rdata["status"] == 1:
             create = Transaction.objects.create(
