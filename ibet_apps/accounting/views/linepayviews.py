@@ -76,28 +76,29 @@ def reserve_payment(request):
         }
         for attempt in range(3):
             response = requests.post(requestURL, json=payload, headers=headers)
-            responseJSON = response.json()
-            if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
-                if (responseJSON["returnCode"] == "0000"):
+            res_json = response.json()
+            if response.status_code == 200: # store temp transaction into db with status of created/pending
+                if res_json["returnCode"] == "0000":
                     userId = CustomUser.objects.get(username=request.user.username)
                     obj, created = Transaction.objects.get_or_create(
-                        user_id = userId,
-                        transaction_id = responseJSON["info"]["transactionId"],
-                        order_id = orderId,
-                        amount = float(amount),
-                        method = "LINEpay",
-                        currency = THB,
-                        transaction_type = DEPOSIT,
-                        channel = LINE_PAY,
-                        status = CREATED,
-                        last_updated = timezone.now()
+                        user_id=userId,
+                        transaction_id=res_json["info"]["transactionId"],
+                        order_id=orderId,
+                        amount=float(amount),
+                        method="LINEpay",
+                        currency=THB,
+                        transaction_type=DEPOSIT,
+                        channel=LINE_PAY,
+                        status=CREATED,
+                        last_updated=timezone.now()
                     )
                     logger.info("created?: " + str(created))
                     logger.info("transaction data: " + str(obj))
+
                 break
             else:
                 time.sleep(5)
-        return JsonResponse(responseJSON)
+        return JsonResponse(res_json)
         
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

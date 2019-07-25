@@ -10,9 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os, boto3, json, logging, datetime
+import os
+import boto3
+import json
+import logging
+import datetime
+import sys
+
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger('django')
 
@@ -28,6 +35,7 @@ if "ENV" in os.environ:
 else:
     print("[" + str(datetime.datetime.now()) + "] Environment not specified!")
 
+
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
     try:
@@ -41,6 +49,7 @@ def getKeys(bucket, file):
         return None
     
     return config
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,15 +71,13 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
 # CORS_ORIGIN_ALLOW_ALL=True     # Stephen
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
-CRSF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 
 
-import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
 sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
@@ -258,7 +265,7 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
 
-from django.utils.translation import ugettext_lazy as _
+
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
