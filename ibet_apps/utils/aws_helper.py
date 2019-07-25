@@ -1,7 +1,7 @@
 import boto3
 import logging
 import json
-# from botocore import ClientError, NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 logger = logging.getLogger('django')
 
