@@ -1,0 +1,65 @@
+{% extends 'xadmin/base_site.html' %}
+{% block content-nav %}
+{% endblock %}
+{% block content %}
+
+<h2>{{ current_user }}</h2>
+
+<table class="table table-bordered table-striped table-hover">
+  <tr>
+    <th>SUBJECT</th>
+    <th>CAMPAIGN</th>
+    <th>SEND TO</th>
+    <th>BONUS</th>
+    <th>SENT DATE</th>
+    <th>AUTHOR</th>
+    <th>STATUS</th>
+    <th>OPENED</th>
+    <th>OPEN RATE</th>
+    <th>Detail</th>
+  </tr>
+  {% for notification in queryset %}
+    <tr>
+      <td>{{ notification.subject }}</td>
+      <td>{{ notification.account_type }}</td>
+      {% if notification.notifiers %}
+        <td>{{ notification.notifiers }}</td>
+      {% else %}
+        <td>{{ notification.topic }}</td>
+      {% endif %}
+      <td>{{ notification.notification_type }}</td>
+      <td>{{ notification.create_date }}</td>
+      <td>{{ notification.creator }}</td>
+      <td></td>
+      <td>{{ notification.audit_date }}</td>
+      <td>{{ notification.publish_on }}</td>
+      <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-info"></i></a></td>
+      <td><button class="btn btn-danger" id="{{ notification.pk }}">APPROVE</button></td>
+      <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
+        <i class="fa fa-info"></i>
+      </button></td>-->
+    </tr>
+    <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
+  {% endfor %}
+</table>
+{% block javascript %}
+<script>
+  $(document).ready(function(){
+    $("button").click(function(){
+      $.ajax({
+          type: "POST",
+          url: "{% url 'xadmin:audit' %}",
+          data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+            notification_id: this.id
+          },
+          success: function() {
+            alert("Message sent!");
+          }
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+{% endblock %}
