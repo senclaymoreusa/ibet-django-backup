@@ -237,6 +237,7 @@ class help2payDepositResultSerialize(serializers.Serializer):
 class fgateChargeCardSerialize(serializers.Serializer):
     pin  = serializers.CharField(required=True)
     serial  = serializers.CharField(required=True)
+    user = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 

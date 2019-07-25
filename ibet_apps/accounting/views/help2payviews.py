@@ -73,7 +73,6 @@ class submitDeposit(generics.GenericAPIView):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
         order_id = self.request.POST.get("order_id")
-        print(order_id)
         #order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         amount = int(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
@@ -99,7 +98,6 @@ class submitDeposit(generics.GenericAPIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
-        print(rdata)
         create = Transaction.objects.create(
             order_id= order_id,
             amount=amount,
@@ -117,7 +115,6 @@ class depositResult(generics.GenericAPIView):
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
-        print(request.data)
         serializer = self.serializer_class(self.get_queryset(), many=True)
         Status = self.request.data.get('Status')
         depositID = self.request.data.get('ID')
@@ -158,7 +155,6 @@ def depositStatus(request):
     order_id = request.data.get('order_id')
     getData = Transaction.objects.get(order_id=order_id)
     order_status = getData.status
-    print(order_status)
     return Response(order_status)
     
     

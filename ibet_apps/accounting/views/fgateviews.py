@@ -35,13 +35,14 @@ class chargeCard(generics.GenericAPIView):
     serializer_class = fgateChargeCardSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
+        user = self.request.POST.get("user")
         pin = self.request.POST.get("pin")
         serial = self.request.POST.get("serial")
         order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         message = bytes(order_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
-        headers = {'Content-type': 'multipart/form-data'}
+        #headers = {'Content-type': 'multipart/form-data'}
         data = {
             "pin": pin,
             "serial": serial,
@@ -55,7 +56,7 @@ class chargeCard(generics.GenericAPIView):
         success = False
         #retry
         for x in range(3):
-            r = requests.post(FGATE_URL, headers=headers, data=data)
+            r = requests.post(FGATE_URL,  data=data)
             rdata = r.json()
             print(rdata)
             if r.status_code == 200:
@@ -71,13 +72,12 @@ class chargeCard(generics.GenericAPIView):
                 print("Request failed {} time(s)'.format(x+1)")
                 print("Waiting for %s seconds before retrying again")
                 sleep(delay)
-        if rdata.error_code == '00':
+        if rdata["error_code"] == '00' and rdata["status"] == 1:
             create = Transaction.objects.create(
                 order_id=order_id,
-                amount=amount,
-                user_id=CustomUser.objects.get(pk=user_id),
-                method= 'Electronic Scratch Card',
-                currency= currency,
+                amount=rdata["amount"],
+                user_id=CustomUser.objects.get(username=user),
+                method= 'Fgo',
                 transaction_type=0,
                 channel=0,
             )
