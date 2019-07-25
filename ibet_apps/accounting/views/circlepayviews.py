@@ -5,7 +5,6 @@ from django.conf import settings
 from django.utils import timezone
 
 from rest_framework import parsers, renderers, status
-from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 
@@ -26,7 +25,6 @@ def create_deposit(request):
     if request.method == "POST": # can only allow post requests
         transId = "test-order-123"
         amount = "123"
-
 
         message = bytes(email + transId + amount, "utf-8")
         token = hmac.new(bytes(api_key, "utf-8"), msg=message, digestmod=hashlib.sha256).hexdigest()
