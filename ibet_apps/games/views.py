@@ -39,20 +39,21 @@ class GamesSearchView(View):
         # print("sort: " + str(sort))
 
         attributeList = []
+        providerList = []
         # if gameType:
         #     attributeList = attributeList + gameType.split()
-        if category:
-            attributeList = attributeList + category.split()
+        # if category:
+        #     attributeList = attributeList + category.split()
         if filterCategory:
-            attributeList = attributeList + filterCategory.split()
+            attributeList = attributeList + filterCategory.split('+')
         if jackpot:
-            attributeList = attributeList + jackpot.split()
+            attributeList = attributeList + jackpot.split('+')
         if provider:
-            attributeList = attributeList + provider.split()
+            providerList = provider.split('+')
         if feature:
-            attributeList = attributeList + feature.split()
+            attributeList = attributeList + feature.split('+')
         if theme:
-            attributeList = attributeList + theme.split()
+            attributeList = attributeList + theme.split('+')
         
         # print(str(attributeList))
         # print("feature: " + str(feature))
@@ -73,8 +74,23 @@ class GamesSearchView(View):
 
         if gameType:
             # print(str(gameType))
-            filter = filter & Q(category_id__name__icontains=gameType)
+            filter = filter & Q(category_id__parent_id__name__iexact=gameType)
+            if category != 'all':
+                filter = filter & Q(category_id__name__iexact=category)
             logger.info("Filter by game category: " + str(gameType))
+
+        providerFilter = Q()
+        if provider:
+            for provider in providerList:
+                # print('provider: ' + str(provider))
+                for gameProvider in GAME_PROVIDERS:
+                    name = gameProvider[1]
+                    if provider.lower() == name.lower():
+                        providerFilter = providerFilter | Q(provider=gameProvider[0])
+                    else:
+                        providerFilter = providerFilter | Q(provider=-1)
+
+        filter = filter & providerFilter
 
         for attr in attributeList:
             filter = filter & Q(attribute__icontains=attr)
