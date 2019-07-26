@@ -113,7 +113,7 @@ def confirm_payment(request):
         transactionId = body.get("transactionId")
         logger.info("matching on transaction ID: " + transactionId)
         matchedTrans = Transaction.objects.get(transaction_id=transactionId)
-        matchedTrans.status = 3 # set deposit transaction status to pending
+        matchedTrans.status = 3  # set deposit transaction status to pending
         matchedTrans.last_updated = timezone.now()
         matchedTrans.save()
         amount = matchedTrans.amount
