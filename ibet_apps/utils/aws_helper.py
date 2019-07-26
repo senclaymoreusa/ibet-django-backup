@@ -36,10 +36,10 @@ def getAWSClient(service_name, third_party_keys):
 
     return client 
 
-def getSQSQueueUrl(third_party_keys):
+def getSQSQueue(third_party_keys, queue_name):
     sqs = boto3.resource('sqs')
     try:
-        queue = sqs.get_queue_by_name(QueueName=third_party_keys["BOUNS_QUEUE_NAME"])
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
     except NonExistentQueue as e:
         logger.error("Queue Not Exist. {}".format(e))
         return None

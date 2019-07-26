@@ -15,7 +15,7 @@ from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
 from time import sleep, gmtime, strftime
 
-import boto3, asyncio
+import asyncio
 from accounting.views.sqs_message import send_message_sqs 
 
 logger = logging.getLogger('django')
@@ -400,17 +400,19 @@ def capture_transaction(request):
                         'channel':2,
                         'status':0,
                         'method':"AstroPay",
+                        # request_time need to be updated
+                        'request_time': timezone.now(),
+                        'product': "None",
                     }
-
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)            
-            loop.run_until_complete(createDb(**tranDict))
+            loop.run_until_complete(createDeposit(**tranDict))
                   
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
 
-async def createDb(**tranDict):
+async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(
-        addTransaction(**tranDict)
+        addTransToDB(**tranDict)
     )
     task2 = asyncio.ensure_future(
         send_message_sqs(**tranDict)
@@ -418,7 +420,7 @@ async def createDb(**tranDict):
     await task1
     await task2
 
-async def addTransaction(**tranDict):
+async def addTransToDB(**tranDict):
     create = Transaction.objects.create(
         order_id=tranDict['order_id'],
         transaction_id=tranDict['user_id'],
@@ -428,5 +430,5 @@ async def addTransaction(**tranDict):
         transaction_type=tranDict['transaction_type'], 
         channel=tranDict['channel'], 
         status=tranDict['status'], 
-        method=tranDict['method'], 
+        method=tranDict['method'],
     )

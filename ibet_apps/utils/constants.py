@@ -441,3 +441,5 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_SMS, 'sms'),
     (NOTIFICATION_EMAIL, 'email')
 )
+
+BOUNE_QUEUE_NAME = "bouns_queue"
