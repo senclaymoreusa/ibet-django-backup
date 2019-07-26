@@ -19,7 +19,7 @@ import requests,json
 import logging, time, struct, hashlib, xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
-import base64
+import base64, socket
 from time import gmtime, strftime, strptime
 
 logger = logging.getLogger("django")
