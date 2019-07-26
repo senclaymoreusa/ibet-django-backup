@@ -52,7 +52,7 @@ def get_Host_name_IP():
         host_ip = socket.gethostbyname(host_name) 
         return host_ip
     except: 
-        print("Unable to get Hostname and IP") 
+        logger.info("Unable to get Hostname and IP") 
 
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
@@ -195,8 +195,10 @@ class submitDeposit(generics.GenericAPIView):
                     return Response(rrdata)
                
             else:
-                return Response(StatusMsg)
                 logger.info("There was something wrong with the result")
+                logger.info(StatusMsg)
+                return Response(StatusMsg)
+                
         else:
             # Handle error
             logger.info("There was something wrong with the result")

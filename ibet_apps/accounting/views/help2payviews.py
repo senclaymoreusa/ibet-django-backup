@@ -57,7 +57,7 @@ def get_Host_name_IP():
         host_ip = socket.gethostbyname(host_name) 
         return host_ip
     except: 
-        print("Unable to get Hostname and IP") 
+        logger.info("Unable to get Hostname and IP") 
   
 
 def MD5(code):

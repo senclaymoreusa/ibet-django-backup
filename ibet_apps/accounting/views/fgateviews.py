@@ -63,7 +63,7 @@ class chargeCard(generics.GenericAPIView):
                 success = True
                 # Handle error
                 logger.info("Failed to complete a request for getDepositMethod...")
-                logger.error(rdata)
+                logger.info(rdata)
                 return Response(rdata)
             if r.status_code == 500:
                 logger.info("Request failed {} time(s)'.format(x+1)")
