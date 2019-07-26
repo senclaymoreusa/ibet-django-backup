@@ -64,7 +64,7 @@ def MD5(code):
     return res
 
 
-class submitDeposit(generics.GenericAPIView):
+class SubmitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
     permission_classes = [AllowAny, ]
@@ -107,7 +107,8 @@ class submitDeposit(generics.GenericAPIView):
         )
         return HttpResponse(rdata)
 
-class depositResult(generics.GenericAPIView):
+
+class DepositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
@@ -117,7 +118,7 @@ class depositResult(generics.GenericAPIView):
         
         update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
-        if  Status == '000':  
+        if Status == '000':
             update_data.status = 0
         elif Status == '001':
             update_data.status = 1
