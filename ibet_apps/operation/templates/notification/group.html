@@ -1,0 +1,76 @@
+{% extends 'xadmin/base_site.html' %}
+{% block content-nav %}
+{% endblock %}
+{% block content %}
+
+
+<h2>{{ current_user }}</h2>
+<h2 id="demo"></h2>
+<!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
+{% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New Group</button>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form action="{% url 'xadmin:awstopic' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
+      {% csrf_token %}
+        <div class="form-group">
+          <label for="topic_name">Group Name</label>
+          <input type="text" class="form-control" name="topic_name" placeholder="Group Name">
+        </div>
+        <div class="form-group">
+          <label for="creator">Group Creator</label>
+          <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
+        </div>
+        <div class="form-group">
+          <label for="valid_until" class="col-2 col-form-label">Valid Until</label>
+          <div class="col-10">
+            <input class="form-control" type="datetime-local" value="" id="valid_until" name="valid_un">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="usrs">Add Users</label>
+          <select name="usrs" class="form-control" multiple="multiple">
+            {% for user in users %}
+            <option value="{{ user.pk }}">{{ user }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <hr/>
+        <button type="submit" class="btn btn-primary">Create Group</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<table class="table table-bordered table-striped table-hover">
+  <tr>
+    <th>NAME</th>
+    <th>MEMBERS</th>
+    <th>TIMES USED</th>
+    <th>CREATOR</th>
+    <th>OPEN RATE</th>
+    <th>EDIT</th>
+    <th>VIEW</th>
+  </tr>
+  {% for topic in queryset %}
+    <tr>
+      <td>{{ topic }}</td>
+      <td>TBD</td>
+      <td>TBD</td>
+      <td>{{ topic.creator }}</td>
+      <td>66.67%</td>
+      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' topic.pk %}" role="button" disabled>Edit</a></td>
+      <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
+      <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
+        <i class="fa fa-info"></i>
+      </button></td>-->
+    </tr>
+    <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
+  {% endfor %}
+</table>
+<script>
+
+</script>
+{% endblock %}

@@ -16,7 +16,6 @@ def getThirdPartyKeys(bucket, file):
     except NoCredentialsError as e:
         logger.error(e)
         return None
-
     return config
 
 
