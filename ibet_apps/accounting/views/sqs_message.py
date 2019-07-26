@@ -51,7 +51,7 @@ async def send_message_sqs(**tranDict):
                     'StringValue': str(tranDict['request_time']),
                 },
                 'Currency': {
-                    'DataType': 'String.datetime',
+                    'DataType': 'String',
                     'StringValue': currency_type,
                 },
                 'Product': {
