@@ -32,7 +32,7 @@ def generateHash(key, message):
 class chargeCard(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = fgateChargeCardSerialize
-    permission_classes = [AllowAny, ]
+    permission_classes = [IsAuthenticated, ]
     def post(self, request, *args, **kwargs):
         user = self.request.POST.get("user")
         pin = self.request.POST.get("pin")

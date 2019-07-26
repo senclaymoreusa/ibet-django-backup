@@ -68,7 +68,7 @@ def MD5(code):
 class submitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
-    permission_classes = [AllowAny, ]
+    permission_classes = [IsAuthenticated, ]
     def post(self, request, *args, **kwargs):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
@@ -150,7 +150,7 @@ def depositFrontResult(request):
         return HttpResponse("Order[%s] is pending." % (order_id))
 
 @api_view(['POST'])
-@permission_classes((AllowAny,))
+@permission_classes((IsAuthenticated,))
 def depositStatus(request):
     order_id = request.data.get('order_id')
     getData = Transaction.objects.get(order_id=order_id)
