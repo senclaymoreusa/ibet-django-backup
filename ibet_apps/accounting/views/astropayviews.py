@@ -400,8 +400,7 @@ def capture_transaction(request):
                         'channel':2,
                         'status':0,
                         'method':"AstroPay",
-                        # request_time need to be updated
-                        'request_time': timezone.now(),
+                        'arrive_time': timezone.now(),
                         'product': "None",
                     }
             loop = asyncio.new_event_loop()
@@ -431,4 +430,5 @@ async def addTransToDB(**tranDict):
         channel=tranDict['channel'], 
         status=tranDict['status'], 
         method=tranDict['method'],
+        arrive_time=tranDict['arrive_time'],
     )

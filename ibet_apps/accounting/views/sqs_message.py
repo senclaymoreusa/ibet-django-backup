@@ -7,6 +7,9 @@ from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys, getAWSClient, getSQSQueue
 from users.models import CustomUser
 
+from django.conf import settings
+from pytz import timezone
+
 third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sqs_access.json")
 client = getAWSClient('sqs', third_party_keys)
 bouns_queue = getSQSQueue(third_party_keys, BONUS_QUEUE_NAME)
@@ -18,7 +21,7 @@ async def send_message_sqs(**tranDict):
     # Get Transaction Type 
     transaction_type = dict(TRANSACTION_TYPE_CHOICES).get(tranDict['transaction_type'])
     currency_type = dict(CURRENCY_CHOICES).get(tranDict['currency'])
-    product_type = tranDict['product']
+    arrive_time = tranDict['arrive_time'].astimezone(timezone(settings.TIME_ZONE))
 
     # Set up logging 
     # logging.basicConfig(level=logging.DEBUG,
@@ -48,7 +51,7 @@ async def send_message_sqs(**tranDict):
                 },
                 'TransactionTime': {
                     'DataType': 'String.datetime',
-                    'StringValue': str(tranDict['request_time']),
+                    'StringValue': str(arrive_time),
                 },
                 'Currency': {
                     'DataType': 'String',
@@ -56,7 +59,7 @@ async def send_message_sqs(**tranDict):
                 },
                 'Product': {
                     'DataType': 'String',
-                    'StringValue': product_type,
+                    'StringValue': tranDict['product'],
                 }
             },
             MessageBody=(
