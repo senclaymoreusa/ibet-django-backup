@@ -9,7 +9,7 @@ from users.models import CustomUser
 
 third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sqs_access.json")
 client = getAWSClient('sqs', third_party_keys)
-bouns_queue = getSQSQueue(third_party_keys, BOUNE_QUEUE_NAME)
+bouns_queue = getSQSQueue(third_party_keys, BOUNS_QUEUE_NAME)
 logger = logging.getLogger('django')
 
 # example for deposit with Astropay

@@ -442,4 +442,4 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_EMAIL, 'email')
 )
 
-BOUNE_QUEUE_NAME = "bouns_queue"
+BOUNS_QUEUE_NAME = "bouns_queue"
