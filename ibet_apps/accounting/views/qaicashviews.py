@@ -65,6 +65,9 @@ statusConversion = {
     "APPROVED":4,
     "REJECTED":5,
     "COMPLETED":6,
+    "RESEND":7,
+    "REJECTED": 8,
+    "HELD": 9,
 }
 REDIRECTURL = "http://localhost:3000/withdraw/success/"
 def generateHash(key, message):

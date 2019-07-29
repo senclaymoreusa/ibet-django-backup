@@ -59,6 +59,7 @@ STATE_CHOICES = (
     (6, 'COMPLETED'),
     (7, 'RESEND'),
     (8, 'REJECTED'),
+    (9, 'HELD'),
 
 )
 REVIEW_STATE_CHOICES = (
