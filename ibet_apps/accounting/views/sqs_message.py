@@ -28,7 +28,7 @@ async def send_message_sqs(**tranDict):
     try:
         msg = client.send_message(
             QueueUrl=bouns_queue.url,
-            DelaySeconds=10,
+            # DelaySeconds=10,
             MessageAttributes={
                 'UserId': {
                     'DataType': 'Number',

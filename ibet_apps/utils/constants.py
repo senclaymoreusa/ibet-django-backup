@@ -449,4 +449,4 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_EMAIL, 'email')
 )
 
-BONUS_QUEUE_NAME = "bouns_queue"
+BONUS_QUEUE_NAME = "bonus_queue"
