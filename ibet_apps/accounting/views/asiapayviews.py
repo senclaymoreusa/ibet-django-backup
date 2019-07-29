@@ -183,6 +183,7 @@ class submitDeposit(generics.GenericAPIView):
                     channel=4,
                     status=2,
                     method=bankidConversion[BankID],
+                    request_time=timezone.now,
                 )
                 if PayWay == ASIAPAY_QRPAYWAY:
                     rr = requests.get(paymentAPIURL, params={
@@ -315,6 +316,7 @@ class submitCashout(generics.GenericAPIView):
                 channel=4,
                 status=2,
                 method=cashoutMethod,
+                request_time=timezone.now,
             )
             return Response(StatusCode)
         else:
@@ -343,6 +345,7 @@ class depositfinish(generics.GenericAPIView):
             orderData = Transaction.objects.get(user_id=CustomUser.objects.get(pk=userid),
             order_id=OrderID)
             orderData.status = 3
+            orderData.last_updated = timezone.now(),
             orderData.save()
         else:
             logger.info('The request information is nor correct, please try again')
@@ -429,6 +432,7 @@ class depositArrive(generics.GenericAPIView):
         if serializer.is_valid() and StatusCode == '001':  
             saveData = Transaction.objects.get(user_id=userid, order_id=order_id) 
             saveData.status = 6
+            saveData.arrive_time = timezone.now()
             saveData.save()
             
             return Response(ET.tostring(root),status=status.HTTP_200_OK)

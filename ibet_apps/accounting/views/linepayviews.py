@@ -84,7 +84,7 @@ def reserve_payment(request):
                         transaction_type = DEPOSIT,
                         channel = LINE_PAY,
                         status = CREATED,
-                        last_updated = timezone.now()
+                        request_time = timezone.now()
                     )
                     logger.info("created?: " + str(created))
                     logger.info("transaction data: " + str(obj))
@@ -129,6 +129,7 @@ def confirm_payment(request):
             if (response.status_code == 200):
                 matchedTrans.status = 0
                 matchedTrans.last_updated = timezone.now()
+                matchedTrans.arrive_time = timezone.now()
                 matchedTrans.save()
                 break
             else:

@@ -328,7 +328,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorEmail': CustomUser.objects.filter(email=email),
             'depositorName': CustomUser.objects.filter(first_name=first_name),
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'http://128dbbc7.ngrok.io/api/qaicash/transaction_status',
+            'callbackUrl': 'http://128dbbc7.ngrok.io/accounting/api/qaicash/transaction_status',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -345,6 +345,7 @@ class submitDeposit(generics.GenericAPIView):
             currency= curr,
             transaction_type=0,
             channel=3,
+            request_time=rdata["depositTransaction"]["dateCreated"],
         )
         
         return Response(rdata)
@@ -421,7 +422,6 @@ class submitPayout(generics.GenericAPIView):
                     cur_status = y[0] 
             create = Transaction.objects.get_or_create(
                 order_id= rdata["payoutTransaction"]['orderId'],
-                request_time=rdata["payoutTransaction"]["dateCreated"],
                 amount=rdata["payoutTransaction"]["amount"],
                 status=cur_status,
                 user_id=user,
@@ -429,6 +429,7 @@ class submitPayout(generics.GenericAPIView):
                 currency= cur_val,
                 transaction_type=1,
                 channel=3,
+                request_time=rdata['payoutTransaction']['dateCreated'],
             )
         else:
             logger.error('post information is not correct, please try again')
@@ -475,7 +476,7 @@ class getPayoutTransaction(generics.GenericAPIView):
                                                 method=rdata["payoutMethod"],                                                                      
             )
             update_data.transaction_id=rdata['transactionId']
-            update_data.request_time=rdata["dateCreated"]
+            update_data.last_updated=rdata["dateUpdated"]
             update_data.status=statusConversion[rdata["status"]]
             update_data.save()
             # create = Transaction.objects.get_or_create(
@@ -540,7 +541,7 @@ class approvePayout(generics.GenericAPIView):
         update_data = Transaction.objects.get(order_id=rdata['orderId']                                                                  
         )
         update_data.transaction_id=rdata['transactionId']
-        update_data.request_time=rdata["dateUpdated"]
+        update_data.last_updated=rdata["dateUpdated"]
         update_data.status=4
         update_data.save()
         
@@ -605,7 +606,7 @@ class rejectPayout(generics.GenericAPIView):
             user = CustomUser.objects.get(username=rdata['userId'])   
             create = Transaction.objects.get_or_create(
                 order_id= rdata['orderId'],
-                request_time=rdata["dateCreated"],
+                last_updated=rdata["dateUpdated"],
                 amount=rdata["amount"],
                 status=cur_status,
                 user_id=user,
@@ -662,7 +663,7 @@ class getDepositTransaction(generics.GenericAPIView):
         
         update_data = Transaction.objects.get(order_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
         update_data.status=statusConversion[rdata["status"]]
-        update_data.request_time=rdata["dateCreated"]
+        update_data.last_updated=rdata["dateUpdated"]
         update_data.save()
       
         return Response(rdata)
@@ -673,30 +674,31 @@ class transactionStatusUpdate(generics.GenericAPIView):
     permission_classes = [AllowAny,]
      
     def post(self, request, *args, **kwargs):
-        print("result:")
+        print("HAHAHAHA:")
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        mystatus = self.request.POST['status']
-        method=self.request.POST['method']
-        amount=self.request.POST['amount']
-        user = CustomUser.objects.get(username=self.request.POST['user_id'])  
-        for x in Transaction._meta.get_field('status').choices:
-                if mystatus == x[1]:
-                    cur_status = x[0] 
-        order = self.request.POST['order_id']
-        order_id = Transaction.objects.get(order_id=order)
+        Status = self.request.data.get('status')
+        # mystatus = self.request.POST['status']
+        # method=self.request.POST['method']
+        # amount=self.request.POST['amount']
+        # user = CustomUser.objects.get(username=self.request.POST['user_id'])  
+        # for x in Transaction._meta.get_field('status').choices:
+        #         if mystatus == x[1]:
+        #             cur_status = x[0] 
+        # order = self.request.POST['order_id']
+        # order_id = Transaction.objects.get(order_id=order)
 
-        try: 
-            order_id = Transaction.objects.filter(order_id=self.request.POST['order_id'])
-        except Transaction.DoesNotExist:
-            order_id = None
+        # try: 
+        #     order_id = Transaction.objects.filter(order_id=self.request.POST['order_id'])
+        # except Transaction.DoesNotExist:
+        #     order_id = None
 
-        if order_id:          
-            update = order_id.update(status=cur_status)
-            status_code = status.HTTP_200_OK
-        else:
-            status_code = status.HTTP_404_NOT_FOUND 
+        # if order_id:          
+        #     update = order_id.update(status=cur_status)
+        #     status_code = status.HTTP_200_OK
+        # else:
+        #     status_code = status.HTTP_404_NOT_FOUND 
 
-        return Response({'details': 'successful update'}, status=status_code)
+        return Response({'Status': Status},status.HTTP_200_OK)
 
 class payoutMethod(generics.GenericAPIView):
     queryset = WithdrawChannel.objects.all()

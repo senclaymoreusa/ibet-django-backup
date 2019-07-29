@@ -77,6 +77,8 @@ class chargeCard(generics.GenericAPIView):
                 method= 'Fgo',
                 transaction_type=0,
                 channel=0,
+                request_time=timezone.now(),
+                arrive_time=timezone.now(),
             )
         else:
             return Response(rdata)

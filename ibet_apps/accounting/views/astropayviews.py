@@ -397,6 +397,7 @@ def capture_transaction(request):
                 channel=2,
                 status=0,
                 method="AstroPay",
+                request_time=timezone.now()
             )
         
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})

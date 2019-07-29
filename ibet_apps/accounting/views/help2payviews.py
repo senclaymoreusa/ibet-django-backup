@@ -106,6 +106,7 @@ class submitDeposit(generics.GenericAPIView):
             currency= currency,
             transaction_type=0,
             channel=0,
+            request_time=timezone.now(),
         )
         
         return HttpResponse(rdata)
@@ -121,6 +122,7 @@ class depositResult(generics.GenericAPIView):
         update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
         update_data.transaction_id = depositID
+        update_data.arrive_time = timezone.now()
         if  Status == '000':  
             update_data.status = 0
         elif Status == '001':

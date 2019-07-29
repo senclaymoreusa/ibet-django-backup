@@ -18,7 +18,7 @@ class Transaction(models.Model):
     method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 
     last_updated = models.DateTimeField(default=timezone.now, verbose_name=_('Status Last Updated'))
     request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
-    arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
+    arrive_time = models.DateTimeField(blank=True, null=True,verbose_name=_('Account Time'))
     status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
     channel = models.SmallIntegerField(choices=CHANNEL_CHOICES,default=0,verbose_name=_('Payment'))
     transaction_type = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
