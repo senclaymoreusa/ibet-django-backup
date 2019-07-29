@@ -12,7 +12,7 @@ from pytz import timezone
 
 third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sqs_access.json")
 client = getAWSClient('sqs', third_party_keys)
-bouns_queue = getSQSQueue(third_party_keys, BONUS_QUEUE_NAME)
+bonus_queue = getSQSQueue(third_party_keys, BONUS_QUEUE_NAME)
 logger = logging.getLogger('django')
 
 # example for deposit with Astropay
@@ -30,7 +30,7 @@ async def send_message_sqs(**tranDict):
     # Send message to SQS queue
     try:
         msg = client.send_message(
-            QueueUrl=bouns_queue.url,
+            QueueUrl=bonus_queue.url,
             # DelaySeconds=10,
             MessageAttributes={
                 'UserId': {
