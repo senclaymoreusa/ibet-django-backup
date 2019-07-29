@@ -448,3 +448,5 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_SMS, 'sms'),
     (NOTIFICATION_EMAIL, 'email')
 )
+
+BONUS_QUEUE_NAME = "bonus_queue"

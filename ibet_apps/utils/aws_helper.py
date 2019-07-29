@@ -16,7 +16,6 @@ def getThirdPartyKeys(bucket, file):
     except NoCredentialsError as e:
         logger.error(e)
         return None
-    
     return config
 
 
@@ -35,4 +34,14 @@ def getAWSClient(service_name, third_party_keys):
         logger.error(e)
         return None
 
-    return client
+    return client 
+
+def getSQSQueue(third_party_keys, queue_name):
+    sqs = boto3.resource('sqs')
+    try:
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+    except NonExistentQueue as e:
+        logger.error("Queue Not Exist. {}".format(e))
+        return None
+
+    return queue
