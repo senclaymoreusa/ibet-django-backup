@@ -49,15 +49,12 @@ CURRENCY_CHOICES = (
     (9, 'MMK'),
     (10, 'XBT')
 )
-<<<<<<< HEAD
 
 tran_pending_type = 3
 tran_success_type = 0
 tran_cancel_type = 5
 tran_fail_type = 8
 
-=======
->>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
@@ -112,14 +109,11 @@ GAME_TYPE_CHOICES = (
     (4, 'General'),
 )
 
-<<<<<<< HEAD
 THIRDPARTY_STATUS_CHOICES = (
     (0, 'OPEN'),
     (1, 'CLOSE'),
 )
 
-=======
->>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa
 COUNTRY_CHOICES = (
     ('US', 'United States'),
     ('CN', 'China'),

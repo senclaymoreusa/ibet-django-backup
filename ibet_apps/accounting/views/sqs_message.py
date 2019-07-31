@@ -10,24 +10,15 @@ from users.models import CustomUser
 from django.conf import settings
 from pytz import timezone
 
-<<<<<<< HEAD
-third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sqs_access.json")
-client = getAWSClient('sqs', third_party_keys)
-bonus_queue = getSQSQueue(third_party_keys, BONUS_QUEUE_NAME)
-=======
->>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa
 logger = logging.getLogger('django')
 
 # example for deposit with Astropay
     
 async def send_message_sqs(**tranDict):
-<<<<<<< HEAD
-=======
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sqs_access.json")
     client = getAWSClient('sqs', third_party_keys)
     bonus_queue = getSQSQueue(third_party_keys, BONUS_QUEUE_NAME)
     
->>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa
     # Get Transaction Type 
     transaction_type = dict(TRANSACTION_TYPE_CHOICES).get(tranDict['transaction_type'])
     currency_type = dict(CURRENCY_CHOICES).get(tranDict['currency'])
