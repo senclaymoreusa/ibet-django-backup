@@ -674,31 +674,27 @@ class transactionStatusUpdate(generics.GenericAPIView):
     permission_classes = [AllowAny,]
      
     def post(self, request, *args, **kwargs):
-        print("HAHAHAHA:")
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        Status = self.request.data.get('status')
-        # mystatus = self.request.POST['status']
-        # method=self.request.POST['method']
-        # amount=self.request.POST['amount']
-        # user = CustomUser.objects.get(username=self.request.POST['user_id'])  
-        # for x in Transaction._meta.get_field('status').choices:
-        #         if mystatus == x[1]:
-        #             cur_status = x[0] 
-        # order = self.request.POST['order_id']
-        # order_id = Transaction.objects.get(order_id=order)
+        orderId = self.request.data.get('orderId')
+        Status = self.request.data.get('status') 
+        for x in Transaction._meta.get_field('status').choices:
+                if Status == x[1]:
+                    cur_status = x[0] 
+        print(cur_status)
+        try: 
+            order_id = Transaction.objects.filter(order_id=orderId)
+        except Transaction.DoesNotExist:
+            order_id = None
 
-        # try: 
-        #     order_id = Transaction.objects.filter(order_id=self.request.POST['order_id'])
-        # except Transaction.DoesNotExist:
-        #     order_id = None
-
-        # if order_id:          
-        #     update = order_id.update(status=cur_status)
-        #     status_code = status.HTTP_200_OK
-        # else:
-        #     status_code = status.HTTP_404_NOT_FOUND 
-
-        return Response({'Status': Status},status.HTTP_200_OK)
+        if order_id: 
+            update = order_id.update(status=cur_status)
+            status_code = status.HTTP_200_OK
+            if cur_status == 0:
+                update = order_id.update(arrive_time=timezone.now())
+            return Response({'Status': Status}, status=status_code)
+        else:
+            status_code = status.HTTP_404_NOT_FOUND 
+            return Response({'Error': 'Can not find the order.'}, status=status_code)
 
 class payoutMethod(generics.GenericAPIView):
     queryset = WithdrawChannel.objects.all()

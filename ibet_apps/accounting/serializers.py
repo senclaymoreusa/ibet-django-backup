@@ -235,6 +235,14 @@ class fgateChargeCardSerialize(serializers.Serializer):
     user = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
+class asiapayPayoutArriveSerialize(serializers.Serializer):
+    Cmd = serializers.CharField(required=True)
+    OrderID= serializers.CharField(required=True)
+    TrustIUser= serializers.CharField(required=True)
+    SignCode= serializers.CharField(required=False)
+    CashType= serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
 
 
 
