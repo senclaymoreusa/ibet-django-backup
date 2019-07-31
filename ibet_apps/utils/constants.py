@@ -28,12 +28,15 @@ CURRENCY_TYPES = (
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 CHANNEL_CHOICES = (
-    (0, 'Help2pay'),
+    (0, 'Help2Pay'),
     (1, 'LINEpay'),
-    (2, 'Astropay'),
+    (2, 'AstroPay'),
     (3, 'Qaicash'),
-    (4, 'Asia Pay'),
-    (5, 'Paypal')
+    (4, 'AsiaPay'),
+    (5, 'Paypal'),
+    (6, 'Payzod'),
+    (7, 'CirclePay'),
+    (8, 'Fgate')
 )
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -214,7 +217,7 @@ INTERVAL = (
     (INTERVAL_PER_SIX_MONTH, 'per six months'),
     (INTERVAL_PER_ONE_YEAR, 'per one year'),
     (INTERVAL_PER_THREE_YEAR, 'per three years'),
-     (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
 )
 
 
@@ -259,7 +262,7 @@ ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('cashifacebatch', '代付'),
 )
 
-#qaicash-payment
+# qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
 MERCHANTAPIKEY = '70PsPAH!Z7l18ZuVo8^c'
@@ -267,26 +270,26 @@ APIVERSION = 'v2.0'
 DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
 
-#paypal-payment
+# paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
-#astroPay sandbox url
+# astroPay sandbox url
 ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'
 
 
-#astroPay sandbox key:
+# astroPay sandbox key:
 ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 
 ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
 ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
-#astroPay sandbod WEBPAYSTATUS:
+# astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-#aisa-pay
+# asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
 ASIAPAY_CID = "BRANDCQNGHUA3"
 ASIAPAY_DEPOSITKEY = "A49E448121886D7C857B39C3467EC117"
@@ -298,7 +301,7 @@ ASIAPAY_R1 = "C1aym0re"
 ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
 
-#help2pay
+# help2pay
 
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT = "M0130"
@@ -310,3 +313,11 @@ BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 CIRCLEPAY_USERCODE = "297802061195"
 CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
 CIRCLEPAY_EMAIL = "jennyto@ibet.com"
+
+# payzod sandbox
+PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+PAYZOD_MERCHANT_ID = 1008779364
+PAYZOD_MERCHANT_NAME = "ibet2019"
+PAYZOD_PASSKEY = "dgr8mM7akMtL"
+
+# payzod production

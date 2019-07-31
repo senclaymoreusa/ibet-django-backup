@@ -9,6 +9,7 @@ import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
 import accounting.views.help2payviews as help2pay
 import accounting.views.circlepayviews as circlepay
+import accounting.views.payzodviews as payzod
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name='deposit_method'),
@@ -48,4 +49,6 @@ urlpatterns = [
     path('api/circlepay/deposit', csrf_exempt(circlepay.create_deposit), name="CirclePay_create_deposit"),
     path('api/circlepay/confirm', csrf_exempt(circlepay.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction")
+    path('api/payzod/deposit', csrf_exempt(payzod.get_qr_code), name="Payzod_Deposit"),
+    path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status")
 ]

@@ -10,9 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os, boto3, json, logging, datetime
+import os
+import boto3
+import json
+import logging
+import datetime
+import sys
+
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger('django')
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -44,9 +51,9 @@ def getKeys(bucket, file):
     
     return config
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -65,15 +72,13 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
 # CORS_ORIGIN_ALLOW_ALL=True     # Stephen
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
-CRSF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 
 
-import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
 sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
@@ -198,8 +203,6 @@ elif os.getenv("ENV") == "dev":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     
-    print(db_data)
-    
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -263,7 +266,7 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
 
-from django.utils.translation import ugettext_lazy as _
+
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),

@@ -7,7 +7,7 @@ djauth/.DS_Store
 /.pydevproject
 logs/
 .env
-.idea
+.idea/
 
 apps/accounting/views/testview.py
 djauth/third_party_keys.py

@@ -7,6 +7,7 @@ from utils.constants import *
 
 import uuid
 
+
 class Transaction(models.Model):
     transaction_id = models.CharField(max_length = 200, default=0, verbose_name=_('Transaction id'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
