@@ -40,7 +40,10 @@ def create_deposit(request):
 
 
 def confirm_payment(request):
+    if request.method == "GET":
+        return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
+        print(request.body)
         transaction_data = json.loads(request.body)
         # matching_transaction = Transaction.objects.get(transaction_id=transactionId)
         print(transaction_data)

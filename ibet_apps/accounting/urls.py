@@ -44,11 +44,11 @@ urlpatterns = [
     path('api/asiapay/orderStatus', asiapay.orderStatus.as_view(), name='AsiaPay_Order_Status'),
     path('api/asiapay/exchangeRate', asiapay.exchangeRate.as_view(), name='AsiaPay_Exchange_Rate'),
     path('api/asiapay/depositArrive', asiapay.depositArrive.as_view(), name='AsiaPay_deposit_Arrive'),
-    path('api/help2pay/deposit', help2pay.submitDeposit.as_view(), name='Help2pay_Deposit'),
-    path('api/help2pay/deposit_result', help2pay.depositResult.as_view(), name='Help2pay_deposit_result'),
+    path('api/help2pay/deposit', help2pay.SubmitDeposit.as_view(), name='Help2pay_Deposit'),
+    path('api/help2pay/deposit_result', help2pay.DepositResult.as_view(), name='Help2pay_deposit_result'),
     path('api/circlepay/deposit', csrf_exempt(circlepay.create_deposit), name="CirclePay_create_deposit"),
     path('api/circlepay/confirm', csrf_exempt(circlepay.confirm_payment), name="CirclePay_Confirm_Payment"),
-    path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction")
+    path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction"),
     path('api/payzod/deposit', csrf_exempt(payzod.get_qr_code), name="Payzod_Deposit"),
     path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status")
 ]
