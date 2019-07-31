@@ -14,45 +14,55 @@ from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, D
 from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
 
-
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
 userCode = CIRCLEPAY_USERCODE
 api_key = CIRCLEPAY_API_KEY
 email = CIRCLEPAY_EMAIL
+
 
 def create_deposit(request):
     if request.method == "GET":
         return HttpResponse("You are at the endpoint for CirclePay reserve payment.")
     
     if request.method == "POST":  # can only allow post requests
-        transId = "testOrder"+str(random.randint(0, 1241241))
-        amount = "999999"
-        encrypt_msg = email + transId + amount
-        print(encrypt_msg)
+        body = json.loads(request.body)
+        trans_id = "testOrder"+str(random.randint(0, 1241241))
+        amount = body["amount"]
+        # print(amount)
+        encrypt_msg = email + trans_id + amount
+
         message = bytes(encrypt_msg, "utf-8")
         token = hmac.new(bytes(api_key, "utf-8"), msg=message, digestmod=hashlib.sha256).hexdigest()
-        print(token)
-        url = "https://gateway.circlepay.ph/payment/" + userCode + "/?partner_tran_id=" + transId + "&amount=" + amount + "&token=" + token
-        print(url)
+
+        url = CIRCLEPAY_DEPOSIT_URL + userCode + "/?partner_tran_id=" + trans_id + "&amount=" + amount + "&token=" + token
+        # print(url)
         response = requests.post(url)
-        print(response.status_code)
 
-        return HttpResponse(response.content)
-
+        return JsonResponse({
+            "url": response.url
+        })
 
 def confirm_payment(request):
     if request.method == "GET":
+        print("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
+        print("Hello POST")
+        print(request.POST)
         print(request.body)
         transaction_data = json.loads(request.body)
+        # query for transaction in ibet db
+
         # matching_transaction = Transaction.objects.get(transaction_id=transactionId)
+
+        # update transaction record status
         print(transaction_data)
         return
 
 def check_transaction(request):
     if request.method == "POST":
-        transId = "test-order-123" # request.POST.data
-        url = "https://api.circlepay.ph/transaction/" + transId
+        trans_id = "test-order-123" # request.POST.data
+        url = "https://api.circlepay.ph/transaction/" + trans_id
 
         response = requests.get(url)
         print(response.status_code)

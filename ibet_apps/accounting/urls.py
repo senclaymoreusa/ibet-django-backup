@@ -50,5 +50,6 @@ urlpatterns = [
     path('api/circlepay/confirm', csrf_exempt(circlepay.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction"),
     path('api/payzod/deposit', csrf_exempt(payzod.get_qr_code), name="Payzod_Deposit"),
+    path('api/payzod/confirm', csrf_exempt(payzod.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status")
 ]

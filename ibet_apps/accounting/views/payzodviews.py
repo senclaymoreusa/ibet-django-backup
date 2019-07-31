@@ -96,6 +96,15 @@ def get_qr_code(request):
             return HttpResponse("Failed to reach Payzod servers")
 
 
+def confirm_payment(request):
+    if request.method == "GET":
+        print(request.GET)
+        return HttpResponse("You are at the endpoint for Payzod confirm payment")
+        # query for transaction in ibet db
+        # update transaction record status
+    return
+
+
 def check_trans_status(request):
     if request.method == "POST":
         logger.info("Attempting to check status of transaction...")
