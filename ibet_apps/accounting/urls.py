@@ -1,5 +1,8 @@
 from django.urls import path, include
+<<<<<<< HEAD:ibet_apps/accounting/urls.py
 from django.conf.urls import url
+=======
+>>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa:apps/accounting/urls.py
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 
@@ -8,7 +11,10 @@ import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
+<<<<<<< HEAD:ibet_apps/accounting/urls.py
 import accounting.views.deposit_views as deposit
+=======
+>>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa:apps/accounting/urls.py
 import accounting.views.help2payviews as help2pay
 import accounting.views.fgateviews as fgate
 

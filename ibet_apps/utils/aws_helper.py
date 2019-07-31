@@ -40,8 +40,16 @@ def getSQSQueue(third_party_keys, queue_name):
     sqs = boto3.resource('sqs')
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
+<<<<<<< HEAD
     except NonExistentQueue as e:
         logger.error("Queue Not Exist. {}".format(e))
+=======
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+>>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa
         return None
 
     return queue

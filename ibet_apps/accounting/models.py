@@ -7,6 +7,7 @@ from utils.constants import *
 
 import uuid
 
+<<<<<<< HEAD:ibet_apps/accounting/models.py
 class Bank(models.Model):
     bank_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length = 200, default=0)
@@ -14,6 +15,33 @@ class Bank(models.Model):
     city = models.CharField(max_length = 200, default=0, null=True, blank=True)
 
 # class PersonalBankAccount(models.Model):
+=======
+class Transaction(models.Model):
+    transaction_id = models.CharField(max_length = 200, default=0, verbose_name=_('Transaction id'))
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
+    order_id = models.CharField(max_length = 200, default=0,verbose_name=_('Order id'))
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Apply Amount'))
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, verbose_name=_('Currency'))
+    language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='en-Us', verbose_name=_('Language'))
+    depositorTier = models.SmallIntegerField(default=0, verbose_name=_('Depositor Tier'))
+    method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 
+    last_updated = models.DateTimeField(default=timezone.now, verbose_name=_('Status Last Updated'))
+    request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
+    arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
+    status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
+    channel = models.SmallIntegerField(choices=CHANNEL_CHOICES,default=0,verbose_name=_('Payment'))
+    transaction_type = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
+    review_status = models.SmallIntegerField(choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
+    remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
+    transfer_from = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('From'))
+    transfer_to = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('To'))
+    bank = models.CharField(max_length=200, null=True, blank=True, verbose_name=_('Bank'))
+    product = models.SmallIntegerField(choices=GAME_TYPE_CHOICES, default=4, verbose_name=_('Product'))
+    payer_id = models.CharField(max_length = 100, default=0)
+    class Meta:
+        verbose_name = 'Transaction'
+        verbose_name_plural = verbose_name
+>>>>>>> ca1e909eebceebc917947afad086cfa29ba2e2fa:apps/accounting/models.py
 
 
 class ThirdParty(models.Model):
