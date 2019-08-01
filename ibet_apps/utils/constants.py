@@ -253,6 +253,89 @@ ASIAPAY_PAYWAY_CHOICES = (
     ('11', '工行手机支付'),
 
 )
+
+GAME_PROVIDER_NETENT = 0
+GAME_PROVIDER_PLAY_GO = 1
+GAME_PROVIDER_BIG_TIME_GAMING = 2
+GAME_PROVIDER_MICROGAMING = 3
+GAME_PROVIDER_QUICKSPIN = 4
+GAME_PROVIDER_PRAGMATIC_PLAY = 5
+GAME_PROVIDER_BLUEPRINT = 6
+GAME_PROVIDER_NOVOMATIC = 7
+GAME_PROVIDER_IGT = 8
+GAME_PROVIDER_ELK_STUDIOS = 9
+GAME_PROVIDER_GENESIS = 10
+GAME_PROVIDER_HIGH5 = 11
+GAME_PROVIDER_IRON_DOG = 12
+GAME_PROVIDER_JUST_FOR_THE_WIN = 13
+GAME_PROVIDER_KALAMBA = 14
+GAME_PROVIDER_LEANDER = 15
+GAME_PROVIDER_LIGHTNING_BOX = 16
+GAME_PROVIDER_NEXTGON = 17
+GAME_PROVIDER_RED7= 18
+GAME_PROVIDER_RED_TIGET_GAMING= 19
+GAME_PROVIDER_SCIENTIFIC_GAMES= 20
+GAME_PROVIDER_THUNDERKICK = 21
+GAME_PROVIDER_YGGDRASIL = 22
+
+
+
+
+GAME_PROVIDERS = (
+    (GAME_PROVIDER_NETENT, 'Netent'),
+    (GAME_PROVIDER_PLAY_GO, 'Play\'n Go'),
+    (GAME_PROVIDER_BIG_TIME_GAMING, 'Big Time Gaming'),
+    (GAME_PROVIDER_MICROGAMING, 'Microgaming'),
+    (GAME_PROVIDER_QUICKSPIN, 'Quickspin'),
+    (GAME_PROVIDER_PRAGMATIC_PLAY, 'Progmatic Play'),
+    (GAME_PROVIDER_BLUEPRINT, 'Blueprint'),
+    (GAME_PROVIDER_NOVOMATIC, 'Novomatic'),
+    (GAME_PROVIDER_IGT, 'IGT'),
+    (GAME_PROVIDER_ELK_STUDIOS, 'Elk Studio'),
+    (GAME_PROVIDER_GENESIS, 'Genesis'),
+    (GAME_PROVIDER_HIGH5, 'High5'),
+    (GAME_PROVIDER_IRON_DOG, 'Iron Dog'),
+    (GAME_PROVIDER_JUST_FOR_THE_WIN, 'Just For The Win'),
+    (GAME_PROVIDER_KALAMBA, 'Kalamba'),
+    (GAME_PROVIDER_LEANDER, 'Leander'),
+    (GAME_PROVIDER_LIGHTNING_BOX, 'Lightning Box'),
+    (GAME_PROVIDER_NEXTGON, 'Nextgen'),
+    (GAME_PROVIDER_RED7, 'Red7'),
+    (GAME_PROVIDER_RED_TIGET_GAMING, 'Red Tiger Gaming'),
+    (GAME_PROVIDER_SCIENTIFIC_GAMES, 'Scientific Games'),
+    (GAME_PROVIDER_THUNDERKICK, 'Thunderkick'),
+    (GAME_PROVIDER_YGGDRASIL, 'Yggdrasil'),
+)
+
+CATEGORY_TYPES_SPORTS = 0
+CATEGORY_TYPES_LIVE_CASINO = 1
+CATEGORY_TYPES_SLOTS = 2
+CATEGORY_TYPES_LOTTERY = 3
+
+
+
+CATEGORY_TYPES = (
+    (CATEGORY_TYPES_SPORTS, 'SPORTS'),
+    (CATEGORY_TYPES_LIVE_CASINO, 'LIVE CASINO'),
+    (CATEGORY_TYPES_SLOTS, 'SLOTS'),
+    (CATEGORY_TYPES_LOTTERY, 'LOTTERY'),
+)
+
+GAME_ATTRIBUTES_GAME_CATEGORY = 0
+GAME_ATTRIBUTES_JACKPOT = 1
+GAME_ATTRIBUTES_PROVIDER = 2
+GAME_ATTRIBUTES_FEATURES = 3
+GAME_ATTRIBUTES_THEME = 4
+
+GAME_ATTRIBUTES = (
+    (GAME_ATTRIBUTES_GAME_CATEGORY, 'Games Category'),
+    (GAME_ATTRIBUTES_JACKPOT, 'Jackpot'),
+    (GAME_ATTRIBUTES_PROVIDER, 'Provider'),
+    (GAME_ATTRIBUTES_FEATURES, 'Features'),
+    (GAME_ATTRIBUTES_THEME, 'Theme'),
+)
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -306,8 +389,9 @@ ASIAPAY_QRPAYWAY = "42"
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
+
 
 #circlepay
 CIRCLEPAY_USERCODE = "297802061195"
@@ -321,3 +405,64 @@ PAYZOD_MERCHANT_NAME = "ibet2019"
 PAYZOD_PASSKEY = "dgr8mM7akMtL"
 
 # payzod production
+
+#fgate
+FGATE_URL = "https://api.fgate247.com/charge_card/"
+FGATE_PARTNERID = "75"
+FGATE_PARTNERKEY = "6tDJkb"
+FGATE_TYPE = "fgo"
+
+
+
+GAME_FILTER_OPTION = [
+    {
+        'name': 'Games Category',
+        'data': ['New', 'Popular', 'Table Games', 'Slots', 'All Games']
+    },
+    {
+        'name': 'Jackpot',
+        'data': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots']
+    },
+    {
+        'name': 'Provider',
+        'data': ['Netent', 'Play\'n Go', 'Big Time Gaming', 'Microgaming', 'Quickspin', 'Pragmatic Play', 'Blueprint', 'Novomatic', 'IGT', 'Elk Studios',
+        'Genesis', 'High5', 'Iron Dog', 'Just For The Win', 'Kalamba', 'Leander', 'Lightning Box', 'Nextgen', 'Red7', 'Red Tiger Gaming', 'Scientific Games', 
+        'Thunderkick', 'Yggdrasil', 'Other']
+    },
+    {
+        'name': 'Feature',
+        'data': ['Megaways', 'Pay Both Ways', 'Bonus Feature', 'Free Spins', 'Double Or Nothing Feature']
+    },
+    {
+        'name': 'Theme',
+        'data': ['Egypt', 'Oriental', 'Mythology', 'Animal', 'Adventure', 'Fruit', 'Western', 'Film / Tv', 'Music', 'Sports',
+            'Space', 'Holidays', 'Dark/ Halloween', 'Vegas']
+    },
+    {
+        'name': 'Sort by',
+        'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
+    },
+]
+# Notification
+MESSAGE_ALERT  = 1
+MESSAGE_DIRECT = 2
+
+NOTIFICATION_TYPE = (
+    (MESSAGE_ALERT, 'ALERT'),
+    (MESSAGE_DIRECT, 'DIRECT'),
+    # (3, 'REFERRAL')
+)
+
+NOTIFICATION_DIRECT = 'D'
+NOTIFICATION_PUSH   = 'P'
+NOTIFICATION_SMS    = 'S'
+NOTIFICATION_EMAIL  = 'E' 
+
+NOTIFICATION_METHOD = (
+    (NOTIFICATION_DIRECT, 'direct'),
+    (NOTIFICATION_PUSH, 'push'),
+    (NOTIFICATION_SMS, 'sms'),
+    (NOTIFICATION_EMAIL, 'email')
+)
+
+BONUS_QUEUE_NAME = "bonus_queue"

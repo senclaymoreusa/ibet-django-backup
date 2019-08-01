@@ -184,24 +184,30 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #         }
 #     }
 
-if os.getenv("ENV") == "prod":
-    print("[" + str(datetime.datetime.now()) + "] Using prod db")
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
-    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+# To accommodate bucket names across all regions, need to remove hard-coded value
+# 
+# ENV: 
+#     USA: dev / prod
+#     EU:  eudev / euprod
+#
+if os.getenv("ENV") == "local":
+    print("[" + str(datetime.datetime.now()) + "] Using local db")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_data['RDS_DB_NAME'],
-            'USER': db_data['RDS_USERNAME'],
-            'PASSWORD': db_data['RDS_PASSWORD'],
-            'HOST': db_data['RDS_HOSTNAME'],
-            'PORT': db_data['RDS_PORT'],
+            'NAME': 'ibetlocal',
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': 5432,
         }
     }
-elif os.getenv("ENV") == "dev":
-    print("[" + str(datetime.datetime.now()) + "] Using dev db")
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+elif "ENV" in os.environ:
+    print("[" + str(datetime.datetime.now()) + "] Using db of " + os.environ["ENV"])
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.environ["ENV"]
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    
+    print("DB HOST: " + db_data['RDS_HOSTNAME'])
     
     DATABASES = {
         'default': {
@@ -211,18 +217,6 @@ elif os.getenv("ENV") == "dev":
             'PASSWORD': db_data['RDS_PASSWORD'],
             'HOST': db_data['RDS_HOSTNAME'],
             'PORT': db_data['RDS_PORT'],
-        }
-    }
-elif os.getenv("ENV") == "local":
-    print("[" + str(datetime.datetime.now()) + "] Using local db \n")
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ibetlocal',
-            'USER': 'postgres',
-            'PASSWORD': '',
-            'HOST': '',
-            'PORT': 5432,
         }
     }
 
@@ -273,7 +267,7 @@ LANGUAGES = (
     ('fr', _('Franch')),
 )
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -316,35 +310,7 @@ os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
 
 # Logging setup added by Stephen
-if os.getenv("ENV") == "dev":
-    print("AWS Logging to sys.stderr")
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
-            },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
-            },
-        }, 
-        'handlers': {
-            'stderr': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'stream': sys.stderr,
-            }
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['stderr'],
-                'level': 'DEBUG',
-            }
-        }
-    }
-else:
+if os.getenv("ENV") == "local":
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -375,6 +341,34 @@ else:
                 'propagate': True,
             },
         },
+    }
+else:
+    print("AWS Logging to sys.stderr")
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'stderr': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stderr,
+            }
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['stderr'],
+                'level': 'DEBUG',
+            }
+        }
     }
 
 

@@ -37,6 +37,7 @@ urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     path('users/', include('users.urls')),
     path('operation/', include('operation.urls')),
+    path('games/', include('games.urls')),
     path('users/', include('django.contrib.auth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('accounting/', include('accounting.urls')),

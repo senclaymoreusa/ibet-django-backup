@@ -11,3 +11,7 @@ logs/
 
 apps/accounting/views/testview.py
 djauth/third_party_keys.py
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

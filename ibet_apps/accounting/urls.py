@@ -10,6 +10,7 @@ import accounting.views.asiapayviews as asiapay
 import accounting.views.help2payviews as help2pay
 import accounting.views.circlepayviews as circlepay
 import accounting.views.payzodviews as payzod
+import accounting.views.fgateviews as fgate
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name='deposit_method'),
@@ -46,6 +47,9 @@ urlpatterns = [
     path('api/asiapay/depositArrive', asiapay.depositArrive.as_view(), name='AsiaPay_deposit_Arrive'),
     path('api/help2pay/deposit', help2pay.SubmitDeposit.as_view(), name='Help2pay_Deposit'),
     path('api/help2pay/deposit_result', help2pay.DepositResult.as_view(), name='Help2pay_deposit_result'),
+    path('api/help2pay/deposit_success', help2pay.depositFrontResult, name = 'Help2pay_deposit_sucess'),
+    path('api/help2pay/deposit_status', help2pay.depositStatus, name = 'Help2pay_deposit_status'),
+    path('api/fgate/chargeCard', fgate.chargeCard.as_view(), name = 'fgate_Charge_Card'),
     path('api/circlepay/deposit', csrf_exempt(circlepay.create_deposit), name="CirclePay_create_deposit"),
     path('api/circlepay/confirm', csrf_exempt(circlepay.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction"),
