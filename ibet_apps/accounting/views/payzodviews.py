@@ -99,9 +99,14 @@ def get_qr_code(request):
 def confirm_payment(request):
     if request.method == "GET":
         print(request.GET)
+        print("Hello, GET request received on payzod confirm_payment()")
         return HttpResponse("You are at the endpoint for Payzod confirm payment")
         # query for transaction in ibet db
         # update transaction record status
+    if request.method == "POST":
+        print("Hello, POST request received on payzod confirm_payment()")
+        print(request.body)
+        print(request.POST)
     return
 
 

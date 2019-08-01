@@ -39,9 +39,9 @@ class Transaction(models.Model):
     
 
 class ThirdParty(models.Model):
-    thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    thridParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
-    method = models.CharField(max_length = 30,  verbose_name =_('Method'))
+    thirdParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thirdParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
+    method = models.CharField(max_length=30,  verbose_name =_('Method'))
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
