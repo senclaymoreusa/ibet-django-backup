@@ -4,16 +4,23 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
+# from users.models import CustomUser
 
 import uuid
 
 class Bank(models.Model):
     bank_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length = 200, default=0)
-    branch = models.CharField(max_length = 200, default=0, null=True, blank=True)
+    province = models.CharField(max_length = 200, default=0, null=True, blank=True)
     city = models.CharField(max_length = 200, default=0, null=True, blank=True)
+    branch = models.CharField(max_length = 200, default=0, null=True, blank=True)
 
-# class PersonalBankAccount(models.Model):
+
+class BankAccount(models.Model):
+    account_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+    account_name = models.CharField(max_length = 200, default=0)
+    account_number = models.CharField(max_length = 200, default=0)
 
 
 class ThirdParty(models.Model):
@@ -23,17 +30,15 @@ class ThirdParty(models.Model):
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
-    # switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
-    switch = models.BooleanField(default=True, verbose_name='Active')
+    switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
     transaction_fee = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True, verbose_name=_('Transaction Fee'))  
     # the maximum number of money to be routed to this channel (%)
     volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
     new_user_volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
-    # bank info
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE, null=True, blank=True)
+
     # control new users volumn
     limit_access = models.BooleanField(default=False)
-    # blocked_risk_level = models.SmallIntegerField(choices=)
+    block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
     
     class Meta:
         abstract = True
@@ -81,8 +86,7 @@ class Transaction(models.Model):
     request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
     arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
     status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
-    deposit_channel = models.ForeignKey(DepositChannel,on_delete=models.CASCADE, null=True)
-    withdraw_channel = models.ForeignKey(WithdrawChannel,on_delete=models.CASCADE, null=True)
+    channel = models.SmallIntegerField(choices=CHANNEL_CHOICES,default=0,verbose_name=_('Payment'))
     transaction_type = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
     review_status = models.SmallIntegerField(choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_('Review status'))
     remark = models.CharField(max_length=200, blank=True, verbose_name=_('Memo')) 
@@ -92,10 +96,9 @@ class Transaction(models.Model):
     # payer_id is Returned by Paypal
     # payer_id = models.CharField(max_length = 100, default=0)
 
-    # Payment Info
-    account_name = models.CharField(max_length = 100, null=True, blank=True)
-    account_number = models.IntegerField(null=True, blank=True)
-    transaction_code = models.IntegerField(null=True, blank=True)
+    # The user Account
+    user_bank_account = models.ForeignKey(BankAccount, on_delete=models.CASCADE, null=True, blank=True)
+
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)    
     
