@@ -17,6 +17,9 @@
   <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/themes/bootstrap-xadmin.css" %}" />
   {% endif %}
   <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin.css" %}" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.12/summernote-bs4.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.0/css/all.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.0/css/v4-shims.css">
   {% vendor 'font-awesome.css' 'xadmin.main.css' 'xadmin.plugins.css' 'xadmin.responsive.css' %}
   {{ media.css }}
   {% block extrastyle %}{% endblock %}
@@ -28,6 +31,9 @@
     window.__admin_language_code__ = "{{LANGUAGE_CODE}}";
   </script>
   <script type="text/javascript" src="{% url 'xadmin:jsi18n' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.12/summernote-bs4.js"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.10.0/js/all.js"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.10.0/js/v4-shims.js"></script>
   {% block extrahead %}{% endblock %}
   {% view_block 'extrahead' %}
 </head>
