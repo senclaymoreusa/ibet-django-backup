@@ -14,7 +14,7 @@ from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, D
 from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
 from time import sleep, gmtime, strftime
-
+from django.utils import timezone
 logger = logging.getLogger('django')
 secretkey = ASTROPAY_SECRET
 currencyConversion = {

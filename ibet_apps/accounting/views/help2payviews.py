@@ -24,6 +24,7 @@ from time import gmtime, strftime, strptime
 import datetime, pytz
 from decimal import *
 import xmltodict, socket
+from django.utils import timezone
 logger = logging.getLogger("django")
 currencyConversion = {
     '0': 'CNY',

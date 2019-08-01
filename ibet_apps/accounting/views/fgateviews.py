@@ -24,6 +24,7 @@ from time import gmtime, strftime, strptime
 import datetime, pytz
 from decimal import *
 import xmltodict
+from django.utils import timezone
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)

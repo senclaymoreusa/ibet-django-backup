@@ -21,6 +21,7 @@ from time import sleep
 from des import DesKey
 import base64, socket
 from time import gmtime, strftime, strptime
+from django.utils import timezone
 
 logger = logging.getLogger("django")
 
@@ -165,6 +166,7 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':"测试",
         })
         rdata = r.text
+        print(rdata)
         logger.info(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
@@ -172,6 +174,7 @@ class submitDeposit(generics.GenericAPIView):
             StatusMsg = tree.find('StatusMsg').text
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
+            print(paymentAPIURL)
             logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
@@ -183,7 +186,7 @@ class submitDeposit(generics.GenericAPIView):
                     channel=4,
                     status=2,
                     method=bankidConversion[BankID],
-                    request_time=timezone.now,
+                    request_time=timezone.now(),
                 )
                 if PayWay == ASIAPAY_QRPAYWAY:
                     rr = requests.get(paymentAPIURL, params={
@@ -193,6 +196,7 @@ class submitDeposit(generics.GenericAPIView):
                     
                     rrdata = rr.json()
                     logger.info(rrdata)
+                    print(rrdata)
                     return Response(rrdata)
                
             else:
@@ -316,7 +320,7 @@ class submitCashout(generics.GenericAPIView):
                 channel=4,
                 status=2,
                 method=cashoutMethod,
-                request_time=timezone.now,
+                request_time=timezone.now(),
             )
             return Response(StatusCode)
         else:
@@ -463,7 +467,7 @@ class payoutArrive(generics.GenericAPIView):
         tr4 = ET.SubElement(root, "CashCardNumber")
         tr4.text = CashCardNumber
         tr5 = ET.SubElement(root, "ProccessTime")
-        tr5.text = timezone.now
+        tr5.text = timezone.now()
         if TrustIUser == ASIAPAY_TRUSTUSER :
 
             if serializer.is_valid() and findData == OrderID:  
