@@ -3,6 +3,7 @@ import requests, json, logging, random, hmac, hashlib, logging
 from time import sleep, gmtime, strftime
 from datetime import datetime
 
+from requests.auth import HTTPBasicAuth
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone
@@ -96,11 +97,20 @@ def confirm_payment(request):
 
 def check_transaction(request):
     if request.method == "POST":
-        trans_id = "test-order-123" # request.POST.data
-        url = "https://api.circlepay.ph/transaction/" + trans_id
 
-        response = requests.get(url)
+        body = json.loads(request.body)
+        trans_id = body["trans_id"]
+        url = "https://api.circlepay.ph/transaction/" + trans_id
+        print(trans_id)
+        print(url)
+        secret = bytes(CIRCLEPAY_API_KEY, 'utf-8')
+        msg = bytes(CIRCLEPAY_EMAIL, 'utf-8')
+        pw = (hmac.new(secret, msg=msg, digestmod=hashlib.sha256)).hexdigest()
+        print(pw)
+        response = requests.get(url, auth=HTTPBasicAuth(CIRCLEPAY_EMAIL, pw))
+
         print(response.status_code)
         print(response.text)
-    
+        if response.status_code != 200:
+            return HttpResponse("Failed to check transaction status.")
         return JsonResponse(response.json())
