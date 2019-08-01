@@ -67,17 +67,21 @@ def confirm_payment(request):
         print(transaction_data)
         # query for transaction in ibet db
         try:
-            matching_transaction = Transaction.objects.get(transaction_id=transaction_data["partner_tran_id"])
+            matching_transaction = Transaction.objects.get(
+                transaction_id=transaction_data["partner_tran_id"],
+                amount=transaction_data["amount"],
+            )
+            print("Found matching transaction!")
             if transaction_data["status"] == '00':  # deposit successful
-                matching_transaction["status"] = 0
+                matching_transaction.status = 0
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
-                matching_transaction["status"] = 3
+                matching_transaction.status = 3
             if transaction_data["status"] == '02':  # deposit canceled
-                matching_transaction["status"] = 5
+                matching_transaction.status = 5
             if transaction_data["status"] == '03':  # deposit failed
-                matching_transaction["status"] = 1
+                matching_transaction.status = 1
 
-            payment_method = matching_transaction["method"] + "_" + transaction_data["method"]
+            payment_method = matching_transaction.method + "_" + transaction_data["method"]
             matching_transaction.order_id = transaction_data["tran_id"]
             matching_transaction.method = payment_method
             matching_transaction.arrive_time = datetime.strptime(transaction_data["time"], '%Y-%m-%d %H:%M:%S')
