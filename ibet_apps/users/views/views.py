@@ -891,7 +891,7 @@ class OneclickRegister(APIView):
         user = CustomUser.objects.filter(username=username)
         user.update(active=True, modified_time=timezone.now())
 
-        return Response({'username': username, 'password': password})
+        return Response({'username': username, 'password': password}, status=status.HTTP_200_OK)
 
 
 class UpdateEmail(APIView):
