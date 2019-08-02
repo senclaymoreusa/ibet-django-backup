@@ -947,8 +947,8 @@ class GenerateForgetPasswordCode(APIView):
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
             user.update(reset_password_code=code)
-            return Response('Success')
-        return Response('Failed')
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class SendResetPasswordCode(APIView):
