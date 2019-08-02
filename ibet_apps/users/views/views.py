@@ -1318,10 +1318,10 @@ class ValidateAndResetPassowrd(APIView):
         user = self.request.user
 
         if not user.check_password(current):
-            return Response({'status': 'Failed'})
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         user.set_password(new)
         user.save()
-        return Response({'status': 'Success'})
+        return Response(status=status.HTTP_200_OK)
 
 
 class CancelRegistration(APIView):
