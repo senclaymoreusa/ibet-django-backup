@@ -1182,8 +1182,8 @@ class CheckUsernameExist(View):
         username = self.request.GET['username']
         user = get_user_model().objects.filter(username=username)
         if user:
-            return HttpResponse('Exist')
-        return HttpResponse('Valid')
+            return HttpResponse(status=400)
+        return HttpResponse(status=200)
 
 
 class GenerateActivationCode(APIView):
