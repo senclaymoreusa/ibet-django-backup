@@ -32,7 +32,7 @@ def create_deposit(request):
     
     if request.method == "POST":  # can only allow post requests
         body = json.loads(request.body)
-        print(body["trans_id"])
+        logger.info(body["trans_id"])
         amount = body["amount"]
         transaction_id = body["trans_id"]
 
@@ -60,19 +60,19 @@ def create_deposit(request):
 
 def confirm_payment(request):
     if request.method == "GET":
-        print("Hello GET")
+        logger.info("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
-        print("Hello POST")
+        logger.info("Hello POST")
         transaction_data = json.loads(request.body)
-        print(transaction_data)
+        logger.info(transaction_data)
         # query for transaction in ibet db
         try:
             matching_transaction = Transaction.objects.get(
                 transaction_id=transaction_data["partner_tran_id"],
                 amount=transaction_data["amount"],
             )
-            print("Found matching transaction!")
+            logger.info("Found matching transaction!")
             if transaction_data["status"] == '00':  # deposit successful
                 matching_transaction.status = 0
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
@@ -101,16 +101,16 @@ def check_transaction(request):
         body = json.loads(request.body)
         trans_id = body["trans_id"]
         url = "https://api.circlepay.ph/transaction/" + trans_id
-        print(trans_id)
-        print(url)
+        logger.info(trans_id)
+        logger.info(url)
         secret = bytes(CIRCLEPAY_API_KEY, 'utf-8')
         msg = bytes(CIRCLEPAY_EMAIL, 'utf-8')
         pw = (hmac.new(secret, msg=msg, digestmod=hashlib.sha256)).hexdigest()
-        print(pw)
+        logger.info(pw)
         response = requests.get(url, auth=HTTPBasicAuth(CIRCLEPAY_EMAIL, pw))
 
-        print(response.status_code)
-        print(response.text)
+        logger.info(response.status_code)
+        logger.info(response.text)
         if response.status_code != 200:
             return HttpResponse("Failed to check transaction status.")
         return JsonResponse(response.json())

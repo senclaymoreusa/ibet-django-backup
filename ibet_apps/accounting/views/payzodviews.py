@@ -60,13 +60,13 @@ def get_qr_code(request):
                 "amount": "123.45",
                 "merchant_name": "ibet2019"
             }
-        print(payload)
+        logger.info(payload)
         for x in range(3):
             if os.getenv("ENV") == "local":
                 r = requests.post(url, params=payload, verify=False)  # verify=False for sandbox
             else:
                 r = requests.post(url, params=payload)
-            # print(r.content)
+            # logger.info(r.content)
             if r.status_code == 200:
                 if r.headers["content-type"] == "image/png":
                     userId = CustomUser.objects.get(username=request.user.username)
@@ -98,33 +98,21 @@ def get_qr_code(request):
 
 def confirm_payment(request):
     if request.method == "GET":
-        print(request.GET)
-        print("Hello, GET request received on payzod confirm_payment()")
+        logger.info(request.GET)
+        logger.info("Hello, GET request received on payzod confirm_payment()")
         return HttpResponse("You are at the endpoint for Payzod confirm payment")
         # query for transaction in ibet db
         # update transaction record status
     if request.method == "POST":
-        print("Hello, POST request received on payzod confirm_payment()")
-        print(request.POST)
+        logger.info("Hello, POST request received on payzod confirm_payment()")
+        logger.info(request.POST)
         req = request.POST
-        """
-        {
-            'merchant_id': ['1008779364'], 
-            'paytype': ['QR'], 
-            'ref_no': ['test-payzod-order-orion662'], 
-            'ref_date': ['20190802221704'], 
-            'passkey': ['7045df6c90dc7ee2dde3e300f94bba86'], 
-            'transaction_no': ['20190801230707443148'], 
-            'amount': ['123.45'], 
-            'response_msg': ['Transaction successful'], 
-            'response_code': ['001']
-        }
-        """
+
         matching_transaction = Transaction.objects.get(
             transaction_id=req.get("ref_no"),
             amount=req.get("amount")
         )
-        print("Found matching transaction!")
+        logger.info("Found matching transaction!")
 
         if req.get("response_code") == "001":
             matching_transaction.status = 0
@@ -137,11 +125,13 @@ def confirm_payment(request):
         matching_transaction.arrive_time = timezone.now()
         matching_transaction.last_updated = timezone.now()
         matching_transaction.save()
-        print("Received confirmation of payment!")
+        logger.info("Received confirmation of payment!")
+
         return JsonResponse({
             "responseCode": req.get("response_code"),
             "responseMesg": req.get("response_msg")
         })
+
     return HttpResponse("Invalid Request")
 
 
@@ -165,5 +155,5 @@ def check_trans_status(request):
             else:
                 r = requests.post(url, params=payload)
             if r.status_code == 200:
-                print(r.content)
+                logger.info(r.content)
         return
