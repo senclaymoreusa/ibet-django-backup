@@ -414,7 +414,7 @@ class SendEmail(APIView):
         content = Content("text/plain", email_content)
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        return Response('Success')
+        return Response(status=status.HTTP_200_OK)
 
 
 class CustomPasswordResetView:
@@ -968,7 +968,7 @@ class SendResetPasswordCode(APIView):
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body = mail.get())
-        return Response('Success')
+        return Response(status=status.HTTP_200_OK)
 
 
 class VerifyResetPasswordCode(APIView):
