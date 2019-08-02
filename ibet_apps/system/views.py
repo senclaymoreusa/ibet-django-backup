@@ -13,6 +13,9 @@ from django.views import View
 from django.urls import reverse
 from django.core import serializers
 
+import logging
+logger = logging.getLogger('django')
+
 # Create your views here.
 class PermissionGroupView(CommAdminView): 
     def get(self, request):
@@ -68,13 +71,12 @@ class PermissionRoleView(CommAdminView):
 
         if get_type == 'view_permission':
             groupName = request.GET.get('groupName')
-            # if groupName == 'clean':
-            #     permission = 
-            #     return JsonResponse({'code': 1})
+            logger.info("Viewing the permission group name: " + str(groupName))
             group = UserGroup.objects.get(name=groupName)
             permissions = PermissionGroup.objects.filter(group=group)
             # print(permissions)
             data = serializers.serialize('json', permissions)
+            logger.info("Get the permission base on the group name: " + str(data))
             data = json.loads(data)
             permissions = []
             for i in data:
@@ -91,7 +93,9 @@ class PermissionRoleView(CommAdminView):
             }
             if group.approvals:
                 response.update(approvals=group.approvals.pk)
+                logger.info("This permission group is approved by: " + str(group.approvals.name) + "which foregin key is: " + str(group.approvals.pk))
             # print(response)
+            logger.info("Send the response for viewing one role of permission:" + str(response))
             return JsonResponse(response)
 
         if pageSize is None:
@@ -122,6 +126,7 @@ class PermissionRoleView(CommAdminView):
 
         data = serializers.serialize('json', userGroup)
         data = json.loads(data)
+        logger.info("Display all role:" + str(data))
         # print(data)
         permissionGroupName = []
         permissionMap = {}
@@ -148,7 +153,7 @@ class PermissionRoleView(CommAdminView):
         # print(permissionGroupName)
         # print(context['permissionList'])
 
-
+        logger.info("Rendering the roles.html.......")
         return render(request, 'roles.html', context)
 
     def post(self, request):
@@ -189,9 +194,9 @@ class PermissionRoleView(CommAdminView):
 
         arr.append(memeber_list)
         arr.append(memeber_detail)
-        arr.append(report)
-        arr.append(bonuses)
-        arr.append(risk_control)
+        # arr.append(report)
+        # arr.append(bonuses)
+        # arr.append(risk_control)
         arr.append(vip)
         arr.append(telesales)
         arr.append(interal_messaging)
@@ -203,11 +208,12 @@ class PermissionRoleView(CommAdminView):
         arr.append(deposit)
         arr.append(withdrawals)
         arr.append(settings)
-        arr.append(content_management)
+        # arr.append(content_management)
         arr.append(users)
         arr.append(roles)
 
         # print(arr)
+        logger.info("New role created and the permission codes are:" + str(arr))
         # print(groupId)
         # print( memeber_list, memeber_detail, report, bonuses, risk_control, vip, telesales, interal_messaging, affiliates_list)
         # print( affiliate_details, messages, group, campaigns, deposit, withdrawals, settings, content_management, users, roles)
@@ -232,17 +238,18 @@ class PermissionRoleView(CommAdminView):
                 ]
 
                 permissions = PermissionGroup.objects.bulk_create(objs)
-
+                logger.info("Successfully created all the permissions")
                 return JsonResponse({ "code": 0, "message": "sucess"})
                 # print(str(permissions))
             else:
+                logger.info("The group name" + str(groupName) + " already exsit")
                 return JsonResponse({ "code": 1, "message": "group name already exsit"})
 
         elif post_type == 'updatePermission':
             if groupName:
                 group = UserGroup.objects.get(pk=groupId)
                 if group.name != groupName:
-                    print("update name")
+                    logger.info("Updating the group name from {} to {}".format(group.name, groupName))
                     UserGroup.objects.filter(pk=groupId).update(name=groupName)
 
                 PermissionGroup.objects.filter(group=group).delete()
@@ -255,7 +262,7 @@ class PermissionRoleView(CommAdminView):
                     for e in arr
                 ]
                 permissions = PermissionGroup.objects.bulk_create(objs)
-
+            logger.info("Successfully updated all the permissions")
             return JsonResponse({ "code": 0, "message": "sucess updated"})
         
 
