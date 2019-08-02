@@ -1217,8 +1217,8 @@ class VerifyActivationCode(APIView):
         if user[0].activation_code == code:
             user.update(active=True)
             user.update(activation_code='')
-            return Response({'status': 'Success'})
-        return Response({'status': 'Failed'})
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSearchAutocomplete(View):
