@@ -921,10 +921,10 @@ class CheckEmailExixted(APIView):
         email = request.GET.get('email')
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
-            return Response('Success')
-        return Response('Failed')
-
-
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        
 class GetUsernameByReferid(APIView):
 
     permission_classes = (AllowAny, )
