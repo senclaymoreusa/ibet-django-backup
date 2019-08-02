@@ -441,3 +441,368 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_SMS, 'sms'),
     (NOTIFICATION_EMAIL, 'email')
 )
+
+
+
+PERMISSION_CODE = [
+    {   
+        "name": "Members",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Members list",
+                "permission": [
+                    {
+                        "CODE": "1001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "1002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "1003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Member details",
+                "permission": [
+                    {
+                        "CODE": "2001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "2002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "2003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Report",
+        "permission": [
+            {
+                "CODE": "3001",
+                "PERMISSION": "No access"
+
+            },{
+                "CODE": "3002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "3003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "Bonuses",
+        "permission": [
+            {
+                "CODE": "4001",
+                "PERMISSION": "No access"
+                
+            },{
+                "CODE": "4002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "4003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "Risk control",
+        "permission": [
+            {
+                "CODE": "5001",
+                "PERMISSION": "No access"
+
+            },{
+                "CODE": "5002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "5003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "Marketing",
+        "permission": [],
+        "menu": [
+            {
+                "name": "VIP",
+                "permission": [
+                    {
+                        "CODE": "6001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "6002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "6003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Telesales",
+                "permission": [
+                    {
+                        "CODE": "7001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "7002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "7003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Interal messaging",
+                "permission": [
+                    {
+                        "CODE": "8001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "8002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "8003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Affiliates",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Affiliates list",
+                "permission": [
+                    {
+                        "CODE": "9001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "9002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "9003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Affiliate details",
+                "permission": [
+                    {
+                        "CODE": "10001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "10002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "10003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Messaging",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Messages",
+                "permission": [
+                    {
+                        "CODE": "11001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "12002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "12003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Group",
+                "permission": [
+                    {
+                        "CODE": "14001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "14002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "14003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Campaigns",
+                "permission": [
+                    {
+                        "CODE": "15001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "15002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "15003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Finance",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Deposits",
+                "permission": [
+                    {
+                        "CODE": "16001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "16002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "16003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Withdrawals",
+                "permission": [
+                    {
+                        "CODE": "17001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "17002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "17003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Settings",
+                "permission": [
+                    {
+                        "CODE": "18001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "18002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "18003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Content management",
+        "permission": [
+            {
+                "CODE": "19001",
+                "PERMISSION": "No access"
+
+            },
+            {
+                "CODE": "19002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "19003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "System admin",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Users",
+                "permission": [
+                    {
+                        "CODE": "20001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "20002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "20003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Roles",
+                "permission": [
+                    {
+                        "CODE": "21001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "21002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "21003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,157 @@
+{% extends 'xadmin/base_site.html' %}
+{% load i18n %}
+
+{% block content-nav %}
+{% endblock %}
+
+
+{% block content %} 
+<div>
+    <form action="{% url 'xadmin:permission_group' %}" method="POST" id="permissionForm">
+        {% csrf_token %}
+        <input type="hidden" id="permission_type" name="permission_type" value="permissionGroup"></input>
+        <div class="row">
+            <label for="groupName" class="col-sm-2 col-form-label">Group name</label>
+            <div class="col-sm-10">
+            <input type="text" class="form-control" name="groupName" id="groupName" placeholder="Group name....">
+            </div>
+        </div>
+        <div class="row" style="margin-top:30px;">
+            <label for="adminUser" class="col-sm-2 col-form-label">User</label>
+            <div class="col-sm-10">
+            <input type="hidden" id="hidden_permission_user" name="hidden_permission_user" value="[]"></input>
+            <input type="text" class="form-control" id="adminUser" placeholder="Choose admin user....">
+            </div>
+        </div>
+        <fieldset class="">
+            <div class="row" style="margin-top:30px;">
+                <label for="permission" class="col-sm-2 col-form-label">Permission</label>
+                <div class="col-sm-10">
+                    <input type="hidden" id="hidden_permission_code" name="hidden_permission_code" value="[]"></input>
+                    <input type="text" class="form-control" id="permission" placeholder="Choose permission...">
+                </div>
+            </div>
+        </fieldset>
+        <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px;">Submit</button>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+
+<script>
+
+$(document).ready(function() {
+
+    $('#permissionForm').on('keypress', function(e) {
+        return e.which !== 13;
+    });
+
+    // user tagsinput
+    var userData = searchOpen();
+    userData = JSON.stringify(userData);
+    // console.log(userData);
+
+    var task = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: jQuery.parseJSON(userData) //your can use json type
+    });
+    task.initialize();
+    var elt = $("#adminUser");
+    elt.tagsinput({
+        allowDuplicates: false,
+        itemValue: "value",
+        itemText: "text",
+        typeaheadjs: {
+            name: "task",
+            displayKey: "text",
+            source: task.ttAdapter()
+        }
+    });
+
+    $('#adminUser').on('beforeItemAdd', function(event) {
+        // console.log(event.item.text);
+        var permissionUsers = $('#hidden_permission_user').val();
+        permissionUsers = JSON.parse(permissionUsers);
+        permissionUsers.push(event.item.id);
+        $('#hidden_permission_user').val(JSON.stringify(permissionUsers));
+        console.log(permissionUsers);
+    });
+     $('#adminUser').on('itemRemoved', function(event) {
+        var permissionUsers = $('#hidden_permission_user').val();
+        permissionUsers = JSON.parse(permissionUsers);
+        array = removeByIndex(permissionUsers, event.item.id);
+        $('#hidden_permission_user').val(JSON.stringify(array));
+        console.log("user: " + $('#hidden_permission_user').val());
+    });
+
+    // permission code tagsinput
+    var permissionData = '[{ "value": 0, "text": "permission1", "continent": "PERMISSION" }, { "value": 1, "text": "permission2", "continent": "PERMISSION" }, { "value": 2, "text": "permission3", "continent": "PERMISSION" }, { "value": 3, "text": "permission4", "continent": "PERMISSION" }, { "value": 4, "text": "permission5", "continent": "PERMISSION" }]';
+     //get data pass to json
+    var taskCode = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: jQuery.parseJSON(permissionData) //your can use json type
+    });
+    taskCode.initialize();
+    var elt = $("#permission");
+    elt.tagsinput({
+        allowDuplicates: false,
+        itemValue: "value",
+        itemText: "text",
+        typeaheadjs: {
+            name: "task",
+            displayKey: "text",
+            source: taskCode.ttAdapter()
+        }
+    });
+
+    $('#permission').on('beforeItemAdd', function(event) {
+        // console.log(event.item.text);
+        var permissionCodes = $('#hidden_permission_code').val();
+        permissionCodes = JSON.parse(permissionCodes);
+        permissionCodes.push(event.item.value);
+        $('#hidden_permission_code').val(JSON.stringify(permissionCodes));
+        console.log(permissionCodes);
+    });
+     $('#permission').on('itemRemoved', function(event) {
+        var permissionCodes = $('#hidden_permission_code').val();
+        permissionCodes = JSON.parse(permissionCodes);
+        array = removeByIndex(permissionCodes, event.item.value);
+        $('#hidden_permission_code').val(JSON.stringify(array));
+        console.log($('#hidden_permission_code').val());
+    });
+
+    
+});
+
+// function sumbitForm() {
+//     $("#permissionForm").submit(function(){
+//         console.log("submit");
+//     });
+// }
+function removeByIndex(array, index){
+    return array.filter(function(elem, _index){
+        return index != elem;
+    });
+}
+
+function searchOpen() {
+    var tmp = null;
+    var search = $('#adminUser').val();
+    var url = "{% url 'get_admin_user' %}";
+    var data = $.ajax({
+        url: url,
+        type: 'GET',
+        async: false,
+        dataType: 'json'
+    }).responseJSON;
+    console.log(data);
+    return data;
+};
+
+</script>
+
+{% endblock %}

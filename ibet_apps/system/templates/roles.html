@@ -1,0 +1,361 @@
+{% extends 'xadmin/base_site.html' %}
+{% load i18n %}
+
+{% block content-nav %}
+{% endblock %}
+
+
+{% block content %} 
+<div>
+    <div>
+        <button type="button" id="create_new_role" class="btn btn-primary" style="margin-top: 20px;" data-toggle="modal" data-target="#new_row" onclick="createView()">Create new role</button>
+        <div class="modal fade" id="new_row" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="color:black; background-color:#f5f5f5; border-top-right-radius:6px; border-top-left-radius:6px; ">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Create new role</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'xadmin:permission_roles' %}" method="POST" id="permissionForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="type" value="createPermission" id="formAction"></input>
+                            <input type="hidden" name="pk" value="" id="permissionId"></input>
+                            <div>
+                                <div>
+                                    <label class="role-title">ROLE NAME</label>
+                                    <input type="text" class="form-control" style="width:32%;" id="role-name" name="roleName">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">APPROVALS ARE SENT TO</label>
+                                    <select class="form-control" id="approval_select" style="width:32%;" name="approval">
+                                        <option value="0" selected>Select a role(optional)</option>
+                                        {% for i in approvalOption %}
+                                            <option value="{{ i.pk }}" id="{{ i.pk }}">{{ i.name }}</option>
+                                        {% endfor %}
+                                        <!-- <option value="2">Two</option>
+                                        <option value="3">Three</option> -->
+                                    </select>
+                                </div>
+                                <div class="form-div">
+                                    <label>PERMISSIONS</label>
+                                </div>
+                                <table id="role-list-table" style="width: 100%; margin-top:30px; ">
+                                    <thead>
+                                        <tr>
+                                            <th class="role-title" style="width:40%;">SECTION</th>
+                                            <th style="text-align:center" class="role-title" style="width:10%;">NO ACCESS</th>
+                                            <th style="text-align:center" class="role-title" style="width:10%;">READ</th>
+                                            <th style="text-align:center" class="role-title" style="width:10%;">READ + WRITE</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>    
+                                            <td></td>
+                                            <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllnoAccess" value="no"></div></td>
+                                            <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllRead" value="read"></div></td>
+                                            <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllReadWrite" value="all"></div></td>
+                                        </tr>
+                                        {% for i in permissionList %}
+                                            {% if i.permission|length > 0 %}
+                                                <tr>    
+                                                    <td>{{ i.name }}</td>
+                                                    {% for p in i.permission %}
+                                                        {% with y=forloop.counter|stringformat:"s" %}
+                                                        {% with template="radio"|add:y %}
+                                                        <!-- <td>{{ template }}</td> -->
+                                                        <!-- <td style="text-align:center"><div class="form-check form-check-inline {{ template }}"><input class="form-check-input" type="radio" name="{{ i.name }}" value="{{ p.CODE }}" id="{{ p.CODE }}"></div></td> -->
+                                                        <td style="text-align:center"></td>
+
+                                                        {% endwith %}
+                                                        {% endwith %}
+                                                    {% endfor %}
+                                                </tr>
+                                            {% else %}
+                                                <tr>    
+                                                    <td>{{ i.name }}</td>
+                                                    <td style="text-align:center"><div class="form-check form-check-inline radio1ALL"></div></td>
+                                                    <td style="text-align:center"><div class="form-check form-check-inline radio2ALL"></div></td>
+                                                    <td style="text-align:center"><div class="form-check form-check-inline radio3ALL"></div></td>
+                                                </tr>
+                                                {% for t in i.menu %}
+                                                <tr class="subMenu">    
+                                                    <td>{{ t.name }}</td>
+                                                        {% for p in t.permission %}
+                                                            {% with y=forloop.counter|stringformat:"s" %}
+                                                            {% with template="radio"|add:y %}
+                                                            <td style="text-align:center"><div class="form-check form-check-inline {{ template }}"><input class="form-check-input" type="radio" name="{{ t.name }}" value="{{ p.CODE }}"  id="{{ p.CODE }}"></div></td>
+                                                            {% endwith %}
+                                                            {% endwith %}
+                                                        {% endfor %}
+                                                    <!-- <td style="text-align:center"><input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"></td>
+                                                    <td style="text-align:center"><input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"></td> -->
+                                                </tr>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <p id='errorMessage'>&nbsp;</p>
+                                <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>           
+    </div>
+    <div>
+        <table id="user-list-table" style="width: 100%;">
+            <thead class="thead-dark">
+                <tr>
+                    <th style="width:22%;">ROLE</th>
+                    <th style="width:22%;">PERMISSIONS UP TO</th>
+                    <th style="width:22%;">APPROVALS ARE SENT TO</th>
+                    <th style="width:22%;">ASSIGNED USERS</th>
+                    <th style="width:8%"></th>
+                </tr>
+            </thead>
+            <tbody id='user_list_tbody'>
+                {% for i in permission %}
+                <tr>    
+                    <td>{{ i.groupName }}</td>
+                    <td>Read + Write</td>
+                    {% if i.approvals %}
+                        <td>{{ i.approvals }}</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td>{{ i.userCount }}</td>
+                    <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;" onclick='editView("{{ i.groupName}}")'>Edit</button></td> 
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row user-list-control-group">
+    <!-- <div class="bottom-align-text"> -->
+    <div class='col-md-9' style="margin-right: 70px"></div>
+    <div class='col-md-1' style="width:10%">
+        <div>SHOW ROWS</div>
+        <select id="pagination_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+        </select>
+    </div>
+    <div class='col-md-1'>
+        <div>&nbsp;</div>
+        <ul class="pagination" style="margin:0px;">
+            {% if isFirstPage is True %}
+                <li class="page-item disabled" id='perviousPage'>
+                <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                </li>
+            {% else %}
+                <li class="page-item " id='perviousPage'>
+                    <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                </li>
+            {% endif %}
+            {% if isLastPage is True %}
+                <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+            {% else %}
+                <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+            {% endif %}
+        </ul>
+    </div>
+        
+    <!-- </div> -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+<!-- <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+<script>
+
+$(document).ready(function() {
+
+    $('#selectAllnoAccess').click(function(){
+        if (!$('#selectAllnoAccess').attr("checked")) {
+            $('.radio1 input').prop('checked', true);
+            $('.radio1ALL input').prop('checked', true);
+        } else {
+            $('.radio1 input').prop('checked', false);
+            $('.radio1ALL input').prop('checked', false);
+        }
+        
+    });
+
+    $('#selectAllRead').click(function(e){
+        if (!$('#selectAllRead').attr("checked")) {
+            $('.radio2 input').prop('checked', true);
+            $('.radio2ALL input').prop('checked', true);
+            
+        } else {
+            $('.radio2 input').prop('checked', false);
+            $('.radio2ALL input').prop('checked', false);
+        }
+        
+    });
+
+    $('#selectAllReadWrite').click(function(){
+        if (!$('#selectAllReadWrite').attr("checked")) {
+            $('.radio3 input').prop('checked', true);
+            $('.radio3ALL input').prop('checked', true);
+        } else {
+            $('.radio3 input').prop('checked', false);
+            $('.radio3ALL input').prop('checked', false);
+        }
+        
+    });
+
+    var check;
+
+    $('input[type="radio"]').hover(function() {
+        check = $(this).is(':checked');
+    });
+
+    $('input[type="radio"]').click(function() {
+        check = !check;
+        $(this).attr("checked", check);
+    });
+
+    $("#permissionForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = form.attr('action');
+        // $(selector).serialize();
+        // console.log(form.serialize());
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form.serialize(),
+            success: function(data)
+            {
+                if (data.code === 1) {
+                    $('#errorMessage').text(data.message); 
+                    $('#errorMessage').css('color', 'red'); 
+                } else {
+                    window.location.reload();
+                }
+            }
+        });
+
+
+    });
+
+    var paramsMap = {
+        'search': '',
+        'pageSize': 20,
+        'offset': 0,
+        'block': false
+    };
+
+    var parsedUrl = new URL(window.location.href);
+    if (parsedUrl.searchParams.get("pageSize") !== null) {
+        paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
+    }
+    if (parsedUrl.searchParams.get("offset") !== null) {
+        paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
+    }
+
+    $('#pagination_value').val(paramsMap['pageSize']);
+        
+    $('#pagination_value').on('change', function() {
+        var pageSize = $("#pagination_value").val();;
+        var oldFromItem = paramsMap['offset'];
+       
+    //    console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, 0);
+    });
+
+    getNext = function() {
+        if ($('#nextPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        var newFromItem = Number(oldFromItem) + Number(pageSize);
+        var block = paramsMap['block'];
+    
+        // console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+    }
+
+    getPervious = function () {
+        if ($('#perviousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        var newFromItem = Number(oldFromItem) - Number(pageSize);
+        var block = paramsMap['block'];
+       
+        // console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+    }
+
+});
+
+function getUserListRedirectUrl(pageSize, offset) {
+    var curUrl = window.location.href;
+    var parts = curUrl.split('?');
+    
+    var redirectUrl = parts[0]; 
+    redirectUrl += "?pageSize=" + pageSize;
+    redirectUrl += '&offset=' + offset;
+    return redirectUrl;
+}
+
+function createView() {
+    $('#permissionId').val("");
+    $('#role-name').val("");
+    $('#formAction').val('createPermission');
+    $('input:radio').each(function () { $(this).prop('checked', false); });
+}
+
+function editView(name) {
+
+    $('#formAction').val('updatePermission');
+    $.ajax({
+        type: "GET",
+        url: "{% url 'xadmin:permission_roles' %}",
+        data:{ 
+            'type': 'view_permission',
+            'groupName': name,
+        },
+        success: function(response)
+        {
+            // console.log(response);
+            if (response.code === 0) {
+                $('#new_row').modal({'show' : true});
+                const permissions = response.data;
+                // console.log(permissions);
+                permissions.forEach(permission => {
+                    $('#' + permission).prop("checked", true);
+                });
+                var name = response.groupName;
+                var id = response.groupId;
+                $('#permissionId').val(id);
+                $('#role-name').val(name);
+                if (response.approvals) {
+                    $('#approval_select option').each(function() {
+                        if ($(this).val() == response.approvals) {
+                            $(this).prop("selected", true);
+                        }
+                    });
+                }
+            }
+        }
+    });
+}
+
+</script>
+
+{% endblock %}

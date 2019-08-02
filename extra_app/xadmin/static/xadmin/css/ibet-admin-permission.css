@@ -1,0 +1,68 @@
+.role-title {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.form-div {
+    margin-top:25px;
+}
+
+#role-list-table>tbody>tr>td, 
+#role-list-table>tbody>tr>th {
+   background-color: #d9edf7;
+}
+
+#role-list-table>tbody>tr:first-child>td,
+#role-list-table>tbody>tr:first-child>th {  
+    background-color: white;
+
+}
+
+#role-list-table>tbody>.subMenu>td,
+#role-list-table>tbody>.subMenu>th {
+    background-color: rgba(217, 237, 247, 0.5);
+    font-weight: normal;
+    /* background-color: red !important; */
+}
+
+#role-list-table>tbody>.subMenu>td:first-child {
+    padding-left:20px;
+    /* background-color: red !important; */
+}
+
+#role-list-table th {
+    height: 12px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    vertical-align: bottom;
+}
+
+
+#role-list-table td {  
+    text-align: left;
+    height: 40px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding: 0px;
+    font-weight: bold;
+
+
+}

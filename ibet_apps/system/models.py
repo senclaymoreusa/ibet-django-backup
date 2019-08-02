@@ -17,7 +17,8 @@ class UserGroup(models.Model):
         auto_now_add=True,
         editable=False,
     )
-
+    approvals = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    
 # many to many relation for permission and user group
 class PermissionGroup(models.Model):
     
