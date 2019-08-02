@@ -95,6 +95,7 @@ def confirm_payment(request):
             logger.error(e)
             return JsonResponse({"message": "Could not find matching transaction"})
 
+
 def check_transaction(request):
     if request.method == "POST":
 
