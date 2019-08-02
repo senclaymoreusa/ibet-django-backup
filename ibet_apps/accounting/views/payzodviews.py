@@ -133,27 +133,3 @@ def confirm_payment(request):
         })
 
     return HttpResponse("Invalid Request")
-
-
-def check_trans_status(request):
-    if request.method == "POST":
-        logger.info("Attempting to check status of transaction...")
-        body = json.loads(request.body)
-        ref_no = body["ref_no"]
-        ref_date = body["ref_date"]
-        url = PAYZOD_API_URL + "inquiry.php"
-        payload = {
-            "merchant_id": PAYZOD_MERCHANT_ID,
-            "ref_no": ref_no,
-            "ref_date": ref_date,
-            "passkey": generate_md5(ref_no + ref_date + PAYZOD_PASSKEY)
-        }
-
-        for x in range(3):
-            if os.getenv("ENV") == "local":
-                r = requests.post(url, params=payload, verify=False)  # verify=False for sandbox
-            else:
-                r = requests.post(url, params=payload)
-            if r.status_code == 200:
-                logger.info(r.content)
-        return
