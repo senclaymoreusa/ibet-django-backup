@@ -105,9 +105,44 @@ def confirm_payment(request):
         # update transaction record status
     if request.method == "POST":
         print("Hello, POST request received on payzod confirm_payment()")
-        print(request.body)
         print(request.POST)
-    return
+        req = request.POST
+        """
+        {
+            'merchant_id': ['1008779364'], 
+            'paytype': ['QR'], 
+            'ref_no': ['test-payzod-order-orion662'], 
+            'ref_date': ['20190802221704'], 
+            'passkey': ['7045df6c90dc7ee2dde3e300f94bba86'], 
+            'transaction_no': ['20190801230707443148'], 
+            'amount': ['123.45'], 
+            'response_msg': ['Transaction successful'], 
+            'response_code': ['001']
+        }
+        """
+        matching_transaction = Transaction.objects.get(
+            transaction_id=req.get("ref_no"),
+            amount=req.get("amount")
+        )
+        print("Found matching transaction!")
+
+        if req.get("response_code") == "001":
+            matching_transaction.status = 0
+            matching_transaction.remark = req.get("response_msg")
+        else:
+            matching_transaction.status = 1
+            matching_transaction.remark = req.get("response_msg")
+
+        matching_transaction.order_id = req.get("transaction_no")
+        matching_transaction.arrive_time = timezone.now()
+        matching_transaction.last_updated = timezone.now()
+        matching_transaction.save()
+        print("Received confirmation of payment!")
+        return JsonResponse({
+            "responseCode": req.get("response_code"),
+            "responseMesg": req.get("response_msg")
+        })
+    return HttpResponse("Invalid Request")
 
 
 def check_trans_status(request):
