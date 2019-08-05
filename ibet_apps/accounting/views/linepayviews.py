@@ -15,9 +15,9 @@ logger = logging.getLogger('django')
 
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 # HOMEPAGE_URL = "https://ibet-web-dev.claymoreusa.net" || http://localhost:3000" use ibet-web
-HOMEPAGE_URL = "http://localhost:3000"
-CONFIRM_URL = "/deposit/success" # will be changed later
-PRODUCT_IMG_URL = "https://pathtoproductimage.jpg" # dummy image, will be replaced with actual company URL later
+HOMEPAGE_URL = "http://localhost:3000" if os.getenv("ENV") == "local" else "https://ibet-web-dev.claymoreusa.net"
+CONFIRM_URL = "/deposit/success"
+PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
 DEPOSIT = 0
 THB = 2
 LINE_PAY = 1

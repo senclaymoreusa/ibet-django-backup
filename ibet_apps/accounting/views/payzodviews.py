@@ -47,7 +47,7 @@ def get_qr_code(request):
                 "ref_no": ref_no,
                 "ref_date": ref_date,
                 "passkey": generate_md5(ref_no+ref_date+PAYZOD_PASSKEY),
-                "amount": "123.45",
+                "amount": amount,
                 "merchant_name": "ibet2019"
             }
         else:  # use dev credentials
@@ -57,7 +57,7 @@ def get_qr_code(request):
                 "ref_no": ref_no,
                 "ref_date": ref_date,
                 "passkey": generate_md5(ref_no + ref_date + PAYZOD_PASSKEY),
-                "amount": "123.45",
+                "amount": amount,
                 "merchant_name": "ibet2019"
             }
         logger.info(payload)
