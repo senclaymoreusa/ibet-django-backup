@@ -35,7 +35,12 @@ class Transaction(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return '{0}: {1}, {2}, {3}'.format(self.user_id, self.transaction_type, self.order_id, self.status)
+        return 'User ID: {0}, \n \
+            Transaction Type: {1}, \n \
+            Internal ID: {2}, \n \
+            External ID: {3}, \n \
+            Status: {4} \
+            '.format(self.user_id, self.transaction_type, self.transaction_id, self.order_id, self.status)
     
 
 class ThirdParty(models.Model):

@@ -64,15 +64,15 @@ def reserve_payment(request):
             return JsonResponse({"errorMsg": "Amount not within maximum or minimum"})
 
         # generate unique orderID
-        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
-        logger.info("amount: " + str(amount) + ", order-id: " + orderId)
+        trans_id = (timezone.datetime.today().isoformat()+"-"+request.user.username+"line-web-payment-"+str(random.randint(0,10000)))
+        logger.info("amount: " + str(amount) + ", order-id: " + trans_id)
         payload = {
             "productName": "iBet-Orion-Test",
             "productImageUrl": PRODUCT_IMG_URL,
             "amount": amount,
             "currency": "THB",
             "confirmUrl": HOMEPAGE_URL + CONFIRM_URL,
-            "orderId": orderId,
+            "orderId": trans_id,
         }
         for attempt in range(3):
             response = requests.post(requestURL, json=payload, headers=headers)
@@ -82,8 +82,8 @@ def reserve_payment(request):
                     userId = CustomUser.objects.get(username=request.user.username)
                     obj, created = Transaction.objects.get_or_create(
                         user_id=userId,
-                        transaction_id=res_json["info"]["transactionId"],
-                        order_id=orderId,
+                        transaction_id=trans_id,
+                        order_id=res_json["info"]["transactionId"],
                         amount=float(amount),
                         method="LINEpay",
                         currency=THB,
