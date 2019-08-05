@@ -166,8 +166,8 @@
         <div class="nav-bar" style="width:99%">
             <nav>
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#pending" role="tab"
+                    <li class="nav-item active">
+                        <a class="nav-link" id="home-tab" data-toggle="tab" href="#pending" role="tab"
                             aria-controls="pending" aria-selected="true">PENDING</a>
                     </li>
                     <li class="nav-item">
@@ -428,8 +428,9 @@
                                 <th scope="col">CITY</th>
                                 <th scope="col">NAME</th>
                                 <th scope="col">ACCOUNT</th>
+                                <th scope="col">TRANSACTION CODE</th>
                                 <th scope="col">APPLY AMOUNT</th>
-                                <th scope="col">STATUS</th>
+                                <th scope="col">SLIP</th>
                             </tr>
                         </thead>
                         <tbody id=latest_deposits>
@@ -439,13 +440,23 @@
                         </tbody>
                     </table>
 
-
                     <!-- notes -->
-                    <div class="form-group">
-                        <label for="deposit_notes">NOTES</label>
-                        <input type='deposit_notes' id='notes' class="form-control" name="deposit_notes"
-                            style="width: 40%;height: 100px;" placeholder="Add anything of importance">
-                    </div>
+                    <form action="{% url 'xadmin:deposit_view' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="audit_deposit"></input>
+                        <div class="form-group">
+                            <label for="deposit_notes">NOTES</label>
+                            <input type='deposit_notes' id='notes' class="form-control" name="deposit_notes"
+                                style="width: 40%;height: 100px;" placeholder="Add anything of importance">
+                        </div>
+                        <div id="deposit_request_button">
+                            <button type="submit" class="btn btn-success">Approve</button>
+                            <button type="submit" class="btn btn-success">Approve and Next</button>
+                            <button type="button" class="btn btn-danger">Reject</button>
+                            <button type="button" class="btn btn-danger">Reject and Next</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -457,7 +468,7 @@
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 
 <!-- datatables -->
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css"> -->
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 <!-- datepicker -->
 

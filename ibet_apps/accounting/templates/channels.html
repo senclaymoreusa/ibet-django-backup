@@ -37,9 +37,8 @@
                     <td>{{ channel.new_users_volume }}</td>
                     <td></td>
                     <td>{{ channel.status }}</td>
-                    <td> <button id="edit-detail-btn" type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                            data-target="#edit_details">Edit</button>
-                    </td>
+                    <td><button id="edit_detail_btn" type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                            data-target="#edit_details">Edit</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -119,8 +118,10 @@
                                     </select>
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-danger" data-toggle="modal"
-                                data-target="#confirm_delete">Delete channel</button><br>
+                            <button id="delete_channel_btn" type="button" class="btn btn-danger">
+                                <span class="glyphicon glyphicon-trash"
+                                    style="color:white; padding-right: 20%; margin-left: -5px;"></span>Delete method
+                            </button><br>
 
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary">Save</button>
@@ -134,7 +135,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="confirm_delete" role="dialog">
+        <!-- <div class="modal fade" id="confirm_delete" role="dialog">
             <div class="modal-dialog">
                 <div class="modal-header">
                 </div>
@@ -145,7 +146,7 @@
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
-        </div>
+        </div> -->
 
     </div>
 
@@ -186,26 +187,32 @@
                 }
             }
         });
-
-        $('#delete_channel').click(function () {
-            var channel_name = $(this).siblings("#delete_channel_name").val()
-            console.log("channel_name " + channel_name)
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'xadmin:channel_list' %}",
-                data: {
-                    'type': 'deleteChannel',
-                    'deposit_channel': channel_name,
-                },
-                success: function (data) {
-                    location.reload();
-                }
-            })
+        
+        $('#delete_channel_btn').click(function () {
+            $('#delete_channel_btn').html('Click to delete');
+            $('#delete_channel_btn').attr('id', 'delete_channel')
+            $('#delete_channel').click(function () {
+                var channel_name = $(this).closest('form').find("h4").html();
+                console.log("channel_name" + channel_name)
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'xadmin:channel_list' %}",
+                    data: {
+                        'type': 'deleteChannel',
+                        'deposit_channel': channel_name,
+                    },
+                    success: function (data) {
+                        location.reload();
+                    }
+                })
+            });
         });
 
         // deposit channel edit function
-        $('#edit-detail-btn').click(function () {
+        $('#edit_detail_btn').click(function () {
+            console.log("start")
             var channel = $(this).closest("tbody").find("input[name='channel_id']").val()
+            console.log("channel " + channel)
             $.ajax({
                 type: 'GET',
                 url: "{% url 'xadmin:channel_list' %}",

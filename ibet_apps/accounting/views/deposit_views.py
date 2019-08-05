@@ -44,7 +44,7 @@ class DepositView(CommAdminView):
             response_deposit_data = []
             for deposit in latest_deposit:
                 depositDict = {}
-                depositDict["payment"] = deposit.deposit_channel
+                depositDict["payment"] = deposit.channel
                 depositDict["tran_no"] = deposit.transaction_id
                 depositDict["time_app"] = deposit.request_time
                 depositDict["bank"] = deposit.bank
@@ -124,10 +124,10 @@ class DepositView(CommAdminView):
                 # pendingDict["first_name"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).first_name
                 # pendingDict["last_name"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).last_name
                 # pendingDict["main_wallet"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).main_wallet
-                pendingDict["payment"] = pending_transaction.deposit_channel
+                pendingDict["payment"] = pending_transaction.channel
                 pendingDict["tran_no"] = pending_transaction.transaction_id
                 pendingDict["app_time"] = pending_transaction.request_time
-                channel = pending_transaction.deposit_channel
+                channel = pending_transaction.channel
                 # pendingDict["bank"] = DepositChannel.objects.get(pk=channel)
                 # pendingDict["branch"] =
                 pendingDict["amount"] = pending_transaction.amount
@@ -140,7 +140,7 @@ class DepositView(CommAdminView):
                 successDict = {}
                 successDict["id"] = success_transaction.user_id_id
                 successDict["username"] = CustomUser.objects.get(pk=success_transaction.user_id_id).username
-                successDict["payment"] = success_transaction.deposit_channel
+                successDict["payment"] = success_transaction.channel
                 successDict["tran_no"] = success_transaction.transaction_id
                 successDict["app_time"] = success_transaction.request_time
                 # successDict["bank"] = success_transaction.bank
@@ -183,6 +183,12 @@ class DepositView(CommAdminView):
 
             return render(request, 'deposits.html', context)
 
+    def post(self, request):
+        post_type = request.POST.get('type')
+
+        if post_type == 'audit_deposit':
+            deposit_notes = request.POST.get('deposit_notes')
+            print(deposit_notes)
 
 
 

@@ -20,7 +20,7 @@
 }
 
 #deposit_request_pop {
-    width: 80%;
+    width: 90%;
     height: 800px;
 }
 
@@ -47,4 +47,13 @@ table.dataTable {
 
 #deposit_channel_detail .form-group{
     background-color: #f3f3f3;
+}
+
+#home-tab, .nav-item {
+    font-family: Helvetica;
+    font-weight: bold;
+}
+
+#deposit_request_button {
+    margin-top: 25px;
 }

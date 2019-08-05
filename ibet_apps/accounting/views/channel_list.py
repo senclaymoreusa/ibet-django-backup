@@ -75,10 +75,9 @@ class ChannelListView(CommAdminView):
 
     def post(self, request):
         post_type = request.POST.get('type')
-
+        
         if post_type == 'deleteChannel':
             deposit_channel = request.POST.get('deposit_channel')
-
             # find choice label from choice value
             deposit_channel_label = None
             for channel_id, name in CHANNEL_CHOICES:
