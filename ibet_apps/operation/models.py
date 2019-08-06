@@ -8,6 +8,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from users.models import CustomUser
+from bonus.models import Bonus
 from utils.constants import *
 
 
@@ -53,8 +54,10 @@ class Notification(models.Model):
     create_on = models.DateTimeField('Create Date', auto_now_add=True, blank=False)
     auditor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, related_name='auditor')
     audit_date = models.DateTimeField('Audit Date', null=True)
-    notification_choice = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
-    notification_type = models.IntegerField(default=1, choices=NOTIFICATION_TYPE)
+    # notification_choice = models.CharField(max_length=1, default='U', choices=NOTIFICATION_CHOICE)
+    campaign = models.CharField(max_length=100, null=True)
+    # notification_type = models.IntegerField(default=1, choices=NOTIFICATION_TYPE)
+    bouns = models.ForeignKey(Bonus, null=True, on_delete=models.CASCADE)
     notification_method = models.CharField(max_length=4, blank=False)
     topic = models.ForeignKey(AWSTopic, blank=True, null=True, on_delete=models.CASCADE)
     notifiers = models.ForeignKey(CustomUser, blank=False, null=True, on_delete=models.CASCADE)

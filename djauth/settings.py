@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
+    'bonus.apps.BonusConfig',      # Bobby
     'games.apps.GamesConfig',
     'accounting.apps.AccountingConfig',
     'system.apps.SystemConfig',
