@@ -44,9 +44,9 @@
                                     <thead>
                                         <tr>
                                             <th class="role-title" style="width:40%;">SECTION</th>
-                                            <th style="text-align:center" class="role-title" style="width:10%;">NO ACCESS</th>
-                                            <th style="text-align:center" class="role-title" style="width:10%;">READ</th>
-                                            <th style="text-align:center" class="role-title" style="width:10%;">READ + WRITE</th>
+                                            <th style="text-align:center; width:15%;" class="role-title">NO ACCESS</th>
+                                            <th style="text-align:center; width:10%;" class="role-title">READ</th>
+                                            <th style="text-align:center; width:15%;" class="role-title">READ + WRITE</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -128,7 +128,7 @@
                         <td></td>
                     {% endif %}
                     <td>{{ i.userCount }}</td>
-                    <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;" onclick='editView("{{ i.groupName}}")'>Edit</button></td> 
+                    <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;" onclick='editView("{{ i.groupName }}")'>Edit</button></td> 
                 </tr>
                 {% endfor %}
             </tbody>

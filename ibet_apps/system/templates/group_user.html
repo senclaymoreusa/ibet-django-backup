@@ -7,7 +7,200 @@
 
 {% block content %} 
 <div>
-    <form action="{% url 'xadmin:permission_group' %}" method="POST" id="permissionForm">
+    <button type="button" id="add_new_user" class="btn btn-primary" style="margin-top:15px;margin-bottom:25px;" data-toggle="modal" data-target="#new_user" >Add new user</button>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-3" style="padding-right:0px;">
+                    <label class="role-title">DEPARTMENT</label>
+                    <select class="form-control">
+                        <option selected>ALL</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>
+                </div>
+                <div class="col-md-3" style="padding-right:0px;">
+                    <label class="role-title">ROLE</label>
+                    <select class="form-control">
+                        <option selected>ALL</option>
+                        {% for role in roles %}
+                            <option value="{{ role.roleId }}">{{ role.roleName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3" style="padding-right:0px;">
+                    <label class="role-title">MARKET</label>
+                    <select class="form-control">
+                        <option selected>ALL</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-5"></div>
+                <div class="col-md-7">
+                    <div class="role-title" style="font-size: 0.9em; padding-bottom:5px;">FIND A USER</div>
+                        <div class="input-group">
+                            <input type="text" id="search" class="form-control" placeholder="Enter member ID, name, phone or email" >
+                            <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <table id="user-group-table" style="width: 100%; margin-top:30px; ">
+        <thead>
+            <tr>
+                <th class="role-title" style="width:3%">ALL</th>
+                <th class="role-title">USERNAME</th>
+                <th class="role-title">NAME</th>
+                <th class="role-title">DEPARTMENT</th>
+                <th class="role-title">ROLE</th>
+                <th class="role-title">IBET MARKETS</th>
+                <th class="role-title">LETOU MARKETS</th>
+            </tr>
+        </thead>
+        <tbody id='user_list_tbody'>
+            <tr>    
+                <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllnoAccess" value="no"></div></td>
+                <td>jwoo</td>
+                <td>John Woo</td>
+                <td>Customer service</td>
+                <td>CS agent</td>
+                <td>CNY, THB, VN</td>
+                <td>CNY, THB, VN</td>
+                <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
+            </tr>
+            <tr>    
+                <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllnoAccess" value="no"></div></td>
+                <td>jwoo</td>
+                <td>John Woo</td>
+                <td>Customer service</td>
+                <td>CS agent</td>
+                <td>CNY, THB, VN</td>
+                <td>CNY, THB, VN</td>
+                <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="new_user" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="color:black; background-color:#f5f5f5; border-top-right-radius:6px; border-top-left-radius:6px; ">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Add new user</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'xadmin:permission_group' %}" method="POST" id="newUserForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="type" value="createUser" id="formAction"></input>
+                            <!-- <input type="hidden" name="pk" value="" id="permissionId"></input> -->
+                            <div>
+                                <div>
+                                    <label class="role-title">USERNAME</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="username" name="username">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">PASSWORD</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="password" name="password">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">EMAIL</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="email" name="email">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">PHONE</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="phone" name="phone">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">NAME</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="name" name="name">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">DEPARTMENT</label>
+                                    <select class="form-control" style="width:50%;" id="department" name="department"></select>
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">ROLE</label>
+                                    <select class="form-control" id="role" name="role">
+                                        {% for role in roles %}
+                                            <option value="{{ role.roleId }}">{{ role.roleName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label>MARKETS</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div>ibet</div>
+                                        <input type="radio" name="ibetAll" value="all"><label>ALL</label>
+                                        <!-- <input type="hidden" name="margets" value=""> -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <input type="radio" name="CNY" value="CNY"><label>CNY</label></input>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="DE" value="DE"><label>DE</label></input>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="FI" value="FI"><label>FI</label></input>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <input type="radio" name="NO" value="NO"><label>NO</label></input>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="THB" value="THB"><label>THB</label></input>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="VN" value="VN"><label>VN</label></input> 
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div>Letou</div>
+                                        <input type="radio" name="letouAll" value="all"><label>ALL</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <input type="radio" name="CNY" value="CNY"><label>CNY</label></input>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="VN" value="VN"><label>VN</label></input>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <input type="radio" name="THB" value="THB"><label>THB</label></input>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                
+                            <p id='errorMessage'>&nbsp;</p>
+                            <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    <!-- <form action="{% url 'xadmin:permission_group' %}" method="POST" id="permissionForm">
         {% csrf_token %}
         <input type="hidden" id="permission_type" name="permission_type" value="permissionGroup"></input>
         <div class="row">
@@ -33,7 +226,7 @@
             </div>
         </fieldset>
         <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px;">Submit</button>
-    </form>
+    </form> -->
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
@@ -122,6 +315,49 @@ $(document).ready(function() {
         array = removeByIndex(permissionCodes, event.item.value);
         $('#hidden_permission_code').val(JSON.stringify(array));
         console.log($('#hidden_permission_code').val());
+    });
+
+    var check;
+
+    $('input[type="radio"]').hover(function() {
+        check = $(this).is(':checked');
+    });
+
+    $('input[type="radio"]').click(function() {
+        check = !check;
+        $(this).attr("checked", check);
+    });
+
+
+    $("#newUserForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = form.attr('action');
+        console.log(url);        
+        var markets = [];
+        $("input[type='radio']:checked").each(function(i) {
+            // console.log($(this).val());
+            markets.push($(this).val());
+        });
+        console.log(markets);
+        var data = form.serialize() + "&markets=" + markets;
+        console.log(data);
+       
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function(data)
+            {
+                if (data.code === 1) {
+                    $('#errorMessage').text(data.message); 
+                    $('#errorMessage').css('color', 'red'); 
+                } else {
+                    window.location.reload();
+                }
+            }
+        });
     });
 
     

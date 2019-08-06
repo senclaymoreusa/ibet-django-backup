@@ -12,6 +12,7 @@ import simplejson as json
 from django.views import View
 from django.urls import reverse
 from django.core import serializers
+from .models import *
 
 import logging
 logger = logging.getLogger('django')
@@ -24,35 +25,48 @@ class PermissionGroupView(CommAdminView):
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
-
+        roles = UserGroup.objects.all()
+        roles = serializers.serialize('json', roles)
+        roles = json.loads(roles)
+        dataResponse = []
+        for role in roles:
+            rolesResponse = {
+                'roleName': role['fields']['name'],
+                'roleId': role['pk']
+            }
+            dataResponse.append(rolesResponse)
+        context['roles'] = dataResponse
         return render(request, 'group_user.html', context)
 
     def post(self, request):
 
-        post_type = request.POST.get('permission_type')
-        groupName = request.POST.get('groupName')
-        users = request.POST.get('hidden_permission_user')
-        permissionCode = request.POST.get('hidden_permission_code')
-        # print("users: " + users + "permission: " + permissionCode + 'groupName: ' + groupName)
+        post_type = request.POST.get('type')
+        if post_type == 'createUser':
+            print("!!!!!")
+
+        # groupName = request.POST.get('groupName')
+        # users = request.POST.get('hidden_permission_user')
+        # permissionCode = request.POST.get('hidden_permission_code')
+        # # print("users: " + users + "permission: " + permissionCode + 'groupName: ' + groupName)
         
-        group = UserGroup.objects.get_or_create(name=groupName, description='', groupType=PERMISSION_GROUP)
-        # groupId = group.pk
+        # group = UserGroup.objects.get_or_create(name=groupName, description='', groupType=PERMISSION_GROUP)
+        # # groupId = group.pk
 
-        insert_permissions_list = []
-        users = json.loads(users)
-        permissionCode = json.loads(permissionCode)
-        for i in range(len(permissionCode)):
-            insert_permissions_list.append(PermissionGroup(group=group, permission_code=permissionCode[i]))
-        # print(insert_permissions_list)
-        PermissionGroup.objects.bulk_create(insert_permissions_list)
+        # insert_permissions_list = []
+        # users = json.loads(users)
+        # permissionCode = json.loads(permissionCode)
+        # for i in range(len(permissionCode)):
+        #     insert_permissions_list.append(PermissionGroup(group=group, permission_code=permissionCode[i]))
+        # # print(insert_permissions_list)
+        # PermissionGroup.objects.bulk_create(insert_permissions_list)
 
-        insert_users_list = []
-        for i in range(len(users)):
-            userId = int(users[i])
-            user = CustomUser.objects.get(pk=userId)
-            insert_users_list.append(UserToUserGroup(group=group, user=user))
-        # print(insert_users_list)
-        UserToUserGroup.objects.bulk_create(insert_users_list)
+        # insert_users_list = []
+        # for i in range(len(users)):
+        #     userId = int(users[i])
+        #     user = CustomUser.objects.get(pk=userId)
+        #     insert_users_list.append(UserToUserGroup(group=group, user=user))
+        # # print(insert_users_list)
+        # UserToUserGroup.objects.bulk_create(insert_users_list)
 
         return HttpResponseRedirect(reverse('xadmin:permission_group'))
             

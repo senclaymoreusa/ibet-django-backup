@@ -64,5 +64,23 @@
     padding: 0px;
     font-weight: bold;
 
+}
 
+#user-group-table {
+    text-align: left;
+    height: 40px;
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding: 0px;
+}
+
+#user-group-table>tbody>tr:nth-child(odd)>td, 
+#user-group-table>tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
 }
