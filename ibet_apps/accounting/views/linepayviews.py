@@ -1,3 +1,4 @@
+import os, requests, json, random, logging, time, boto3
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.utils import timezone
 from django.conf import settings
@@ -7,7 +8,8 @@ from rest_framework.decorators import api_view, permission_classes
 
 from ..models import Transaction
 from users.models import CustomUser
-import os, requests, json, random, logging, time, boto3
+from utils.constants import *
+
 from botocore.exceptions import ClientError, NoCredentialsError
 
 
