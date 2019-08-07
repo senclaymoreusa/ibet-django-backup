@@ -345,6 +345,13 @@ ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('cashifacebatch', '代付'),
 )
 
+LOCALHOST = "http://localhost:3000"
+DEV_URL = "https://ibet-web-dev.claymoreusa.net"
+
+# LINEpay
+LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
+PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
+
 # qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
@@ -385,7 +392,6 @@ ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
 
 # help2pay
-
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
@@ -393,11 +399,12 @@ BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
 
-#circlepay
+# circlepay
 CIRCLEPAY_USERCODE = "297802061195"
 CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
 CIRCLEPAY_EMAIL = "jennyto@ibet.com"
 CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
 # payzod sandbox
 PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
@@ -407,12 +414,11 @@ PAYZOD_PASSKEY = "dgr8mM7akMtL"
 
 # payzod production
 
-#fgate
+# fgate
 FGATE_URL = "https://api.fgate247.com/charge_card/"
 FGATE_PARTNERID = "75"
 FGATE_PARTNERKEY = "6tDJkb"
 FGATE_TYPE = "fgo"
-
 
 
 GAME_FILTER_OPTION = [

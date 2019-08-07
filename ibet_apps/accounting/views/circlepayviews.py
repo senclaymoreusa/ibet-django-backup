@@ -100,7 +100,7 @@ def check_transaction(request):
 
         body = json.loads(request.body)
         trans_id = body["trans_id"]
-        url = "https://api.circlepay.ph/transaction/" + trans_id
+        url = CIRCLEPAY_CHECK_STATUS_URL + trans_id
         logger.info(trans_id)
         logger.info(url)
         secret = bytes(CIRCLEPAY_API_KEY, 'utf-8')
