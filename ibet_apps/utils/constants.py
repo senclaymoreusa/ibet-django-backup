@@ -397,6 +397,7 @@ REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 CIRCLEPAY_USERCODE = "297802061195"
 CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
 CIRCLEPAY_EMAIL = "jennyto@ibet.com"
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
 
 # payzod sandbox
 PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"

@@ -317,23 +317,34 @@ if os.getenv("ENV") == "local":
         'disable_existing_loggers': False,
         'formatters': {
             'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
+                'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
             },
             'simple': {
                 'format': '%(levelname)s %(message)s'
             },
         }, 
         'handlers': {
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.handlers.TimedRotatingFileHandler',
-                'filename': 'logs/debug.log',
-                'when': 'midnight', # Log file rollover at midnight
-                'interval': 1, # Interval as 1 day
-                'backupCount': 10, # how many backup file to keep, 10 days
-                'formatter': 'verbose',
-            },
+            'file':
+                {
+                    'level': 'DEBUG',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/debug.log',
+                    'when': 'midnight', # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                },
+            'error':
+                {
+                    'level': 'ERROR',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/error.log',
+                    'when': 'midnight',  # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                }
         },
         'loggers': {
             'django': {

@@ -1,4 +1,4 @@
-import requests, json, logging, random, hmac, hashlib, logging
+import requests, json, logging, random, hmac, hashlib
 
 from time import sleep, gmtime, strftime
 from datetime import datetime
@@ -19,11 +19,10 @@ from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
 
 logger = logging.getLogger('django')
-
-CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
 userCode = CIRCLEPAY_USERCODE
 api_key = CIRCLEPAY_API_KEY
 email = CIRCLEPAY_EMAIL
+
 
 # creates record of deposit request, status set to CREATED
 def create_deposit(request):
