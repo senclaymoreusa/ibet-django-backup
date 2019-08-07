@@ -7,6 +7,7 @@ from utils.constants import *
 
 import uuid
 
+
 class Transaction(models.Model):
     transaction_id = models.CharField(max_length = 200, default=0, verbose_name=_('Transaction id'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
@@ -34,13 +35,18 @@ class Transaction(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return '{0}: {1}, {2}, {3}'.format(self.user_id, self.transaction_type, self.order_id, self.status)
+        return 'User ID: {0}, \n \
+            Transaction Type: {1}, \n \
+            Internal ID: {2}, \n \
+            External ID: {3}, \n \
+            Status: {4} \
+            '.format(self.user_id, self.transaction_type, self.transaction_id, self.order_id, self.status)
     
 
 class ThirdParty(models.Model):
-    thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    thridParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
-    method = models.CharField(max_length = 30,  verbose_name =_('Method'))
+    thirdParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thirdParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
+    method = models.CharField(max_length=30,  verbose_name =_('Method'))
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
