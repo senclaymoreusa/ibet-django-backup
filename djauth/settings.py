@@ -348,8 +348,8 @@ if os.getenv("ENV") == "local":
         },
         'loggers': {
             'django': {
-                'handlers': ['file'],
-                'level': 'DEBUG',
+                'handlers': ['file', 'error'],
+                # 'level': 'DEBUG',
                 'propagate': True,
             },
         },
