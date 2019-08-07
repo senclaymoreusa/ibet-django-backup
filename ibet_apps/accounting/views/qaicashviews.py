@@ -473,7 +473,7 @@ class getPayoutTransaction(generics.GenericAPIView):
             )
             update_data.transaction_id=rdata['transactionId']
             update_data.request_time=rdata["dateCreated"]
-            update_data.status=6
+            update_data.status=statusConversion[rdata["status"]]
             update_data.save()
             # create = Transaction.objects.get_or_create(
             #     order_id= rdata['orderId'],
@@ -658,7 +658,7 @@ class getDepositTransaction(generics.GenericAPIView):
                 cur_val = x[0]
         
         update_data = Transaction.objects.get(order_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
-        update_data.status=6
+        update_data.status=statusConversion[rdata["status"]]
         update_data.request_time=rdata["dateCreated"]
         update_data.save()
       

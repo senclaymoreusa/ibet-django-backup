@@ -44,6 +44,37 @@
   </div>
 </div>
 
+<table>
+  <thead class="thead-dark">
+    <tr>
+      <th style="width: 3%;">#</th>
+      <th style="width: 25%;">NAME</th>
+      <th style="width: 10%;">MEMBERS</th>
+      <th style="width: 10%;">TIME USED</th>
+      <th style="width: 15%;">CREATOR</th>
+      <th>OPEN RATE</th>
+    </tr>
+  </thead>
+  <tbody class="table table-striped table-hover">
+    {% for topic in queryset %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ topic }}</td>
+      <td>TBD</td>
+      <td>TBD</td>
+      <td>{{ topic.creator }}</td>
+      <td>66.67%</td>
+      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' topic.pk %}" role="button" disabled>Edit</a></td>
+      <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
+      <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
+        <i class="fa fa-info"></i>
+      </button></td>-->
+    </tr>
+    <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
+    {% endfor %}
+  </tbody>
+</table>
+
 <table class="table table-bordered table-striped table-hover">
   <tr>
     <th>NAME</th>

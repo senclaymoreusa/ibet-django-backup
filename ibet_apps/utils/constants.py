@@ -33,7 +33,8 @@ CHANNEL_CHOICES = (
     (2, 'Astropay'),
     (3, 'Qaicash'),
     (4, 'Asia Pay'),
-    (5, 'Paypal')
+    (5, 'Paypal'),
+    (6,'fgate'),
 )
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -386,8 +387,14 @@ ASIAPAY_QRPAYWAY = "42"
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
+
+#fgate
+FGATE_URL = "https://api.fgate247.com/charge_card/"
+FGATE_PARTNERID = "75"
+FGATE_PARTNERKEY = "6tDJkb"
+FGATE_TYPE = "fgo"
 
 
 
@@ -806,3 +813,4 @@ PERMISSION_CODE = [
         ]
     }
 ]
+BONUS_QUEUE_NAME = "bonus_queue"

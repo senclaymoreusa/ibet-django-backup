@@ -19,7 +19,7 @@ import requests,json
 import logging, time, struct, hashlib, xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
-import base64
+import base64, socket
 from time import gmtime, strftime, strptime
 
 logger = logging.getLogger("django")
@@ -46,13 +46,13 @@ bankidConversion = {
     '201': '比特币',
 }
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+def get_Host_name_IP(): 
+    try: 
+        host_name = socket.gethostname() 
+        host_ip = socket.gethostbyname(host_name) 
+        return host_ip
+    except: 
+        logger.info("Unable to get Hostname and IP") 
 
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
@@ -92,7 +92,7 @@ class submitDeposit(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= get_client_ip(request)
+        UserIP= get_Host_name_IP()
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
@@ -166,7 +166,6 @@ class submitDeposit(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
-        print(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
@@ -194,9 +193,12 @@ class submitDeposit(generics.GenericAPIView):
                     rrdata = rr.json()
                     logger.info(rrdata)
                     return Response(rrdata)
-                
+               
             else:
                 logger.info("There was something wrong with the result")
+                logger.info(StatusMsg)
+                return Response(StatusMsg)
+                
         else:
             # Handle error
             logger.info("There was something wrong with the result")
@@ -213,7 +215,7 @@ class submitCashout(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= get_client_ip(request)
+        UserIP= get_Host_name_IP()
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
@@ -298,7 +300,7 @@ class submitCashout(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
-        print(rdata)
+    
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text
