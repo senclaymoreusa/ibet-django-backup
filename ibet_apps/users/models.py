@@ -151,6 +151,10 @@ class CustomUser(AbstractBaseUser):
     temporary_block_time = models.DateTimeField(null=True, blank=True)
     block_timespan = models.DurationField(null=True, blank=True)
 
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
+    letouMarkets = models.CharField(max_length=100, null=True, blank=True)
+    department = models.SmallIntegerField(null=True, blank=True)
+
     
     created_time = models.DateTimeField(
         _('Created Time'),

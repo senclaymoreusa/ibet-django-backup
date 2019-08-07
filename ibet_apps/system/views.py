@@ -13,6 +13,7 @@ from django.views import View
 from django.urls import reverse
 from django.core import serializers
 from .models import *
+import re
 
 import logging
 logger = logging.getLogger('django')
@@ -36,6 +37,8 @@ class PermissionGroupView(CommAdminView):
             }
             dataResponse.append(rolesResponse)
         context['roles'] = dataResponse
+        context['departments'] = DEPARTMENT_LIST
+
         return render(request, 'group_user.html', context)
 
     def post(self, request):
@@ -43,6 +46,47 @@ class PermissionGroupView(CommAdminView):
         post_type = request.POST.get('type')
         if post_type == 'createUser':
             print("!!!!!")
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            name = request.POST.get('name')
+            roleId = request.POST.get('role')
+            departmentId = request.POST.get('department')
+            ibetMarkets = request.POST.get('ibetMarkets')
+            ibetMarketsList = ibetMarkets.split(',')
+            letouMarkets = request.POST.get('letouMarkets')
+            letouMarketsList = letouMarkets.split(',')
+
+            print(username, password, email, phone, name, roleId, departmentId, ibetMarkets, letouMarkets)
+
+            # department = ''
+            # for i in DEPARTMENT_LIST:
+            #     if i['code'] == departmentId:
+            #         department = i['name']
+                    # print(department)
+
+            if not username or not password or not email or not phone or not departmentId and (not ibetMarkets or not letouMarkets) :
+                return JsonResponse({ "code": 1, "message": "invalid data"})
+            
+            if CustomUser.objects.filter(username=username).exists():
+                return JsonResponse({ "code": 1, "message": "username already be used"})
+            if CustomUser.objects.filter(email=email).exists():
+                return JsonResponse({ "code": 1, "message": "email already be used"})
+
+            if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+                return JsonResponse({ "code": 1, "message": "please enter valid email"})
+
+            user = CustomUser.objects.create_superuser(username=username, email=email, phone=phone, password=password)
+            # user.update(ibetMarkets=ibetMarkets, letouMarkets=letouMarkets, department=department)
+            user.ibetMarkets = ibetMarkets
+            user.letouMarkets = letouMarkets
+            user.department = departmentId
+            user.save()
+            # print(ibetMarketsList)
+            # print(letouMarketsList)
+            group = UserGroup.objects.get(pk=roleId)
+            UserToUserGroup.objects.create(group=group, user=user)
 
         # groupName = request.POST.get('groupName')
         # users = request.POST.get('hidden_permission_user')
@@ -68,7 +112,7 @@ class PermissionGroupView(CommAdminView):
         # # print(insert_users_list)
         # UserToUserGroup.objects.bulk_create(insert_users_list)
 
-        return HttpResponseRedirect(reverse('xadmin:permission_group'))
+        return JsonResponse({ "code": 0, "message": "sucess created a new role"})
             
 
 class PermissionRoleView(CommAdminView): 

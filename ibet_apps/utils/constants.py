@@ -450,6 +450,41 @@ NOTIFICATION_METHOD = (
 )
 
 
+DEPARTMENT_LIST = [
+    {
+        'code': '1',
+        'name': 'Customer service'
+    },
+    {
+        'code': '2',
+        'name': 'Payments'
+    },
+    {
+        'code': '3',
+        'name': 'Risk'
+    },
+    {
+        'code': '4',
+        'name': 'Marketing'
+    },
+    {
+        'code': '5',
+        'name': 'IT Operations'
+    },
+    {
+        'code': '6',
+        'name': 'Finance'
+    },
+    {
+        'code': '7',
+        'name': 'HR'
+    },
+    {
+        'code': '8',
+        'name': 'Sportsbook'
+    }
+]
+
 
 PERMISSION_CODE = [
     {   

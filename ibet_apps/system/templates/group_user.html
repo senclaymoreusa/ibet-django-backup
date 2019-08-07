@@ -15,9 +15,13 @@
                     <label class="role-title">DEPARTMENT</label>
                     <select class="form-control">
                         <option selected>ALL</option>
-                        <option value="1">One</option>
+                        {% for department in departments %}
+                            <option value="{{ department.code }}">{{ department.name }}</option>
+                        {% endfor %}
+                        <!-- <option selected>ALL</option> -->
+                        <!-- <option value="1">One</option>
                         <option value="2">Two</option>
-                        <option value="3">Three</option>
+                        <option value="3">Three</option> -->
                     </select>
                 </div>
                 <div class="col-md-3" style="padding-right:0px;">
@@ -126,7 +130,13 @@
                                 </div>
                                 <div class="form-div">
                                     <label class="role-title">DEPARTMENT</label>
-                                    <select class="form-control" style="width:50%;" id="department" name="department"></select>
+                                    
+                                    <select class="form-control" style="width:50%;" id="department" name="department">
+                                        <option selected>ALL</option>
+                                        {% for department in departments %}
+                                            <option value="{{ department.code }}">{{ department.name }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="form-div">
                                     <label class="role-title">ROLE</label>
@@ -140,50 +150,50 @@
                             <div>
                                 <label>MARKETS</label>
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 ibetMarkets" >
                                         <div>ibet</div>
                                         <input type="radio" name="ibetAll" value="all"><label>ALL</label>
                                         <!-- <input type="hidden" name="margets" value=""> -->
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div>
-                                                    <input type="radio" name="CNY" value="CNY"><label>CNY</label></input>
+                                                    <input type="radio" name="ibetCNY" id="ibetCNY" value="CNY"><label>CNY</label></input>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="DE" value="DE"><label>DE</label></input>
+                                                    <input type="radio" name="ibetDE" id="ibetDE" value="DE"><label>DE</label></input>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="FI" value="FI"><label>FI</label></input>
+                                                    <input type="radio" name="ibetFI" id="ibetFI" value="FI"><label>FI</label></input>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div>
-                                                    <input type="radio" name="NO" value="NO"><label>NO</label></input>
+                                                    <input type="radio" name="ibetNO" id="ibetNO" value="NO"><label>NO</label></input>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="THB" value="THB"><label>THB</label></input>
+                                                    <input type="radio" name="ibetTHB" id="ibetTHB" value="THB"><label>THB</label></input>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="VN" value="VN"><label>VN</label></input> 
+                                                    <input type="radio" name="ibetVN" id="ibetVN" value="VN"><label>VN</label></input> 
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 letouMarkets">
                                         <div>Letou</div>
                                         <input type="radio" name="letouAll" value="all"><label>ALL</label>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div>
-                                                    <input type="radio" name="CNY" value="CNY"><label>CNY</label></input>
+                                                    <input type="radio" name="letouCNY" id="letouCNY" value="CNY"><label>CNY</label></input>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="VN" value="VN"><label>VN</label></input>
+                                                    <input type="radio" name="letouVN" id="letouVN" value="VN"><label>VN</label></input>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div>
-                                                    <input type="radio" name="THB" value="THB"><label>THB</label></input>
+                                                    <input type="radio" name="letouTHB" id="letouTHB" value="THB"><label>THB</label></input>
                                                 </div>
                                             </div>
                                         </div>
@@ -335,13 +345,18 @@ $(document).ready(function() {
         var form = $(this);
         var url = form.attr('action');
         console.log(url);        
-        var markets = [];
-        $("input[type='radio']:checked").each(function(i) {
+        var ibetMarkets = [];
+        var letouMarkets = [];
+        $(".ibetMarkets input[type='radio']:checked").each(function(i) {
             // console.log($(this).val());
-            markets.push($(this).val());
+            ibetMarkets.push($(this).val());
         });
-        console.log(markets);
-        var data = form.serialize() + "&markets=" + markets;
+        $(".letouMarkets input[type='radio']:checked").each(function(i) {
+            // console.log($(this).val());
+            letouMarkets.push($(this).val());
+        });
+        // console.log(markets);
+        var data = form.serialize() + "&ibetMarkets=" + ibetMarkets + "&letouMarkets=" + letouMarkets;
         console.log(data);
        
         $.ajax({
