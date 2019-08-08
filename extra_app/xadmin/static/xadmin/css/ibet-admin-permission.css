@@ -84,3 +84,14 @@
 #user-group-table>tbody>tr:nth-child(odd)>th {
    background-color: #f3f3f3;
 }
+
+
+.flag-icon {
+    width:15px; 
+    height: 15px; 
+    margin-left:10%;
+}
+
+.checkboxIcon {
+    margin-left:10px;
+}

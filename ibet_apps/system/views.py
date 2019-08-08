@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.core import serializers
 from .models import *
 import re
+from django.db.models import Q
 
 import logging
 logger = logging.getLogger('django')
@@ -21,6 +22,26 @@ logger = logging.getLogger('django')
 # Create your views here.
 class PermissionGroupView(CommAdminView): 
     def get(self, request):
+
+        search = request.GET.get('search')
+        pageSize = request.GET.get('pageSize')
+        offset = request.GET.get('offset')
+        department = request.GET.get('department')
+        role = request.GET.get('role')
+        market = request.GET.get('market')
+
+        # print(search, pageSize, offset, department, role, market)
+
+        if pageSize is None:
+            pageSize = 20
+        else: 
+            pageSize = int(pageSize)
+
+        if offset is None:
+            offset = 0
+        else:
+            offset = int(offset)
+
         context = super().get_context()
         title = _('Group Permission')
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
@@ -38,6 +59,83 @@ class PermissionGroupView(CommAdminView):
             dataResponse.append(rolesResponse)
         context['roles'] = dataResponse
         context['departments'] = DEPARTMENT_LIST
+        userPermissionList = []
+
+        adminUsers = CustomUser.objects.filter(is_admin=True)
+        adminCount = adminUsers.count()
+        adminUsers = CustomUser.objects.filter(is_admin=True)[offset:offset+pageSize]
+        
+        filter = Q(is_admin=True)
+        if department:
+            filter &= (
+                Q(department=department)
+            )
+
+        if market:
+            filter &= (
+                Q(ibetMarkets__icontains=market)|Q(letouMarkets__icontains=market)
+            )
+
+        adminUsers = CustomUser.objects.filter(filter)
+        adminUsersCount = adminUsers.count()
+
+        adminUsers = adminUsers[offset:offset+pageSize]
+        
+        # roleFilter = Q()
+    
+        # for adminUser in adminUsers:
+        #     if role:
+        #         roleFilter
+
+        if offset == 0:
+            context['isFirstPage'] = True
+        else:
+            context['isFirstPage'] = False
+        
+        if adminUsersCount <= offset+pageSize:
+            context['isLastPage'] = True
+        else:
+            context['isLastPage'] = False
+
+        for user in adminUsers: 
+            if user.department:
+                userRole = UserToUserGroup.objects.get(user=user)
+                # departmentList = json.loads(DEPARTMENT_LIST)
+                # print(userRole.group.name)
+                for i in DEPARTMENT_LIST:
+                    # print(type(user.department))
+                    # print(type(i['code']))
+                    if int(i['code']) == int(user.department):
+                        department = i['name']
+                seperator = ', '
+                ibetMarket = user.ibetMarkets.split(',')
+                ibetMarket = seperator.join(ibetMarket)
+                letouMarket = user.letouMarkets.split(',')
+                letouMarket = seperator.join(letouMarket)
+                userPermissionDict = {
+                    'userId': user.pk,
+                    'username': user.username,
+                    'name': user.first_name + user.last_name,
+                    'department': department,
+                    'role': userRole.group.name,
+                    'ibetMarkets': ibetMarket,
+                    'letouMarkets': letouMarket
+                }
+            else:
+                userPermissionDict = {
+                    'userId': user.pk,
+                    'username': user.username,
+                    'name': user.first_name + user.last_name,
+                    'department': '',
+                    'role': '',
+                    'ibetMarkets': '',
+                    'letouMarkets': ''
+                }
+            userPermissionList.append(userPermissionDict)
+
+
+        # print(userPermissionList)
+        context['userPermissionList'] = userPermissionList
 
         return render(request, 'group_user.html', context)
 
@@ -50,7 +148,8 @@ class PermissionGroupView(CommAdminView):
             password = request.POST.get('password')
             email = request.POST.get('email')
             phone = request.POST.get('phone')
-            name = request.POST.get('name')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
             roleId = request.POST.get('role')
             departmentId = request.POST.get('department')
             ibetMarkets = request.POST.get('ibetMarkets')
@@ -58,7 +157,7 @@ class PermissionGroupView(CommAdminView):
             letouMarkets = request.POST.get('letouMarkets')
             letouMarketsList = letouMarkets.split(',')
 
-            print(username, password, email, phone, name, roleId, departmentId, ibetMarkets, letouMarkets)
+            # print(username, password, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets)
 
             # department = ''
             # for i in DEPARTMENT_LIST:
@@ -66,7 +165,7 @@ class PermissionGroupView(CommAdminView):
             #         department = i['name']
                     # print(department)
 
-            if not username or not password or not email or not phone or not departmentId and (not ibetMarkets or not letouMarkets) :
+            if not username or not password or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets) :
                 return JsonResponse({ "code": 1, "message": "invalid data"})
             
             if CustomUser.objects.filter(username=username).exists():
@@ -82,12 +181,24 @@ class PermissionGroupView(CommAdminView):
             user.ibetMarkets = ibetMarkets
             user.letouMarkets = letouMarkets
             user.department = departmentId
+            user.first_name = first_name
+            user.last_name = last_name
             user.save()
             # print(ibetMarketsList)
             # print(letouMarketsList)
             group = UserGroup.objects.get(pk=roleId)
             UserToUserGroup.objects.create(group=group, user=user)
 
+            return JsonResponse({ "code": 0, "message": "sucess created a new role"})
+
+        if post_type == 'delete_admin_user':
+            deleteUserIds = request.POST.get('userIds')
+            deleteUserIds = json.loads(deleteUserIds)
+            print(deleteUserIds)
+            for userId in deleteUserIds:
+                CustomUser.objects.filter(pk=userId).delete()
+
+            return JsonResponse({ "code": 0, "message": "sucess delete users"})
         # groupName = request.POST.get('groupName')
         # users = request.POST.get('hidden_permission_user')
         # permissionCode = request.POST.get('hidden_permission_code')
@@ -112,7 +223,7 @@ class PermissionGroupView(CommAdminView):
         # # print(insert_users_list)
         # UserToUserGroup.objects.bulk_create(insert_users_list)
 
-        return JsonResponse({ "code": 0, "message": "sucess created a new role"})
+        
             
 
 class PermissionRoleView(CommAdminView): 

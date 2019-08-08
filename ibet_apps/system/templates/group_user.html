@@ -13,7 +13,7 @@
             <div class="row">
                 <div class="col-md-3" style="padding-right:0px;">
                     <label class="role-title">DEPARTMENT</label>
-                    <select class="form-control">
+                    <select class="form-control" id="departmentSelect">
                         <option selected>ALL</option>
                         {% for department in departments %}
                             <option value="{{ department.code }}">{{ department.name }}</option>
@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-md-3" style="padding-right:0px;">
                     <label class="role-title">ROLE</label>
-                    <select class="form-control">
+                    <select class="form-control" id="roleSelect">
                         <option selected>ALL</option>
                         {% for role in roles %}
                             <option value="{{ role.roleId }}">{{ role.roleName }}</option>
@@ -35,11 +35,14 @@
                 </div>
                 <div class="col-md-3" style="padding-right:0px;">
                     <label class="role-title">MARKET</label>
-                    <select class="form-control">
+                    <select class="form-control" id="marketSelect">
                         <option selected>ALL</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
+                        <option value="CNY">CNY</option>
+                        <option value="DE">DE</option>
+                        <option value="FI">FI</option>
+                        <option value="NO">NO</option>
+                        <option value="THB">THB</option>
+                        <option value="VN">VN</option>
                     </select>
                 </div>
             </div>
@@ -50,7 +53,7 @@
                 <div class="col-md-7">
                     <div class="role-title" style="font-size: 0.9em; padding-bottom:5px;">FIND A USER</div>
                         <div class="input-group">
-                            <input type="text" id="search" class="form-control" placeholder="Enter member ID, name, phone or email" >
+                            <input type="text" id="search" class="form-control" placeholder="Enter username or name" >
                             <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
                         </div>
                     </div>
@@ -62,7 +65,7 @@
     <table id="user-group-table" style="width: 100%; margin-top:30px; ">
         <thead>
             <tr>
-                <th class="role-title" style="width:3%">ALL</th>
+                <th class="role-title" style="width:4%">ALL<label class="checkboxIcon"><input class="form-check-input" type="checkbox" name="selectAll" id="selectAll"></label></th>
                 <th class="role-title">USERNAME</th>
                 <th class="role-title">NAME</th>
                 <th class="role-title">DEPARTMENT</th>
@@ -72,7 +75,19 @@
             </tr>
         </thead>
         <tbody id='user_list_tbody'>
-            <tr>    
+            {% for user in userPermissionList %}
+                <tr>    
+                    <td style="text-align:center"><div class="form-check form-check-inline checkboxIcon"><input class="form-check-input" type="checkbox" name="selectAll" id="select_{{ user.userId }}"></div></td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.department }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.ibetMarkets }}</td>
+                    <td>{{ user.letouMarkets }}</td>
+                    <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
+                </tr>
+            {% endfor %}
+            <!-- <tr>    
                 <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllnoAccess" value="no"></div></td>
                 <td>jwoo</td>
                 <td>John Woo</td>
@@ -81,17 +96,7 @@
                 <td>CNY, THB, VN</td>
                 <td>CNY, THB, VN</td>
                 <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
-            </tr>
-            <tr>    
-                <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllnoAccess" value="no"></div></td>
-                <td>jwoo</td>
-                <td>John Woo</td>
-                <td>Customer service</td>
-                <td>CS agent</td>
-                <td>CNY, THB, VN</td>
-                <td>CNY, THB, VN</td>
-                <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
-            </tr>
+            </tr> -->
         </tbody>
     </table>
 
@@ -125,8 +130,12 @@
                                     <input type="text" class="form-control" style="width:50%;" id="phone" name="phone">
                                 </div>
                                 <div class="form-div">
-                                    <label class="role-title">NAME</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="name" name="name">
+                                    <label class="role-title">FIRST NAME</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="first_name" name="first_name">
+                                </div>
+                                <div class="form-div">
+                                    <label class="role-title">LAST NAME</label>
+                                    <input type="text" class="form-control" style="width:50%;" id="last_name" name="last_name">
                                 </div>
                                 <div class="form-div">
                                     <label class="role-title">DEPARTMENT</label>
@@ -152,48 +161,52 @@
                                 <div class="row">
                                     <div class="col-md-6 ibetMarkets" >
                                         <div>ibet</div>
-                                        <input type="radio" name="ibetAll" value="all"><label>ALL</label>
-                                        <!-- <input type="hidden" name="margets" value=""> -->
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div>
-                                                    <input type="radio" name="ibetCNY" id="ibetCNY" value="CNY"><label>CNY</label></input>
+                                        <div style="margin-top: 15px">
+                                            <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:10%">ALL</label>
+                                            <!-- <input type="hidden" name="margets" value=""> -->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="ibetCNY" id="ibetCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetDE" id="ibetDE" value="DE"><img src="{{STATIC_URL}}images/germany.png" alt="germany" class="flag-icon"><label style="margin-left:10%;">DE</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetFI" id="ibetFI" value="FI"><img src="{{STATIC_URL}}images/finland.png" alt="finland" class="flag-icon"><label style="margin-left:10%;">FI</label></input>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <input type="radio" name="ibetDE" id="ibetDE" value="DE"><label>DE</label></input>
-                                                </div>
-                                                <div>
-                                                    <input type="radio" name="ibetFI" id="ibetFI" value="FI"><label>FI</label></input>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div>
-                                                    <input type="radio" name="ibetNO" id="ibetNO" value="NO"><label>NO</label></input>
-                                                </div>
-                                                <div>
-                                                    <input type="radio" name="ibetTHB" id="ibetTHB" value="THB"><label>THB</label></input>
-                                                </div>
-                                                <div>
-                                                    <input type="radio" name="ibetVN" id="ibetVN" value="VN"><label>VN</label></input> 
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="ibetNO" id="ibetNO" value="NO"><img src="{{STATIC_URL}}images/norway.png" alt="norway" class="flag-icon"><label style="margin-left:10%;">NO</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetTHB" id="ibetTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetVN" id="ibetVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input> 
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6 letouMarkets">
                                         <div>Letou</div>
-                                        <input type="radio" name="letouAll" value="all"><label>ALL</label>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div>
-                                                    <input type="radio" name="letouCNY" id="letouCNY" value="CNY"><label>CNY</label></input>
+                                        <div style="margin-top: 15px">
+                                            <input type="checkbox" name="letouAll" value="all"><label style="margin-left:10%">ALL</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="letouCNY" id="letouCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="letouVN" id="letouVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <input type="radio" name="letouVN" id="letouVN" value="VN"><label>VN</label></input>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div>
-                                                    <input type="radio" name="letouTHB" id="letouTHB" value="THB"><label>THB</label></input>
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="letouTHB" id="letouTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -210,33 +223,43 @@
                 </div>
             </div>
         </div> 
-    <!-- <form action="{% url 'xadmin:permission_group' %}" method="POST" id="permissionForm">
-        {% csrf_token %}
-        <input type="hidden" id="permission_type" name="permission_type" value="permissionGroup"></input>
-        <div class="row">
-            <label for="groupName" class="col-sm-2 col-form-label">Group name</label>
-            <div class="col-sm-10">
-            <input type="text" class="form-control" name="groupName" id="groupName" placeholder="Group name....">
-            </div>
-        </div>
-        <div class="row" style="margin-top:30px;">
-            <label for="adminUser" class="col-sm-2 col-form-label">User</label>
-            <div class="col-sm-10">
-            <input type="hidden" id="hidden_permission_user" name="hidden_permission_user" value="[]"></input>
-            <input type="text" class="form-control" id="adminUser" placeholder="Choose admin user....">
-            </div>
-        </div>
-        <fieldset class="">
-            <div class="row" style="margin-top:30px;">
-                <label for="permission" class="col-sm-2 col-form-label">Permission</label>
-                <div class="col-sm-10">
-                    <input type="hidden" id="hidden_permission_code" name="hidden_permission_code" value="[]"></input>
-                    <input type="text" class="form-control" id="permission" placeholder="Choose permission...">
+        <div class="row user-list-control-group">
+            <!-- <div class="bottom-align-text"> -->
+            <div class='col-md-9' style="margin-right: 70px">
+                <div>
+                    <button type="button" class="btn btn-primary" id="changeAccess">Change access</button>
+                    <button type="button" class="btn btn-danger" id="deleteUser" disabled onclick="deleteUser()"><i class="far fa-trash-alt" style="margin-right: 5%"></i>Delete users</button>
                 </div>
             </div>
-        </fieldset>
-        <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px;">Submit</button>
-    </form> -->
+            <div class='col-md-1' style="width:10%">
+                <div>SHOW ROWS</div>
+                <select id="pagination_value"  class="form-control">
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="250">250</option>
+                </select>
+            </div>
+            <div class='col-md-1'>
+                <div>&nbsp;</div>
+                <ul class="pagination" style="margin:0px;">
+                    {% if isFirstPage is True %}
+                        <li class="page-item disabled" id='perviousPage'>
+                        <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                        </li>
+                    {% else %}
+                        <li class="page-item " id='perviousPage'>
+                            <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                        </li>
+                    {% endif %}
+                    {% if isLastPage is True %}
+                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                    {% else %}
+                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
@@ -249,6 +272,10 @@ $(document).ready(function() {
 
     $('#permissionForm').on('keypress', function(e) {
         return e.which !== 13;
+    });
+
+    $("#selectAll").click(function(){
+        $('input:checkbox').not(this).prop('checked', this.checked);
     });
 
     // user tagsinput
@@ -280,14 +307,14 @@ $(document).ready(function() {
         permissionUsers = JSON.parse(permissionUsers);
         permissionUsers.push(event.item.id);
         $('#hidden_permission_user').val(JSON.stringify(permissionUsers));
-        console.log(permissionUsers);
+        // console.log(permissionUsers);
     });
      $('#adminUser').on('itemRemoved', function(event) {
         var permissionUsers = $('#hidden_permission_user').val();
         permissionUsers = JSON.parse(permissionUsers);
         array = removeByIndex(permissionUsers, event.item.id);
         $('#hidden_permission_user').val(JSON.stringify(array));
-        console.log("user: " + $('#hidden_permission_user').val());
+        // console.log("user: " + $('#hidden_permission_user').val());
     });
 
     // permission code tagsinput
@@ -317,47 +344,191 @@ $(document).ready(function() {
         permissionCodes = JSON.parse(permissionCodes);
         permissionCodes.push(event.item.value);
         $('#hidden_permission_code').val(JSON.stringify(permissionCodes));
-        console.log(permissionCodes);
+        // console.log(permissionCodes);
     });
      $('#permission').on('itemRemoved', function(event) {
         var permissionCodes = $('#hidden_permission_code').val();
         permissionCodes = JSON.parse(permissionCodes);
         array = removeByIndex(permissionCodes, event.item.value);
         $('#hidden_permission_code').val(JSON.stringify(array));
-        console.log($('#hidden_permission_code').val());
+        // console.log($('#hidden_permission_code').val());
     });
 
-    var check;
+    // var check;
 
-    $('input[type="radio"]').hover(function() {
-        check = $(this).is(':checked');
+    // $('input[type="checkbox"]').hover(function() {
+    //     check = $(this).is(':checked');
+    // });
+
+    // $('input[type="checkbox"]').click(function() {
+    //     check = !check;
+    //     $(this).attr("checked", check);
+    // });
+
+    var paramsMap = {
+        'department': '',
+        'role': '',
+        'market': '',
+        'search': '',
+        'pageSize': 20,
+        'offset': 0
+    };
+
+    var parsedUrl = new URL(window.location.href);
+    if (parsedUrl.searchParams.get("department") !== null) {
+        paramsMap['department'] = parsedUrl.searchParams.get("department");
+    }
+    if (parsedUrl.searchParams.get("role") !== null) {
+        paramsMap['role'] = parsedUrl.searchParams.get("role");
+    }
+    if (parsedUrl.searchParams.get("search") !== null) {
+        paramsMap['search'] = parsedUrl.searchParams.get("search");
+    }
+    if (parsedUrl.searchParams.get("market") !== null) {
+        paramsMap['market'] = parsedUrl.searchParams.get("market");
+    }
+    if (parsedUrl.searchParams.get("pageSize") !== null) {
+        paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
+    }
+    if (parsedUrl.searchParams.get("offset") !== null) {
+        paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
+    }
+
+    $('#pagination_value').val(paramsMap['pageSize']);
+    if (paramsMap['department'] == '') {
+        $('#departmentSelect').val('ALL');
+    } else {
+        $('#departmentSelect').val(paramsMap['department']);
+    }
+
+    if (paramsMap['role'] == '') {
+        $('#roleSelect').val('ALL');
+    } else {
+        $('#roleSelect').val(paramsMap['role']);
+    }
+
+    if (paramsMap['market'] == '') {
+        $('#marketSelect').val('ALL');
+    } else {
+        $('#marketSelect').val(paramsMap['market']);
+    }
+        
+    $('#pagination_value').on('change', function() {
+        var pageSize = $("#pagination_value").val();;
+        var department = paramsMap['department'];
+        var role = paramsMap['role'];
+        var market = paramsMap['market'];
+        var search = paramsMap['search'];
+       
+    //    console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, 0, department, role, market, search);
+        // console.log("pagination change");
+        // console.log( getUserListRedirectUrl(pageSize, 0, department, role, market, search));
     });
 
-    $('input[type="radio"]').click(function() {
-        check = !check;
-        $(this).attr("checked", check);
+    $('#departmentSelect').on('change', function() {
+        var pageSize = paramsMap['pageSize'];
+        var department = $('#departmentSelect').val();
+        if (department == 'ALL') {
+            department = '';
+        }
+        var role = paramsMap['role'];
+        var market = paramsMap['market'];
+        var search = paramsMap['search'];
+       
+    //    console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, 0, department, role, market, search);
+        // console.log("department select");
+        // console.log( getUserListRedirectUrl(pageSize, 0, department, role, market, search));
     });
 
+    $('#roleSelect').on('change', function() {
+        var pageSize = paramsMap['pageSize'];
+        var role = $('#roleSelect').val();
+        if (role == 'ALL') {
+            role = '';
+        }
+        var department = paramsMap['department'];
+        var market = paramsMap['market'];
+        var search = paramsMap['search'];
+       
+    //    console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, 0, department, role, market, search);
+        // console.log("department select");
+        // console.log( getUserListRedirectUrl(pageSize, 0, department, role, market, search));
+    });
+
+    $('#marketSelect').on('change', function() {
+        var pageSize = paramsMap['pageSize'];
+        var market = $('#marketSelect').val();
+        if (market == 'ALL') {
+            market = '';
+        }
+        var department = paramsMap['department'];
+        var role = paramsMap['role'];
+        var search = paramsMap['search'];
+       
+    //    console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, 0, department, role, market, search);
+        // console.log("department select");
+        // console.log( getUserListRedirectUrl(pageSize, 0, department, role, market, search));
+    });
+
+    getNext = function() {
+        if ($('#nextPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        var newFromItem = Number(oldFromItem) + Number(pageSize);
+        var department = paramsMap['department'];
+        var role = paramsMap['role'];
+        var market = paramsMap['market'];
+        var search = paramsMap['search'];
+    
+        // console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, department, role, market, search);
+    }
+
+    getPervious = function () {
+        if ($('#perviousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        var newFromItem = Number(oldFromItem) - Number(pageSize);
+        var department = paramsMap['department'];
+        var role = paramsMap['role'];
+        var market = paramsMap['market'];
+        var search = paramsMap['search'];
+       
+        // console.log(getUserListRedirectUrl(pageSize, 0));
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, department, role, market, search);
+    }
+
+    $("input[type=checkbox]").on('change', function () {
+        $('#deleteUser').removeAttr('disabled');
+    });
 
     $("#newUserForm").submit(function(e) {
 
         e.preventDefault(); // avoid to execute the actual submit of the form.
         var form = $(this);
         var url = form.attr('action');
-        console.log(url);        
+        // console.log(url);        
         var ibetMarkets = [];
         var letouMarkets = [];
-        $(".ibetMarkets input[type='radio']:checked").each(function(i) {
+        $(".ibetMarkets input[type='checkbox']:checked").each(function(i) {
             // console.log($(this).val());
             ibetMarkets.push($(this).val());
         });
-        $(".letouMarkets input[type='radio']:checked").each(function(i) {
+        $(".letouMarkets input[type='checkbox']:checked").each(function(i) {
             // console.log($(this).val());
             letouMarkets.push($(this).val());
         });
         // console.log(markets);
         var data = form.serialize() + "&ibetMarkets=" + ibetMarkets + "&letouMarkets=" + letouMarkets;
-        console.log(data);
+        // console.log(data);
        
         $.ajax({
             type: "POST",
@@ -399,9 +570,54 @@ function searchOpen() {
         async: false,
         dataType: 'json'
     }).responseJSON;
-    console.log(data);
+    // console.log(data);
     return data;
-};
+}
+
+function getUserListRedirectUrl(pageSize, offset, department, role, market, search) {
+    var curUrl = window.location.href;
+    var parts = curUrl.split('?');
+    
+    var redirectUrl = parts[0]; 
+    redirectUrl += "?pageSize=" + pageSize;
+    redirectUrl += '&offset=' + offset;
+    redirectUrl += '&department=' + department;
+    redirectUrl += '&role=' + role;
+    redirectUrl += '&market=' + market;
+    redirectUrl += '&search=' + search;
+    return redirectUrl;
+}
+
+function deleteUser() {
+    var deleteUsers = [];
+    $("input[type=checkbox]:checked").each(function () {
+        var self = $(this);
+        var id = self.attr('id');
+        var splitArr = id.split('_');
+        deleteUsers.push(splitArr[1]);
+    });
+    console.log(deleteUsers);
+    deleteUsers = JSON.stringify(deleteUsers);
+    $.ajax({
+        type: "POST",
+        url: "{% url 'xadmin:permission_group' %}",
+        data: {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "type": "delete_admin_user",
+            "userIds": deleteUsers,
+        },
+        success: function(data)
+        {
+            console.log(data);
+            // if (data.code === 1) {
+            //     $('#errorMessage').text(data.message); 
+            //     $('#errorMessage').css('color', 'red'); 
+            // } else {
+            //     window.location.reload();
+            // }
+        }
+    });
+}
 
 </script>
 
