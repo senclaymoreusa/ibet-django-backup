@@ -10,14 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os, boto3, json, logging, datetime
+import os
+import boto3
+import json
+import logging
+import datetime
+import sys
+
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger('django')
-
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print("[" + str(datetime.datetime.now()) + "] Trying to load environment variables...")
-if os.path.exists("/tmp/ibetenv/.env"):
+if os.path.exists("/tmp/ibetenv/.env") or os.path.exists(BASE_DIR+"/.env"):
     print("[" + str(datetime.datetime.now()) + "] .env file found!")
 else:
     print("[" + str(datetime.datetime.now()) + "] No .env file was found")
@@ -27,6 +35,7 @@ if "ENV" in os.environ:
     print("[" + str(datetime.datetime.now()) + "] Environment is: " + os.getenv("ENV"))
 else:
     print("[" + str(datetime.datetime.now()) + "] Environment not specified!")
+
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
@@ -42,10 +51,9 @@ def getKeys(bucket, file):
     
     return config
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -64,15 +72,13 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
 # CORS_ORIGIN_ALLOW_ALL=True     # Stephen
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
-CRSF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 
 
-import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
 sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
@@ -255,7 +261,7 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
 
-from django.utils.translation import ugettext_lazy as _
+
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
@@ -311,28 +317,39 @@ if os.getenv("ENV") == "local":
         'disable_existing_loggers': False,
         'formatters': {
             'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
+                'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
             },
             'simple': {
                 'format': '%(levelname)s %(message)s'
             },
         }, 
         'handlers': {
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.handlers.TimedRotatingFileHandler',
-                'filename': 'logs/debug.log',
-                'when': 'midnight', # Log file rollover at midnight
-                'interval': 1, # Interval as 1 day
-                'backupCount': 10, # how many backup file to keep, 10 days
-                'formatter': 'verbose',
-            },
+            'file':
+                {
+                    'level': 'DEBUG',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/debug.log',
+                    'when': 'midnight', # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                },
+            'error':
+                {
+                    'level': 'ERROR',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/error.log',
+                    'when': 'midnight',  # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                }
         },
         'loggers': {
             'django': {
-                'handlers': ['file'],
-                'level': 'DEBUG',
+                'handlers': ['file', 'error'],
+                # 'level': 'DEBUG',
                 'propagate': True,
             },
         },
