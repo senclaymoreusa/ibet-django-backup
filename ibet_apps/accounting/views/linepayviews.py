@@ -1,8 +1,5 @@
 import os, requests, json, random, logging, time, boto3
-<<<<<<< HEAD
 
-=======
->>>>>>> 50e81a3044fd5c8361e5b1fc086dfb2628320955
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.utils import timezone
 from django.conf import settings
