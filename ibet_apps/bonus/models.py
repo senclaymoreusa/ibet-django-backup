@@ -60,3 +60,12 @@ class BonusRequirement(models.Model):
 
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
     requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE, verbose_name=_('Requirement'))
+
+# Mapping between Bonuses and Users
+# This is an m:n relationship
+class UserBonus(models.Model):
+
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, verbose_name=_('User'))
+    bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
+    start_time = models.DateTimeField('Start Time', blank=False)
+    is_successful = models.BooleanField(default=False)
