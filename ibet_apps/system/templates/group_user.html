@@ -53,7 +53,7 @@
                 <div class="col-md-7">
                     <div class="role-title" style="font-size: 0.9em; padding-bottom:5px;">FIND A USER</div>
                         <div class="input-group">
-                            <input type="text" id="search" class="form-control" placeholder="Enter username or name" >
+                            <input type="text" id="searchAdminUser" class="form-control" placeholder="Enter username or name" >
                             <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
     <table id="user-group-table" style="width: 100%; margin-top:30px; ">
         <thead>
             <tr>
-                <th class="role-title" style="width:4%">ALL<label class="checkboxIcon"><input class="form-check-input" type="checkbox" name="selectAll" id="selectAll"></label></th>
+                <th class="role-title" style="width:4%">ALL<label class="checkboxIcon"><input class="form-check-input" type="checkbox" id="selectAll"></label></th>
                 <th class="role-title">USERNAME</th>
                 <th class="role-title">NAME</th>
                 <th class="role-title">DEPARTMENT</th>
@@ -103,7 +103,7 @@
     <div class="modal fade" id="new_user" role="dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header" style="color:black; background-color:#f5f5f5; border-top-right-radius:6px; border-top-left-radius:6px; ">
+                    <div class="modal-header permission-dialog">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                         <h4 class="modal-title">Add new user</h4>
                     </div>
@@ -139,7 +139,6 @@
                                 </div>
                                 <div class="form-div">
                                     <label class="role-title">DEPARTMENT</label>
-                                    
                                     <select class="form-control" style="width:50%;" id="department" name="department">
                                         <option selected>ALL</option>
                                         {% for department in departments %}
@@ -156,13 +155,13 @@
                                     </select>
                                 </div>
                             </div>
-                            <div>
-                                <label>MARKETS</label>
-                                <div class="row">
-                                    <div class="col-md-6 ibetMarkets" >
-                                        <div>ibet</div>
-                                        <div style="margin-top: 15px">
-                                            <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:10%">ALL</label>
+                            <div class="form-div">
+                                <label class="role-title">MARKETS</label>
+                                <div class="row" style="margin-top: 10px">
+                                    <div class="col-md-6 ibetMarkets">
+                                        <label>ibet</label>
+                                        <div style="margin-top: 5px">
+                                            <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
                                             <!-- <input type="hidden" name="margets" value=""> -->
                                             <div class="row">
                                                 <div class="col-md-6">
@@ -191,9 +190,9 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6 letouMarkets">
-                                        <div>Letou</div>
-                                        <div style="margin-top: 15px">
-                                            <input type="checkbox" name="letouAll" value="all"><label style="margin-left:10%">ALL</label>
+                                        <label>Letou</label>
+                                        <div style="margin-top: 5px">
+                                            <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div>
@@ -227,7 +226,11 @@
             <!-- <div class="bottom-align-text"> -->
             <div class='col-md-9' style="margin-right: 70px">
                 <div>
-                    <button type="button" class="btn btn-primary" id="changeAccess">Change access</button>
+                    <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#changeAccess" data-myvalue="troudbal" data-bb="troudbal">
+                        Change access
+                    </button> -->
+                    <div>&nbsp;</div>
+                    <button type="button" class="btn btn-primary" id="changeAccessBtn" onclick="changeAccess()">Change access</button>
                     <button type="button" class="btn btn-danger" id="deleteUser" disabled onclick="deleteUser()"><i class="far fa-trash-alt" style="margin-right: 5%"></i>Delete users</button>
                 </div>
             </div>
@@ -260,11 +263,134 @@
                 </ul>
             </div>
         </div>
+
+        <div class="modal fade" id="changeAccess" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header permission-dialog">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Change user access</h4>
+                    </div>
+                    <form action="{% url 'xadmin:permission_group' %}" method="POST" id="updateUserForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="updateRole" id="updateRole"></input>
+                        <input type="hidden" name="updateUserIds" value="" id="updateUserIds"></input>
+                        <div class="modal-body">
+                            <table id="user-group-table" style="width: 100%">
+                                <thead>
+                                    <tr>
+                                        <th class="role-title">USERNAME</th>
+                                        <th class="role-title">NAME</th>
+                                        <th class="role-title"><span class="glyphicon glyphicon-search"></span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id='change_access_table'>
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.name }}</td>
+                                        <td>{{ user.name }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-div">
+                                        <label class="role-title">DEPARTMENT</label>
+                                        <select class="form-control" id="department" name="department">
+                                            <option selected>Change department</option>
+                                            {% for department in departments %}
+                                                <option value="{{ department.code }}">{{ department.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-div">
+                                        <label class="role-title">ROLE</label>
+                                        <select class="form-control" id="roleSelect" name="roleSelect">
+                                            <option selected>Change role</option>
+                                            {% for role in roles %}
+                                                <option value="{{ role.roleId }}">{{ role.roleName }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+
+                            <div class="form-div">
+                                <label class="role-title">MARKETS</label>
+                                <div class="row" style="margin-top: 10px">
+                                    <div class="col-md-6 ibetMarkets">
+                                        <label>ibet</label>
+                                        <div style="margin-top: 5px">
+                                            <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
+                                            <!-- <input type="hidden" name="margets" value=""> -->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="ibetCNY" id="ibetCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetDE" id="ibetDE" value="DE"><img src="{{STATIC_URL}}images/germany.png" alt="germany" class="flag-icon"><label style="margin-left:10%;">DE</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetFI" id="ibetFI" value="FI"><img src="{{STATIC_URL}}images/finland.png" alt="finland" class="flag-icon"><label style="margin-left:10%;">FI</label></input>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="ibetNO" id="ibetNO" value="NO"><img src="{{STATIC_URL}}images/norway.png" alt="norway" class="flag-icon"><label style="margin-left:10%;">NO</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetTHB" id="ibetTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="ibetVN" id="ibetVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input> 
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 letouMarkets">
+                                        <label>Letou</label>
+                                        <div style="margin-top: 5px">
+                                            <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="letouCNY" id="letouCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="letouVN" id="letouVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <input type="checkbox" name="letouTHB" id="letouTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <p id='updateErrorMessage'>&nbsp;</p>
+                            <button type="submit" id="updateButton" class="btn btn-primary submit-btn">Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>     
+        </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
 
 <script>
 
@@ -275,31 +401,31 @@ $(document).ready(function() {
     });
 
     $("#selectAll").click(function(){
-        $('input:checkbox').not(this).prop('checked', this.checked);
+        $('#user-group-table input:checkbox').not(this).prop('checked', this.checked);
     });
 
     // user tagsinput
-    var userData = searchOpen();
-    userData = JSON.stringify(userData);
+    // var userData = searchOpen();
+    // userData = JSON.stringify(userData);
     // console.log(userData);
 
-    var task = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        local: jQuery.parseJSON(userData) //your can use json type
-    });
-    task.initialize();
-    var elt = $("#adminUser");
-    elt.tagsinput({
-        allowDuplicates: false,
-        itemValue: "value",
-        itemText: "text",
-        typeaheadjs: {
-            name: "task",
-            displayKey: "text",
-            source: task.ttAdapter()
-        }
-    });
+    // var task = new Bloodhound({
+    //     datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
+    //     queryTokenizer: Bloodhound.tokenizers.whitespace,
+    //     local: jQuery.parseJSON(userData) //your can use json type
+    // });
+    // task.initialize();
+    // var elt = $("#adminUser");
+    // elt.tagsinput({
+    //     allowDuplicates: false,
+    //     itemValue: "value",
+    //     itemText: "text",
+    //     typeaheadjs: {
+    //         name: "task",
+    //         displayKey: "text",
+    //         source: task.ttAdapter()
+    //     }
+    // });
 
     $('#adminUser').on('beforeItemAdd', function(event) {
         // console.log(event.item.text);
@@ -318,25 +444,25 @@ $(document).ready(function() {
     });
 
     // permission code tagsinput
-    var permissionData = '[{ "value": 0, "text": "permission1", "continent": "PERMISSION" }, { "value": 1, "text": "permission2", "continent": "PERMISSION" }, { "value": 2, "text": "permission3", "continent": "PERMISSION" }, { "value": 3, "text": "permission4", "continent": "PERMISSION" }, { "value": 4, "text": "permission5", "continent": "PERMISSION" }]';
-     //get data pass to json
-    var taskCode = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        local: jQuery.parseJSON(permissionData) //your can use json type
-    });
-    taskCode.initialize();
-    var elt = $("#permission");
-    elt.tagsinput({
-        allowDuplicates: false,
-        itemValue: "value",
-        itemText: "text",
-        typeaheadjs: {
-            name: "task",
-            displayKey: "text",
-            source: taskCode.ttAdapter()
-        }
-    });
+    // var permissionData = '[{ "value": 0, "text": "permission1", "continent": "PERMISSION" }, { "value": 1, "text": "permission2", "continent": "PERMISSION" }, { "value": 2, "text": "permission3", "continent": "PERMISSION" }, { "value": 3, "text": "permission4", "continent": "PERMISSION" }, { "value": 4, "text": "permission5", "continent": "PERMISSION" }]';
+    //  //get data pass to json
+    // var taskCode = new Bloodhound({
+    //     datumTokenizer: Bloodhound.tokenizers.obj.whitespace("text"),
+    //     queryTokenizer: Bloodhound.tokenizers.whitespace,
+    //     local: jQuery.parseJSON(permissionData) //your can use json type
+    // });
+    // taskCode.initialize();
+    // var elt = $("#permission");
+    // elt.tagsinput({
+    //     allowDuplicates: false,
+    //     itemValue: "value",
+    //     itemText: "text",
+    //     typeaheadjs: {
+    //         name: "task",
+    //         displayKey: "text",
+    //         source: taskCode.ttAdapter()
+    //     }
+    // });
 
     $('#permission').on('beforeItemAdd', function(event) {
         // console.log(event.item.text);
@@ -506,8 +632,49 @@ $(document).ready(function() {
         window.location.href = getUserListRedirectUrl(pageSize, newFromItem, department, role, market, search);
     }
 
-    $("input[type=checkbox]").on('change', function () {
+    $(".user_list_tbody input[type=checkbox]").on('change', function () {
         $('#deleteUser').removeAttr('disabled');
+    });
+
+
+    // search part 
+
+    $("#searchAdminUser").on('keyup', function () {
+        if( this.value.length < 2 ) return;
+        // console.log("searching......");
+        searchOpen();
+    });
+
+    function searchOpen() {
+        var search = $('#searchAdminUser').val();
+        var url = "{% url 'get_admin_user' %}" + "?search=" + search;
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data) {
+                // console.log(data);
+                searchResult(data, search);
+            }
+        });
+    }
+
+    function searchResult(data, term) {
+    
+        $( "#searchAdminUser" ).autocomplete({
+            source: data,
+        });
+    }
+
+
+    $("#search-btn").click(function(){
+        var pageSize = paramsMap['pageSize'];
+        var search = $('#searchAdminUser').val();
+        var department = paramsMap['department'];
+        var role = paramsMap['role'];
+        var market = paramsMap['market'];
+
+        // console.log(getUserListRedirectUrl(pageSize, 0, department, role, market, search));
+        window.location.href = getUserListRedirectUrl(pageSize, 0, department, role, market, search);
     });
 
     $("#newUserForm").submit(function(e) {
@@ -518,11 +685,11 @@ $(document).ready(function() {
         // console.log(url);        
         var ibetMarkets = [];
         var letouMarkets = [];
-        $(".ibetMarkets input[type='checkbox']:checked").each(function(i) {
+        $("#newUserForm .ibetMarkets input[type='checkbox']:checked").each(function(i) {
             // console.log($(this).val());
             ibetMarkets.push($(this).val());
         });
-        $(".letouMarkets input[type='checkbox']:checked").each(function(i) {
+        $("#newUserForm .letouMarkets input[type='checkbox']:checked").each(function(i) {
             // console.log($(this).val());
             letouMarkets.push($(this).val());
         });
@@ -546,8 +713,45 @@ $(document).ready(function() {
         });
     });
 
+    $("#updateUserForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = form.attr('action');
+        // console.log(url);        
+        var ibetMarkets = [];
+        var letouMarkets = [];
+        $("#updateUserForm .ibetMarkets input[type='checkbox']:checked").each(function(i) {
+            // console.log($(this).val());
+            ibetMarkets.push($(this).val());
+        });
+        $("#updateUserForm .letouMarkets input[type='checkbox']:checked").each(function(i) {
+            // console.log($(this).val());
+            letouMarkets.push($(this).val());
+        });
+        // console.log(markets);
+        var data = form.serialize() + "&ibetMarkets=" + ibetMarkets + "&letouMarkets=" + letouMarkets;
+        // console.log(data);
+        // console.log(data);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function(data)
+            {
+                // console.log(data);
+                if (data.code === 1) {
+                    $('#updateErrorMessage').text(data.message); 
+                    $('#updateErrorMessage').css('color', 'red'); 
+                } else {
+                    window.location.reload();
+                }
+            }
+        });
+    });
     
 });
+
 
 // function sumbitForm() {
 //     $("#permissionForm").submit(function(){
@@ -560,19 +764,19 @@ function removeByIndex(array, index){
     });
 }
 
-function searchOpen() {
-    var tmp = null;
-    var search = $('#adminUser').val();
-    var url = "{% url 'get_admin_user' %}";
-    var data = $.ajax({
-        url: url,
-        type: 'GET',
-        async: false,
-        dataType: 'json'
-    }).responseJSON;
-    // console.log(data);
-    return data;
-}
+// function searchOpen() {
+//     var tmp = null;
+//     var search = $('#adminUser').val();
+//     var url = "{% url 'get_admin_user' %}";
+//     var data = $.ajax({
+//         url: url,
+//         type: 'GET',
+//         async: false,
+//         dataType: 'json'
+//     }).responseJSON;
+//     // console.log(data);
+//     return data;
+// }
 
 function getUserListRedirectUrl(pageSize, offset, department, role, market, search) {
     var curUrl = window.location.href;
@@ -596,7 +800,7 @@ function deleteUser() {
         var splitArr = id.split('_');
         deleteUsers.push(splitArr[1]);
     });
-    console.log(deleteUsers);
+    // console.log(deleteUsers);
     deleteUsers = JSON.stringify(deleteUsers);
     $.ajax({
         type: "POST",
@@ -608,16 +812,87 @@ function deleteUser() {
         },
         success: function(data)
         {
-            console.log(data);
-            // if (data.code === 1) {
-            //     $('#errorMessage').text(data.message); 
-            //     $('#errorMessage').css('color', 'red'); 
-            // } else {
-            //     window.location.reload();
-            // }
+            window.location.reload();
         }
     });
 }
+
+function changeAccess() {
+    var changeAccessUserIds = [];
+    $("#user-group-table input[type=checkbox]:checked").each(function () {
+        var self = $(this);
+        var id = self.attr('id');
+        if (id !== "selectAll") {
+            var splitArr = id.split('_');
+            changeAccessUserIds.push(splitArr[1]);
+        }
+    });
+    changeAccessUserIdsStr = JSON.stringify(changeAccessUserIds);
+    if (changeAccessUserIds.length > 0) {
+        $("#updateUserIds").val(changeAccessUserIds);
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'xadmin:permission_group' %}",
+            data: {
+                'type': 'get_select_admin_id',
+                'userIds': changeAccessUserIdsStr
+            },
+            success: function(data) {
+                // console.log(data);
+                // $("#change_access_table").empty();
+                
+            }
+        }).done(function(res) {
+
+            console.log(res.data);
+            var res = res.data;
+            // $('#changeAccess').on('show.bs.modal', function(e) {
+                $("#change_access_table").empty();
+                // var modal = $(this);
+                // console.log(modal);
+                var content = '';
+                for (var i = 0; i < res.length; i++) {
+
+                    content += '<tr>';
+                    content += '<td>' + res[i].username + '</td>';
+                    content += '<td>' + res[i].name + '</td>';
+                    content += '<td>455</td>';
+                    content += '</tr>';
+
+                }
+                
+                
+                // modal.find('#change_access_table').html(content);
+                // $("#change_access_table").append("<tr><td>New account</td></tr>");     
+                $("#change_access_table").append(content);            
+            // });
+            $('#changeAccess').modal({'show' : true});
+
+        });
+
+        
+    } else {
+        alert("you have to select a user");
+    }
+}
+
+
+// function searchOpen() {
+//     var search = $('#search').val();
+//     var url = "{% url 'get_admin_user' %}" + "?search=" + search;
+//     $.ajax({
+//         url: url,
+//         type: 'GET',
+//         success: function (data) {
+//             console.log(data);
+//             // searchResult(data, search);
+//         },
+//         error: function () {
+//             // console.log('error');
+//         }
+
+//     });
+// }
 
 </script>
 

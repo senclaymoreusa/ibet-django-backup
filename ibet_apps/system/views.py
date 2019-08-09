@@ -22,13 +22,29 @@ logger = logging.getLogger('django')
 # Create your views here.
 class PermissionGroupView(CommAdminView): 
     def get(self, request):
-
-        search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
         department = request.GET.get('department')
         role = request.GET.get('role')
         market = request.GET.get('market')
+        search = request.GET.get('search')
+        getType = request.GET.get('type')
+
+        if getType == 'get_select_admin_id':
+            userIds = request.GET.get('userIds')
+            userIds = json.loads(userIds)
+            # print(userIds)
+            response = []
+            for userId in userIds:
+                customUsers = CustomUser.objects.get(pk=userId)
+                userMap = {
+                    'username': customUsers.username,
+                    'name': customUsers.first_name + customUsers.last_name,
+                    'userId': customUsers.pk
+                }
+                response.append(userMap)
+        
+            return JsonResponse({"data": response})
 
         # print(search, pageSize, offset, department, role, market)
 
@@ -66,6 +82,11 @@ class PermissionGroupView(CommAdminView):
         adminUsers = CustomUser.objects.filter(is_admin=True)[offset:offset+pageSize]
         
         filter = Q(is_admin=True)
+
+        print(str(search))
+        if search:
+            filter &= (Q(username__icontains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
+
         if department:
             filter &= (
                 Q(department=department)
@@ -143,7 +164,7 @@ class PermissionGroupView(CommAdminView):
 
         post_type = request.POST.get('type')
         if post_type == 'createUser':
-            print("!!!!!")
+            # print("!!!!!")
             username = request.POST.get('username')
             password = request.POST.get('password')
             email = request.POST.get('email')
@@ -189,16 +210,46 @@ class PermissionGroupView(CommAdminView):
             group = UserGroup.objects.get(pk=roleId)
             UserToUserGroup.objects.create(group=group, user=user)
 
-            return JsonResponse({ "code": 0, "message": "sucess created a new role"})
+            return JsonResponse({ "code": 0, "message": "success created a new role"})
 
         if post_type == 'delete_admin_user':
             deleteUserIds = request.POST.get('userIds')
             deleteUserIds = json.loads(deleteUserIds)
-            print(deleteUserIds)
+            # print(deleteUserIds)
             for userId in deleteUserIds:
                 CustomUser.objects.filter(pk=userId).delete()
 
-            return JsonResponse({ "code": 0, "message": "sucess delete users"})
+            return JsonResponse({ "code": 0, "message": "success delete users"})
+
+        if post_type == 'updateRole':
+            changeAccessUserIds = request.POST.get('updateUserIds')
+            changeAccessUserIds = changeAccessUserIds.split(',')
+            role = request.POST.get('roleSelect')
+            departmentId = request.POST.get('department')
+            ibetMarkets = request.POST.get('ibetMarkets')
+            if ibetMarkets:
+                ibetMarketsList = ibetMarkets.split(',')
+            letouMarkets = request.POST.get('letouMarkets')
+            if letouMarkets:
+                letouMarketsList = letouMarkets.split(',')
+            
+            if not changeAccessUserIds or not role or not departmentId or not ibetMarkets or not letouMarkets:
+                return JsonResponse({ "code": 1, "message": "invalid data"})
+
+            # print(changeAccessUserIds, role, departmentId, ibetMarketsList, letouMarketsList)
+
+
+            for userId in changeAccessUserIds:
+                user = CustomUser.objects.get(pk=userId)
+                user.letouMarkets = letouMarkets
+                user.ibetMarkets = ibetMarkets
+                user.department = departmentId
+                user.save()
+                # .update(letouMarkets=letouMarkets, ibetMarkets=ibetMarkets)
+                group = UserGroup.objects.get(pk=role)
+                UserToUserGroup.objects.filter(user=user).update(group=group)
+
+            return JsonResponse({ "code": 0, "message": "success update users role"})
         # groupName = request.POST.get('groupName')
         # users = request.POST.get('hidden_permission_user')
         # permissionCode = request.POST.get('hidden_permission_code')
@@ -408,7 +459,7 @@ class PermissionRoleView(CommAdminView):
 
                 permissions = PermissionGroup.objects.bulk_create(objs)
                 logger.info("Successfully created all the permissions")
-                return JsonResponse({ "code": 0, "message": "sucess"})
+                return JsonResponse({ "code": 0, "message": "success"})
                 # print(str(permissions))
             else:
                 logger.info("The group name" + str(groupName) + " already exsit")
@@ -432,26 +483,25 @@ class PermissionRoleView(CommAdminView):
                 ]
                 permissions = PermissionGroup.objects.bulk_create(objs)
             logger.info("Successfully updated all the permissions")
-            return JsonResponse({ "code": 0, "message": "sucess updated"})
+            return JsonResponse({ "code": 0, "message": "success updated"})
         
-
-
 
 
 class GetAdminUser(View):
 
     def get(self, request):
+        search = request.GET.get('search')
         i = 0
-        adminUser = CustomUser.objects.filter(is_staff=1)
+        adminUser = CustomUser.objects.filter(Q(is_staff=1)&(Q(username__icontains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search)))
         # print(str(adminUser))
         array = []
         for user in adminUser:
             response = {}
-            response['value'] = i
-            response['id'] = str(user.pk)
-            response['text'] = str(user.username)
-            response['continent'] = "PERMISSION"
-            i += 1
-            array.append(response)
+            # response['value'] = i
+            # response['id'] = str(user.pk)
+            response['username'] = str(user.username)
+            # response['continent'] = "PERMISSION"
+            # i += 1
+            array.append(str(user.username))
         
         return HttpResponse(json.dumps(array), content_type='application/json')
