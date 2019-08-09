@@ -17,3 +17,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 from utils.constants import *
 from ..models import Transaction
+
+
+def verify_user(request):
+    if request.method == "POST":
+        print("Hi")
+
+        return JsonResponse({
+
+        })

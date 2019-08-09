@@ -11,6 +11,7 @@ import accounting.views.help2payviews as help2pay
 import accounting.views.circlepayviews as circlepay
 import accounting.views.payzodviews as payzod
 import accounting.views.fgateviews as fgate
+import accounting.views.paymentiqviews as paymentiq
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name='deposit_method'),
@@ -55,5 +56,7 @@ urlpatterns = [
     path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction"),
     path('api/payzod/deposit', csrf_exempt(payzod.get_qr_code), name="Payzod_Deposit"),
     path('api/payzod/confirm', csrf_exempt(payzod.confirm_payment), name="CirclePay_Confirm_Payment"),
-    path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status")
+    path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status"),
+
+    path('api/paymentiq/verifyUser', csrf_exempt(paymentiq.verify_user), name="Verify_PaymentIQ_User")
 ]
