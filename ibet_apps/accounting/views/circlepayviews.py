@@ -35,6 +35,7 @@ def create_deposit(request):
         amount = body["amount"]
         transaction_id = body["trans_id"]
 
+        print(request.user)
         user_id = CustomUser.objects.get(username=request.user.username)
         obj, created = Transaction.objects.get_or_create(
             user_id=user_id,

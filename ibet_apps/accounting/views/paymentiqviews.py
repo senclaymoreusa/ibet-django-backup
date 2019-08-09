@@ -26,3 +26,4 @@ def verify_user(request):
         return JsonResponse({
 
         })
+
