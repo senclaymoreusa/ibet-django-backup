@@ -13,8 +13,6 @@ from users.models import (
     CustomUser,
 )
 
-from utils.constants import CURRENCY_CHOICES, TRANSACTION_TYPE_CHOICES
-
 import json
 
 # Test Accounting Model
