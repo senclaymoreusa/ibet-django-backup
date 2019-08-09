@@ -116,7 +116,7 @@ class getDepositMethod(generics.GenericAPIView):
         for x in responseJson:
             print(x)
             depositData = {
-                "thridParty_name": QAICASH_NAME, # third party name is hard-fixed to match the channel choice in models
+                "thirdParty_name": QAICASH_NAME, # third party name is hard-fixed to match the channel choice in models
                 "method": x['method'],
                 "currency": currency,
                 "min_amount": x['limits'].get('minTransactionAmount'),
@@ -247,7 +247,7 @@ class getBankLimits(generics.GenericAPIView):
             
         # save a single bank limit into the database...?
         depositData = {
-            "thridParty_name": QAICASH_NAME,
+            "thirdParty_name": QAICASH_NAME,
             "method": method,
             "currency": currency,
             "min_amount":data["minTransactionAmount"],
@@ -736,7 +736,7 @@ class payoutMethod(generics.GenericAPIView):
                 if x['limits'].get('currency') == y[1]:
                     cur_val = y[0]
             create = WithdrawChannel.objects.get_or_create(
-            thridParty_name= 3,
+            thirdParty_name= 3,
             method=x['method'],
             currency=cur_val,
             min_amount=x['limits'].get('minTransactionAmount'),
@@ -825,7 +825,7 @@ class getPayoutBankLimits(generics.GenericAPIView):
                     cur_val = x[0]
 
             create = WithdrawChannel.objects.save(
-                thridParty_name= 3,
+                thirdParty_name= 3,
                 method= method,
                 currency= cur_val,
                 min_amount=data['minTransactionAmount'],
