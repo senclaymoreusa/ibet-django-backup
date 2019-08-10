@@ -38,6 +38,9 @@ CHANNEL_CHOICES = (
     (7, 'CirclePay'),
     (8, 'Fgate')
 )
+
+currency_cny = 0
+
 CURRENCY_CHOICES = (
     (0, 'CNY'),
     (1, 'USD'),

@@ -13,7 +13,7 @@ from users.models import (
     CustomUser,
 )
 
-from utils.constants import transaction_deposit, transaction_withdrawl
+from utils.constants import transaction_deposit, transaction_withdrawl, currency_cny
 
 import json
 
@@ -75,7 +75,7 @@ class AccountingModelTest(TestCase):
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
             transaction_type=transaction_deposit,
-            currency=0,
+            currency=currency_cny,
             method="test_method",
             remark="test_remark",
         )
@@ -86,7 +86,7 @@ class AccountingModelTest(TestCase):
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
             transaction_type=transaction_withdrawl,
-            currency=0,
+            currency=currency_cny,
             method="test_method",
             remark="test_remark",
         )
