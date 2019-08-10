@@ -78,6 +78,9 @@ DEPOSIT_METHOD_CHOICES = (
     (5, "IBT")
 )
 
+transaction_deposit = 0
+transaction_withdrawl = 1
+
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),
     (1, 'Withdrawal'),

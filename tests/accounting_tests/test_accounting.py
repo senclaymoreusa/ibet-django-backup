@@ -13,6 +13,8 @@ from users.models import (
     CustomUser,
 )
 
+from utils.constants import transaction_deposit, transaction_withdrawl
+
 import json
 
 # Test Accounting Model
@@ -68,29 +70,27 @@ class AccountingModelTest(TestCase):
     #     self.assertEqual(user.main_wallet, 100)
 
     # create transaction from backend model
-    # def test_create_deposit_transaction_from_admin(self):
-    #     deposit_transaction = Transaction.objects.create(
-    #         transaction_id=0,
-    #         user_id=CustomUser.objects.get(id=1), 
-    #         amount=100, 
-    #         transaction_type=list(TRANSACTION_TYPE_CHOICES)[0],
-    #         currency=list(CURRENCY_CHOICES)[0],
-    #         method="test_method",
-    #         remark="test_remark",
-    #     )
-    #     self.assertEqual(Transaction.objects.filter(transaction_type=0).count(), 1) 
+    def test_create_deposit_transaction_from_admin(self):
+        deposit_transaction = Transaction.objects.create(
+            user_id=CustomUser.objects.get(id=1), 
+            amount=100, 
+            transaction_type=transaction_deposit,
+            currency=0,
+            method="test_method",
+            remark="test_remark",
+        )
+        self.assertEqual(Transaction.objects.filter(transaction_type=transaction_deposit).count(), 1) 
     
-    # def test_create_withdraw_transaction_from_admin(self):
-    #     deposit_transaction = Transaction.objects.create(
-    #         transaction_id=0,
-    #         user_id=CustomUser.objects.get(id=1), 
-    #         amount=100, 
-    #         transaction_type=list(TRANSACTION_TYPE_CHOICES)[0],
-    #         currency=list(CURRENCY_CHOICES)[0],
-    #         method="test_method",
-    #         remark="test_remark",
-    #     )
-    #     self.assertEqual(Transaction.objects.filter(transaction_type=1).count(), 1)
+    def test_create_withdraw_transaction_from_admin(self):
+        deposit_transaction = Transaction.objects.create(
+            user_id=CustomUser.objects.get(id=1), 
+            amount=100, 
+            transaction_type=transaction_withdrawl,
+            currency=0,
+            method="test_method",
+            remark="test_remark",
+        )
+        self.assertEqual(Transaction.objects.filter(transaction_type=transaction_withdrawl).count(), 1)
     
     # create deposit channel from backend model
     def test_create_deposit_channel(self):
