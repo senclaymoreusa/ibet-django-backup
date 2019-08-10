@@ -667,7 +667,6 @@ class AddOrWithdrawBalance(APIView):
                 transaction_type=1,
                 currency=0,
             )
-            print(create)
 
             # action = UserAction(
             #     user= CustomUser.objects.filter(username=username).first(),
