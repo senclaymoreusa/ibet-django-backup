@@ -472,6 +472,50 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_EMAIL, 'email')
 )
 
+MARKET_OPTIONS = {
+    'ibetMarket_options': [
+        {
+            'code': 'CNY',
+            'name': 'china',
+        },
+        {
+            'code': 'DE',
+            'name': 'germany',
+        },
+        {
+            'code': 'FI',
+            'name': 'finland',
+        },
+        {
+            'code': 'NO',
+            'name': 'norway',
+        },
+        {
+            'code': 'THB',
+            'name': 'thailand',
+        },
+        {
+            'code': 'VN',
+            'name': 'vietnam',
+        }
+    ],
+    'letouMarket_options': [
+        {
+            'code': 'CNY',
+            'name': 'china',
+        },
+        {
+            'code': 'THB',
+            'name': 'thailand',
+        },
+        {
+            'code': 'VN',
+            'name': 'vietnam',
+        }
+    ]
+}
+
+
 
 DEPARTMENT_LIST = [
     {

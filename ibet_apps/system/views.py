@@ -67,14 +67,15 @@ class PermissionGroupView(CommAdminView):
         roles = serializers.serialize('json', roles)
         roles = json.loads(roles)
         dataResponse = []
-        for role in roles:
+        for r in roles:
             rolesResponse = {
-                'roleName': role['fields']['name'],
-                'roleId': role['pk']
+                'roleName': r['fields']['name'],
+                'roleId': r['pk']
             }
             dataResponse.append(rolesResponse)
         context['roles'] = dataResponse
         context['departments'] = DEPARTMENT_LIST
+        context['markets'] = MARKET_OPTIONS
         userPermissionList = []
 
         adminUsers = CustomUser.objects.filter(is_admin=True)
@@ -83,7 +84,7 @@ class PermissionGroupView(CommAdminView):
         
         filter = Q(is_admin=True)
 
-        print(str(search))
+        # print(str(search))
         if search:
             filter &= (Q(username__icontains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
 
@@ -95,6 +96,19 @@ class PermissionGroupView(CommAdminView):
         if market:
             filter &= (
                 Q(ibetMarkets__icontains=market)|Q(letouMarkets__icontains=market)
+            )
+
+        if role:
+            print('mikeyangh, role: ' + role)
+            userToUserGroups = UserToUserGroup.objects.filter(group=role)
+            userIds = []
+            for userToUserGroup in userToUserGroups:
+                userId = userToUserGroup.user.pk
+                if userId not in userIds:
+                    userIds.append(userId)
+            print(userIds)
+            filter &= (
+                Q(pk__in=userIds)
             )
 
         adminUsers = CustomUser.objects.filter(filter)
@@ -505,3 +519,60 @@ class GetAdminUser(View):
             array.append(str(user.username))
         
         return HttpResponse(json.dumps(array), content_type='application/json')
+
+
+class GetAdminProfile(View):
+
+    def get(self, request):
+        # print("!!!!")
+        username = request.GET.get('username')
+        print(username)
+
+        adminUser = CustomUser.objects.get(username=username)
+
+        response = {
+            'username': adminUser.username,
+            'first_name': adminUser.first_name,
+            'last_name': adminUser.last_name,
+            'email': adminUser.email,
+            'phone': adminUser.phone
+        }
+
+        ibetMarketList = []
+        if adminUser.ibetMarkets:
+            ibetMarkets = adminUser.ibetMarkets
+            ibetMarketList = ibetMarkets.split(',')
+        
+        letouMarketList = []
+        if adminUser.letouMarkets:
+            letouMarkets = adminUser.letouMarkets
+            letouMarketList = letouMarkets.split(',')
+
+        if adminUser.department:
+            role = UserToUserGroup.objects.get(user=adminUser)
+            department = ''
+            for i in DEPARTMENT_LIST:
+                if int(i['code']) == int(adminUser.department):
+                    department = i['name']
+        # print(role.group)
+        # print(str(role.group.name))
+            update = {
+                'ibetMarkets': ibetMarketList,
+                'letouMarkets': letouMarketList,
+                'department':  department,
+                'roleName': role.group.name or ''
+            }
+        
+        else:
+            update = {
+                'ibetMarkets': ibetMarketList,
+                'letouMarkets': letouMarketList,
+                'department':  '',
+                'roleName': ''
+            }
+        
+        response.update(update)
+        print(response)
+
+        return JsonResponse({ "code": 0, "data": response})
+        

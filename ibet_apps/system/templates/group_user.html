@@ -85,62 +85,281 @@
                     <td>{{ user.ibetMarkets }}</td>
                     <td>{{ user.letouMarkets }}</td>
                     <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
+                    <td style="width: 3%; padding: 0px;"><button id="view-btn"  data-toggle="modal" data-target="#viewUser" onclick='viewProfile("{{ user.username }}")'><span class="glyphicon glyphicon-search"></span></button></td>
                 </tr>
             {% endfor %}
-            <!-- <tr>    
-                <td style="text-align:center"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="selectAll" id="selectAllnoAccess" value="no"></div></td>
-                <td>jwoo</td>
-                <td>John Woo</td>
-                <td>Customer service</td>
-                <td>CS agent</td>
-                <td>CNY, THB, VN</td>
-                <td>CNY, THB, VN</td>
-                <td style="padding:0px;"><button class="btn btn-primary" style="width:100%;">Edit</button></td> 
-            </tr> -->
         </tbody>
     </table>
 
     <div class="modal fade" id="new_user" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header permission-dialog">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Add new user</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form action="{% url 'xadmin:permission_group' %}" method="POST" id="newUserForm">
-                            {% csrf_token %}
-                            <input type="hidden" name="type" value="createUser" id="formAction"></input>
-                            <!-- <input type="hidden" name="pk" value="" id="permissionId"></input> -->
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header permission-dialog">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add new user</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'xadmin:permission_group' %}" method="POST" id="newUserForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="createUser" id="formAction"></input>
+                        <!-- <input type="hidden" name="pk" value="" id="permissionId"></input> -->
+                        <div>
                             <div>
-                                <div>
-                                    <label class="role-title">USERNAME</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="username" name="username">
+                                <label class="role-title">USERNAME</label>
+                                <input type="text" class="form-control" style="width:50%;" id="username" name="username">
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">PASSWORD</label>
+                                <input type="text" class="form-control" style="width:50%;" id="password" name="password">
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">EMAIL</label>
+                                <input type="text" class="form-control" style="width:50%;" id="email" name="email">
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">PHONE</label>
+                                <input type="text" class="form-control" style="width:50%;" id="phone" name="phone">
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">FIRST NAME</label>
+                                <input type="text" class="form-control" style="width:50%;" id="first_name" name="first_name">
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">LAST NAME</label>
+                                <input type="text" class="form-control" style="width:50%;" id="last_name" name="last_name">
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">DEPARTMENT</label>
+                                <select class="form-control" style="width:50%;" id="department" name="department">
+                                    <option selected>ALL</option>
+                                    {% for department in departments %}
+                                        <option value="{{ department.code }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-div">
+                                <label class="role-title">ROLE</label>
+                                <select class="form-control" id="role" name="role">
+                                    {% for role in roles %}
+                                        <option value="{{ role.roleId }}">{{ role.roleName }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-div">
+                            <label class="role-title">MARKETS</label>
+                            <div class="row" style="margin-top: 10px">
+                                <div class="col-md-6 ibetMarkets">
+                                    <label>ibet</label>
+                                    <div style="margin-top: 5px">
+                                        <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <!-- <input type="hidden" name="margets" value=""> -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                {% for market in markets.ibetMarket_options|slice:":3" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {% for market in markets.ibetMarket_options|slice:"3:" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-div">
-                                    <label class="role-title">PASSWORD</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="password" name="password">
+                                <div class="col-md-6 letouMarkets">
+                                    <label>Letou</label>
+                                    <div style="margin-top: 5px">
+                                        <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                {% for market in markets.letouMarket_options|slice:":2" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {% for market in markets.letouMarket_options|slice:"2:" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-div">
-                                    <label class="role-title">EMAIL</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="email" name="email">
-                                </div>
-                                <div class="form-div">
-                                    <label class="role-title">PHONE</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="phone" name="phone">
-                                </div>
-                                <div class="form-div">
-                                    <label class="role-title">FIRST NAME</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="first_name" name="first_name">
-                                </div>
-                                <div class="form-div">
-                                    <label class="role-title">LAST NAME</label>
-                                    <input type="text" class="form-control" style="width:50%;" id="last_name" name="last_name">
-                                </div>
+
+                            </div>
+                        </div>
+            
+                        <p id='errorMessage'>&nbsp;</p>
+                        <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <div class="modal fade" id="viewUser" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">User Profile</h4>
+                </div>
+                <div class="modal-body" style="height: 545px;">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <img src="{{STATIC_URL}}images/happyface.png" alt="china" style="width: 100%;height: 100%;">
+                        </div>
+                        <div class="col-md-10">
+                            <div class="name-title" id="viewName">Martin Sandstrom</div>
+                            <div class="name-username" id="viewUsername">msandstrom</div>
+                        </div>
+                    </div>
+                    <div style="background-color: #f5f5f5; height: 98px; margin-top: 20px">
+                        <div class="row" style="padding: 20px 15px;">
+                            <div class="col-md-2">Email: </div>
+                            <div class="view-text col-md-10" id="viewEmail">ibet@gmail.com</div>
+                        </div>
+                        <div class="row" style="padding: 0px 15px;">
+                            <div class="col-md-2">Phone: </div>
+                            <div class="view-text col-md-10" id="viewPhone">3332929292</div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col-md-3 profile-title">
+                            MARKET
+                        </div>
+                        <div class="col-md-1 profile-info">
+                            ibet
+                        </div>
+                        <div class="col-md-8 profile-info" id="viewIbetMarket">
+                            <!-- <div>FE</div> -->
+                           <div class="inline icon-margin"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                           <div class="inline sec-icon-margin"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:15px;">
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-1 profile-info">
+                            Letou
+                        </div>
+                        <div class="col-md-8 profile-info" id="viewLetouMarket">
+                            FO
+                        </div>
+                    </div>
+                    <div>
+                        <hr style="width: 100%">
+                    </div>
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col-md-3 profile-title">
+                            ROLE
+                        </div>
+                        <div class="col-md-9 profile-info" id="viewRole">
+                            ROLE
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col-md-3 profile-title">
+                            DEPARTMENT
+                        </div>
+                        <div class="col-md-9 profile-info"  id="viewDepartment">
+                            DEPARTMENT
+                        </div>
+                    </div>
+                    <div>
+                        <hr style="width: 100%">
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="row user-list-control-group">
+        <!-- <div class="bottom-align-text"> -->
+        <div class='col-md-9' style="margin-right: 70px">
+            <div>
+                <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#changeAccess" data-myvalue="troudbal" data-bb="troudbal">
+                    Change access
+                </button> -->
+                <div>&nbsp;</div>
+                <button type="button" class="btn btn-primary" id="changeAccessBtn" onclick="changeAccess()">Change access</button>
+                <button type="button" class="btn btn-danger" id="deleteUser" onclick="deleteUser()"><i class="far fa-trash-alt" style="margin-right: 5%"></i>Delete users</button>
+            </div>
+        </div>
+        <div class='col-md-1' style="width:10%">
+            <div>SHOW ROWS</div>
+            <select id="pagination_value"  class="form-control">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="250">250</option>
+            </select>
+        </div>
+        <div class='col-md-1'>
+            <div>&nbsp;</div>
+            <ul class="pagination" style="margin:0px;">
+                {% if isFirstPage is True %}
+                    <li class="page-item disabled" id='perviousPage'>
+                    <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% else %}
+                    <li class="page-item " id='perviousPage'>
+                        <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% endif %}
+                {% if isLastPage is True %}
+                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% else %}
+                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal fade" id="changeAccess" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header permission-dialog">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Change user access</h4>
+                </div>
+                <form action="{% url 'xadmin:permission_group' %}" method="POST" id="updateUserForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="updateRole" id="updateRole"></input>
+                    <input type="hidden" name="updateUserIds" value="" id="updateUserIds"></input>
+                    <div class="modal-body">
+                        <table id="user-group-table" style="width: 100%">
+                            <thead>
+                                <tr>
+                                    <th class="role-title">USERNAME</th>
+                                    <th class="role-title">NAME</th>
+                                    <th class="role-title"><span class="glyphicon glyphicon-search"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id='change_access_table'>
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.name }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row">
+                            <div class="col-md-6">
                                 <div class="form-div">
                                     <label class="role-title">DEPARTMENT</label>
-                                    <select class="form-control" style="width:50%;" id="department" name="department">
-                                        <option selected>ALL</option>
+                                    <select class="form-control" id="department" name="department">
+                                        <option selected>Change department</option>
                                         {% for department in departments %}
                                             <option value="{{ department.code }}">{{ department.name }}</option>
                                         {% endfor %}
@@ -148,241 +367,77 @@
                                 </div>
                                 <div class="form-div">
                                     <label class="role-title">ROLE</label>
-                                    <select class="form-control" id="role" name="role">
+                                    <select class="form-control" id="roleSelect" name="roleSelect">
+                                        <option selected>Change role</option>
                                         {% for role in roles %}
                                             <option value="{{ role.roleId }}">{{ role.roleName }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
+                                
                             </div>
-                            <div class="form-div">
-                                <label class="role-title">MARKETS</label>
-                                <div class="row" style="margin-top: 10px">
-                                    <div class="col-md-6 ibetMarkets">
-                                        <label>ibet</label>
-                                        <div style="margin-top: 5px">
-                                            <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
-                                            <!-- <input type="hidden" name="margets" value=""> -->
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="ibetCNY" id="ibetCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetDE" id="ibetDE" value="DE"><img src="{{STATIC_URL}}images/germany.png" alt="germany" class="flag-icon"><label style="margin-left:10%;">DE</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetFI" id="ibetFI" value="FI"><img src="{{STATIC_URL}}images/finland.png" alt="finland" class="flag-icon"><label style="margin-left:10%;">FI</label></input>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="ibetNO" id="ibetNO" value="NO"><img src="{{STATIC_URL}}images/norway.png" alt="norway" class="flag-icon"><label style="margin-left:10%;">NO</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetTHB" id="ibetTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetVN" id="ibetVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input> 
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 letouMarkets">
-                                        <label>Letou</label>
-                                        <div style="margin-top: 5px">
-                                            <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="letouCNY" id="letouCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="letouVN" id="letouVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="letouTHB" id="letouTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                
-                            <p id='errorMessage'>&nbsp;</p>
-                            <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div> 
-        <div class="row user-list-control-group">
-            <!-- <div class="bottom-align-text"> -->
-            <div class='col-md-9' style="margin-right: 70px">
-                <div>
-                    <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#changeAccess" data-myvalue="troudbal" data-bb="troudbal">
-                        Change access
-                    </button> -->
-                    <div>&nbsp;</div>
-                    <button type="button" class="btn btn-primary" id="changeAccessBtn" onclick="changeAccess()">Change access</button>
-                    <button type="button" class="btn btn-danger" id="deleteUser" disabled onclick="deleteUser()"><i class="far fa-trash-alt" style="margin-right: 5%"></i>Delete users</button>
-                </div>
-            </div>
-            <div class='col-md-1' style="width:10%">
-                <div>SHOW ROWS</div>
-                <select id="pagination_value"  class="form-control">
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="250">250</option>
-                </select>
-            </div>
-            <div class='col-md-1'>
-                <div>&nbsp;</div>
-                <ul class="pagination" style="margin:0px;">
-                    {% if isFirstPage is True %}
-                        <li class="page-item disabled" id='perviousPage'>
-                        <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
-                        </li>
-                    {% else %}
-                        <li class="page-item " id='perviousPage'>
-                            <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
-                        </li>
-                    {% endif %}
-                    {% if isLastPage is True %}
-                        <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-                    {% else %}
-                        <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-
-        <div class="modal fade" id="changeAccess" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header permission-dialog">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Change user access</h4>
-                    </div>
-                    <form action="{% url 'xadmin:permission_group' %}" method="POST" id="updateUserForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="type" value="updateRole" id="updateRole"></input>
-                        <input type="hidden" name="updateUserIds" value="" id="updateUserIds"></input>
-                        <div class="modal-body">
-                            <table id="user-group-table" style="width: 100%">
-                                <thead>
-                                    <tr>
-                                        <th class="role-title">USERNAME</th>
-                                        <th class="role-title">NAME</th>
-                                        <th class="role-title"><span class="glyphicon glyphicon-search"></span></th>
-                                    </tr>
-                                </thead>
-                                <tbody id='change_access_table'>
-                                    <tr>
-                                        <td>{{ user.username }}</td>
-                                        <td>{{ user.name }}</td>
-                                        <td>{{ user.name }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-div">
-                                        <label class="role-title">DEPARTMENT</label>
-                                        <select class="form-control" id="department" name="department">
-                                            <option selected>Change department</option>
-                                            {% for department in departments %}
-                                                <option value="{{ department.code }}">{{ department.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-div">
-                                        <label class="role-title">ROLE</label>
-                                        <select class="form-control" id="roleSelect" name="roleSelect">
-                                            <option selected>Change role</option>
-                                            {% for role in roles %}
-                                                <option value="{{ role.roleId }}">{{ role.roleName }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            <div class="form-div">
-                                <label class="role-title">MARKETS</label>
-                                <div class="row" style="margin-top: 10px">
-                                    <div class="col-md-6 ibetMarkets">
-                                        <label>ibet</label>
-                                        <div style="margin-top: 5px">
-                                            <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
-                                            <!-- <input type="hidden" name="margets" value=""> -->
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="ibetCNY" id="ibetCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetDE" id="ibetDE" value="DE"><img src="{{STATIC_URL}}images/germany.png" alt="germany" class="flag-icon"><label style="margin-left:10%;">DE</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetFI" id="ibetFI" value="FI"><img src="{{STATIC_URL}}images/finland.png" alt="finland" class="flag-icon"><label style="margin-left:10%;">FI</label></input>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="ibetNO" id="ibetNO" value="NO"><img src="{{STATIC_URL}}images/norway.png" alt="norway" class="flag-icon"><label style="margin-left:10%;">NO</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetTHB" id="ibetTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="ibetVN" id="ibetVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input> 
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 letouMarkets">
-                                        <label>Letou</label>
-                                        <div style="margin-top: 5px">
-                                            <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="letouCNY" id="letouCNY" value="CNY"><img src="{{STATIC_URL}}images/china.png" alt="china" class="flag-icon"><label style="margin-left:10%;">CNY</label></input>
-                                                    </div>
-                                                    <div>
-                                                        <input type="checkbox" name="letouVN" id="letouVN" value="VN"><img src="{{STATIC_URL}}images/vietnam.png" alt="vietnam" class="flag-icon"><label style="margin-left:10%;">VN</label></input>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div>
-                                                        <input type="checkbox" name="letouTHB" id="letouTHB" value="THB"><img src="{{STATIC_URL}}images/thailand.png" alt="thailand" class="flag-icon"><label style="margin-left:10%;">THB</label></input>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <p id='updateErrorMessage'>&nbsp;</p>
-                            <button type="submit" id="updateButton" class="btn btn-primary submit-btn">Save</button>
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                         </div>
-                    </form>
-                </div>
-            </div>     
-        </div>
+
+                        <div class="form-div">
+                            <label class="role-title">MARKETS</label>
+                            <div class="row" style="margin-top: 10px">
+                                <div class="col-md-6 ibetMarkets">
+                                    <label>ibet</label>
+                                    <div style="margin-top: 5px">
+                                        <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <!-- <input type="hidden" name="margets" value=""> -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                {% for market in markets.ibetMarket_options|slice:":3" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {% for market in markets.ibetMarket_options|slice:"3:" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 letouMarkets">
+                                    <label>Letou</label>
+                                    <div style="margin-top: 5px">
+                                        <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                {% for market in markets.letouMarket_options|slice:":2" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {% for market in markets.letouMarket_options|slice:"2:" %}
+                                                <div>
+                                                    <input type="checkbox" name="ibet{{ market.code }}" id="ibet{{ market.code }}" value="{{  market.code }}"><img src="{{STATIC_URL}}images/{{  market.name }}.png" alt="{{  market.name }}" class="flag-icon"><label style="margin-left:10%;">{{  market.code }}</label></input>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <p id='updateErrorMessage'>&nbsp;</p>
+                        <button type="submit" id="updateButton" class="btn btn-primary submit-btn">Save</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>     
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
@@ -876,6 +931,52 @@ function changeAccess() {
     }
 }
 
+
+function viewProfile(username) {
+
+    console.log(username);
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_admin_profile' %}",
+        data:{ 
+            'username': username,
+        },
+        success: function(response)
+        {
+            console.log(response);
+            var data = response.data;
+            if (response.code === 0) {
+                $('#viewProfile').modal({'show' : true});
+                var username = data.username;
+                var firstName = data.first_name;
+                var lastName = data.last_name;
+                var email = data.email;
+                var phone = data.phone;
+                var role = data.roleName;
+                var department = data.department;
+                var ibetMarkets = data.ibetMarkets;
+                var letouMarkets = data.letouMarkets;
+                $('#viewEmail').text(email);
+                $('#viewPhone').text(phone);
+                $('#viewRole').text(role);
+                $('#viewDepartment').text(department);
+                if (!firstName && !lastName) {
+                    $('#viewName').text(username);
+                    $('#viewUsername').text('');
+                } else {
+                    $('#viewName').text(firstName + lastName);
+                    $('#viewUsername').text(username);
+                }
+                
+                var content = '';
+                // for (var i = 0; i < ibetMarkets; i++) {
+                //     content += '<>'
+                //     $('#viewEmail').append();
+                // }
+            }
+        }
+    });
+}
 
 // function searchOpen() {
 //     var search = $('#search').val();
