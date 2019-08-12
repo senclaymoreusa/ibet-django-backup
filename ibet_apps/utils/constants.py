@@ -479,49 +479,6 @@ COUNTRY_CODE_NORWAY = 'NO'
 COUNTRY_CODE_THAILAND = 'THB'
 COUNTRY_CODE_VIETNAM = 'VN'
 
-# MARKET_OPTIONS = {
-#     'ibetMarket_options': [
-#         {
-#             'code': 'CNY',
-#             'name': 'china',
-#         },
-#         {
-#             'code': 'DE',
-#             'name': 'germany',
-#         },
-#         {
-#             'code': 'FI',
-#             'name': 'finland',
-#         },
-#         {
-#             'code': 'NO',
-#             'name': 'norway',
-#         },
-#         {
-#             'code': 'THB',
-#             'name': 'thailand',
-#         },
-#         {
-#             'code': 'VN',
-#             'name': 'vietnam',
-#         }
-#     ],
-#     'letouMarket_options': [
-#         {
-#             'code': 'CNY',
-#             'name': 'china',
-#         },
-#         {
-#             'code': 'THB',
-#             'name': 'thailand',
-#         },
-#         {
-#             'code': 'VN',
-#             'name': 'vietnam',
-#         }
-#     ]
-# }
-
 MARKET_OPTIONS = {
     'ibetMarket_options': [
         COUNTRY_CODE_CHINA,
@@ -946,3 +903,6 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+
+
+PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"

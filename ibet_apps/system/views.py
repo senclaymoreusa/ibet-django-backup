@@ -114,6 +114,7 @@ class PermissionGroupView(CommAdminView):
             dataResponse.append(rolesResponse)
         context['roles'] = dataResponse
         context['departments'] = DEPARTMENT_LIST
+        context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
 
         markets = {
             'ibetMarket_options': [],
