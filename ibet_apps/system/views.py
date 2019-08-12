@@ -32,6 +32,7 @@ class PermissionGroupView(CommAdminView):
 
         if getType == 'get_select_admin_id':
             userIds = request.GET.get('userIds')
+            logger.info('Select multiple admin user\'s ID which are: ' + str(userIds))
             userIds = json.loads(userIds)
             # print(userIds)
             response = []
@@ -44,13 +45,15 @@ class PermissionGroupView(CommAdminView):
                     'userId': customUsers.pk
                 }
                 response.append(userMap)
-        
+
+            logger.info('Sending multiple admin user\'s data responses: ' + json.dumps(response))
             return JsonResponse({"data": response})
 
         if getType == 'edit_user_view':
             userId = request.GET.get('userId')
             # userId = int(userId)
             customUser = CustomUser.objects.get(pk=userId)
+            logger.info('View admin user\'s: ' + str(customUser.username) + ' profile')
             department = ''
             if customUser.department:
                 # for i in DEPARTMENT_LIST:
@@ -79,7 +82,7 @@ class PermissionGroupView(CommAdminView):
 
                 response.update(role=role.group.pk, ibetMarkets=ibetMarketsList, letouMarkets=letouMarketsList)
                 
-
+            logger.info('Sending admin user\'s "'  + str(customUser.username) + '" profile data response')
             return JsonResponse({ "data": response })
 
         # print(search, pageSize, offset, department, role, market)
@@ -138,19 +141,23 @@ class PermissionGroupView(CommAdminView):
 
         # print(str(search))
         if search:
+            logger.info('Query user model by search key: %s',  search)
             filter &= (Q(username__icontains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
 
         if department:
+            logger.info('Query user model by department ID: %s',  department)
             filter &= (
                 Q(department=department)
             )
 
         if market:
+            logger.info('Query user model by market ID: %s',  market)
             filter &= (
                 Q(ibetMarkets__icontains=market)|Q(letouMarkets__icontains=market)
             )
 
         if role:
+            logger.info('Query user group model by role ID: %s',  int(role))
             userToUserGroups = UserToUserGroup.objects.filter(group=role)
             userIds = []
             for userToUserGroup in userToUserGroups:
@@ -158,6 +165,7 @@ class PermissionGroupView(CommAdminView):
                 if userId not in userIds:
                     userIds.append(userId)
             # print(userIds)
+            logger.info('Query user group model by user\'s IDs: [{0}]'.format(', '.join(map(str, userIds))))
             filter &= (
                 Q(pk__in=userIds)
             )
@@ -166,6 +174,7 @@ class PermissionGroupView(CommAdminView):
         adminUsersCount = adminUsers.count()
 
         adminUsers = adminUsers[offset:offset+pageSize]
+        logger.info('Getting user\'s role data index from ' + str(offset) + ' to ' + str(int(offset)+ int(pageSize)))
         
 
         if offset == 0:
@@ -238,8 +247,8 @@ class PermissionGroupView(CommAdminView):
             letouMarkets = request.POST.get('letouMarkets')
             letouMarketsList = letouMarkets.split(',')
 
-            # print(username, password, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets)
-
+            logger.info('Create a new admin user username: {}, password: {}, email: {}, phone: {}, first_name: {}, last_name: {}, roleId: {}, departmentId: {}, ibetMarkets: {}, letouMarkets: {}' .format
+                        (username, password, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets))
             # department = ''
             # for i in DEPARTMENT_LIST:
             #     if i['code'] == departmentId:
@@ -247,14 +256,18 @@ class PermissionGroupView(CommAdminView):
                     # print(department)
 
             if not username or not password or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets) :
+                logger.error('Invalid data when create a new user')
                 return JsonResponse({ "code": 1, "message": "invalid data"})
             
             if CustomUser.objects.filter(username=username).exists():
+                logger.error('Username already be used when create a new user')
                 return JsonResponse({ "code": 1, "message": "username already be used"})
             if CustomUser.objects.filter(email=email).exists():
+                logger.error('Email already be used when create a new user')
                 return JsonResponse({ "code": 1, "message": "email already be used"})
 
             if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+                logger.error('Email format is not correct when create a new user')
                 return JsonResponse({ "code": 1, "message": "please enter valid email"})
 
             user = CustomUser.objects.create_superuser(username=username, email=email, phone=phone, password=password)
@@ -270,7 +283,8 @@ class PermissionGroupView(CommAdminView):
             group = UserGroup.objects.get(pk=roleId)
             UserToUserGroup.objects.create(group=group, user=user)
 
-            return JsonResponse({ "code": 0, "message": "success created a new role"})
+            logger.info('Successfully create a new role')
+            return JsonResponse({ "code": 0, "message": "success create a new role"})
 
         if post_type == 'delete_admin_user':
             deleteUserIds = request.POST.get('userIds')
@@ -279,6 +293,7 @@ class PermissionGroupView(CommAdminView):
             for userId in deleteUserIds:
                 CustomUser.objects.filter(pk=userId).delete()
 
+            logger.info('Successfully delete a new role')
             return JsonResponse({ "code": 0, "message": "success delete users"})
 
         if post_type == 'updateRole':
@@ -294,6 +309,7 @@ class PermissionGroupView(CommAdminView):
                 letouMarketsList = letouMarkets.split(',')
             
             if not changeAccessUserIds or not role or not departmentId or not ibetMarkets or not letouMarkets:
+                logger.error('Missing some input fields when update the role for certain users')
                 return JsonResponse({ "code": 1, "message": "invalid data"})
 
             # print(changeAccessUserIds, role, departmentId, ibetMarketsList, letouMarketsList)
@@ -309,6 +325,7 @@ class PermissionGroupView(CommAdminView):
                 group = UserGroup.objects.get(pk=role)
                 UserToUserGroup.objects.filter(user=user).update(group=group)
 
+            logger.info('Successfully update new role to certain users: ' + str(changeAccessUserIds))
             return JsonResponse({ "code": 0, "message": "success update users role"})
 
 
@@ -328,15 +345,19 @@ class PermissionGroupView(CommAdminView):
 
             # print(username, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets)
 
-            if not username or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets) :
+            if not username or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets):
+                logger.error('Missing some input fields when update the user profile')
                 return JsonResponse({ "code": 1, "message": "invalid data"})
             
             if CustomUser.objects.filter(username=username).exclude(pk=userId).exists():
+                logger.error('Username already be used when update the user profile')
                 return JsonResponse({ "code": 1, "message": "username already be used"})
             if CustomUser.objects.filter(email=email).exclude(pk=userId).exists():
+                logger.error('Email already be used when update the user profile')
                 return JsonResponse({ "code": 1, "message": "email already be used"})
 
             if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+                logger.error('Email format is not correct when update the user profile')
                 return JsonResponse({ "code": 1, "message": "please enter valid email"})
 
 
@@ -587,6 +608,7 @@ class GetAdminUser(View):
             # i += 1
             array.append(str(user.username))
         
+        logger.info("Sending the search result by key: " + str(search))
         return HttpResponse(json.dumps(array), content_type='application/json')
 
 
@@ -605,8 +627,6 @@ class GetAdminProfile(View):
             'email': adminUser.email,
             'phone': adminUser.phone
         }
-
-        
 
         ibetMarketList = []
         if adminUser.ibetMarkets:
@@ -651,6 +671,6 @@ class GetAdminProfile(View):
         
         response.update(updateMap)
         # print(response)
-
+        logger.info("Sending the user profile : " + str(username) + ', data: ' + json.dumps(response))
         return JsonResponse({ "code": 0, "data": response})
         
