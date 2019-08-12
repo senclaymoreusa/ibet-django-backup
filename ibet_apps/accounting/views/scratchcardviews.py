@@ -77,21 +77,34 @@ def confirm_transaction(request):
     if request.method == "POST":
         print("hi")
         print(request.POST)
-        if request.POST["status"] == '4':
-            print({'msg': 'Card already used!'})
-        if request.POST["status"] == '5':
-            print({'msg': 'Wrong PIN'})
-        if request.POST["status"] == '7':
-            print({'msg': 'Wrong Serial'})
-        if request.POST["status"] == '8':
-            print({'msg': 'Wrong Amount'})
-        if request.POST["status"] == '1':
+        try:
             matching_transaction = Transaction.objects.get(
-                transaction_id=request.POST["parter_tran_id"],
+                transaction_id=request.POST["partner_tran_id"],
                 order_id=request.POST["id"]
             )
-            matching_transaction.status = 0
-            matching_transaction.amount = request.POST["amount"]
+            matching_transaction.status = 3
             matching_transaction.arrive_time = timezone.now()
             matching_transaction.last_updated = timezone.now()
-            print({'msg': 'Confirming Transaction!'})
+            matching_transaction.save()
+            if request.POST["status"] == '4':
+                print({'msg': 'Card already used!'})
+            if request.POST["status"] == '5':
+                print({'msg': 'Wrong PIN'})
+            if request.POST["status"] == '7':
+                print({'msg': 'Wrong Serial'})
+            if request.POST["status"] == '8':
+                print({'msg': 'Wrong Amount'})
+            if request.POST["status"] == '1':
+                print({'msg': 'Confirming Transaction!'})
+                matching_transaction.status = 0
+                matching_transaction.amount = request.POST["amount"]
+                matching_transaction.arrive_time = timezone.now()
+                matching_transaction.last_updated = timezone.now()
+                matching_transaction.save()
+            return JsonResponse({"msg": "received response"})
+        except ObjectDoesNotExist as e:
+            logger.error(e)
+            print("matching transaction not found / does not exist")
+            return JsonResponse({"message": "Could not find matching transaction"})
+
+
