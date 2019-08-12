@@ -664,7 +664,8 @@ class AddOrWithdrawBalance(APIView):
             create = Transaction.objects.create(
                 user_id=CustomUser.objects.filter(username=username).first(), 
                 amount=balance, 
-                transaction_type=1
+                transaction_type=1,
+                currency=0,
             )
 
             # action = UserAction(

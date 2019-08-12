@@ -56,7 +56,7 @@ class ThirdParty(models.Model):
         abstract = True
 
     def __str__(self):
-        return '{0}'.format(self.thridParty_name)
+        return '{0}'.format(self.thirdParty_name)
  
 
 class DepositChannel(ThirdParty):
@@ -75,7 +75,7 @@ class DepositChannel(ThirdParty):
         verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
-        return self.get_thridParty_name_display()
+        return self.get_thirdParty_name_display()
 
 
 class WithdrawChannel(ThirdParty):
@@ -86,7 +86,7 @@ class WithdrawChannel(ThirdParty):
         verbose_name_plural = "Withdraw Channels"
 
     def __str__(self):
-        return self.get_thridParty_name_display()
+        return self.get_thirdParty_name_display()
 
 
 class DepositAccessManagement(models.Model):
