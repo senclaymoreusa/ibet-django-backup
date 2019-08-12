@@ -39,7 +39,8 @@ class PermissionGroupView(CommAdminView):
                 customUsers = CustomUser.objects.get(pk=userId)
                 userMap = {
                     'username': customUsers.username,
-                    'name': customUsers.first_name + customUsers.last_name,
+                    'first_name': customUsers.first_name, 
+                    'last_name': customUsers.last_name,
                     'userId': customUsers.pk
                 }
                 response.append(userMap)
@@ -594,7 +595,6 @@ class GetAdminProfile(View):
     def get(self, request):
         # print("!!!!")
         username = request.GET.get('username')
-        print(username)
 
         adminUser = CustomUser.objects.get(username=username)
 

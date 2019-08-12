@@ -181,3 +181,7 @@
     color: #4a4a4a;
     margin-top: 6px;
 }
+
+.customAutocomplete {
+    margin: 10px !important;
+}

@@ -153,7 +153,7 @@
                                 <div class="col-md-6 ibetMarkets">
                                     <label>ibet</label>
                                     <div style="margin-top: 5px">
-                                        <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <input type="checkbox" class="ibetAll"><label style="margin-left:4%">ALL</label>
                                         <!-- <input type="hidden" name="margets" value=""> -->
                                         <div class="row">
                                             <div class="col-md-6">
@@ -176,7 +176,7 @@
                                 <div class="col-md-6 letouMarkets">
                                     <label>Letou</label>
                                     <div style="margin-top: 5px">
-                                        <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <input type="checkbox" class="letouAll"><label style="margin-left:4%">ALL</label>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 {% for market in markets.letouMarket_options|slice:":2" %}
@@ -385,7 +385,7 @@
                                 <div class="col-md-6 ibetMarkets">
                                     <label>ibet</label>
                                     <div style="margin-top: 5px">
-                                        <input type="checkbox" name="ibetAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <input type="checkbox" class="ibetAll"><label style="margin-left:4%">ALL</label>
                                         <!-- <input type="hidden" name="margets" value=""> -->
                                         <div class="row">
                                             <div class="col-md-6">
@@ -408,7 +408,7 @@
                                 <div class="col-md-6 letouMarkets">
                                     <label>Letou</label>
                                     <div style="margin-top: 5px">
-                                        <input type="checkbox" name="letouAll" value="all"><label style="margin-left:4%">ALL</label>
+                                        <input type="checkbox" class="letouAll"><label style="margin-left:4%">ALL</label>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 {% for market in markets.letouMarket_options|slice:":2" %}
@@ -458,6 +458,14 @@ $(document).ready(function() {
 
     $("#selectAll").click(function(){
         $('#user-group-table input:checkbox').not(this).prop('checked', this.checked);
+    });
+
+    $(".ibetAll").click(function(){
+        $('.ibetMarkets input:checkbox').not(this).prop('checked', this.checked);
+    });
+
+    $(".letouAll").click(function(){
+        $('.letouMarkets input:checkbox').not(this).prop('checked', this.checked);
     });
 
     // user tagsinput
@@ -718,7 +726,12 @@ $(document).ready(function() {
     
         $( "#searchAdminUser" ).autocomplete({
             source: data,
-        });
+        }).data("ui-autocomplete")._renderItem = function( ul, item ) {
+            return $( "<li class='customAutocomplete'>" )
+            .data( "ui-autocomplete-item", item )
+            .append( item.label )
+            .appendTo( ul );
+        };
     }
 
 
@@ -742,12 +755,14 @@ $(document).ready(function() {
         var ibetMarkets = [];
         var letouMarkets = [];
         $("#newUserForm .ibetMarkets input[type='checkbox']:checked").each(function(i) {
-            // console.log($(this).val());
-            ibetMarkets.push($(this).val());
+            if (!$(this).hasClass("ibetAll")) {
+                ibetMarkets.push($(this).val());
+            }
         });
         $("#newUserForm .letouMarkets input[type='checkbox']:checked").each(function(i) {
-            // console.log($(this).val());
-            letouMarkets.push($(this).val());
+            if (!$(this).hasClass("letouAll")) {
+                letouMarkets.push($(this).val());
+            }
         });
         // console.log(markets);
         var data = form.serialize() + "&ibetMarkets=" + ibetMarkets + "&letouMarkets=" + letouMarkets;
@@ -778,12 +793,14 @@ $(document).ready(function() {
         var ibetMarkets = [];
         var letouMarkets = [];
         $("#updateUserForm .ibetMarkets input[type='checkbox']:checked").each(function(i) {
-            // console.log($(this).val());
-            ibetMarkets.push($(this).val());
+            if (!$(this).hasClass("ibetAll")) {
+                ibetMarkets.push($(this).val());
+            }
         });
         $("#updateUserForm .letouMarkets input[type='checkbox']:checked").each(function(i) {
-            // console.log($(this).val());
-            letouMarkets.push($(this).val());
+            if (!$(this).hasClass("letouAll")) {
+                letouMarkets.push($(this).val());
+            }
         });
         // console.log(markets);
         var data = form.serialize() + "&ibetMarkets=" + ibetMarkets + "&letouMarkets=" + letouMarkets;
@@ -880,6 +897,7 @@ function editUserView(userId) {
                     }
                 });
             }
+            $('#new_user input:checkbox').each(function () { $(this).prop('checked', false); });
 
             var ibetMarkets = data.ibetMarkets;
             ibetMarkets.forEach(market => {
@@ -987,8 +1005,8 @@ function changeAccess() {
 
                     content += '<tr>';
                     content += '<td>' + res[i].username + '</td>';
-                    content += '<td>' + res[i].name + '</td>';
-                    content += '<td>455</td>';
+                    content += '<td>' + res[i].first_name + ' ' + res[i].last_name + '</td>';
+                    content += '<td><button id="view-btn"  data-toggle="modal" data-target="#viewUser" onclick=\'viewProfile("' + res[i].username + '", "toViewUserDetail")\'><span class="glyphicon glyphicon-search"></span></button></td>';
                     content += '</tr>';
 
                 }
@@ -1009,9 +1027,11 @@ function changeAccess() {
 }
 
 
-function viewProfile(username) {
+function viewProfile(username, userDetail) {
 
-    // console.log(username);
+    if (userDetail) {
+        $('#changeAccess').modal('hide');
+    }
     $.ajax({
         type: "GET",
         url: "{% url 'get_admin_profile' %}",
@@ -1023,7 +1043,6 @@ function viewProfile(username) {
             // console.log(response);
             var data = response.data;
             if (response.code === 0) {
-                $('#viewProfile').modal({'show' : true});
                 var username = data.username;
                 var firstName = data.first_name;
                 var lastName = data.last_name;
@@ -1041,14 +1060,14 @@ function viewProfile(username) {
                     $('#viewName').text(username);
                     $('#viewUsername').text('');
                 } else {
-                    $('#viewName').text(firstName + lastName);
+                    $('#viewName').text(firstName + ' ' + lastName);
                     $('#viewUsername').text(username);
                 }
                 
                 var content = '';
                 for (var i = 0; i < ibetMarkets.length; i++) {
                     // console.log(ibetMarkets[i].name);
-                    content += '<div class="inline" style="margin-left: -15px;"><img src="{{STATIC_URL}}images/' + ibetMarkets[i].name + '.png" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{STATIC_URL}}images/' + ibetMarkets[i].name + '.png" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
                 }
                 // console.log(content);
                 $('#viewIbetMarket').empty();
@@ -1058,16 +1077,23 @@ function viewProfile(username) {
                 var content = '';
                 for (var i = 0; i < letouMarkets.length; i++) {
                     // console.log(ibetMarkets[i].name);
-                    content += '<div class="inline" style="margin-left: -15px;"><img src="{{STATIC_URL}}images/' + letouMarkets[i].name + '.png" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{STATIC_URL}}images/' + letouMarkets[i].name + '.png" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
                 }
                 // console.log(content);
                 $('#viewLetouMarket').empty();
                 $('#viewLetouMarket').append(content);
-
-
             }
         }
+    }).done(function (data) {
+        $('#viewProfile').modal({'show' : true});
+        if (userDetail) {
+            $('#viewUser').on('hidden.bs.modal', function () {
+                $("#changeAccess").modal("show");
+            });
+        }
     });
+
+    
 }
 
 // function searchOpen() {
