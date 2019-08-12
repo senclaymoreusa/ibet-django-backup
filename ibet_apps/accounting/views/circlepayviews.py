@@ -85,7 +85,7 @@ def confirm_payment(request):
             payment_method = matching_transaction.method + "_" + transaction_data["method"]
             matching_transaction.order_id = transaction_data["tran_id"]
             matching_transaction.method = payment_method
-            matching_transaction.arrive_time = datetime.strptime(transaction_data["time"], '%Y-%m-%d %H:%M:%S')
+            matching_transaction.arrive_time = timezone.datetime.strptime(transaction_data["time"], '%Y-%m-%d %H:%M:%S')
             matching_transaction.last_updated = timezone.now()
             matching_transaction.save()
 

@@ -39,7 +39,7 @@ def create_deposit(request):
         message = bytes(SCRATCHCARD_PARTNER_ID+operator+pin+serial+amount, 'utf-8')
         secret = bytes(SCRATCHCARD_CODE, 'utf-8')
         sign = hmac.new(secret, msg=message, digestmod=hashlib.sha256).hexdigest()
-        trans_id = request.user.username + "ScratchCard"
+        trans_id = request.user.username + "ScratchCardDeposit" + timezone.datetime.today().isoformat()
 
         r = requests.get(SCRATCHCARD_URL, params={
             'partner': SCRATCHCARD_PARTNER_ID,
@@ -54,25 +54,44 @@ def create_deposit(request):
         print(r.url)
         print(r.status_code)
         print(r.json())
-        #
-        # user_id = CustomUser.objects.get(username=request.user.username)
-        # obj, created = Transaction.objects.get_or_create(
-        #     user_id=user_id,
-        #     transaction_id=transaction_id,
-        #     amount=float(amount),
-        #     method="ScratchCard",
-        #     channel=9,  # ScratchCard
-        #     currency=8,  # VND
-        #     transaction_type=0,  # DEPOSIT
-        #     status=2,  # CREATED
-        #     request_time=timezone.now(),
-        #     last_updated=timezone.now()
-        # )
+        res_json = r.json()
+
+        user_id = CustomUser.objects.get(username="orion")
+        obj, created = Transaction.objects.get_or_create(
+            user_id=user_id,
+            transaction_id=trans_id,
+            order_id=res_json["id"],
+            amount=int(amount),
+            method="ScratchCard",
+            channel=9,  # ScratchCard
+            currency=8,  # VND
+            transaction_type=0,  # DEPOSIT
+            status=2,  # CREATED
+            request_time=timezone.now(),
+            last_updated=timezone.now()
+        )
         return JsonResponse(r.json())
-        # return JsonResponse({
-        #     "response_msg": r.json(),
-        #     "record_created": created,
-        #     "message": "Created new record" if created else "Failed to create new record",
-        #     "user": request.user.username,
-        #     "transaction_id": transaction_id
-        # })
+
+
+def confirm_transaction(request):
+    if request.method == "POST":
+        print("hi")
+        print(request.POST)
+        if request.POST["status"] == '4':
+            print({'msg': 'Card already used!'})
+        if request.POST["status"] == '5':
+            print({'msg': 'Wrong PIN'})
+        if request.POST["status"] == '7':
+            print({'msg': 'Wrong Serial'})
+        if request.POST["status"] == '8':
+            print({'msg': 'Wrong Amount'})
+        if request.POST["status"] == '1':
+            matching_transaction = Transaction.objects.get(
+                transaction_id=request.POST["parter_tran_id"],
+                order_id=request.POST["id"]
+            )
+            matching_transaction.status = 0
+            matching_transaction.amount = request.POST["amount"]
+            matching_transaction.arrive_time = timezone.now()
+            matching_transaction.last_updated = timezone.now()
+            print({'msg': 'Confirming Transaction!'})

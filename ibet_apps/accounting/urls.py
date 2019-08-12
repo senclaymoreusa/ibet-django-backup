@@ -60,6 +60,7 @@ urlpatterns = [
     path('api/payzod/confirm', csrf_exempt(payzod.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status"),
     path('api/paymentiq/verifyUser', csrf_exempt(paymentiq.verify_user), name="Verify_PaymentIQ_User"),
-    path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card"),
+    path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card_Deposit"),
+    path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
     path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
 ]
