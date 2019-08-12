@@ -3,15 +3,332 @@
 {% endblock %}
 {% block content %}
 
+<div class="row">
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
+  <a role="button" class="btn btn-primary" href="/xadmin/audit">
+    Notifications <span class="badge badge-light">{{ waiting_list }}</span>
+  </a>
+
+  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">New Message</h3>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="{% url 'xadmin:notification' %}" method="post" style="margin: 10px 10px 10px 10px">
+        {% csrf_token %}
+          <div class="form-group">
+            <label for="campaign">CAMPAIGN</label>
+            <select name="campaign" class="form-control">
+              <option selected disabled hidden>SELECT CAMPAIGN...</option>
+              <option value="CAMPAIGN1">CAMPAIGN1</option>
+              <option value="CAMPAIGN2">CAMPAIGN2</option>
+              <option value="CAMPAIGN3">CAMPAIGN3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subject">SEND TO</label>
+            <input type="text" class="form-control" name="notifiers" placeholder="Enter ID, username, name, phone or email" required>
+          </div>
+          <div class="form-group">
+            <label for="subject">MESSAGE SUBJECT</label>
+            <input type="text" class="form-control" name="subject" placeholder="Subject..." required>
+          </div>
+          <div class="form-group">
+            <label for="content_text">MESSAGE BODY</label>
+            <textarea class="form-control" name="content_text" rows="20" placeholder="Message..." required></textarea>
+          </div>
+          <!--<div class="form-group">
+            <label for="creator">Creator</label>
+            <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
+          </div>
+          <div class="form-group">
+            <label for="auditor">Auditor</label>
+            <select name="auditor" class="form-control">
+              <option selected disabled hidden>Choose an auditor...</option>
+              {% for auditor in auditors %}
+              <option value="{{ auditor.id }}">{{ auditor }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="notification_choice">Notification Choice</label>
+            <select id="notification_choice" name="notification_choice" class="form-control" onchange="showUser()">
+              <option selected disabled hidden>Choose a notification range...</option>
+              <option value="U">Unicast</option>
+              <option value="M">Multicast</option>
+              <option value="B">Broadcast</option>
+            </select>
+          </div>
+          <div class="form-group" id="usrlist" hidden>
+            <label for="notifiers">User List</label>
+            <select id="notifiers" name="notifiers" class="form-control">
+              <option selected disabled hidden>Choose a notifier...</option>
+              {% for user in all_user %}
+              <option value="{{ user.id }}">{{ user }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group" id="topiclist" hidden>
+            <label for="topic">Group List</label>
+            <select id="topic" name="topic" class="form-control">
+              <option selected disabled hidden>Choose a notification type...</option>
+              {% for topic in topics %}
+              <option value="{{ topic.pk}}">{{ topic }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="publishOn" class="col-2 col-form-label">Publish On</label>
+            <div class="col-10">
+              <input class="form-control" type="datetime-local" value="" id="publishOn">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="direct_check">
+              <label class="form-check-label" for="direct_check">
+                  Direct Message
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="email_check">
+              <label class="form-check-label" for="email_check">
+                  Email
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="SMS_check">
+              <label class="form-check-label" for="SMS_check">
+                  SMS
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="push_check">
+              <label class="form-check-label" for="push_check">
+                  Push Notification
+              </label>
+            </div>
+          </div>-->
+          <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+            <button type="button" class="btn btn-secondary">1</button>
+            <button type="button" class="btn btn-secondary">2</button>
+
+            <div class="btn-group" role="group">
+              <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Dropdown
+              </button>
+              <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                <a class="dropdown-item" href="#">Dropdown link</a>
+                <a class="dropdown-item" href="#">Dropdown link</a>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Create Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+<div class="row" style="padding-top: 2em">
+  <div class='col-md-3'>
+    <div class="input-group">
+      <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword..." >
+      <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+    </div>
+  </div>
+</div>
+<div class="col-md-3">
+    {% if searchError %}
+        <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
+    {% endif %}
+</div>
+    <!-- <div class='col-md-8'> -->
+        <!-- {% block time_search %} -->
+        <!-- <label>Date Range</label>
+        <div class="row">
+            <div class='col-md-4'>
+                <div class='input-group date' id='user_list_time_from'>
+                    <input type='text' class="form-control" placeholder="From" id='user_list_time_from_input' />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div class='input-group date' id='user_list_time_to'>
+                    <input type='text' class="form-control" placeholder="To"  id='user_list_time_to_input'/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <button id="user_list_time_submit" type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div> -->
+        <!-- {% endblock %} -->
+    <!-- </div> -->
+
+<div style="margin-top:40px;">
+  <ul class="nav nav-tabs">
+    <li class="active" id="sent-messages"><a data-toggle="tab" class="tab-label" href="#sent-message">SENT MESSAGES</a></li>
+    <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AUTOMATED MESSAGES</a></li>
+    <li id="drafts"><a data-toggle="tab"  class="tab-label" href="#draft">DRAFTS</a></li>
+  </ul>
+  <div class="tab-content">
+    <div id="sent-message" class="tab-pane fade in active">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th style="width: 15%;">SUBJECT</th>
+            <th style="width: 10%;">CAMPAIGN</th>
+            <th style="width: 12%;">SENT TO</th>
+            <th style="width: 5%;">BONUS</th>
+            <th style="width: 15%;">SENT TIME</th>
+            <th style="width: 13%;">AUTHOR</th>
+            <th style="width: 5%;">SENT</th>
+            {% comment %} <th style="word-break: break-all; width:6%;">DEPOSIT/<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th> {% endcomment %}
+            {% comment %} <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th> {% endcomment %}
+            <th style="width: 5%;">OPENED</th>
+            <th style="width: 5%;">OPEN RATE</th>
+            <th style="width: 7%;">BONUS CTR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notification in queryset %} 
+            <tr>
+              <td>{{ notification.subject }}</td>
+              <td>CAMPAIGN</td>
+              {% if notification.notifiers %}
+              <td>{{ notification.notifiers }}</td>
+              {% else %}
+              <td>{{ notification.topic }}</td>
+              {% endif %}
+              <td>BONUS</td>
+              <td>{{ notification.publish_on }}</td>
+              <td>{{ notification.creator }}</td>
+              <td>1</td>
+              <td>2</td>
+              <td>3</td>
+              <td><a class="btn btn-primary" href="#" role="button"><i class="fa fa-search"></i></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="automated-message" class="tab-pane fade">
+      <table>
+        <thead class="thead-dark">
+          <tr>
+            <th style="width: 15%;">SUBJECT</th>
+            <th style="width: 10%;">CAMPAIGN</th>
+            <th style="width: 12%;">GROUP</th>
+            <th style="width: 5%;">BONUS</th>
+            <th style="width: 15%;">CREATED</th>
+            <th style="width: 13%;">AUTHOR</th>
+            <th style="width: 5%;">SENT</th>
+            <th style="width: 5%;">OPENED</th>
+            <th style="width: 5%;">OPEN RATE</th>
+            <th style="width: 7%;">BONUS CTR</th>
+          </tr>
+        </thead>
+        <tbody id='user_list_tbody'>
+          {% for notification in queryset %} 
+            <tr>
+              <td>{{ notification.subject }}</td>
+              <td>CAMPAIGN</td>
+              {% if notification.notifiers %}
+              <td>{{ notification.notifiers }}</td>
+              {% else %}
+              <td>{{ notification.topic }}</td>
+              {% endif %}
+              <td>BONUS</td>
+              <td>{{ notification.publish_on }}</td>
+              <td>{{ notification.creator }}</td>
+              <td>1</td>
+              <td>2</td>
+              <td>3</td>
+              <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="draft" class="tab-pane fade">
+      <table>
+        <thead class="thead-dark">
+          <tr>
+            <th style="width: 25%;">SUBJECT</th>
+            <th style="width: 15%;">CAMPAIGN</th>
+            <th style="width: 15%;">GROUP</th>
+            <th style="width: 5%;">BONUS</th>
+            <th style="width: 15%;">CREATED</th>
+            <th style="width: 13%;">AUTHOR</th>
+            <th style="width: 12%;">STATUS</th>
+          </tr>
+        </thead>
+        <tbody id='user_list_tbody'>
+          {% for notification in queryset %} 
+            <tr>
+              <td>{{ notification.subject }}</td>
+              <td>CAMPAIGN</td>
+              <td>{{ notification.topic }}</td>
+              <td>BONUS</td>
+              <td>{{ notification.publish_on }}</td>
+              <td>{{ notification.creator }}</td>
+              <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row user-list-control-group">
+    <!-- <div class="bottom-align-text"> -->
+    <div class='col-md-9' style="margin-right: 70px"></div>
+    <div class='col-md-1' style="width:10%">
+        <div>SHOW ROWS</div>
+        <select id="pagination_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+        </select>
+    </div>
+    <div class='col-md-1'>
+      <div>&nbsp;</div>
+      <ul class="pagination" style="margin:0px;">
+          {% if isFirstPage is True %}
+              <li class="page-item disabled" id='perviousPage'>
+              <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+              </li>
+          {% else %}
+              <li class="page-item " id='perviousPage'>
+                  <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+              </li>
+          {% endif %}
+          {% if isLastPage is True %}
+              <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+          {% else %}
+              <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+          {% endif %}
+      </ul>
+    </div>
+  </div>
 <h2>{{ current_user }}</h2>
-<h2 id="demo"></h2>
 <!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
 <a role="button" class="btn btn-primary" href="/xadmin/audit">
   Notifications <span class="badge badge-light">{{ waiting_list }}</span>
 </a>
-<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<!--<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <form action="{% url 'xadmin:notification' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
@@ -110,7 +427,7 @@
       </form>
     </div>
   </div>
-</div>
+</div>-->
 
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
