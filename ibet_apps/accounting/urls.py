@@ -12,6 +12,7 @@ import accounting.views.circlepayviews as circlepay
 import accounting.views.payzodviews as payzod
 import accounting.views.fgateviews as fgate
 import accounting.views.paymentiqviews as paymentiq
+import accounting.views.scratchcardviews as scratchcard
 import accounting.transactions
 
 urlpatterns = [
@@ -59,5 +60,6 @@ urlpatterns = [
     path('api/payzod/confirm', csrf_exempt(payzod.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status"),
     path('api/paymentiq/verifyUser', csrf_exempt(paymentiq.verify_user), name="Verify_PaymentIQ_User"),
+    path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card"),
     path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
 ]

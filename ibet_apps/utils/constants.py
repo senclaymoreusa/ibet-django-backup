@@ -36,7 +36,8 @@ CHANNEL_CHOICES = (
     (5, 'Paypal'),
     (6, 'Payzod'),
     (7, 'CirclePay'),
-    (8, 'Fgate')
+    (8, 'Fgate'),
+    (9, 'ScratchCard')
 )
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -473,3 +474,9 @@ NOTIFICATION_METHOD = (
 )
 
 BONUS_QUEUE_NAME = "bonus_queue"
+
+# scratch card API
+SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
+SCRATCHCARD_PARTNER_ID = "9"
+SCRATCHCARD_CODE = "n2P9R8"
+SCRATCHCARD_EMAIL = "jennyto@ibet.com"
