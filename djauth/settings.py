@@ -105,6 +105,8 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
+    'django_user_agents',
+    
 ]
 
 SITE_ID = 1                        # Stephen
@@ -130,6 +132,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'djauth.urls'
@@ -400,3 +403,5 @@ STATICFILES_DIRS = [
 
 AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
 PATH_TO_KEYS = 'config/thirdPartyKeys.json'
+
+

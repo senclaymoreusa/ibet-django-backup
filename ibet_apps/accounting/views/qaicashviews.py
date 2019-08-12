@@ -30,6 +30,7 @@ from time import sleep
 from time import gmtime, strftime
 import uuid
 
+
 QAICASH_NAME = 3
 
 #payment
@@ -99,12 +100,18 @@ class getDepositMethod(generics.GenericAPIView):
         my_hmac = generateHash(secret, message)
         delay = kwargs.get("delay", 5)
         success = False
+        
+        if request.user_agent.is_pc:
+            deviceType = 'PC'
+        else:
+            deviceType = 'MOBILE'
+
         #retry
         for x in range(3):
             r = requests.get(url, headers=headers, params = {
                 # 'userId' : userId,
                 'hmac' : my_hmac,
-                'deviceType' : 'PC',
+                'deviceType' : deviceType,
             })
             responseJson = r.json()
             if r.status_code == 200:
@@ -170,12 +177,16 @@ class getBankList(generics.GenericAPIView):
             my_hmac = generateHash(secret, message) # hmac format for qaicash api
 
             delay = kwargs.get("delay", 5)
+            if request.user_agent.is_pc:
+                deviceType = 'PC'
+            else:
+                deviceType = 'MOBILE'
 
             for x in range(3):
                 r = requests.get(url, headers=headers, params = {
                     # 'userId' : userId,
                     'hmac' : my_hmac,
-                    'deviceType' : 'PC',
+                    'deviceType' : deviceType,
                 })
                 data = r.json() # r.json() converts the string/byte return of the response into a JSON object
                 if r.status_code == 200:
@@ -214,6 +225,10 @@ class getBankLimits(generics.GenericAPIView):
         print(bank, currency, method)
         url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits/'
         headers = {'Accept': 'application/json'}
+        if request.user_agent.is_pc:
+                deviceType = 'PC'
+        else:
+            deviceType = 'MOBILE'
 
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
@@ -226,11 +241,12 @@ class getBankLimits(generics.GenericAPIView):
 
          #retry
         success = False
+        
         for x in range(3):
             r = requests.get(url, headers=headers, params = {
                 # 'userId' : userId,
                 'hmac' : my_hmac,
-                'deviceType' : 'PC',
+                'deviceType' : deviceType,
             })
             print("bank limits response: ")
             print(r)
