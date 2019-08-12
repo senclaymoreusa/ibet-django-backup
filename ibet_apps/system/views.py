@@ -46,6 +46,41 @@ class PermissionGroupView(CommAdminView):
         
             return JsonResponse({"data": response})
 
+        if getType == 'edit_user_view':
+            userId = request.GET.get('userId')
+            # userId = int(userId)
+            customUser = CustomUser.objects.get(pk=userId)
+            department = ''
+            if customUser.department:
+                # for i in DEPARTMENT_LIST:
+                #     if int(i['code']) == int(customUser.department):
+                #         department = i['name']
+                department = customUser.department
+            response = {
+                'userId': userId,
+                'username': customUser.username,
+                'password': "12345678",
+                'first_name': customUser.first_name,
+                'last_name': customUser.last_name,
+                'email': customUser.email,
+                'phone': customUser.phone,
+                'department': department,
+                'role': '',
+                'ibetMarkets': [],
+                'letouMarkets': []
+            }
+            if customUser.department:
+                role = UserToUserGroup.objects.get(user=customUser)
+                ibetMarkets = customUser.ibetMarkets
+                ibetMarketsList = ibetMarkets.split(',')
+                letouMarkets = customUser.letouMarkets
+                letouMarketsList = letouMarkets.split(',')
+
+                response.update(role=role.group.pk, ibetMarkets=ibetMarketsList, letouMarkets=letouMarketsList)
+                
+
+            return JsonResponse({ "data": response })
+
         # print(search, pageSize, offset, department, role, market)
 
         if pageSize is None:
@@ -75,7 +110,23 @@ class PermissionGroupView(CommAdminView):
             dataResponse.append(rolesResponse)
         context['roles'] = dataResponse
         context['departments'] = DEPARTMENT_LIST
-        context['markets'] = MARKET_OPTIONS
+
+        markets = {
+            'ibetMarket_options': [],
+            'letouMarket_options': []
+        }
+        for countryCode in MARKET_OPTIONS['ibetMarket_options']:
+            markets['ibetMarket_options'].append({
+                'code': countryCode,
+                'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+            })
+        for countryCode in MARKET_OPTIONS['letouMarket_options']:
+            markets['letouMarket_options'].append({
+                'code': countryCode,
+                'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+            })
+
+        context['markets'] = markets
         userPermissionList = []
 
         adminUsers = CustomUser.objects.filter(is_admin=True)
@@ -99,14 +150,13 @@ class PermissionGroupView(CommAdminView):
             )
 
         if role:
-            print('mikeyangh, role: ' + role)
             userToUserGroups = UserToUserGroup.objects.filter(group=role)
             userIds = []
             for userToUserGroup in userToUserGroups:
                 userId = userToUserGroup.user.pk
                 if userId not in userIds:
                     userIds.append(userId)
-            print(userIds)
+            # print(userIds)
             filter &= (
                 Q(pk__in=userIds)
             )
@@ -116,11 +166,6 @@ class PermissionGroupView(CommAdminView):
 
         adminUsers = adminUsers[offset:offset+pageSize]
         
-        # roleFilter = Q()
-    
-        # for adminUser in adminUsers:
-        #     if role:
-        #         roleFilter
 
         if offset == 0:
             context['isFirstPage'] = True
@@ -264,32 +309,55 @@ class PermissionGroupView(CommAdminView):
                 UserToUserGroup.objects.filter(user=user).update(group=group)
 
             return JsonResponse({ "code": 0, "message": "success update users role"})
-        # groupName = request.POST.get('groupName')
-        # users = request.POST.get('hidden_permission_user')
-        # permissionCode = request.POST.get('hidden_permission_code')
-        # # print("users: " + users + "permission: " + permissionCode + 'groupName: ' + groupName)
-        
-        # group = UserGroup.objects.get_or_create(name=groupName, description='', groupType=PERMISSION_GROUP)
-        # # groupId = group.pk
 
-        # insert_permissions_list = []
-        # users = json.loads(users)
-        # permissionCode = json.loads(permissionCode)
-        # for i in range(len(permissionCode)):
-        #     insert_permissions_list.append(PermissionGroup(group=group, permission_code=permissionCode[i]))
-        # # print(insert_permissions_list)
-        # PermissionGroup.objects.bulk_create(insert_permissions_list)
 
-        # insert_users_list = []
-        # for i in range(len(users)):
-        #     userId = int(users[i])
-        #     user = CustomUser.objects.get(pk=userId)
-        #     insert_users_list.append(UserToUserGroup(group=group, user=user))
-        # # print(insert_users_list)
-        # UserToUserGroup.objects.bulk_create(insert_users_list)
+        if post_type == 'updateUser':
+            userId = request.POST.get('userId')
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            roleId = request.POST.get('role')
+            departmentId = request.POST.get('department')
+            ibetMarkets = request.POST.get('ibetMarkets')
+            ibetMarketsList = ibetMarkets.split(',')
+            letouMarkets = request.POST.get('letouMarkets')
+            letouMarketsList = letouMarkets.split(',')
 
-        
+            # print(username, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets)
+
+            if not username or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets) :
+                return JsonResponse({ "code": 1, "message": "invalid data"})
             
+            if CustomUser.objects.filter(username=username).exclude(pk=userId).exists():
+                return JsonResponse({ "code": 1, "message": "username already be used"})
+            if CustomUser.objects.filter(email=email).exclude(pk=userId).exists():
+                return JsonResponse({ "code": 1, "message": "email already be used"})
+
+            if not re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email):
+                return JsonResponse({ "code": 1, "message": "please enter valid email"})
+
+
+            user = CustomUser.objects.get(pk=userId)
+            # user.update(ibetMarkets=ibetMarkets, letouMarkets=letouMarkets, department=department)
+            user.ibetMarkets = ibetMarkets
+            user.letouMarkets = letouMarkets
+            user.department = departmentId
+            user.first_name = first_name
+            user.last_name = last_name
+            user.phone = phone
+            user.save()
+
+            if roleId:
+                group = UserGroup.objects.get(pk=roleId)
+                UserToUserGroup.objects.filter(user=user).delete()
+                UserToUserGroup.objects.create(user=user, group=group)
+
+            logger.info("Successfully updated user")
+            return JsonResponse({ "code": 0, "message": "success update users role"})
+
+        
 
 class PermissionRoleView(CommAdminView): 
     def get(self, request):
@@ -538,15 +606,25 @@ class GetAdminProfile(View):
             'phone': adminUser.phone
         }
 
+        
+
         ibetMarketList = []
         if adminUser.ibetMarkets:
-            ibetMarkets = adminUser.ibetMarkets
-            ibetMarketList = ibetMarkets.split(',')
-        
+            countryCodes = adminUser.ibetMarkets.split(',')
+            for countryCode in countryCodes:
+                ibetMarketList.append({
+                    'code': countryCode,
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+                })
+
         letouMarketList = []
         if adminUser.letouMarkets:
-            letouMarkets = adminUser.letouMarkets
-            letouMarketList = letouMarkets.split(',')
+            countryCodes = adminUser.letouMarkets.split(',')
+            for countryCode in countryCodes:
+                letouMarketList.append({
+                    'code': countryCode,
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+                })
 
         if adminUser.department:
             role = UserToUserGroup.objects.get(user=adminUser)
@@ -556,7 +634,7 @@ class GetAdminProfile(View):
                     department = i['name']
         # print(role.group)
         # print(str(role.group.name))
-            update = {
+            updateMap = {
                 'ibetMarkets': ibetMarketList,
                 'letouMarkets': letouMarketList,
                 'department':  department,
@@ -564,15 +642,15 @@ class GetAdminProfile(View):
             }
         
         else:
-            update = {
+            updateMap = {
                 'ibetMarkets': ibetMarketList,
                 'letouMarkets': letouMarketList,
                 'department':  '',
                 'roleName': ''
             }
         
-        response.update(update)
-        print(response)
+        response.update(updateMap)
+        # print(response)
 
         return JsonResponse({ "code": 0, "data": response})
         

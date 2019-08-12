@@ -472,50 +472,80 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_EMAIL, 'email')
 )
 
+COUNTRY_CODE_CHINA = 'CNY'
+COUNTRY_CODE_GERMANY = 'DE'
+COUNTRY_CODE_FINAND = 'FI'
+COUNTRY_CODE_NORWAY = 'NO'
+COUNTRY_CODE_THAILAND = 'THB'
+COUNTRY_CODE_VIETNAM = 'VN'
+
+# MARKET_OPTIONS = {
+#     'ibetMarket_options': [
+#         {
+#             'code': 'CNY',
+#             'name': 'china',
+#         },
+#         {
+#             'code': 'DE',
+#             'name': 'germany',
+#         },
+#         {
+#             'code': 'FI',
+#             'name': 'finland',
+#         },
+#         {
+#             'code': 'NO',
+#             'name': 'norway',
+#         },
+#         {
+#             'code': 'THB',
+#             'name': 'thailand',
+#         },
+#         {
+#             'code': 'VN',
+#             'name': 'vietnam',
+#         }
+#     ],
+#     'letouMarket_options': [
+#         {
+#             'code': 'CNY',
+#             'name': 'china',
+#         },
+#         {
+#             'code': 'THB',
+#             'name': 'thailand',
+#         },
+#         {
+#             'code': 'VN',
+#             'name': 'vietnam',
+#         }
+#     ]
+# }
+
 MARKET_OPTIONS = {
     'ibetMarket_options': [
-        {
-            'code': 'CNY',
-            'name': 'china',
-        },
-        {
-            'code': 'DE',
-            'name': 'germany',
-        },
-        {
-            'code': 'FI',
-            'name': 'finland',
-        },
-        {
-            'code': 'NO',
-            'name': 'norway',
-        },
-        {
-            'code': 'THB',
-            'name': 'thailand',
-        },
-        {
-            'code': 'VN',
-            'name': 'vietnam',
-        }
+        COUNTRY_CODE_CHINA,
+        COUNTRY_CODE_GERMANY,
+        COUNTRY_CODE_FINAND,
+        COUNTRY_CODE_NORWAY,
+        COUNTRY_CODE_THAILAND,
+        COUNTRY_CODE_VIETNAM
     ],
     'letouMarket_options': [
-        {
-            'code': 'CNY',
-            'name': 'china',
-        },
-        {
-            'code': 'THB',
-            'name': 'thailand',
-        },
-        {
-            'code': 'VN',
-            'name': 'vietnam',
-        }
+        COUNTRY_CODE_CHINA,
+        COUNTRY_CODE_THAILAND,
+        COUNTRY_CODE_VIETNAM
     ]
 }
 
-
+COUNTRY_CODE_TO_IMG_PREFIX = {
+    COUNTRY_CODE_CHINA: 'china',
+    COUNTRY_CODE_GERMANY: 'germany',
+    COUNTRY_CODE_FINAND: 'finland',
+    COUNTRY_CODE_NORWAY: 'norway',
+    COUNTRY_CODE_THAILAND: 'thailand',
+    COUNTRY_CODE_VIETNAM: 'vietnam'
+}
 
 DEPARTMENT_LIST = [
     {
