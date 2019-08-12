@@ -4,7 +4,7 @@ from utils.constants import *
 
 class depositMethodSerialize(serializers.Serializer):
     # specify what fields are required when we save object into database
-    thridParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
+    thirdParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.CharField(required=True)
     min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
@@ -24,7 +24,7 @@ class bankListSerialize(serializers.Serializer):
 
 class bankLimitsSerialize(serializers.Serializer):
     bank = serializers.CharField(required=True)
-    thridParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
+    thirdParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
     currency = serializers.CharField(required=True)
     method = serializers.CharField(required=True)
     min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
