@@ -19,6 +19,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from users.models import CustomUser
 from utils.constants import *
+from utils.helpers import *
 from ..models import Transaction
 
 logger = logging.getLogger('django')
@@ -30,11 +31,12 @@ def create_deposit(request):
         return HttpResponse("You are at the endpoint for ScratchCard reserve payment.")
 
     if request.method == "POST":  # can only allow post requests
+        print(request.body)
         body = json.loads(request.body)
         pin = body["pin"]
         serial = body["serial"]
         operator = body["operator"]
-        amount = body["amount"]
+        amount = str(body["amount"])
 
         message = bytes(SCRATCHCARD_PARTNER_ID+operator+pin+serial+amount, 'utf-8')
         secret = bytes(SCRATCHCARD_CODE, 'utf-8')
@@ -50,27 +52,48 @@ def create_deposit(request):
             'sign': sign,
             'partner_tran_id': trans_id
         })
-
-        print(r.url)
-        print(r.status_code)
-        print(r.json())
         res_json = r.json()
+        # print(r.url)
+        # print(r.status_code)
+        # print(res_json)
+        # print(request.user.username)
 
-        user_id = CustomUser.objects.get(username="orion")
-        obj, created = Transaction.objects.get_or_create(
-            user_id=user_id,
-            transaction_id=trans_id,
-            order_id=res_json["id"],
-            amount=int(amount),
-            method="ScratchCard",
-            channel=9,  # ScratchCard
-            currency=8,  # VND
-            transaction_type=0,  # DEPOSIT
-            status=2,  # CREATED
-            request_time=timezone.now(),
-            last_updated=timezone.now()
-        )
-        return JsonResponse(r.json())
+        if res_json["status"] == 6:
+            user_id = CustomUser.objects.get(username=request.user.username)
+            obj, created = Transaction.objects.get_or_create(
+                user_id=user_id,
+                transaction_id=trans_id,
+                order_id=res_json["id"],
+                amount=int(amount),
+                method="ScratchCard",
+                channel=9,  # ScratchCard
+                currency=8,  # VND
+                transaction_type=0,  # DEPOSIT
+                status=2,  # CREATED
+                request_time=timezone.now(),
+                last_updated=timezone.now()
+            )
+            return JsonResponse({
+                "created": created,
+                "status": res_json["status"],
+                "msg": {
+                    "eng": res_json["message_eng"],
+                    "vn": res_json["message"]
+                },
+                "api_response": res_json,
+            })
+        else:
+            return JsonResponse({
+                "created": False,
+                "status": res_json["status"],
+                "msg": {
+                    "eng": res_json["message_eng"],
+                    "vn": res_json["message"]
+                },
+                "api_response": res_json,
+            })
+
+
 
 
 def confirm_transaction(request):
@@ -101,10 +124,11 @@ def confirm_transaction(request):
                 matching_transaction.arrive_time = timezone.now()
                 matching_transaction.last_updated = timezone.now()
                 matching_transaction.save()
+
+                # update user balance after updating matching transaction
+
             return JsonResponse({"msg": "received response"})
         except ObjectDoesNotExist as e:
             logger.error(e)
             print("matching transaction not found / does not exist")
             return JsonResponse({"message": "Could not find matching transaction"})
-
-
