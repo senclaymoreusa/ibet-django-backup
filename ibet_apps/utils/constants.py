@@ -401,8 +401,10 @@ ASIAPAY_TRUSTUSER = "983eb07e"
 
 # help2pay
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-HELP2PAY_MERCHANT = "M0130"
-HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
+HELP2PAY_MERCHANT_THB = "M0513"
+HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
+HELP2PAY_MERCHANT_VND = "M0514"
+HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 

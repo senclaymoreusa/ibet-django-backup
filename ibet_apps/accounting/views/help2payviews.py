@@ -84,12 +84,19 @@ class SubmitDeposit(generics.GenericAPIView):
         bank = self.request.POST.get("bank")
         ip = get_Host_name_IP()
         currency = self.request.POST.get("currency")
+        if currency == 2:
+            help2pay_mechant = HELP2PAY_MERCHANT_THB
+            help2pay_security = HELP2PAY_SECURITY_THB
+        elif currency == 8:
+            help2pay_mechant = HELP2PAY_MERCHANT_VND
+            help2pay_security = HELP2PAY_SECURITY_VND
+
         data = {
-            "Merchant":HELP2PAY_MERCHANT,
+            "Merchant":help2pay_mechant,
             "Customer":user_id,
             "Currency":currencyConversion[currency],
             "Reference":str(order_id),
-            "Key":MD5(HELP2PAY_MERCHANT+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+HELP2PAY_SECURITY+ip),
+            "Key":MD5(help2pay_mechant+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+help2pay_security+ip),
             "Amount":amount,
             "Datetime":Datetime,
             "FrontURI":REDIRECTURL,
