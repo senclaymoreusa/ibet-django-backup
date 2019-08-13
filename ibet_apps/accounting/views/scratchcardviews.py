@@ -19,7 +19,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from users.models import CustomUser
 from utils.constants import *
-from utils.helpers import *
+import utils.helpers as helpers
 from ..models import Transaction
 
 logger = logging.getLogger('django')
@@ -31,6 +31,7 @@ def create_deposit(request):
         return HttpResponse("You are at the endpoint for ScratchCard reserve payment.")
 
     if request.method == "POST":  # can only allow post requests
+        print("Creating Deposit...")
         print(request.body)
         body = json.loads(request.body)
         pin = body["pin"]
@@ -121,14 +122,16 @@ def create_deposit(request):
 def confirm_transaction(request):
     if request.method == "POST":
         print("Received callback request from TTT ScratchCard servers")
-        print("Refferer: " + request.META["HTTP_REFERER"])
-        print("Host: " + request.META["REMOTE_HOST"])
+        # print("Refferer: " + request.META["HTTP_REFERER"])
+        # print("Host: " + request.META["REMOTE_HOST"])
         print(request.POST)
         try:
             matching_transaction = Transaction.objects.get(
                 transaction_id=request.POST["partner_tran_id"],
                 order_id=request.POST["id"]
             )
+            print("Found matching transaction:")
+            print(matching_transaction)
             matching_transaction.status = 3  # PENDING
 
             if request.POST["status"] == '4':
@@ -152,13 +155,12 @@ def confirm_transaction(request):
                 matching_transaction.status = 0  # success
                 matching_transaction.amount = request.POST["amount"]
                 matching_transaction.remark = 'Successfully Deposited!'
+                # update user balance after updating matching transaction
+                helpers.addOrWithdrawBalance(matching_transaction.user_id, request.POST["amount"], "add")
 
             matching_transaction.arrive_time = timezone.now()
             matching_transaction.last_updated = timezone.now()
             matching_transaction.save()
-
-            # update user balance after updating matching transaction
-
             return JsonResponse({"msg": "received response"})
         except ObjectDoesNotExist as e:
             logger.error(e)

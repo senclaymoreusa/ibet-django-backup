@@ -1,8 +1,11 @@
+import decimal
+
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from users.models import CustomUser
 
 
-def addOrWithdrawBalance(username, balance, type):
+def addOrWithdrawBalance(username, balance, type_balance):
     user = CustomUser.objects.filter(username=username)
 
     currrent_balance = user[0].main_wallet
