@@ -31,8 +31,8 @@ def create_deposit(request):
         return HttpResponse("You are at the endpoint for ScratchCard reserve payment.")
 
     if request.method == "POST":  # can only allow post requests
-        print("Creating Deposit...")
-        print(request.body)
+        logger.info("Creating Deposit...")
+        logger.info(request.body)
         body = json.loads(request.body)
         pin = body["pin"]
         serial = body["serial"]
@@ -121,37 +121,37 @@ def create_deposit(request):
 
 def confirm_transaction(request):
     if request.method == "POST":
-        print("Received callback request from TTT ScratchCard servers")
-        # print("Refferer: " + request.META["HTTP_REFERER"])
-        # print("Host: " + request.META["REMOTE_HOST"])
-        print(request.POST)
+        logger.info("Received callback request from TTT ScratchCard servers")
+        # logger.info("Refferer: " + request.META["HTTP_REFERER"])
+        # logger.info("Host: " + request.META["REMOTE_HOST"])
+        logger.info(request.POST)
         try:
             matching_transaction = Transaction.objects.get(
                 transaction_id=request.POST["partner_tran_id"],
                 order_id=request.POST["id"]
             )
-            print("Found matching transaction:")
-            print(matching_transaction)
+            logger.info("Found matching transaction:")
+            logger.info(matching_transaction)
             matching_transaction.status = 3  # PENDING
 
             if request.POST["status"] == '4':
-                print({'msg': 'Card already used!'})
+                logger.info({'msg': 'Card already used!'})
                 matching_transaction.status = 1  # FAILED
                 matching_transaction.remark = 'Card already used!'
             if request.POST["status"] == '5':
-                print({'msg': 'Wrong PIN'})
+                logger.info({'msg': 'Wrong PIN'})
                 matching_transaction.status = 1  # FAILED
                 matching_transaction.remark = 'Wrong PIN'
             if request.POST["status"] == '7':
-                print({'msg': 'Wrong Serial'})
+                logger.info({'msg': 'Wrong Serial'})
                 matching_transaction.status = 1  # FAILED
                 matching_transaction.remark = 'Wrong Serial'
             if request.POST["status"] == '8':
-                print({'msg': 'Wrong Amount'})
+                logger.info({'msg': 'Wrong Amount'})
                 matching_transaction.status = 1  # FAILED
                 matching_transaction.remark = 'Wrong Amount'
             if request.POST["status"] == '1':
-                print({'msg': 'Confirming Transaction!'})
+                logger.info({'msg': 'Confirming Transaction!'})
                 matching_transaction.status = 0  # success
                 matching_transaction.amount = request.POST["amount"]
                 matching_transaction.remark = 'Successfully Deposited!'
@@ -164,5 +164,5 @@ def confirm_transaction(request):
             return JsonResponse({"msg": "received response"})
         except ObjectDoesNotExist as e:
             logger.error(e)
-            print("matching transaction not found / does not exist")
+            logger.info("matching transaction not found / does not exist")
             return JsonResponse({"message": "Could not find matching transaction"})
