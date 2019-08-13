@@ -271,13 +271,14 @@ class PermissionGroupView(CommAdminView):
                 logger.error('Email format is not correct when create a new user')
                 return JsonResponse({ "code": 1, "message": "please enter valid email"})
 
-            user = CustomUser.objects.create_superuser(username=username, email=email, phone=phone, password=password)
+            user = CustomUser.objects.create_superuser(username=username, email=email, phone=phone)
             # user.update(ibetMarkets=ibetMarkets, letouMarkets=letouMarkets, department=department)
             user.ibetMarkets = ibetMarkets
             user.letouMarkets = letouMarkets
             user.department = departmentId
             user.first_name = first_name
             user.last_name = last_name
+            user.set_password(password)
             user.save()
             # print(ibetMarketsList)
             # print(letouMarketsList)
