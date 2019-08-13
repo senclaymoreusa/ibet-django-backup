@@ -82,6 +82,30 @@ def create_deposit(request):
                 },
                 "api_response": res_json,
             })
+        elif res_json["status"] == 1:
+            user_id = CustomUser.objects.get(username=request.user.username)
+            obj, created = Transaction.objects.get_or_create(
+                user_id=user_id,
+                transaction_id=trans_id,
+                order_id=res_json["id"],
+                amount=int(amount),
+                method="ScratchCard",
+                channel=9,  # ScratchCard
+                currency=8,  # VND
+                transaction_type=0,  # DEPOSIT
+                status=0,  # SUCCESS
+                request_time=timezone.now(),
+                last_updated=timezone.now()
+            )
+            return JsonResponse({
+                "created": created,
+                "status": res_json["status"],
+                "msg": {
+                    "eng": res_json["message_eng"],
+                    "vn": res_json["message"]
+                },
+                "api_response": res_json,
+            })
         else:
             return JsonResponse({
                 "created": False,
@@ -94,38 +118,46 @@ def create_deposit(request):
             })
 
 
-
-
 def confirm_transaction(request):
     if request.method == "POST":
-        print("hi")
+        print("Received callback request from TTT ScratchCard servers")
+        print("Refferer: " + request.META["HTTP_REFERER"])
+        print("Host: " + request.META["REMOTE_HOST"])
         print(request.POST)
         try:
             matching_transaction = Transaction.objects.get(
                 transaction_id=request.POST["partner_tran_id"],
                 order_id=request.POST["id"]
             )
-            matching_transaction.status = 3
+            matching_transaction.status = 3  # PENDING
+
+            if request.POST["status"] == '4':
+                print({'msg': 'Card already used!'})
+                matching_transaction.status = 1  # FAILED
+                matching_transaction.remark = 'Card already used!'
+            if request.POST["status"] == '5':
+                print({'msg': 'Wrong PIN'})
+                matching_transaction.status = 1  # FAILED
+                matching_transaction.remark = 'Wrong PIN'
+            if request.POST["status"] == '7':
+                print({'msg': 'Wrong Serial'})
+                matching_transaction.status = 1  # FAILED
+                matching_transaction.remark = 'Wrong Serial'
+            if request.POST["status"] == '8':
+                print({'msg': 'Wrong Amount'})
+                matching_transaction.status = 1  # FAILED
+                matching_transaction.remark = 'Wrong Amount'
+            if request.POST["status"] == '1':
+                print({'msg': 'Confirming Transaction!'})
+                matching_transaction.status = 0  # success
+                matching_transaction.amount = request.POST["amount"]
+                matching_transaction.remark = 'Successfully Deposited!'
+
             matching_transaction.arrive_time = timezone.now()
             matching_transaction.last_updated = timezone.now()
             matching_transaction.save()
-            if request.POST["status"] == '4':
-                print({'msg': 'Card already used!'})
-            if request.POST["status"] == '5':
-                print({'msg': 'Wrong PIN'})
-            if request.POST["status"] == '7':
-                print({'msg': 'Wrong Serial'})
-            if request.POST["status"] == '8':
-                print({'msg': 'Wrong Amount'})
-            if request.POST["status"] == '1':
-                print({'msg': 'Confirming Transaction!'})
-                matching_transaction.status = 0
-                matching_transaction.amount = request.POST["amount"]
-                matching_transaction.arrive_time = timezone.now()
-                matching_transaction.last_updated = timezone.now()
-                matching_transaction.save()
 
-                # update user balance after updating matching transaction
+            # update user balance after updating matching transaction
 
             return JsonResponse({"msg": "received response"})
         except ObjectDoesNotExist as e:
