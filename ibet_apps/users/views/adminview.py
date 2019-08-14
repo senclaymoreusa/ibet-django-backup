@@ -16,9 +16,10 @@ from django.utils.translation import ugettext_lazy as _
 import simplejson as json
 import datetime
 from django.http import HttpResponseRedirect, HttpResponse
-
+from system.models import UserToUserGroup
 
 import logging
+import pytz
 
 
 logger = logging.getLogger('django')
@@ -77,7 +78,6 @@ class UserDetailView(CommAdminView):
             transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
             transactions = serializers.serialize('json', transactions)
             transactions = json.loads(transactions)
-
             trans = []
             for tran in transactions:
                 try:
@@ -954,3 +954,64 @@ class UserListView(CommAdminView):
             response['usersList'] = usersList
             # response = json.loads(response)
             return HttpResponse(json.dumps(response), content_type="application/json")   
+
+
+
+class UserProfileView(CommAdminView):
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context()
+        title = 'User Profile'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context['title'] = title
+        context['time'] = timezone.now()
+
+        user = request.user
+        user = CustomUser.objects.get(username=user)
+        response = {
+            'name': user.first_name + ' ' + user.last_name,
+            'title': '',
+            'location': '',
+            'birthday': user.date_of_birth,
+            'email': user.email,
+            'phone': user.phone,
+            'language': user.language,
+            'username': user.username,
+            'department': '',
+            'role': '',
+            'ibetMarkets': '',
+            'letouMarkets': ''
+        }
+
+
+        ibetMarketList = []
+        if user.ibetMarkets:
+            countryCodes = user.ibetMarkets.split(',')
+            for countryCode in countryCodes:
+                ibetMarketList.append({
+                    'code': countryCode,
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+                })
+
+        letouMarketList = []
+        if user.letouMarkets:
+            countryCodes = user.letouMarkets.split(',')
+            for countryCode in countryCodes:
+                letouMarketList.append({
+                    'code': countryCode,
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+                })
+
+        if user.department:
+            role = UserToUserGroup.objects.get(user=user)
+            response.update(role=role.group.name)
+            department = ''
+            for i in DEPARTMENT_LIST:
+                if int(i['code']) == int(user.department):
+                    department = i['name']
+
+            response.update(department=department)
+            
+        response.update(ibetMarkets=ibetMarketList, letouMarkets=letouMarketList)
+        # print(response)
+        return render(request, 'user_profile.html', context)
