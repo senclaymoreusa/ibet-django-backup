@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  variables:
+    ENV: "dev"
+    DJANGO_SETTINGS_MODULE: "djauth.settings"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+  pre_build:
+    commands:
+      - echo "Before running tests"
+      - pip install -r requirements.txt
+    finally:
+      - echo This always runs after install requirements
+  build:
+    commands:
+      - echo "Running all unit tests"
+      - python manage.py test
+    finally:
+      - echo This always runs even after test
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - '**/*'
+cache:
+  paths:
+    - '/root/.cache/pip/**/*'
+    
