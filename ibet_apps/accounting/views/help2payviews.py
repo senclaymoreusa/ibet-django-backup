@@ -84,10 +84,13 @@ class SubmitDeposit(generics.GenericAPIView):
         bank = self.request.POST.get("bank")
         ip = get_Host_name_IP()
         currency = self.request.POST.get("currency")
-        if currency == 2:
+        
+        if currency == '2':
+            
             help2pay_merchant = HELP2PAY_MERCHANT_THB
             help2pay_security = HELP2PAY_SECURITY_THB
-        elif currency == 8:
+        elif currency == '8':
+            
             help2pay_merchant = HELP2PAY_MERCHANT_VND
             help2pay_security = HELP2PAY_SECURITY_VND
 
