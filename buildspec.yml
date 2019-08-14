@@ -14,13 +14,13 @@ phases:
       - echo "Before running tests"
       - pip install -r requirements.txt
     finally:
-      - echo This always runs after install requirements
+      - echo This always runs after installing requirements
   build:
     commands:
       - echo "Running all unit tests"
       - python manage.py test
     finally:
-      - echo This always runs even after test
+      - echo This always runs after unit tests
   post_build:
     commands:
       - echo Build completed on `date`
