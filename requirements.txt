@@ -69,3 +69,6 @@ wrapt==1.11.1
 xlrd==1.2.0
 xlwt==1.3.0
 xmltodict==0.12.0
+ua-parser==0.8.0
+user-agents==2.0
+
