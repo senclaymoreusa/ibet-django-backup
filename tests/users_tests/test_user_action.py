@@ -54,19 +54,21 @@ class UserActionModelTest(APITestCase):
         response = self.client.post(reverse('api_register'), {
             'username': 'vickytestsignup',
             'email': 'vicky_signup@gamil.com',
-            'password1': 'testtest1231',
-            'password2': 'testtest1231',
+            'password': 'testtest1231',
             'first_name': 'vicky',
             'last_name': 'yaya',
             'date_of_birth': "01/01/2011",
             'phone': '5849939393',
+            'street_address_1': 'aaaaaaaaaa',
             'city': "SF",
             'country': 'USA',
             'state': 'CA',
-            'over_eighteen': 'false',
-            'zipcode': '92929'
+            'over_eighteen': 'true',
+            'zipcode': '92929',
+            'language': 'english'
 
         }, format='json')
+        print(response.status_code)
         assert response.status_code == 201
         user = CustomUser.objects.filter(username="vickytestsignup")
         self.assertTrue(UserAction.objects.filter(user=user[0], event_type=2).exists())

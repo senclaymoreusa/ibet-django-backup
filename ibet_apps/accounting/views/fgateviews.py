@@ -24,6 +24,7 @@ from time import gmtime, strftime, strptime
 import datetime, pytz
 from decimal import *
 import xmltodict
+from django.utils import timezone
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
@@ -77,6 +78,8 @@ class chargeCard(generics.GenericAPIView):
                 method= 'Fgo',
                 transaction_type=0,
                 channel=0,
+                request_time=timezone.now(),
+                arrive_time=timezone.now(),
             )
         else:
             return Response(rdata)

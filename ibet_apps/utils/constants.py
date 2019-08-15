@@ -39,6 +39,9 @@ CHANNEL_CHOICES = (
     (8, 'Fgate'),
     (9, 'ScratchCard')
 )
+
+currency_cny = 0
+
 CURRENCY_CHOICES = (
     (0, 'CNY'),
     (1, 'USD'),
@@ -62,6 +65,7 @@ STATE_CHOICES = (
     (6, 'COMPLETED'),
     (7, 'RESEND'),
     (8, 'REJECTED'),
+    (9, 'HELD'),
 
 )
 REVIEW_STATE_CHOICES = (
@@ -78,6 +82,9 @@ DEPOSIT_METHOD_CHOICES = (
     (4, "BANK_TRANSFER"),
     (5, "IBT")
 )
+
+transaction_deposit = 0
+transaction_withdrawl = 1
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),
@@ -391,11 +398,14 @@ ASIAPAY_UNITEKEY = "Ki3CgDAz"
 ASIAPAY_R1 = "C1aym0re"
 ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
+ASIAPAY_TRUSTUSER = "983eb07e"
 
 # help2pay
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-HELP2PAY_MERCHANT = "M0130"
-HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
+HELP2PAY_MERCHANT_THB = "M0513"
+HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
+HELP2PAY_MERCHANT_VND = "M0514"
+HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
