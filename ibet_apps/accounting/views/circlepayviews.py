@@ -17,6 +17,7 @@ from users.models import CustomUser
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
+import utils.helpers as helpers
 
 logger = logging.getLogger('django')
 userCode = CIRCLEPAY_USERCODE
@@ -73,8 +74,13 @@ def confirm_payment(request):
                 amount=transaction_data["amount"],
             )
             logger.info("Found matching transaction!")
+            if matching_transaction.order_id != '0':
+                return JsonResponse({"code": "888", "message": "Callback rejected: Transaction already processed"})
+
             if transaction_data["status"] == '00':  # deposit successful
                 matching_transaction.status = 0
+                helpers.addOrWithdrawBalance(matching_transaction.user_id, transaction_data["amount"], "add")
+
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
                 matching_transaction.status = 3
             if transaction_data["status"] == '02':  # deposit canceled
