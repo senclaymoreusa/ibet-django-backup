@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes,renderer_classes
 
 from utils.constants import *
 from django.utils import timezone
@@ -678,33 +678,59 @@ class getDepositTransaction(generics.GenericAPIView):
         update_data.save()
       
         return Response(rdata)
+@api_view(['POST'])
+@permission_classes((AllowAny,))   
+#@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
+def transactionStatusUpdate(request):
+    print("callback")
+    orderId = request.data.get('orderId')
+    Status = request.POST.get('status') 
+    for x in Transaction._meta.get_field('status').choices:
+            if Status == x[1]:
+                cur_status = x[0]
+    try: 
+        order_id = Transaction.objects.filter(order_id=orderId)
+    except Transaction.DoesNotExist:
+        order_id = None
 
-class transactionStatusUpdate(generics.GenericAPIView):
-    queryset = Transaction.objects.all()
-    serializer_class = depositThirdPartySerialize
-    permission_classes = [AllowAny,]
+    if order_id: 
+        update = order_id.update(status=cur_status)
+        status_code = status.HTTP_200_OK
+        if cur_status == 0:
+            update = order_id.update(arrive_time=timezone.now())
+        return HttpResponse({'Status': Status}, status=status_code)
+    else:
+        status_code = status.HTTP_404_NOT_FOUND 
+        return HttpResponse({'Error': 'Can not find the order.'}, status=status_code)
+
+
+# class transactionStatusUpdate(generics.GenericAPIView):
+#     queryset = Transaction.objects.all()
+#     serializer_class = depositThirdPartySerialize
+#     permission_classes = [AllowAny,]
+#     renderer_classes = [renderers.OpenAPIRenderer, renderers.JSONRenderer]
      
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(self.get_queryset(), many=True)
-        orderId = self.request.data.get('orderId')
-        Status = self.request.data.get('status') 
-        for x in Transaction._meta.get_field('status').choices:
-                if Status == x[1]:
-                    cur_status = x[0]
-        try: 
-            order_id = Transaction.objects.filter(order_id=orderId)
-        except Transaction.DoesNotExist:
-            order_id = None
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(self.get_queryset(), many=True)
+#         orderId = self.request.data.get('orderId')
+#         Status = self.request.data.get('status') 
+#         for x in Transaction._meta.get_field('status').choices:
+#                 if Status == x[1]:
+#                     cur_status = x[0]
+#         try: 
+#             order_id = Transaction.objects.filter(order_id=orderId)
+#         except Transaction.DoesNotExist:
+#             order_id = None
 
-        if order_id: 
-            update = order_id.update(status=cur_status)
-            status_code = status.HTTP_200_OK
-            if cur_status == 0:
-                update = order_id.update(arrive_time=timezone.now())
-            return Response({'Status': Status}, status=status_code)
-        else:
-            status_code = status.HTTP_404_NOT_FOUND 
-            return Response({'Error': 'Can not find the order.'}, status=status_code)
+#         if order_id: 
+#             update = order_id.update(status=cur_status)
+#             status_code = status.HTTP_200_OK
+#             if cur_status == 0:
+#                 update = order_id.update(arrive_time=timezone.now())
+#             return Response({'Status': Status}, status=status_code)
+#         else:
+#             status_code = status.HTTP_404_NOT_FOUND 
+#             return Response({'Error': 'Can not find the order.'}, status=status_code)
 
 class payoutMethod(generics.GenericAPIView):
     queryset = WithdrawChannel.objects.all()
