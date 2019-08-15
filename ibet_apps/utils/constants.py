@@ -406,6 +406,8 @@ HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
 HELP2PAY_MERCHANT_VND = "M0514"
 HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
+HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
