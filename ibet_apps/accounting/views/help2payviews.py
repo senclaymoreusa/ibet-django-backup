@@ -1,27 +1,30 @@
-import requests, json, logging, time, struct, hashlib, base64, datetime, pytz, xmltodict, socket, xml.etree.ElementTree as ET
+import requests, json, logging, hashlib, base64, datetime, pytz, socket
 
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
-from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from django.utils import timezone
+
 from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
-from utils.constants import *
+
+
+from users.models import CustomUser
+from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 
 from ..serializers import help2payDepositSerialize,help2payDepositResultSerialize
 from django.conf import settings
 from time import sleep
 from des import DesKey
 from decimal import *
-from django.utils import timezone
 from time import gmtime, strftime, strptime
 
-
+from utils.constants import *
+import utils.helpers as helpers
 
 logger = logging.getLogger("django")
 currencyConversion = {
@@ -29,8 +32,8 @@ currencyConversion = {
     '8': 'VND',
 }
 convertCurrency = {
-    'THB':'2',
-    'VND':'8',
+    'THB': '2',
+    'VND': '8',
 }
 
 
@@ -117,24 +120,25 @@ class DepositResult(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         print(request.POST)
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        status = self.request.data.get('Status')
+        trans_status = self.request.data.get('Status')
         depositID = self.request.data.get('ID')
         update_data = Transaction.objects.get(transaction_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
         result = "Pending"
-        if status == '000':
+        if trans_status == '000':
             update_data.status = 0
             result = "Success"
-        elif status == '001':
+            helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('amount'), 'add')
+        elif trans_status == '001':
             update_data.status = 1
             result = "Failed"
-        elif status == '006':
+        elif trans_status == '006':
             update_data.status = 4
             result = "Approved"
-        elif status == '007':
+        elif trans_status == '007':
             update_data.status = 8
             result = "Rejected"
-        elif status == '009':
+        elif trans_status == '009':
             update_data.status = 3
             result = "Pending"
 
@@ -145,7 +149,7 @@ class DepositResult(generics.GenericAPIView):
         
         return Response({
             'message': 'Result successfully arrived',
-            'status': status,
+            'status': trans_status,
             'result': result
         }, status=status.HTTP_200_OK)
 
