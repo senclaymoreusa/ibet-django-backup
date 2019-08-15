@@ -148,7 +148,7 @@ class DepositResult(generics.GenericAPIView):
         update_data.save()
         
         return Response({
-            'message': 'Result successfully arrived',
+            'message': 'Received callback from Help2Pay',
             'status': trans_status,
             'result': result
         }, status=status.HTTP_200_OK)
