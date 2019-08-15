@@ -5,7 +5,7 @@
 
 #pending_table_length {
     float: right;
-    
+    margin-right: 80px;
 }
 
 #pending_table_paginate {
@@ -56,4 +56,27 @@ table.dataTable {
 
 #deposit_request_button {
     margin-top: 25px;
+}
+
+#pending_table_previous {
+    margin-right: 20px;
+}
+
+#success_deposit_table_length{
+    float: right;
+    margin-right: 100px;
+}
+
+#success_deposit_table_paginate {
+    float: right;
+    margin-right: 100px;
+
+}
+
+#success_deposit_table_previous {
+    margin-right: 18px;
+}
+
+.paginate_button { 
+    margin-right: 15px;
 }

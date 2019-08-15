@@ -15,27 +15,35 @@ from django.utils.timezone import timedelta
 
 from utils.constants import *
 
-class DepositView(CommAdminView): 
-    def get(self, request):
-        get_type = request.GET.get('type')
 
-        if get_type == 'getMemberInfo':
-            user_id= request.GET.get('user')
+class DepositView(CommAdminView):
+    def get(self, request):
+        get_type = request.GET.get("type")
+
+        if get_type == "getMemberInfo":
+            user_id = request.GET.get("user")
             user = CustomUser.objects.get(pk=user_id)
             response_data = {
-                'id': user_id,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'balance': user.main_wallet,
+                "id": user_id,
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "balance": user.main_wallet,
             }
-            return HttpResponse(json.dumps(response_data), content_type="application/json")
-        
+            return HttpResponse(
+                json.dumps(response_data), content_type="application/json"
+            )
 
-        elif get_type == 'getLatestDeposit':
-            user= request.GET.get('user')
+        elif get_type == "getLatestDeposit":
+            user = request.GET.get("user")
             within_this_month = datetime.date.today() - datetime.timedelta(days=30)
-            latest_deposit = Transaction.objects.filter(Q(user_id_id=user) & Q(transaction_type=0) & Q(request_time__gte=within_this_month))
+            latest_deposit = Transaction.objects.filter(
+                Q(user_id_id=user)
+                & Q(transaction_type=0)
+                & Q(request_time__gte=within_this_month)
+                & Q(status=tran_success_type)
+            )
+            print(str(latest_deposit))
 
             def myconverter(o):
                 if isinstance(o, datetime.date):
@@ -44,28 +52,41 @@ class DepositView(CommAdminView):
             response_deposit_data = []
             for deposit in latest_deposit:
                 depositDict = {}
-                depositDict["payment"] = deposit.channel
+                bankAccount = deposit.user_bank_account
+                if bankAccount == None:
+                    depositDict["bank"] = ""
+                    depositDict["branch"] = ""
+                    depositDict["city"] = ""
+                    depositDict["name"] = ""
+                    depositDict["account"] = ""
+                else:
+                    bank = bankAccount.bank
+                    depositDict["bank"] = bank.name
+                    depositDict["branch"] = bank.branch
+                    depositDict["city"] = bank.city
+                    depositDict["name"] = bankAccount
+                    depositDict["account"] = deposit.user_bank_account
+
+                depositDict["payment"] = deposit.get_channel_display()
                 depositDict["tran_no"] = deposit.transaction_id
-                depositDict["time_app"] = deposit.request_time
-                depositDict["bank"] = deposit.bank
-                depositDict["branch"] = "..."
-                depositDict["city"] = "..."
-                depositDict["name"] = "..."
-                depositDict["account"] = deposit.payer_id
+                depositDict["time_app"] = deposit.request_time.strftime(
+                    "%d/%m/%y %H:%M:%S"
+                )
                 depositDict["amount"] = deposit.amount
+                depositDict["tran_code"] = deposit.order_id
                 depositDict["status"] = deposit.get_status_display()
                 response_deposit_data.append(depositDict)
-            return HttpResponse(json.dumps(response_deposit_data, default = myconverter), content_type="application/json")
-
-
-
+            return HttpResponse(
+                json.dumps(response_deposit_data, default=myconverter),
+                content_type="application/json",
+            )
 
         # elif get_type == 'getChannelInfo':
         #     deposit_channel = request.GET.get('current_deposit_channel')
         #     current_channel_obj = DepositChannel.objects.get(pk=deposit_channel)
         #     context = super().get_context()
         #     context['current_channel_name'] = current_channel_obj.get_thirdParty_name_display()
-            
+
         #     response_data = {
         #         'name': current_channel_obj.get_thirdParty_name_display(),
         #         'status': current_channel_obj.get_switch_display(),
@@ -78,26 +99,30 @@ class DepositView(CommAdminView):
         #     return HttpResponse(json.dumps(response_data), content_type="application/json")
         #     # return render(request, 'deposits.html', context)
 
-            
-
-
-
         else:
             context = super().get_context()
-            title = 'Deposits'
-            context["breadcrumbs"].append({'url': '/deposit/', 'title': title})
-            context['title'] = title
+            title = "Deposits"
+            context["breadcrumbs"].append({"url": "/deposit/", "title": title})
+            context["title"] = title
 
             # CHANNEL
             depositChannel = DepositChannel.objects.all()
             # PENDING
-            pending_trans = Transaction.objects.filter(Q(status=tran_pending_type) & Q(transaction_type=0))
+            pending_trans = Transaction.objects.filter(
+                Q(status=tran_pending_type) & Q(transaction_type=0)
+            )
             # SUCCESS
-            success_trans = Transaction.objects.filter(Q(status=tran_success_type) & Q(transaction_type=0))
+            success_trans = Transaction.objects.filter(
+                Q(status=tran_success_type) & Q(transaction_type=0)
+            )
             # FAILED
-            fail_trans = Transaction.objects.filter(Q(status=tran_fail_type) & Q(transaction_type=0))
+            fail_trans = Transaction.objects.filter(
+                Q(status=tran_fail_type) & Q(transaction_type=0)
+            )
             # CANCELLED
-            cancelled_trans = Transaction.objects.filter(Q(status=tran_cancel_type) & Q(transaction_type=0))
+            cancelled_trans = Transaction.objects.filter(
+                Q(status=tran_cancel_type) & Q(transaction_type=0)
+            )
 
             # channels
             channel_data = []
@@ -108,23 +133,25 @@ class DepositView(CommAdminView):
                 depositDict["min_deposit"] = channel.min_amount
                 depositDict["max_deposit"] = channel.max_amount
                 depositDict["fee"] = channel.transaction_fee
-                # depositDict["volume"] = 
-                # depositDict["new_users_volume"] = 
-                # depositDict["blocked_risk_level"] = 
+                # depositDict["volume"] =
+                # depositDict["new_users_volume"] =
+                # depositDict["blocked_risk_level"] =
                 depositDict["status"] = channel.get_switch_display()
                 channel_data.append(depositDict)
-            context['channel_data'] = channel_data
+            context["channel_data"] = channel_data
 
             # pending transaction
             pending_tran = []
             for pending_transaction in pending_trans:
                 pendingDict = {}
                 pendingDict["id"] = pending_transaction.user_id_id
-                pendingDict["username"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).username
+                pendingDict["username"] = CustomUser.objects.get(
+                    pk=pending_transaction.user_id_id
+                ).username
                 # pendingDict["first_name"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).first_name
                 # pendingDict["last_name"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).last_name
                 # pendingDict["main_wallet"] = CustomUser.objects.get(pk=pending_transaction.user_id_id).main_wallet
-                pendingDict["payment"] = pending_transaction.channel
+                pendingDict["payment"] = pending_transaction.get_channel_display()
                 pendingDict["tran_no"] = pending_transaction.transaction_id
                 pendingDict["app_time"] = pending_transaction.request_time
                 channel = pending_transaction.channel
@@ -132,67 +159,69 @@ class DepositView(CommAdminView):
                 # pendingDict["branch"] =
                 pendingDict["amount"] = pending_transaction.amount
                 pending_tran.append(pendingDict)
-            context['pending_tran'] = pending_tran
+            context["pending_tran"] = pending_tran
 
             # success transaction
             success_tran = []
             for success_transaction in success_trans:
                 successDict = {}
                 successDict["id"] = success_transaction.user_id_id
-                successDict["username"] = CustomUser.objects.get(pk=success_transaction.user_id_id).username
-                successDict["payment"] = success_transaction.channel
+                successDict["username"] = CustomUser.objects.get(
+                    pk=success_transaction.user_id_id
+                ).username
+                successDict["payment"] = success_transaction.get_channel_display()
                 successDict["tran_no"] = success_transaction.transaction_id
                 successDict["app_time"] = success_transaction.request_time
                 # successDict["bank"] = success_transaction.bank
-            #     # pendingDict["branch"] =
+                #     # pendingDict["branch"] =
                 successDict["amount"] = success_transaction.amount
                 success_tran.append(successDict)
-            context['success_tran'] = success_tran
+            context["success_tran"] = success_tran
 
             # failed transaction
             fail_tran = []
             for fail_transaction in fail_trans:
                 failDict = {}
                 failDict["id"] = fail_transaction.user_id_id
-                failDict["username"] = CustomUser.objects.get(pk=fail_transaction.user_id_id).username
-                failDict["payment"] = fail_transaction.channel
+                failDict["username"] = CustomUser.objects.get(
+                    pk=fail_transaction.user_id_id
+                ).username
+                failDict["payment"] = fail_transaction.get_channel_display()
                 failDict["tran_no"] = fail_transaction.transaction_id
                 failDict["app_time"] = fail_transaction.request_time
                 failDict["arr_time"] = fail_transaction.arrive_time
-                failDict["bank"] = fail_transaction.bank
-            #     # pendingDict["branch"] =
+                failDict["bank"] = fail_transaction.user_bank_account
+                #     # pendingDict["branch"] =
                 failDict["amount"] = fail_transaction.amount
                 fail_tran.append(failDict)
-            context['fail_tran'] = fail_tran
+            context["fail_tran"] = fail_tran
 
             # cancelled transaction
             cancelled_tran = []
             for cancelled_transaction in cancelled_trans:
                 cancelledDict = {}
                 failDict["id"] = cancelled_transaction.user_id_id
-                failDict["username"] = CustomUser.objects.get(pk=cancelled_transaction.user_id_id).username
-                failDict["payment"] = cancelled_transaction.channel
+                failDict["username"] = CustomUser.objects.get(
+                    pk=cancelled_transaction.user_id_id
+                ).username
+                failDict["payment"] = cancelled_transaction.get_channel_display()
                 failDict["tran_no"] = cancelled_transaction.transaction_id
                 failDict["app_time"] = cancelled_transaction.request_time
                 failDict["arr_time"] = cancelled_transaction.arrive_time
-                failDict["bank"] = cancelled_transaction.bank
-            #     # pendingDict["branch"] =
+                failDict["bank"] = cancelled_transaction.user_bank_account
+                #     # pendingDict["branch"] =
                 failDict["amount"] = cancelled_transaction.amount
                 cancelled_tran.append(cancelledDict)
-            context['cancelled_tran'] = cancelled_tran
+            context["cancelled_tran"] = cancelled_tran
 
-            return render(request, 'deposits.html', context)
+            return render(request, "deposits.html", context)
 
     def post(self, request):
-        post_type = request.POST.get('type')
+        post_type = request.POST.get("type")
 
-        if post_type == 'audit_deposit':
-            deposit_notes = request.POST.get('deposit_notes')
+        if post_type == "audit_deposit":
+            deposit_notes = request.POST.get("deposit_notes")
             print(deposit_notes)
-
-
-
-
 
     # def post(self, request):
     #     post_type = request.POST.get('type')

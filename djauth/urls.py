@@ -23,27 +23,27 @@ from django.views.generic.base import TemplateView
 from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 import xadmin
+
 xadmin.autodiscover()
 
 # from xadmin.plugins import xversion
 # xversion.register_models()
-    
 
 
 urlpatterns = [
-#    path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('', RedirectView.as_view(url='/admin/')),
-    path('admin/', admin.site.urls),
-    path('xadmin/', xadmin.site.urls),
-    path('users/', include('users.urls')),
-    path('operation/', include('operation.urls')),
-    path('games/', include('games.urls')),
-    path('users/', include('django.contrib.auth.urls')),
-    path('i18n/', include('django.conf.urls.i18n')),
-    path('accounting/', include('accounting.urls')),
-    path('api-auth/', include('rest_framework.urls')),   # Stephen
-    path('rest-auth/', include('rest_auth.urls')),         # Stephen
-    path('rest-auth/registration/', include('rest_auth.registration.urls'))    # Stephen
+    #    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path("", RedirectView.as_view(url="/admin/")),
+    path("admin/", admin.site.urls),
+    path("xadmin/", xadmin.site.urls),
+    path("users/", include("users.urls")),
+    path("operation/", include("operation.urls")),
+    path("games/", include("games.urls")),
+    path("users/", include("django.contrib.auth.urls")),
+    path("i18n/", include("django.conf.urls.i18n")),
+    path("accounting/", include("accounting.urls")),
+    path("api-auth/", include("rest_framework.urls")),  # Stephen
+    path("rest-auth/", include("rest_auth.urls")),  # Stephen
+    path("rest-auth/registration/", include("rest_auth.registration.urls")),  # Stephen
 ]
 
 # Use static() to add url mapping to serve static files during development (only)
@@ -51,12 +51,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 
-urlpatterns+= static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 
-#Add Django site authentication urls (for login, logout, password management)
-urlpatterns += [
-    path('accounts/', include('django.contrib.auth.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+# Add Django site authentication urls (for login, logout, password management)
+urlpatterns += [path("accounts/", include("django.contrib.auth.urls"))] + static(
+    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+)
 

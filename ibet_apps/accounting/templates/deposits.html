@@ -215,7 +215,7 @@
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.app_time|date:'m/d/Y' }}</td>
+                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
                             <td></td>
                             <td></td>
@@ -258,7 +258,7 @@
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.app_time }}</td>
+                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
                             <td></td>
                             <td></td>
@@ -301,7 +301,7 @@
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.app_time }}</td>
+                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.arr_time }}</td>
                             <td>{{ tran.bank }}</td>
                             <td></td>
@@ -344,7 +344,7 @@
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.app_time }}</td>
+                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
                             <td></td>
                             <td></td>
@@ -380,7 +380,6 @@
                             <p><strong>Deposit Slip</strong></p>
                             <p><strong>Transaction No</strong></p>
                             <p><strong>Application Time</strong></p>
-                            <p><strong>Device No.</strong></p>
                             <p><strong>Transaction Code</strong></p>
                             <p><strong>Amount</strong></p>
                         </div>
@@ -558,7 +557,7 @@
                 "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14],
             }],
             language: {
-                searchPlaceholder: "Enter member ID, username or transaction number"
+                searchPlaceholder: " Enter member ID, username or transaction number"
             },
             "dom": '<f<t>ipl>'
         });
@@ -572,7 +571,7 @@
                 "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12, 13],
             }],
             language: {
-                searchPlaceholder: "Enter member ID, username or transaction number"
+                searchPlaceholder: " Enter member ID, username or transaction number"
             },
             "dom": '<f<t>ipl>'
         });
@@ -691,6 +690,7 @@
         function addMemberDetails(data) {
             $("#member_detail1").empty();
             var content = "";
+            console.log(data);
             content += "<p>" + data[0].id + "</p>";
             content += "<p>" + data[0].username + "</p>";
             content += "<p>" + data[0].first_name + "</p>";
@@ -706,20 +706,19 @@
         }
         function addDepositRecord(data) {
             $("#latest_deposits").empty();
-            console.log("latest_deposits" + data[0])
             content = "";
-            for (var i = 1; i < data[0].length; i++) {
-                console.log(i + data[0][i]);
+            for (var i = 0; i < data[0].length; i++) {
                 content += '<tr>'
-                content += '<td>' + i + '</td>';
+                content += '<td>' + (i + 1) + '</td>';
                 content += '<td>' + data[0][i].payment + '</td>';
                 content += '<td>' + data[0][i].tran_no + '</td>';
-                content += '<td>' + data[0][i].time_app + '</td>';
+                content += '<td>' + data[0][i].time_app + '' + '</td>';
                 content += '<td>' + data[0][i].bank + '</td>';
                 content += '<td>' + data[0][i].branch + '</td>';
                 content += '<td>' + data[0][i].city + '</td>';
                 content += '<td>' + data[0][i].name + '</td>';
                 content += '<td>' + data[0][i].account + '</td>';
+                content += '<td>' + data[0][i].tran_code + '</td>';
                 content += '<td>' + data[0][i].amount + '</td>';
                 content += '<td>' + data[0][i].status + '</td>';
                 content += '</tr>'
@@ -733,7 +732,6 @@
             content += "<p>...</p>";
             content += "<p>" + data[4] + "</p>";
             content += "<p>" + data[5] + "</p>";
-            content += "<p>...</p>";
             content += "<p>...</p>";
             content += "<p>" + data[12] + "</p>";
             $("#deposit_detail").append(content);

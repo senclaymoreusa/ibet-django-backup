@@ -59,34 +59,36 @@
                             <input type="hidden" name="type" value="edit_channel_detail"></input>
                             <input type="hidden" id="channel_id_number" name="channel_id_number"></input>
                             <div id="deposit_channel_detail" class="bg_color">
-                                <i class="fa fa-sign-in"></i><strong> DEPOSITS</strong>
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <input type="radio" name="channel_status" id="status_yes" value="0" /> Active
-                                    <input type="radio" name="channel_status" id="status_no" value="1" /> Disabled
-                                </div>
+                                <i class="fa fa-money"></i><strong> DEPOSITS</strong>
+                                <p>
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input type="radio" name="channel_status" id="status_yes" value="0" /> Active
+                                        <input type="radio" name="channel_status" id="status_no" value="1" /> Disabled
+                                    </div>
+                                    <br>
 
-                                <div class="form-group">
-                                    <label>MINIMUM DEPOSIT</label>
-                                    <br>
-                                    <input type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
-                                </div>
-                                <div class="form-group">
-                                    <label>MAXIMUM DEPOSIT</label>
-                                    <br>
-                                    <input type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
-                                </div>
-                                <div class="form-group">
-                                    <label>TRANSACTION FEE($)</label>
-                                    <br>
-                                    <input type=number min=0 step=0.01 id="transaction_fee" name="transaction_fee">
-                                </div>
-                                <div class="form-group">
-                                    <label>VOLUME(%)</label>
-                                    <br>
-                                    &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volumn"
-                                        name="volumn">&#37;
-                                </div>
+                                    <div class="form-group">
+                                        <label>MINIMUM DEPOSIT</label>
+                                        <br>
+                                        <input type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>MAXIMUM DEPOSIT</label>
+                                        <br>
+                                        <input type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>TRANSACTION FEE($)</label>
+                                        <br>
+                                        <input type=number min=0 step=0.01 id="transaction_fee" name="transaction_fee">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>VOLUME(%)</label>
+                                        <br>
+                                        &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volumn"
+                                            name="volumn">&#37;
+                                    </div>
                             </div><br>
                             <div class="form-group">
                                 <label>Limit access</label>
@@ -118,7 +120,8 @@
                                     </select>
                                 </div>
                             </div>
-                            <button id="delete_channel_btn" type="button" class="btn btn-danger">
+                            <button id="delete_channel_btn" type="button" class="btn btn-danger"
+                                style="margin-top: 10px">
                                 <span class="glyphicon glyphicon-trash"
                                     style="color:white; padding-right: 20%; margin-left: -5px;"></span>Delete method
                             </button><br>
@@ -187,7 +190,7 @@
                 }
             }
         });
-        
+
         $('#delete_channel_btn').click(function () {
             $('#delete_channel_btn').html('Click to delete');
             $('#delete_channel_btn').attr('id', 'delete_channel')
