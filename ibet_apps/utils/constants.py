@@ -28,14 +28,19 @@ CURRENCY_TYPES = (
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 CHANNEL_CHOICES = (
-    (0, 'Help2pay'),
+    (0, 'Help2Pay'),
     (1, 'LINEpay'),
-    (2, 'Astropay'),
+    (2, 'AstroPay'),
     (3, 'Qaicash'),
-    (4, 'Asia Pay'),
+    (4, 'AsiaPay'),
     (5, 'Paypal'),
-    (6,'fgate'),
+    (6, 'Payzod'),
+    (7, 'CirclePay'),
+    (8, 'Fgate')
 )
+
+currency_cny = 0
+
 CURRENCY_CHOICES = (
     (0, 'CNY'),
     (1, 'USD'),
@@ -43,7 +48,7 @@ CURRENCY_CHOICES = (
     (3, 'IDR'),
     (4, 'HKD'),
     (5, 'AUD'),
-    (6,'THB'),
+    (6, 'THB'),
     (7, 'MYR'),
     (8, 'VND'),
     (9, 'MMK'),
@@ -81,6 +86,9 @@ DEPOSIT_METHOD_CHOICES = (
     (4, "BANK_TRANSFER"),
     (5, "IBT")
 )
+
+transaction_deposit = 0
+transaction_withdrawl = 1
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),
@@ -226,7 +234,7 @@ INTERVAL = (
     (INTERVAL_PER_SIX_MONTH, 'per six months'),
     (INTERVAL_PER_ONE_YEAR, 'per one year'),
     (INTERVAL_PER_THREE_YEAR, 'per three years'),
-     (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
 )
 
 
@@ -354,7 +362,14 @@ ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('cashifacebatch', '代付'),
 )
 
-#qaicash-payment
+LOCALHOST = "http://localhost:3000"
+DEV_URL = "https://ibet-web-dev.claymoreusa.net"
+
+# LINEpay
+LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
+PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
+
+# qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
 MERCHANTAPIKEY = '70PsPAH!Z7l18ZuVo8^c'
@@ -362,26 +377,26 @@ APIVERSION = 'v2.0'
 DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
 
-#paypal-payment
+# paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
-#astroPay sandbox url
+# astroPay sandbox url
 ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'
 
 
-#astroPay sandbox key:
+# astroPay sandbox key:
 ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 
 ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
 ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
-#astroPay sandbod WEBPAYSTATUS:
+# astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-#aisa-pay
+# asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
 ASIAPAY_CID = "BRANDCQNGHUA3"
 ASIAPAY_DEPOSITKEY = "A49E448121886D7C857B39C3467EC117"
@@ -393,20 +408,34 @@ ASIAPAY_R1 = "C1aym0re"
 ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
 
-#help2pay
-
+# help2pay
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT = "M0130"
 HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-#fgate
+
+# circlepay
+CIRCLEPAY_USERCODE = "297802061195"
+CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
+CIRCLEPAY_EMAIL = "jennyto@ibet.com"
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
+
+# payzod sandbox
+PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+PAYZOD_MERCHANT_ID = 1008779364
+PAYZOD_MERCHANT_NAME = "ibet2019"
+PAYZOD_PASSKEY = "dgr8mM7akMtL"
+
+# payzod production
+
+# fgate
 FGATE_URL = "https://api.fgate247.com/charge_card/"
 FGATE_PARTNERID = "75"
 FGATE_PARTNERKEY = "6tDJkb"
 FGATE_TYPE = "fgo"
-
 
 
 GAME_FILTER_OPTION = [

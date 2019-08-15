@@ -1,29 +1,27 @@
+import requests,json, logging, time, struct, hashlib, base64, datetime, pytz, xmltodict, socket, xml.etree.ElementTree as ET
+
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
-from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
-#from djauth.third_party_keys import *
-from rest_framework import generics
+
 from ..serializers import help2payDepositSerialize,help2payDepositResultSerialize
 from django.conf import settings
-import requests,json
-import logging, time, struct, hashlib, xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
-import base64
-from time import gmtime, strftime, strptime
-import datetime, pytz
 from decimal import *
-import xmltodict, socket
+from time import gmtime, strftime, strptime
+
+
+
 logger = logging.getLogger("django")
 currencyConversion = {
     '0': 'CNY',
@@ -65,15 +63,17 @@ def MD5(code):
     return res
 
 
-class submitDeposit(generics.GenericAPIView):
+class SubmitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
     permission_classes = [IsAuthenticated, ]
     def post(self, request, *args, **kwargs):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
+
         order_id = self.request.POST.get("order_id")
         #order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+
         amount = int(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
@@ -110,7 +110,8 @@ class submitDeposit(generics.GenericAPIView):
         
         return HttpResponse(rdata)
 
-class depositResult(generics.GenericAPIView):
+
+class DepositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]

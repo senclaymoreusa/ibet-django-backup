@@ -414,7 +414,7 @@ class SendEmail(APIView):
         content = Content("text/plain", email_content)
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
-        return Response('Success')
+        return Response(status=status.HTTP_200_OK)
 
 
 class CustomPasswordResetView:
@@ -664,7 +664,8 @@ class AddOrWithdrawBalance(APIView):
             create = Transaction.objects.create(
                 user_id=CustomUser.objects.filter(username=username).first(), 
                 amount=balance, 
-                transaction_type=1
+                transaction_type=1,
+                currency=0,
             )
 
             # action = UserAction(
@@ -891,7 +892,7 @@ class OneclickRegister(APIView):
         user = CustomUser.objects.filter(username=username)
         user.update(active=True, modified_time=timezone.now())
 
-        return Response({'username': username, 'password': password})
+        return Response({'username': username, 'password': password}, status=status.HTTP_200_OK)
 
 
 class UpdateEmail(APIView):
@@ -921,10 +922,10 @@ class CheckEmailExixted(APIView):
         email = request.GET.get('email')
         check_exist = get_user_model().objects.filter(email__iexact=email)
         if check_exist:
-            return Response('Success')
-        return Response('Failed')
-
-
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
+        
+        
 class GetUsernameByReferid(APIView):
 
     permission_classes = (AllowAny, )
@@ -947,8 +948,8 @@ class GenerateForgetPasswordCode(APIView):
         if user:
             code = ''.join([str(random.randint(0, 9)) for i in range(4)])
             user.update(reset_password_code=code)
-            return Response('Success')
-        return Response('Failed')
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class SendResetPasswordCode(APIView):
@@ -968,7 +969,7 @@ class SendResetPasswordCode(APIView):
         content = Content("text/plain", content_text + "\n {} \n \n {} ".format(reset_password_code, 'ibet'))
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body = mail.get())
-        return Response('Success')
+        return Response(status=status.HTTP_200_OK)
 
 
 class VerifyResetPasswordCode(APIView):
@@ -1182,8 +1183,8 @@ class CheckUsernameExist(View):
         username = self.request.GET['username']
         user = get_user_model().objects.filter(username=username)
         if user:
-            return HttpResponse('Exist')
-        return HttpResponse('Valid')
+            return HttpResponse(status=400)
+        return HttpResponse(status=200)
 
 
 class GenerateActivationCode(APIView):
@@ -1217,8 +1218,8 @@ class VerifyActivationCode(APIView):
         if user[0].activation_code == code:
             user.update(active=True)
             user.update(activation_code='')
-            return Response({'status': 'Success'})
-        return Response({'status': 'Failed'})
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSearchAutocomplete(View):
@@ -1318,10 +1319,10 @@ class ValidateAndResetPassowrd(APIView):
         user = self.request.user
 
         if not user.check_password(current):
-            return Response({'status': 'Failed'})
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         user.set_password(new)
         user.save()
-        return Response({'status': 'Success'})
+        return Response(status=status.HTTP_200_OK)
 
 
 class CancelRegistration(APIView):

@@ -64,10 +64,10 @@ class DepositView(CommAdminView):
         #     deposit_channel = request.GET.get('current_deposit_channel')
         #     current_channel_obj = DepositChannel.objects.get(pk=deposit_channel)
         #     context = super().get_context()
-        #     context['current_channel_name'] = current_channel_obj.get_thridParty_name_display()
+        #     context['current_channel_name'] = current_channel_obj.get_thirdParty_name_display()
             
         #     response_data = {
-        #         'name': current_channel_obj.get_thridParty_name_display(),
+        #         'name': current_channel_obj.get_thirdParty_name_display(),
         #         'status': current_channel_obj.get_switch_display(),
         #         'min_deposit': current_channel_obj.min_amount,
         #         'max_deposit': current_channel_obj.max_amount,
@@ -104,7 +104,7 @@ class DepositView(CommAdminView):
             for channel in depositChannel:
                 depositDict = {}
                 depositDict["channel_id"] = channel.pk
-                depositDict["channel_name"] = channel.get_thridParty_name_display()
+                depositDict["channel_name"] = channel.get_thirdParty_name_display()
                 depositDict["min_deposit"] = channel.min_amount
                 depositDict["max_deposit"] = channel.max_amount
                 depositDict["fee"] = channel.transaction_fee
