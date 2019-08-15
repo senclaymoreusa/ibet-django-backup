@@ -137,6 +137,7 @@ def confirm_payment(request):
             if (response.status_code == 200):
                 matchedTrans.status = 0
                 matchedTrans.last_updated = timezone.now()
+                matchedTrans.arrive_time = timezone.now()
                 matchedTrans.save()
                 break
             else:

@@ -16,12 +16,14 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 
 from utils.constants import *
+from django.utils import timezone
 
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from ..serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 
 from time import sleep, gmtime, strftime
+
 
 
 QAICASH_NAME = 3
@@ -59,6 +61,9 @@ statusConversion = {
     "APPROVED":4,
     "REJECTED":5,
     "COMPLETED":6,
+    "RESEND":7,
+    "REJECTED": 8,
+    "HELD": 9,
 }
 REDIRECTURL = "http://localhost:3000/withdraw/success/"
 def generateHash(key, message):
@@ -90,12 +95,18 @@ class getDepositMethod(generics.GenericAPIView):
         my_hmac = generateHash(secret, message)
         delay = kwargs.get("delay", 5)
         success = False
+        
+        if request.user_agent.is_pc:
+            deviceType = 'PC'
+        else:
+            deviceType = 'MOBILE'
+
         #retry
         for x in range(3):
             r = requests.get(url, headers=headers, params = {
                 # 'userId' : userId,
                 'hmac' : my_hmac,
-                'deviceType' : 'PC',
+                'deviceType' : deviceType,
             })
             responseJson = r.json()
             if r.status_code == 200:
@@ -108,13 +119,13 @@ class getDepositMethod(generics.GenericAPIView):
                 logger.error(responseJson)
                 return Response(responseJson)
             if r.status_code == 500:
-                print("Request failed {} time(s)'.format(x+1)")
-                print("Waiting for %s seconds before retrying again")
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
         if not success:
             return Response(responseJson)
         for x in responseJson:
-            print(x)
+            logger.info(x)
             depositData = {
                 "thirdParty_name": QAICASH_NAME, # third party name is hard-fixed to match the channel choice in models
                 "method": x['method'],
@@ -147,9 +158,9 @@ class getBankList(generics.GenericAPIView):
         if (serializer.is_valid()):
             currency_long = currencyConversion[currency]
             method_long = methodConversion[method]
-            print("currency: " + currency_long + ", method: " + method_long)
+            logger.info("currency: " + currency_long + ", method: " + method_long)
             url = api + apiVersion +'/' + merchantId + deposit_url + currency_long + '/methods/' + method_long + '/banks'
-            print(url)
+            logger.info(url)
             headers = {'Accept': 'application/json'}
 
             # username = self.request.GET.get('username')
@@ -161,12 +172,16 @@ class getBankList(generics.GenericAPIView):
             my_hmac = generateHash(secret, message) # hmac format for qaicash api
 
             delay = kwargs.get("delay", 5)
+            if request.user_agent.is_pc:
+                deviceType = 'PC'
+            else:
+                deviceType = 'MOBILE'
 
             for x in range(3):
                 r = requests.get(url, headers=headers, params = {
                     # 'userId' : userId,
                     'hmac' : my_hmac,
-                    'deviceType' : 'PC',
+                    'deviceType' : deviceType,
                 })
                 data = r.json() # r.json() converts the string/byte return of the response into a JSON object
                 if r.status_code == 200:
@@ -202,9 +217,13 @@ class getBankLimits(generics.GenericAPIView):
 
         # currency_long = currencyConversion[currency]
         # method_long = methodConversion[method]
-        print(bank, currency, method)
+        logger.info(bank, currency, method)
         url =  api + apiVersion +'/' + merchantId + deposit_url + currency + '/methods/' + method + '/banks/' + bank + '/limits/'
         headers = {'Accept': 'application/json'}
+        if request.user_agent.is_pc:
+                deviceType = 'PC'
+        else:
+            deviceType = 'MOBILE'
 
         # username = self.request.GET.get('username')
         # userId = CustomUser.objects.filter(username=username)
@@ -217,20 +236,21 @@ class getBankLimits(generics.GenericAPIView):
 
          #retry
         success = False
+        
         for x in range(3):
             r = requests.get(url, headers=headers, params = {
                 # 'userId' : userId,
                 'hmac' : my_hmac,
-                'deviceType' : 'PC',
+                'deviceType' : deviceType,
             })
-            print("bank limits response: ")
-            print(r)
+            logger.info("bank limits response: ")
+            logger.info(r)
             if r.status_code == 200:
                 success = True
                 break
             if r.status_code == 400 or r.status_code == 401:
-                print("There was something wrong with the result")
-                print(r.text)
+                logger.info("There was something wrong with the result")
+                logger.info(r.text)
                 logger.info("Failed to complete a request for retrieving available deposit methods..")
                 logger.error(r.text)
                 return Response(data)
@@ -319,12 +339,12 @@ class submitDeposit(generics.GenericAPIView):
             'depositorEmail': CustomUser.objects.filter(email=email),
             'depositorName': CustomUser.objects.filter(first_name=first_name),
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'http://128dbbc7.ngrok.io/api/qaicash/transaction_status',
+            'callbackUrl': 'http://128dbbc7.ngrok.io/accounting/api/qaicash/transaction_status',
             'messageAuthenticationCode': my_hmac,
         })
         
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         
         create = Transaction.objects.create(
             order_id= rdata['depositTransaction']['orderId'],
@@ -336,6 +356,7 @@ class submitDeposit(generics.GenericAPIView):
             currency= curr,
             transaction_type=0,
             channel=3,
+            request_time=rdata["depositTransaction"]["dateCreated"],
         )
         
         return Response(rdata)
@@ -412,7 +433,6 @@ class submitPayout(generics.GenericAPIView):
                     cur_status = y[0] 
             create = Transaction.objects.get_or_create(
                 order_id= rdata["payoutTransaction"]['orderId'],
-                request_time=rdata["payoutTransaction"]["dateCreated"],
                 amount=rdata["payoutTransaction"]["amount"],
                 status=cur_status,
                 user_id=user,
@@ -420,11 +440,12 @@ class submitPayout(generics.GenericAPIView):
                 currency= cur_val,
                 transaction_type=1,
                 channel=3,
+                request_time=rdata['payoutTransaction']['dateCreated'],
             )
         else:
             logger.error('post information is not correct, please try again')
 
-        print(rdata)
+        logger.info(rdata)
         return Response(rdata)
            
 class getPayoutTransaction(generics.GenericAPIView):
@@ -459,14 +480,14 @@ class getPayoutTransaction(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 200:  
             user = CustomUser.objects.get(username=rdata['userId'])   
             update_data = Transaction.objects.get(order_id=rdata['orderId'],
                                                 method=rdata["payoutMethod"],                                                                      
             )
             update_data.transaction_id=rdata['transactionId']
-            update_data.request_time=rdata["dateCreated"]
+            update_data.last_updated=rdata["dateUpdated"]
             update_data.status=statusConversion[rdata["status"]]
             update_data.save()
             # create = Transaction.objects.get_or_create(
@@ -526,12 +547,12 @@ class approvePayout(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         user = CustomUser.objects.get(username=rdata['userId'])   
         update_data = Transaction.objects.get(order_id=rdata['orderId']                                                                  
         )
         update_data.transaction_id=rdata['transactionId']
-        update_data.request_time=rdata["dateUpdated"]
+        update_data.last_updated=rdata["dateUpdated"]
         update_data.status=4
         update_data.save()
         
@@ -582,7 +603,7 @@ class rejectPayout(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         if r.status_code == 201:  
             
             for x in Transaction._meta.get_field('currency').choices:
@@ -596,7 +617,7 @@ class rejectPayout(generics.GenericAPIView):
             user = CustomUser.objects.get(username=rdata['userId'])   
             create = Transaction.objects.get_or_create(
                 order_id= rdata['orderId'],
-                request_time=rdata["dateCreated"],
+                last_updated=rdata["dateUpdated"],
                 amount=rdata["amount"],
                 status=cur_status,
                 user_id=user,
@@ -644,7 +665,7 @@ class getDepositTransaction(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
-        print(rdata)
+        logger.info(rdata)
         
         for x in Transaction._meta.get_field('currency').choices:
 
@@ -653,7 +674,7 @@ class getDepositTransaction(generics.GenericAPIView):
         
         update_data = Transaction.objects.get(order_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
         update_data.status=statusConversion[rdata["status"]]
-        update_data.request_time=rdata["dateCreated"]
+        update_data.last_updated=rdata["dateUpdated"]
         update_data.save()
       
         return Response(rdata)
@@ -664,30 +685,26 @@ class transactionStatusUpdate(generics.GenericAPIView):
     permission_classes = [AllowAny,]
      
     def post(self, request, *args, **kwargs):
-        print("result:")
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        mystatus = self.request.POST['status']
-        method=self.request.POST['method']
-        amount=self.request.POST['amount']
-        user = CustomUser.objects.get(username=self.request.POST['user_id'])  
+        orderId = self.request.data.get('orderId')
+        Status = self.request.data.get('status') 
         for x in Transaction._meta.get_field('status').choices:
-                if mystatus == x[1]:
-                    cur_status = x[0] 
-        order = self.request.POST['order_id']
-        order_id = Transaction.objects.get(order_id=order)
-
+                if Status == x[1]:
+                    cur_status = x[0]
         try: 
-            order_id = Transaction.objects.filter(order_id=self.request.POST['order_id'])
+            order_id = Transaction.objects.filter(order_id=orderId)
         except Transaction.DoesNotExist:
             order_id = None
 
-        if order_id:          
+        if order_id: 
             update = order_id.update(status=cur_status)
             status_code = status.HTTP_200_OK
+            if cur_status == 0:
+                update = order_id.update(arrive_time=timezone.now())
+            return Response({'Status': Status}, status=status_code)
         else:
             status_code = status.HTTP_404_NOT_FOUND 
-
-        return Response({'details': 'successful update'}, status=status_code)
+            return Response({'Error': 'Can not find the order.'}, status=status_code)
 
 class payoutMethod(generics.GenericAPIView):
     queryset = WithdrawChannel.objects.all()
@@ -812,7 +829,7 @@ class getPayoutBankLimits(generics.GenericAPIView):
         if not success:
             logger.info('Failed to complete a request for...')
         if r.status_code == 500:
-            print('Response content is not in JSON format.')
+            logger.info('Response content is not in JSON format.')
             data = '500 Internal Error'    
         else:
             data = r.json()
