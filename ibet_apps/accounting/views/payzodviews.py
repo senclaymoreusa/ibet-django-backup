@@ -19,6 +19,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from users.models import CustomUser
 from utils.constants import *
+import utils.helpers as helpers
 from ..models import Transaction
 
 load_dotenv()
@@ -118,24 +119,44 @@ def confirm_payment(request):
                 amount=req.get("amount")
             )
             logger.info("Found matching transaction!")
+            if matching_transaction.order_id != '0':
+                return JsonResponse({
+                    "responseCode": "202",
+                    "responseMesg": "Transaction already exists"
+                })
 
             if req.get("response_code") == "001":
                 matching_transaction.status = 0
                 matching_transaction.remark = req.get("response_msg")
+                matching_transaction.order_id = req.get("transaction_no")
+                matching_transaction.arrive_time = timezone.now()
+                matching_transaction.last_updated = timezone.now()
+                matching_transaction.save()
+                logger.info("Finished updating transaction in DB!")
+
+                logger.info("Updating user balance...")
+                helpers.addOrWithdrawBalance(matching_transaction.user_id, req.get("amount"), "add")
+
+                return JsonResponse({
+                    "responseCode": "000",
+                    "responseMesg": req.get("response_msg")
+                })
+
             else:
                 matching_transaction.status = 1
                 matching_transaction.remark = req.get("response_msg")
+                matching_transaction.order_id = req.get("transaction_no")
+                matching_transaction.arrive_time = timezone.now()
+                matching_transaction.last_updated = timezone.now()
+                matching_transaction.save()
+                logger.info("Finished updating transaction in DB!")
 
-            matching_transaction.order_id = req.get("transaction_no")
-            matching_transaction.arrive_time = timezone.now()
-            matching_transaction.last_updated = timezone.now()
-            matching_transaction.save()
-            logger.info("Received confirmation of payment!")
+                return JsonResponse({
+                    "responseCode": "888",
+                    "responseMesg": req.get("response_msg")
+                })
 
-            return JsonResponse({
-                "responseCode": req.get("response_code"),
-                "responseMesg": req.get("response_msg")
-            })
+
         except ObjectDoesNotExist as e:
             logger.error(e)
             return JsonResponse({"message": "Could not find matching transaction"})

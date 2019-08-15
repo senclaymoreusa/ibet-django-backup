@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from rest_framework import parsers, renderers, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
 from users.models import CustomUser
@@ -355,6 +355,8 @@ def cancel_cashout_card(request):
         return JsonResponse(responseJSON)
 
 # create money order with astropay card
+@api_view(['POST'])
+@permission_classes((IsAuthenticated,))
 def capture_transaction(request):
     if (request.method == "POST"):
         requestURL = "https://sandbox-api.astropaycard.com/verif/validator"

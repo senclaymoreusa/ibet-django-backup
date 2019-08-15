@@ -1,4 +1,5 @@
 import decimal
+import logging
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -15,9 +16,10 @@ def addOrWithdrawBalance(username, balance, type_balance):
     if type_balance == 'add':
         if user[0].ftd_time is None:
             user.update(ftd_time=timezone.now(), modified_time=timezone.now())
-
+        logger.info("User's current balance is: " + current_balance)
         new_balance = currrent_balance + decimal.Decimal(balance)
         user.update(main_wallet=new_balance, modified_time=timezone.now())
+        logger.info("User's new balance is: " + new_balance)
         referrer = user[0].referred_by
 
         if referrer:
