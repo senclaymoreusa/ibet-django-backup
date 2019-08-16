@@ -28,13 +28,19 @@ CURRENCY_TYPES = (
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
 CHANNEL_CHOICES = (
-    (0, 'Help2pay'),
+    (0, 'Help2Pay'),
     (1, 'LINEpay'),
-    (2, 'Astropay'),
+    (2, 'AstroPay'),
     (3, 'Qaicash'),
-    (4, 'Asia Pay'),
-    (5, 'Paypal')
+    (4, 'AsiaPay'),
+    (5, 'Paypal'),
+    (6, 'Payzod'),
+    (7, 'CirclePay'),
+    (8, 'Fgate')
 )
+
+currency_cny = 0
+
 CURRENCY_CHOICES = (
     (0, 'CNY'),
     (1, 'USD'),
@@ -42,7 +48,7 @@ CURRENCY_CHOICES = (
     (3, 'IDR'),
     (4, 'HKD'),
     (5, 'AUD'),
-    (6,'THB'),
+    (6, 'THB'),
     (7, 'MYR'),
     (8, 'VND'),
     (9, 'MMK'),
@@ -58,6 +64,7 @@ STATE_CHOICES = (
     (6, 'COMPLETED'),
     (7, 'RESEND'),
     (8, 'REJECTED'),
+    (9, 'HELD'),
 
 )
 REVIEW_STATE_CHOICES = (
@@ -74,6 +81,9 @@ DEPOSIT_METHOD_CHOICES = (
     (4, "BANK_TRANSFER"),
     (5, "IBT")
 )
+
+transaction_deposit = 0
+transaction_withdrawl = 1
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),
@@ -214,7 +224,7 @@ INTERVAL = (
     (INTERVAL_PER_SIX_MONTH, 'per six months'),
     (INTERVAL_PER_ONE_YEAR, 'per one year'),
     (INTERVAL_PER_THREE_YEAR, 'per three years'),
-     (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
 )
 
 
@@ -250,6 +260,89 @@ ASIAPAY_PAYWAY_CHOICES = (
     ('11', '工行手机支付'),
 
 )
+
+GAME_PROVIDER_NETENT = 0
+GAME_PROVIDER_PLAY_GO = 1
+GAME_PROVIDER_BIG_TIME_GAMING = 2
+GAME_PROVIDER_MICROGAMING = 3
+GAME_PROVIDER_QUICKSPIN = 4
+GAME_PROVIDER_PRAGMATIC_PLAY = 5
+GAME_PROVIDER_BLUEPRINT = 6
+GAME_PROVIDER_NOVOMATIC = 7
+GAME_PROVIDER_IGT = 8
+GAME_PROVIDER_ELK_STUDIOS = 9
+GAME_PROVIDER_GENESIS = 10
+GAME_PROVIDER_HIGH5 = 11
+GAME_PROVIDER_IRON_DOG = 12
+GAME_PROVIDER_JUST_FOR_THE_WIN = 13
+GAME_PROVIDER_KALAMBA = 14
+GAME_PROVIDER_LEANDER = 15
+GAME_PROVIDER_LIGHTNING_BOX = 16
+GAME_PROVIDER_NEXTGON = 17
+GAME_PROVIDER_RED7= 18
+GAME_PROVIDER_RED_TIGET_GAMING= 19
+GAME_PROVIDER_SCIENTIFIC_GAMES= 20
+GAME_PROVIDER_THUNDERKICK = 21
+GAME_PROVIDER_YGGDRASIL = 22
+
+
+
+
+GAME_PROVIDERS = (
+    (GAME_PROVIDER_NETENT, 'Netent'),
+    (GAME_PROVIDER_PLAY_GO, 'Play\'n Go'),
+    (GAME_PROVIDER_BIG_TIME_GAMING, 'Big Time Gaming'),
+    (GAME_PROVIDER_MICROGAMING, 'Microgaming'),
+    (GAME_PROVIDER_QUICKSPIN, 'Quickspin'),
+    (GAME_PROVIDER_PRAGMATIC_PLAY, 'Progmatic Play'),
+    (GAME_PROVIDER_BLUEPRINT, 'Blueprint'),
+    (GAME_PROVIDER_NOVOMATIC, 'Novomatic'),
+    (GAME_PROVIDER_IGT, 'IGT'),
+    (GAME_PROVIDER_ELK_STUDIOS, 'Elk Studio'),
+    (GAME_PROVIDER_GENESIS, 'Genesis'),
+    (GAME_PROVIDER_HIGH5, 'High5'),
+    (GAME_PROVIDER_IRON_DOG, 'Iron Dog'),
+    (GAME_PROVIDER_JUST_FOR_THE_WIN, 'Just For The Win'),
+    (GAME_PROVIDER_KALAMBA, 'Kalamba'),
+    (GAME_PROVIDER_LEANDER, 'Leander'),
+    (GAME_PROVIDER_LIGHTNING_BOX, 'Lightning Box'),
+    (GAME_PROVIDER_NEXTGON, 'Nextgen'),
+    (GAME_PROVIDER_RED7, 'Red7'),
+    (GAME_PROVIDER_RED_TIGET_GAMING, 'Red Tiger Gaming'),
+    (GAME_PROVIDER_SCIENTIFIC_GAMES, 'Scientific Games'),
+    (GAME_PROVIDER_THUNDERKICK, 'Thunderkick'),
+    (GAME_PROVIDER_YGGDRASIL, 'Yggdrasil'),
+)
+
+CATEGORY_TYPES_SPORTS = 0
+CATEGORY_TYPES_LIVE_CASINO = 1
+CATEGORY_TYPES_SLOTS = 2
+CATEGORY_TYPES_LOTTERY = 3
+
+
+
+CATEGORY_TYPES = (
+    (CATEGORY_TYPES_SPORTS, 'SPORTS'),
+    (CATEGORY_TYPES_LIVE_CASINO, 'LIVE CASINO'),
+    (CATEGORY_TYPES_SLOTS, 'SLOTS'),
+    (CATEGORY_TYPES_LOTTERY, 'LOTTERY'),
+)
+
+GAME_ATTRIBUTES_GAME_CATEGORY = 0
+GAME_ATTRIBUTES_JACKPOT = 1
+GAME_ATTRIBUTES_PROVIDER = 2
+GAME_ATTRIBUTES_FEATURES = 3
+GAME_ATTRIBUTES_THEME = 4
+
+GAME_ATTRIBUTES = (
+    (GAME_ATTRIBUTES_GAME_CATEGORY, 'Games Category'),
+    (GAME_ATTRIBUTES_JACKPOT, 'Jackpot'),
+    (GAME_ATTRIBUTES_PROVIDER, 'Provider'),
+    (GAME_ATTRIBUTES_FEATURES, 'Features'),
+    (GAME_ATTRIBUTES_THEME, 'Theme'),
+)
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -259,7 +352,14 @@ ASIAPAY_CASHOUTMETHOD_CHOICES = (
     ('cashifacebatch', '代付'),
 )
 
-#qaicash-payment
+LOCALHOST = "http://localhost:3000"
+DEV_URL = "https://ibet-web-dev.claymoreusa.net"
+
+# LINEpay
+LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
+PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
+
+# qaicash-payment
 QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
 MERCHANTID = '39'
 MERCHANTAPIKEY = '70PsPAH!Z7l18ZuVo8^c'
@@ -267,26 +367,26 @@ APIVERSION = 'v2.0'
 DEPOSIT_URL = '/deposit/routing/'
 PAYOUT_URL = '/payout/routing/'
 
-#paypal-payment
+# paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
 PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
-#astroPay sandbox url
+# astroPay sandbox url
 ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'
 
 
-#astroPay sandbox key:
+# astroPay sandbox key:
 ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 
 ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
 ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
-#astroPay sandbod WEBPAYSTATUS:
+# astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-#aisa-pay
+# asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
 ASIAPAY_CID = "BRANDCQNGHUA3"
 ASIAPAY_DEPOSITKEY = "A49E448121886D7C857B39C3467EC117"
@@ -297,15 +397,69 @@ ASIAPAY_UNITEKEY = "Ki3CgDAz"
 ASIAPAY_R1 = "C1aym0re"
 ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
+ASIAPAY_TRUSTUSER = "983eb07e"
 
-#help2pay
-
+# help2pay
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-HELP2PAY_MERCHANT = "M0130"
-HELP2PAY_SECURITY = "aw4uHGgeUCLrhF8"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+HELP2PAY_MERCHANT_THB = "M0513"
+HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
+HELP2PAY_MERCHANT_VND = "M0514"
+HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
+
+# circlepay
+CIRCLEPAY_USERCODE = "297802061195"
+CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
+CIRCLEPAY_EMAIL = "jennyto@ibet.com"
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
+
+# payzod sandbox
+PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+PAYZOD_MERCHANT_ID = 1008779364
+PAYZOD_MERCHANT_NAME = "ibet2019"
+PAYZOD_PASSKEY = "dgr8mM7akMtL"
+
+# payzod production
+
+# fgate
+FGATE_URL = "https://api.fgate247.com/charge_card/"
+FGATE_PARTNERID = "75"
+FGATE_PARTNERKEY = "6tDJkb"
+FGATE_TYPE = "fgo"
+
+
+GAME_FILTER_OPTION = [
+    {
+        'name': 'Games Category',
+        'data': ['New', 'Popular', 'Table Games', 'Slots', 'All Games']
+    },
+    {
+        'name': 'Jackpot',
+        'data': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots']
+    },
+    {
+        'name': 'Provider',
+        'data': ['Netent', 'Play\'n Go', 'Big Time Gaming', 'Microgaming', 'Quickspin', 'Pragmatic Play', 'Blueprint', 'Novomatic', 'IGT', 'Elk Studios',
+        'Genesis', 'High5', 'Iron Dog', 'Just For The Win', 'Kalamba', 'Leander', 'Lightning Box', 'Nextgen', 'Red7', 'Red Tiger Gaming', 'Scientific Games', 
+        'Thunderkick', 'Yggdrasil', 'Other']
+    },
+    {
+        'name': 'Feature',
+        'data': ['Megaways', 'Pay Both Ways', 'Bonus Feature', 'Free Spins', 'Double Or Nothing Feature']
+    },
+    {
+        'name': 'Theme',
+        'data': ['Egypt', 'Oriental', 'Mythology', 'Animal', 'Adventure', 'Fruit', 'Western', 'Film / Tv', 'Music', 'Sports',
+            'Space', 'Holidays', 'Dark/ Halloween', 'Vegas']
+    },
+    {
+        'name': 'Sort by',
+        'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
+    },
+]
 # Notification
 MESSAGE_REJECTED = 0
 MESSAGE_PENDING  = 1
@@ -328,3 +482,5 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_SMS, 'sms'),
     (NOTIFICATION_EMAIL, 'email')
 )
+
+BONUS_QUEUE_NAME = "bonus_queue"

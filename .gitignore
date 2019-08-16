@@ -3,11 +3,15 @@ __pycache__/
 .project
 .coverage
 .DS_Store
-.env
 djauth/.DS_Store
 /.pydevproject
 logs/
 .env
+.idea/
 
 apps/accounting/views/testview.py
 djauth/third_party_keys.py
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

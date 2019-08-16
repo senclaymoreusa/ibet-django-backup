@@ -2510,7 +2510,7 @@ function getTransData(data) {
     $("#transaction_tbody").empty();
     for (var i = 0; i < data.length; i++) {
         var fields = data[i].fields;
-        var time = moment(fields.request_time).format('MMMM, D, YYYY h:mm a');
+        // var time = moment(fields.request_time).format('MMMM, D, YYYY h:mm a');
         // time = time.format();
         var content = '';
         content += '<tr>';
@@ -2541,11 +2541,15 @@ function getTransData(data) {
             content += '<td>None</td>';
         }
 
-        if (fields.currency == 0) {
-            content += '<td>CNY</td>';
-        }
-        // content += '<td>' + fields.currency + '</td>';
-        content += '<td>' + time + '</td>';
+        // if (fields.currency == 0) {
+        //     content += '<td>CNY</td>';
+        // } else if (fields.currency == 1) {
+        //     content += '<td>USD</td>';
+        // } else if (fields.currency == 2) {
+        //     content += '<td>THB</td>';
+        // }
+        content += '<td>' + fields.currency + '</td>';
+        content += '<td>' + fields.time + '</td>';
         content += '<td>' + fields.amount + '</td>';
         content += '<td>' + fields.amount + '</td>';
         content += '<td>' + fields.status + '</td>';

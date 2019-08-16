@@ -1,29 +1,29 @@
+import requests,json, logging, time, struct, hashlib, base64, datetime, pytz, xmltodict, socket, xml.etree.ElementTree as ET
+
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
 from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
-from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
-#from djauth.third_party_keys import *
-from rest_framework import generics
+
 from ..serializers import help2payDepositSerialize,help2payDepositResultSerialize
 from django.conf import settings
-import requests,json
-import logging, time, struct, hashlib, xml.etree.ElementTree as ET
 from time import sleep
 from des import DesKey
-import base64
-from time import gmtime, strftime, strptime
-import datetime, pytz
 from decimal import *
-import xmltodict
+import xmltodict, socket
+from django.utils import timezone
+from time import gmtime, strftime, strptime
+
+
+
 logger = logging.getLogger("django")
 currencyConversion = {
     '0': 'CNY',
@@ -51,41 +51,55 @@ convertCurrency = {
     'MMK':'9',
     'XBT':'10',
 }
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+def get_Host_name_IP(): 
+    try: 
+        host_name = socket.gethostname() 
+        host_ip = socket.gethostbyname(host_name) 
+        return host_ip
+    except: 
+        logger.info("Unable to get Hostname and IP") 
+  
 
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
 
-class submitDeposit(generics.GenericAPIView):
+class SubmitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
-    permission_classes = [AllowAny, ]
+    permission_classes = [IsAuthenticated, ]
     def post(self, request, *args, **kwargs):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
-        order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+
+        order_id = self.request.POST.get("order_id")
+        #order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+
         amount = int(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
         Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
         key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
         bank = self.request.POST.get("bank")
-        ip = get_client_ip(request)
+        ip = get_Host_name_IP()
         currency = self.request.POST.get("currency")
+        
+        if currency == '2':
+            
+            help2pay_merchant = HELP2PAY_MERCHANT_THB
+            help2pay_security = HELP2PAY_SECURITY_THB
+        elif currency == '8':
+            
+            help2pay_merchant = HELP2PAY_MERCHANT_VND
+            help2pay_security = HELP2PAY_SECURITY_VND
+
         data = {
-            "Merchant":HELP2PAY_MERCHANT,
+            "Merchant":help2pay_merchant,
             "Customer":user_id,
             "Currency":currencyConversion[currency],
             "Reference":str(order_id),
-            "Key":MD5(HELP2PAY_MERCHANT+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+HELP2PAY_SECURITY+ip),
+            "Key":MD5(help2pay_merchant+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+help2pay_security+ip),
             "Amount":amount,
             "Datetime":Datetime,
             "FrontURI":REDIRECTURL,
@@ -104,19 +118,24 @@ class submitDeposit(generics.GenericAPIView):
             currency= currency,
             transaction_type=0,
             channel=0,
+            request_time=timezone.now(),
         )
+        
         return HttpResponse(rdata)
 
-class depositResult(generics.GenericAPIView):
+
+class DepositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        Status = self.request.POST.get('Status')
-        
+        Status = self.request.data.get('Status')
+        depositID = self.request.data.get('ID')
         update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
+        update_data.transaction_id = depositID
+        update_data.arrive_time = timezone.now()
         if  Status == '000':  
             update_data.status = 0
         elif Status == '001':
@@ -128,7 +147,33 @@ class depositResult(generics.GenericAPIView):
         elif Status == '009':
             update_data.status = 3
         update_data.save()
+        
         return Response({'details': 'result successful arrived'}, status=status.HTTP_200_OK)
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def depositFrontResult(request):
+    order_id = request.data.get('Reference')
+    if request.data.get('Status') == '000':
+        return HttpResponse("Order[%s] is success." % (order_id))
+    elif request.data.get('Status') == '001':
+        return HttpResponse("Order[%s] is failed." % (order_id))
+    elif request.data.get('Status') == '006':
+        return HttpResponse("Order[%s] is approved." % (order_id))
+    elif request.data.get('Status') == '007':
+        return HttpResponse("Order[%s] is rejected." % (order_id))
+    elif request.data.get('Status') == '009':
+        return HttpResponse("Order[%s] is pending." % (order_id))
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated,))
+def depositStatus(request):
+    order_id = request.data.get('order_id')
+    getData = Transaction.objects.get(order_id=order_id)
+    order_status = getData.status
+    return Response(order_status)
+    
+    
+
         
     
 

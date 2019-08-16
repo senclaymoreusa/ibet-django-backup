@@ -7,6 +7,7 @@ from utils.constants import *
 
 import uuid
 
+
 class Transaction(models.Model):
     transaction_id = models.CharField(max_length = 200, default=0, verbose_name=_('Transaction id'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
@@ -18,7 +19,7 @@ class Transaction(models.Model):
     method = models.CharField(max_length=200, blank=True, verbose_name=_('Method')) 
     last_updated = models.DateTimeField(default=timezone.now, verbose_name=_('Status Last Updated'))
     request_time = models.DateTimeField(default=timezone.now, verbose_name=_('Time of Application'))
-    arrive_time = models.DateTimeField(default=timezone.now, verbose_name=_('Account Time'))
+    arrive_time = models.DateTimeField(blank=True, null=True,verbose_name=_('Account Time'))
     status = models.SmallIntegerField(choices=STATE_CHOICES,default=2, verbose_name=_('Status'))
     channel = models.SmallIntegerField(choices=CHANNEL_CHOICES,default=0,verbose_name=_('Payment'))
     transaction_type = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
@@ -34,13 +35,18 @@ class Transaction(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return '{0}: {1}, {2}, {3}'.format(self.user_id, self.transaction_type, self.order_id, self.status)
+        return 'User ID: {0}, \n \
+            Transaction Type: {1}, \n \
+            Internal ID: {2}, \n \
+            External ID: {3}, \n \
+            Status: {4} \
+            '.format(self.user_id, self.transaction_type, self.transaction_id, self.order_id, self.status)
     
 
 class ThirdParty(models.Model):
-    thridParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    thridParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
-    method = models.CharField(max_length = 30,  verbose_name =_('Method'))
+    thirdParty_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thirdParty_name = models.SmallIntegerField(choices=CHANNEL_CHOICES, default=2, verbose_name=_('Name'))
+    method = models.CharField(max_length=30,  verbose_name =_('Method'))
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Currency'))
     min_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Min Amount'))
     max_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name=_('Max Amount'))
@@ -50,7 +56,7 @@ class ThirdParty(models.Model):
         abstract = True
 
     def __str__(self):
-        return '{0}'.format(self.thridParty_name)
+        return '{0}'.format(self.thirdParty_name)
  
 
 class DepositChannel(ThirdParty):
@@ -69,7 +75,7 @@ class DepositChannel(ThirdParty):
         verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
-        return self.get_thridParty_name_display()
+        return self.get_thirdParty_name_display()
 
 
 class WithdrawChannel(ThirdParty):
@@ -80,7 +86,7 @@ class WithdrawChannel(ThirdParty):
         verbose_name_plural = "Withdraw Channels"
 
     def __str__(self):
-        return self.get_thridParty_name_display()
+        return self.get_thirdParty_name_display()
 
 
 class DepositAccessManagement(models.Model):

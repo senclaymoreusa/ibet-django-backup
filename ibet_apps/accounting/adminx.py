@@ -84,11 +84,11 @@ class WithdrawReviewAdmin(object):
         return super().get_model_form(**kwargs)
 
 class WithdrawChannelAdmin(object):
-    list_display = ('thridParty_name', 'min_amount', 'max_amount', 'transaction_fee', 'currency', 'switch',)
+    list_display = ('thirdParty_name', 'min_amount', 'max_amount', 'transaction_fee', 'currency', 'switch',)
     model_icon = 'fa fa-credit-card'
 
 class DepositChannelAdmin(object):
-    list_display = ('thridParty_name', 'min_amount', 'max_amount', 'currency', 'priority', 'switch',)
+    list_display = ('thirdParty_name', 'min_amount', 'max_amount', 'currency', 'priority', 'switch',)
     model_icon = 'fa fa-won'
 
 

@@ -10,14 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-import os, boto3, json, logging, datetime
+import os
+import boto3
+import json
+import logging
+import datetime
+import sys
+
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger('django')
-
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print("[" + str(datetime.datetime.now()) + "] Trying to load environment variables...")
-if os.path.exists("/tmp/ibetenv/.env"):
+if os.path.exists("/tmp/ibetenv/.env") or os.path.exists(BASE_DIR+"/.env"):
     print("[" + str(datetime.datetime.now()) + "] .env file found!")
 else:
     print("[" + str(datetime.datetime.now()) + "] No .env file was found")
@@ -27,6 +35,7 @@ if "ENV" in os.environ:
     print("[" + str(datetime.datetime.now()) + "] Environment is: " + os.getenv("ENV"))
 else:
     print("[" + str(datetime.datetime.now()) + "] Environment not specified!")
+
 
 def getKeys(bucket, file):
     s3 = boto3.client('s3')
@@ -42,10 +51,9 @@ def getKeys(bucket, file):
     
     return config
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -64,15 +72,13 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
 # CORS_ORIGIN_ALLOW_ALL=True     # Stephen
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
-CRSF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 
 
-import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
 sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
@@ -106,8 +112,13 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
+<<<<<<< HEAD
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
+=======
+    'django_user_agents',
+    
+>>>>>>> 3adf19a466fe81ecf0e04b8430a06069d0bbd2ba
 ]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
@@ -143,6 +154,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'djauth.urls'
@@ -191,38 +203,13 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #         }
 #     }
 
-if os.getenv("ENV") == "prod":
-    print("[" + str(datetime.datetime.now()) + "] Using prod db")
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-prod"
-    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_data['RDS_DB_NAME'],
-            'USER': db_data['RDS_USERNAME'],
-            'PASSWORD': db_data['RDS_PASSWORD'],
-            'HOST': db_data['RDS_HOSTNAME'],
-            'PORT': db_data['RDS_PORT'],
-        }
-    }
-elif os.getenv("ENV") == "dev":
-    print("[" + str(datetime.datetime.now()) + "] Using dev db")
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
-    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-    
-    print(db_data)
-    
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_data['RDS_DB_NAME'],
-            'USER': db_data['RDS_USERNAME'],
-            'PASSWORD': db_data['RDS_PASSWORD'],
-            'HOST': db_data['RDS_HOSTNAME'],
-            'PORT': db_data['RDS_PORT'],
-        }
-    }
-elif os.getenv("ENV") == "local":
+# To accommodate bucket names across all regions, need to remove hard-coded value
+# 
+# ENV: 
+#     USA: dev / prod
+#     EU:  eudev / euprod
+#
+if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
     DATABASES = {
         'default': {
@@ -232,6 +219,23 @@ elif os.getenv("ENV") == "local":
             'PASSWORD': '',
             'HOST': '',
             'PORT': 5432,
+        }
+    }
+elif "ENV" in os.environ:
+    print("[" + str(datetime.datetime.now()) + "] Using db of " + os.environ["ENV"])
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.environ["ENV"]
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    
+    print("DB HOST: " + db_data['RDS_HOSTNAME'])
+    
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
         }
     }
 
@@ -275,14 +279,14 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
 
-from django.utils.translation import ugettext_lazy as _
+
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
     ('fr', _('Franch')),
 )
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -325,7 +329,50 @@ os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
 
 # Logging setup added by Stephen
-if os.getenv("ENV") == "dev":
+if os.getenv("ENV") == "local":
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'file':
+                {
+                    'level': 'DEBUG',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/debug.log',
+                    'when': 'midnight', # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                },
+            'error':
+                {
+                    'level': 'ERROR',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/error.log',
+                    'when': 'midnight',  # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                }
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file', 'error'],
+                # 'level': 'DEBUG',
+                'propagate': True,
+            },
+        },
+    }
+else:
     print("AWS Logging to sys.stderr")
     LOGGING = {
         'version': 1,
@@ -352,38 +399,6 @@ if os.getenv("ENV") == "dev":
                 'level': 'DEBUG',
             }
         }
-    }
-else:
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
-            },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
-            },
-        }, 
-        'handlers': {
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.handlers.TimedRotatingFileHandler',
-                'filename': 'logs/debug.log',
-                'when': 'midnight', # Log file rollover at midnight
-                'interval': 1, # Interval as 1 day
-                'backupCount': 10, # how many backup file to keep, 10 days
-                'formatter': 'verbose',
-            },
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['file'],
-                'level': 'DEBUG',
-                'propagate': True,
-            },
-        },
     }
 
 
@@ -413,3 +428,5 @@ STATICFILES_DIRS = [
 
 AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
 PATH_TO_KEYS = 'config/thirdPartyKeys.json'
+
+

@@ -14,6 +14,10 @@ from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, D
 from ..serializers import astroPaymentStatusSerialize
 from utils.constants import *
 from time import sleep, gmtime, strftime
+from django.utils import timezone
+
+import asyncio
+from accounting.views.sqs_message import send_message_sqs 
 
 logger = logging.getLogger('django')
 secretkey = ASTROPAY_SECRET
@@ -387,16 +391,45 @@ def capture_transaction(request):
         logger.info(responseData)
         if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
             logger.info("success!")
-            create = Transaction.objects.create(
-                order_id=(orderId)[0:20],
-                transaction_id=userid,
-                amount=amount,
-                user_id=CustomUser.objects.get(username=userid),
-                currency=currencyConversion[currency],
-                transaction_type=0, 
-                channel=2,
-                status=0,
-                method="AstroPay",
-            )
-        
+            
+            tranDict = {'order_id':(orderId)[0:20],
+                        'transaction_id':userid,
+                        'amount':amount,
+                        'user_id':CustomUser.objects.get(username=userid),
+                        'currency':currencyConversion[currency],
+                        'transaction_type':0,
+                        'channel':2,
+                        'status':0,
+                        'method':"AstroPay",
+                        'arrive_time': timezone.now(),
+                        'product': "None",
+                    }
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)            
+            loop.run_until_complete(createDeposit(**tranDict))
+                  
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
+
+async def createDeposit(**tranDict):
+    task1 = asyncio.ensure_future(
+        addTransToDB(**tranDict)
+    )
+    task2 = asyncio.ensure_future(
+        send_message_sqs(**tranDict)
+    ) 
+    await task1
+    await task2
+
+async def addTransToDB(**tranDict):
+    create = Transaction.objects.create(
+        order_id=tranDict['order_id'],
+        transaction_id=tranDict['user_id'],
+        amount=tranDict['amount'],
+        user_id=CustomUser.objects.get(username=tranDict['user_id']),
+        currency=tranDict['currency'],
+        transaction_type=tranDict['transaction_type'], 
+        channel=tranDict['channel'], 
+        status=tranDict['status'], 
+        method=tranDict['method'],
+        arrive_time=tranDict['arrive_time'],
+    )
