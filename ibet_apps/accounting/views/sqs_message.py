@@ -30,33 +30,42 @@ async def send_message_sqs(**tranDict):
     #                     format='%(levelname)s: %(asctime)s: %(message)s')
 
     # Send message to SQS queue
+    # userid - user id(pk)
+    # transtype - transaction type : deposit, withdrawal, bet placed
+    # amount  - Transaction Amount
+    # mainwallet - User main wallet
+    # bonuswallet - User Bonus wallet
+    # transtime - the transaction arrive time
+    # currency - the currency type
+    # product - game types choice Sports, Games, Live Casino
     try:
         msg = client.send_message(
             QueueUrl=bonus_queue.url,
             # DelaySeconds=10,
             MessageAttributes={
-                "UserId": {
+                "userid": {
                     "DataType": "Number",
                     "StringValue": str(tranDict["user_id"].pk),
                 },
-                "TransactionType": {
-                    "DataType": "String",
-                    "StringValue": transaction_type,
-                },
-                "TransactionAmount": {
+                "transtype": {"DataType": "String", "StringValue": transaction_type},
+                "amount": {
                     "DataType": "Number",
                     "StringValue": str(tranDict["amount"]),
                 },
-                "UserBalance": {
+                "mainwallet": {
                     "DataType": "Number",
                     "StringValue": str(tranDict["user_id"].main_wallet),
                 },
-                "TransactionTime": {
+                "bonuswallet": {
+                    "DataType": "Number",
+                    "StringValue": str(tranDict["user_id"].bonus_wallet),
+                },
+                "transtime": {
                     "DataType": "String.datetime",
                     "StringValue": str(arrive_time),
                 },
-                "Currency": {"DataType": "String", "StringValue": currency_type},
-                "Product": {"DataType": "String", "StringValue": tranDict["product"]},
+                "currency": {"DataType": "String", "StringValue": currency_type},
+                "product": {"DataType": "String", "StringValue": tranDict["product"]},
             },
             MessageBody=("Deposit Transaction(Astropay)"),
         )
