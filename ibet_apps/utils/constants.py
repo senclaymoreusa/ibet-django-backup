@@ -307,13 +307,14 @@ REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 
 # Notification
-MESSAGE_ALERT  = 1
-MESSAGE_DIRECT = 2
+MESSAGE_REJECTED = 0
+MESSAGE_PENDING  = 1
+MESSAGE_APPROVED = 2
 
-NOTIFICATION_TYPE = (
-    (MESSAGE_ALERT, 'ALERT'),
-    (MESSAGE_DIRECT, 'DIRECT'),
-    # (3, 'REFERRAL')
+NOTIFICATION_STATUS = (
+    (MESSAGE_REJECTED, 'REJECTED'),
+    (MESSAGE_PENDING, 'PENDING'),
+    (MESSAGE_APPROVED, 'APPROVED')
 )
 
 NOTIFICATION_DIRECT = 'D'
