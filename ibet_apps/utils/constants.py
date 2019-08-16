@@ -106,7 +106,7 @@ GAME_TYPE_CHOICES = (
 THIRDPARTY_STATUS_CHOICES = ((0, "OPEN"), (1, "CLOSE"))
 
 COUNTRY_CHOICES = (
-    ("US", "United States"),
+    ('US', "United States"),
     ("CN", "China"),
     ("TH", "Thailand"),
     ("JP", "Japan"),

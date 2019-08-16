@@ -68,7 +68,7 @@ class DepositChannel(ThirdParty):
     deposit_channel = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
-        related_name="sb",
+        related_name="thirdparty",
         through="DepositAccessManagement",
         through_fields=("deposit_channel", "user_id"),
     )
