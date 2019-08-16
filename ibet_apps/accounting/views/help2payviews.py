@@ -128,7 +128,7 @@ class DepositResult(generics.GenericAPIView):
         if trans_status == '000':
             update_data.status = 0
             result = "Success"
-            helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('amount'), 'add')
+            helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('Amount'), 'add')
         elif trans_status == '001':
             update_data.status = 1
             result = "Failed"

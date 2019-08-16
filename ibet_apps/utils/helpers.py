@@ -6,20 +6,22 @@ from django.utils import timezone
 from users.models import CustomUser
 
 
+logger = logging.getLogger("django")
 def addOrWithdrawBalance(username, balance, type_balance):
     user = CustomUser.objects.filter(username=username)
-
-    currrent_balance = user[0].main_wallet
+    print(username)
+    print(user)
+    current_balance = user[0].main_wallet
     # if balance.isdigit() == False:
     #     return HttpResponse('Failed')
-
+    print(current_balance)
     if type_balance == 'add':
         if user[0].ftd_time is None:
             user.update(ftd_time=timezone.now(), modified_time=timezone.now())
-        logger.info("User's current balance is: " + current_balance)
-        new_balance = currrent_balance + decimal.Decimal(balance)
+        logger.info("User's current balance is: " + str(current_balance))
+        new_balance = current_balance + decimal.Decimal(balance)
         user.update(main_wallet=new_balance, modified_time=timezone.now())
-        logger.info("User's new balance is: " + new_balance)
+        logger.info("User's new balance is: " + str(new_balance))
         referrer = user[0].referred_by
 
         if referrer:
