@@ -112,13 +112,9 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
-<<<<<<< HEAD
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
-=======
     'django_user_agents',
-    
->>>>>>> 3adf19a466fe81ecf0e04b8430a06069d0bbd2ba
 ]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
