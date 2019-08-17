@@ -15,9 +15,15 @@ from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 import simplejson as json
 import datetime
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from system.models import UserToUserGroup
+from django.views import View
+from django.contrib.auth import update_session_auth_hash
+from django.utils.translation import LANGUAGE_SESSION_KEY
+from django.urls import reverse
+from django.utils import translation
 
+import requests
 import logging
 import pytz
 
@@ -968,14 +974,22 @@ class UserProfileView(CommAdminView):
 
         user = request.user
         user = CustomUser.objects.get(username=user)
+
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in request.session:
+            # print(request.session[LANGUAGE_SESSION_KEY])
+            languageCode = request.session[LANGUAGE_SESSION_KEY]
+
         response = {
-            'name': user.first_name + ' ' + user.last_name,
-            'title': '',
-            'location': '',
-            'birthday': user.date_of_birth,
+            'userId': user.pk,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'title': user.title,
+            'location': user.country,
+            'birthday': '',
             'email': user.email,
             'phone': user.phone,
-            'language': user.language,
+            'language': languageCode,
             'username': user.username,
             'department': '',
             'role': '',
@@ -983,6 +997,7 @@ class UserProfileView(CommAdminView):
             'letouMarkets': ''
         }
 
+        imagePath = PUBLIC_S3_BUCKET + 'admin_images/'
 
         ibetMarketList = []
         if user.ibetMarkets:
@@ -990,7 +1005,8 @@ class UserProfileView(CommAdminView):
             for countryCode in countryCodes:
                 ibetMarketList.append({
                     'code': countryCode,
-                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode],
+                    'url': imagePath + COUNTRY_CODE_TO_IMG_PREFIX[countryCode] + '.png'
                 })
 
         letouMarketList = []
@@ -999,7 +1015,8 @@ class UserProfileView(CommAdminView):
             for countryCode in countryCodes:
                 letouMarketList.append({
                     'code': countryCode,
-                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode],
+                    'url': imagePath + COUNTRY_CODE_TO_IMG_PREFIX[countryCode] + '.png'
                 })
 
         if user.department:
@@ -1011,7 +1028,87 @@ class UserProfileView(CommAdminView):
                     department = i['name']
 
             response.update(department=department)
+
+        if user.date_of_birth:
+            dobList = user.date_of_birth.split('/')
+            month = dobList[0]
+            day = dobList[1]
+            year = dobList[2]
+            birthday = year + '-' + month + '-' + day
             
-        response.update(ibetMarkets=ibetMarketList, letouMarkets=letouMarketList)
-        # print(response)
+        response.update(ibetMarkets=ibetMarketList, letouMarkets=letouMarketList, birthday=birthday)
+        context['userProfile'] = response
+
         return render(request, 'user_profile.html', context)
+    
+
+    def post(self, request):
+        post_type = request.POST.get('type')
+        userId = request.POST.get('userId')
+
+        if post_type == 'changePassword':
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            repeat_new_password = request.POST.get('repeat_new_password')
+
+            logger.info("Change password request by: {}").format(userId)
+
+            if new_password != repeat_new_password:
+                logger.error("The passwords do not match")
+                return JsonResponse({ "code": 1, "message": "The passwords do not match"})
+
+            user = CustomUser.objects.get(pk=userId)
+            
+            if user.check_password(old_password):
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)
+                logger.info("Success change the password")
+                return JsonResponse({ "code": 0, "message": "Success change the password"})
+            else:
+                logger.error("Old password is incorrect")
+                return JsonResponse({ "code": 1, "message": "Old password is incorrect"})
+        
+        elif post_type == 'changeProfile':
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            title = request.POST.get('title')
+            location = request.POST.get('location')
+            birthday = request.POST.get('birthday')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            language = request.POST.get('system_language')
+
+            # print(first_name, last_name, title, location, birthday, email, phone, language)
+            
+            birthdayList = birthday.split('-')
+            year = birthdayList[0]
+            month = birthdayList[1]
+            day = birthdayList[2]
+            if len(year) > 4 :
+                return JsonResponse({ "code": 1, "message": "Birthday info is not correct"})
+            
+            birthday = month + '/' + day + '/' + year
+            user = CustomUser.objects.get(pk=userId)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.title = title
+            user.country = location
+            user.date_of_birth = birthday
+            user.email = email
+            user.phone = phone
+            user.save()
+            
+            response = JsonResponse({ "code": 0, "message": "Success save user profile"}, status=200)
+
+            if language:
+                request.session[LANGUAGE_SESSION_KEY] = language
+                request.session.modified = True
+                translation.activate(language)
+
+                session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+                if session_key is None:
+                    request.session.create()
+                    response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
+
+            return response

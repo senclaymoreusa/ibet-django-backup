@@ -10,7 +10,7 @@
 }
 
 .form-div {
-    margin-top:25px;
+    margin-top:25px !important;
 }
 
 #role-list-table>tbody>tr>td, 
@@ -184,4 +184,22 @@
 
 .customAutocomplete {
     margin: 10px !important;
+}
+
+
+ /* user profile css */
+
+.change-password {
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.profile-div {
+    margin-top: 15px !important;
 }

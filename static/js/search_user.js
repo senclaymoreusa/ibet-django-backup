@@ -172,10 +172,18 @@ function getUserListRedirectUrl(pageSize, offset, block, search) {
     // console.log(parts);
     
     var redirectUrl = parts[0]; 
-    redirectUrl += '?search=' + search;
-    redirectUrl += "&pageSize=" + pageSize;
-    redirectUrl += '&offset=' + offset;
-    redirectUrl += '&block=' + block;
+    if (pageSize) {
+        redirectUrl += "&pageSize=" + pageSize;
+    }
+    if (search) {
+        redirectUrl += '?search=' + search;
+    }
+    if (offset) {
+        redirectUrl += '?offset=' + offset;
+    }
+    if (block) {
+        redirectUrl += '?block=' + block;
+    }
     // console.log(redirectUrl);
     return redirectUrl;
 }
