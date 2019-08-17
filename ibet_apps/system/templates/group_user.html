@@ -608,6 +608,10 @@ $(document).ready(function() {
     } else {
         $('#marketSelect').val(paramsMap['market']);
     }
+
+    if (paramsMap['search']) {
+        $('#searchAdminUser').val(paramsMap['search']);
+    }
         
     $('#pagination_value').on('change', function() {
         var pageSize = $("#pagination_value").val();;
