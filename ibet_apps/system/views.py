@@ -256,6 +256,12 @@ class PermissionGroupView(CommAdminView):
             #         department = i['name']
                     # print(department)
 
+            if not departmentId.isdigit():
+                return JsonResponse({ "code": 1, "message": "Please choose the department"})
+
+            if not roleId.isdigit():
+                return JsonResponse({ "code": 1, "message": "Please choose the role"})
+
             if not username or not password or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets) :
                 logger.error('Invalid data when create a new user')
                 return JsonResponse({ "code": 1, "message": "invalid data"})
