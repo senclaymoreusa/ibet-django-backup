@@ -198,7 +198,6 @@
 
                             </div>
                         </div>
-            
                         <p id='errorMessage'>&nbsp;</p>
                         <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
@@ -468,6 +467,13 @@ $(document).ready(function() {
         $('.letouMarkets input:checkbox').not(this).prop('checked', this.checked);
     });
 
+    var rolesLen = "{{ roles|length }}";
+
+    if (rolesLen <= 0) {
+        $('#errorMessage').text("Please create a role first"); 
+        $('#errorMessage').css('color', 'red'); 
+        $('#submitButton').attr("disabled", "disabled");
+    }
     // user tagsinput
     // var userData = searchOpen();
     // userData = JSON.stringify(userData);
