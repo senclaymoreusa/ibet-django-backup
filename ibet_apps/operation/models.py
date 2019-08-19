@@ -59,7 +59,6 @@ class Notification(models.Model):
     notifiers = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE)
     publish_on = models.DateTimeField('Publish Time', auto_now_add=True, blank=False)
     status = models.IntegerField(default=1, choices=NOTIFICATION_STATUS)
-    # is_read = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = _('Notification')
@@ -78,3 +77,4 @@ class NotificationLog(models.Model):
 class NotificationToUsers(models.Model):
     notification_id = models.ForeignKey(Notification, on_delete=models.CASCADE)
     notifier_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    is_read = models.BooleanField(default=False)

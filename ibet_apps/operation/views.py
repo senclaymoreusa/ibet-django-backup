@@ -86,7 +86,7 @@ class NotificationView(CommAdminView):
             sent_count = NotificationToUsers.objects.filter(notification_id=sent_msg.pk).count()
             notification_list.append((sent_msg, sent_count))
 
-        logger.info("notification_list", notification_list)
+        # logger.info("notification_list", notification_list)
         context["notifications"] = notification_list
 
         drafts = Notification.objects.filter(status=MESSAGE_PENDING)
