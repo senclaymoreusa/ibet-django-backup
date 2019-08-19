@@ -90,8 +90,8 @@ class SubmitDeposit(generics.GenericAPIView):
             "Key": MD5(help2pay_merchant+str(trans_id)+str(user_id)+amount+currencyConversion[currency]+key_time+help2pay_security+ip),
             "Amount": amount,
             "Datetime": Datetime,
-            # "FrontURI": "http://localhost:3000/deposit/success/",
-            "FrontURI": "https://03720ad2.ngrok.io/" + HELP2PAY_CONFIRM_PATH,
+            "FrontURI": "https://03720ad2.ngrok.io/accounting/api/help2pay/deposit_success",
+            # "FrontURI": "https://03720ad2.ngrok.io/" + HELP2PAY_CONFIRM_PATH,
             "BackURI": "https://03720ad2.ngrok.io/" + HELP2PAY_CONFIRM_PATH,
             "Bank": bank,
             "Language": language,
@@ -109,7 +109,6 @@ class SubmitDeposit(generics.GenericAPIView):
             channel=0,
             request_time=timezone.now(),
         )
-        
         return HttpResponse(rdata)
 
 
