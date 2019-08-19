@@ -5,9 +5,18 @@ import json
 
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError, NoCredentialsError
+import utils.aws_helper
 
+
+AWS_S3_ADMIN_BUCKET = ""
+keys = {}
 load_dotenv()
-print("[" + str(datetime.datetime.now()) + "] Using settings file for " + os.getenv("ENV") + " env.")
+print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
+
+if os.getenv("ENV") != "local":
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
+    keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
+
 
 GENDER_CHOICES = (
     ('Male', 'Male'),
@@ -33,7 +42,6 @@ CURRENCY_TYPES = (
     ('VND', 'VND'),
     ('MMK', 'MMK'),
     ('XBT', 'XBT')
-
 )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -77,7 +85,6 @@ STATE_CHOICES = (
     (7, 'RESEND'),
     (8, 'REJECTED'),
     (9, 'HELD'),
-
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),
@@ -387,12 +394,13 @@ PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
 
 if os.getenv("ENV") != "local":
-    ASTROPAY_URL = ""
-    ASTROPAY_X_LOGIN = "WC8dkWzHt3k3siluNFYmAvF6W3PZR762"
-    ASTROPAY_X_TRANS_KEY = ""
-    ASTROPAY_SECRET = ""
+    # fetch prod credentials from s3
+    ASTROPAY_URL = "https://api.astropaycard.com"
+    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
+    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
+    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
 else:
-    # astroPay sandbox key:
+    # astroPay sandbox keys:
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
