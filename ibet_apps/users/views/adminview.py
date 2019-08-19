@@ -1051,7 +1051,7 @@ class UserProfileView(CommAdminView):
             new_password = request.POST.get('new_password')
             repeat_new_password = request.POST.get('repeat_new_password')
 
-            logger.info("Change password request by: {}").format(userId)
+            logger.info("Change password request by: {}".format(userId))
 
             if new_password != repeat_new_password:
                 logger.error("The passwords do not match")

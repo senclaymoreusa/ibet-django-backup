@@ -155,7 +155,6 @@ class CustomUser(AbstractBaseUser):
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
     department = models.SmallIntegerField(null=True, blank=True)
     title = models.CharField(max_length=100, null=True, blank=True)
-
     
     created_time = models.DateTimeField(
         _('Created Time'),

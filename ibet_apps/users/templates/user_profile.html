@@ -177,21 +177,19 @@
         var form = $(this);
         var url = form.attr('action');
         var data = form.serialize();
-        console.log(data);
-        console.log(url);
         $.ajax({
             type: "POST",
             url: url,
             data: data,
             success: function(data)
             {
-                console.log(data);
-                // if (data.code === 1) {
-                //     $('#errorMessage').text(data.message); 
-                //     $('#errorMessage').css('color', 'red'); 
-                // } else {
-                //     window.location.reload();
-                // }
+                // console.log(data);
+                if (data.code === 1) {
+                    $('#errorMessage').text(data.message); 
+                    $('#errorMessage').css('color', 'red'); 
+                } else {
+                    window.location.reload();
+                }
             }
         });
     });
@@ -203,15 +201,13 @@
         var form = $(this);
         var url = form.attr('action');
         var data = form.serialize();
-        console.log(data);
-        console.log(url);
         $.ajax({
             type: "POST",
             url: url,
             data: data,
             success: function(data)
             {
-                console.log(data);
+                // console.log(data);
                 if (data.code === 1) {
                     $('#changeProfileErrorMessage').text(data.message); 
                     $('#changeProfileErrorMessage').css('color', 'red'); 
