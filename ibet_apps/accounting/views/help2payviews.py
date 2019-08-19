@@ -119,10 +119,19 @@ class DepositResult(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         print(request.POST)
         serializer = self.serializer_class(self.get_queryset(), many=True)
-        trans_status = self.request.data.get('Status')
-        depositID = self.request.data.get('ID')
-        update_data = Transaction.objects.get(transaction_id=self.request.POST.get('Reference'),
-                                              user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
+        trans_status = request.data.get('Status')
+        depositID = request.data.get('ID')
+        update_data = Transaction.objects.get(
+            transaction_id=request.POST.get('Reference'),
+            user_id=CustomUser.objects.get(pk=request.POST.get('Customer'))
+        )
+        if update_data.order_id != '0':  # attempting to confirm the same transaction twice
+            logger.info("Callback was sent twice for Deposit #" + str(request.POST.get('Reference')))
+            return JsonResponse({
+                "error": "Transaction was already modified from 3rd party callback",
+                "message": "Transaction already exists"
+            })
+
         result = "Pending"
         if trans_status == '000':
             update_data.status = 0
