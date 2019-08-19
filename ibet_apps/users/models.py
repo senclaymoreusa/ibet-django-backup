@@ -151,6 +151,10 @@ class CustomUser(AbstractBaseUser):
     temporary_block_time = models.DateTimeField(null=True, blank=True)
     block_timespan = models.DurationField(null=True, blank=True)
 
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
+    letouMarkets = models.CharField(max_length=100, null=True, blank=True)
+    department = models.SmallIntegerField(null=True, blank=True)
+
     
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -262,6 +266,7 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
+    game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
     
