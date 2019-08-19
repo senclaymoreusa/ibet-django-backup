@@ -64,7 +64,7 @@ def confirm_payment(request):
         logger.info("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
-        logger.info("Hello POST")
+        logger.info("Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
         logger.info(transaction_data)
         # query for transaction in ibet db
