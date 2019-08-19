@@ -41,7 +41,7 @@
             <div class="form-group" class="change-password">
                 <div for="system_language" class="profile-div">SYSTEM LANGUAGE</div>
                 <select class="form-control" id="system_language" name="system_language">
-                    <option selected>ALL</option>
+                    <option selected value="">ALL</option>
                     <option value="en">English (en)</option>
                     <option value="zh-hans">简体中文 (zh-hans)</option>
                     <option value="fr">français (fr)</option>
@@ -166,7 +166,12 @@
         // if (language == 'English') {
         //     languageCode = 'en';
         // }
-        $('#system_language').val(language);
+        if (language !== 'ALL') {
+            $('#system_language').val(language);
+        } else {
+            $("#system_language option:contains(ALL)").attr('selected', true);
+        }
+       
 
     });
     
@@ -201,6 +206,7 @@
         var form = $(this);
         var url = form.attr('action');
         var data = form.serialize();
+        // console.log(data);
         $.ajax({
             type: "POST",
             url: url,

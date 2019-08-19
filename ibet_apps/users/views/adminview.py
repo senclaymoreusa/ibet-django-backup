@@ -979,6 +979,8 @@ class UserProfileView(CommAdminView):
         if LANGUAGE_SESSION_KEY in request.session:
             # print(request.session[LANGUAGE_SESSION_KEY])
             languageCode = request.session[LANGUAGE_SESSION_KEY]
+        
+        logger.info("System language is : {}".format(languageCode))
 
         response = {
             'userId': user.pk,
@@ -1035,8 +1037,8 @@ class UserProfileView(CommAdminView):
             day = dobList[1]
             year = dobList[2]
             birthday = year + '-' + month + '-' + day
-            
-        response.update(ibetMarkets=ibetMarketList, letouMarkets=letouMarketList, birthday=birthday)
+            response.update(ibetMarkets=ibetMarketList, letouMarkets=letouMarketList, birthday=birthday)
+
         context['userProfile'] = response
 
         return render(request, 'user_profile.html', context)
@@ -1078,29 +1080,34 @@ class UserProfileView(CommAdminView):
             email = request.POST.get('email')
             phone = request.POST.get('phone')
             language = request.POST.get('system_language')
-
             # print(first_name, last_name, title, location, birthday, email, phone, language)
-            
-            birthdayList = birthday.split('-')
-            year = birthdayList[0]
-            month = birthdayList[1]
-            day = birthdayList[2]
-            if len(year) > 4 :
-                return JsonResponse({ "code": 1, "message": "Birthday info is not correct"})
-            
-            birthday = month + '/' + day + '/' + year
+
             user = CustomUser.objects.get(pk=userId)
             user.first_name = first_name
             user.last_name = last_name
             user.title = title
             user.country = location
-            user.date_of_birth = birthday
             user.email = email
             user.phone = phone
+
+            if birthday:
+                birthdayList = birthday.split('-')
+                year = birthdayList[0]
+                month = birthdayList[1]
+                day = birthdayList[2]
+                if len(year) > 4 :
+                    logger.error("User profile birthday info is not correct")
+                    return JsonResponse({ "code": 1, "message": "Birthday info is not correct"})
+            
+                date_of_birth = month + '/' + day + '/' + year
+                user.date_of_birth = date_of_birth
+                logger.info("Updating user date_of_birth field: {}".format(date_of_birth))
+            
+            logger.info("Updating user info: {0}, {1}, {2}, {3}, {4}, {5}".format(first_name, last_name, title, location, email, phone))
             user.save()
             
             response = JsonResponse({ "code": 0, "message": "Success save user profile"}, status=200)
-
+            
             if language:
                 request.session[LANGUAGE_SESSION_KEY] = language
                 request.session.modified = True
@@ -1110,5 +1117,8 @@ class UserProfileView(CommAdminView):
                 if session_key is None:
                     request.session.create()
                     response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
+                
+                logger.info("Setting system language : {}".format(language))
 
+            logger.info("Finished update admin user profile")
             return response
