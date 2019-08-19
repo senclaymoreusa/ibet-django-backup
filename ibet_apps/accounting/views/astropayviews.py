@@ -360,7 +360,7 @@ def cancel_cashout_card(request):
 @permission_classes((IsAuthenticated,))
 def capture_transaction(request):
     if (request.method == "POST"):
-        requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
+        requestURL = ASTROPAY_URL + "/verif/validator"
         
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
@@ -374,7 +374,7 @@ def capture_transaction(request):
         amount = body.get("amount")
         currency = "USD"
 
-        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
+        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-astropay-web-payment-"+str(random.randint(0,10000)))
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
@@ -383,7 +383,7 @@ def capture_transaction(request):
             "x_card_code": card_code,
             "x_exp_date": exp_date,
             "x_amount": amount,
-            "x_currency": currency, # we are only using this API for thailand
+            "x_currency": currency,  # we are only using this API for thailand
             "x_unique_id": "user_id_123",
             "x_invoice_num": orderId,
         }
@@ -416,11 +416,11 @@ async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(
         addTransToDB(**tranDict)
     )
-    task2 = asyncio.ensure_future(
-        send_message_sqs(**tranDict)
-    ) 
+    # task2 = asyncio.ensure_future(
+    #     send_message_sqs(**tranDict)
+    # )
     await task1
-    await task2
+    # await task2
 
 async def addTransToDB(**tranDict):
     create = Transaction.objects.create(
