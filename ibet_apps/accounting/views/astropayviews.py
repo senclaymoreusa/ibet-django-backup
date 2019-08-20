@@ -24,8 +24,8 @@ secretkey = ASTROPAY_SECRET
 currencyConversion = {
     "CNY": 0,
     "USD": 1,
-    "PHP": 2,
-    "IDR": 3
+    "THB": 2,
+    "IDR": 3,
 }
 
 #get hash code 
@@ -372,9 +372,10 @@ def capture_transaction(request):
         card_code = body.get("card_code")
         exp_date = body.get("exp_date")
         amount = body.get("amount")
-        currency = "USD"
+        currency = "THB"
 
-        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-astropay-web-payment-"+str(random.randint(0,10000)))
+        orderId = request.user.username+"-astropay-deposit-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
