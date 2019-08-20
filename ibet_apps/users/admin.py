@@ -8,7 +8,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, Config, NoticeMessage, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls, AGGamemodels
+from .models import Language, Category, Status, Game, Config, NoticeMessage,  AGGamemodels, GBSportWallet
+# GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls,
 from .forms import UserCreationForm
 
 # Bonus, BonusRequirement, UserBonus,
@@ -39,12 +40,13 @@ admin.site.register(NoticeMessage)
 # admin.site.register(Bonus)
 # admin.site.register(BonusRequirement)
 # admin.site.register(UserBonus)
-admin.site.register(GBSportWalletBet)
-admin.site.register(BetKenoList)
-admin.site.register(BetKenoBalls)
-admin.site.register(GBSportWalletSettle)
-admin.site.register(SettleKenoList)
-admin.site.register(SettleKenoBalls)
+# admin.site.register(GBSportWalletBet)
+# admin.site.register(BetKenoList)
+# admin.site.register(BetKenoBalls)
+# admin.site.register(GBSportWalletSettle)
+# admin.site.register(SettleKenoList)
+# admin.site.register(SettleKenoBalls)
+admin.site.register(GBSportWallet)
 admin.site.register(AGGamemodels)
 
 
