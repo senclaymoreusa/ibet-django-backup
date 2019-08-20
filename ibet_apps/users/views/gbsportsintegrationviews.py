@@ -2,7 +2,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ..models import CustomUser, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls
+from ..models import CustomUser, GBSportWallet 
+# BetKenoList, BetKenoBalls, SettleKenoList, SettleKenoBalls, GBSportWalletBet,  GBSportWalletSettle, 
 import simplejson as json
 import xmltodict
 
@@ -45,12 +46,14 @@ class WalletGeneralAPI(APIView):
             pass
 
         return Response({
-            "Success"  :        success,
-            "TransType":        TransType,
-            "TransData":        TransData,
-            "TransDataExists":  TransDataExists,
-            "ErrorCode":        error_code,
-            "ErrorDesc":        error  
+            "ThirdParty": {
+                "Success"  :        success,
+                "TransType":        TransType,
+                "TransData":        TransData,
+                "TransDataExists":  TransDataExists,
+                "ErrorCode":        error_code,
+                "ErrorDesc":        error  
+            }
         })
 
 
