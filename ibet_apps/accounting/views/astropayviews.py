@@ -385,7 +385,7 @@ def capture_transaction(request):
             "x_exp_date": exp_date,
             "x_amount": amount,
             "x_currency": currency,  # we are only using this API for thailand
-            "x_unique_id": "user_id_123",
+            "x_unique_id": request.user.username,
             "x_invoice_num": orderId,
         }
 
@@ -394,7 +394,7 @@ def capture_transaction(request):
         print(r.content)
         responseData = r.text.split("|")
         logger.info(responseData)
-        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
+        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
             logger.info("success!")
             
             tranDict = {'order_id':(orderId)[0:20],
