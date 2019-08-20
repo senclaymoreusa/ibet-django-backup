@@ -40,7 +40,7 @@ def get_qr_code(request):
         amount = body.get("amount")
         url = PAYZOD_API_URL
         now = datetime.now()
-        ref_no = "test-payzod-order-" + request.user.username + str(random.randint(0, 1000))
+        ref_no = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         ref_date = now.strftime("%Y%m%d%H%M%S")
         if os.getenv("ENV") == "local":
             payload = {

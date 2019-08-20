@@ -316,7 +316,7 @@ def verif_transtatus(request):
         r = requests.post(url + 'verif/transtatus', data=params)
         rdata = r.text
         logger.info(rdata)
-        if r.status_code == 200 :
+        if r.status_code == 200:
             break
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
@@ -374,7 +374,7 @@ def capture_transaction(request):
         amount = body.get("amount")
         currency = "THB"
 
-        orderId = request.user.username+"-astropay-deposit-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+        orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
         params = {
             "x_login": ASTROPAY_X_LOGIN,
@@ -390,25 +390,25 @@ def capture_transaction(request):
         }
 
         r = requests.post(requestURL, data=params)
-        print(r.status_code)
-        print(r.content)
+
         responseData = r.text.split("|")
         logger.info(responseData)
         if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
-            logger.info("success!")
+            logger.info("contact AstroPay servers success and deposit success!")
             
-            tranDict = {'order_id':(orderId)[0:20],
-                        'transaction_id':userid,
-                        'amount':amount,
-                        'user_id':CustomUser.objects.get(username=userid),
-                        'currency':currencyConversion[currency],
-                        'transaction_type':0,
-                        'channel':2,
-                        'status':0,
-                        'method':"AstroPay",
-                        'arrive_time': timezone.now(),
-                        'product': "None",
-                    }
+            tranDict = {
+                'order_id':(orderId)[0:20],
+                'transaction_id':userid,
+                'amount':amount,
+                'user_id':CustomUser.objects.get(username=userid),
+                'currency':currencyConversion[currency],
+                'transaction_type':0,
+                'channel':2,
+                'status':0,
+                'method':"AstroPay",
+                'arrive_time': timezone.now(),
+                'product': "None",
+            }
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)            
             loop.run_until_complete(createDeposit(**tranDict))

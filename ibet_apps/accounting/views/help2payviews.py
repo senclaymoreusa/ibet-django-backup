@@ -60,16 +60,19 @@ class SubmitDeposit(generics.GenericAPIView):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
 
-        trans_id = self.request.POST.get("order_id")
+        # trans_id = self.request.POST.get("order_id")
         # order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+
+        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
         amount = float(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
+
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
         Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
         key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
         bank = self.request.POST.get("bank")
-        # ip = get_Host_name_IP()
+
         ip = get_client_ip(request)
         currency = self.request.POST.get("currency")
         
