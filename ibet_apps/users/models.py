@@ -621,4 +621,4 @@ class AGGamemodels(models.Model):
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return self.sessionToken
+        return self.playname + ' ' + self.transactionType
