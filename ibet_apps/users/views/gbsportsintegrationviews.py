@@ -266,6 +266,11 @@ class WalletSettleAPIURL(APIView):
             try: 
                 user = CustomUser.objects.get(username = MemberID)
 
+                error      =  'No_Error'
+                error_code =  0
+                success    =  1
+                TransData  = user.main_wallet
+
                 GBSportWallet.objects.create(
                     Method        = Method,
                     Success       = Success,
@@ -329,9 +334,7 @@ class WalletSettleAPIURL(APIView):
                 #         OptResult = item['OptResult']
                 #     )
                 
-                error      =  'No_Error'
-                error_code =  0
-                success    =  1
+                
 
             except: 
                 error = 'Member_Not_Found'
