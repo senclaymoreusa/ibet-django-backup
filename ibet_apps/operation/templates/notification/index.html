@@ -434,8 +434,6 @@ function searchOpen() {
         url: url,
         type: 'GET',
         success: function (data) {
-            console.log(data);
-            console.log("------------------");
             searchResult(data, search);
         },
         error: function () {
@@ -534,14 +532,12 @@ function searchResult(data, term) {
       });
     }
   }
-  //sourceList = ['Jess', 'Jennie', 'Bobby'];
-  console.log("This is sourceList: " + sourceList);
+  
   $( "#search" ).autocomplete({
     source: sourceList,
     create: function () {
       $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
           if (item.type === 'category') {
-            console.log('c');
             return $('<li class="ui-state-disabled member-search-result" style="margin: 0px 13px;">')
             .append(item.value)
             .appendTo(ul);
@@ -550,23 +546,18 @@ function searchResult(data, term) {
               //var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
               var url = "#"
               if (item.type == 'username') {
-                  console.log('u');
                   return $('<li>')
                   .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-user" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
                   .appendTo(ul);
               } else if (item.type == 'email') {
-                  console.log('e');
-                  alert("email");
                   return $('<li>')
                   .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-envelope"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
                   .appendTo(ul);
               } else if (item.type == 'phone') {
-                  console.log('p');
                   return $('<li>')
                   .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-phone"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
                   .appendTo(ul);
               } else if (item.type == 'name') {
-                  console.log('n');
                   return $('<li>')
                   .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-id-card"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
                   .appendTo(ul);
