@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ..models import CustomUser, GBSportWallet 
-# BetKenoList, BetKenoBalls, SettleKenoList, SettleKenoBalls, GBSportWalletBet,  GBSportWalletSettle, 
 import simplejson as json
 import xmltodict
 import decimal
@@ -160,26 +159,6 @@ class WalletBetAPIURL(APIView):
                     PreWinAmt     = PreWinAmt
                 )
 
-                # GBSports = GBSportWalletBet.objects.get(BetID=BetID)
-                
-                # BetKenoList.objects.create(
-                #     BetID     = GBSports,
-                #     DetailID  = DetailID,
-                #     SrcCode   = SrcCode,
-                #     DrawNo    = DrawNo,
-                #     OptCode   = OptCode,
-                #     OptParam1 = OptParam1,
-                #     MaxRate   = MaxRate
-                # )
-
-                # Keno = BetKenoList.objects.get(DetailID=DetailID)
-                # for item in KenoBalls_list:
-                #     BetKenoBalls.objects.create(
-                #         DetailID = Keno,
-                #         BallID   = item['BallID'],
-                #         BallNum  = item['BallNum']
-                #     )
-
             except:
                 error = 'Member_Not_Found'
                 error_code = -2
@@ -307,34 +286,6 @@ class WalletSettleAPIURL(APIView):
                     TicketWLAmt   = TicketWLAmt,
                     SettleDT      = SettleDT
                 )
-
-
-                # GBSports = GBSportWalletSettle.objects.get(SettleID=SettleID)
-
-                # SettleKenoList.objects.create(
-                #     SettleOID = GBSports,
-                #     DetailID  = DetailID,
-                #     SrcCode   = SrcCode,
-                #     DrawNo    = DrawNo,
-                #     OptCode   = OptCode,
-                #     OptParam1 = OptParam1,
-                #     MaxRate   = MaxRate,
-                #     RealRate  = RealRate,
-                #     DrawDT    = DrawDT,
-                #     OptResult = OptResult
-                # )
-
-                # Keno = SettleKenoList.objects.get(DetailID  = DetailID)
-
-                # for item in KenoBalls_list:
-                #     SettleKenoBalls.objects.create(
-                #         DetailID  = Keno,
-                #         BallID    = item['BallID'],
-                #         BallNum   = item['BallNum'],
-                #         OptResult = item['OptResult']
-                #     )
-                
-                
 
             except: 
                 error = 'Member_Not_Found'

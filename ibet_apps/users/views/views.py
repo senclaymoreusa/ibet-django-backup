@@ -51,7 +51,7 @@ from allauth.account import app_settings as allauth_settings
 from dateutil.relativedelta import relativedelta
 from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from users.forms import RenewBookForm, CustomUserCreationForm
-from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation,  AGGamemodels #GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls,
+from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
 from games.models import Game as NewGame
 from accounting.models import Transaction
 from threading import Timer
