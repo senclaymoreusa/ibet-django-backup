@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 import users.views.gbsportsintegrationviews as gbsportsintegrationviews
+import users.views.agintegrationviews as agintegrationviews
 
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
@@ -58,5 +59,5 @@ urlpatterns += [
     path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
     path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
-    path('api/posttransferforag/', views.PostTransferforAG.as_view(), name='post_transfer_for_ag')
+    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag')
 ]
