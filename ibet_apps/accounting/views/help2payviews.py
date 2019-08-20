@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException

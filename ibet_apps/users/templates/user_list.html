@@ -74,7 +74,7 @@
                         <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
                         <th >COUNTRIBUTION ($)</th>
                         <th >ACTIVE DAYS</th>
-                        <th >BET PLATFORM</th>
+                        <th >IS ADMIN</th>
                     </tr>
                 </thead>
                 <tbody id='user_list_tbody'>
@@ -114,8 +114,9 @@
                         <td>{{ user.bonus_turnover }}</td>
                         <td>{{ user.contribution }}</td>
                         <td>{{ user.active_days }}</td>
-                        <td>
-                            <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
+                        <td>{{ user.is_admin }}</td>
+                        <!-- <td> -->
+                            <!-- <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
                             <span style="margin-left: -3px;">W</span>
                             </a>
                             <a href="#" class="btn btn-info btn-sm" style="background-color:#6666ff; border-color: #6666ff;">
@@ -126,8 +127,8 @@
                             </a>
                             <a href="#" class="btn btn-info btn-sm" style="background-color:#556b2f; border-color: #556b2f;">
                             <span style="margin-left: -1px;">T</span>
-                            </a>
-                        </td>
+                            </a> -->
+                        <!-- </td> -->
                     </tr>
                     {% endfor %}
                 </tbody>

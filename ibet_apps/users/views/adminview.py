@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
 from django.utils import timezone
-from ..models import *
+from users.models import *
 from accounting.models import Transaction
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
@@ -848,6 +848,11 @@ class UserListView(CommAdminView):
             userDict['withdrawal'] = Transaction.objects.filter(user_id=user, transaction_type=1).count()
             userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
             userDict['last_login_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+
+            if user.is_admin is True:
+                userDict['is_admin'] = 'Yes'
+            else:
+                userDict['is_admin'] = 'No'
             # print("object: " + str(userDict))
             user_data.append(userDict)
         

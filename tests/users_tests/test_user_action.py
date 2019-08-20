@@ -68,7 +68,7 @@ class UserActionModelTest(APITestCase):
             'language': 'english'
 
         }, format='json')
-        print(response.status_code)
+        # print(response.status_code)
         assert response.status_code == 201
         user = CustomUser.objects.filter(username="vickytestsignup")
         self.assertTrue(UserAction.objects.filter(user=user[0], event_type=2).exists())
