@@ -493,7 +493,7 @@ class GBSportWallet(models.Model):
     SettleDT       = models.CharField(max_length=30)
 
     def __str__(self):
-        return self.BetID
+        return self.MemberID + ' ' + self. TransType
 
 
 # class BetKenoList(models.Model):

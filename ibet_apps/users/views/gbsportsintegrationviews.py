@@ -6,6 +6,7 @@ from ..models import CustomUser, GBSportWallet
 # BetKenoList, BetKenoBalls, SettleKenoList, SettleKenoBalls, GBSportWalletBet,  GBSportWalletSettle, 
 import simplejson as json
 import xmltodict
+import decimal
 
 class WalletGeneralAPI(APIView):
 
@@ -116,12 +117,15 @@ class WalletBetAPIURL(APIView):
             KenoBalls_list = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['KenoBalls']
 
             try:
-                user = CustomUser.objects.get(username = MemberID)
-                temp = user.main_wallet
-                if temp >= int(BetTotalAmt):
+                user = CustomUser.objects.filter(username = MemberID)
+                temp = user[0].main_wallet
+                if temp >= decimal.Decimal(BetTotalAmt):
+                    current_balance = temp-decimal.Decimal(BetTotalAmt)
+                    user.update(main_wallet=current_balance)
                     error      =  'No_Error'
                     error_code =  0
                     success    =  1
+                    TransData  = current_balance
 
                 else:
                     error      =  'Insufficient_Balance'
