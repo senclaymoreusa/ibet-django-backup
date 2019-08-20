@@ -190,12 +190,14 @@ class WalletBetAPIURL(APIView):
 
 
         return Response({
-            "Success"  :       success,
-            "TransType":       TransType,
-            "TransData":       TransData,
-            "TransDataExists": TransDataExists, 
-            "ErrorCode":       error_code,
-            "ErrorDesc":       error 
+            "ThirdParty": {
+                "Success"  :       success,
+                "TransType":       TransType,
+                "TransData":       TransData,
+                "TransDataExists": TransDataExists, 
+                "ErrorCode":       error_code,
+                "ErrorDesc":       error 
+            }
         })
 
 class WalletSettleAPIURL(APIView):
@@ -339,12 +341,14 @@ class WalletSettleAPIURL(APIView):
             pass
 
         return Response({
-            "Success"  :       success,
-            "TransType":       TransType,
-            "TransData":       TransData,
-            "TransDataExists": TransDataExists, 
-            "ErrorCode":       error_code,
-            "ErrorDesc":       error 
+            "ThirdParty": {
+                "Success"  :       success,
+                "TransType":       TransType,
+                "TransData":       TransData,
+                "TransDataExists": TransDataExists, 
+                "ErrorCode":       error_code,
+                "ErrorDesc":       error 
+            }
         })
 
 
