@@ -280,93 +280,197 @@ class WalletSettleAPIURL(APIView):
         TransDataExists = 0
         error_code = -5
         error = 'Missing_Input_Parameter'
+        game_type = None
 
-        try:
-            Method        = data['GB']['Result']['Method']
-            Success       = data['GB']['Result']['Success']
 
-            TransType     = data['GB']['Result']['ReturnSet']['TransType']
-            BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
-            BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+        if "KenoList" in data['GB']['Result']['ReturnSet']['SettleList']:
+            game_type = "keno"
+        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "LottoList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
+            game_type = "lotto" 
+        elif "SscList" in data['GB']['Result']['ReturnSet']['SettleList']:
+            game_type = "ssc"
+        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "PkxList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
+            game_type = "pk"
+        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "KsList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
+            game_type = "k"
+        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
+            game_type = "sport"
+
+        if game_type in ["keno", "ssc"]:
+            try:
+                Method        = data['GB']['Result']['Method']
+                Success       = data['GB']['Result']['Success']
+
+                TransType     = data['GB']['Result']['ReturnSet']['TransType']
+                BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+                BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+            
+                SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
+                BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
+                BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
+                TPCode        = data['GB']['Result']['ReturnSet']['SettleList']['TPCode']
+                GBSN          = data['GB']['Result']['ReturnSet']['SettleList']['GBSN']
+                MemberID      = data['GB']['Result']['ReturnSet']['SettleList']['MemberID']
+                CurCode       = data['GB']['Result']['ReturnSet']['SettleList']['CurCode']
+                BetDT         = data['GB']['Result']['ReturnSet']['SettleList']['BetDT']
+                BetType       = data['GB']['Result']['ReturnSet']['SettleList']['BetType']
+                BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam1']
+                BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam2']
+                Wintype       = data['GB']['Result']['ReturnSet']['SettleList']['Wintype']
+                HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList']['HxMGUID']
+                InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['InitBetAmt']
+                RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['RealBetAmt']
+                HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList']['HoldingAmt']
+                InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['InitBetRate']
+                RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['RealBetRate']
+                PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
+                BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
+                WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['WLAmt']
+                RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt'] if game_type == 'keno' else data['GB']['Result']['ReturnSet']['SettleList']['RefundAmt']
+                TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
+                TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
+                TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
+                SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
+
+                try: 
+                    user = CustomUser.objects.get(username = MemberID)
+
+                    error      =  'No_Error'
+                    error_code =  0
+                    success    =  1
+                    TransData  = user.main_wallet
+
+                    GBSportWallet.objects.create(
+                        Method        = Method,
+                        Success       = Success,
+
+                        TransType     = TransType,
+                        BetTotalCnt   = BetTotalCnt,
+                        BetTotalAmt   = BetTotalAmt,
+
+                        SettleID      = SettleID,
+                        BetID         = BetID,
+                        BetGrpNO      = BetGrpNO,
+                        TPCode        = TPCode,
+                        GBSN          = GBSN,
+                        MemberID      = MemberID,
+                        CurCode       = CurCode,
+                        BetDT         = BetDT,
+                        BetType       = BetType,
+                        BetTypeParam1 = BetTypeParam1,
+                        BetTypeParam2 = BetTypeParam2,
+                        Wintype       = Wintype,
+                        HxMGUID       = HxMGUID,
+                        InitBetAmt    = InitBetAmt,
+                        RealBetAmt    = RealBetAmt,
+                        HoldingAmt    = HoldingAmt,
+                        InitBetRate   = InitBetRate,
+                        RealBetRate   = RealBetRate,
+                        PreWinAmt     = PreWinAmt,
+
+                        BetResult     = BetResult,
+                        WLAmt         = WLAmt,
+                        RefundBetAmt  = RefundBetAmt,
+                        TicketBetAmt  = TicketBetAmt,
+                        TicketResult  = TicketResult,
+                        TicketWLAmt   = TicketWLAmt,
+                        SettleDT      = SettleDT
+                    )
+
+                except: 
+                    error = 'Member_Not_Found'
+                    error_code = -2
+
+            except:
+                pass
+
+        
+        # try:
+        #     Method        = data['GB']['Result']['Method']
+        #     Success       = data['GB']['Result']['Success']
+
+        #     TransType     = data['GB']['Result']['ReturnSet']['TransType']
+        #     BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+        #     BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
          
-            SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
-            BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
-            BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
-            TPCode        = data['GB']['Result']['ReturnSet']['SettleList']['TPCode']
-            GBSN          = data['GB']['Result']['ReturnSet']['SettleList']['GBSN']
-            MemberID      = data['GB']['Result']['ReturnSet']['SettleList']['MemberID']
-            CurCode       = data['GB']['Result']['ReturnSet']['SettleList']['CurCode']
-            BetDT         = data['GB']['Result']['ReturnSet']['SettleList']['BetDT']
-            BetType       = data['GB']['Result']['ReturnSet']['SettleList']['BetType']
-            BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam1']
-            BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam2']
-            Wintype       = data['GB']['Result']['ReturnSet']['SettleList']['Wintype']
-            HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList']['HxMGUID']
-            InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['InitBetAmt']
-            RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['RealBetAmt']
-            HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList']['HoldingAmt']
-            InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['InitBetRate']
-            RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['RealBetRate']
-            PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
-            BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
-            WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['WLAmt']
-            RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt']
-            TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
-            TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
-            TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
-            SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
+        #     SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
+        #     BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
+        #     BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
+        #     TPCode        = data['GB']['Result']['ReturnSet']['SettleList']['TPCode']
+        #     GBSN          = data['GB']['Result']['ReturnSet']['SettleList']['GBSN']
+        #     MemberID      = data['GB']['Result']['ReturnSet']['SettleList']['MemberID']
+        #     CurCode       = data['GB']['Result']['ReturnSet']['SettleList']['CurCode']
+        #     BetDT         = data['GB']['Result']['ReturnSet']['SettleList']['BetDT']
+        #     BetType       = data['GB']['Result']['ReturnSet']['SettleList']['BetType']
+        #     BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam1']
+        #     BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList']['BetTypeParam2']
+        #     Wintype       = data['GB']['Result']['ReturnSet']['SettleList']['Wintype']
+        #     HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList']['HxMGUID']
+        #     InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['InitBetAmt']
+        #     RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList']['RealBetAmt']
+        #     HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList']['HoldingAmt']
+        #     InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['InitBetRate']
+        #     RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList']['RealBetRate']
+        #     PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
+        #     BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
+        #     WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['WLAmt']
+        #     RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt'] 
+        #     TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
+        #     TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
+        #     TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
+        #     SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
 
-            try: 
-                user = CustomUser.objects.get(username = MemberID)
+        #     try: 
+        #         user = CustomUser.objects.get(username = MemberID)
 
-                error      =  'No_Error'
-                error_code =  0
-                success    =  1
-                TransData  = user.main_wallet
+        #         error      =  'No_Error'
+        #         error_code =  0
+        #         success    =  1
+        #         TransData  = user.main_wallet
 
-                GBSportWallet.objects.create(
-                    Method        = Method,
-                    Success       = Success,
+        #         GBSportWallet.objects.create(
+        #             Method        = Method,
+        #             Success       = Success,
 
-                    TransType     = TransType,
-                    BetTotalCnt   = BetTotalCnt,
-                    BetTotalAmt   = BetTotalAmt,
+        #             TransType     = TransType,
+        #             BetTotalCnt   = BetTotalCnt,
+        #             BetTotalAmt   = BetTotalAmt,
 
-                    SettleID      = SettleID,
-                    BetID         = BetID,
-                    BetGrpNO      = BetGrpNO,
-                    TPCode        = TPCode,
-                    GBSN          = GBSN,
-                    MemberID      = MemberID,
-                    CurCode       = CurCode,
-                    BetDT         = BetDT,
-                    BetType       = BetType,
-                    BetTypeParam1 = BetTypeParam1,
-                    BetTypeParam2 = BetTypeParam2,
-                    Wintype       = Wintype,
-                    HxMGUID       = HxMGUID,
-                    InitBetAmt    = InitBetAmt,
-                    RealBetAmt    = RealBetAmt,
-                    HoldingAmt    = HoldingAmt,
-                    InitBetRate   = InitBetRate,
-                    RealBetRate   = RealBetRate,
-                    PreWinAmt     = PreWinAmt,
+        #             SettleID      = SettleID,
+        #             BetID         = BetID,
+        #             BetGrpNO      = BetGrpNO,
+        #             TPCode        = TPCode,
+        #             GBSN          = GBSN,
+        #             MemberID      = MemberID,
+        #             CurCode       = CurCode,
+        #             BetDT         = BetDT,
+        #             BetType       = BetType,
+        #             BetTypeParam1 = BetTypeParam1,
+        #             BetTypeParam2 = BetTypeParam2,
+        #             Wintype       = Wintype,
+        #             HxMGUID       = HxMGUID,
+        #             InitBetAmt    = InitBetAmt,
+        #             RealBetAmt    = RealBetAmt,
+        #             HoldingAmt    = HoldingAmt,
+        #             InitBetRate   = InitBetRate,
+        #             RealBetRate   = RealBetRate,
+        #             PreWinAmt     = PreWinAmt,
 
-                    BetResult     = BetResult,
-                    WLAmt         = WLAmt,
-                    RefundBetAmt  = RefundBetAmt,
-                    TicketBetAmt  = TicketBetAmt,
-                    TicketResult  = TicketResult,
-                    TicketWLAmt   = TicketWLAmt,
-                    SettleDT      = SettleDT
-                )
+        #             BetResult     = BetResult,
+        #             WLAmt         = WLAmt,
+        #             RefundBetAmt  = RefundBetAmt,
+        #             TicketBetAmt  = TicketBetAmt,
+        #             TicketResult  = TicketResult,
+        #             TicketWLAmt   = TicketWLAmt,
+        #             SettleDT      = SettleDT
+        #         )
 
-            except: 
-                error = 'Member_Not_Found'
-                error_code = -2
+        #     except: 
+        #         error = 'Member_Not_Found'
+        #         error_code = -2
 
-        except:
-            pass
+        # except:
+        #     pass
 
         return Response({
             "ThirdParty": {
