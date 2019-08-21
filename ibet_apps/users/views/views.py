@@ -1224,7 +1224,6 @@ class VerifyActivationCode(APIView):
 
 class UserSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
-        # print("!!!!!!")
         search = request.GET['search']
         # block = request.GET['block'] == 'true'
 

@@ -1065,8 +1065,8 @@ class UserProfileView(CommAdminView):
                 user.set_password(new_password)
                 user.save()
                 update_session_auth_hash(request, user)
-                logger.info("Success change the password")
-                return JsonResponse({ "code": 0, "message": "Success change the password"})
+                logger.info("Your password has been successfully changed.")
+                return JsonResponse({ "code": 0, "message": "Your password has been successfully changed."}, status=200)
             else:
                 logger.error("Old password is incorrect")
                 return JsonResponse({ "code": 1, "message": "Old password is incorrect"})
@@ -1106,7 +1106,7 @@ class UserProfileView(CommAdminView):
             logger.info("Updating user info: {0}, {1}, {2}, {3}, {4}, {5}".format(first_name, last_name, title, location, email, phone))
             user.save()
             
-            response = JsonResponse({ "code": 0, "message": "Success save user profile"}, status=200)
+            response = JsonResponse({ "code": 0, "message": "User information has been successfully updated."}, status=200)
             
             if language:
                 request.session[LANGUAGE_SESSION_KEY] = language
