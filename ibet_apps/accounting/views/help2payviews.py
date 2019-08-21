@@ -42,15 +42,6 @@ def MD5(code):
     return res
 
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
 class SubmitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
@@ -73,7 +64,7 @@ class SubmitDeposit(generics.GenericAPIView):
         key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
         bank = self.request.POST.get("bank")
 
-        ip = get_client_ip(request)
+        ip = helpers.get_client_ip(request)
         currency = self.request.POST.get("currency")
         
         if currency == '2':
@@ -82,9 +73,7 @@ class SubmitDeposit(generics.GenericAPIView):
         elif currency == '8':
             help2pay_merchant = HELP2PAY_MERCHANT_VND
             help2pay_security = HELP2PAY_SECURITY_VND
-        print(help2pay_merchant)
-        print(user_id)
-        print(ip)
+
         data = {
             "Merchant": help2pay_merchant,
             "Customer": user_id,
@@ -119,8 +108,8 @@ class DepositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
+
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         serializer = self.serializer_class(self.get_queryset(), many=True)
         trans_status = request.data.get('Status')
         depositID = request.data.get('ID')
