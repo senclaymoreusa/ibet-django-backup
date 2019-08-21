@@ -20,7 +20,7 @@ def getThirdPartyKeys(bucket, file):
 
 
 def getAWSClient(service_name, third_party_keys):
-    service = boto3.resource(service_name)
+    # service = boto3.resource(service_name, region_name='eu-west-2')
     try:
         client = boto3.client(
             service_name,
