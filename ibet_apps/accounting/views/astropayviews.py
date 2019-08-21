@@ -415,15 +415,17 @@ def capture_transaction(request):
                   
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
 
+
 async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(
         addTransToDB(**tranDict)
     )
-    # task2 = asyncio.ensure_future(
-    #     send_message_sqs(**tranDict)
-    # )
+    task2 = asyncio.ensure_future(
+        send_message_sqs(**tranDict)
+    )
     await task1
-    # await task2
+    await task2
+
 
 async def addTransToDB(**tranDict):
     create = Transaction.objects.create(
