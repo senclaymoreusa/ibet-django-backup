@@ -1,0 +1,187 @@
+.role-title {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.form-div {
+    margin-top:25px;
+}
+
+#role-list-table>tbody>tr>td, 
+#role-list-table>tbody>tr>th {
+   background-color: #d9edf7;
+}
+
+#role-list-table>tbody>tr:first-child>td,
+#role-list-table>tbody>tr:first-child>th {  
+    background-color: white;
+
+}
+
+#role-list-table>tbody>.subMenu>td,
+#role-list-table>tbody>.subMenu>th {
+    background-color: rgba(217, 237, 247, 0.5);
+    font-weight: normal;
+    /* background-color: red !important; */
+}
+
+#role-list-table>tbody>.subMenu>td:first-child {
+    padding-left:20px;
+    /* background-color: red !important; */
+}
+
+#role-list-table th {
+    height: 12px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    vertical-align: bottom;
+}
+
+
+#role-list-table td {  
+    text-align: left;
+    height: 40px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding: 0px;
+    font-weight: bold;
+
+}
+
+#user-group-table {
+    text-align: left;
+    height: 40px;
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    padding: 0px;
+}
+
+#user-group-table>tbody>tr:nth-child(odd)>td, 
+#user-group-table>tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+
+.flag-icon {
+    width:15px; 
+    height: 15px; 
+    margin-left:10%;
+}
+
+.checkboxIcon {
+    margin-left:10px;
+}
+
+.permission-dialog {
+    color:black; 
+    background-color:#f5f5f5; 
+    border-top-right-radius:6px; 
+    border-top-left-radius:6px;
+}
+
+#view-btn {
+    background-color: #428bca;
+    color: white;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    border-color: #428bca;
+}
+
+.view-text {
+    width: 109px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.profile-title {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.profile-info {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.name-title {
+    font-family: Helvetica;
+    font-size: 22px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top: 10px;
+}
+
+.inline {
+    display: inline;
+}
+
+.icon-margin {
+    margin-left: -40px;
+}
+
+.sec-icon-margin {
+    margin-left: -20px;
+}
+
+.name-username {
+    font-family: Helvetica;
+    font-size: 15px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    margin-top: 6px;
+}
+
+.customAutocomplete {
+    margin: 10px !important;
+}
