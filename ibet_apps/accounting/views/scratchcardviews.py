@@ -42,7 +42,7 @@ def create_deposit(request):
         message = bytes(SCRATCHCARD_PARTNER_ID+operator+pin+serial+amount, 'utf-8')
         secret = bytes(SCRATCHCARD_CODE, 'utf-8')
         sign = hmac.new(secret, msg=message, digestmod=hashlib.sha256).hexdigest()
-        trans_id = request.user.username + "ScratchCardDeposit" + timezone.datetime.today().isoformat()
+        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
         r = requests.get(SCRATCHCARD_URL, params={
             'partner': SCRATCHCARD_PARTNER_ID,

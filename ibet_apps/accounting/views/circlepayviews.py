@@ -36,7 +36,6 @@ def create_deposit(request):
         amount = body["amount"]
         transaction_id = body["trans_id"]
 
-        print(request.user)
         user_id = CustomUser.objects.get(username=request.user.username)
         obj, created = Transaction.objects.get_or_create(
             user_id=user_id,
@@ -64,7 +63,7 @@ def confirm_payment(request):
         logger.info("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
-        logger.info("Hello POST")
+        logger.info("[" + str(datetime.now()) + "] Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
         logger.info(transaction_data)
         # query for transaction in ibet db
