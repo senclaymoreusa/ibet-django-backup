@@ -78,7 +78,7 @@ class WalletBetAPIURL(APIView):
         error_code = -5
         error = 'Missing_Input_Parameter'
         game_type = None
-        print("KenoList" in data['GB']['Result']['ReturnSet']['BettingList'])
+
         
         if  "KenoList" in data['GB']['Result']['ReturnSet']['BettingList']:
             game_type = 'keno'
@@ -254,96 +254,6 @@ class WalletBetAPIURL(APIView):
                 
                 pass
 
-        
-
-        # try:
-        #     Method        = data['GB']['Result']['Method']
-        #     Success       = data['GB']['Result']['Success']
-
-        #     TransType     = data['GB']['Result']['ReturnSet']['TransType']
-        #     BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
-        #     BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
-
-        #     BetID         = data['GB']['Result']['ReturnSet']['BettingList']['BetID']
-        #     BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList']['BetGrpNO']
-        #     TPCode        = data['GB']['Result']['ReturnSet']['BettingList']['TPCode']
-        #     GBSN          = data['GB']['Result']['ReturnSet']['BettingList']['GBSN']
-        #     MemberID      = data['GB']['Result']['ReturnSet']['BettingList']['MemberID']
-        #     CurCode       = data['GB']['Result']['ReturnSet']['BettingList']['CurCode']
-        #     BetDT         = data['GB']['Result']['ReturnSet']['BettingList']['BetDT']
-        #     BetType       = data['GB']['Result']['ReturnSet']['BettingList']['BetType']
-        #     BetTypeParam1 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam1']
-        #     BetTypeParam2 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam2']
-        #     Wintype       = data['GB']['Result']['ReturnSet']['BettingList']['Wintype']
-        #     HxMGUID       = data['GB']['Result']['ReturnSet']['BettingList']['HxMGUID']
-        #     InitBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['InitBetAmt']
-        #     RealBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['RealBetAmt']
-        #     HoldingAmt    = data['GB']['Result']['ReturnSet']['BettingList']['HoldingAmt']
-        #     InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['InitBetRate']
-        #     RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['RealBetRate']
-        #     PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList']['PreWinAmt']
-
-        #     # DetailID      = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['DetailID']
-        #     # SrcCode       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['SrcCode']
-        #     # DrawNo        = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['DrawNo']
-        #     # OptCode       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['OptCode']
-        #     # OptParam1     = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['OptParam1']
-        #     # MaxRate       = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['MaxRate']
-
-        #     # KenoBalls_list = data['GB']['Result']['ReturnSet']['BettingList']['KenoList']['KenoBalls']
-
-        #     try:
-        #         user = CustomUser.objects.filter(username = MemberID)
-        #         temp = user[0].main_wallet
-        #         if temp >= decimal.Decimal(BetTotalAmt):
-        #             current_balance = temp-decimal.Decimal(BetTotalAmt)
-        #             user.update(main_wallet=current_balance)
-        #             error      =  'No_Error'
-        #             error_code =  0
-        #             success    =  1
-        #             TransData  = current_balance
-
-        #         else:
-        #             error      =  'Insufficient_Balance'
-        #             error_code =  -4
-            
-
-        #         GBSportWallet.objects.create(
-        #             Method        = Method,
-        #             Success       = Success,
-
-        #             TransType     = TransType,
-        #             BetTotalCnt   = BetTotalCnt,
-        #             BetTotalAmt   = BetTotalAmt,
-
-        #             BetID         = BetID,
-        #             BetGrpNO      = BetGrpNO,
-        #             TPCode        = TPCode,
-        #             GBSN          = GBSN,
-        #             MemberID      = MemberID,
-        #             CurCode       = CurCode,
-        #             BetDT         = BetDT,
-        #             BetType       = BetType,
-        #             BetTypeParam1 = BetTypeParam1,
-        #             BetTypeParam2 = BetTypeParam2,
-        #             Wintype       = Wintype,
-        #             HxMGUID       = HxMGUID,
-        #             InitBetAmt    = InitBetAmt,
-        #             RealBetAmt    = RealBetAmt,
-        #             HoldingAmt    = HoldingAmt,
-        #             InitBetRate   = InitBetRate,
-        #             RealBetRate   = RealBetRate,
-        #             PreWinAmt     = PreWinAmt
-        #         )
-
-        #     except:
-        #         error = 'Member_Not_Found'
-        #         error_code = -2
-            
-        # except:
-            
-        #     pass
-
 
         return Response({
             "ThirdParty": {
@@ -405,19 +315,6 @@ class WalletSettleAPIURL(APIView):
             TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
             TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
             SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
-            
-            # SettleOID     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['SettleOID']
-            # DetailID      = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DetailID']
-            # SrcCode       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['SrcCode']
-            # DrawNo        = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DrawNo']
-            # OptCode       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptCode']
-            # OptParam1     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptParam1']
-            # MaxRate       = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['MaxRate']
-            # RealRate      = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['RealRate']
-            # DrawDT        = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['DrawDT']
-            # OptResult     = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['OptResult']
-            
-            # KenoBalls_list = data['GB']['Result']['ReturnSet']['SettleList']['KenoList']['KenoBalls']
 
             try: 
                 user = CustomUser.objects.get(username = MemberID)
