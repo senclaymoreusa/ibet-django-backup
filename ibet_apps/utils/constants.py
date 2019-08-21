@@ -55,10 +55,15 @@ CURRENCY_CHOICES = (
     (10, 'XBT')
 )
 
-tran_pending_type = 3
 tran_success_type = 0
+tran_fail_type = 1
+tran_create_type = 2
+tran_pending_type = 3
+tran_approved_type = 4
 tran_cancel_type = 5
-tran_fail_type = 8
+tran_completed_type = 6
+tran_resend_type = 7
+tran_rejected_type = 8
 
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -72,6 +77,11 @@ STATE_CHOICES = (
     (8, 'REJECTED'),
 
 )
+
+review_app = 0
+review_pend = 1
+review_rej = 2
+
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),
     (1, 'Pending'),
@@ -88,7 +98,7 @@ DEPOSIT_METHOD_CHOICES = (
 )
 
 transaction_deposit = 0
-transaction_withdrawl = 1
+transaction_withdraw = 1
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),

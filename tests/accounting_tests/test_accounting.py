@@ -13,7 +13,7 @@ from users.models import (
     CustomUser,
 )
 
-from utils.constants import transaction_deposit, transaction_withdrawl, currency_cny
+from utils.constants import transaction_deposit, transaction_withdraw, currency_cny
 
 import json
 
@@ -85,12 +85,12 @@ class AccountingModelTest(TestCase):
         deposit_transaction = Transaction.objects.create(
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
-            transaction_type=transaction_withdrawl,
+            transaction_type=transaction_withdraw,
             currency=currency_cny,
             method="test_method",
             remark="test_remark",
         )
-        self.assertEqual(Transaction.objects.filter(transaction_type=transaction_withdrawl).count(), 1)
+        self.assertEqual(Transaction.objects.filter(transaction_type=transaction_withdraw).count(), 1)
     
     # create deposit channel from backend model
     def test_create_deposit_channel(self):

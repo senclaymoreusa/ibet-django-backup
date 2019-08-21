@@ -1,9 +1,11 @@
-#pending_table_filter, #success_deposit_table_filter, #fail_deposit_table_filter, #cancelled_deposit_table_filter {
+
+/* datatable */
+/* #pending_table_filter, #success_deposit_table_filter, #fail_deposit_table_filter, #cancelled_deposit_table_filter {
     float: left;
     margin-top: -130px;
-}
+} */
 
-#pending_table_length {
+/* #pending_table_length {
     float: right;
     margin-right: 80px;
 }
@@ -14,7 +16,7 @@
 
 #pending_table_previous {
     margin-right: 20px;
-}
+} */
 
 .dataTables_filter input { 
     width: 350px;
@@ -23,14 +25,200 @@
     border: solid 1px #bdbdbd;  
 }
 
-#deposit_request_pop {
-    width: 90%;
+#deposit_request_pop, #withdraw_request_pop {
+    width: 80%;
     height: 800px;
 }
 
-.bg_color {
-    background-color: #f3f3f3;
+table.dataTable {
+    border-spacing: 0;
 }
+
+
+#deposit-request-button {
+    margin-top: 25px;
+}
+
+
+/* #success_deposit_table_paginate {
+    float: right;
+    margin-right: 100px;
+
+}
+
+#success_deposit_table_previous {
+    margin-right: 18px;
+} */
+
+.dataTables_filter {
+    display: none; 
+}
+
+
+/* #pending_deposit_data tbody tr{
+    height: 20px;
+    width: 50px;
+    background: blue;
+} */
+
+/* #pending_table {
+    font: bold;
+} */
+
+#edit-pending-detail-btn {
+    height: 100%;
+    width: 100%;
+    background-color: #428bca;
+    color: #ffffff;
+}
+
+.btn-note {
+    background-color: #72befb;
+}
+.btn-look {
+    background-color: #428bca;
+}
+
+table thead tr th {
+    font-family: Helvetica;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+table tbody tr td {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+/* #success_deposit_table_wrapper .dataTables_scroll {
+    width: 100%
+} */
+
+.dataTables_paginate {
+    float: right;
+}
+
+
+.dataTables_paginate.paging_simple_numbers span{
+    display: none
+}
+
+.paginate_button.previous {
+    position:absolute;
+    bottom: 28px;
+    right: 49px;
+}
+
+.paginate_button.next {
+    position:absolute;
+    bottom: 28px;
+    right: 16px;
+}
+
+.dataTables_info {
+    position:absolute;
+    bottom: 34.9px;
+    right: 118px;
+}
+
+/* #pending_table_length {
+    position:relative;
+    font-family:Helvetica;
+    right: 2%;
+    top: 10px;
+} */
+
+.dataTables_length label select{
+    width: 82px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    position: absolute;
+    bottom: 28px;
+    right: 201px;
+}
+
+.show-rows {
+    width: 82px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    position: absolute;
+    bottom: 63px;
+    right: 201px;
+}
+
+.dt-buttons{
+    width: 159px;
+    height: 32px;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 30px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+    position: absolute;
+    bottom: 25px;
+}
+.dt-buttons .dt-button.buttons-csv.buttons-html5{
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #ffffff;
+}
+/* .dt-buttons a span {
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #ffffff;
+} */
+
+.deposit-request-details {
+    background-color: #f3f3f3;
+    margin-right: 25px;
+    padding-left: 0px;
+    padding-top: 15px;
+    padding-bottom: 20px;
+}
+
+.withdraw-request-details {
+    background-color: #f3f3f3;
+    margin-right: 15px;
+    padding-left: 0px;
+    padding-top: 15px;
+    padding-bottom: 20px;
+    height: 123px;
+}
+
+
+
+
+/* other */
+
 
 #edit-detail-btn {
     margin-left: 5%;
@@ -44,10 +232,7 @@
     width: 99% !important;
 }
 
-table.dataTable {
-    border-collapse: initial;
-    border-spacing: 0;
-}
+
 
 #deposit-channel-detail .form-group{
     background-color: #f3f3f3;
@@ -58,25 +243,6 @@ table.dataTable {
     font-weight: bold;
 }
 
-#deposit-request-button {
-    margin-top: 25px;
-}
-
-
-#success_deposit_table_length{
-    float: right;
-    margin-right: 100px;
-}
-
-#success_deposit_table_paginate {
-    float: right;
-    margin-right: 100px;
-
-}
-
-#success_deposit_table_previous {
-    margin-right: 18px;
-}
 
 .paginate_button { 
     margin-right: 15px;
@@ -84,7 +250,7 @@ table.dataTable {
 
 
 .detail-title-block {
-    border-radius: 4px;
+    border-radius: 1px;
     border: solid 1px #bdbdbd;  
 }
 
@@ -108,6 +274,46 @@ table.dataTable {
     float: right,
 }
 
-.dataTables_filter {
-    display: none; 
+
+/* Audit Deposit Request */
+
+#trans_detail {
+    background-color: #f3f3f3
+}
+
+.deposit-request-title, .withdraw-request-title{
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.panel-body{
+    position: relative;
+} 
+
+.deposit-request-data, .withdraw-request-data {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.deposit-request-word, .withdraw-request-word{
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    
 }

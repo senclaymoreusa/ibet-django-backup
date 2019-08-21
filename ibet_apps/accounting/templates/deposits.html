@@ -14,7 +14,7 @@
         </h2>
     </div>
     <div class="panel-body">
-
+        <!-- search bar and time filter -->
         <div class="row">
             <div class='col-md-4'>
                 <div class="input-group">
@@ -43,7 +43,7 @@
 
         </div>
 
-
+        <!-- four nav tab: PENDING, SUCCESS, FAILED, CANCELLED -->
         <div class="nav-bar" style="width:99%">
             <nav>
                 <ul class="nav nav-tabs" role="tablist">
@@ -66,9 +66,14 @@
                 </ul>
             </nav>
         </div>
-        <div class="tab-content" id="myTabContent" style="padding-top: 3%">
-            <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab">
-                <table id="pending_table" class="table table-striped table-bordered hover" cellspacing="1">
+
+
+        <div class="tab-content" id="myTabContent">
+            <!-- PENDING TABLE -->
+            <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab"
+                style="margin-bottom: 50px;">
+                <table id="pending_table" class="table-striped table-bordered hover compact"
+                    style="width:100%; margin-bottom: 50px">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
@@ -84,6 +89,7 @@
                             <th scope="col">ACCOUNT</th>
                             <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
+                            <th scope="col" style="display: none">pk</th>
                             <th scope="col">SLIP</th>
                             <th scope="col"></th>
                         </tr>
@@ -98,21 +104,28 @@
                             <td>{{ tran.tran_no }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ tran.branch }}</td>
+                            <td>{{ tran.city }}</td>
+                            <td>{{ tran.name }}</td>
+                            <td>{{ tran.account }}</td>
+                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
+                            <td style="display: none">{{ tran.pk }}</td>
                             <td></td>
-                            <td></td>
+                            <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                                    data-target="#audit_deposit">Audit</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                <label class="show-rows">SHOW ROWS</label>
             </div>
-            <div class="tab-pane fade" id="success" role="tabpanel" aria-labelledby="profile-tab">
-                <table id="success_deposit_table" class="table table-striped table-bordered hover">
+
+            <!-- SUCCESS TABLE -->
+            <div class="tab-pane fade" id="success" role="tabpanel" aria-labelledby="profile-tab"
+                style="margin-bottom: 50px;">
+                <table id="success_deposit_table" class="table-striped table-bordered hover compact"
+                    style="width:100%; margin-bottom: 50px">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
@@ -121,6 +134,7 @@
                             <th scope="col">PAYMENT</th>
                             <th scope="col">TRANSACTION NO.</th>
                             <th scope="col">APPLICATION TIME</th>
+                            <th scope="col">ACCOUNT TIME</th>
                             <th scope="col">BANK</th>
                             <th scope="col">BRANCH</th>
                             <th scope="col">CITY</th>
@@ -129,6 +143,7 @@
                             <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
                             <th scope="col">NOTE</th>
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -140,21 +155,35 @@
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
+                            <td>{{ tran.arr_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ tran.branch }}</td>
+                            <td>{{ tran.city }}</td>
+                            <td>{{ tran.name }}</td>
+                            <td>{{ tran.account }}</td>
+                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
-                            <td></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-note" data-toggle="tooltip"
+                                    title="{{ tran.note }}" data-placement="top" data-html="true">
+                                    <i class="fa fa-comment-o"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <button type='button' class='btn btn-sm btn-look'><i class='fa fa-search'></i></button>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                <label class="show-rows">SHOW ROWS</label>
             </div>
-            <div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="profile-tab">
-                <table id="fail_deposit_table" class="table table-striped table-bordered hover">
+
+            <!-- FAILED TABLE -->
+            <div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="profile-tab"
+                style="margin-bottom: 50px;">
+                <table id="fail_deposit_table" class="table-striped table-bordered hover compact"
+                    style="width:100%; margin-bottom: 50px;">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
@@ -163,7 +192,6 @@
                             <th scope="col">PAYMENT</th>
                             <th scope="col">TRANSACTION NO.</th>
                             <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">ARRIVING TIME</th>
                             <th scope="col">BANK</th>
                             <th scope="col">BRANCH</th>
                             <th scope="col">CITY</th>
@@ -171,7 +199,6 @@
                             <th scope="col">ACCOUNT</th>
                             <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
-                            <th scope="col">NOTE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -183,22 +210,25 @@
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.arr_time }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ tran.branch }}</td>
+                            <td>{{ tran.city }}</td>
+                            <td>{{ tran.name }}</td>
+                            <td>{{ tran.account }}</td>
+                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
-                            <td></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                <label class="show-rows">SHOW ROWS</label>
             </div>
-            <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="contact-tab">
-                <table id="cancelled_deposit_table" class="table table-striped table-bordered hover">
+
+            <!-- CANCELLED TABLE -->
+            <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="contact-tab"
+                style="margin-bottom: 50px;">
+                <table id="cancelled_deposit_table" class="table-striped table-bordered hover compact"
+                    style="width:100%; margin-bottom: 50px;">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
@@ -214,7 +244,6 @@
                             <th scope="col">ACCOUNT</th>
                             <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
-                            <th scope="col">NOTE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -227,17 +256,17 @@
                             <td>{{ tran.tran_no }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ tran.branch }}</td>
+                            <td>{{ tran.city }}</td>
+                            <td>{{ tran.name }}</td>
+                            <td>{{ tran.account }}</td>
+                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
-                            <td></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                <label class="show-rows">SHOW ROWS</label>
             </div>
         </div>
     </div>
@@ -251,90 +280,106 @@
                     Deposit request details
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-4">TRANSACTION DETAILS</div>
-                        <div class="col-md-4">BANK DETAILS</div>
-                        <div class="col-md-4">MEMBER DETAILS</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-2 bg_color">
-                            <p><strong>Deposit Slip</strong></p>
-                            <p><strong>Transaction No</strong></p>
-                            <p><strong>Application Time</strong></p>
-                            <p><strong>Transaction Code</strong></p>
-                            <p><strong>Amount</strong></p>
-                        </div>
-                        <div class="col-md-2 bg_color" id="deposit_detail">
-                        </div>
-                        <div class="col-md-2 bg_color">
-                            <p><strong>Bank</strong></p>
-                            <p><strong>Branch</strong></p>
-                            <p><strong>City</strong></p>
-                            <p><strong>Account Name</strong></p>
-                            <p><strong>Account No.</strong></p>
-                        </div>
-                        <div class="col-md-2 bg_color" id="bank_detail">
-                        </div>
-                        <div class="col-md-1 bg_color">
-                            <p><strong>Member ID</strong></p>
-                            <p><strong>Username</strong></p>
-                            <p><strong>First Name</strong></p>
-                            <p><strong>Last Name</strong></p>
-                        </div>
-                        <div class="col-md-1 bg_color" id="member_detail1">
-                        </div>
-                        <div class="col-md-1 bg_color">
-                            <p><strong>VIP Level</strong></p>
-                            <p><strong>Risk Level</strong></p>
-                            <p><strong>Balance</strong></p>
-                        </div>
-                        <div class="col-md-1 bg_color" id="member_detail2">
-                        </div>
-                    </div>
-
-                    <!-- latest deposits -->
-                    <div class="row" style="margin-top: 20px;">
-                        <p><strong>LATEST DEPOSITS</strong></p>
-                    </div>
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">PAYMENT</th>
-                                <th scope="col">TRANSACTION NO.</th>
-                                <th scope="col">TIME OF APPLICATION</th>
-                                <th scope="col">BANK</th>
-                                <th scope="col">BRANCH</th>
-                                <th scope="col">CITY</th>
-                                <th scope="col">NAME</th>
-                                <th scope="col">ACCOUNT</th>
-                                <th scope="col">TRANSACTION CODE</th>
-                                <th scope="col">APPLY AMOUNT</th>
-                                <th scope="col">SLIP</th>
-                            </tr>
-                        </thead>
-                        <tbody id=latest_deposits>
-                            <!-- <tr id = latest_deposits>
-                                <td></td>
-                            </tr> -->
-                        </tbody>
-                    </table>
-
-                    <!-- notes -->
                     <form action="{% url 'xadmin:deposit_view' %}" method="POST">
                         {% csrf_token %}
                         <input type="hidden" name="type" value="audit_deposit"></input>
-                        <div class="form-group">
-                            <label for="deposit_notes">NOTES</label>
-                            <input type='deposit_notes' id='notes' class="form-control" name="deposit_notes"
-                                style="width: 40%;height: 100px;" placeholder="Add anything of importance">
+                        <input type="hidden" id="dep_trans_no" name="dep_trans_no"></input>
+
+                        <div class="row deposit-request-word">
+                            <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
+                            <div class="col-md-4" style="margin-left:20px">BANK DETAILS</div>
+                            <div class="col-md-4" style="margin-left:12px">MEMBER DETAILS</div>
                         </div>
-                        <div id="deposit-request-button">
-                            <button type="submit" class="btn btn-success">Approve</button>
-                            <button type="submit" class="btn btn-success">Approve and Next</button>
-                            <button type="button" class="btn btn-danger">Reject</button>
-                            <button type="button" class="btn btn-danger">Reject and Next</button>
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+
+                        <div class="row" style="margin-left:10px;margin-top: 10px">
+                            <div class="col-md-3 deposit-request-details">
+                                <div class="col-md-6 deposit-request-title">
+                                    <p>Deposit slip</p>
+                                    <p>Transaction No.</p>
+                                    <p>Application time</p>
+                                    <p>Transaction code</p>
+                                    <p>Amount</p>
+                                </div>
+                                <div class="col-md-6 deposit-request-data" id="trans_deposit_detail">
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 deposit-request-details">
+                                <div class="col-md-6 deposit-request-title">
+                                    <p>Bank</p>
+                                    <p>Branch</p>
+                                    <p>City</p>
+                                    <p>Account Name</p>
+                                    <p>Account No.</p>
+                                </div>
+                                <div class="col-md-6 deposit-request-data" id="bank_detail">
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 deposit-request-details" style="padding-bottom: 50px">
+                                <div class="col-md-3 deposit-request-title">
+                                    <p>Member ID</p>
+                                    <p>Username</p>
+                                    <p>First Name</p>
+                                    <p>Last Name</p>
+                                </div>
+                                <div class="col-md-4 deposit-request-data" id="member_detail1">
+                                </div>
+                                <div class="col-md-3 deposit-request-title">
+                                    <p>VIP Level</p>
+                                    <p>Risk Level</p>
+                                    <p>Balance</p>
+                                </div>
+                                <div class="col-md-2 deposit-request-data" id="member_detail2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- latest deposits -->
+                        <div class="row deposit-request-notes" style="margin-top: 30px;margin-left: 10px">
+                            <p><strong>LATEST DEPOSITS</strong></p>
+                        </div>
+                        <div id="latest_deposit">
+                            <table class="table-striped table-bordered"
+                                style="width: 100%; margin-top: 10px; margin-bottom: 40px">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">PAYMENT</th>
+                                        <th scope="col">TRANSACTION NO.</th>
+                                        <th scope="col">TIME OF APPLICATION</th>
+                                        <th scope="col">BANK</th>
+                                        <th scope="col">BRANCH</th>
+                                        <th scope="col">CITY</th>
+                                        <th scope="col">NAME</th>
+                                        <th scope="col">ACCOUNT</th>
+                                        <th scope="col">TRANSACTION CODE</th>
+                                        <th scope="col">APPLY AMOUNT</th>
+                                        <th scope="col">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id=latest_deposits>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- notes -->
+
+                        <div class="form-group">
+                            <label for="deposit_notes" class="deposit-request-word"
+                                style="margin-left: 10px">NOTES</label>
+                            <textarea type='text' id='notes' class="form-control" name="deposit_notes"
+                                style="width: 40%;height: 100px;" placeholder="Add anything of importance"></textarea>
+
+                            <div id="deposit-request-button">
+                                <button type="submit" class="btn btn-success" name="deposit-review-app">Approve</button>
+                                <button type="submit" class="btn btn-success" name="deposit-review-appnext">Approve and
+                                    Next</button>
+                                <button type="submit" class="btn btn-danger" name="deposit-review-rej">Reject</button>
+                                <button type="submit" class="btn btn-danger" name="deposit-review-rejnext">Reject and
+                                    Next</button>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -344,24 +389,6 @@
 </div>
 
 
-
-<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-
-<!-- datatables -->
-<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css"> -->
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-<!-- datepicker -->
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
-    type="text/css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 
 <script>
@@ -381,85 +408,58 @@
             }
         });
 
-
+        // draw DataTable
         var table = $('#pending_table').DataTable({
             responsive: true,
-            // "scrollY": 200,
-            "scrollX": true,
-            "aoColumns": [{
-                "mData": 0
-            }, {
-                "sWidth": "10%",
-                "mData": 1
-            }, {
-                "sWidth": "10%",
-                "mData": 2
-            }, {
-                "sWidth": "10%",
-                "mData": 3
-            }, {
-                "sWidth": "10%",
-                "mData": 4
-            }, {
-                "sWidth": "10%",
-                "mData": 5
-            }, {
-                "sWidth": "10%",
-                "mData": 6
-            }, {
-                "sWidth": "8%",
-                "mData": 7
-            }, {
-                "sWidth": "9%",
-                "mData": 8
-            }, {
-                "sWidth": "8%",
-                "mData": 9
-            }, {
-                "sWidth": "10%",
-                "mData": 10
-            }, {
-                "sWidth": "10%",
-                "mData": 11
-            }, {
-                "sWidth": "10%",
-                "mData": 12
-            }, {
-                "sWidth": "10%",
-                "mData": 13
-            }, {
-                "mData": null,
-                "bSortable": false,
-                "mRender": function (data, type, full) {
-                    return '<button id="edit-pending-detail-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#audit_deposit">Audit</button>'
-                }
-            }],
+            dom: 'Bfrtip, <f<t>il>',
+            buttons: [
+                'csv'
+            ],
             "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
             }],
-            "dom": '<f<t>ipl>'
+            "language": {
+                "info": " _START_ - _END_ of _TOTAL_",
+                "infoEmpty": " 0 - 0 of 0",
+                "paginate": {
+                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                },
+                "lengthMenu": "_MENU_",
+            },
         });
 
+        var success_fail_cancel_table = $('#success_deposit_table, #fail_deposit_table, #cancelled_deposit_table').DataTable({
+            responsive: true,
+            dom: 'Bfrtip, <f<t>il>',
+            buttons: [
+                'csv'
+            ],
+            "columnDefs": [{
+                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12],
+            }],
+            "language": {
+                "info": " _START_ - _END_ of _TOTAL_",
+                "infoEmpty": " 0 - 0 of 0",
+                "paginate": {
+                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                },
+                "lengthMenu": "_MENU_",
+            },
+        });
+
+        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
+
+
+        // user id, username, trans_no search
         $('#search-btn').on('keyup click', function () {
             table.search($('#search').val()).draw();
+            success_fail_cancel_table.search($('#search').val()).draw();
         });
 
-        // deposit success table
-        var success_table = $('#success_deposit_table, #fail_deposit_table, #cancelled_deposit_table').DataTable({
-            responsive: true,
-            // "scrollY": 200,
-            "scrollX": true,
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12, 13],
-            }],
-            "dom": '<f<t>ipl>'
-        });
 
-        $('#search-btn').on('keyup click', function () {
-            success_table.search($('#search').val()).draw();
-        });
-
-        // date search
+        // date range search
         $.fn.dataTable.ext.search.push(
             function (settings, data, dataIndex) {
                 var min = $('#min').datepicker("getDate");
@@ -479,70 +479,13 @@
         // Event listener to the two range filtering inputs to redraw on input
         $('#min, #max').change(function () {
             table.draw();
+            success_fail_cancel_table.draw();
         });
 
-        // // deposit channel edit function
-        // $('#edit-detail-btn').click(function () {
-        //     var channel = $(this).closest("tbody").find("input[name='channel_id']").val()
-        //     // $(this).closest("tr")
-        //     //     .find(".nr")
-        //     //     .text();
-        //     console.log("sjkdhlsd" + channel)
-        //     $.ajax({
-        //         type: 'GET',
-        //         url: "{% url 'xadmin:deposit_view' %}",
-        //         data: {
-        //             'type': 'getChannelInfo',
-        //             'current_deposit_channel': channel,
-        //         },
-        //         success: function (data) {
-        //             console.log(data['name']);
-        //             // renderDepositChannel(data);
-        //             $('#channel_name').html(data['name'])
-        //             $('#status').html(data['status'])
-        //             $('#min_deposit').val(data['min_deposit'])
-        //             $('#max_deposit').val(data['max_deposit'])
-        //             $('#transaction_fee').val(data['transaction_fee'])
-        //             $('#volumn').val(data['volumn'])
-        //             console.log(data['limit_access'])
-        //             if (data['limit_access'] == true) {
-        //                 $('#' + 'limit_access_yes').prop('checked', true);
-        //             } else {
-        //                 $('#' + 'limit_access_no').prop('checked', true);
-        //                 $('#limit_access_detail').hide();
-        //             }
-
-        //             $('#limit_access_yes').click(function () {
-        //                 $("#limit_access_detail").show();
-
-        //             });
-
-        //             $('#limit_access_no').click(function () {
-        //                 $("#limit_access_detail").hide();
-        //             });
-
-        //             $('#newUserCheck').click(function () {
-        //                 if (this.checked) {
-        //                     $('#new_user_volume_info').show();
-        //                 } else {
-        //                     $('#new_user_volume_info').hide();
-        //                 }
-        //             });
-
-        //             $('#riskLevelCheck').click(function () {
-        //                 if (this.checked) {
-        //                     $('#risk_level_info').show();
-        //                 } else {
-        //                     $('#risk_level_info').hide();
-        //                 }
-        //             });
-        //         }
-        //     })
-        // });
-
-
+        // send data to pop-up window
         $('#pending_table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
+            // transaction pk: data[13]
             showDepositeDetail(data);
             showBankDetail(data);
             var user_id = data[1];
@@ -565,15 +508,13 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addDepositRecord(data2);
+                addDepositRecord(data2, data[13]);
             });
         });
-
 
         function addMemberDetails(data) {
             $("#member_detail1").empty();
             var content = "";
-            console.log(data);
             content += "<p>" + data[0].id + "</p>";
             content += "<p>" + data[0].username + "</p>";
             content += "<p>" + data[0].first_name + "</p>";
@@ -583,11 +524,11 @@
             $("#member_detail2").empty();
             var content2 = "";
             content2 += "<p>.....</p>";
-            content2 += "<p>.....</p>";
+            content2 += "<p>" + data[0].risk_level + "</p>";
             content2 += "<p>" + data[0].balance + "</p>";
             $("#member_detail2").append(content2);
         }
-        function addDepositRecord(data) {
+        function addDepositRecord(data, trans_pk) {
             $("#latest_deposits").empty();
             content = "";
             for (var i = 0; i < data[0].length; i++) {
@@ -607,17 +548,18 @@
                 content += '</tr>'
             }
             $("#latest_deposits").append(content);
+            $("#dep_trans_no").val(trans_pk)
         }
 
         showDepositeDetail = function (data) {
-            $("#deposit_detail").empty();
+            $("#trans_deposit_detail").empty();
             var content = "";
             content += "<p>...</p>";
             content += "<p>" + data[4] + "</p>";
             content += "<p>" + data[5] + "</p>";
-            content += "<p>...</p>";
+            content += "<p>" + data[11] + "</p>";
             content += "<p>" + data[12] + "</p>";
-            $("#deposit_detail").append(content);
+            $("#trans_deposit_detail").append(content);
         }
 
         showBankDetail = function (data) {
@@ -630,11 +572,6 @@
             content += "<p>" + data[10] + "</p>";
             $("#bank_detail").append(content);
         }
-
-        getMemberInfo = function (data) {
-            console.log("aaa" + data)
-        }
-
 
     })
 </script>
