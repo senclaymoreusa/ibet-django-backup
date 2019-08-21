@@ -40,7 +40,7 @@ class Transaction(models.Model):
             Internal ID: {2}, \n \
             External ID: {3}, \n \
             Status: {4} \
-            '.format(self.user_id, self.transaction_type, self.transaction_id, self.order_id, self.status)
+            '.format(self.user_id, self.get_transaction_type_display(), self.transaction_id, self.order_id, self.get_status_display())
     
 
 class ThirdParty(models.Model):
