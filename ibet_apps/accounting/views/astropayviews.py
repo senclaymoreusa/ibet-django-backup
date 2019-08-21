@@ -217,15 +217,15 @@ def sendCardToMobile(request):
 @permission_classes((AllowAny,))
 def checkUser(request):
     url = ASTROPAY_URL
-    curtomer_id = request.data.get('curtomer_id')
-    message = str(secretkey) + str(curtomer_id)
+    customer_id = request.data.get('customer_id')
+    message = str(secretkey) + str(customer_id)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
     logger.info(my_hmac)
     params = {
-        "x_login":ASTROPAY_X_LOGIN,
-        "x_trans_key":ASTROPAY_X_TRANS_KEY,
-        "x_astropaycard_customer_id":curtomer_id,
-        "x_control":my_hmac,
+        "x_login": ASTROPAY_X_LOGIN,
+        "x_trans_key": ASTROPAY_X_TRANS_KEY,
+        "x_astropaycard_customer_id": customer_id,
+        "x_control": my_hmac,
     }
     for x in range(3):
         r = requests.post(url + 'cashOut/checkUser', data=params)
@@ -248,7 +248,7 @@ def checkUser(request):
 def sendCardToMobileWithAppId(request):
     amount = request.data.get('amount')
     currency = request.data.get('currency')
-    curtomer_id = request.data.get('curtomer_id')
+    customer_id = request.data.get('customer_id')
     userid = request.data.get('userid')
     user_fn = CustomUser.objects.get(pk=userid).first_name
     user_ln = CustomUser.objects.get(pk=userid).last_name
@@ -256,7 +256,7 @@ def sendCardToMobileWithAppId(request):
     doc_id = request.data.get('doc_id')
     country = request.data.get('country')
     notification_url = request.data.get('notification_url')
-    message = str(secretkey) + str(amount) + str(currency) + str(curtomer_id)
+    message = str(secretkey) + str(amount) + str(currency) + str(customer_id)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
     logger.info(my_hmac)
     OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
@@ -265,7 +265,7 @@ def sendCardToMobileWithAppId(request):
         "x_trans_key":ASTROPAY_X_TRANS_KEY,
         "x_amount":amount,
         "x_currency": currency,
-        "x_astropaycard_customer_id":curtomer_id,
+        "x_astropaycard_customer_id":customer_id,
         "x_name":name,
         "x_document":doc_id,
         "x_country":country,
