@@ -23,7 +23,7 @@ def getAWSClient(service_name, third_party_keys):
     try:
         client = boto3.client(
             service_name,
-            region_name='us-west-1',
+            region_name='eu-west-2',
             aws_access_key_id=third_party_keys["AWS_ACCESS_KEY_ID"],
             aws_secret_access_key=third_party_keys["AWS_SECRET_ACCESS_KEY"],
         )
@@ -38,7 +38,7 @@ def getAWSClient(service_name, third_party_keys):
 
 
 def getSQSQueue(queue_name):
-    sqs = boto3.resource('sqs', region_name='us-west-1')
+    sqs = boto3.resource('sqs', region_name='eu-west-2')
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except ClientError as e:
