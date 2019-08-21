@@ -82,7 +82,7 @@ class WalletBetAPIURL(APIView):
         if  "KenoList" in data['GB']['Result']['ReturnSet']['BettingList']:
             game_type = 'keno'
         elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "LottoList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
-            game_type = 'looto'
+            game_type = 'lotto'
         elif "SscList" in data['GB']['Result']['ReturnSet']['BettingList']:
             game_type = 'ssc'
         elif "PkxList" in data['GB']['Result']['ReturnSet']['BettingList']:
@@ -92,8 +92,88 @@ class WalletBetAPIURL(APIView):
         elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
             game_type = 'sports'
         print(game_type)
+        if game_type == 'keno':
+            try:
+                Method        = data['GB']['Result']['Method']
+                Success       = data['GB']['Result']['Success']
 
-        if game_type == 'sports':
+                TransType     = data['GB']['Result']['ReturnSet']['TransType']
+                BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
+                BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
+
+                BetID         = data['GB']['Result']['ReturnSet']['BettingList']['BetID']
+                BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList']['BetGrpNO']
+                TPCode        = data['GB']['Result']['ReturnSet']['BettingList']['TPCode']
+                GBSN          = data['GB']['Result']['ReturnSet']['BettingList']['GBSN']
+                MemberID      = data['GB']['Result']['ReturnSet']['BettingList']['MemberID']
+                CurCode       = data['GB']['Result']['ReturnSet']['BettingList']['CurCode']
+                BetDT         = data['GB']['Result']['ReturnSet']['BettingList']['BetDT']
+                BetType       = data['GB']['Result']['ReturnSet']['BettingList']['BetType']
+                BetTypeParam1 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam1']
+                BetTypeParam2 = data['GB']['Result']['ReturnSet']['BettingList']['BetTypeParam2']
+                Wintype       = data['GB']['Result']['ReturnSet']['BettingList']['Wintype']
+                HxMGUID       = data['GB']['Result']['ReturnSet']['BettingList']['HxMGUID']
+                InitBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['InitBetAmt']
+                RealBetAmt    = data['GB']['Result']['ReturnSet']['BettingList']['RealBetAmt']
+                HoldingAmt    = data['GB']['Result']['ReturnSet']['BettingList']['HoldingAmt']
+                InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['InitBetRate']
+                RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList']['RealBetRate']
+                PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList']['PreWinAmt']
+
+                try:
+                    user = CustomUser.objects.filter(username = MemberID)
+                    temp = user[0].main_wallet
+                    if temp >= decimal.Decimal(BetTotalAmt):
+                        current_balance = temp-decimal.Decimal(BetTotalAmt)
+                        user.update(main_wallet=current_balance)
+                        error      =  'No_Error'
+                        error_code =  0
+                        success    =  1
+                        TransData  = current_balance
+
+                    else:
+                        error      =  'Insufficient_Balance'
+                        error_code =  -4
+                
+
+                    GBSportWallet.objects.create(
+                        Method        = Method,
+                        Success       = Success,
+
+                        TransType     = TransType,
+                        BetTotalCnt   = BetTotalCnt,
+                        BetTotalAmt   = BetTotalAmt,
+
+                        BetID         = BetID,
+                        BetGrpNO      = BetGrpNO,
+                        TPCode        = TPCode,
+                        GBSN          = GBSN,
+                        MemberID      = MemberID,
+                        CurCode       = CurCode,
+                        BetDT         = BetDT,
+                        BetType       = BetType,
+                        BetTypeParam1 = BetTypeParam1,
+                        BetTypeParam2 = BetTypeParam2,
+                        Wintype       = Wintype,
+                        HxMGUID       = HxMGUID,
+                        InitBetAmt    = InitBetAmt,
+                        RealBetAmt    = RealBetAmt,
+                        HoldingAmt    = HoldingAmt,
+                        InitBetRate   = InitBetRate,
+                        RealBetRate   = RealBetRate,
+                        PreWinAmt     = PreWinAmt
+                    )
+
+                except:
+                    error = 'Member_Not_Found'
+                    error_code = -2
+                
+            except:
+                
+                pass
+
+
+        elif game_type == 'sports':
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
