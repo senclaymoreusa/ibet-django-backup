@@ -78,6 +78,7 @@ class WalletBetAPIURL(APIView):
         error_code = -5
         error = 'Missing_Input_Parameter'
         game_type = None
+        print("KenoList" in data['GB']['Result']['ReturnSet']['BettingList'])
         
         if  "KenoList" in data['GB']['Result']['ReturnSet']['BettingList']:
             game_type = 'keno'
@@ -92,7 +93,7 @@ class WalletBetAPIURL(APIView):
         elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
             game_type = 'sports'
         print(game_type)
-        if game_type == 'keno':
+        if game_type in ['keno', 'ssc', 'pk', 'k']:
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
@@ -173,7 +174,7 @@ class WalletBetAPIURL(APIView):
                 pass
 
 
-        elif game_type == 'sports':
+        elif game_type in ['lotto', 'sports']:
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
