@@ -1,4 +1,4 @@
-import requests, json, logging, hashlib, base64, datetime, pytz, socket
+import requests, json, logging, random, hashlib, base64, datetime, pytz, socket
 
 from django.shortcuts import render
 from django.http import HttpResponse

@@ -1,7 +1,7 @@
-import requests, json, logging, random, hmac, hashlib
+import requests, json, logging, random, hmac, hashlib, datetime
 
 from time import sleep, gmtime, strftime
-from datetime import datetime
+
 
 from requests.auth import HTTPBasicAuth
 from django.http import HttpResponse, JsonResponse
@@ -63,7 +63,7 @@ def confirm_payment(request):
         logger.info("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
-        logger.info("[" + str(datetime.now()) + "] Received confirm_payment() callback from CirclePay")
+        logger.info("[" + str(datetime.datetime.now()) + "] Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
         logger.info(transaction_data)
         # query for transaction in ibet db

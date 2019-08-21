@@ -16,7 +16,9 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-
+else:
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
 
 GENDER_CHOICES = (
     ('Male', 'Male'),
@@ -407,6 +409,14 @@ else:
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
+# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
+# TODO: RETRIEVE API KEYS FROM AWS S3
+# circlepay
+CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
+CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
+CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
 # astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
@@ -436,13 +446,6 @@ HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-
-# circlepay
-CIRCLEPAY_USERCODE = "297802061195"
-CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
-CIRCLEPAY_EMAIL = "jennyto@ibet.com"
-CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
-CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
 # payzod sandbox
 PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
