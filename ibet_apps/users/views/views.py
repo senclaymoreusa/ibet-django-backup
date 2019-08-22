@@ -282,10 +282,10 @@ class LoginView(GenericAPIView):
 
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
-            print("user block")
+            # print("user block")
             raise BlockedUserException
         if self.user.active == False:
-            print('User not active')
+            # print('User not active')
             raise InactiveUserException
 
         if getattr(settings, 'REST_USE_JWT', False):
@@ -1335,3 +1335,151 @@ class CancelRegistration(APIView):
         user = CustomUser.objects.get(username=username)
         user.delete()
         return Response(status=status.HTTP_200_OK)
+
+from users.views.helper import set_loss_limitation, set_deposit_limitation, set_temporary_timeout, set_permanent_timeout, get_old_limitations
+
+class SetLimitation(View):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        limit = data['limit']
+        interval = data['interval']
+        limit_type = data['type']
+        
+        # print(limit, interval, user_id, limit_type)
+        user = CustomUser.objects.get(pk=user_id)
+
+        oldLimitMap = get_old_limitations(user_id)
+        print(oldLimitMap)
+
+        if limit_type == 'loss':
+            otherLimits = oldLimitMap[LIMIT_TYPE_LOSS]
+            set_loss_limitation(user_id, limit, interval, oldLimitMap, user)
+        elif limit_type == 'deposit':
+            set_deposit_limitation(user_id, limit, interval, oldLimitMap, user)
+
+        return HttpResponse('Successfully set the {} limitation'.format(limit_type))
+
+class DeleteLimitation(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        limit = data['limit']
+        interval = data['interval']
+        limit_type = data['type']
+        limit_id = data['id']
+
+        if limit_type == 'deposit':
+            limit_type = LIMIT_TYPE_DEPOSIT
+        elif limit_type == 'loss':
+            limit_type = LIMIT_TYPE_LOSS
+
+        user = CustomUser.objects.get(pk=user_id)
+
+        Limitation.objects.filter(user=user, limit_type=limit_type)
+        time = timezone.now() + datetime.timedelta(days=1)
+        Limitation.objects.filter(user=user, limit_type=limit_type).update(expiration_time=time)
+        
+        return HttpResponse('Successfully delete the {} limitation'.format(limit_type))
+
+
+class GetLimitation(View):
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET.get('id')
+        # limit_type = request.GET.get('type')
+        # limit_type = limit_type.capitalize()
+        # limitDict = dict(LIMIT_TYPE)
+        # for key, value in limitDict.items():
+        #     if value == limit_type:
+        #         limit_type = key
+
+        user = CustomUser.objects.get(pk=user_id)
+        userJson = serializers.serialize('json', [user])
+        userJson = json.loads(userJson)
+        # print(userJson)
+
+        # print(user)
+        userLimitation = Limitation.objects.filter(user=user)
+
+        intervalMap = {}
+        for t in Limitation._meta.get_field('interval').choices:
+            intervalMap[t[0]] = t[1]
+
+        limitationDict = {
+            'bet': [],
+            'loss': [],
+            'deposit': [],
+            'withdraw': [],
+            'tempBlock': {},
+            'permBlock': {}
+        }
+        for limitation in userLimitation:
+            if limitation.limit_type == LIMIT_TYPE_LOSS:
+                lossMap = {
+                    'amount': limitation.amount,
+                    'intervalValue': limitation.interval,
+                    'interval': intervalMap[limitation.interval],
+                    'limitId': limitation.pk
+                }
+                limitationDict['loss'].append(lossMap)
+            elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
+                depositMap = {
+                    'amount': limitation.amount,
+                    'intervalValue': limitation.interval,
+                    'interval': intervalMap[limitation.interval],
+                    'limitId': limitation.pk
+                }
+                limitationDict['deposit'].append(depositMap)
+    
+        if user.temporary_block_interval:
+            # print(user.temporary_block_timespan)
+            # print(userJson[0]['fields']['temporary_block_timespan'])
+            # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
+            # time = timeList[0]
+            # time = int(time)
+            tempMap = {
+                'temporary_block': user.temporary_block_interval
+            }
+            limitationDict['tempBlock'] = tempMap
+
+        if user.permanent_block_interval:
+            # print(user.permanent_block_timespan)
+            # # print(userJson[0]['fields']['permanent_block_timespan'])
+            # timeList = userJson[0]['fields']['permanent_block_timespan'].split(' ')
+            # time = timeList[0]
+            # time = int(time)
+            # if time < 190:
+            #     time = time//30
+            #     # timeStr = '%d months' % (time)
+            # elif time >= 365:
+            #     time = time//365
+            #     # time = '%d years' % (time)
+            permanentMap = {
+                'permanent_block': user.permanent_block_interval
+            }
+            limitationDict['permBlock'] = permanentMap
+
+        return HttpResponse(json.dumps(limitationDict), content_type="application/json")
+
+class SetBlockTime(View):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        lock_timespan = data['timespan']
+        user_id = data['userId']
+        # lock_type = data['type']
+        tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
+        # print(user_id, lock_type, lock_timespan)
+        if lock_timespan not in tempIntervals:
+            set_permanent_timeout(user_id, lock_timespan)
+            set_temporary_timeout(user_id, -1)
+        else:
+            set_temporary_timeout(user_id, lock_timespan)
+            set_permanent_timeout(user_id, -1)
+        
+
+        return HttpResponse('Successfully block the userId: {0} for lock timespan option {1}'.format(user_id, lock_timespan))

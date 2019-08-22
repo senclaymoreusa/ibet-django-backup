@@ -59,5 +59,9 @@ urlpatterns += [
     path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
     path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
-    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag')
+    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
+    path('api/set-limitation/',csrf_exempt(views.SetLimitation.as_view()), name='set_limitation'),
+    path('api/delete-limitation/', csrf_exempt(views.DeleteLimitation.as_view()), name='delete_limitation'),
+    path('api/get-limitation/', csrf_exempt(views.GetLimitation.as_view()), name='get_limitation'),
+    path('api/set-block-time/', csrf_exempt(views.SetBlockTime.as_view()), name='set_block_time')
 ]
