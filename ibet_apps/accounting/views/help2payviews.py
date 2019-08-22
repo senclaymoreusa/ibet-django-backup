@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
@@ -18,6 +18,8 @@ from django.conf import settings
 from time import sleep
 from des import DesKey
 from decimal import *
+import xmltodict, socket
+from django.utils import timezone
 from time import gmtime, strftime, strptime
 
 
@@ -82,12 +84,22 @@ class SubmitDeposit(generics.GenericAPIView):
         bank = self.request.POST.get("bank")
         ip = get_Host_name_IP()
         currency = self.request.POST.get("currency")
+        
+        if currency == '2':
+            
+            help2pay_merchant = HELP2PAY_MERCHANT_THB
+            help2pay_security = HELP2PAY_SECURITY_THB
+        elif currency == '8':
+            
+            help2pay_merchant = HELP2PAY_MERCHANT_VND
+            help2pay_security = HELP2PAY_SECURITY_VND
+
         data = {
-            "Merchant":HELP2PAY_MERCHANT,
+            "Merchant":help2pay_merchant,
             "Customer":user_id,
             "Currency":currencyConversion[currency],
             "Reference":str(order_id),
-            "Key":MD5(HELP2PAY_MERCHANT+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+HELP2PAY_SECURITY+ip),
+            "Key":MD5(help2pay_merchant+str(order_id)+str(user_id)+amount+currencyConversion[currency]+key_time+help2pay_security+ip),
             "Amount":amount,
             "Datetime":Datetime,
             "FrontURI":REDIRECTURL,
@@ -106,6 +118,7 @@ class SubmitDeposit(generics.GenericAPIView):
             currency= currency,
             transaction_type=0,
             channel=0,
+            request_time=timezone.now(),
         )
         
         return HttpResponse(rdata)
@@ -122,6 +135,7 @@ class DepositResult(generics.GenericAPIView):
         update_data = Transaction.objects.get(order_id=self.request.POST.get('Reference'),
                                               user_id=CustomUser.objects.get(pk=self.request.POST.get('Customer')))
         update_data.transaction_id = depositID
+        update_data.arrive_time = timezone.now()
         if  Status == '000':  
             update_data.status = 0
         elif Status == '001':

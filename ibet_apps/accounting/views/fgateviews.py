@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
 #from djauth.third_party_keys import *
 from rest_framework import generics
-from ..serializers import fgateChargeCardSerialize
+from accounting.serializers import fgateChargeCardSerialize
 from django.conf import settings
 import requests,json
 import logging, time, struct, hashlib, xml.etree.ElementTree as ET
@@ -24,6 +24,7 @@ from time import gmtime, strftime, strptime
 import datetime, pytz
 from decimal import *
 import xmltodict
+from django.utils import timezone
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
@@ -77,6 +78,8 @@ class chargeCard(generics.GenericAPIView):
                 method= 'Fgo',
                 transaction_type=0,
                 channel=0,
+                request_time=timezone.now(),
+                arrive_time=timezone.now(),
             )
         else:
             return Response(rdata)

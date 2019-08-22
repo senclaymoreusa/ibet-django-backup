@@ -13,6 +13,9 @@ import accounting.views.help2payviews as help2pay
 import accounting.views.circlepayviews as circlepay
 import accounting.views.payzodviews as payzod
 import accounting.views.fgateviews as fgate
+import accounting.views.paymentiqviews as paymentiq
+import accounting.views.scratchcardviews as scratchcard
+import accounting.transactions
 
 urlpatterns = [
     path('api/qaicash/deposit_method', qaicash.getDepositMethod.as_view(), name='deposit_method'),
@@ -24,7 +27,7 @@ urlpatterns = [
     path('api/qaicash/approve_payout', qaicash.approvePayout.as_view(), name='approve_Payout'),
     path('api/qaicash/reject_payout', qaicash.rejectPayout.as_view(), name='reject_Payout'),
     path('api/qaicash/deposit_transaction', qaicash.getDepositTransaction.as_view(), name='deposit_Transaction'),
-    path('api/qaicash/transaction_status', qaicash.transactionStatusUpdate.as_view(), name='transaction_status_update'),
+    path('api/qaicash/transaction_status', qaicash.transactionStatusUpdate, name='transaction_status_update'),
     path('api/qaicash/payout_method', qaicash.payoutMethod.as_view(), name='payout_Method'),
     path('api/qaicash/payout_bank_list', qaicash.getPayoutBankList.as_view(), name='payout_Banklist'),
     path('api/qaicash/payout_bank_limits', qaicash.getPayoutBankLimits.as_view(), name='payout_Banklimits'),
@@ -57,7 +60,11 @@ urlpatterns = [
     path('api/circlepay/check_transaction', csrf_exempt(circlepay.check_transaction), name="CirclePay_check_transaction"),
     path('api/payzod/deposit', csrf_exempt(payzod.get_qr_code), name="Payzod_Deposit"),
     path('api/payzod/confirm', csrf_exempt(payzod.confirm_payment), name="CirclePay_Confirm_Payment"),
-    path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status")
+    path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status"),
+    path('api/paymentiq/verifyUser', csrf_exempt(paymentiq.verify_user), name="Verify_PaymentIQ_User"),
+    path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card_Deposit"),
+    path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
+    path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
 ]
 
 

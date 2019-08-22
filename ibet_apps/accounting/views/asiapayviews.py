@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
 #from djauth.third_party_keys import *
 from rest_framework import generics
-from ..serializers import asiapayDepositSerialize, asiapayCashoutSerialize,asiapayDepositFinishSerialize,asiapayOrderStatusFinishSerialize,asiapayExchangeRateFinishSerialize,asiapayDepositArriveSerialize
+from accounting.serializers import asiapayDepositSerialize, asiapayCashoutSerialize,asiapayDepositFinishSerialize,asiapayOrderStatusFinishSerialize,asiapayExchangeRateFinishSerialize,asiapayDepositArriveSerialize,asiapayPayoutArriveSerialize
 from django.conf import settings
 import requests,json
 import logging, time, struct, hashlib, xml.etree.ElementTree as ET
@@ -21,6 +21,7 @@ from time import sleep
 from des import DesKey
 import base64, socket
 from time import gmtime, strftime, strptime
+from django.utils import timezone
 
 logger = logging.getLogger("django")
 
@@ -165,6 +166,7 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':"测试",
         })
         rdata = r.text
+        print(rdata)
         logger.info(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
@@ -172,6 +174,7 @@ class submitDeposit(generics.GenericAPIView):
             StatusMsg = tree.find('StatusMsg').text
             paymentAPIURL = tree.find('RedirectUrl').text
             paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
+            print(paymentAPIURL)
             logger.info(paymentAPIURL)
             if StatusMsg == 'OK':
                 create = Transaction.objects.create(
@@ -183,6 +186,7 @@ class submitDeposit(generics.GenericAPIView):
                     channel=4,
                     status=2,
                     method=bankidConversion[BankID],
+                    request_time=timezone.now(),
                 )
                 if PayWay == ASIAPAY_QRPAYWAY:
                     rr = requests.get(paymentAPIURL, params={
@@ -192,6 +196,7 @@ class submitDeposit(generics.GenericAPIView):
                     
                     rrdata = rr.json()
                     logger.info(rrdata)
+                    print(rrdata)
                     return Response(rrdata)
                
             else:
@@ -315,6 +320,7 @@ class submitCashout(generics.GenericAPIView):
                 channel=4,
                 status=2,
                 method=cashoutMethod,
+                request_time=timezone.now(),
             )
             return Response(StatusCode)
         else:
@@ -343,6 +349,7 @@ class depositfinish(generics.GenericAPIView):
             orderData = Transaction.objects.get(user_id=CustomUser.objects.get(pk=userid),
             order_id=OrderID)
             orderData.status = 3
+            orderData.last_updated = timezone.now(),
             orderData.save()
         else:
             logger.info('The request information is nor correct, please try again')
@@ -429,6 +436,7 @@ class depositArrive(generics.GenericAPIView):
         if serializer.is_valid() and StatusCode == '001':  
             saveData = Transaction.objects.get(user_id=userid, order_id=order_id) 
             saveData.status = 6
+            saveData.arrive_time = timezone.now()
             saveData.save()
             
             return Response(ET.tostring(root),status=status.HTTP_200_OK)
@@ -437,6 +445,47 @@ class depositArrive(generics.GenericAPIView):
         else:
             return Response(ET.tostring(root2), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+class payoutArrive(generics.GenericAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = asiapayPayoutArriveSerialize
+    permission_classes = [AllowAny, ]
+    def post(self, request, *args, **kwargs):
+        TrustIUser = self.request.data.get('TrustIUser')
+        OrderID = self.request.data.get('OrderID')
+        OrderID = order_id[1:]
+        findData = Transaction.objects.get(order_id=OrderID)
+        uID = findData.user_id
+        uID = 'n' + uID
+        amount = findData.amount
+        root = ET.Element("CashInfo")
+        tr1 = ET.SubElement(root, "StatusCode")
+        tr1.text = "001"
+        tr2 = ET.SubElement(root, "uID")
+        tr2.text = uID
+        tr3 = ET.SubElement(root, "CashMoney")
+        tr3.text = amount
+        tr4 = ET.SubElement(root, "CashCardNumber")
+        tr4.text = CashCardNumber
+        tr5 = ET.SubElement(root, "ProccessTime")
+        tr5.text = timezone.now()
+        if TrustIUser == ASIAPAY_TRUSTUSER :
+
+            if serializer.is_valid() and findData == OrderID:  
+
+                saveData = Transaction.objects.get(user_id=userid, order_id=order_id) 
+                saveData.status = 6
+                saveData.arrive_time = timezone.now()
+                saveData.save()
+                
+                return Response(ET.tostring(root),status=status.HTTP_200_OK)
+            elif not serializer.is_valid():
+                return Response(ET.tostring(root1), status=status.ccc)
+            else:
+                return Response(ET.tostring(root2), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"detail" : "need a trust user please."}, status=HTTP_401_UNAUTHORIZED)
+
+
 
 
 
