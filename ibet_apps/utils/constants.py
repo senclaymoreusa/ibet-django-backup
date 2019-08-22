@@ -914,6 +914,7 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 
 # scratch card API
