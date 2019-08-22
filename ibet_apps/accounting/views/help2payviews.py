@@ -145,6 +145,7 @@ class DepositResult(generics.GenericAPIView):
         update_data.order_id = depositID
         update_data.arrive_time = timezone.now()
         update_data.last_updated = timezone.now()
+        update_data.remark = result
         update_data.save()
         
         return Response({

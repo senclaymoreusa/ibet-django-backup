@@ -35,12 +35,14 @@ class Transaction(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return 'User ID: {0}, \n \
+        return "User ID: {0}, \n \
             Transaction Type: {1}, \n \
-            Internal ID: {2}, \n \
-            External ID: {3}, \n \
-            Status: {4} \
-            '.format(self.user_id, self.get_transaction_type_display(), self.transaction_id, self.order_id, self.get_status_display())
+            Transaction Gateway: {2}, \n \
+            Transaction Method: {3}, \n \
+            Internal ID: {4}, \n \
+            External ID: {5}, \n \
+            Status: {6} \
+            ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
     
 
 class ThirdParty(models.Model):

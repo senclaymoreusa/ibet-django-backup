@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-
+p
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -78,14 +78,18 @@ def confirm_payment(request):
 
             if transaction_data["status"] == '00':  # deposit successful
                 matching_transaction.status = 0
+                matching_transaction.remark = "Deposit successful!"
                 helpers.addOrWithdrawBalance(matching_transaction.user_id, transaction_data["amount"], "add")
 
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
                 matching_transaction.status = 3
+                matching_transaction.remark = "Deposit pending!"
             if transaction_data["status"] == '02':  # deposit canceled
                 matching_transaction.status = 5
+                matching_transaction.remark = "Deposit canceled!"
             if transaction_data["status"] == '03':  # deposit failed
                 matching_transaction.status = 1
+                matching_transaction.remark = "Deposit failed!"
 
             payment_method = matching_transaction.method + "_" + transaction_data["method"]
             matching_transaction.order_id = transaction_data["tran_id"]
