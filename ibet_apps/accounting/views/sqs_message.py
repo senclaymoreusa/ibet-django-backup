@@ -16,7 +16,7 @@ logger = logging.getLogger("django")
 
 
 async def send_message_sqs(**tranDict):
-    third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sqs_access.json")
+    third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/sqs_access.json")
     client = getAWSClient("sqs", third_party_keys)
     bonus_queue = getSQSQueue(BONUS_QUEUE_NAME)
 
