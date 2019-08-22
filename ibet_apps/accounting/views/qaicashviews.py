@@ -19,8 +19,8 @@ from utils.constants import *
 from django.utils import timezone
 
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
-from ..serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 
 from time import sleep, gmtime, strftime
 
