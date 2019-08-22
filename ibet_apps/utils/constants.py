@@ -422,6 +422,12 @@ CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
 CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
 CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
+# scratch card API
+SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
+SCRATCHCARD_PARTNER_ID = keys["SCRATCHCARD"]["PARTNER_ID"]
+SCRATCHCARD_CODE = keys["SCRATCHCARD"]["CODE"]
+SCRATCHCARD_EMAIL = keys["SCRATCHCARD"]["EMAIL"]
+
 # asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
 ASIAPAY_CID = "BRANDCQNGHUA3"
@@ -521,8 +527,4 @@ NOTIFICATION_METHOD = (
 
 BONUS_QUEUE_NAME = "bonus_queue"
 
-# scratch card API
-SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
-SCRATCHCARD_PARTNER_ID = "9"
-SCRATCHCARD_CODE = "n2P9R8"
-SCRATCHCARD_EMAIL = "jennyto@ibet.com"
+
