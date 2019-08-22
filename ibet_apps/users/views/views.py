@@ -1371,6 +1371,36 @@ class DeleteLimitation(View):
         interval = data['interval']
         limit_type = data['type']
         limit_id = data['id']
+        
+        print(request.body)
+        if limit_type == 'deposit':
+            limit_type = LIMIT_TYPE_DEPOSIT
+        elif limit_type == 'loss':
+            limit_type = LIMIT_TYPE_LOSS
+
+        user = CustomUser.objects.get(pk=user_id)
+
+        limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
+        print(str(limit.amount))
+        time = timezone.now() + datetime.timedelta(days=1)
+        limit.expiration_time = time
+        limit.tempory_amount = limit.amount
+        limit.amount = 0
+        limit.save()
+        print(str(limit.amount))
+        return HttpResponse('Successfully delete the {} limitation'.format(limit_type))
+
+
+class CancelDeleteLimitation(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        limit = data['limit']
+        interval = data['interval']
+        limit_type = data['type']
+        limit_id = data['id']
 
         if limit_type == 'deposit':
             limit_type = LIMIT_TYPE_DEPOSIT
@@ -1379,11 +1409,13 @@ class DeleteLimitation(View):
 
         user = CustomUser.objects.get(pk=user_id)
 
-        Limitation.objects.filter(user=user, limit_type=limit_type)
-        time = timezone.now() + datetime.timedelta(days=1)
-        Limitation.objects.filter(user=user, limit_type=limit_type).update(expiration_time=time)
-        
-        return HttpResponse('Successfully delete the {} limitation'.format(limit_type))
+        limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
+        limit.expiration_time = None
+        limit.amount = limit.tempory_amount
+        limit.tempory_amount = 0
+        limit.save()
+
+        return HttpResponse('Successfully cancel delete the {} limitation action'.format(limit_type))
 
 
 class GetLimitation(View):
@@ -1418,20 +1450,34 @@ class GetLimitation(View):
             'permBlock': {}
         }
         for limitation in userLimitation:
+            amount = 0 if limitation.tempory_amount is None else limitation.tempory_amount
+            # print(limitation.expiration_time)
+            # expiration_time = None if limitation.expiration_time is None else str(limitation.expiration_time)
+            # print(expiration_time)
+            expiration_time = ''
+            if limitation.expiration_time:
+                current_tz = timezone.get_current_timezone()
+                expiration_time = str(limitation.expiration_time.astimezone(current_tz))
+
             if limitation.limit_type == LIMIT_TYPE_LOSS:
                 lossMap = {
                     'amount': limitation.amount,
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
-                    'limitId': limitation.pk
+                    'limitId': limitation.pk,
+                    'tempory_amount': amount,
+                    'expiration_time': expiration_time
                 }
                 limitationDict['loss'].append(lossMap)
             elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
+                
                 depositMap = {
                     'amount': limitation.amount,
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
-                    'limitId': limitation.pk
+                    'limitId': limitation.pk,
+                    'tempory_amount': amount,
+                    'expiration_time': expiration_time
                 }
                 limitationDict['deposit'].append(depositMap)
     

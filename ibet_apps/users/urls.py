@@ -62,6 +62,7 @@ urlpatterns += [
     path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
     path('api/set-limitation/',csrf_exempt(views.SetLimitation.as_view()), name='set_limitation'),
     path('api/delete-limitation/', csrf_exempt(views.DeleteLimitation.as_view()), name='delete_limitation'),
-    path('api/get-limitation/', csrf_exempt(views.GetLimitation.as_view()), name='get_limitation'),
-    path('api/set-block-time/', csrf_exempt(views.SetBlockTime.as_view()), name='set_block_time')
+    path('api/get-limitations/', csrf_exempt(views.GetLimitation.as_view()), name='get_limitation'),
+    path('api/set-block-time/', csrf_exempt(views.SetBlockTime.as_view()), name='set_block_time'),
+    path('api/cancel-delete-limitation/', csrf_exempt(views.CancelDeleteLimitation.as_view()), name='cancel-delete-limitation')
 ]
