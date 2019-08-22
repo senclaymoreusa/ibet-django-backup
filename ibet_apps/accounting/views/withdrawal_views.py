@@ -82,12 +82,13 @@ class WithdrawalView(CommAdminView):
             # WITHDRAWAL TRANSACTIONS
             withdrawal_trans = Transaction.objects.filter(transaction_type=transaction_withdraw)
 
+
             # PENDING
-            pending_trans = withdrawal_trans.filter(status=tran_pending_type) 
+            pending_trans = withdrawal_trans.filter(review_status=review_pend) 
             # APPROVED
-            approved_trans = withdrawal_trans.filter(status=tran_approved_type) 
+            approved_trans = withdrawal_trans.filter(review_status=review_app) 
             # REJECTED
-            rejected_trans = withdrawal_trans.filter(status=tran_rejected_type) 
+            rejected_trans = withdrawal_trans.filter(review_status=review_rej) 
             # SUCCESSFUL
             success_trans = withdrawal_trans.filter(status=tran_success_type) 
             # FAILED

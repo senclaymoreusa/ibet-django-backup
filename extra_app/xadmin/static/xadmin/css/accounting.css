@@ -214,6 +214,10 @@ table tbody tr td {
     height: 123px;
 }
 
+.withdraw-request-title p {
+    margin-bottom:15px;
+}
+
 
 
 
@@ -232,11 +236,6 @@ table tbody tr td {
     width: 99% !important;
 }
 
-
-
-#deposit-channel-detail .form-group{
-    background-color: #f3f3f3;
-}
 
 #home-tab, .nav-item {
     font-family: Helvetica;
@@ -281,7 +280,7 @@ table tbody tr td {
     background-color: #f3f3f3
 }
 
-.deposit-request-title, .withdraw-request-title{
+.deposit-request-title, .withdraw-request-title, .channel-info{
     font-family: Helvetica;
     font-size: 13px;
     font-weight: bold;
@@ -296,7 +295,7 @@ table tbody tr td {
     position: relative;
 } 
 
-.deposit-request-data, .withdraw-request-data {
+.deposit-request-data, .withdraw-request-data, .channel-data {
     font-family: Helvetica;
     font-size: 13px;
     font-style: normal;
@@ -316,4 +315,37 @@ table tbody tr td {
     letter-spacing: normal;
     color: #4a4a4a;
     
+}
+
+
+
+
+/* channel list */
+.remove-border {
+    border: none;
+    -webkit-box-shadow:none;
+    box-shadow:none;
+}
+
+.edit-channel-btn {
+    background-color: #428bca;
+    width: 100%;
+    color: #ffffff;
+}
+
+.channel-info-box {
+    width: 97%;
+    background-color: #f3f3f3;
+    margin-bottom: 20px; 
+    margin-left: 0px;
+    padding-top: 10px;
+}
+
+.bridge {
+    margin-bottom: 5%;
+}
+
+.limit-label {
+    margin-top: 2%; 
+    margin-left: 3%;
 }

@@ -81,11 +81,17 @@ STATE_CHOICES = (
 review_app = 0
 review_pend = 1
 review_rej = 2
+review_success = 3
+review_fail = 4
+review_resend = 5
 
 REVIEW_STATE_CHOICES = (
-    (0, 'Approved'),
-    (1, 'Pending'),
-    (2, 'Rejected'),
+    (0, 'APPROVED'),
+    (1, 'PENDING'),
+    (2, 'REJECTED'),
+    (3, 'SUCCESSFUL'),
+    (4, 'FAILED'),
+    (5, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (

@@ -5,40 +5,55 @@
 {% endblock %}
 
 {% block content %}
-<div class="panel panel-default">
-    <div class="panel-heading">
+<div class="panel panel-default remove-border">
+    <div class="panel-heading" style="display: none">
         <h2 class="panel-title">
             Deposit Channels
         </h2>
     </div>
     <div class="panel-body">
-        <table id="deposit_channels" class="table table-striped table-bordered">
+        <table id="deposit_channels" class="table-striped table-bordered hover" style="width:100%;">
             <thead>
                 <tr>
+                    <th>METHOD</th>
                     <th>CHANNEL</th>
-                    <th>MIN DEPOSIT</th>
-                    <th>MAX DEPOSIT</th>
-                    <th>FEE</th>
+                    <th>SUPPLIER</th>
+                    <th>TYPE</th>
+                    <th>MARKET</th>
+                    <th>MIN</th>
+                    <th>MAX</th>
+                    <th>FLAT FEE</th>
+                    <th>% FEE</th>
                     <th>VOLUME</th>
+                    <th>REQUIRED VERIFICATIONS</th>
+                    <th>VIP LEVEL</th>
+                    <th>RISK LEVEL</th>
                     <th>NEW USERS VOLUMN</th>
-                    <th>BLOCKED RISK LEVEL</th>
                     <th>STATUS</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for channel in channel_data %}
-                <input type="hidden" name="channel_id" value="{{ channel.channel_id }}"></input>
+                <input type="hidden" name="channel_id" value="{{ channel.id }}"></input>
                 <tr style="height: 10px;">
-                    <td class="nr">{{ channel.channel_name }}</td>
-                    <td>{{ channel.min_deposit }}</td>
-                    <td>{{ channel.max_deposit }}</td>
+                    <td>{{ channel.method }}</td>
+                    <td>{{ channel.channel }}</td>
+                    <td>{{ channel.supplier }}</td>
+                    <td>{{ channel.type }}</td>
+                    <td>{{ channel.market }}</td>
+                    <td>{{ channel.min }}</td>
+                    <td>{{ channel.max }}</td>
+                    <td>{{ channel.flat_fee }}</td>
                     <td>{{ channel.fee }}</td>
                     <td>{{ channel.volume }}</td>
+                    <td>{{ channel.require }}</td>
+                    <td>{{ channel.vip_level }}</td>
+                    <td>{{ channel.risk_level }}</td>
                     <td>{{ channel.new_users_volume }}</td>
-                    <td></td>
                     <td>{{ channel.status }}</td>
-                    <td><button id="edit_detail_btn" type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                            data-target="#edit_details">Edit</button></td>
+                    <td><button id="edit_channel_btn" type="button" class="btn btn-sm edit-channel-btn"
+                            data-toggle="modal" data-target="#edit_details">Edit</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -55,48 +70,91 @@
                     <div class="modal-body">
                         <form action="{% url 'xadmin:channel_list' %}" method="POST">
                             {% csrf_token %}
-                            <h4 id="channel_name"></h4><br>
+                            <!-- <p id="channel_name"></p><br> -->
                             <input type="hidden" name="type" value="edit_channel_detail"></input>
                             <input type="hidden" id="channel_id_number" name="channel_id_number"></input>
-                            <div id="deposit-channel-detail" class="bg_color">
-                                <i class="fa fa-money"></i><strong> DEPOSITS</strong>
-                                <p>
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <input type="radio" name="channel_status" id="status_yes" value="0" /> Active
-                                        <input type="radio" name="channel_status" id="status_no" value="1" /> Disabled
-                                    </div>
-                                    <br>
 
-                                    <div class="form-group">
-                                        <label>MINIMUM DEPOSIT</label>
-                                        <br>
-                                        <input type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>MAXIMUM DEPOSIT</label>
-                                        <br>
-                                        <input type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>TRANSACTION FEE($)</label>
-                                        <br>
-                                        <input type=number min=0 step=0.01 id="transaction_fee" name="transaction_fee">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>VOLUME(%)</label>
-                                        <br>
-                                        &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volumn"
-                                            name="volumn">&#37;
-                                    </div>
-                            </div><br>
-                            <div class="form-group">
-                                <label>Limit access</label>
-                                <input type="radio" name="limit_access" id="limit_access_yes" /> Yes
-                                <input type="radio" name="limit_access" id="limit_access_no" /> No
+                            <div class="row channel-info-box">
+                                <div class="col-md-3 channel-info">
+                                    <p>Method</p>
+                                    <p>Channel</p>
+                                    <p>Supplier</p>
+                                </div>
+                                <div class="col-md-3 channel-data" id="payment_info_1">
+                                    <p id="method"></p>
+                                    <p id="channel"></p>
+                                    <p id="supplier"></p>
+                                </div>
+                                <div class="col-md-2 channel-info">
+                                    <p>Type</p>
+                                    <p>Market</p>
+                                </div>
+                                <div class="col-md-3 channel-data" id="payment_info_2">
+                                    <p id="type"></p>
+                                    <p id="market"></p>
+                                </div>
                             </div>
 
-                            <div class="form-check" id="limit_access_detail">
+                            <div id="deposit-channel-detail">
+                                <div class="form-group" style="padding-bottom: 10px">
+                                    <label>Status</label>
+                                    <input type="radio" name="channel_status" id="status_yes" value="0" /> Active
+                                    <input type="radio" name="channel_status" id="status_no" value="1" /> Disabled
+                                </div>
+                                <br>
+
+                                <label class="bridge">PAYMENTS SETTINGS</label>
+
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-md-4 channel-data">MINIMUM DEPOSIT</div>
+                                        <div class="col-md-4 channel-data">MAXIMUM DEPOSIT</div>
+                                    </div>
+                                    <div class="row bridge">
+                                        <div class="col-md-4">
+                                            <input type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 channel-data">TRANSACTION FEE</div>
+                                        <div class="col-md-4 channel-data">TRANSACTION % FEE</div>
+                                    </div>
+                                    <div class="row bridge">
+                                        <div class="col-md-4">
+                                            <input type=number min=0 step=0.01 id="transaction_fee"
+                                                name="transaction_fee">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type=number min=0 step=0.01 id="transaction_fee"
+                                                name="transaction_fee">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 channel-data">VOLUME</div>
+                                    </div>
+                                    <div class="row bridge">
+                                        <div class="col-md-6">
+                                            &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volumn"
+                                                name="volumn">&#37;
+                                        </div>
+                                    </div>
+                                    <br>
+                                </div>
+
+
+                                <div class="row">
+                                    <label class="limit-label">Limit access</label>
+                                    <input type="radio" name="limit_access" id="limit_access_yes" /> Yes
+                                    <input type="radio" name="limit_access" id="limit_access_no" /> No
+                                </div>
+                            </div>
+
+                            <div class="form-check" id="limit_access_detail" style="margin-top: 4%">
                                 <input type="checkbox" class="form-check-input" id="newUserCheck" checked>
                                 <label class="form-check-label" for="newUserCheck">New users</label>
 
@@ -120,11 +178,11 @@
                                     </select>
                                 </div>
                             </div>
-                            <button id="delete_channel_btn" type="button" class="btn btn-danger"
+                            <!-- <button id="delete_channel_btn" type="button" class="btn btn-danger"
                                 style="margin-top: 10px">
                                 <span class="glyphicon glyphicon-trash"
                                     style="color:white; padding-right: 20%; margin-left: -5px;"></span>Delete method
-                            </button><br>
+                            </button><br> -->
 
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary">Save</button>
@@ -190,30 +248,30 @@
                 }
             }
         });
+        // remove delete_channel_btn
+        // $('#delete_channel_btn').click(function () {
+        //     $('#delete_channel_btn').html('Click to delete');
+        //     $('#delete_channel_btn').attr('id', 'delete_channel')
+        //     $('#delete_channel').click(function () {
+        //         var channel_name = $(this).closest('form').find("h4").html();
+        //         console.log("channel_name" + channel_name)
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: "{% url 'xadmin:channel_list' %}",
+        //             data: {
+        //                 'type': 'deleteChannel',
+        //                 'deposit_channel': channel_name,
+        //             },
+        //             success: function (data) {
+        //                 location.reload();
+        //             }
+        //         })
+        //     });
+        // });
 
-        $('#delete_channel_btn').click(function () {
-            $('#delete_channel_btn').html('Click to delete');
-            $('#delete_channel_btn').attr('id', 'delete_channel')
-            $('#delete_channel').click(function () {
-                var channel_name = $(this).closest('form').find("h4").html();
-                console.log("channel_name" + channel_name)
-                $.ajax({
-                    type: 'POST',
-                    url: "{% url 'xadmin:channel_list' %}",
-                    data: {
-                        'type': 'deleteChannel',
-                        'deposit_channel': channel_name,
-                    },
-                    success: function (data) {
-                        location.reload();
-                    }
-                })
-            });
-        });
 
         // deposit channel edit function
-        $('#edit_detail_btn').click(function () {
-            console.log("start")
+        $('#edit_channel_btn').click(function () {
             var channel = $(this).closest("tbody").find("input[name='channel_id']").val()
             console.log("channel " + channel)
             $.ajax({
@@ -221,9 +279,16 @@
                 url: "{% url 'xadmin:channel_list' %}",
                 data: {
                     'type': 'getChannelInfo',
-                    'current_deposit_channel': channel,
+                    'current_channel': channel,
                 },
                 success: function (data) {
+                    console.log(data)
+                    $('#method').html(data['method'])
+                    $('#channel').html(data['channel'])
+                    $('#supplier').html(data['supplier'])
+                    $('#type').html(data['type'])
+                    $('#market').html(data['market'])
+
                     $('#channel_id_number').val(data['channel_id']);
                     $('#channel_name').html(data['name']);
                     $('#delete_channel_name').val(data['name']);

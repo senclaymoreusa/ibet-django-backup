@@ -372,12 +372,12 @@
                                 style="width: 40%;height: 100px;" placeholder="Add anything of importance"></textarea>
 
                             <div id="deposit-request-button">
-                                <button type="submit" class="btn btn-success" name="deposit-review-app">Approve</button>
-                                <button type="submit" class="btn btn-success" name="deposit-review-appnext">Approve and
-                                    Next</button>
-                                <button type="submit" class="btn btn-danger" name="deposit-review-rej">Reject</button>
-                                <button type="submit" class="btn btn-danger" name="deposit-review-rejnext">Reject and
-                                    Next</button>
+                                <button type="button" class="btn btn-success" id="deposit-review-a">Approve</button>
+                                <!-- <button type="submit" class="btn btn-success" name="deposit-review-appnext">Approve and
+                                    Next</button> -->
+                                <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button>
+                                <!-- <button type="submit" class="btn btn-danger" name="deposit-review-rejnext">Reject and
+                                    Next</button> -->
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
@@ -390,8 +390,8 @@
 
 
 
-
 <script>
+
     $(document).ready(function () {
         var csrftoken = $.cookie("csrftoken")
 
@@ -572,6 +572,25 @@
             content += "<p>" + data[10] + "</p>";
             $("#bank_detail").append(content);
         }
+
+        // double click button
+        $('#deposit-review-a').click(function () {
+            $('#deposit-review-a').html('Click to Approve');
+            $('#deposit-review-a').attr('id', 'deposit-review-app');
+            $('#deposit-review-app').click(function () {
+                $('#deposit-review-app').attr('type', 'submit')
+                $('#deposit-review-app').attr('name', 'deposit-review-app')
+            });
+        });
+
+        $('#deposit-review-r').click(function () {
+            $('#deposit-review-r').html('Click to Reject');
+            $('#deposit-review-r').attr('id', 'deposit-review-rej');
+            $('#deposit-review-rej').click(function () {
+                $('#deposit-review-rej').attr('type', 'submit')
+                $('#deposit-review-rej').attr('name', 'deposit-review-rej')
+            });
+        });
 
     })
 </script>

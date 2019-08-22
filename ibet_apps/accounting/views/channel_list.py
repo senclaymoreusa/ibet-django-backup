@@ -15,6 +15,8 @@ from django.core import serializers
 from django.utils.timezone import timedelta
 
 from utils.constants import *
+from itertools import chain
+
 
 
 class ChannelListView(CommAdminView):
@@ -22,22 +24,34 @@ class ChannelListView(CommAdminView):
         get_type = request.GET.get("type")
 
         if get_type == "getChannelInfo":
-            deposit_channel = request.GET.get("current_deposit_channel")
-            current_channel_obj = DepositChannel.objects.get(pk=deposit_channel)
+            channel = request.GET.get("current_channel")
             context = super().get_context()
+            
+            current_channel = DepositChannel.objects.get(pk=channel)
+            current_type = "Deposit"
+            if current_channel is None:
+                current_channel = WithdrawChannel.objects.get(pk=channel)
+                current_type = "Withdraw"
+                   
             context[
                 "current_channel_name"
-            ] = current_channel_obj.get_thirdParty_name_display()
+            ] = current_channel.get_thirdParty_name_display()
 
             response_data = {
-                "channel_id": deposit_channel,
-                "name": current_channel_obj.get_thirdParty_name_display(),
-                "channel_status": current_channel_obj.get_switch_display(),
-                "min_deposit": current_channel_obj.min_amount,
-                "max_deposit": current_channel_obj.max_amount,
-                "transaction_fee": current_channel_obj.transaction_fee,
-                "volumn": current_channel_obj.volume,
-                "limit_access": current_channel_obj.limit_access,
+                "channel_id": str(current_channel),
+                "name": current_channel.get_thirdParty_name_display(),
+                "channel_status": current_channel.get_switch_display(),
+                "min_deposit": current_channel.min_amount,
+                "max_deposit": current_channel.max_amount,
+                "transaction_fee": current_channel.transaction_fee,
+                "volumn": current_channel.volume,
+                "limit_access": current_channel.limit_access,
+                # methods part
+                "method": current_channel.method,
+                "type": current_type,
+                "channel": current_channel.get_thirdParty_name_display(),
+                "market": "market",
+                "supplier": "supplier"
             }
             return HttpResponse(
                 json.dumps(response_data), content_type="application/json"
@@ -45,64 +59,45 @@ class ChannelListView(CommAdminView):
 
         else:
             context = super().get_context()
-            title = "Payment methods"
+            title = "Finance / Payment methods"
             context["breadcrumbs"].append({"url": "/deposit/", "title": title})
-            context["title"] = title
 
             # CHANNEL
             depositChannel = DepositChannel.objects.all()
-            # PENDING
-            pending_trans = Transaction.objects.filter(
-                Q(status=tran_pending_type) & Q(transaction_type=0)
-            )
-            # SUCCESS
-            success_trans = Transaction.objects.filter(
-                Q(status=tran_success_type) & Q(transaction_type=0)
-            )
-            # FAILED
-            fail_trans = Transaction.objects.filter(
-                Q(status=tran_fail_type) & Q(transaction_type=0)
-            )
-            # CANCELLED
-            cancelled_trans = Transaction.objects.filter(
-                Q(status=tran_cancel_type) & Q(transaction_type=0)
-            )
+            withdrawChannel = WithdrawChannel.objects.all()
+            channels = list(chain(depositChannel, withdrawChannel))
 
             # channels
             channel_data = []
-            for channel in depositChannel:
-                depositDict = {}
-                depositDict["channel_id"] = channel.pk
-                depositDict["channel_name"] = channel.get_thirdParty_name_display()
-                depositDict["min_deposit"] = channel.min_amount
-                depositDict["max_deposit"] = channel.max_amount
-                depositDict["fee"] = channel.transaction_fee
-                depositDict["volume"] = channel.volume
-                depositDict["new_users_volume"] = channel.new_user_volume
-                # depositDict["blocked_risk_level"] = channel.blocked_risk_level
-                depositDict["status"] = channel.get_switch_display()
-                channel_data.append(depositDict)
+            for channel in channels:
+                channelDict = {}
+                channelDict["id"] = channel.pk
+                channelDict["method"] = channel.method
+                channelDict["channel"] = channel.get_thirdParty_name_display()
+                channelDict["supplier"] = "supplier"
+                if channel._meta.get_field('deposit_channel') is None:
+                    channelDict["type"] = "Withdrawal"
+                else:
+                    channelDict["type"] = "Deposit"
+                channelDict["market"] = "market"
+                channelDict["min"] = channel.min_amount
+                channelDict["max"] = channel.max_amount
+                channelDict["flat_fee"] = "flat fee"
+                channelDict["fee"] = channel.transaction_fee
+                channelDict["volume"] = channel.volume
+                channelDict["require"] = "require"
+                channelDict["vip_level"] = "vip level"
+                channelDict["risk_level"] = channel.get_block_risk_level_display()
+                channelDict["new_users_volume"] = channel.new_user_volume
+                channelDict["status"] = channel.get_switch_display()
+                channel_data.append(channelDict)
             context["channel_data"] = channel_data
             return render(request, "channels.html", context)
 
     def post(self, request):
         post_type = request.POST.get("type")
 
-        if post_type == "deleteChannel":
-            deposit_channel = request.POST.get("deposit_channel")
-            # find choice label from choice value
-            deposit_channel_label = None
-            for channel_id, name in CHANNEL_CHOICES:
-                if name == deposit_channel:
-                    deposit_channel_label = str(channel_id)
-                    break
-            delete_channel = get_object_or_404(
-                DepositChannel, thirdParty_name=deposit_channel_label
-            )
-            delete_channel.delete()
-            return HttpResponseRedirect(reverse("xadmin:channel_list"))
-
-        elif post_type == "edit_channel_detail":
+        if post_type == "edit_channel_detail":
             channel_id = request.POST.get("channel_id_number")
             channel_status = request.POST.get("channel_status")
 
@@ -121,4 +116,19 @@ class ChannelListView(CommAdminView):
                 switch=channel_status,
             )
 
+        # elif post_type == "deleteChannel":
+        #     deposit_channel = request.POST.get("deposit_channel")
+        #     # find choice label from choice value
+        #     deposit_channel_label = None
+        #     for channel_id, name in CHANNEL_CHOICES:
+        #         if name == deposit_channel:
+        #             deposit_channel_label = str(channel_id)
+        #             break
+        #     delete_channel = get_object_or_404(
+        #         DepositChannel, thirdParty_name=deposit_channel_label
+        #     )
+        #     delete_channel.delete()
             return HttpResponseRedirect(reverse("xadmin:channel_list"))
+
+        
+

@@ -455,13 +455,13 @@
                                     placeholder="Add anything of importance"></textarea>
 
                                 <div id="withdraw-request-button" style="margin-top:40px">
-                                    <button type="submit" class="btn btn-success"
-                                        name="withdraw-review-app">Approve</button>
+                                    <button type="button" class="btn btn-success"
+                                        id="withdraw-review-a">Approve</button>
                                     <!-- <button type="submit" class="btn btn-success" name="withdraw-review-appnext">Approve
                                         and
                                         Next</button> -->
-                                    <button type="submit" class="btn btn-danger"
-                                        name="withdraw-review-rej">Reject</button>
+                                    <button type="button" class="btn btn-danger"
+                                        id="withdraw-review-r">Reject</button>
                                     <!-- <button type="submit" class="btn btn-danger" name="withdraw-review-rejnext">Reject
                                         and
                                         Next</button> -->
@@ -478,6 +478,28 @@
 
 
 <script>
+
+    // double click button
+    $('#withdraw-review-a').click(function () {
+        $('#withdraw-review-a').html('Click to Approve');
+        $('#withdraw-review-a').attr('id', 'withdraw-review-app');
+        $('#withdraw-review-app').click(function () {
+            $('#withdraw-review-app').attr('type', 'submit')
+            $('#withdraw-review-app').attr('name', 'withdraw-review-app')
+        });
+    });
+
+    $('#withdraw-review-r').click(function () {
+        $('#withdraw-review-r').html('Click to Reject');
+        $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
+        $('#withdraw-review-rej').click(function () {
+            $('#withdraw-review-rej').attr('type', 'submit')
+            $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
+        });
+    });
+
+
+
     $(document).ready(function () {
 
         var csrftoken = $.cookie("csrftoken")
