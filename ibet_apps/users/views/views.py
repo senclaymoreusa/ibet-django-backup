@@ -1359,7 +1359,7 @@ class SetLimitation(View):
         elif limit_type == 'deposit':
             set_deposit_limitation(user_id, limit, interval, oldLimitMap, user)
 
-        return HttpResponse('Successfully set the {} limitation'.format(limit_type))
+        return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
 
 class DeleteLimitation(View):
 
@@ -1367,12 +1367,11 @@ class DeleteLimitation(View):
         
         data = json.loads(request.body)
         user_id = data['user_id']
-        limit = data['limit']
+        # limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
         limit_id = data['id']
         
-        print(request.body)
         if limit_type == 'deposit':
             limit_type = LIMIT_TYPE_DEPOSIT
         elif limit_type == 'loss':
@@ -1381,14 +1380,12 @@ class DeleteLimitation(View):
         user = CustomUser.objects.get(pk=user_id)
 
         limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
-        print(str(limit.amount))
         time = timezone.now() + datetime.timedelta(days=1)
         limit.expiration_time = time
         limit.tempory_amount = limit.amount
         limit.amount = 0
         limit.save()
-        print(str(limit.amount))
-        return HttpResponse('Successfully delete the {} limitation'.format(limit_type))
+        return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
 
 
 class CancelDeleteLimitation(View):
@@ -1397,7 +1394,7 @@ class CancelDeleteLimitation(View):
         
         data = json.loads(request.body)
         user_id = data['user_id']
-        limit = data['limit']
+        # limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
         limit_id = data['id']
@@ -1415,7 +1412,7 @@ class CancelDeleteLimitation(View):
         limit.tempory_amount = 0
         limit.save()
 
-        return HttpResponse('Successfully cancel delete the {} limitation action'.format(limit_type))
+        return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
 
 
 class GetLimitation(View):
@@ -1509,7 +1506,7 @@ class GetLimitation(View):
             }
             limitationDict['permBlock'] = permanentMap
 
-        return HttpResponse(json.dumps(limitationDict), content_type="application/json")
+        return HttpResponse(json.dumps(limitationDict), content_type="application/json", status = 200)
 
 class SetBlockTime(View):
 
@@ -1527,5 +1524,4 @@ class SetBlockTime(View):
             set_temporary_timeout(user_id, lock_timespan)
             set_permanent_timeout(user_id, -1)
         
-
-        return HttpResponse('Successfully block the userId: {0} for lock timespan option {1}'.format(user_id, lock_timespan))
+        return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(user_id, lock_timespan)), status = 200)
