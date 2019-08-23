@@ -165,7 +165,6 @@ class CustomUser(AbstractBaseUser):
 
     bonusesProgram = models.BooleanField(default=False)
     vipProgram = models.BooleanField(default=False)
-
     
     created_time = models.DateTimeField(
         _('Created Time'),

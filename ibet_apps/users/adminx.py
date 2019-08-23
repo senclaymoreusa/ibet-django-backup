@@ -246,6 +246,7 @@ class UserActionAdmin(object):
 xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'users/', UserListView, name='user_list')
+xadmin.site.register_view(r'profile/', UserProfileView, name='user_profile')
 
 from xadmin.views import CommAdminView
 # xadmin.site.register(CommAdminView, GlobalSettings)
