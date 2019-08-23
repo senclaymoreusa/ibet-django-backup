@@ -1,4 +1,5 @@
 import os, requests, json, random, logging, time, boto3
+
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.utils import timezone
 from django.conf import settings
@@ -6,9 +7,10 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
-from ..models import Transaction
+from accounting.models import Transaction
 from users.models import CustomUser
 from utils.constants import *
+from utils.aws_helper import *
 
 from botocore.exceptions import ClientError, NoCredentialsError
 
@@ -22,21 +24,6 @@ DEPOSIT = 0
 THB = 2
 LINE_PAY = 1
 CREATED = 2
-
-
-def getThirdPartyKeys(bucket, file):
-    s3client = boto3.client("s3")
-    try:
-        config_obj = s3client.get_object(Bucket=bucket, Key=file)
-        config = json.loads(config_obj['Body'].read())
-    except ClientError as e:
-        logger.error(e)
-        return None
-    except NoCredentialsError as e:
-        logger.error(e)
-        return None
-    
-    return config
 
 
 config = getThirdPartyKeys(settings.AWS_S3_ADMIN_BUCKET, settings.PATH_TO_KEYS)

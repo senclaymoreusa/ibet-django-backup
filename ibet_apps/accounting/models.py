@@ -9,9 +9,9 @@ import uuid
 
 
 class Transaction(models.Model):
-    transaction_id = models.CharField(max_length = 200, default=0, verbose_name=_('Transaction id'))
+    transaction_id = models.CharField(max_length=200, default=0, verbose_name=_('Transaction ID'))
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_('Member'))
-    order_id = models.CharField(max_length = 200, default=0,verbose_name=_('Order id'))
+    order_id = models.CharField(max_length=200, default=0, verbose_name=_('Order ID'))
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Apply Amount'))
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, verbose_name=_('Currency'))
     language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='en-Us', verbose_name=_('Language'))

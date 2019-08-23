@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
 from django.utils import timezone
-from ..models import *
+from users.models import *
 from accounting.models import Transaction
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _

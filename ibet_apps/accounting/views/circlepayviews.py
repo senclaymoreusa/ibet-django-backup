@@ -14,8 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
 from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
-from ..serializers import astroPaymentStatusSerialize
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.serializers import astroPaymentStatusSerialize
 from utils.constants import *
 
 logger = logging.getLogger('django')
@@ -35,6 +35,7 @@ def create_deposit(request):
         amount = body["amount"]
         transaction_id = body["trans_id"]
 
+        print(request.user)
         user_id = CustomUser.objects.get(username=request.user.username)
         obj, created = Transaction.objects.get_or_create(
             user_id=user_id,
@@ -84,7 +85,7 @@ def confirm_payment(request):
             payment_method = matching_transaction.method + "_" + transaction_data["method"]
             matching_transaction.order_id = transaction_data["tran_id"]
             matching_transaction.method = payment_method
-            matching_transaction.arrive_time = datetime.strptime(transaction_data["time"], '%Y-%m-%d %H:%M:%S')
+            matching_transaction.arrive_time = timezone.datetime.strptime(transaction_data["time"], '%Y-%m-%d %H:%M:%S')
             matching_transaction.last_updated = timezone.now()
             matching_transaction.save()
 

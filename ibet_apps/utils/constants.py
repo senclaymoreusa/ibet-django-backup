@@ -36,7 +36,8 @@ CHANNEL_CHOICES = (
     (5, 'Paypal'),
     (6, 'Payzod'),
     (7, 'CirclePay'),
-    (8, 'Fgate')
+    (8, 'Fgate'),
+    (9, 'ScratchCard')
 )
 
 currency_cny = 0
@@ -217,14 +218,17 @@ INTERVAL_PER_ONE_YEAR = 4
 INTERVAL_PER_THREE_YEAR = 5
 INTERVAL_PER_FIVE_YEAR = 6
 
-INTERVAL = (
-    (INTERVAL_PER_DAY, 'per day'),
-    (INTERVAL_PER_WEEK, 'per week'),
-    (INTERVAL_PER_MONTH, 'per month'),
-    (INTERVAL_PER_SIX_MONTH, 'per six months'),
-    (INTERVAL_PER_ONE_YEAR, 'per one year'),
-    (INTERVAL_PER_THREE_YEAR, 'per three years'),
-    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+TEMPORARY_INTERVAL = (
+    (INTERVAL_PER_DAY, 'day'),
+    (INTERVAL_PER_WEEK, 'week'),
+    (INTERVAL_PER_MONTH, 'month'),
+)
+
+PERMANENT_INTERVAL = (
+    (INTERVAL_PER_SIX_MONTH, 'six months'),
+    (INTERVAL_PER_ONE_YEAR, 'one year'),
+    (INTERVAL_PER_THREE_YEAR, 'three years'),
+    (INTERVAL_PER_FIVE_YEAR, 'five years'),
 )
 
 
@@ -915,4 +919,10 @@ PERMISSION_CODE = [
 BONUS_QUEUE_NAME = "bonus_queue"
 
 
+# scratch card API
+SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
+SCRATCHCARD_PARTNER_ID = "9"
+SCRATCHCARD_CODE = "n2P9R8"
+SCRATCHCARD_EMAIL = "jennyto@ibet.com"
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
+

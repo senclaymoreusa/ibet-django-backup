@@ -1,5 +1,9 @@
 from django.urls import path
 from . import views
+
+import users.views.gbsportsintegrationviews as gbsportsintegrationviews
+import users.views.agintegrationviews as agintegrationviews
+
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
 from django.views.decorators.csrf import csrf_exempt
@@ -52,8 +56,8 @@ urlpatterns += [
     path('api/validateandresetpassword/', views.ValidateAndResetPassowrd.as_view(), name='validate_and_reset_password'),
     path('api/cancelregistration/', views.CancelRegistration.as_view(), name='cancel_registration'),
     path('api/getusernamebyreferid/', views.GetUsernameByReferid.as_view(), name = 'get_user'),
-    path('api/walletgeneral/', views.WalletGeneralAPI.as_view(), name='wallet_general'),
-    path('api/walletbet/', views.WalletBetAPIURL.as_view(), name='wallet_bet'),
-    path('api/walletsettle/', views.WalletSettleAPIURL.as_view(), name='wallet_settle'),
-    path('api/posttransferforag/', views.PostTransferforAG.as_view(), name='post_transfer_for_ag')
+    path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
+    path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
+    path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
+    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag')
 ]
