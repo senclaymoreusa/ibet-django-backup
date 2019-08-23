@@ -16,8 +16,8 @@ def set_loss_limitation(userId, lossLimit, lossLimitInterval, oldLimitMap, user)
     for intervalType in oldLimitMap[LIMIT_TYPE_LOSS]:
         if intervalType not in lossLimitInterval:
             logger.info('Deleting loss limit for interval type: ' + str(intervalType))
-            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).delete()
-            # Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).update(amount=0)
+            # Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).delete()
+            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).update(amount=None)
 
     # insert or update
     for i in range(len(lossLimit)):
@@ -41,8 +41,8 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
     for intervalType in oldLimitMap[LIMIT_TYPE_DEPOSIT]:
         if intervalType not in depositLimitInterval:
             logger.info('Deleting deposit limit for interval type: ' + str(intervalType))
-            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).delete()
-            # Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).update(amount=0)
+            # Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).delete()
+            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).update(amount=None)
 
     # insert or update
     for i in range(len(depositLimitInterval)):
@@ -109,4 +109,5 @@ def get_old_limitations(userId):
             # oldLimitMap[limitType]['amount'] = limit.amount
             oldLimitMap[limitType][limit.interval] = limit.amount
     
+    print(oldLimitMap)
     return oldLimitMap

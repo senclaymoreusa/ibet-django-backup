@@ -1383,7 +1383,7 @@ class DeleteLimitation(View):
         time = timezone.now() + datetime.timedelta(days=1)
         limit.expiration_time = time
         limit.temporary_amount = limit.amount
-        limit.amount = 0
+        limit.amount = None
         limit.save()
         return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
 
@@ -1409,7 +1409,7 @@ class CancelDeleteLimitation(View):
         limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
         limit.expiration_time = None
         limit.amount = limit.temporary_amount
-        limit.temporary_amount = 0
+        limit.temporary_amount = None
         limit.save()
 
         return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
@@ -1447,23 +1447,27 @@ class GetLimitation(View):
             'permBlock': {}
         }
         for limitation in userLimitation:
-            amount = 0 if limitation.temporary_amount is None else limitation.temporary_amount
+            temporary_amount = 0 if limitation.temporary_amount is None else limitation.temporary_amount
+            expiration_timeStr = ''
+            if limitation.expiration_time:
+                current_tz = timezone.get_current_timezone()
+                expiration_time = limitation.expiration_time.astimezone(current_tz)
+                expiration_timeStr = str(limitation.expiration_time.astimezone(current_tz))
+
+            if limitation.amount is None and limitation.expiration_time and expiration_time <= timezone.now():
+                continue
             # print(limitation.expiration_time)
             # expiration_time = None if limitation.expiration_time is None else str(limitation.expiration_time)
             # print(expiration_time)
-            expiration_time = ''
-            if limitation.expiration_time:
-                current_tz = timezone.get_current_timezone()
-                expiration_time = str(limitation.expiration_time.astimezone(current_tz))
-
+            
             if limitation.limit_type == LIMIT_TYPE_LOSS:
                 lossMap = {
                     'amount': limitation.amount,
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'temporary_amount': amount,
-                    'expiration_time': expiration_time
+                    'temporary_amount': temporary_amount,
+                    'expiration_time': expiration_timeStr
                 }
                 limitationDict['loss'].append(lossMap)
             elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
@@ -1473,8 +1477,8 @@ class GetLimitation(View):
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'temporary_amount': amount,
-                    'expiration_time': expiration_time
+                    'temporary_amount': temporary_amount,
+                    'expiration_time': expiration_timeStr
                 }
                 limitationDict['deposit'].append(depositMap)
     
