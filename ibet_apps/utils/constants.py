@@ -400,12 +400,23 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
+    #fgo
+    FGATE_URL = "https://api.fgate247.com/charge_card/"
+    FGATE_PARTNERID = "75"
+    FGATE_PARTNERKEY = "6tDJkb"
+    FGATE_TYPE = "fgo"
 else:
     # astroPay sandbox keys:
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+
+    # fgo
+    FGATE_URL = "https://api.fgate247.com/charge_card/"
+    FGATE_PARTNERID = "75"
+    FGATE_PARTNERKEY = "6tDJkb"
+    FGATE_TYPE = "fgo"
 
 
 # astroPay sandbod WEBPAYSTATUS:
@@ -452,11 +463,7 @@ PAYZOD_PASSKEY = "dgr8mM7akMtL"
 
 # payzod production
 
-# fgate
-FGATE_URL = "https://api.fgate247.com/charge_card/"
-FGATE_PARTNERID = "75"
-FGATE_PARTNERKEY = "6tDJkb"
-FGATE_TYPE = "fgo"
+
 
 
 GAME_FILTER_OPTION = [
