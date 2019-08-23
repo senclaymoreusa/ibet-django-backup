@@ -867,7 +867,7 @@ function createNewUser() {
 }
 
 function editUserView(userId) {
-    console.log(userId);
+    // console.log(userId);
 
     $('#formAction').val('updateUser');
     $.ajax({
@@ -1004,7 +1004,7 @@ function changeAccess() {
             }
         }).done(function(res) {
 
-            console.log(res.data);
+            // console.log(res.data);
             var res = res.data;
             // $('#changeAccess').on('show.bs.modal', function(e) {
                 $("#change_access_table").empty();
@@ -1105,23 +1105,6 @@ function viewProfile(username, userDetail) {
 
     
 }
-
-// function searchOpen() {
-//     var search = $('#search').val();
-//     var url = "{% url 'get_admin_user' %}" + "?search=" + search;
-//     $.ajax({
-//         url: url,
-//         type: 'GET',
-//         success: function (data) {
-//             console.log(data);
-//             // searchResult(data, search);
-//         },
-//         error: function () {
-//             // console.log('error');
-//         }
-
-//     });
-// }
 
 </script>
 
