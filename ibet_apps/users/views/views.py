@@ -1382,7 +1382,7 @@ class DeleteLimitation(View):
         limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
         time = timezone.now() + datetime.timedelta(days=1)
         limit.expiration_time = time
-        limit.tempory_amount = limit.amount
+        limit.temporary_amount = limit.amount
         limit.amount = 0
         limit.save()
         return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
@@ -1408,8 +1408,8 @@ class CancelDeleteLimitation(View):
 
         limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
         limit.expiration_time = None
-        limit.amount = limit.tempory_amount
-        limit.tempory_amount = 0
+        limit.amount = limit.temporary_amount
+        limit.temporary_amount = 0
         limit.save()
 
         return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
@@ -1447,7 +1447,7 @@ class GetLimitation(View):
             'permBlock': {}
         }
         for limitation in userLimitation:
-            amount = 0 if limitation.tempory_amount is None else limitation.tempory_amount
+            amount = 0 if limitation.temporary_amount is None else limitation.temporary_amount
             # print(limitation.expiration_time)
             # expiration_time = None if limitation.expiration_time is None else str(limitation.expiration_time)
             # print(expiration_time)
@@ -1462,7 +1462,7 @@ class GetLimitation(View):
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'tempory_amount': amount,
+                    'temporary_amount': amount,
                     'expiration_time': expiration_time
                 }
                 limitationDict['loss'].append(lossMap)
@@ -1473,7 +1473,7 @@ class GetLimitation(View):
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'tempory_amount': amount,
+                    'temporary_amount': amount,
                     'expiration_time': expiration_time
                 }
                 limitationDict['deposit'].append(depositMap)

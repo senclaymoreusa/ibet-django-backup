@@ -3,8 +3,6 @@ import json
 from utils.constants import *
 from users.models import *
 from django.utils import timezone
-from celery.schedules import crontab
-from celery.task import periodic_task
 import datetime
 
 logger = logging.getLogger('django')
