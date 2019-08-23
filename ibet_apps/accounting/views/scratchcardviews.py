@@ -20,7 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 from utils.constants import *
 import utils.helpers as helpers
-from ..models import Transaction
+from accounting.models import Transaction
 
 logger = logging.getLogger('django')
 

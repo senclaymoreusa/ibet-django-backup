@@ -14,8 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
 from users.models import CustomUser
-from ..models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
-from ..serializers import astroPaymentStatusSerialize
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.serializers import astroPaymentStatusSerialize
 from utils.constants import *
 import utils.helpers as helpers
 

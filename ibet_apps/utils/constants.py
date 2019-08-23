@@ -238,14 +238,17 @@ INTERVAL_PER_ONE_YEAR = 4
 INTERVAL_PER_THREE_YEAR = 5
 INTERVAL_PER_FIVE_YEAR = 6
 
-INTERVAL = (
-    (INTERVAL_PER_DAY, 'per day'),
-    (INTERVAL_PER_WEEK, 'per week'),
-    (INTERVAL_PER_MONTH, 'per month'),
-    (INTERVAL_PER_SIX_MONTH, 'per six months'),
-    (INTERVAL_PER_ONE_YEAR, 'per one year'),
-    (INTERVAL_PER_THREE_YEAR, 'per three years'),
-    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+TEMPORARY_INTERVAL = (
+    (INTERVAL_PER_DAY, 'day'),
+    (INTERVAL_PER_WEEK, 'week'),
+    (INTERVAL_PER_MONTH, 'month'),
+)
+
+PERMANENT_INTERVAL = (
+    (INTERVAL_PER_SIX_MONTH, 'six months'),
+    (INTERVAL_PER_ONE_YEAR, 'one year'),
+    (INTERVAL_PER_THREE_YEAR, 'three years'),
+    (INTERVAL_PER_FIVE_YEAR, 'five years'),
 )
 
 
@@ -434,6 +437,12 @@ CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
 CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
 CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
+# scratch card API
+SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
+SCRATCHCARD_PARTNER_ID = keys["SCRATCHCARD"]["PARTNER_ID"]
+SCRATCHCARD_CODE = keys["SCRATCHCARD"]["CODE"]
+SCRATCHCARD_EMAIL = keys["SCRATCHCARD"]["EMAIL"]
+
 # asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
 ASIAPAY_CID = "BRANDCQNGHUA3"
@@ -527,10 +536,434 @@ NOTIFICATION_METHOD = (
     (NOTIFICATION_EMAIL, 'email')
 )
 
-BONUS_QUEUE_NAME = "bonus_queue"
+COUNTRY_CODE_CHINA = 'CNY'
+COUNTRY_CODE_GERMANY = 'DE'
+COUNTRY_CODE_FINAND = 'FI'
+COUNTRY_CODE_NORWAY = 'NO'
+COUNTRY_CODE_THAILAND = 'THB'
+COUNTRY_CODE_VIETNAM = 'VN'
 
-# scratch card API
-SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
-SCRATCHCARD_PARTNER_ID = "9"
-SCRATCHCARD_CODE = "n2P9R8"
-SCRATCHCARD_EMAIL = "jennyto@ibet.com"
+MARKET_OPTIONS = {
+    'ibetMarket_options': [
+        COUNTRY_CODE_CHINA,
+        COUNTRY_CODE_GERMANY,
+        COUNTRY_CODE_FINAND,
+        COUNTRY_CODE_NORWAY,
+        COUNTRY_CODE_THAILAND,
+        COUNTRY_CODE_VIETNAM
+    ],
+    'letouMarket_options': [
+        COUNTRY_CODE_CHINA,
+        COUNTRY_CODE_THAILAND,
+        COUNTRY_CODE_VIETNAM
+    ]
+}
+
+COUNTRY_CODE_TO_IMG_PREFIX = {
+    COUNTRY_CODE_CHINA: 'china',
+    COUNTRY_CODE_GERMANY: 'germany',
+    COUNTRY_CODE_FINAND: 'finland',
+    COUNTRY_CODE_NORWAY: 'norway',
+    COUNTRY_CODE_THAILAND: 'thailand',
+    COUNTRY_CODE_VIETNAM: 'vietnam'
+}
+
+DEPARTMENT_LIST = [
+    {
+        'code': '1',
+        'name': 'Customer service'
+    },
+    {
+        'code': '2',
+        'name': 'Payments'
+    },
+    {
+        'code': '3',
+        'name': 'Risk'
+    },
+    {
+        'code': '4',
+        'name': 'Marketing'
+    },
+    {
+        'code': '5',
+        'name': 'IT Operations'
+    },
+    {
+        'code': '6',
+        'name': 'Finance'
+    },
+    {
+        'code': '7',
+        'name': 'HR'
+    },
+    {
+        'code': '8',
+        'name': 'Sportsbook'
+    }
+]
+
+
+PERMISSION_CODE = [
+    {   
+        "name": "Members",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Members list",
+                "permission": [
+                    {
+                        "CODE": "1001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "1002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "1003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Member details",
+                "permission": [
+                    {
+                        "CODE": "2001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "2002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "2003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Report",
+        "permission": [
+            {
+                "CODE": "3001",
+                "PERMISSION": "No access"
+
+            },{
+                "CODE": "3002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "3003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "Bonuses",
+        "permission": [
+            {
+                "CODE": "4001",
+                "PERMISSION": "No access"
+                
+            },{
+                "CODE": "4002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "4003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "Risk control",
+        "permission": [
+            {
+                "CODE": "5001",
+                "PERMISSION": "No access"
+
+            },{
+                "CODE": "5002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "5003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "Marketing",
+        "permission": [],
+        "menu": [
+            {
+                "name": "VIP",
+                "permission": [
+                    {
+                        "CODE": "6001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "6002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "6003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Telesales",
+                "permission": [
+                    {
+                        "CODE": "7001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "7002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "7003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Interal messaging",
+                "permission": [
+                    {
+                        "CODE": "8001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "8002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "8003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Affiliates",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Affiliates list",
+                "permission": [
+                    {
+                        "CODE": "9001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "9002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "9003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Affiliate details",
+                "permission": [
+                    {
+                        "CODE": "10001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "10002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "10003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Messaging",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Messages",
+                "permission": [
+                    {
+                        "CODE": "11001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "12002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "12003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Group",
+                "permission": [
+                    {
+                        "CODE": "14001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "14002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "14003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Campaigns",
+                "permission": [
+                    {
+                        "CODE": "15001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "15002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "15003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Finance",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Deposits",
+                "permission": [
+                    {
+                        "CODE": "16001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "16002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "16003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Withdrawals",
+                "permission": [
+                    {
+                        "CODE": "17001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "17002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "17003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Settings",
+                "permission": [
+                    {
+                        "CODE": "18001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "18002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "18003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    },
+    {   
+        "name": "Content management",
+        "permission": [
+            {
+                "CODE": "19001",
+                "PERMISSION": "No access"
+
+            },
+            {
+                "CODE": "19002",
+                "PERMISSION": "READ"
+            },
+            {
+                "CODE": "19003",
+                "PERMISSION": "ALL"
+            }
+        ]
+    },
+    {   
+        "name": "System admin",
+        "permission": [],
+        "menu": [
+            {
+                "name": "Users",
+                "permission": [
+                    {
+                        "CODE": "20001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "20002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "20003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            },
+            {
+                "name": "Roles",
+                "permission": [
+                    {
+                        "CODE": "21001",
+                        "PERMISSION": "No access"
+                    },
+                    {
+                        "CODE": "21002",
+                        "PERMISSION": "READ"
+                    },
+                    {
+                        "CODE": "21003",
+                        "PERMISSION": "ALL"
+                    }
+                ]
+            }
+        ]
+    }
+]
+BONUS_QUEUE_NAME = "bonus_queue"
