@@ -289,10 +289,12 @@ class WalletSettleAPIURL(APIView):
 
         game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
 
-        if any(game in data['GB']['Result']['ReturnSet']['SettleList'][0] for game in game_list):
+        if any(game in data['GB']['Result']['ReturnSet']['SettleList'] for game in game_list):
             game_type = 'dict'
         else:
             game_type = 'list'
+
+        print(game_type)
 
 
         # if "KenoList" in data['GB']['Result']['ReturnSet']['SettleList']:
@@ -316,7 +318,6 @@ class WalletSettleAPIURL(APIView):
                 TransType     = data['GB']['Result']['ReturnSet']['TransType']
                 BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
                 BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
-            
                 SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
                 BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
                 BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
@@ -338,12 +339,14 @@ class WalletSettleAPIURL(APIView):
                 PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
                 BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
                 WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['WLAmt']
-                RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt'] if game_type == 'keno' else data['GB']['Result']['ReturnSet']['SettleList']['RefundAmt']
+                try:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt'] 
+                except:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundAmt']
                 TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
                 TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
                 TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
                 SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
-
                 try: 
                     user = CustomUser.objects.get(username = MemberID)
 
@@ -426,7 +429,10 @@ class WalletSettleAPIURL(APIView):
                 PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList'][0]['PreWinAmt']
                 BetResult     = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetResult']
                 WLAmt         = data['GB']['Result']['ReturnSet']['SettleList'][0]['WLAmt']
-                RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundAmt'] 
+                try:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundAmt'] 
+                except:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundBetAmt'] 
                 TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketBetAmt']
                 TicketResult  = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketResult']
                 TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketWLAmt']
