@@ -139,7 +139,7 @@ class Transaction(models.Model):
         default=timezone.now, verbose_name=_("Time of Application")
     )
     arrive_time = models.DateTimeField(
-        default=timezone.now, verbose_name=_("Account Time")
+        null=True, blank=True, verbose_name=_("Arrive Time")
     )
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
