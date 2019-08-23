@@ -137,7 +137,7 @@ class CustomUser(AbstractBaseUser):
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
-    bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, default=0)
+    bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     
     # agent
     agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
