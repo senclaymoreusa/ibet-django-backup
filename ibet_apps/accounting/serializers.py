@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel
+from accounting.models import ThirdParty, Transaction, DepositChannel, WithdrawChannel
 from utils.constants import *
 
 class depositMethodSerialize(serializers.Serializer):

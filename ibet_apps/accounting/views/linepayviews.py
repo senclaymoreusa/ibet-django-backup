@@ -7,7 +7,7 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
-from ..models import Transaction
+from accounting.models import Transaction
 from users.models import CustomUser
 from utils.constants import *
 from utils.aws_helper import *

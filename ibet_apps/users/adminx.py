@@ -54,6 +54,22 @@ class GlobalSettings(object):
                         'icon': 'fa fa-cny'
                     },
                 )
+            },
+            {
+                'title': 'System admin',
+                'icon': 'fa-fw fa fa-cog',
+                'menus': (
+                    {
+                        'title': 'Users',
+                        'url': '/xadmin/permission/',
+                        'icon': 'fa fa-user-circle-o'
+                    },
+                    {
+                        'title': 'Roles',
+                        'url': '/xadmin/roles/',
+                        'icon': 'fa fa-id-badge'
+                    },
+                )
             }
         ]
                     

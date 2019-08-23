@@ -149,7 +149,16 @@ class CustomUser(AbstractBaseUser):
     id_image = models.CharField(max_length=250, blank=True)
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
-    block_timespan = models.DurationField(null=True, blank=True)
+    temporary_block_timespan = models.DurationField(null=True, blank=True)
+    temporary_block_interval = models.SmallIntegerField(choices=TEMPORARY_INTERVAL, null=True, blank=True)
+
+    permanent_block_time = models.DateTimeField(null=True, blank=True)
+    permanent_block_timespan = models.DurationField(null=True, blank=True)
+    permanent_block_interval = models.SmallIntegerField(choices=PERMANENT_INTERVAL, null=True, blank=True)
+
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
+    letouMarkets = models.CharField(max_length=100, null=True, blank=True)
+    department = models.SmallIntegerField(null=True, blank=True)
 
     
     created_time = models.DateTimeField(
@@ -424,8 +433,10 @@ class Limitation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
+    temporary_amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
     product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
-    interval = models.SmallIntegerField(choices=INTERVAL, default=0, null=True)
+    interval = models.SmallIntegerField(choices=TEMPORARY_INTERVAL, default=0, null=True)
+    expiration_time = models.DateTimeField(null=True, blank=True)
 
     admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name="limit_admin")
 
@@ -441,7 +452,7 @@ class Limitation(models.Model):
     )
 
 
-class GBSportWalletBet(models.Model):
+class GBSportWallet(models.Model):
 
     Success_Status = [
         ('1', '1'),
@@ -455,126 +466,41 @@ class GBSportWalletBet(models.Model):
         ('Balance', 'Balance')
     ]
 
-    Method        = models.CharField(max_length=30)
-    Success       = models.CharField(choices=Success_Status, max_length=1)
-    TransType     = models.CharField(choices=Trans_Type, max_length=20)
-    BetTotalCnt   = models.CharField(max_length=30)
-    BetTotalAmt   = models.CharField(max_length=30)
-    BetID         = models.CharField(primary_key=True, max_length=20)
-    BetGrpNO      = models.CharField(max_length=50)
-    TPCode        = models.CharField(max_length=30)
-    GBSN          = models.CharField(max_length=30)
-    MemberID      = models.CharField(max_length=30)
-    CurCode       = models.CharField(max_length=30)
-    BetDT         = models.CharField(max_length=100)
-    BetType       = models.CharField(max_length=20)
-    BetTypeParam1 = models.CharField(max_length=20)
-    BetTypeParam2 = models.CharField(max_length=20)
-    Wintype       = models.CharField(max_length=20)
-    HxMGUID       = models.CharField(max_length=20)
-    InitBetAmt    = models.CharField(max_length=30)
-    RealBetAmt    = models.CharField(max_length=30)
-    HoldingAmt    = models.CharField(max_length=30)
-    InitBetRate   = models.CharField(max_length=30)
-    RealBetRate   = models.CharField(max_length=20)
-    PreWinAmt     = models.CharField(max_length=30)
+    Method         = models.CharField(max_length=30)
+    Success        = models.CharField(choices=Success_Status, max_length=1)
+    TransType      = models.CharField(choices=Trans_Type, max_length=20)
+    ThirdPartyCode = models.CharField(max_length=30)
+    BetTotalCnt    = models.CharField(max_length=30)
+    BetTotalAmt    = models.CharField(max_length=30)
+    BetID          = models.CharField(max_length=20)
+    SettleID       = models.CharField(max_length=20)
+    BetGrpNO       = models.CharField(max_length=50)
+    TPCode         = models.CharField(max_length=30)
+    GBSN           = models.CharField(max_length=30)
+    MemberID       = models.CharField(max_length=30)
+    CurCode        = models.CharField(max_length=30)
+    BetDT          = models.CharField(max_length=100)
+    BetType        = models.CharField(max_length=20)
+    BetTypeParam1  = models.CharField(max_length=20)
+    BetTypeParam2  = models.CharField(max_length=20)
+    Wintype        = models.CharField(max_length=20)
+    HxMGUID        = models.CharField(max_length=20)
+    InitBetAmt     = models.CharField(max_length=30)
+    RealBetAmt     = models.CharField(max_length=30)
+    HoldingAmt     = models.CharField(max_length=30)
+    InitBetRate    = models.CharField(max_length=30)
+    RealBetRate    = models.CharField(max_length=20)
+    PreWinAmt      = models.CharField(max_length=30)
+    BetResult      = models.CharField(max_length=30)
+    WLAmt          = models.CharField(max_length=30)
+    RefundBetAmt   = models.CharField(max_length=30)
+    TicketBetAmt   = models.CharField(max_length=30)
+    TicketResult   = models.CharField(max_length=30)
+    TicketWLAmt    = models.CharField(max_length=30)
+    SettleDT       = models.CharField(max_length=30)
 
     def __str__(self):
-        return self.BetID
-
-
-class BetKenoList(models.Model):
-    BetID     = models.ForeignKey(GBSportWalletBet, on_delete=models.CASCADE)
-    DetailID  = models.CharField(max_length=30)
-    SrcCode   = models.CharField(max_length=30)
-    DrawNo    = models.CharField(max_length=30)
-    OptCode   = models.CharField(max_length=30)
-    OptParam1 = models.CharField(max_length=30)
-    MaxRate   = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.DetailID
-
-
-class BetKenoBalls(models.Model):
-    DetailID = models.ForeignKey(BetKenoList, on_delete=models.CASCADE)
-    BallID   = models.CharField(max_length=30)
-    BallNum  = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.BallID
-
-
-class GBSportWalletSettle(models.Model):
-
-    Success_Status = [
-        ('1', '1'),
-        ('0', '0'),
-    ]
-
-    Trans_Type = [
-        ('Bet', 'Bet'),
-        ('Discard', 'Discard'),
-        ('Settle', 'Settle'),
-        ('Balance', 'Balance')
-    ]
-
-    Method        = models.CharField(max_length=30)
-    Success       = models.CharField(choices=Success_Status, max_length=1)
-    TransType     = models.CharField(choices=Trans_Type, max_length=20)
-    BetTotalCnt   = models.CharField(max_length=30)
-    BetTotalAmt   = models.CharField(max_length=30)
-    SettleID      = models.CharField(primary_key=True, max_length=20)
-    BetID         = models.CharField(max_length=20)
-    BetGrpNO      = models.CharField(max_length=50)
-    TPCode        = models.CharField(max_length=30)
-    GBSN          = models.CharField(max_length=30)
-    MemberID      = models.CharField(max_length=30)
-    CurCode       = models.CharField(max_length=30)
-    BetDT         = models.CharField(max_length=100)
-    BetType       = models.CharField(max_length=20)
-    BetTypeParam1 = models.CharField(max_length=20)
-    BetTypeParam2 = models.CharField(max_length=20)
-    Wintype       = models.CharField(max_length=20)
-    HxMGUID       = models.CharField(max_length=20)
-    InitBetAmt    = models.CharField(max_length=30)
-    RealBetAmt    = models.CharField(max_length=30)
-    HoldingAmt    = models.CharField(max_length=30)
-    InitBetRate   = models.CharField(max_length=30)
-    RealBetRate   = models.CharField(max_length=20)
-    PreWinAmt     = models.CharField(max_length=30)
-    BetResult     = models.CharField(max_length=30)
-    WLAmt         = models.CharField(max_length=30)
-    RefundBetAmt  = models.CharField(max_length=30)
-    TicketBetAmt  = models.CharField(max_length=30)
-    TicketResult  = models.CharField(max_length=30)
-    TicketWLAmt   = models.CharField(max_length=30)
-    SettleDT      = models.CharField(max_length=30)
-    
-    def __str__(self):
-        return self.SettleID
-
-class SettleKenoList(models.Model):
-    SettleOID = models.ForeignKey(GBSportWalletSettle, on_delete=models.CASCADE)
-    DetailID  = models.CharField(max_length=30)
-    SrcCode   = models.CharField(max_length=30)
-    DrawNo    = models.CharField(max_length=30)
-    OptCode   = models.CharField(max_length=30)
-    OptParam1 = models.CharField(max_length=30)
-    MaxRate   = models.CharField(max_length=30)
-    RealRate  = models.CharField(max_length=30)
-    DrawDT    = models.CharField(max_length=30)
-    OptResult = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.DetailID
-
-class SettleKenoBalls(models.Model):
-    DetailID   = models.ForeignKey(SettleKenoList, on_delete=models.CASCADE)
-    SettleODID = models.CharField(max_length=30)
-    BallID     = models.CharField(max_length=30)
-    BallNum    = models.CharField(max_length=30)
-    OptResult  = models.CharField(max_length=30)
+        return self.MemberID + ' ' + self. TransType
 
 
 class AGGamemodels(models.Model):
@@ -608,4 +534,4 @@ class AGGamemodels(models.Model):
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return self.sessionToken
+        return self.playname + ' ' + self.transactionType
