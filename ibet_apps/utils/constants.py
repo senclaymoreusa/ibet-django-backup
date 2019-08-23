@@ -245,14 +245,17 @@ INTERVAL_PER_ONE_YEAR = 4
 INTERVAL_PER_THREE_YEAR = 5
 INTERVAL_PER_FIVE_YEAR = 6
 
-INTERVAL = (
-    (INTERVAL_PER_DAY, 'per day'),
-    (INTERVAL_PER_WEEK, 'per week'),
-    (INTERVAL_PER_MONTH, 'per month'),
-    (INTERVAL_PER_SIX_MONTH, 'per six months'),
-    (INTERVAL_PER_ONE_YEAR, 'per one year'),
-    (INTERVAL_PER_THREE_YEAR, 'per three years'),
-    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+TEMPORARY_INTERVAL = (
+    (INTERVAL_PER_DAY, 'day'),
+    (INTERVAL_PER_WEEK, 'week'),
+    (INTERVAL_PER_MONTH, 'month'),
+)
+
+PERMANENT_INTERVAL = (
+    (INTERVAL_PER_SIX_MONTH, 'six months'),
+    (INTERVAL_PER_ONE_YEAR, 'one year'),
+    (INTERVAL_PER_THREE_YEAR, 'three years'),
+    (INTERVAL_PER_FIVE_YEAR, 'five years'),
 )
 
 
