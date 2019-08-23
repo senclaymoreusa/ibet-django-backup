@@ -433,6 +433,7 @@ class Limitation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
+    temporary_amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
     product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
     interval = models.SmallIntegerField(choices=TEMPORARY_INTERVAL, default=0, null=True)
     expiration_time = models.DateTimeField(null=True, blank=True)
