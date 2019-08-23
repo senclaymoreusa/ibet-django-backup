@@ -56,6 +56,8 @@ class ChannelListView(CommAdminView):
             return HttpResponse(
                 json.dumps(response_data), content_type="application/json"
             )
+        elif get_type == "channel_filter":
+            print("get")
 
         else:
             context = super().get_context()
@@ -75,10 +77,12 @@ class ChannelListView(CommAdminView):
                 channelDict["method"] = channel.method
                 channelDict["channel"] = channel.get_thirdParty_name_display()
                 channelDict["supplier"] = "supplier"
-                if channel._meta.get_field('deposit_channel') is None:
-                    channelDict["type"] = "Withdrawal"
-                else:
+                try:
+                    channel._meta.get_field('deposit_channel')
                     channelDict["type"] = "Deposit"
+                except models.FieldDoesNotExist:
+                    channelDict["type"] = "Withdrawal"
+                    
                 channelDict["market"] = "market"
                 channelDict["min"] = channel.min_amount
                 channelDict["max"] = channel.max_amount
