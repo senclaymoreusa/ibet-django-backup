@@ -1416,6 +1416,7 @@ class PrivacySettings(View):
         user = CustomUser.objects.get(pk=user_id)
         user.bonusesProgram = bonuses
         user.vipProgram = vip
+        user.save()
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
     
