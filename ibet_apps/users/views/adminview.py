@@ -610,12 +610,12 @@ class UserDetailView(CommAdminView):
             if loss_limitation:
                 set_loss_limitation(user_id, loss_limitation, loss_interval, oldLimitMap, user)
             else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=0)
+                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).delete()
 
             if deposit_limitation:
                 set_deposit_limitation(user_id, deposit_limitation, deposit_interval, oldLimitMap, user)
             else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=0)
+                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).delete()
             # if loss_interval:
             #     # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).exists():
             #     #     logger.info('Update loss limitation')
