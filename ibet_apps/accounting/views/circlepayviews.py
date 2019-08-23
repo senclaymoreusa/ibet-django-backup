@@ -1,7 +1,7 @@
-import requests, json, logging, random, hmac, hashlib
+import requests, json, logging, random, hmac, hashlib, datetime
 
 from time import sleep, gmtime, strftime
-from datetime import datetime
+
 
 from requests.auth import HTTPBasicAuth
 from django.http import HttpResponse, JsonResponse
@@ -36,7 +36,6 @@ def create_deposit(request):
         amount = body["amount"]
         transaction_id = body["trans_id"]
 
-        print(request.user)
         user_id = CustomUser.objects.get(username=request.user.username)
         obj, created = Transaction.objects.get_or_create(
             user_id=user_id,
@@ -64,7 +63,7 @@ def confirm_payment(request):
         logger.info("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
-        logger.info("Received confirm_payment() callback from CirclePay")
+        logger.info("[" + str(datetime.datetime.now()) + "] Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
         logger.info(transaction_data)
         # query for transaction in ibet db
@@ -79,14 +78,18 @@ def confirm_payment(request):
 
             if transaction_data["status"] == '00':  # deposit successful
                 matching_transaction.status = 0
+                matching_transaction.remark = "Deposit successful!"
                 helpers.addOrWithdrawBalance(matching_transaction.user_id, transaction_data["amount"], "add")
 
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
                 matching_transaction.status = 3
+                matching_transaction.remark = "Deposit pending!"
             if transaction_data["status"] == '02':  # deposit canceled
                 matching_transaction.status = 5
+                matching_transaction.remark = "Deposit canceled!"
             if transaction_data["status"] == '03':  # deposit failed
                 matching_transaction.status = 1
+                matching_transaction.remark = "Deposit failed!"
 
             payment_method = matching_transaction.method + "_" + transaction_data["method"]
             matching_transaction.order_id = transaction_data["tran_id"]

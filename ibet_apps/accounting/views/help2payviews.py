@@ -1,4 +1,4 @@
-import requests, json, logging, hashlib, base64, datetime, pytz, socket
+import requests, json, logging, random, hashlib, base64, datetime, pytz, socket
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -42,15 +42,6 @@ def MD5(code):
     return res
 
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
 class SubmitDeposit(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
@@ -60,17 +51,20 @@ class SubmitDeposit(generics.GenericAPIView):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
 
-        trans_id = self.request.POST.get("order_id")
+        # trans_id = self.request.POST.get("order_id")
         # order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
+
+        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
         amount = float(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
+
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
         Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
         key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
         bank = self.request.POST.get("bank")
-        # ip = get_Host_name_IP()
-        ip = get_client_ip(request)
+
+        ip = helpers.get_client_ip(request)
         currency = self.request.POST.get("currency")
         
         if currency == '2':
@@ -79,9 +73,7 @@ class SubmitDeposit(generics.GenericAPIView):
         elif currency == '8':
             help2pay_merchant = HELP2PAY_MERCHANT_VND
             help2pay_security = HELP2PAY_SECURITY_VND
-        print(help2pay_merchant)
-        print(user_id)
-        print(ip)
+
         data = {
             "Merchant": help2pay_merchant,
             "Customer": user_id,
@@ -116,8 +108,8 @@ class DepositResult(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositResultSerialize
     permission_classes = [AllowAny, ]
+
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         serializer = self.serializer_class(self.get_queryset(), many=True)
         trans_status = request.data.get('Status')
         depositID = request.data.get('ID')
@@ -153,6 +145,7 @@ class DepositResult(generics.GenericAPIView):
         update_data.order_id = depositID
         update_data.arrive_time = timezone.now()
         update_data.last_updated = timezone.now()
+        update_data.remark = result
         update_data.save()
         
         return Response({

@@ -9,12 +9,11 @@ from users.models import CustomUser
 logger = logging.getLogger("django")
 def addOrWithdrawBalance(username, balance, type_balance):
     user = CustomUser.objects.filter(username=username)
-    print(username)
-    print(user)
+    logger.info("Updating " + user[0].username + " balance (" + type_balance + " " + balance + ")")
     current_balance = user[0].main_wallet
     # if balance.isdigit() == False:
     #     return HttpResponse('Failed')
-    print(current_balance)
+    logger.info(current_balance)
     if type_balance == 'add':
         if user[0].ftd_time is None:
             user.update(ftd_time=timezone.now(), modified_time=timezone.now())
@@ -67,3 +66,12 @@ def addOrWithdrawBalance(username, balance, type_balance):
         # )
         # action.save()
         return created
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip

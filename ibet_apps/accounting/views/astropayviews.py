@@ -24,8 +24,8 @@ secretkey = ASTROPAY_SECRET
 currencyConversion = {
     "CNY": 0,
     "USD": 1,
-    "PHP": 2,
-    "IDR": 3
+    "THB": 2,
+    "IDR": 3,
 }
 
 #get hash code 
@@ -217,15 +217,15 @@ def sendCardToMobile(request):
 @permission_classes((AllowAny,))
 def checkUser(request):
     url = ASTROPAY_URL
-    curtomer_id = request.data.get('curtomer_id')
-    message = str(secretkey) + str(curtomer_id)
+    customer_id = request.data.get('customer_id')
+    message = str(secretkey) + str(customer_id)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
     logger.info(my_hmac)
     params = {
-        "x_login":ASTROPAY_X_LOGIN,
-        "x_trans_key":ASTROPAY_X_TRANS_KEY,
-        "x_astropaycard_customer_id":curtomer_id,
-        "x_control":my_hmac,
+        "x_login": ASTROPAY_X_LOGIN,
+        "x_trans_key": ASTROPAY_X_TRANS_KEY,
+        "x_astropaycard_customer_id": customer_id,
+        "x_control": my_hmac,
     }
     for x in range(3):
         r = requests.post(url + 'cashOut/checkUser', data=params)
@@ -248,7 +248,7 @@ def checkUser(request):
 def sendCardToMobileWithAppId(request):
     amount = request.data.get('amount')
     currency = request.data.get('currency')
-    curtomer_id = request.data.get('curtomer_id')
+    customer_id = request.data.get('customer_id')
     userid = request.data.get('userid')
     user_fn = CustomUser.objects.get(pk=userid).first_name
     user_ln = CustomUser.objects.get(pk=userid).last_name
@@ -256,7 +256,7 @@ def sendCardToMobileWithAppId(request):
     doc_id = request.data.get('doc_id')
     country = request.data.get('country')
     notification_url = request.data.get('notification_url')
-    message = str(secretkey) + str(amount) + str(currency) + str(curtomer_id)
+    message = str(secretkey) + str(amount) + str(currency) + str(customer_id)
     my_hmac = hashlib.sha1(message.encode()).hexdigest()
     logger.info(my_hmac)
     OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
@@ -265,7 +265,7 @@ def sendCardToMobileWithAppId(request):
         "x_trans_key":ASTROPAY_X_TRANS_KEY,
         "x_amount":amount,
         "x_currency": currency,
-        "x_astropaycard_customer_id":curtomer_id,
+        "x_astropaycard_customer_id":customer_id,
         "x_name":name,
         "x_document":doc_id,
         "x_country":country,
@@ -316,7 +316,7 @@ def verif_transtatus(request):
         r = requests.post(url + 'verif/transtatus', data=params)
         rdata = r.text
         logger.info(rdata)
-        if r.status_code == 200 :
+        if r.status_code == 200:
             break
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
@@ -372,9 +372,10 @@ def capture_transaction(request):
         card_code = body.get("card_code")
         exp_date = body.get("exp_date")
         amount = body.get("amount")
-        currency = "USD"
+        currency = "THB"
 
-        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-astropay-web-payment-"+str(random.randint(0,10000)))
+        orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
@@ -384,45 +385,47 @@ def capture_transaction(request):
             "x_exp_date": exp_date,
             "x_amount": amount,
             "x_currency": currency,  # we are only using this API for thailand
-            "x_unique_id": "user_id_123",
+            "x_unique_id": request.user.username,
             "x_invoice_num": orderId,
         }
 
         r = requests.post(requestURL, data=params)
-        print(r.status_code)
-        print(r.content)
+
         responseData = r.text.split("|")
         logger.info(responseData)
-        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
-            logger.info("success!")
+        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
+            logger.info("contact AstroPay servers success and deposit success!")
             
-            tranDict = {'order_id':(orderId)[0:20],
-                        'transaction_id':userid,
-                        'amount':amount,
-                        'user_id':CustomUser.objects.get(username=userid),
-                        'currency':currencyConversion[currency],
-                        'transaction_type':0,
-                        'channel':2,
-                        'status':0,
-                        'method':"AstroPay",
-                        'arrive_time': timezone.now(),
-                        'product': "None",
-                    }
+            tranDict = {
+                'order_id':(orderId)[0:20],
+                'transaction_id':userid,
+                'amount':amount,
+                'user_id':CustomUser.objects.get(username=userid),
+                'currency':currencyConversion[currency],
+                'transaction_type':0,
+                'channel':2,
+                'status':0,
+                'method':"AstroPay",
+                'arrive_time': timezone.now(),
+                'product': "None",
+            }
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)            
             loop.run_until_complete(createDeposit(**tranDict))
                   
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
 
+
 async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(
         addTransToDB(**tranDict)
     )
-    # task2 = asyncio.ensure_future(
-    #     send_message_sqs(**tranDict)
-    # )
+    task2 = asyncio.ensure_future(
+        send_message_sqs(**tranDict)
+    )
     await task1
-    # await task2
+    await task2
+
 
 async def addTransToDB(**tranDict):
     create = Transaction.objects.create(

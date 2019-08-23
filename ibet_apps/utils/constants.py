@@ -16,7 +16,9 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-
+else:
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
 
 GENDER_CHOICES = (
     ('Male', 'Male'),
@@ -412,16 +414,25 @@ else:
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
+
     # fgo
     FGATE_URL = "https://api.fgate247.com/charge_card/"
     FGATE_PARTNERID = "75"
     FGATE_PARTNERKEY = "6tDJkb"
     FGATE_TYPE = "fgo"
 
-
 # astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
+
+# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
+# TODO: RETRIEVE API KEYS FROM AWS S3
+# circlepay
+CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
+CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
+CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
 # asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
@@ -436,7 +447,8 @@ ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
 ASIAPAY_TRUSTUSER = "983eb07e"
 
-# help2pay
+# TODO: update this with if/else block after h2pproduction credentials have been provided
+# help2pay sandbox credentials & callback
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
@@ -447,15 +459,13 @@ HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-
-# circlepay
-CIRCLEPAY_USERCODE = "297802061195"
-CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
-CIRCLEPAY_EMAIL = "jennyto@ibet.com"
-CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
-CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
-
-# payzod sandbox
+# TODO: update this after payzod production credentials have been provided
+# if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+#     PAYZOD_API_URL = "https://api.astropaycard.com"
+#     PAYZOD_MERCHANT_ID = keys["ASTROPAY"]["X_LOGIN"]
+#     PAYZOD_MERCHANT_NAME = keys["ASTROPAY"]["X_TRANS_KEY"]
+#     PAYZOD_PASSKEY = keys["ASTROPAY"]["SECRET"]
+# else:  # payzod sandbox
 PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
 PAYZOD_MERCHANT_ID = 1008779364
 PAYZOD_MERCHANT_NAME = "ibet2019"

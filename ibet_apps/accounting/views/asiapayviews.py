@@ -11,6 +11,8 @@ from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
+import utils.helpers as helpers
+
 #from djauth.third_party_keys import *
 from rest_framework import generics
 from ..serializers import asiapayDepositSerialize, asiapayCashoutSerialize,asiapayDepositFinishSerialize,asiapayOrderStatusFinishSerialize,asiapayExchangeRateFinishSerialize,asiapayDepositArriveSerialize,asiapayPayoutArriveSerialize
@@ -47,13 +49,6 @@ bankidConversion = {
     '201': '比特币',
 }
 
-def get_Host_name_IP(): 
-    try: 
-        host_name = socket.gethostname() 
-        host_ip = socket.gethostbyname(host_name) 
-        return host_ip
-    except: 
-        logger.info("Unable to get Hostname and IP") 
 
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
@@ -93,7 +88,7 @@ class submitDeposit(generics.GenericAPIView):
        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= get_Host_name_IP()
+        UserIP=helpers.get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
@@ -216,11 +211,11 @@ class submitCashout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayCashoutSerialize
     permission_classes = [AllowAny, ]
+    
     def post(self, request, *args, **kwargs):
-       
         userid = self.request.POST.get("userid")
         uID = "n" + userid
-        UserIP= get_Host_name_IP()
+        UserIP=helpers.get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
         OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
