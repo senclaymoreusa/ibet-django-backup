@@ -84,20 +84,7 @@ class WalletBetAPIURL(APIView):
             game_type = 'dict'
         else:
             game_type = 'list'
-        '''
-        if  "KenoList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'keno'
-        elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "LottoList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
-            game_type = 'lotto'
-        elif "SscList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'ssc'
-        elif "PkxList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'pk'
-        elif "KsList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'k'
-        elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
-            game_type = 'sports'
-        '''
+
         if game_type == 'dict':
             try:
                 Method        = data['GB']['Result']['Method']
@@ -293,22 +280,6 @@ class WalletSettleAPIURL(APIView):
             game_type = 'dict'
         else:
             game_type = 'list'
-
-        print(game_type)
-
-
-        # if "KenoList" in data['GB']['Result']['ReturnSet']['SettleList']:
-        #     game_type = "keno"
-        # elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "LottoList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-        #     game_type = "lotto" 
-        # elif "SscList" in data['GB']['Result']['ReturnSet']['SettleList']:
-        #     game_type = "ssc"
-        # elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "PkxList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-        #     game_type = "pk"
-        # elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "KsList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-        #     game_type = "k"
-        # elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-        #     game_type = "sport"
 
         if game_type == 'dict':
             try:
