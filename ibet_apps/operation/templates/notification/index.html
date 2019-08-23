@@ -7,6 +7,34 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
 <style>
+form {
+  padding: 0 16px 16px 16px;
+}
+
+label {
+  height: 13px;
+  font-family: Helvetica;
+  font-size: 11px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+.form-group {
+  padding-top: 20px;
+}
+
+.modal-header {
+  border-radius: 4px;
+  border: solid 1px #bdbdbd;
+  background-color: #f5f5f5;
+}
+.modal-header .close {
+  margin-top: -16px;
+}
 .row {
   margin: 0 0 0 0;
 }
@@ -25,13 +53,13 @@
   <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div id="mydialog" class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header" style="background-color: #cccccc">
+        <div class="modal-header">
           <h3 class="modal-title">New Message</h3>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form action="{% url 'xadmin:notification' %}" method="post" id="myform" style="margin: 10px 10px 10px 10px">
+        <form action="{% url 'xadmin:notification' %}" method="post" id="myform">
         {% csrf_token %}
           <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
@@ -49,18 +77,6 @@
             </div>
           </div>-->
           <div class="form-group">
-            <label for="subject">MESSAGE SUBJECT</label>
-            <input type="text" class="form-control" name="subject" placeholder="Subject..." required>
-          </div>
-          <!--<div class="form-group">
-            <label for="subject">SEND TO</label>
-            <input type="text" class="form-control" name="subject" data-role="tagsinput">
-          </div>
-          <div class="form-group">
-            <label for="tags">TAGS</label>
-            <input type="text" class="form-control" id="tags">
-          </div>-->
-          <div class="form-group">
             <label for="notifiers">SEND TO</label>
             <select id="notifiers" name="notifiers" class="form-control" multiple>
               <option selected disabled hidden>Choose a notifier...</option>
@@ -69,6 +85,14 @@
               {% endfor %}
             </select>
           </div>
+          <div class="form-group">
+            <label for="subject">MESSAGE SUBJECT</label>
+            <input type="text" class="form-control" name="subject" placeholder="Subject..." required>
+          </div>
+          <!--<div class="form-group">
+            <label for="subject">SEND TO</label>
+            <input type="text" class="form-control" name="subject" data-role="tagsinput">
+          </div>-->
           <div class="form-group">
             <label for="tags">CONTENT</label>
             <textarea name="content_text" id="editor" rows="30">This is some sample content.</textarea>
@@ -146,6 +170,7 @@
             <button type="button" class="btn btn-secondary" id=""><i class="fa fa-windows"></i></button>
           </div>-->
           <button type="submit" class="btn btn-primary">Create Message</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
         </form>
       </div>
     </div>
@@ -532,7 +557,7 @@ function searchResult(data, term) {
       });
     }
   }
-  
+
   $( "#search" ).autocomplete({
     source: sourceList,
     create: function () {

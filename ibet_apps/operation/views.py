@@ -14,7 +14,6 @@ import logging
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer
 from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
-from .forms import PostNotificationForm
 from users.models import CustomUser
 from xadmin.views import CommAdminView
 from utils.constants import *
@@ -61,7 +60,31 @@ def add_post(request):
     else:
         form = PostNotificationForm()
     return render('request', 'notification/index.html', {'form': form})
+
+def send_message(self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False):
+    # create Notification Object
+    message = {
+        "subject": self.subject,
+        "content_text": content,
+        "creator": self.user,
+        "notifiers": notifiers,
+        "groups": groups,
+    }
+
+    notification_serializer = NotificationSerializer(data=message)
+
+    if serializer.is_valid():
+        notification = serializer.save()
+        logger.info("create a notification")
+
+
+    # n_user_serializer = NotificationToUsersSerializer()
+    for notifier in notifiers:
+        log = NotificationToUsers(notification_id=notification.pk, notifier_id=notifier.pk)
+
+    logger.info("added notification-to-users log")
 '''
+
 
 class NotificationView(CommAdminView):
     lookup_field = 'pk'
@@ -98,6 +121,13 @@ class NotificationView(CommAdminView):
         return render(request, 'notification/index.html', context)
 
     def post(self, request, *arg, **kwargs):
+        data = {
+            "campaign": request.POST.get('campaign'),
+            "subject": request.POST.get('subject'),
+            "content_text": request.POST.get('content_text'),
+            "creator": self.user.id,
+        }
+
         direct_check = request.POST.get('direct_check')
         email_check = request.POST.get('email_check')
         SMS_check = request.POST.get('SMS_check')
@@ -106,36 +136,22 @@ class NotificationView(CommAdminView):
         notification_method = ""
 
         if direct_check != None:
-            notification_method += NOTIFICATION_DIRECT
+            data["is_direct_message"] = True
 
         if email_check != None:
-            notification_method += NOTIFICATION_EMAIL
+            data["is_email_message"] = True
 
         if SMS_check != None:
-            notification_method += NOTIFICATION_SMS
+            data["is_sms_message"] = True
 
         if push_check != None:
-            notification_method += NOTIFICATION_PUSH
-
-        data = {
-            "campaign": request.POST.get('campaign'),
-            "subject": request.POST.get('subject'),
-            "content_text": request.POST.get('content_text'),
-            "creator": self.user.id,
-            "auditor": self.user.id,
-            # "notification_choice": request.POST.get('notification_choice'),
-            # "notification_type": request.POST.get('notification_type'),
-            "notification_method": notification_method,
-            "topic": request.POST.get("topic"),
-        }
+            data["is_push_message"] = True
 
         notifiers = request.POST.getlist("notifiers")
-        print(notifiers)
 
         serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():           
-            # serializer.save()
             notification = serializer.save()
             logger.info("Save notification message")
             # store notification data in NotificationLog
@@ -145,6 +161,7 @@ class NotificationView(CommAdminView):
             logger.info("Save notification log")
             return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
+            print("invalid")
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
@@ -193,36 +210,40 @@ class AuditNotificationView(CommAdminView):
 
     def post(self, request, *arg, **kwargs):
         notification_id = request.POST.get('notification_id')
-        message = Notification.objects.get(pk=notification_id)
-        notification_methods = message.notification_method
+        notification = Notification.objects.get(pk=notification_id)
+        # All messages
+        queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
 
-        if notification_methods != None:
-            # connect AWS S3
-            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+        # notification_methods = message.notification_method
 
-            # AWS SNS Client
-            sns = boto3.resource('sns')
-            client = getAWSClient('sns', third_party_keys)
+        # connect AWS S3
+        third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
-            # Push Notification
-            if NOTIFICATION_PUSH in notification_methods:
-                platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
-                
-                platform_endpoint.publish(
-                    Message=message.content_text,
-                )
-                logger.info("Enabled Push Notification")
+        # AWS SNS Client
+        sns = boto3.resource('sns')
+        client = getAWSClient('sns', third_party_keys)
+
+        # Push Notification
+        if notification.is_push_message:
+            platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
             
-            # SMS Notification
-            if NOTIFICATION_SMS in notification_methods:
-                try:
-                    notifier = CustomUser.objects.get(pk=message.notifiers.pk)
+            platform_endpoint.publish(
+                Message=notification.content_text,
+            )
+            logger.info("Enabled Push Notification")
+            
+        # SMS Notification
+        if notification.is_sms_message:
+            try:
+                for message in queryset:
+                    notifier = CustomUser.objects.get(pk=message.notifier_id)
                     phone = notifier.phone
-                    client.publish(PhoneNumber=phone, Message=message.content_text)
-                    logger.info("Enabled SMS Notification")
-                except Exception as e:
-                    logger.error("Unexpected error: %s" % e)
-                    return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
+                    client.publish(PhoneNumber=phone, Message=notification.content_text)
+
+                logger.info("Enabled SMS Notification")
+            except Exception as e:
+                logger.error("Unexpected error: %s" % e)
+                return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
             # Email Notification
             if NOTIFICATION_EMAIL in notification_methods:
