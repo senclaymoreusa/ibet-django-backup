@@ -17,8 +17,17 @@ import simplejson as json
 import datetime
 from django.http import HttpResponseRedirect, HttpResponse
 from users.views.helper import set_loss_limitation, set_deposit_limitation, set_temporary_timeout, set_permanent_timeout, get_old_limitations
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from system.models import UserToUserGroup
+from django.views import View
+from django.contrib.auth import update_session_auth_hash
+from django.utils.translation import LANGUAGE_SESSION_KEY
+from django.urls import reverse
+from django.utils import translation
 
+import requests
 import logging
+import pytz
 
 
 logger = logging.getLogger('django')
@@ -77,7 +86,6 @@ class UserDetailView(CommAdminView):
             transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
             transactions = serializers.serialize('json', transactions)
             transactions = json.loads(transactions)
-
             trans = []
             for tran in transactions:
                 try:
@@ -1034,3 +1042,165 @@ class UserListView(CommAdminView):
             response['usersList'] = usersList
             # response = json.loads(response)
             return HttpResponse(json.dumps(response), content_type="application/json")   
+
+
+
+class UserProfileView(CommAdminView):
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context()
+        title = 'User Profile'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context['title'] = title
+        context['time'] = timezone.now()
+
+        user = request.user
+        user = CustomUser.objects.get(username=user)
+
+        languageCode = 'en'
+        if LANGUAGE_SESSION_KEY in request.session:
+            # print(request.session[LANGUAGE_SESSION_KEY])
+            languageCode = request.session[LANGUAGE_SESSION_KEY]
+        
+        logger.info("System language is : {}".format(languageCode))
+
+        response = {
+            'userId': user.pk,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'title': user.title,
+            'location': user.country,
+            'birthday': '',
+            'email': user.email,
+            'phone': user.phone,
+            'language': languageCode,
+            'username': user.username,
+            'department': '',
+            'role': '',
+            'ibetMarkets': '',
+            'letouMarkets': ''
+        }
+
+        imagePath = PUBLIC_S3_BUCKET + 'admin_images/'
+
+        ibetMarketList = []
+        if user.ibetMarkets:
+            countryCodes = user.ibetMarkets.split(',')
+            for countryCode in countryCodes:
+                ibetMarketList.append({
+                    'code': countryCode,
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode],
+                    'url': imagePath + COUNTRY_CODE_TO_IMG_PREFIX[countryCode] + '.png'
+                })
+
+        letouMarketList = []
+        if user.letouMarkets:
+            countryCodes = user.letouMarkets.split(',')
+            for countryCode in countryCodes:
+                letouMarketList.append({
+                    'code': countryCode,
+                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode],
+                    'url': imagePath + COUNTRY_CODE_TO_IMG_PREFIX[countryCode] + '.png'
+                })
+
+        if user.department:
+            role = UserToUserGroup.objects.get(user=user)
+            response.update(role=role.group.name)
+            department = ''
+            for i in DEPARTMENT_LIST:
+                if int(i['code']) == int(user.department):
+                    department = i['name']
+
+            response.update(department=department)
+
+        if user.date_of_birth:
+            dobList = user.date_of_birth.split('/')
+            month = dobList[0]
+            day = dobList[1]
+            year = dobList[2]
+            birthday = year + '-' + month + '-' + day
+            response.update(ibetMarkets=ibetMarketList, letouMarkets=letouMarketList, birthday=birthday)
+
+        context['userProfile'] = response
+
+        return render(request, 'user_profile.html', context)
+    
+
+    def post(self, request):
+        post_type = request.POST.get('type')
+        userId = request.POST.get('userId')
+
+        if post_type == 'changePassword':
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            repeat_new_password = request.POST.get('repeat_new_password')
+
+            logger.info("Change password request by: {}".format(userId))
+
+            if new_password != repeat_new_password:
+                logger.error("The passwords do not match")
+                return JsonResponse({ "code": 1, "message": "The passwords do not match"})
+
+            user = CustomUser.objects.get(pk=userId)
+            
+            if user.check_password(old_password):
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)
+                logger.info("Your password has been successfully changed.")
+                return JsonResponse({ "code": 0, "message": "Your password has been successfully changed."}, status=200)
+            else:
+                logger.error("Old password is incorrect")
+                return JsonResponse({ "code": 1, "message": "Old password is incorrect"})
+        
+        elif post_type == 'changeProfile':
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            title = request.POST.get('title')
+            location = request.POST.get('location')
+            birthday = request.POST.get('birthday')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            language = request.POST.get('system_language')
+            # print(first_name, last_name, title, location, birthday, email, phone, language)
+
+            user = CustomUser.objects.get(pk=userId)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.title = title
+            user.country = location
+            user.email = email
+            user.phone = phone
+
+            if birthday:
+                birthdayList = birthday.split('-')
+                year = birthdayList[0]
+                month = birthdayList[1]
+                day = birthdayList[2]
+                if len(year) > 4 :
+                    logger.error("User profile birthday info is not correct")
+                    return JsonResponse({ "code": 1, "message": "Birthday info is not correct"})
+            
+                date_of_birth = month + '/' + day + '/' + year
+                user.date_of_birth = date_of_birth
+                logger.info("Updating user date_of_birth field: {}".format(date_of_birth))
+            
+            logger.info("Updating user info: {0}, {1}, {2}, {3}, {4}, {5}".format(first_name, last_name, title, location, email, phone))
+            user.save()
+            
+            response = JsonResponse({ "code": 0, "message": "User information has been successfully updated."}, status=200)
+            
+            if language:
+                request.session[LANGUAGE_SESSION_KEY] = language
+                request.session.modified = True
+                translation.activate(language)
+
+                session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+                if session_key is None:
+                    request.session.create()
+                    response.set_cookie(key=settings.SESSION_COOKIE_NAME, value=request.session._session_key)
+                
+                logger.info("Setting system language : {}".format(language))
+
+            logger.info("Finished update admin user profile")
+            return response

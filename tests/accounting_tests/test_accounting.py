@@ -16,6 +16,7 @@ from users.models import (
 from utils.constants import transaction_deposit, transaction_withdrawl, currency_cny
 
 import json
+from utils.constants import *
 
 # Test Accounting Model
 class AccountingModelTest(TestCase):
@@ -95,21 +96,27 @@ class AccountingModelTest(TestCase):
     # create deposit channel from backend model
     def test_create_deposit_channel(self):
         deposit_channel = DepositChannel.objects.create(
-            thirdParty_name = 0,
+            method="test method",
+            channel="test channel",
+            market= ibetVN
         )
         self.assertEqual(DepositChannel.objects.count(), 1)
     
     # create withdraw channel from backend model
     def test_create_withdraw_channel(self):
         withdraw_channel = WithdrawChannel.objects.create(
-            thirdParty_name = 0,
+            method="test method",
+            channel="test channel",
+            market= ibetVN
         )
         self.assertEqual(WithdrawChannel.objects.count(), 1)
 
     def test_deposit_access_management(self):
         user = CustomUser.objects.get(id=1)
         deposit_channel = DepositChannel.objects.create(
-            thirdParty_name = 0,
+            method="test method",
+            channel="test channel",
+            market= ibetVN
         )
         deposit_access = DepositAccessManagement.objects.create(
             user_id = user,
@@ -120,7 +127,9 @@ class AccountingModelTest(TestCase):
     def test_withdraw_access_management(self):
         user = CustomUser.objects.get(id=1)
         withdraw_channel = WithdrawChannel.objects.create(
-            thirdParty_name = 1,
+            method="test method",
+            channel="test channel",
+            market= ibetVN
         )
         withdraw_access = WithdrawAccessManagement.objects.create(
             user_id = user,

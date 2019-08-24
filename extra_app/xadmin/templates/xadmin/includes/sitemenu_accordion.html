@@ -1,11 +1,11 @@
 {% extends 'xadmin/includes/sitemenu_default.html' %}
 {% load i18n xadmin_tags %}
 
-
 {% block navbar_md %}
 <div class="panel-group hide-sm nav-sitemenu col-md-2" id="nav-accordion">
     <div style="padding:10px; background-color: rgb(247, 247, 247);" class="panel panel-default">
         <div class="input-group">
+            <input type='hidden' value="{% url 'xadmin:user_detail' %}" id='userDetailUrl' />
             <input type="text" id="user-search" class="form-control" placeholder="Enter member ID, name, phone or email" >
             <span id="search-btn-icon" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
         </div>
