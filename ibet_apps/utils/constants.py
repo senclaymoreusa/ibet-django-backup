@@ -135,9 +135,36 @@ GAME_TYPE_CHOICES = (
     (4, 'General'),
 )
 
+ACTIVE_STATE = 0
+DISABLED_STATE = 1
+
 THIRDPARTY_STATUS_CHOICES = (
-    (0, 'OPEN'),
-    (1, 'CLOSE'),
+    (ACTIVE_STATE, "ACTIVE"), 
+    (DISABLED_STATE, "DISABLED")
+)
+
+VIP_1 = 1
+VIP_2 = 2
+VIP_3 = 3
+VIP_4 = 4
+VIP_5 = 5
+VIP_6 = 6
+
+VIP_CHOICES = (
+    (VIP_1, "VIP_1"),
+    (VIP_2, "VIP_2"),
+    (VIP_3, "VIP_3"),
+    (VIP_4, "VIP_4"),
+    (VIP_5, "VIP_5"),
+    (VIP_6, "VIP_6"),
+)
+
+ibetVN = 0
+ibetTH = 1
+
+MARKET_CHOICES = (
+    (ibetVN, "ibet-VN"),
+    (ibetTH, "ibet-TH"),
 )
 
 COUNTRY_CHOICES = (

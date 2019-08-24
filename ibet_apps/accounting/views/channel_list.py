@@ -96,6 +96,11 @@ class ChannelListView(CommAdminView):
                 channelDict["status"] = channel.get_switch_display()
                 channel_data.append(channelDict)
             context["channel_data"] = channel_data
+
+            
+
+
+
             return render(request, "channels.html", context)
 
     def post(self, request):

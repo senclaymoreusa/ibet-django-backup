@@ -13,7 +13,7 @@
     </div>
     <div class="panel-body">
         <form action="{% url 'xadmin:channel_list' %}" method="GET" id="channel_filter">
-            <input type="hidden" name="type" value="channel_filter"></input>
+            <!-- <input type="hidden" name="type" value="channel_filter"></input> -->
             <div class="row">
                 <div class="col-md-2"> MARKET</div>
                 <div class="col-md-2"> TYPE</div>
@@ -40,6 +40,7 @@
                             <option value="Disabled">Disabled</option>
                         </select>
                     </div>
+                    <input type="submit" />
         </form>
         </form>
     </div>
@@ -363,6 +364,15 @@
                         } else {
                             $('#risk_level_info').hide();
                         }
+                    });
+
+
+                    // channel filter
+                    $('#channel_filter').click(function (e) {
+                        e.preventDefault();
+
+                        $('#channel_filter').val(0);
+                        getTransactions(0);
                     });
                 }
             })

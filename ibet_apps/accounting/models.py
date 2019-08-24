@@ -33,6 +33,7 @@ class ThirdParty(models.Model):
         choices=CHANNEL_CHOICES, default=2, verbose_name=_("Name")
     )
     method = models.CharField(max_length=30, verbose_name=_("Method"))
+    channel = models.CharField(max_length=30, verbose_name=_("Channel"))
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
     )
@@ -43,6 +44,7 @@ class ThirdParty(models.Model):
         max_digits=20, decimal_places=2, default=0, verbose_name=_("Max Amount")
     )
     switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+    # flat fee for each transaction
     transaction_fee = models.DecimalField(
         max_digits=20,
         decimal_places=2,
@@ -50,13 +52,29 @@ class ThirdParty(models.Model):
         blank=True,
         verbose_name=_("Transaction Fee"),
     )
+    # % fee for each transaction
+    transaction_fee_per = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        default=0,
+        blank=True,
+        verbose_name=_("Transaction Fee Percentage"),
+    )
+
+    # required verifications: id, phone, email
+    req_ver = models.CharField(max_length=200, null=True, blank=True)
+
+    # market
+    market = models.SmallIntegerField(choices=MARKET_CHOICES)
+
     # the maximum number of money to be routed to this channel (%)
     volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
     new_user_volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
 
     # control new users volumn
     limit_access = models.BooleanField(default=False)
-    block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
+    block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
+    vip_level = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -70,7 +88,11 @@ class DepositChannel(ThirdParty):
     deposit_channel = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
+<<<<<<< HEAD
         related_name="sb",
+=======
+        related_name="thirdparty",
+>>>>>>> 2a38346977367b31b709a5703b222a3447a5b916
         through="DepositAccessManagement",
         through_fields=("deposit_channel", "user_id"),
     )
@@ -123,7 +145,11 @@ class Transaction(models.Model):
         default=timezone.now, verbose_name=_("Time of Application")
     )
     arrive_time = models.DateTimeField(
+<<<<<<< HEAD
         default=timezone.now, verbose_name=_("Account Time")
+=======
+        null=True, blank=True, verbose_name=_("Arrive Time")
+>>>>>>> 2a38346977367b31b709a5703b222a3447a5b916
     )
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
