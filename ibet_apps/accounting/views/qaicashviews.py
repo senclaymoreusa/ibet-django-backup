@@ -339,7 +339,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorEmail': CustomUser.objects.filter(email=email),
             'depositorName': CustomUser.objects.filter(first_name=first_name),
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'http://128dbbc7.ngrok.io/accounting/api/qaicash/transaction_status',
+            'callbackUrl': 'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/transaction_status',
             'messageAuthenticationCode': my_hmac,
         })
         

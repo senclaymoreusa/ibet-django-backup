@@ -11,7 +11,7 @@ import utils.aws_helper
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
-print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
+#print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
@@ -384,12 +384,12 @@ LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
 
 # qaicash-payment
-QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
-MERCHANTID = '39'
-MERCHANTAPIKEY = '70PsPAH!Z7l18ZuVo8^c'
-APIVERSION = 'v2.0'
-DEPOSIT_URL = '/deposit/routing/'
-PAYOUT_URL = '/payout/routing/'
+QAICASH_URL = keys["QAICASH"]["URL"]
+MERCHANTID = keys["QAICASH"]["MERCHANTID"]
+MERCHANTAPIKEY = keys["QAICASH"]["MERCHANTAPIKEY"]
+APIVERSION = keys["QAICASH"]["APIVERSION"]
+DEPOSIT_URL = keys["QAICASH"]["DEPOSIT_URL"]
+PAYOUT_URL = keys["QAICASH"]["PAYOUT_URL"]
 
 # paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
@@ -405,11 +405,7 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
-    #fgo
-    FGATE_URL = "https://api.fgate247.com/charge_card/"
-    FGATE_PARTNERID = "75"
-    FGATE_PARTNERKEY = "6tDJkb"
-    FGATE_TYPE = "fgo"
+ 
 else:
     # astroPay sandbox keys:
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
@@ -418,11 +414,11 @@ else:
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
 
-    # fgo
-    FGATE_URL = "https://api.fgate247.com/charge_card/"
-    FGATE_PARTNERID = "75"
-    FGATE_PARTNERKEY = "6tDJkb"
-    FGATE_TYPE = "fgo"
+# fgo
+FGATE_URL = keys["FGO"]["URL"]
+FGATE_PARTNERID = keys["FGO"]["PARTNERID"]
+FGATE_PARTNERKEY = keys["FGO"]["PARTNERKEY"]
+FGATE_TYPE = keys["FGO"]["TYPE"]
 
 # astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
@@ -444,17 +440,17 @@ SCRATCHCARD_CODE = keys["SCRATCHCARD"]["CODE"]
 SCRATCHCARD_EMAIL = keys["SCRATCHCARD"]["EMAIL"]
 
 # asia-pay
-ASIAPAY_API_URL = "http://gw.wave-pay.com"
-ASIAPAY_CID = "BRANDCQNGHUA3"
-ASIAPAY_DEPOSITKEY = "A49E448121886D7C857B39C3467EC117"
-ASIAPAY_CASHKEY = "C00761u84165A61B3B0CCA4BDC21DE0D9"
-ASIAPAY_CPASS = "6aC3a873Qp2cCGpQ7pDgTg58CH57cQS6"
-ASIAPAY_KEY1 = "f6b451943fb44a38"
-ASIAPAY_UNITEKEY = "Ki3CgDAz"
-ASIAPAY_R1 = "C1aym0re"
-ASIAPAY_R2 = "C1aym0re"
-ASIAPAY_QRPAYWAY = "42"
-ASIAPAY_TRUSTUSER = "983eb07e"
+ASIAPAY_API_URL = keys["ASIAPAY"]["API_URL"]
+ASIAPAY_CID = keys["ASIAPAY"]["CID"]
+ASIAPAY_DEPOSITKEY = keys["ASIAPAY"]["DEPOSITKEY"]
+ASIAPAY_CASHKEY = keys["ASIAPAY"]["CASHKEY"]
+ASIAPAY_CPASS = keys["ASIAPAY"]["CPASS"]
+ASIAPAY_KEY1 = keys["ASIAPAY"]["KEY1"]
+ASIAPAY_UNITEKEY = keys["ASIAPAY"]["UNITEKEY"]
+ASIAPAY_R1 = keys["ASIAPAY"]["R1"]
+ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
+ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
+ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
 # TODO: update this with if/else block after h2pproduction credentials have been provided
 # help2pay sandbox credentials & callback
