@@ -1,0 +1,229 @@
+{% extends 'xadmin/base_site.html' %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %} 
+<div class="row">
+    <div class="col-md-3">
+        <form action="{% url 'xadmin:user_profile' %}" method="POST" id="changeProfileForm">
+            {% csrf_token %}
+            <input hidden name="type" value="changeProfile">
+            <input hidden type="text" value="{{ userProfile.userId }}" name="userId">
+            <div class="form-group profile-div">
+                <div for="name" class="change-password">FIRST NAME</div>
+                <input type="text" class="form-control" id="first_name" value="{{ userProfile.first_name }}" name="first_name">
+            </div>
+            <div class="form-group profile-div">
+                <div for="name" class="change-password">LAST NAME</div>
+                <input type="text" class="form-control" id="last_name" value="{{ userProfile.last_name }}" name="last_name">
+            </div>
+            <div class="form-group profile-div">
+                <div for="title" class="change-password">TITLE</div>
+                <input type="text" class="form-control" id="title" value="{{ userProfile.title }}" name="title">
+            </div>
+            <div class="form-group profile-div">
+                <div for="location" class="change-password">LOCATION</div>
+                <input type="text" class="form-control" id="location" value="" name="location">
+            </div>
+            <div class="form-group profile-div" class="change-password">
+                <div for="birthday">BIRTHDAY</div>
+                <input type="date" class="form-control" id="birthday" value="{{ userProfile.birthday }}" name="birthday">
+            </div>
+            <div class="form-group profile-div" class="change-password">
+                <div for="email">EMAIL</div>
+                <input type="email" class="form-control" id="email"  value="{{ userProfile.email }}" name="email">
+            </div>
+            <div class="form-group profile-div" class="change-password">
+                <div for="phone">PHONE</div>
+                <input type="text" class="form-control" id="phone" value="{{ userProfile.phone }}" name="phone">
+            </div>
+            <div class="form-group" class="change-password">
+                <div for="system_language" class="profile-div">SYSTEM LANGUAGE</div>
+                <select class="form-control" id="system_language" name="system_language">
+                    <option selected value="">ALL</option>
+                    <option value="en">English (en)</option>
+                    <option value="zh-hans">简体中文 (zh-hans)</option>
+                    <option value="fr">français (fr)</option>
+                </select>
+            </div>
+            <div>
+                <button id="changePasswordBtn" class="btn btn-primary" style="margin-top:30px;"  data-toggle="modal" data-target="#changePasswordView">Change Password</button>
+            </div>
+            <div id="changeProfileErrorMessage"></div>
+            <div>
+                <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top:50px;">Save</button>
+            </div>
+
+        </form>
+    </div>
+    <div class="col-md-6">
+        <div style=" width: 100%; background-color: #f3f3f3;">
+            <div class="row" style="padding-top:30px; padding-left:30px;">
+                <div class="col-md-2">
+                    <label>Username</label>
+                </div>
+                <div class="col-md-10">
+                    {{ userProfile.username }}
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px; padding-left:30px;">
+                <div class="col-md-2">
+                    <label>Department</label>
+                </div>
+                <div class="col-md-10">
+                    {{ userProfile.department }}
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px; padding-left:30px;">
+                <div class="col-md-2">
+                    <label>Role</label>
+                </div>
+                <div class="col-md-10">
+                    {{ userProfile.role }}
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px; padding-left:30px;">
+                <div class="col-md-2">
+                    <label>Markets</label>
+                </div>
+                <div class="col-md-10">
+                    <div class="row">
+                        <div class="col-md-1">ibet</div>
+                        <div class="col-md-11">
+                            {% for i in userProfile.ibetMarkets %}
+                                <div class="inline"><img src="{{ i.url }}" alt="{{ i.name }}" class="flag-icon"><label style="margin-left:2%;">{{ i.code }}</label></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row" style="padding-top:10px;">
+                        <div class="col-md-1">Letou</div>
+                        <div class="col-md-11">
+                            {% for i in userProfile.letouMarkets %}
+                                <div class="inline"><img src="{{ i.url }}" alt="{{ i.name }}" class="flag-icon"><label style="margin-left:2%;">{{ i.code }}</label></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding-left:30px; padding-top:20px; word-wrap: break-word; width: 300px; padding-bottom: 20px;">
+                Speak with an administrator if you need to update any of the details above.
+            </div>
+
+        </div>
+    </div>
+    <div class="col-md-3">
+
+    </div>
+
+    <div class="modal fade" id="changePasswordView" role="dialog">
+        <div class="modal-dialog">
+        
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Change password</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'xadmin:user_profile' %}" method="POST" id="changePasswordForm">
+                        {% csrf_token %}
+                        <input hidden name="type" value="changePassword">
+                        <input hidden type="text" value="{{ userProfile.userId }}" name="userId">
+                        <div class="form-group" style="width:80%;">
+                            <div for="old_password" class="change-password">OLD PASSWORD</div>
+                            <input type="password" class="form-control" id="old_password" name="old_password">
+                        </div>
+                        <div class="form-group form-div" style="width:80%;">
+                            <div for="new_password" class="change-password">NEW PASSWORD</div>
+                            <input type="password" class="form-control" id="new_password" name="new_password">
+                        </div>
+                        <div class="form-group form-div" style="width:80%;">
+                            <div for="repeat_new_password" class="change-password">REPEAT NEW PASSWORD</div>
+                            <input type="password" class="form-control" id="repeat_new_password" name="repeat_new_password">
+                        </div>
+                        <div id="errorMessage"></div>
+                        <div class="form-div">
+                            <button type="submit" id="submitButton" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div> 
+        </div>
+    </div>
+   
+</div>
+
+
+<script>
+    $(document).ready(function() {
+        
+        var language = "{{ userProfile.language }}";
+        // console.log(language);
+        // var languageCode = '';
+        // if (language == 'English') {
+        //     languageCode = 'en';
+        // }
+        if (language !== 'ALL') {
+            $('#system_language').val(language);
+        } else {
+            $("#system_language option:contains(ALL)").attr('selected', true);
+        }
+       
+
+    });
+    
+
+    $("#changePasswordForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = form.attr('action');
+        var data = form.serialize();
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function(data)
+            {
+                // console.log(data);
+                if (data.code === 1) {
+                    $('#errorMessage').text(data.message); 
+                    $('#errorMessage').css('color', 'red'); 
+                } else {
+                    window.location.reload();
+                }
+            }
+        });
+    });
+
+
+    $("#changeProfileForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = form.attr('action');
+        var data = form.serialize();
+        // console.log(data);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function(data)
+            {
+                // console.log(data);
+                if (data.code === 1) {
+                    $('#changeProfileErrorMessage').text(data.message); 
+                    $('#changeProfileErrorMessage').css('color', 'red'); 
+                } else {
+                    window.location.reload();
+                }
+            }
+        });
+});
+
+</script>
+
+{% endblock %}

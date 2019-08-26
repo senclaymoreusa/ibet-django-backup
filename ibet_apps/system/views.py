@@ -206,7 +206,7 @@ class PermissionGroupView(CommAdminView):
                 userPermissionDict = {
                     'userId': user.pk,
                     'username': user.username,
-                    'name': user.first_name + user.last_name,
+                    'name': user.first_name + ' ' + user.last_name,
                     'department': department,
                     'role': userRole.group.name,
                     'ibetMarkets': ibetMarket,
