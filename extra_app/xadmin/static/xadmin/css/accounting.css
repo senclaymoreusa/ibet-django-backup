@@ -1,23 +1,4 @@
 
-/* datatable */
-/* #pending_table_filter, #success_deposit_table_filter, #fail_deposit_table_filter, #cancelled_deposit_table_filter {
-    float: left;
-    margin-top: -130px;
-} */
-
-/* #pending_table_length {
-    float: right;
-    margin-right: 80px;
-}
-
-#pending_table_paginate {
-    float: right;
-}
-
-#pending_table_previous {
-    margin-right: 20px;
-} */
-
 .dataTables_filter input { 
     width: 350px;
     height: 33px;
@@ -40,30 +21,10 @@ table.dataTable {
 }
 
 
-/* #success_deposit_table_paginate {
-    float: right;
-    margin-right: 100px;
-
-}
-
-#success_deposit_table_previous {
-    margin-right: 18px;
-} */
-
 .dataTables_filter {
     display: none; 
 }
 
-
-/* #pending_deposit_data tbody tr{
-    height: 20px;
-    width: 50px;
-    background: blue;
-} */
-
-/* #pending_table {
-    font: bold;
-} */
 
 #edit-pending-detail-btn {
     height: 100%;
@@ -79,7 +40,7 @@ table.dataTable {
     background-color: #428bca;
 }
 
-table thead tr th {
+.datatable table thead tr th {
     font-family: Helvetica;
     font-size: 10px;
     font-weight: normal;
@@ -89,7 +50,7 @@ table thead tr th {
     letter-spacing: normal;
     color: #4a4a4a;
 }
-table tbody tr td {
+.datatable table tbody tr td {
     font-family: Helvetica;
     font-size: 13px;
     font-weight: normal;
@@ -131,12 +92,6 @@ table tbody tr td {
     right: 118px;
 }
 
-/* #pending_table_length {
-    position:relative;
-    font-family:Helvetica;
-    right: 2%;
-    top: 10px;
-} */
 
 .dataTables_length label select{
     width: 82px;
@@ -186,16 +141,7 @@ table tbody tr td {
     letter-spacing: normal;
     color: #ffffff;
 }
-/* .dt-buttons a span {
-    font-family: Helvetica;
-    font-size: 14px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #ffffff;
-} */
+
 
 .deposit-request-details {
     background-color: #f3f3f3;
