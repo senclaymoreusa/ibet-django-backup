@@ -88,11 +88,7 @@ class DepositChannel(ThirdParty):
     deposit_channel = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
-<<<<<<< HEAD
-        related_name="sb",
-=======
         related_name="thirdparty",
->>>>>>> 2a38346977367b31b709a5703b222a3447a5b916
         through="DepositAccessManagement",
         through_fields=("deposit_channel", "user_id"),
     )
@@ -145,11 +141,7 @@ class Transaction(models.Model):
         default=timezone.now, verbose_name=_("Time of Application")
     )
     arrive_time = models.DateTimeField(
-<<<<<<< HEAD
-        default=timezone.now, verbose_name=_("Account Time")
-=======
         null=True, blank=True, verbose_name=_("Arrive Time")
->>>>>>> 2a38346977367b31b709a5703b222a3447a5b916
     )
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")

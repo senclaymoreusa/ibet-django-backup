@@ -50,8 +50,8 @@ class ChannelListView(CommAdminView):
                 "method": current_channel.method,
                 "type": current_type,
                 "channel": current_channel.get_thirdParty_name_display(),
-                "market": "market",
-                "supplier": "supplier"
+                "market": current_channel.get_market_display(),
+                "supplier": current_channel.supplier
             }
             return HttpResponse(
                 json.dumps(response_data), content_type="application/json"
@@ -83,7 +83,7 @@ class ChannelListView(CommAdminView):
                 except models.FieldDoesNotExist:
                     channelDict["type"] = "Withdrawal"
                     
-                channelDict["market"] = "market"
+                channelDict["market"] = channel.get_market_display()
                 channelDict["min"] = channel.min_amount
                 channelDict["max"] = channel.max_amount
                 channelDict["flat_fee"] = "flat fee"
@@ -97,7 +97,11 @@ class ChannelListView(CommAdminView):
                 channel_data.append(channelDict)
             context["channel_data"] = channel_data
 
-            
+            context["markets_choices"] = MARKET_CHOICES
+            context["types_choices"] = ("Deposit", "Withdrawal")
+            context["status_choices"] = THIRDPARTY_STATUS_CHOICES
+
+
 
 
 

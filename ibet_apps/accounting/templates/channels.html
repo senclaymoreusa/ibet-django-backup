@@ -13,35 +13,38 @@
     </div>
     <div class="panel-body">
         <form action="{% url 'xadmin:channel_list' %}" method="GET" id="channel_filter">
-            <!-- <input type="hidden" name="type" value="channel_filter"></input> -->
+
             <div class="row">
-                <div class="col-md-2"> MARKET</div>
-                <div class="col-md-2"> TYPE</div>
-                <div class="col-md-2"> STATUS</div>
+                <div class="form-group col-md-2">
+                    <label for="market-select">MARKET</label>
+                    <select class="form-control" id="market-select">
+                        <option value="all">All</option>
+                        {% for market_key, market_value in markets_choices %}
+                        <option value="{{ market_value }}">{{ market_value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="type-select">TYPE</label>
+                    <select class="form-control" id="type-select">
+                        <option value="all">All</option>
+                        {% for type in types_choices %}
+                        <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="status-select">STATUS</label>
+                    <select class="form-control" id="status-select">
+                        <option value="all">All</option>
+                        {% for status_key, status_value in status_choices %}
+                        <option value="{{ status_value }}">{{ status_value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="row">
-                <div class="form-group">
-                    <div class="col-md-2">
-                        <select name="market">
-                            <option value="ibet - VN">ibet - VN</option>
-                            <option value="ibet - TH">ibet - TH</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="type">
-                            <option value="All">All</option>
-                            <option value="Deposit">Deposit</option>
-                            <option value="Withdrawal">Withdrawal</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="status">
-                            <option value="Active">Active</option>
-                            <option value="Disabled">Disabled</option>
-                        </select>
-                    </div>
-                    <input type="submit" />
-        </form>
         </form>
     </div>
 
