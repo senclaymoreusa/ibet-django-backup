@@ -16,7 +16,9 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-
+else:
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
 
 GENDER_CHOICES = (
     ('Male', 'Male'),
@@ -131,6 +133,38 @@ GAME_TYPE_CHOICES = (
     (4, 'General'),
 )
 
+ACTIVE_STATE = 0
+DISABLED_STATE = 1
+
+THIRDPARTY_STATUS_CHOICES = (
+    (ACTIVE_STATE, "ACTIVE"), 
+    (DISABLED_STATE, "DISABLED")
+)
+
+VIP_1 = 1
+VIP_2 = 2
+VIP_3 = 3
+VIP_4 = 4
+VIP_5 = 5
+VIP_6 = 6
+
+VIP_CHOICES = (
+    (VIP_1, "VIP_1"),
+    (VIP_2, "VIP_2"),
+    (VIP_3, "VIP_3"),
+    (VIP_4, "VIP_4"),
+    (VIP_5, "VIP_5"),
+    (VIP_6, "VIP_6"),
+)
+
+ibetVN = 0
+ibetTH = 1
+
+MARKET_CHOICES = (
+    (ibetVN, "ibet-VN"),
+    (ibetTH, "ibet-TH"),
+)
+
 COUNTRY_CHOICES = (
     ('US', 'United States'),
     ('CN', 'China'),
@@ -236,14 +270,17 @@ INTERVAL_PER_ONE_YEAR = 4
 INTERVAL_PER_THREE_YEAR = 5
 INTERVAL_PER_FIVE_YEAR = 6
 
-INTERVAL = (
-    (INTERVAL_PER_DAY, 'per day'),
-    (INTERVAL_PER_WEEK, 'per week'),
-    (INTERVAL_PER_MONTH, 'per month'),
-    (INTERVAL_PER_SIX_MONTH, 'per six months'),
-    (INTERVAL_PER_ONE_YEAR, 'per one year'),
-    (INTERVAL_PER_THREE_YEAR, 'per three years'),
-    (INTERVAL_PER_FIVE_YEAR, 'per five years'),
+TEMPORARY_INTERVAL = (
+    (INTERVAL_PER_DAY, 'day'),
+    (INTERVAL_PER_WEEK, 'week'),
+    (INTERVAL_PER_MONTH, 'month'),
+)
+
+PERMANENT_INTERVAL = (
+    (INTERVAL_PER_SIX_MONTH, 'six months'),
+    (INTERVAL_PER_ONE_YEAR, 'one year'),
+    (INTERVAL_PER_THREE_YEAR, 'three years'),
+    (INTERVAL_PER_FIVE_YEAR, 'five years'),
 )
 
 
@@ -400,6 +437,11 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
+    #fgo
+    FGATE_URL = "https://api.fgate247.com/charge_card/"
+    FGATE_PARTNERID = "75"
+    FGATE_PARTNERKEY = "6tDJkb"
+    FGATE_TYPE = "fgo"
 else:
     # astroPay sandbox keys:
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
@@ -408,9 +450,30 @@ else:
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
 
+    # fgo
+    FGATE_URL = "https://api.fgate247.com/charge_card/"
+    FGATE_PARTNERID = "75"
+    FGATE_PARTNERKEY = "6tDJkb"
+    FGATE_TYPE = "fgo"
+
 # astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
+
+# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
+# TODO: RETRIEVE API KEYS FROM AWS S3
+# circlepay
+CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
+CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
+CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
+
+# scratch card API
+SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
+SCRATCHCARD_PARTNER_ID = keys["SCRATCHCARD"]["PARTNER_ID"]
+SCRATCHCARD_CODE = keys["SCRATCHCARD"]["CODE"]
+SCRATCHCARD_EMAIL = keys["SCRATCHCARD"]["EMAIL"]
 
 # asia-pay
 ASIAPAY_API_URL = "http://gw.wave-pay.com"
@@ -425,7 +488,8 @@ ASIAPAY_R2 = "C1aym0re"
 ASIAPAY_QRPAYWAY = "42"
 ASIAPAY_TRUSTUSER = "983eb07e"
 
-# help2pay
+# TODO: update this with if/else block after h2p production credentials have been provided
+# help2pay sandbox credentials & callback
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
@@ -436,15 +500,13 @@ HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-
-# circlepay
-CIRCLEPAY_USERCODE = "297802061195"
-CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
-CIRCLEPAY_EMAIL = "jennyto@ibet.com"
-CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
-CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
-
-# payzod sandbox
+# TODO: update this after payzod production credentials have been provided
+# if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+#     PAYZOD_API_URL = "https://api.astropaycard.com"
+#     PAYZOD_MERCHANT_ID = keys["ASTROPAY"]["X_LOGIN"]
+#     PAYZOD_MERCHANT_NAME = keys["ASTROPAY"]["X_TRANS_KEY"]
+#     PAYZOD_PASSKEY = keys["ASTROPAY"]["SECRET"]
+# else:  # payzod sandbox
 PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
 PAYZOD_MERCHANT_ID = 1008779364
 PAYZOD_MERCHANT_NAME = "ibet2019"
@@ -452,11 +514,7 @@ PAYZOD_PASSKEY = "dgr8mM7akMtL"
 
 # payzod production
 
-# fgate
-FGATE_URL = "https://api.fgate247.com/charge_card/"
-FGATE_PARTNERID = "75"
-FGATE_PARTNERKEY = "6tDJkb"
-FGATE_TYPE = "fgo"
+
 
 
 GAME_FILTER_OPTION = [
@@ -941,10 +999,3 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
-
-# scratch card API
-SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
-SCRATCHCARD_PARTNER_ID = "9"
-SCRATCHCARD_CODE = "n2P9R8"
-SCRATCHCARD_EMAIL = "jennyto@ibet.com"
-PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
