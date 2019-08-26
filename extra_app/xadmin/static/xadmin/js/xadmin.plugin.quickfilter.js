@@ -42,7 +42,7 @@
 	  $('.nav-quickfilter li.nav-header i').toggleClass('icon-chevron-right');
 	  $('.nav-quickfilter li.nav-header i').toggleClass('icon-chevron-left');
 	  $('#left-side').toggleClass('col-md-2');
-	  $('#left-side').toggleClass("col-md-4");
+	  $('#left-side').toggleClass('col-md-4');
 	  $('#content-block').toggleClass('col-md-10');
 	  $('#content-block').toggleClass('col-md-8');
   });
