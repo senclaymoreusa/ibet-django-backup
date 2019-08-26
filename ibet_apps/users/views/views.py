@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse, reverse_lazy
 
 from django.views import generic
@@ -1385,7 +1385,19 @@ class DeleteLimitation(View):
         limit.temporary_amount = limit.amount
         limit.amount = None
         limit.save()
-        return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
+        # return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
+        message = 'Successfully delete the {} limitation and interval is {}'.format(limit_type, interval)
+        current_tz = timezone.get_current_timezone()
+        time = time.astimezone(current_tz)
+        expiration_timeStr = str(time.astimezone(current_tz))
+
+        
+        response = {
+            "expire_time": expiration_timeStr,
+            "message": message
+        }
+        
+        return JsonResponse(response, status = 200)
 
 
 class CancelDeleteLimitation(View):
@@ -1413,6 +1425,7 @@ class CancelDeleteLimitation(View):
         limit.save()
 
         return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
+
 
 
 class GetLimitation(View):
