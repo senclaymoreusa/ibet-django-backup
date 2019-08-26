@@ -150,12 +150,16 @@ class CustomUser(AbstractBaseUser):
     id_image = models.CharField(max_length=250, blank=True)
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
-    block_timespan = models.DurationField(null=True, blank=True)
+    temporary_block_timespan = models.DurationField(null=True, blank=True)
+    temporary_block_interval = models.SmallIntegerField(choices=TEMPORARY_INTERVAL, null=True, blank=True)
+
+    permanent_block_time = models.DateTimeField(null=True, blank=True)
+    permanent_block_timespan = models.DurationField(null=True, blank=True)
+    permanent_block_interval = models.SmallIntegerField(choices=PERMANENT_INTERVAL, null=True, blank=True)
 
     ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
     department = models.SmallIntegerField(null=True, blank=True)
-
     
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -429,8 +433,10 @@ class Limitation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
+    temporary_amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
     product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
-    interval = models.SmallIntegerField(choices=INTERVAL, default=0, null=True)
+    interval = models.SmallIntegerField(choices=TEMPORARY_INTERVAL, default=0, null=True)
+    expiration_time = models.DateTimeField(null=True, blank=True)
 
     admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name="limit_admin")
 
