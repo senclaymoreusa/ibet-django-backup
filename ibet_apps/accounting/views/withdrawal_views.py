@@ -78,6 +78,7 @@ class WithdrawalView(CommAdminView):
             context = super().get_context()
             title = "Finance / Withdrawals"
             context["breadcrumbs"].append({"url": "/withdrawal/", "title": title})
+            context['time'] = timezone.now()
 
             # WITHDRAWAL TRANSACTIONS
             withdrawal_trans = Transaction.objects.filter(transaction_type=transaction_withdraw)

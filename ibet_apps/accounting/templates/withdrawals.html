@@ -113,7 +113,7 @@
                             <td>{{ tran.bank }}</td>
                             <td>{{ tran.balance }}</td>
                             <td>{{ tran.amount }}</td>
-                            <td>{{ tran.app_time }}</td>
+                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.withdrawal_today }}</td>
                             <td>{{ tran.withdrawal_count_today }}</td>
                             <td style="display: none">{{ tran.pk }}</td>
@@ -476,6 +476,26 @@
     </div>
 </div>
 
+<!-- datatables -->
+<!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
+
+<!-- datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+    type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+
 
 <script>
 
@@ -574,7 +594,9 @@
             function (settings, data, dataIndex) {
                 var min = $('#min').datepicker("getDate");
                 var max = $('#max').datepicker("getDate");
-                var startDate = new Date(data[9]);
+                var dateParts = data[9].split("/");
+                var newDate = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2]
+                var startDate = new Date(newDate);
                 if (min == null && max == null) { return true; }
                 if (min == null && startDate <= max) { return true; }
                 if (max == null && startDate >= min) { return true; }
@@ -583,8 +605,8 @@
             }
         );
 
-        $("#min").datepicker({ onSelect: function () { table.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { table.draw(); }, changeMonth: true, changeYear: true });
+        $("#min").datepicker({ onSelect: function () { table.draw();other_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#max").datepicker({ onSelect: function () { table.draw();other_table.draw(); }, changeMonth: true, changeYear: true });
 
         // Event listener to the two range filtering inputs to redraw on input
         $('#min, #max').change(function () {

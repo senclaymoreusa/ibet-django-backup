@@ -27,9 +27,10 @@ class ChannelListView(CommAdminView):
             channel = request.GET.get("current_channel")
             context = super().get_context()
             
-            current_channel = DepositChannel.objects.get(pk=channel)
-            current_type = "Deposit"
-            if current_channel is None:
+            if DepositChannel.objects.filter(pk=channel).exists():
+                current_channel = DepositChannel.objects.get(pk=channel)
+                current_type = "Deposit"
+            else:
                 current_channel = WithdrawChannel.objects.get(pk=channel)
                 current_type = "Withdraw"
                    
@@ -44,7 +45,9 @@ class ChannelListView(CommAdminView):
                 "min_deposit": current_channel.min_amount,
                 "max_deposit": current_channel.max_amount,
                 "transaction_fee": current_channel.transaction_fee,
-                "volumn": current_channel.volume,
+                "transaction_fee_per": current_channel.transaction_fee_per,
+                "volume": current_channel.volume,
+                "new_user_volume": current_channel.new_user_volume,
                 "limit_access": current_channel.limit_access,
                 # methods part
                 "method": current_channel.method,
@@ -56,13 +59,12 @@ class ChannelListView(CommAdminView):
             return HttpResponse(
                 json.dumps(response_data), content_type="application/json"
             )
-        elif get_type == "channel_filter":
-            print("get")
 
         else:
             context = super().get_context()
             title = "Finance / Payment methods"
             context["breadcrumbs"].append({"url": "/deposit/", "title": title})
+            context['time'] = timezone.now()
 
             # CHANNEL
             depositChannel = DepositChannel.objects.all()
@@ -76,7 +78,7 @@ class ChannelListView(CommAdminView):
                 channelDict["id"] = channel.pk
                 channelDict["method"] = channel.method
                 channelDict["channel"] = channel.get_thirdParty_name_display()
-                channelDict["supplier"] = "supplier"
+                channelDict["supplier"] = channel.supplier
                 try:
                     channel._meta.get_field('deposit_channel')
                     channelDict["type"] = "Deposit"
@@ -100,11 +102,6 @@ class ChannelListView(CommAdminView):
             context["markets_choices"] = MARKET_CHOICES
             context["types_choices"] = ("Deposit", "Withdrawal")
             context["status_choices"] = THIRDPARTY_STATUS_CHOICES
-
-
-
-
-
             return render(request, "channels.html", context)
 
     def post(self, request):
@@ -118,17 +115,33 @@ class ChannelListView(CommAdminView):
             max_deposit = request.POST.get("max_deposit")
 
             transaction_fee = request.POST.get("transaction_fee")
-            volumn = request.POST.get("volumn")
-            limit_access = request.POST.get("limit_access")
-            new_user_volumn = request.POST.get("new_user_volumn")
+            transaction_fee_per = request.POST.get("transaction_fee_per")
+            volume = request.POST.get("volume")
+            if str(request.POST.get("limit_access_yes")) == "on":
+                limit_access = True
+            else:
+                limit_access = False
+            new_user_volume = request.POST.get("new_user_volume")
 
-            DepositChannel.objects.filter(pk=channel_id).update(
+            if DepositChannel.objects.get(pk=channel_id) == None:
+                channel = WithdrawChannel.objects.filter(pk=channel_id)
+            else:
+                channel = DepositChannel.objects.filter(pk=channel_id)
+
+            # channel.min_amount = min_deposit,
+            # channel.max_amount = max_deposit,
+            # channel.transaction_fee = transaction_fee,
+            channel.update(
                 min_amount=min_deposit,
                 max_amount=max_deposit,
                 transaction_fee=transaction_fee,
+                transaction_fee_per=transaction_fee_per,
                 switch=channel_status,
+                limit_access = limit_access,
+                new_user_volume = new_user_volume,
+                volume = volume, 
             )
-
+        # Delete Channel
         # elif post_type == "deleteChannel":
         #     deposit_channel = request.POST.get("deposit_channel")
         #     # find choice label from choice value

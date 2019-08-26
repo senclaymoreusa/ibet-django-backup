@@ -66,12 +66,13 @@ class ThirdParty(models.Model):
 
     # market
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
+    supplier = models.CharField(max_length=200, null=True, blank=True)
 
     # the maximum number of money to be routed to this channel (%)
     volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
     new_user_volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
 
-    # control new users volumn
+    # control new users volume
     limit_access = models.BooleanField(default=False)
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
     vip_level = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)

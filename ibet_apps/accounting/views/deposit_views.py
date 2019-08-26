@@ -86,6 +86,7 @@ class DepositView(CommAdminView):
             title = 'Finance / Deposits'
             context["breadcrumbs"].append({"title": title})
             context["title"] = title
+            context['time'] = timezone.now()
 
             deposit_trans = Transaction.objects.filter(transaction_type=transaction_deposit)
 

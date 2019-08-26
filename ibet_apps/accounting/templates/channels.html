@@ -12,8 +12,8 @@
         </h2>
     </div>
     <div class="panel-body">
-        <form action="{% url 'xadmin:channel_list' %}" method="GET" id="channel_filter">
-
+        <!-- pending request -->
+        <!-- <form action="{% url 'xadmin:channel_list' %}" method="GET" id="channel_filter">
             <div class="row">
                 <div class="form-group col-md-2">
                     <label for="market-select">MARKET</label>
@@ -45,7 +45,7 @@
                     </select>
                 </div>
             </div>
-        </form>
+        </form> -->
     </div>
 
 
@@ -65,8 +65,9 @@
                 <th>REQUIRED VERIFICATIONS</th>
                 <th>VIP LEVEL</th>
                 <th>RISK LEVEL</th>
-                <th>NEW USERS VOLUMN</th>
+                <th>NEW USERS volume</th>
                 <th>STATUS</th>
+                <th style="display: none">pk</th>
                 <th></th>
             </tr>
         </thead>
@@ -89,6 +90,7 @@
                 <td>{{ channel.risk_level }}</td>
                 <td>{{ channel.new_users_volume }}</td>
                 <td>{{ channel.status }}</td>
+                <td style="display: none">{{ channel.id }}</td>
                 <td><button id="edit_channel_btn" type="button" class="btn btn-sm edit-channel-btn" data-toggle="modal"
                         data-target="#edit_details">Edit</button></td>
             </tr>
@@ -165,7 +167,7 @@
                                         <input type=number min=0 step=0.01 id="transaction_fee" name="transaction_fee">
                                     </div>
                                     <div class="col-md-4">
-                                        <input type=number min=0 step=0.01 id="transaction_fee" name="transaction_fee">
+                                        <input type=number min=0 step=0.01 id="transaction_fee_per" name="transaction_fee_per">
                                     </div>
                                 </div>
 
@@ -174,8 +176,8 @@
                                 </div>
                                 <div class="row bridge">
                                     <div class="col-md-6">
-                                        &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volumn"
-                                            name="volumn">&#37;
+                                        &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volume"
+                                            name="volume">&#37;
                                     </div>
                                 </div>
                                 <br>
@@ -184,8 +186,8 @@
 
                             <div class="row">
                                 <label class="limit-label">Limit access</label>
-                                <input type="radio" name="limit_access" id="limit_access_yes" /> Yes
-                                <input type="radio" name="limit_access" id="limit_access_no" /> No
+                                <input type="radio" name="limit_access_yes" id="limit_access_yes" /> Yes
+                                <input type="radio" name="limit_access_no" id="limit_access_no" /> No
                             </div>
                         </div>
 
@@ -196,8 +198,8 @@
                             <div id="new_user_volume_info">
                                 NEW USERS VOLUME(%)
                                 <br>
-                                &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="new_user_volumn"
-                                    name="new_user_volumn">&#37;
+                                &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="new_user_volume"
+                                    name="new_user_volume">&#37;
                             </div><br>
 
                             <input type="checkbox" class="form-check-input" id="riskLevelCheck" checked>
@@ -283,32 +285,10 @@
                 }
             }
         });
-        // remove delete_channel_btn
-        // $('#delete_channel_btn').click(function () {
-        //     $('#delete_channel_btn').html('Click to delete');
-        //     $('#delete_channel_btn').attr('id', 'delete_channel')
-        //     $('#delete_channel').click(function () {
-        //         var channel_name = $(this).closest('form').find("h4").html();
-        //         console.log("channel_name" + channel_name)
-        //         $.ajax({
-        //             type: 'POST',
-        //             url: "{% url 'xadmin:channel_list' %}",
-        //             data: {
-        //                 'type': 'deleteChannel',
-        //                 'deposit_channel': channel_name,
-        //             },
-        //             success: function (data) {
-        //                 location.reload();
-        //             }
-        //         })
-        //     });
-        // });
-
 
         // deposit channel edit function
-        $('#edit_channel_btn').click(function () {
-            var channel = $(this).closest("tbody").find("input[name='channel_id']").val()
-            console.log("channel " + channel)
+        $('.edit-channel-btn').click(function () {
+            var channel = $(this).closest('td').prev('td').text();
             $.ajax({
                 type: 'GET',
                 url: "{% url 'xadmin:channel_list' %}",
@@ -317,14 +297,13 @@
                     'current_channel': channel,
                 },
                 success: function (data) {
-                    console.log(data)
                     $('#method').html(data['method'])
                     $('#channel').html(data['channel'])
                     $('#supplier').html(data['supplier'])
                     $('#type').html(data['type'])
                     $('#market').html(data['market'])
 
-                    $('#channel_id_number').val(data['channel_id']);
+                    $('#channel_id_number').val(channel);
                     $('#channel_name').html(data['name']);
                     $('#delete_channel_name').val(data['name']);
                     if (data['channel_status'] == 'Active') {
@@ -335,22 +314,27 @@
                     $('#min_deposit').val(data['min_deposit']);
                     $('#max_deposit').val(data['max_deposit']);
                     $('#transaction_fee').val(data['transaction_fee']);
-                    $('#volumn').val(data['volumn']);
+                    $('#transaction_fee_per').val(data['transaction_fee_per']);
+                    $('#volume').val(data['volume']);
+                    $('#new_user_volume').val(data['new_user_volume']);
                     console.log(data['limit_access'])
                     if (data['limit_access'] == true) {
                         $('#' + 'limit_access_yes').prop('checked', true);
+                        $('#' + 'limit_access_no').prop('checked', false);
                     } else {
+                        $('#' + 'limit_access_yes').prop('checked', false);
                         $('#' + 'limit_access_no').prop('checked', true);
                         $('#limit_access_detail').hide();
                     };
 
                     $('#limit_access_yes').click(function () {
                         $("#limit_access_detail").show();
-
+                        $('#' + 'limit_access_no').prop('checked', false);
                     });
 
                     $('#limit_access_no').click(function () {
                         $("#limit_access_detail").hide();
+                        $('#' + 'limit_access_yes').prop('checked', false);
                     });
 
                     $('#newUserCheck').click(function () {
@@ -371,15 +355,35 @@
 
 
                     // channel filter
-                    $('#channel_filter').click(function (e) {
-                        e.preventDefault();
-
-                        $('#channel_filter').val(0);
-                        getTransactions(0);
-                    });
+                    // $('#channel_filter').click(function (e) {
+                    //     e.preventDefault();
+                    //     $('#channel_filter').val(0);
+                    //     getTransactions(0);
+                    // });
                 }
             })
         });
+
+        // remove delete_channel_btn
+        // $('#delete_channel_btn').click(function () {
+        //     $('#delete_channel_btn').html('Click to delete');
+        //     $('#delete_channel_btn').attr('id', 'delete_channel')
+        //     $('#delete_channel').click(function () {
+        //         var channel_name = $(this).closest('form').find("h4").html();
+        //         console.log("channel_name" + channel_name)
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: "{% url 'xadmin:channel_list' %}",
+        //             data: {
+        //                 'type': 'deleteChannel',
+        //                 'deposit_channel': channel_name,
+        //             },
+        //             success: function (data) {
+        //                 location.reload();
+        //             }
+        //         })
+        //     });
+        // });
     })
 
 
