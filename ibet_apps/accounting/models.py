@@ -225,6 +225,6 @@ class WithdrawAccessManagement(models.Model):
     )
 
     class Meta:
-        unique_together = (("user_id", "withd raw_channel"),)
+        unique_together = (("user_id", "withdraw_channel"),)
         verbose_name = "Withdraw Access management"
         verbose_name_plural = verbose_name
