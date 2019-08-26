@@ -59,5 +59,7 @@ urlpatterns += [
     path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
     path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
-    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag')
+    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
+    path('api/marketing-settings/', csrf_exempt(views.MarketingSettings.as_view()), name="market_settings"),
+    path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings")
 ]
