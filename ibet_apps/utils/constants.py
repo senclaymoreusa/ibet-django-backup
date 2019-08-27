@@ -95,12 +95,17 @@ REVIEW_STATE_CHOICES = (
 )
 
 DEPOSIT_METHOD_CHOICES = (
-    (0, "LBT_ONLINE"),
-    (1, "LBT_ATM"),
-    (2, "LBT_OTC"),
-    (3, "DIRECT_PAYMENT"),
+    (0, "ONLINE_DEBIT"),
+    (1, "ALIPAY"),
+    (2, "WECHAT_PAY"),
+    (3, "CUP_QR"),
     (4, "BANK_TRANSFER"),
-    (5, "IBT")
+    (5, "ALIPAY_H5"),
+    (6, "WECHAT_PAY_H5"),
+    (7, "CUP"),
+    (8, "CUP_MOBILE"),
+    (9, "JDWALLET"),
+
 )
 
 transaction_deposit = 0
