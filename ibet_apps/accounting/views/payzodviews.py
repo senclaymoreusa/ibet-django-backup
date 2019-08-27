@@ -35,34 +35,22 @@ def generate_md5(code):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_qr_code(request):
-    if request.method =="POST":
+    if request.method == "POST":
         logger.info("Attempting to get QR Code to make deposit via Payzod...")
         body = json.loads(request.body)
         amount = body.get("amount")
         url = PAYZOD_API_URL
-        now = datetime.now()
         ref_no = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         ref_date = now.strftime("%Y%m%d%H%M%S")
-        if os.getenv("ENV") == "local":
-            payload = {
-                "merchant_id": PAYZOD_MERCHANT_ID,
-                "paytype": "QR",
-                "ref_no": ref_no,
-                "ref_date": ref_date,
-                "passkey": generate_md5(ref_no+ref_date+PAYZOD_PASSKEY),
-                "amount": amount,
-                "merchant_name": "ibet2019"
-            }
-        else:  # use dev credentials
-            payload = {
-                "merchant_id": PAYZOD_MERCHANT_ID,
-                "paytype": "QR",
-                "ref_no": ref_no,
-                "ref_date": ref_date,
-                "passkey": generate_md5(ref_no + ref_date + PAYZOD_PASSKEY),
-                "amount": amount,
-                "merchant_name": "ibet2019"
-            }
+        payload = {
+            "merchant_id": PAYZOD_MERCHANT_ID,
+            "paytype": "QR",
+            "ref_no": ref_no,
+            "ref_date": ref_date,
+            "passkey": generate_md5(ref_no + ref_date + PAYZOD_PASSKEY),
+            "amount": amount,
+            "merchant_name": PAYZOD_MERCHANT_NAME
+        }
         logger.info(payload)
         for x in range(3):
             if os.getenv("ENV") == "local":
@@ -126,6 +114,7 @@ def confirm_payment(request):
                     "responseMesg": "Transaction already exists"
                 })
 
+            # success
             if req.get("response_code") == "001":
                 matching_transaction.status = 0
                 matching_transaction.remark = req.get("response_msg")
@@ -142,8 +131,7 @@ def confirm_payment(request):
                     "responseCode": "000",
                     "responseMesg": req.get("response_msg")
                 })
-
-            else:
+            else:  # failure
                 matching_transaction.status = 1
                 matching_transaction.remark = req.get("response_msg")
                 matching_transaction.order_id = req.get("transaction_no")
