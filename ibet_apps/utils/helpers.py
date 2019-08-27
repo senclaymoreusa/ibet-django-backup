@@ -1,23 +1,26 @@
 import decimal
+import logging
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from users.models import CustomUser
 
 
+logger = logging.getLogger("django")
 def addOrWithdrawBalance(username, balance, type_balance):
     user = CustomUser.objects.filter(username=username)
-
-    currrent_balance = user[0].main_wallet
+    logger.info("Updating " + user + " (" + username + ") balance (" + type_balance + " " + balance + ")")
+    current_balance = user[0].main_wallet
     # if balance.isdigit() == False:
     #     return HttpResponse('Failed')
-
+    logger.info(current_balance)
     if type_balance == 'add':
         if user[0].ftd_time is None:
             user.update(ftd_time=timezone.now(), modified_time=timezone.now())
-
-        new_balance = currrent_balance + decimal.Decimal(balance)
+        logger.info("User's current balance is: " + str(current_balance))
+        new_balance = current_balance + decimal.Decimal(balance)
         user.update(main_wallet=new_balance, modified_time=timezone.now())
+        logger.info("User's new balance is: " + str(new_balance))
         referrer = user[0].referred_by
 
         if referrer:
@@ -63,3 +66,12 @@ def addOrWithdrawBalance(username, balance, type_balance):
         # )
         # action.save()
         return created
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip

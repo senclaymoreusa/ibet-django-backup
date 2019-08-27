@@ -1,5 +1,27 @@
+import os
+import datetime
+import boto3
+import json
+
+from dotenv import load_dotenv
+from botocore.exceptions import ClientError, NoCredentialsError
+import utils.aws_helper
+
+
+AWS_S3_ADMIN_BUCKET = ""
+keys = {}
+load_dotenv()
+#print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
+
+if os.getenv("ENV") != "local":
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
+    keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
+else:
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
+    keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
+
 GENDER_CHOICES = (
-    ('Male','Male'),
+    ('Male', 'Male'),
     ('Female', 'Female')
 )
 
@@ -17,12 +39,11 @@ CURRENCY_TYPES = (
     ('CNY', 'CNY'),
     ('HKD', 'HKD'),
     ('AUD', 'AUD'),
-    ('THB','THB'),
+    ('THB', 'THB'),
     ('MYR', 'MYR'),
     ('VND', 'VND'),
     ('MMK', 'MMK'),
     ('XBT', 'XBT')
-
 )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -66,7 +87,6 @@ STATE_CHOICES = (
     (7, 'RESEND'),
     (8, 'REJECTED'),
     (9, 'HELD'),
-
 )
 REVIEW_STATE_CHOICES = (
     (0, 'Approved'),
@@ -396,12 +416,12 @@ LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
 
 # qaicash-payment
-QAICASH_URL = 'https://public-services.mekong-300.com/ago/integration/'
-MERCHANTID = '39'
-MERCHANTAPIKEY = '70PsPAH!Z7l18ZuVo8^c'
-APIVERSION = 'v2.0'
-DEPOSIT_URL = '/deposit/routing/'
-PAYOUT_URL = '/payout/routing/'
+QAICASH_URL = keys["QAICASH"]["URL"]
+MERCHANTID = keys["QAICASH"]["MERCHANTID"]
+MERCHANTAPIKEY = keys["QAICASH"]["MERCHANTAPIKEY"]
+APIVERSION = keys["QAICASH"]["APIVERSION"]
+DEPOSIT_URL = keys["QAICASH"]["DEPOSIT_URL"]
+PAYOUT_URL = keys["QAICASH"]["PAYOUT_URL"]
 
 # paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
@@ -409,50 +429,80 @@ PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87Dc
 PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
-# astroPay sandbox url
-ASTROPAY_URL = 'https://sandbox-api.astropaycard.com/'
+
+if os.getenv("ENV") != "local":
+    # fetch prod credentials from s3
+    ASTROPAY_URL = "https://api.astropaycard.com"
+    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
+    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
+    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
+    # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
+ 
+else:
+    # astroPay sandbox keys:
+    ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
+    ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
+    ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
+    ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
 
 
-# astroPay sandbox key:
-ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ' 
-ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
-ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+# fgo
+FGATE_URL = keys["FGO"]["URL"]
+FGATE_PARTNERID = keys["FGO"]["PARTNERID"]
+FGATE_PARTNERKEY = keys["FGO"]["PARTNERKEY"]
+FGATE_TYPE = keys["FGO"]["TYPE"]
 
 # astroPay sandbod WEBPAYSTATUS:
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-# asia-pay
-ASIAPAY_API_URL = "http://gw.wave-pay.com"
-ASIAPAY_CID = "BRANDCQNGHUA3"
-ASIAPAY_DEPOSITKEY = "A49E448121886D7C857B39C3467EC117"
-ASIAPAY_CASHKEY = "C0076184165A61B3B0CCA4BDC21DE0D9"
-ASIAPAY_CPASS = "6aC3a873Qp2cCGpQ7pDgTg58CH57cQS6"
-ASIAPAY_KEY1 = "f6b451943fb44a38"
-ASIAPAY_UNITEKEY = "Ki3CgDAz"
-ASIAPAY_R1 = "C1aym0re"
-ASIAPAY_R2 = "C1aym0re"
-ASIAPAY_QRPAYWAY = "42"
-ASIAPAY_TRUSTUSER = "983eb07e"
+# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
+# TODO: RETRIEVE API KEYS FROM AWS S3
+# circlepay
+CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
+CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
+CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
+CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
+CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
 
-# help2pay
+# scratch card API
+SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
+SCRATCHCARD_PARTNER_ID = keys["SCRATCHCARD"]["PARTNER_ID"]
+SCRATCHCARD_CODE = keys["SCRATCHCARD"]["CODE"]
+SCRATCHCARD_EMAIL = keys["SCRATCHCARD"]["EMAIL"]
+
+# asia-pay
+ASIAPAY_API_URL = keys["ASIAPAY"]["API_URL"]
+ASIAPAY_CID = keys["ASIAPAY"]["CID"]
+ASIAPAY_DEPOSITKEY = keys["ASIAPAY"]["DEPOSITKEY"]
+ASIAPAY_CASHKEY = keys["ASIAPAY"]["CASHKEY"]
+ASIAPAY_CPASS = keys["ASIAPAY"]["CPASS"]
+ASIAPAY_KEY1 = keys["ASIAPAY"]["KEY1"]
+ASIAPAY_UNITEKEY = keys["ASIAPAY"]["UNITEKEY"]
+ASIAPAY_R1 = keys["ASIAPAY"]["R1"]
+ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
+ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
+ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
+
+# TODO: update this with if/else block after h2pproduction credentials have been provided
+# help2pay sandbox credentials & callback
 HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
 HELP2PAY_MERCHANT_VND = "M0514"
 HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
+HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-
-# circlepay
-CIRCLEPAY_USERCODE = "297802061195"
-CIRCLEPAY_API_KEY = "Kiy4O3IAvPpHxXJ9ht1mBfZs"
-CIRCLEPAY_EMAIL = "jennyto@ibet.com"
-CIRCLEPAY_DEPOSIT_URL = "https://gateway.circlepay.ph/payment/"
-CIRCLEPAY_CHECK_STATUS_URL = "https://api.circlepay.ph/transaction/"
-
-# payzod sandbox
+# TODO: update this after payzod production credentials have been provided
+# if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+#     PAYZOD_API_URL = "https://api.astropaycard.com"
+#     PAYZOD_MERCHANT_ID = keys["ASTROPAY"]["X_LOGIN"]
+#     PAYZOD_MERCHANT_NAME = keys["ASTROPAY"]["X_TRANS_KEY"]
+#     PAYZOD_PASSKEY = keys["ASTROPAY"]["SECRET"]
+# else:  # payzod sandbox
 PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
 PAYZOD_MERCHANT_ID = 1008779364
 PAYZOD_MERCHANT_NAME = "ibet2019"
@@ -460,11 +510,7 @@ PAYZOD_PASSKEY = "dgr8mM7akMtL"
 
 # payzod production
 
-# fgate
-FGATE_URL = "https://api.fgate247.com/charge_card/"
-FGATE_PARTNERID = "75"
-FGATE_PARTNERKEY = "6tDJkb"
-FGATE_TYPE = "fgo"
+
 
 
 GAME_FILTER_OPTION = [

@@ -160,6 +160,12 @@ class CustomUser(AbstractBaseUser):
     ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
     department = models.SmallIntegerField(null=True, blank=True)
+
+    contact_methods = models.CharField(max_length=100, null=True, blank=True)
+    social_media = models.BooleanField(default=False)
+
+    bonusesProgram = models.BooleanField(default=False)
+    vipProgram = models.BooleanField(default=False)
     
     created_time = models.DateTimeField(
         _('Created Time'),
