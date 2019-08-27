@@ -597,12 +597,11 @@
             function (settings, data, dataIndex) {
                 var min = $('#min').datepicker("getDate");
                 var max = $('#max').datepicker("getDate");
-                console.log("data")
-                console.log(data)
-
+    
                 var dateParts = data[9].split("/");
                 var newDate = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2]
                 var startDate = new Date(newDate);
+                
                 if (min == null && max == null) { return true; }
                 if (min == null && startDate <= max) { return true; }
                 if (max == null && startDate >= min) { return true; }
