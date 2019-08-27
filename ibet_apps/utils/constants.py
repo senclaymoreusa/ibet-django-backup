@@ -40,7 +40,7 @@ CHANNEL_CHOICES = (
     (9, 'ScratchCard')
 )
 
-currency_cny = 0
+CURRENCY_CNY = 0
 
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -56,15 +56,15 @@ CURRENCY_CHOICES = (
     (10, 'XBT')
 )
 
-tran_success_type = 0
-tran_fail_type = 1
-tran_create_type = 2
-tran_pending_type = 3
-tran_approved_type = 4
-tran_cancel_type = 5
-tran_completed_type = 6
-tran_resend_type = 7
-tran_rejected_type = 8
+TRAN_SUCCESS_TYPE = 0
+TRAN_FAIL_TYPE = 1
+TRAN_CREATE_TYPE = 2
+TRAN_PENDING_TYPE = 3
+TRAN_APPROVED_TYPE = 4
+TRAN_CANCEL_TYPE = 5
+TRAN_COMPLETED_TYPE = 6
+TRAN_RESEND_TYPE = 7
+TRAN_REJECTED_TYPE = 8
 
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -80,12 +80,12 @@ STATE_CHOICES = (
 
 )
 
-review_app = 0
-review_pend = 1
-review_rej = 2
-review_success = 3
-review_fail = 4
-review_resend = 5
+REVIEW_APP = 0
+REVIEW_PEND = 1
+REVIEW_REJ = 2
+REVIEW_SUCCESS = 3
+REVIEW_FAIL = 4
+REVIEW_RESEND = 5
 
 REVIEW_STATE_CHOICES = (
     (0, 'APPROVED'),
@@ -105,8 +105,8 @@ DEPOSIT_METHOD_CHOICES = (
     (5, "IBT")
 )
 
-transaction_deposit = 0
-transaction_withdraw = 1
+TRANSACTION_DEPOSIT = 0
+TRANSACTION_WITHDRAW = 1
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),

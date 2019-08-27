@@ -36,7 +36,7 @@ class WithdrawalView(CommAdminView):
             within_this_month = datetime.date.today() - datetime.timedelta(days=30)
             latest_withdraw = Transaction.objects.filter(
                 Q(user_id_id=user)
-                & Q(transaction_type=transaction_withdraw)
+                & Q(transaction_type=TRANSACTION_WITHDRAW)
                 & Q(request_time__gte=within_this_month)
             )
 
@@ -81,21 +81,21 @@ class WithdrawalView(CommAdminView):
             context['time'] = timezone.now()
 
             # WITHDRAWAL TRANSACTIONS
-            withdrawal_trans = Transaction.objects.filter(transaction_type=transaction_withdraw)
+            withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAW)
 
 
             # PENDING
-            pending_trans = withdrawal_trans.filter(review_status=review_pend) 
+            pending_trans = withdrawal_trans.filter(review_status=REVIEW_PEND) 
             # APPROVED
-            approved_trans = withdrawal_trans.filter(review_status=review_app) 
+            approved_trans = withdrawal_trans.filter(review_status=REVIEW_APP) 
             # REJECTED
-            rejected_trans = withdrawal_trans.filter(review_status=review_rej) 
+            rejected_trans = withdrawal_trans.filter(review_status=REVIEW_REJ) 
             # SUCCESSFUL
-            success_trans = withdrawal_trans.filter(status=tran_success_type) 
+            success_trans = withdrawal_trans.filter(status=TRAN_SUCCESS_TYPE) 
             # FAILED
-            failed_trans = withdrawal_trans.filter(status=tran_fail_type)
+            failed_trans = withdrawal_trans.filter(status=TRAN_FAIL_TYPE)
             # RESEND
-            resend_trans = withdrawal_trans.filter(status=tran_resend_type) 
+            resend_trans = withdrawal_trans.filter(status=TRAN_RESEND_TYPE) 
 
             # pending transaction
             pending_tran = []
@@ -167,7 +167,8 @@ class WithdrawalView(CommAdminView):
                 approvedDict["app_time"] = approved_transaction.request_time
                 # auditor
                 approvedDict["audit_time"] = "..."
-                approvedDict["auditor"] = approved_transaction.request_time
+                approvedDict["processing_time"] = approved_transaction.arrive_time
+                approvedDict["auditor"] = "auditor"
                 approvedDict["channel"] = approved_transaction.get_channel_display()
                 approvedDict["note"] = approved_transaction.remark
                 approved_tran.append(approvedDict)
@@ -198,8 +199,8 @@ class WithdrawalView(CommAdminView):
                 rejectedDict["app_time"] = "..."
                 # auditor
                 rejectedDict["audit_time"] = "..."
-                rejectedDict["process_time"] = "..."
-                rejectedDict["auditor"] = rejected_transaction.request_time
+                rejectedDict["process_time"] = rejected_transaction.request_time
+                rejectedDict["auditor"] = "auditor"
                 rejectedDict["channel"] = rejected_transaction.get_channel_display()
                 rejected_tran.append(rejectedDict)
             context["rejected_tran"] = rejected_tran
@@ -229,8 +230,8 @@ class WithdrawalView(CommAdminView):
                 successDict["app_time"] = "..."
                 # auditor
                 successDict["audit_time"] = "..."
-                successDict["process_time"] = "..."
-                successDict["auditor"] = success_transaction.request_time
+                successDict["process_time"] = success_transaction.request_time
+                successDict["auditor"] = "auditor"
                 successDict["channel"] = success_transaction.get_channel_display()
                 success_tran.append(successDict)
             context["success_tran"] = success_tran
@@ -259,8 +260,8 @@ class WithdrawalView(CommAdminView):
                 failedDict["app_time"] = "..."
                 # auditor
                 failedDict["audit_time"] = "..."
-                failedDict["process_time"] = "..."
-                failedDict["auditor"] = failed_transaction.request_time
+                failedDict["process_time"] = failed_transaction.request_time
+                failedDict["auditor"] = "auditor"
                 failedDict["channel"] = failed_transaction.get_channel_display()
                 failed_tran.append(failedDict)
             context["failed_tran"] = failed_tran
@@ -276,12 +277,12 @@ class WithdrawalView(CommAdminView):
             current_tran = Transaction.objects.filter(pk=wtd_trans_no)
             current_tran.update(remark=withdraw_notes)
             if 'withdraw-review-app' in request.POST:
-                current_tran.update(review_status=review_app)
+                current_tran.update(review_status=REVIEW_APP)
             elif 'withdraw-review-rej' in request.POST:
-                current_tran.update(review_status=review_rej)
+                current_tran.update(review_status=REVIEW_REJ)
             elif 'withdraw-review-appnext' in request.POST:
-                current_tran.update(review_status=review_app)
+                current_tran.update(review_status=REVIEW_APP)
             elif 'withdraw-review-rejnext' in request.POST:
-                current_tran.update(review_status=review_rej)
+                current_tran.update(review_status=REVIEW_REJ)
 
             return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))

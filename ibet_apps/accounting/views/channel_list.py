@@ -123,10 +123,11 @@ class ChannelListView(CommAdminView):
                 limit_access = False
             new_user_volume = request.POST.get("new_user_volume")
 
-            if DepositChannel.objects.get(pk=channel_id) == None:
-                channel = WithdrawChannel.objects.filter(pk=channel_id)
-            else:
+            if DepositChannel.objects.filter(pk=channel_id).exists():
                 channel = DepositChannel.objects.filter(pk=channel_id)
+            else:
+                channel = WithdrawChannel.objects.filter(pk=channel_id)
+                
 
             # channel.min_amount = min_deposit,
             # channel.max_amount = max_deposit,

@@ -308,9 +308,11 @@
                     $('#channel_id_number').val(channel);
                     $('#channel_name').html(data['name']);
                     $('#delete_channel_name').val(data['name']);
-                    if (data['channel_status'] == 'Active') {
+                    if (data['channel_status'] == 'ACTIVE') {
                         $('#' + 'status_yes').prop('checked', true);
+                        $('#' + 'status_no').prop('checked', false);
                     } else {
+                        $('#' + 'status_yes').prop('checked', false);
                         $('#' + 'status_no').prop('checked', true);
                     }
                     $('#min_deposit').val(data['min_deposit']);
@@ -319,10 +321,10 @@
                     $('#transaction_fee_per').val(data['transaction_fee_per']);
                     $('#volume').val(data['volume']);
                     $('#new_user_volume').val(data['new_user_volume']);
-                    console.log(data['limit_access'])
                     if (data['limit_access'] == true) {
                         $('#' + 'limit_access_yes').prop('checked', true);
                         $('#' + 'limit_access_no').prop('checked', false);
+                        $("#limit_access_detail").show();
                     } else {
                         $('#' + 'limit_access_yes').prop('checked', false);
                         $('#' + 'limit_access_no').prop('checked', true);
@@ -354,17 +356,16 @@
                             $('#risk_level_info').hide();
                         }
                     });
-
-
-                    // channel filter
-                    // $('#channel_filter').click(function (e) {
-                    //     e.preventDefault();
-                    //     $('#channel_filter').val(0);
-                    //     getTransactions(0);
-                    // });
                 }
             })
         });
+
+        // channel filter
+        // $('#channel_filter').click(function (e) {
+        //     e.preventDefault();
+        //     $('#channel_filter').val(0);
+        //     getTransactions(0);
+        // });
 
         // remove delete_channel_btn
         // $('#delete_channel_btn').click(function () {

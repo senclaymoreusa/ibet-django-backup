@@ -41,7 +41,7 @@ class DepositView(CommAdminView):
             within_this_month = datetime.date.today() - datetime.timedelta(days=30)
             latest_deposit = Transaction.objects.filter(
                 Q(user_id_id=user)
-                & Q(transaction_type=transaction_deposit)
+                & Q(transaction_type=TRANSACTION_DEPOSIT)
                 & Q(request_time__gte=within_this_month)
             )
 
@@ -88,16 +88,16 @@ class DepositView(CommAdminView):
             context["title"] = title
             context['time'] = timezone.now()
 
-            deposit_trans = Transaction.objects.filter(transaction_type=transaction_deposit)
+            deposit_trans = Transaction.objects.filter(transaction_type=TRANSACTION_DEPOSIT)
 
             # PENDING DEPOSIT
-            pending_trans = deposit_trans.filter(review_status=review_pend)
+            pending_trans = deposit_trans.filter(review_status=REVIEW_PEND)
             # SUCCESS DEPOSIT
-            success_trans = deposit_trans.filter(review_status=review_app)
+            success_trans = deposit_trans.filter(review_status=REVIEW_APP)
             # FAILED DEPOSIT
-            fail_trans = deposit_trans.filter(review_status=review_rej)
+            fail_trans = deposit_trans.filter(review_status=REVIEW_REJ)
             # CANCELLED DEPOSIT
-            cancelled_trans = deposit_trans.filter(status=tran_cancel_type)
+            cancelled_trans = deposit_trans.filter(status=TRAN_CANCEL_TYPE)
 
             # pending deposit transaction
             pending_tran = []
@@ -239,13 +239,13 @@ class DepositView(CommAdminView):
             current_tran = Transaction.objects.filter(pk=dep_trans_no)
             current_tran.update(remark=deposit_notes)
             if 'deposit-review-app' in request.POST:
-                current_tran.update(review_status=review_app)
+                current_tran.update(review_status=REVIEW_APP)
             elif 'deposit-review-rej' in request.POST:
-                current_tran.update(review_status=review_rej)
+                current_tran.update(review_status=REVIEW_REJ)
             elif 'deposit-review-appnext' in request.POST:
-                current_tran.update(review_status=review_app)
+                current_tran.update(review_status=REVIEW_APP)
             elif 'deposit-review-rejnext' in request.POST:
-                current_tran.update(review_status=review_rej)
+                current_tran.update(review_status=REVIEW_REJ)
 
             return HttpResponseRedirect(reverse('xadmin:deposit_view'))
         
