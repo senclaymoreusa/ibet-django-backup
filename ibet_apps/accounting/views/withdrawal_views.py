@@ -106,7 +106,6 @@ class WithdrawalView(CommAdminView):
                 pendingDict["username"] = pending_transaction.user_id.username
                 pendingDict["tran_no"] = pending_transaction.transaction_id
                 pendingDict["app_time"] = pending_transaction.request_time
-                pendingDict["app_time"] = pending_transaction.request_time
                 pendingDict["vip"] = "vip"
                 pendingDict["risk"] = pending_transaction.user_id.get_risk_level_display()
 

@@ -541,12 +541,12 @@
         // draw DataTable
         var table = $('#pending_table').DataTable({
             responsive: true,
-            dom: 'Bfrtip, <f<t>il>',
+            dom: 'B<ftilp>',
             buttons: [
                 'csv'
             ],
             "columnDefs": [{
-                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
             }],
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
@@ -563,12 +563,12 @@
 
         var other_table = $('#approved_table, #rejected_table, #success_table, #rejected_table, #failed_table').DataTable({
             responsive: true,
-            dom: 'Bfrtip, <f<t>il>',
+            dom: 'B<ftilp>',
             buttons: [
                 'csv'
             ],
             "columnDefs": [{
-                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 10, 11, 12],
             }],
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
@@ -597,6 +597,9 @@
             function (settings, data, dataIndex) {
                 var min = $('#min').datepicker("getDate");
                 var max = $('#max').datepicker("getDate");
+                console.log("data")
+                console.log(data)
+
                 var dateParts = data[9].split("/");
                 var newDate = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2]
                 var startDate = new Date(newDate);
