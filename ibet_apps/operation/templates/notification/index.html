@@ -23,6 +23,27 @@ label {
   color: #4a4a4a;
 }
 
+thead {
+  height: 12px;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+td {
+  border: solid 4px #ffffff;
+}
+
+tbody>tr:nth-child(odd)>td, 
+tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
 .form-group {
   padding-top: 20px;
 }
@@ -175,7 +196,7 @@ label {
       </div>
     </div>
   </div>
-<div class="row" style="padding-top: 2em">
+<div class="row">
   <div class='col-md-3'>
     <div class="input-group">
       <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword..." >
@@ -223,8 +244,8 @@ label {
   </ul>
   <div class="tab-content">
     <div id="sent-message" class="tab-pane fade in active">
-      <table class="table table-bordered table-striped">
-        <thead>
+      <table>
+        <thead class="thead-dark">
           <tr>
             <th style="width: 3%;">ID</th>
             <th style="width: 20%;">SUBJECT</th>
@@ -240,20 +261,21 @@ label {
           </tr>
         </thead>
         <tbody>
-          {% for notification in queryset %}
+          {% for notification in notifications %}
             <tr>
-              <td>{{ forloop.counter }}</td>
+              <td>{{ notification.pk }}</td>
               <td>{{ notification.subject }}</td>
-              <td>CAMPAIGN</td>
+              <td>{{ notification.campaign }}</td>
               {% if notification.notifiers %}
-              <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td>
+              {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
+              <td>{{ notification.sent_count }}</td>
               {% else %}
               <td>{{ notification.topic }}</td>
               {% endif %}
               <td>BONUS</td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
-              <td>N/A</td>
+              <td>{{ notification.sent_count }}</td>
               <td>N/A</td>
               <td>N/A</td>
               <td>N/A</td>
@@ -264,10 +286,9 @@ label {
       </table>
     </div>
     <div id="automated-message" class="tab-pane fade">
-      <table>
+      <!--<table>
         <thead class="thead-dark">
           <tr>
-            <!--<th style="width: 2%;">pk</th>-->
             <th style="width: 15%;">SUBJECT</th>
             <th style="width: 10%;">CAMPAIGN</th>
             <th style="width: 12%;">GROUP</th>
@@ -282,7 +303,7 @@ label {
         <tbody id='user_list_tbody'>
           {% for notification, info in notifications %} 
             <tr>
-              <!--<td>{{ notification.pk }}</td>-->
+              <td>{{ notification.pk }}</td>
               <td>{{ notification.subject }}</td>
               <td>{{ notification.campaign }}</td>
               {% if notification.notifiers %}
@@ -300,7 +321,7 @@ label {
             </tr>
           {% endfor %}
         </tbody>
-      </table>
+      </table>-->
     </div>
     <div id="draft" class="tab-pane fade">
       <table class="table table-bordered table-striped">
@@ -350,8 +371,8 @@ label {
       <div>&nbsp;</div>
       <ul class="pagination" style="margin:0px;">
           {% if isFirstPage is True %}
-              <li class="page-item disabled" id='perviousPage'>
-              <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
+              <li class="page-item disabled" id='previousPage'>
+              <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
               </li>
           {% else %}
               <li class="page-item " id='perviousPage'>
@@ -374,7 +395,8 @@ label {
 
 
 <script>
-ClassicEditor
+$(document).ready(function() {
+  ClassicEditor
   .create( document.querySelector( '#editor' ) )
   .then( editor => {
     console.log( editor );
@@ -453,8 +475,7 @@ $("#search").on('keyup', function () {
 
 function searchOpen() {
     var search = $('#search').val();
-    var block = false;
-    var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search + "&block=" + block;
+    var url = "{% url 'notification-search' %}" + "?search=" + search;
     $.ajax({
         url: url,
         type: 'GET',
@@ -464,135 +485,76 @@ function searchOpen() {
         error: function () {
             // console.log('error');
         }
-
     });
 }
 
 function searchResult(data, term) {
-  var ids = data['id'];
-  var usernames = data['username'];
-  var emails = data['email'];
-  var phones = data['phone'];
-  var firstNames = data['firstName'];
-  var lastNames = data['lastName'];
-        
+  var subject = data['subject'];
+  // var usernames = data['body'];
+
   var sourceList = [];
-  if($.isNumeric(term)) {
-    if(ids.length > 0) {
-      sourceList.push({
-        'label': term,
-        'value': 'MEMBER RESULTS'
-      });
-      for (var i = 0; i < ids.length; i++) {
-        sourceList.push({
-          'type': 'username',
-          'label': term,
-          'value': ids[i]['id'],
-          'id': ids[i]['id']
-        });
-      }
-    }
-  } else {
-    if (usernames.length > 0) {
-      sourceList.push({
-        'type': 'category',
-        'label': term,
-        'value': 'MEMBER RESULTS'
-      });
-      for (var i = 0; i < usernames.length; i++) {
-        sourceList.push({
-          'type': 'username',
-          'label': term,
-          'value': usernames[i]['username'],
-          'id': usernames[i]['id'],
-        });
-      }
-    }
-  }
-  if (emails.length > 0 || phones.length > 0 || firstNames.length > 0 || lastNames.length > 0) {
+
+  if (subject.length > 0) {
     sourceList.push({
       'type': 'category',
       'label': term,
-      'value': 'MEMBER DETAILS RESULTS'
+      'value': 'MESSAGE RESULTS'
     });
-  }
-
-  if (emails.length > 0) {
-    for (var i = 0; i < emails.length; i++) {
+    for (var i = 0; i < subject.length; i++) {
       sourceList.push({
-        'type': 'email',
+        'type': 'subject',
         'label': term,
-        'value': emails[i]['email'],
-        'id': emails[i]['id'],
+        'value': subject[i]['subject'],
       });
     }
   }
-  if (phones.length > 0) {
-    for (var i = 0; i < phones.length; i++) {
-      sourceList.push({
-        'type': 'phone',
-        'label': term,
-        'value': phones[i]['phone'],
-        'id': phones[i]['id'],
-      });
-    }  
-  }
-  if (firstNames.length > 0) {
-    for (var i = 0; i < firstNames.length; i++) {
-      sourceList.push({
-        'type': 'name',
-        'label': term,
-        'value': firstNames[i]['firstName'],
-        'id': firstNames[i]['id'],
-      });
-    }
-  }
-  if (lastNames.length > 0) {
-    for (var i = 0; i < lastNames.length; i++) {
-      sourceList.push({
-        'type': 'name',
-        'label': term,
-        'value': lastNames[i]['lastName'],
-        'id': lastNames[i]['id'],
-      });
-    }
-  }
-
   $( "#search" ).autocomplete({
     source: sourceList,
     create: function () {
       $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
-          if (item.type === 'category') {
-            return $('<li class="ui-state-disabled member-search-result" style="margin: 0px 13px;">')
-            .append(item.value)
+        if (item.type === 'category') {
+          return $('<li class="ui-state-disabled search-result" style="margin: 0px 13px;">')
+          .append(item.value)
+          .appendTo(ul);
+          // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
+        } else {
+          //var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
+          var url = "#"
+          if (item.type == 'subject') {
+            return $('<li>')
+            .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
             .appendTo(ul);
-            // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
-          } else {
-              //var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
-              var url = "#"
-              if (item.type == 'username') {
-                  return $('<li>')
-                  .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-user" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
-                  .appendTo(ul);
-              } else if (item.type == 'email') {
-                  return $('<li>')
-                  .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-envelope"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
-                  .appendTo(ul);
-              } else if (item.type == 'phone') {
-                  return $('<li>')
-                  .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-phone"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
-                  .appendTo(ul);
-              } else if (item.type == 'name') {
-                  return $('<li>')
-                  .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-id-card"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
-                  .appendTo(ul);
-              }
           }
+        }
       };
       
     }
   });
 }
+
+  getNext = function() {
+      if ($('#nextPage').hasClass('disabled')) {
+          return;
+      }
+      var pageSize = paramsMap['pageSize'];
+      var oldFromItem = paramsMap['offset'];
+      var newFromItem = Number(oldFromItem) + Number(pageSize);
+      var block = paramsMap['block'];
+      
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+  }
+
+  getPervious = function () {
+      if ($('#perviousPage').hasClass('disabled')) {
+          return;
+      }
+      var pageSize = paramsMap['pageSize'];
+      var oldFromItem = paramsMap['offset'];
+      var newFromItem = Number(oldFromItem) - Number(pageSize);
+      var block = paramsMap['block'];
+      
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+  }
 
 /*
 function showUser() {
@@ -614,6 +576,9 @@ function showUser() {
   }
 }
 */
+});
+
+
 </script>
 {% comment %} You have visited this page {{ num_visits }} times. {% endcomment %}
 

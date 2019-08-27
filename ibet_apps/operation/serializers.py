@@ -57,7 +57,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ('pk', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date', 'campaign','bonus', 
-        'is_direct_message','is_email_message', 'is_sms_message', 'is_push_message','notification_method', 'publish_on', 'status')
+        'is_direct_message','is_email_message', 'is_sms_message', 'is_push_message', 'publish_on', 'status')
         read_only_fields = ['pk', 'account_type', 'audit_date', 'create_on']
 
 

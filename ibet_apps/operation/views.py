@@ -3,6 +3,9 @@ from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.db.models import Count
+from django.views import View
+from django.core import serializers
+from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import status
@@ -21,54 +24,69 @@ from utils.aws_helper import getThirdPartyKeys, getAWSClient
 
 logger = logging.getLogger('django')
 
-'''
-def getThirdPartyKeys(bucket, file):
-    s3client = boto3.client("s3")
-    try:
-        config_obj = s3client.get_object(Bucket=bucket, Key=file)
-        config = json.loads(config_obj['Body'].read())
-    except ClientError as e:
-        logger.error(e)
-        return None
-    except NoCredentialsError as e:
-        logger.error(e)
-        return None
-    
-    return config
 
-def getAWSClient():
+def send_message(notification_id):
+    notification = Notification.objects.get(pk=notification_id)
+    # All messages
+    queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
+
     # connect AWS S3
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
     # AWS SNS Client
     sns = boto3.resource('sns')
-    client = boto3.client(
-        'sns',
-        aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
-    )
+    client = getAWSClient('sns', third_party_keys)
 
-    return client
+    # Push Notification
+    if notification.is_push_message:
+        platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
+        
+        platform_endpoint.publish(
+            Message=notification.content_text,
+        )
+        logger.info("Enabled Push Notification")
+        
+    # SMS Notification
+    if notification.is_sms_message:
+        try:
+            for message in queryset:
+                notifier = CustomUser.objects.get(pk=message.notifier_id)
+                phone = notifier.phone
+                client.publish(PhoneNumber=phone, Message=notification.content_text)
 
-def add_post(request):
-    if request.method == "POST":
-        form = PostNotificationForm(request.POST)
-        if form.is_valid():
-            post_item = form.save(commit=False)
-            post_item.save()
-            return redirect('/')
+            logger.info("Enabled SMS Notification")
+        except Exception as e:
+            logger.error("Unexpected error: %s" % e)
+            return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
+
+        # Email Notification
+        if NOTIFICATION_EMAIL in notification_methods:
+            # AWS SNS Topic
+            topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
+            topic.publish(
+                Message=message.content_text,
+                Subject='iBet Notification',
+            )
+            logger.info("Enabled Email Notification")
+
+        Notification.objects.filter(pk=notification_id).update(status=MESSAGE_APPROVED)
+        logger.info('create notification message')
+        # return HttpResponseRedirect(reverse('xadmin:notification'))
     else:
-        form = PostNotificationForm()
-    return render('request', 'notification/index.html', {'form': form})
+        logger.error("Sending Message API error!:")
+        return HttpResponse("Can not send Message!")
 
-def send_message(self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False):
+
+'''
+class createMessage(View):
+    self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False
     # create Notification Object
     message = {
-        "subject": self.subject,
-        "content_text": content,
+        "subject": request.POST.get('subject'),
+        "content_text": request.POST.get('content_text'),
         "creator": self.user,
-        "notifiers": notifiers,
-        "groups": groups,
+        "notifiers": request.POST.getlist('notifiers'),
+        "groups": request.POST.getlist('notifiers'),
     }
 
     notification_serializer = NotificationSerializer(data=message)
@@ -76,6 +94,9 @@ def send_message(self, subject, content, creator, notifiers, groups, is_direct=F
     if serializer.is_valid():
         notification = serializer.save()
         logger.info("create a notification")
+        return HttpResponse(json.dumps(response), content_type='application/json')
+    else:
+        return 
 
 
     # n_user_serializer = NotificationToUsersSerializer()
@@ -83,6 +104,127 @@ def send_message(self, subject, content, creator, notifiers, groups, is_direct=F
         log = NotificationToUsers(notification_id=notification.pk, notifier_id=notifier.pk)
 
     logger.info("added notification-to-users log")
+
+    '''
+class NotificationSearchAutocomplete(View):
+    def get(self, request, *args, **kwargs):
+        search = request.GET['search']
+
+        logger.info('Search user, key: ' + search)
+
+        search_subject = Notification.objects.filter(subject__contains=search)
+        # search_body = Notification.objects.filter(content_text__contains=search)
+
+        search_subject = serializers.serialize('json', search_subject)
+        # search_body = serializers.serialize('json', search_body)
+
+        search_subject = json.loads(search_subject)
+        # search_body = json.loads(search_body)
+
+        response = {}
+
+        subject_data = []
+        for notification in search_subject:
+            notificationMap = {}
+            notificationMap["subject"] = notification["fields"]["subject"]
+            subject_data.append(notificationMap)
+        response["subject"] = subject_data
+
+        # body_data = []
+        # for notification in subject_body:
+        #     notificationMap = {}
+        #     notificationMap['body'] = notification['body']
+        #     subject_data.append(notificationMap)
+        # response['body'] = subject_data
+
+        logger.info('Search response: ' + json.dumps(response))
+        return HttpResponse(json.dumps(response), content_type='application/json')
+
+'''
+class NotificationSearchAutocomplete(View):
+    def get(self, request, *args, **kwargs):
+        search = request.GET['search']
+        # block = request.GET['block'] == 'true'
+
+        logger.info('Search user, key: ' + search)
+        # search_id = CustomUser.objects.filter(Q(pk__contains=search)&Q(block=block))
+        # search_username = CustomUser.objects.filter(Q(username__contains=search)&Q(block=block))
+        # search_email = CustomUser.objects.filter(Q(email__contains=search)&Q(block=block))
+        # search_phone = CustomUser.objects.filter(Q(phone__contains=search)&Q(block=block))
+        # search_first_name = CustomUser.objects.filter(Q(first_name__contains=search)&Q(block=block))
+        # search_last_name = CustomUser.objects.filter(Q(last_name__contains=search)&Q(block=block))
+
+        search_id = CustomUser.objects.filter(pk__contains=search)
+        search_username = CustomUser.objects.filter(username__contains=search)
+        search_email = CustomUser.objects.filter(email__contains=search)
+        search_phone = CustomUser.objects.filter(phone__contains=search)
+        search_first_name = CustomUser.objects.filter(first_name__contains=search)
+        search_last_name = CustomUser.objects.filter(last_name__contains=search)
+
+        search_id = serializers.serialize('json', search_id)
+        search_username = serializers.serialize('json', search_username)
+        search_email = serializers.serialize('json', search_email)
+        search_phone = serializers.serialize('json', search_phone)
+        search_first_name = serializers.serialize('json', search_first_name)
+        search_last_name = serializers.serialize('json', search_last_name)
+
+        search_id = json.loads(search_id)
+        search_username = json.loads(search_username)
+        search_email = json.loads(search_email)
+        search_phone = json.loads(search_phone)
+        search_first_name = json.loads(search_first_name)
+        search_last_name = json.loads(search_last_name)
+        response = {}
+
+        id_data = []
+        for user in search_id:
+            userMap = {}
+            userMap['id'] = user['pk']
+            id_data.append(userMap)
+        response['id'] = id_data
+
+        username_data = []
+        for user in search_username:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['username'] = user['fields']['username']
+            username_data.append(userMap)
+        response['username'] = username_data
+
+        email_data = []
+        for user in search_email:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['email'] = user['fields']['email']
+            email_data.append(userMap)
+        response['email'] = email_data
+
+        phone_data = []
+        for user in search_phone:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['phone'] = user['fields']['phone']
+            phone_data.append(userMap)
+        response['phone'] = phone_data
+
+        first_name_data = []
+        for user in search_first_name:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['firstName'] = user['fields']['first_name']
+            first_name_data.append(userMap)
+        response['firstName'] = first_name_data
+
+        last_name_data = []
+        for user in search_last_name:
+            userMap = {}
+            userMap['id'] = user['pk']
+            userMap['lastName'] = user['fields']['last_name']
+            last_name_data.append(userMap)
+        response['lastName'] = last_name_data
+        # print(str(response))
+        logger.info('Search response: ' + json.dumps(response))
+        return HttpResponse(json.dumps(response), content_type='application/json')
 '''
 
 
@@ -91,31 +233,65 @@ class NotificationView(CommAdminView):
     serializer_class = NotificationSerializer
 
     def get(self, request, *arg, **kwargs):
+        pageSize = request.GET.get('pageSize')
+        offset = request.GET.get('offset')
+        block = request.GET.get('block')
+
+        if pageSize is None:
+            pageSize = 20
+        else: 
+            pageSize = int(pageSize)
+
+        if offset is None:
+            offset = 0
+        else:
+            offset = int(offset)
+
+        if block is None:
+            block = MESSAGE_APPROVED
+        else:
+            block = int(block)
+
+        # set context
         context = super().get_context()
         title = 'message'
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context["title"] = title
         context['time'] = timezone.now()
+
         context['current_user'] = self.user
         context['all_user'] = CustomUser.objects.all()
         context['auditors'] = CustomUser.objects.filter(is_admin=True)
-        context['topics'] = AWSTopic.objects.all()
+        # context['topics'] = AWSTopic.objects.all()
         context['waiting_list'] = Notification.objects.filter(auditor=self.user.pk).count()
-        queryset = Notification.objects.filter(status=MESSAGE_APPROVED)
-        context["queryset"] = queryset
 
+        queryset = Notification.objects.filter(status=block)
+        # paginator = Paginator(queryset, pageSize)
+        # context["queryset"] = paginator.get_page(offset)
         notification_list = []
         for sent_msg in queryset:
-            sent_count = NotificationToUsers.objects.filter(notification_id=sent_msg.pk).count()
-            notification_list.append((sent_msg, sent_count))
+            notification_item = {}
+            notification_item["pk"] = sent_msg.pk
+            notification_item["subject"] = sent_msg.subject
+            notification_item["content_text"] = sent_msg.content_text
+            notification_item["campaign"] = sent_msg.campaign
+            notification_item["creator"] = sent_msg.creator
+            notification_item["publish_on"] = sent_msg.publish_on
+            notification_item["notifiers"] = NotificationToUsers.objects.filter(notification_id=sent_msg.pk)
+            # notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=sent_msg.pk).count()
+            notification_item["sent_count"] = len( notification_item["notifiers"])
+            
+            notification_list.append(notification_item)
 
-        # logger.info("notification_list", notification_list)
+        # paginator = Paginator(notification_list, pageSize)
+        # context["queryset"] = paginator.get_page(offset)
+        # context["notifications"] = paginator.get_page(offset)
         context["notifications"] = notification_list
 
         drafts = Notification.objects.filter(status=MESSAGE_PENDING)
         context["drafts"] = drafts
 
-        serializer = NotificationSerializer(queryset, many=True)
+        # serializer = NotificationSerializer(queryset, many=True)
 
         logger.info("GET NotificationView")
         return render(request, 'notification/index.html', context)
@@ -149,6 +325,9 @@ class NotificationView(CommAdminView):
 
         notifiers = request.POST.getlist("notifiers")
 
+        if len(notifiers) < 2:
+            data["status"] = MESSAGE_APPROVED
+
         serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():           
@@ -159,9 +338,12 @@ class NotificationView(CommAdminView):
                 log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
                 log.save()
             logger.info("Save notification log")
+
+            if(notification.status == MESSAGE_APPROVED):
+                send_message(notification.pk)
+
             return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
-            print("invalid")
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
