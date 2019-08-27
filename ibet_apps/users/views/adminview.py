@@ -495,11 +495,7 @@ class UserDetailView(CommAdminView):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         elif post_type == 'limitation_setting':
-            # bet_limitation = request.POST.getlist('bet_limit[]')
-            # bet_product = request.POST.getlist('game_type[]')
-            # bet_product = list(map(lambda x : int(x), bet_product))
-            # print("passing data.....")
-            # print("user: " + str(user_id))
+            
             loss_limitation = request.POST.getlist('loss_limit')
             loss_limitation = [item for item in loss_limitation if len(item) > 0]
             # print("loss_limitation type: " + str(type(loss_limitation)))
@@ -526,20 +522,6 @@ class UserDetailView(CommAdminView):
             # print(temporary_time, permanent_time)
             # print("reason type: " + str(reason))
             # print(str(reason))
-
-            # withdraw_interval = list(map(lambda x : int(x), withdraw_interval))
-
-            # print("loss data.....")
-            # print("loss_limitation: " + str(loss_limitation))
-            # print("loss_interval: " + str(loss_interval))
-
-            # print("deposit data.....")
-            # print("deposit_limitation: " + str(deposit_limitation))
-            # print("deposit_interval: " + str(deposit_interval))
-
-            # print("withdraw data.....")
-            # print("withdraw_limitation: " + str(withdraw_limitation))
-            # print("withdraw_interval: " + str(withdraw_interval))
 
             access_deny_tags = request.POST.get('access_deny_tags')
             if access_deny_tags:
@@ -624,92 +606,8 @@ class UserDetailView(CommAdminView):
                 set_deposit_limitation(user_id, deposit_limitation, deposit_interval, oldLimitMap, user)
             else:
                 Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=None)
-            # if loss_interval:
-            #     # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).exists():
-            #     #     logger.info('Update loss limitation')
-            #     #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=loss_limitation)
-            #     # else:
-            #     #     logger.info('Create a loss limitation')
-            #     #     limitation = Limitation(
-            #     #             user= user,
-            #     #             limit_type=LIMIT_TYPE_LOSS,
-            #     #             amount=loss_limitation,
-            #     #         )
-            #     #     limitation.save()
-
-            #     # delete
-            #     for intervalType in oldLimitMap[LIMIT_TYPE_LOSS]:
-            #         if intervalType not in loss_interval:
-            #             logger.info('Deleting loss limit for interval type: ' + str(intervalType))
-            #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).delete()
-
-            #     # insert or update
-            #     for i in range(len(loss_limitation)):
-            #         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=loss_interval[i]).exists():
-            #             logger.info('Update loss limit for interval type: ' + str(user))
-            #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=loss_interval[i]).update(amount=loss_limitation[i])
-            #         else:
-            #             logger.info('Create new bet limit for product type for' + str(user))
-            #             limitation = Limitation(
-            #                 user= user,
-            #                 limit_type=LIMIT_TYPE_LOSS,
-            #                 amount=loss_limitation[i],
-            #                 interval=loss_interval[i],
-            #             )
-            #             limitation.save()
-            # else:
-            #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).delete()
-
-            # if deposit_interval:
-            #     # logger.info('Update deposit limitation')
-            #     # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).exists():
-            #     #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=deposit_limitation)
-            #     # else:
-            #     #     logger.info('Create deposit limitation')
-            #     #     limitation = Limitation(
-            #     #             user= user,
-            #     #             limit_type=LIMIT_TYPE_DEPOSIT,
-            #     #             amount=deposit_limitation,
-            #     #         )
-            #     #     limitation.save()
-
-            #     # delete
-            #     for intervalType in oldLimitMap[LIMIT_TYPE_DEPOSIT]:
-            #         if intervalType not in deposit_interval:
-            #             logger.info('Deleting loss limit for interval type: ' + str(intervalType))
-            #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).delete()
-
-            #     # insert or update
-            #     for i in range(len(deposit_limitation)):
-            #         # print("index: " + str(i))
-            #         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=deposit_interval[i]).exists():
-            #             logger.info('Update loss limit for interval type: ' + str(user))
-            #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=deposit_interval[i]).update(amount=deposit_limitation[i])
-            #         else:
-            #             logger.info('Create new bet limit for product type for' + str(user))
-            #             limitation = Limitation(
-            #                 user= user,
-            #                 limit_type=LIMIT_TYPE_DEPOSIT,
-            #                 amount=deposit_limitation[i],
-            #                 interval=deposit_interval[i],
-            #             )
-            #             limitation.save()
-            # else:
-            #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).delete()
 
             if withdraw_interval:
-                # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).exists():
-                #     logger.info('Update withdraw limitation')
-                #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).update(amount=withdraw_limitation)
-                # else:
-                #     logger.info('Create withdraw limitation')
-                #     limitation = Limitation(
-                #             user= user,
-                #             limit_type=LIMIT_TYPE_WITHDRAW,
-                #             amount=withdraw_limitation,
-                #         )
-                #     limitation.save()
-
                 # delete
                 for intervalType in oldLimitMap[LIMIT_TYPE_WITHDRAW]:
                     if intervalType not in withdraw_interval:
