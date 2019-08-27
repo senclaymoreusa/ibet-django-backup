@@ -996,12 +996,3 @@ PERMISSION_CODE = [
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
-
-
-# scratch card API
-SCRATCHCARD_URL = "https://api.thethanhtien.com/charge-card/"
-SCRATCHCARD_PARTNER_ID = "9"
-SCRATCHCARD_CODE = "n2P9R8"
-SCRATCHCARD_EMAIL = "jennyto@ibet.com"
-PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
-
