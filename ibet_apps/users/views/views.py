@@ -1343,15 +1343,18 @@ class MarketingSettings(View):
         user_id = request.GET['userId']
         user = CustomUser.objects.get(pk=user_id)
         contact_methods = user.contact_methods
-        contact_methods_list = contact_methods.split(',')
+
         response = {
-            "email": "",
-            "phone": "",
-            "sms": "",
-            "postal": ""
+            "email": False,
+            "phone": False,
+            "sms": False,
+            "postal": False
         }
-        for i in contact_methods_list:
-            response[i] = True
+           
+        if contact_methods:
+            contact_methods_list = contact_methods.split(',')
+            for i in contact_methods_list:
+                response[i] = True
 
         response.update(socialMedia=user.social_media)
 
@@ -1381,13 +1384,12 @@ class MarketingSettings(View):
         
         contact_methods_str = ''
         contact_methods_str = ','.join(str(i) for i in contact_methods)
-    
-        # print(contact_methods)
+
+        # print(contact_methods_str)
         # print(social_media)
         user = CustomUser.objects.get(pk=user_id)
         user.social_media = social_media
-        if contact_methods:
-            user.contact_methods = contact_methods_str
+        user.contact_methods = contact_methods_str
         user.save()
 
         return HttpResponse(('Successfully set the marketing setting'), status = 200)
