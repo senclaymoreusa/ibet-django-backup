@@ -426,8 +426,10 @@ class submitPayout(generics.GenericAPIView):
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
+        user = CustomUser.objects.get(username=userId)
+        trans_id = userId+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
         mymethod = self.request.POST.get('method')
-        list = [merchantId, orderId, amount, currency, dateTime, userId]
+        list = [merchantId, trans_id, amount, currency, dateTime, userId]
         message = '|'.join(str(x) for x in list)
         
         mymessage = bytes(message, 'utf-8')
@@ -440,7 +442,7 @@ class submitPayout(generics.GenericAPIView):
          #retry
         success = False
         r = requests.post(url, headers=headers, data = {
-            'orderId' : orderId,
+            'orderId' : trans_id,
             'amount' : amount,
             'currency' : currency,
             'dateTime': dateTime,
@@ -448,9 +450,11 @@ class submitPayout(generics.GenericAPIView):
             'userId': userId,
             'depositorTier': '0',
             'payoutMethod':  mymethod,
-            'withdrawerEmail': CustomUser.objects.filter(email=email),
-            'withdrawerName': CustomUser.objects.filter(first_name=first_name),
+            'withdrawerEmail': user.email,
+            'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
+            'withdrawerEmail':user.email,
+            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/transaction_status',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -466,7 +470,8 @@ class submitPayout(generics.GenericAPIView):
                 if rdata["payoutTransaction"]["status"] ==y[1]:
                     cur_status = y[0] 
             create = Transaction.objects.get_or_create(
-                order_id= rdata["payoutTransaction"]['orderId'],
+                transaction_id= rdata["payoutTransaction"]['orderId'],
+                order_id=rdata["payoutTransaction"]["transactionId"],
                 amount=rdata["payoutTransaction"]["amount"],
                 status=cur_status,
                 user_id=user,
@@ -737,11 +742,11 @@ def transactionStatusUpdate(request):
         if cur_status == 0:
             update = order_id.update(
                 arrive_time=timezone.now(),
-                remark = 'Successfully Deposited!')
+                remark = 'Transaction success!')
             
         else :
             update = order_id.update(
-                remark = 'Deposit Failed!')
+                remark = 'Transaction' + Status)
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
