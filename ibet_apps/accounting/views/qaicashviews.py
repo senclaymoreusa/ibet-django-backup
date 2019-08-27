@@ -469,7 +469,7 @@ class submitPayout(generics.GenericAPIView):
             for y in Transaction._meta.get_field('status').choices:
                 if rdata["payoutTransaction"]["status"] ==y[1]:
                     cur_status = y[0] 
-            create = Transaction.objects.get_or_create(
+            create = Transaction.objects.create(
                 transaction_id= rdata["payoutTransaction"]['orderId'],
                 order_id=rdata["payoutTransaction"]["transactionId"],
                 amount=rdata["payoutTransaction"]["amount"],
@@ -746,7 +746,7 @@ def transactionStatusUpdate(request):
             
         else :
             update = order_id.update(
-                remark = 'Transaction' + Status)
+                remark = 'Transaction ' + Status)
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
