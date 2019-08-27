@@ -17,6 +17,7 @@ from users.models import CustomUser
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import astroPaymentStatusSerialize
 from utils.constants import *
+import utils.helpers as helpers
 
 logger = logging.getLogger('django')
 userCode = CIRCLEPAY_USERCODE
@@ -35,7 +36,6 @@ def create_deposit(request):
         amount = body["amount"]
         transaction_id = body["trans_id"]
 
-        print(request.user)
         user_id = CustomUser.objects.get(username=request.user.username)
         obj, created = Transaction.objects.get_or_create(
             user_id=user_id,
@@ -63,7 +63,7 @@ def confirm_payment(request):
         logger.info("Hello GET")
         return HttpResponse("You are at the endpoint for CirclePay confirm payment")
     if request.method == "POST":
-        logger.info("Hello POST")
+        logger.info("[" + str(datetime.now()) + "] Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
         logger.info(transaction_data)
         # query for transaction in ibet db
@@ -73,8 +73,13 @@ def confirm_payment(request):
                 amount=transaction_data["amount"],
             )
             logger.info("Found matching transaction!")
+            if matching_transaction.order_id != '0':
+                return JsonResponse({"code": "888", "message": "Callback rejected: Transaction already processed"})
+
             if transaction_data["status"] == '00':  # deposit successful
                 matching_transaction.status = 0
+                helpers.addOrWithdrawBalance(matching_transaction.user_id, transaction_data["amount"], "add")
+
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
                 matching_transaction.status = 3
             if transaction_data["status"] == '02':  # deposit canceled

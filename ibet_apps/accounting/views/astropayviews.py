@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from rest_framework import parsers, renderers, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
 from users.models import CustomUser
@@ -24,8 +24,8 @@ secretkey = ASTROPAY_SECRET
 currencyConversion = {
     "CNY": 0,
     "USD": 1,
-    "PHP": 2,
-    "IDR": 3
+    "THB": 2,
+    "IDR": 3,
 }
 
 #get hash code 
@@ -316,7 +316,7 @@ def verif_transtatus(request):
         r = requests.post(url + 'verif/transtatus', data=params)
         rdata = r.text
         logger.info(rdata)
-        if r.status_code == 200 :
+        if r.status_code == 200:
             break
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")
@@ -356,9 +356,11 @@ def cancel_cashout_card(request):
         return JsonResponse(responseJSON)
 
 # create money order with astropay card
+@api_view(['POST'])
+@permission_classes((IsAuthenticated,))
 def capture_transaction(request):
     if (request.method == "POST"):
-        requestURL = "https://sandbox-api.astropaycard.com/verif/validator"
+        requestURL = ASTROPAY_URL + "/verif/validator"
         
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
@@ -370,9 +372,10 @@ def capture_transaction(request):
         card_code = body.get("card_code")
         exp_date = body.get("exp_date")
         amount = body.get("amount")
-        currency = "USD"
+        currency = "THB"
 
-        orderId = (timezone.datetime.today().isoformat()+"-"+request.user.username+"-web-payment-"+str(random.randint(0,10000)))
+        orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+
         params = {
             "x_login": ASTROPAY_X_LOGIN,
             "x_trans_key": ASTROPAY_X_TRANS_KEY,
@@ -381,34 +384,37 @@ def capture_transaction(request):
             "x_card_code": card_code,
             "x_exp_date": exp_date,
             "x_amount": amount,
-            "x_currency": currency, # we are only using this API for thailand
-            "x_unique_id": "user_id_123",
+            "x_currency": currency,  # we are only using this API for thailand
+            "x_unique_id": request.user.username,
             "x_invoice_num": orderId,
         }
 
         r = requests.post(requestURL, data=params)
+
         responseData = r.text.split("|")
         logger.info(responseData)
-        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"): # create transaction record when successfully approved
-            logger.info("success!")
+        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
+            logger.info("contact AstroPay servers success and deposit success!")
             
-            tranDict = {'order_id':(orderId)[0:20],
-                        'transaction_id':userid,
-                        'amount':amount,
-                        'user_id':CustomUser.objects.get(username=userid),
-                        'currency':currencyConversion[currency],
-                        'transaction_type':0,
-                        'channel':2,
-                        'status':0,
-                        'method':"AstroPay",
-                        'arrive_time': timezone.now(),
-                        'product': "None",
-                    }
+            tranDict = {
+                'order_id':(orderId)[0:20],
+                'transaction_id':userid,
+                'amount':amount,
+                'user_id':CustomUser.objects.get(username=userid),
+                'currency':currencyConversion[currency],
+                'transaction_type':0,
+                'channel':2,
+                'status':0,
+                'method':"AstroPay",
+                'arrive_time': timezone.now(),
+                'product': "None",
+            }
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)            
             loop.run_until_complete(createDeposit(**tranDict))
                   
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
+
 
 async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(
@@ -416,9 +422,10 @@ async def createDeposit(**tranDict):
     )
     task2 = asyncio.ensure_future(
         send_message_sqs(**tranDict)
-    ) 
+    )
     await task1
     await task2
+
 
 async def addTransToDB(**tranDict):
     create = Transaction.objects.create(
