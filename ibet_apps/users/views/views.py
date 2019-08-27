@@ -1345,10 +1345,10 @@ class MarketingSettings(View):
         contact_methods = user.contact_methods
         contact_methods_list = contact_methods.split(',')
         response = {
-            "email": "",
-            "phone": "",
-            "sms": "",
-            "postal": ""
+            "email": False,
+            "phone": False,
+            "sms": False,
+            "postal": False
         }
         for i in contact_methods_list:
             response[i] = True
