@@ -457,7 +457,7 @@ class Limitation(models.Model):
     )
 
 
-class GBSportWallet(models.Model):
+class GameRequestsModel(models.Model):
 
     Success_Status = [
         ('1', '1'),

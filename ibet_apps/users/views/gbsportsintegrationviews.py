@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ..models import CustomUser, GBSportWallet 
+from ..models import CustomUser, GameRequestsModel 
 import simplejson as json
 import xmltodict
 import decimal
@@ -37,7 +37,7 @@ class WalletGeneralAPI(APIView):
                 success    =  1
                 TransDataExists = 1
 
-                GBSportWallet.objects.create(
+                GameRequestsModel.objects.create(
                     TransType = TransType,
                     ThirdPartyCode = ThirdPartyCode,
                     MemberID = MemberID
@@ -129,7 +129,7 @@ class WalletBetAPIURL(APIView):
                         error_code =  -4
                 
 
-                    GBSportWallet.objects.create(
+                    GameRequestsModel.objects.create(
                         Method        = Method,
                         Success       = Success,
 
@@ -210,7 +210,7 @@ class WalletBetAPIURL(APIView):
                         error_code =  -4
                 
 
-                    GBSportWallet.objects.create(
+                    GameRequestsModel.objects.create(
                         Method        = Method,
                         Success       = Success,
 
@@ -326,7 +326,7 @@ class WalletSettleAPIURL(APIView):
                     success    =  1
                     TransData  = user.main_wallet
 
-                    GBSportWallet.objects.create(
+                    GameRequestsModel.objects.create(
                         Method        = Method,
                         Success       = Success,
 
@@ -417,7 +417,7 @@ class WalletSettleAPIURL(APIView):
                     success    =  1
                     TransData  = user.main_wallet
 
-                    GBSportWallet.objects.create(
+                    GameRequestsModel.objects.create(
                         Method        = Method,
                         Success       = Success,
 
