@@ -33,6 +33,7 @@ from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render
 from django.dispatch import receiver
@@ -68,7 +69,6 @@ import simplejson as json
 import decimal
 from utils.constants import *
 import requests
-from decimal import Decimal
 
 import xmltodict
 
@@ -1428,7 +1428,6 @@ class CancelDeleteLimitation(View):
         return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
 
 
-
 class GetLimitation(View):
 
     def get(self, request, *args, **kwargs):
@@ -1461,7 +1460,8 @@ class GetLimitation(View):
             'permBlock': {}
         }
         for limitation in userLimitation:
-            temporary_amount = 0 if limitation.temporary_amount is None else limitation.temporary_amount
+            temporary_amount = decimal.Decimal(0) if limitation.temporary_amount is None else  decimal.Decimal(limitation.temporary_amount)
+            amount = None if limitation.amount is None else decimal.Decimal(limitation.amount)
             expiration_timeStr = ''
             if limitation.expiration_time:
                 current_tz = timezone.get_current_timezone()
@@ -1476,22 +1476,22 @@ class GetLimitation(View):
             
             if limitation.limit_type == LIMIT_TYPE_LOSS:
                 lossMap = {
-                    'amount': float(str(round(limitation.amount, 2))),
+                    'amount': amount,
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'temporary_amount': float(str(round(temporary_amount, 2))),
+                    'temporary_amount': temporary_amount,
                     'expiration_time': expiration_timeStr
                 }
                 limitationDict['loss'].append(lossMap)
             elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
                 
                 depositMap = {
-                    'amount': float(str(round(limitation.amount, 2))),
+                    'amount': amount,
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'temporary_amount': float(str(round(temporary_amount, 2))),
+                    'temporary_amount': temporary_amount,
                     'expiration_time': expiration_timeStr
                 }
                 limitationDict['deposit'].append(depositMap)
@@ -1514,7 +1514,7 @@ class GetLimitation(View):
             limitationDict['permBlock'] = permanentMap
             # print(limitationDict)
 
-        return HttpResponse(json.dumps(limitationDict), content_type="application/json", status = 200)
+        return HttpResponse(json.dumps(limitationDict, cls=DjangoJSONEncoder), content_type="application/json", status = 200)
 
 class SetBlockTime(View):
 
