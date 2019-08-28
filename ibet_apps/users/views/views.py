@@ -661,12 +661,12 @@ class AddOrWithdrawBalance(APIView):
             new_balance = currrent_balance - decimal.Decimal(balance)
             user.update(main_wallet=new_balance, modified_time=timezone.now())
 
-            create = Transaction.objects.create(
-                user_id=CustomUser.objects.filter(username=username).first(), 
-                amount=balance, 
-                transaction_type=1,
-                currency=0,
-            )
+            # create = Transaction.objects.create(
+            #     user_id=CustomUser.objects.filter(username=username).first(), 
+            #     amount=balance, 
+            #     transaction_type=1,
+            #     currency=0,
+            # )
 
             # action = UserAction(
             #     user= CustomUser.objects.filter(username=username).first(),

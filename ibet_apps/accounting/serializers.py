@@ -33,17 +33,17 @@ class bankLimitsSerialize(serializers.Serializer):
         return DepositChannel.objects.get_or_create(**validated_data)
 
     
-class submitDepositSerialize(serializers.ModelSerializer):
-    # transaction_id         = serializers.UUIDField(format='hex')
-    # amount            = serializers.DecimalField(max_digits = 10, decimal_places=2, required=True)
-    # currency        = serializers.CharField(required=True)
-    # language       = serializers.CharField(required=True)
-    # user_id        = serializers.CharField(required=True)
-    # method            = serializers.CharField(required=True)
-    class Meta:
-        model = Transaction
-        fields = ('order_id','amount', 'currency','language','user_id','method')
+class submitDepositSerialize(serializers.Serializer):
+    
+    amount            = serializers.DecimalField(max_digits = 10, decimal_places=2, required=True)
+    currency        = serializers.CharField(required=True)
+    language       = serializers.CharField(required=True)
+    user_id        = serializers.CharField(required=True)
+    method            = serializers.CharField(required=True)
+    bank           = serializers.CharField(required=False)
 
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
 
 class submitPayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
