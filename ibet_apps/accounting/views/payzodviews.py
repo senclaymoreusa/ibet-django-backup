@@ -101,8 +101,6 @@ def confirm_payment(request):
         logger.info("Hello, POST request received on payzod confirm_payment()")
         logger.info(request.POST)
         req = request.POST
-        print("HELLO POST")
-        print(request.POST)
         try:
             matching_transaction = Transaction.objects.get(
                 transaction_id=req.get("ref_no"),

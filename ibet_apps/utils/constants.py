@@ -70,11 +70,10 @@ CURRENCY_CHOICES = (
     (3, 'IDR'),
     (4, 'HKD'),
     (5, 'AUD'),
-    (6, 'THB'),
-    (7, 'MYR'),
-    (8, 'VND'),
-    (9, 'MMK'),
-    (10, 'XBT')
+    (6, 'MYR'),
+    (7, 'VND'),
+    (8, 'MMK'),
+    (9, 'XBT')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
