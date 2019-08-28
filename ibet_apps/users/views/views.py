@@ -68,6 +68,7 @@ import simplejson as json
 import decimal
 from utils.constants import *
 import requests
+from decimal import Decimal
 
 import xmltodict
 
@@ -1475,22 +1476,22 @@ class GetLimitation(View):
             
             if limitation.limit_type == LIMIT_TYPE_LOSS:
                 lossMap = {
-                    'amount': limitation.amount,
+                    'amount': float(str(round(limitation.amount, 2))),
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'temporary_amount': temporary_amount,
+                    'temporary_amount': float(str(round(temporary_amount, 2))),
                     'expiration_time': expiration_timeStr
                 }
                 limitationDict['loss'].append(lossMap)
             elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
                 
                 depositMap = {
-                    'amount': limitation.amount,
+                    'amount': float(str(round(limitation.amount, 2))),
                     'intervalValue': limitation.interval,
                     'interval': intervalMap[limitation.interval],
                     'limitId': limitation.pk,
-                    'temporary_amount': temporary_amount,
+                    'temporary_amount': float(str(round(temporary_amount, 2))),
                     'expiration_time': expiration_timeStr
                 }
                 limitationDict['deposit'].append(depositMap)
@@ -1507,21 +1508,11 @@ class GetLimitation(View):
             limitationDict['tempBlock'] = tempMap
 
         if user.permanent_block_interval:
-            # print(user.permanent_block_timespan)
-            # # print(userJson[0]['fields']['permanent_block_timespan'])
-            # timeList = userJson[0]['fields']['permanent_block_timespan'].split(' ')
-            # time = timeList[0]
-            # time = int(time)
-            # if time < 190:
-            #     time = time//30
-            #     # timeStr = '%d months' % (time)
-            # elif time >= 365:
-            #     time = time//365
-            #     # time = '%d years' % (time)
             permanentMap = {
                 'permanent_block': user.permanent_block_interval
             }
             limitationDict['permBlock'] = permanentMap
+            # print(limitationDict)
 
         return HttpResponse(json.dumps(limitationDict), content_type="application/json", status = 200)
 
