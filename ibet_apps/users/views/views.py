@@ -1335,3 +1335,91 @@ class CancelRegistration(APIView):
         user = CustomUser.objects.get(username=username)
         user.delete()
         return Response(status=status.HTTP_200_OK)
+
+ 
+class MarketingSettings(View):
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET['userId']
+        user = CustomUser.objects.get(pk=user_id)
+        contact_methods = user.contact_methods
+
+        response = {
+            "email": False,
+            "phone": False,
+            "sms": False,
+            "postal": False
+        }
+           
+        if contact_methods:
+            contact_methods_list = contact_methods.split(',')
+            for i in contact_methods_list:
+                response[i] = True
+
+        response.update(socialMedia=user.social_media)
+
+        # print(response)
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        # print(data)
+        email = data['email']
+        phone = data['phone']
+        sms = data['sms']
+        postal_mail = data['postalMail']
+        social_media = data['socialMedia']
+        user_id = data['userId']
+
+        contact_methods = []
+        # print(email, phone, sms, postal_mail, social_media, user_id)
+        if email is True:
+            contact_methods.append("email")
+        if phone is True:
+            contact_methods.append("phone")
+        if sms is True:
+            contact_methods.append("sms")
+        if postal_mail is True:
+            contact_methods.append("postal")
+        
+        contact_methods_str = ''
+        contact_methods_str = ','.join(str(i) for i in contact_methods)
+
+        # print(contact_methods_str)
+        # print(social_media)
+        user = CustomUser.objects.get(pk=user_id)
+        user.social_media = social_media
+        user.contact_methods = contact_methods_str
+        user.save()
+
+        return HttpResponse(('Successfully set the marketing setting'), status = 200)
+
+
+
+class PrivacySettings(View):
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET['userId']
+        user = CustomUser.objects.get(pk=user_id)
+        response = {
+            "bonus": user.bonusesProgram,
+            "vip": user.vipProgram
+        }
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+
+        bonuses = data['bonuses']
+        vip = data['vip']
+        user_id = data['userId']
+
+        user = CustomUser.objects.get(pk=user_id)
+        user.bonusesProgram = bonuses
+        user.vipProgram = vip
+        user.save()
+
+        return HttpResponse(('Successfully set the privacy setting'), status = 200)
+    
+
