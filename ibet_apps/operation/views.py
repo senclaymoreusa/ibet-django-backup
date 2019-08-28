@@ -271,22 +271,29 @@ class NotificationView(CommAdminView):
         notification_list = []
         for sent_msg in queryset:
             notification_item = {}
-            notification_item["pk"] = sent_msg.pk
-            notification_item["subject"] = sent_msg.subject
-            notification_item["content_text"] = sent_msg.content_text
-            notification_item["campaign"] = sent_msg.campaign
-            notification_item["creator"] = sent_msg.creator
-            notification_item["publish_on"] = sent_msg.publish_on
-            notification_item["notifiers"] = NotificationToUsers.objects.filter(notification_id=sent_msg.pk)
+            notification_item['pk'] = sent_msg.pk
+            notification_item['subject'] = sent_msg.subject
+            # notification_item["content_text"] = sent_msg.content_text
+            # print(sent_msg.content_text)
+            notification_item['campaign'] = sent_msg.campaign
+            # notification_item["creator"] = sent_msg.creator
+            # notification_item["publish_on"] = sent_msg.publish_on
+            # notifiers = NotificationToUsers.objects.filter(notification_id=sent_msg.pk)
+            # if len(notifiers) > 1:
+            #     notification_item["notifiers"] = len(notifiers)
+            # else:
+            #     notification_item["notifiers"] = notifiers
             # notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=sent_msg.pk).count()
-            notification_item["sent_count"] = len( notification_item["notifiers"])
-            
+            # notification_item["sent_count"] = notifiers
+            # print(notification_item)
+
             notification_list.append(notification_item)
 
         # paginator = Paginator(notification_list, pageSize)
         # context["queryset"] = paginator.get_page(offset)
         # context["notifications"] = paginator.get_page(offset)
-        context["notifications"] = notification_list
+        context['notifications'] = notification_list
+        print(notification_list)
 
         drafts = Notification.objects.filter(status=MESSAGE_PENDING)
         context["drafts"] = drafts

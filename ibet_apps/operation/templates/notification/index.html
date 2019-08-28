@@ -261,67 +261,16 @@ tbody>tr:nth-child(odd)>th {
           </tr>
         </thead>
         <tbody>
-          {% for notification in notifications %}
             <tr>
-              <td>{{ notification.pk }}</td>
-              <td>{{ notification.subject }}</td>
-              <td>{{ notification.campaign }}</td>
-              {% if notification.notifiers %}
-              {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
-              <td>{{ notification.sent_count }}</td>
-              {% else %}
-              <td>{{ notification.topic }}</td>
-              {% endif %}
-              <td>BONUS</td>
-              <td>{{ notification.publish_on }}</td>
-              <td>{{ notification.creator }}</td>
-              <td>{{ notification.sent_count }}</td>
+              <td>{{ time }}</td>
               <td>N/A</td>
               <td>N/A</td>
               <td>N/A</td>
-              <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td>
             </tr>
-          {% endfor %}
         </tbody>
       </table>
     </div>
     <div id="automated-message" class="tab-pane fade">
-      <!--<table>
-        <thead class="thead-dark">
-          <tr>
-            <th style="width: 15%;">SUBJECT</th>
-            <th style="width: 10%;">CAMPAIGN</th>
-            <th style="width: 12%;">GROUP</th>
-            <th style="width: 5%;">BONUS</th>
-            <th style="width: 25%;">CREATED</th>
-            <th style="width: 13%;">AUTHOR</th>
-            <th style="width: 5%;">SENT</th>
-            <th style="width: 5%;">OPENED</th>
-            <th style="width: 5%;">OPEN RATE</th>
-          </tr>
-        </thead>
-        <tbody id='user_list_tbody'>
-          {% for notification, info in notifications %} 
-            <tr>
-              <td>{{ notification.pk }}</td>
-              <td>{{ notification.subject }}</td>
-              <td>{{ notification.campaign }}</td>
-              {% if notification.notifiers %}
-              <td><a href="% url 'xadmin:user_detail' notification.pk %}">{{ notification.message.notifiers }}</a></td>
-              {% else %}
-              <td>{{ notification.topic }}</td>
-              {% endif %}
-              <td>BONUS</td>
-              <td>{{ notification.publish_on }}</td>
-              <td>{{ notification.creator }}</td>
-              <td>{{ info }}</td>
-              <td>N/A</td>
-              <td>N/A</td>
-              <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>-->
     </div>
     <div id="draft" class="tab-pane fade">
       <table class="table table-bordered table-striped">
