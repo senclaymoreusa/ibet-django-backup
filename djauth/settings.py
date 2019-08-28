@@ -186,7 +186,6 @@ if os.getenv("ENV") == "local":
             'USER': '',
             'PASSWORD': '',
             'HOST': '',
-            'HOST': '',
             'PORT': 5432,
         }
     }
