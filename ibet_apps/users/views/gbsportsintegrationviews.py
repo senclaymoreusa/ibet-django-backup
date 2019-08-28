@@ -79,21 +79,13 @@ class WalletBetAPIURL(APIView):
         error = 'Missing_Input_Parameter'
         game_type = None
 
-        
-        if  "KenoList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'keno'
-        elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "LottoList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
-            game_type = 'lotto'
-        elif "SscList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'ssc'
-        elif "PkxList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'pk'
-        elif "KsList" in data['GB']['Result']['ReturnSet']['BettingList']:
-            game_type = 'k'
-        elif isinstance(data['GB']['Result']['ReturnSet']['BettingList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['BettingList'][0]:
-            game_type = 'sports'
+        game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
+        if any(game in data['GB']['Result']['ReturnSet']['BettingList'] for game in game_list):
+            game_type = 'dict'
+        else:
+            game_type = 'list'
 
-        if game_type in ['keno', 'ssc', 'pk', 'k']:
+        if game_type == 'dict':
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
@@ -174,7 +166,7 @@ class WalletBetAPIURL(APIView):
                 pass
 
 
-        elif game_type in ['lotto', 'sports']:
+        elif game_type == 'list':
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
@@ -282,21 +274,14 @@ class WalletSettleAPIURL(APIView):
         error = 'Missing_Input_Parameter'
         game_type = None
 
+        game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
 
-        if "KenoList" in data['GB']['Result']['ReturnSet']['SettleList']:
-            game_type = "keno"
-        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "LottoList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-            game_type = "lotto" 
-        elif "SscList" in data['GB']['Result']['ReturnSet']['SettleList']:
-            game_type = "ssc"
-        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "PkxList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-            game_type = "pk"
-        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "KsList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-            game_type = "k"
-        elif isinstance(data['GB']['Result']['ReturnSet']['SettleList'], list) and "SportList" in data['GB']['Result']['ReturnSet']['SettleList'][0]:
-            game_type = "sport"
+        if any(game in data['GB']['Result']['ReturnSet']['SettleList'] for game in game_list):
+            game_type = 'dict'
+        else:
+            game_type = 'list'
 
-        if game_type in ["keno", "ssc"]:
+        if game_type == 'dict':
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
@@ -304,7 +289,6 @@ class WalletSettleAPIURL(APIView):
                 TransType     = data['GB']['Result']['ReturnSet']['TransType']
                 BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
                 BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
-            
                 SettleID      = data['GB']['Result']['ReturnSet']['SettleList']['SettleID']
                 BetID         = data['GB']['Result']['ReturnSet']['SettleList']['BetID']
                 BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList']['BetGrpNO']
@@ -326,12 +310,14 @@ class WalletSettleAPIURL(APIView):
                 PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList']['PreWinAmt']
                 BetResult     = data['GB']['Result']['ReturnSet']['SettleList']['BetResult']
                 WLAmt         = data['GB']['Result']['ReturnSet']['SettleList']['WLAmt']
-                RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt'] if game_type == 'keno' else data['GB']['Result']['ReturnSet']['SettleList']['RefundAmt']
+                try:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundBetAmt'] 
+                except:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['RefundAmt']
                 TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList']['TicketBetAmt']
                 TicketResult  = data['GB']['Result']['ReturnSet']['SettleList']['TicketResult']
                 TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList']['TicketWLAmt']
                 SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
-
                 try: 
                     user = CustomUser.objects.get(username = MemberID)
 
@@ -384,7 +370,7 @@ class WalletSettleAPIURL(APIView):
             except:
                 pass
 
-        elif game_type in ["lotto", "pk", "k", "sport"]:
+        elif game_type == 'list':
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
@@ -414,7 +400,10 @@ class WalletSettleAPIURL(APIView):
                 PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList'][0]['PreWinAmt']
                 BetResult     = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetResult']
                 WLAmt         = data['GB']['Result']['ReturnSet']['SettleList'][0]['WLAmt']
-                RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundAmt'] 
+                try:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundAmt'] 
+                except:
+                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundBetAmt'] 
                 TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketBetAmt']
                 TicketResult  = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketResult']
                 TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketWLAmt']
