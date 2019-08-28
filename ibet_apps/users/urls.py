@@ -3,6 +3,7 @@ from . import views
 
 import users.views.gbsportsintegrationviews as gbsportsintegrationviews
 import users.views.agintegrationviews as agintegrationviews
+import users.views.eagameviews as eagameviews
 
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
@@ -61,5 +62,6 @@ urlpatterns += [
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
     path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
     path('api/marketing-settings/', csrf_exempt(views.MarketingSettings.as_view()), name="market_settings"),
-    path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings")
+    path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings"),
+    path('api/login-ea/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
 ]

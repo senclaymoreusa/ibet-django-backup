@@ -40,20 +40,30 @@ CHANNEL_CHOICES = (
     (9, 'ScratchCard')
 )
 
-currency_cny = 0
+
+CURRENCY_CNY = 0
+CURRENCY_USD = 1
+CURRENCY_THB = 2
+CURRENCY_IDR = 3
+CURRENCY_HKD = 4
+CURRENCY_AUD = 5
+CURRENCY_MYR = 7
+CURRENCY_VND = 8
+CURRENCY_MMK = 8
+CURRENCY_XBT = 9
+
 
 CURRENCY_CHOICES = (
-    (0, 'CNY'),
-    (1, 'USD'),
-    (2, 'THB'),
-    (3, 'IDR'),
-    (4, 'HKD'),
-    (5, 'AUD'),
-    (6, 'THB'),
-    (7, 'MYR'),
-    (8, 'VND'),
-    (9, 'MMK'),
-    (10, 'XBT')
+    (CURRENCY_CNY, 'CNY'),
+    (CURRENCY_USD, 'USD'),
+    (CURRENCY_THB, 'THB'),
+    (CURRENCY_IDR, 'IDR'),
+    (CURRENCY_HKD, 'HKD'),
+    (CURRENCY_AUD, 'AUD'),
+    (CURRENCY_MYR, 'MYR'),
+    (CURRENCY_VND, 'VND'),
+    (CURRENCY_MMK, 'MMK'),
+    (CURRENCY_XBT, 'XBT')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
