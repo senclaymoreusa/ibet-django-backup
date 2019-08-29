@@ -471,6 +471,8 @@ class GameRequestsModel(models.Model):
         ('Balance', 'Balance')
     ]
 
+    # GB Sports
+
     Method         = models.CharField(max_length=30)
     Success        = models.CharField(choices=Success_Status, max_length=1)
     TransType      = models.CharField(choices=Trans_Type, max_length=20)
@@ -504,11 +506,8 @@ class GameRequestsModel(models.Model):
     TicketWLAmt    = models.CharField(max_length=30)
     SettleDT       = models.CharField(max_length=30)
 
-    def __str__(self):
-        return self.MemberID + ' ' + self. TransType
-
-
-class AGGamemodels(models.Model):
+    # AG model
+    
     sessionToken    = models.CharField(max_length=100, blank=True)
     currency        = models.CharField(max_length=100, blank=True)
     value           = models.CharField(max_length=100, blank=True)
@@ -539,4 +538,4 @@ class AGGamemodels(models.Model):
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return self.playname + ' ' + self.transactionType
+        return self.MemberID + ' ' + self. TransType
