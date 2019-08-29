@@ -189,7 +189,6 @@ class Transaction(models.Model):
             ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
 
 
-
 class DepositAccessManagement(models.Model):
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL,

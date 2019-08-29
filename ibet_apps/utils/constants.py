@@ -441,7 +441,6 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
- 
 else:
     # astroPay sandbox keys:
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
