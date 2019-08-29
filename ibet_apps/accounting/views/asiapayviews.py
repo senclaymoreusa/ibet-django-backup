@@ -329,6 +329,7 @@ class submitCashout(generics.GenericAPIView):
         
         return Response(StatusCode)
 
+#cancel deposit
 class depositfinish(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayDepositFinishSerialize
@@ -374,7 +375,9 @@ class orderStatus(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
-        return Response(rdata)
+        tree = ET.fromstring(rdata)
+        StatusCode = tree.find('StatusCode').text
+        return Response({"status" : StatusCode})
 class exchangeRate(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayExchangeRateFinishSerialize
