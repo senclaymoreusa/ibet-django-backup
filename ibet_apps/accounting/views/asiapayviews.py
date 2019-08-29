@@ -377,7 +377,8 @@ class orderStatus(generics.GenericAPIView):
         logger.info(rdata)
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
-        return Response({"status" : StatusCode})
+        StatusMsg =  tree.find('StatusMsg').text
+        return Response({"status" : StatusCode, "StatusMsg": StatusMsg})
 class exchangeRate(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayExchangeRateFinishSerialize
