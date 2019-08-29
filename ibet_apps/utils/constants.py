@@ -70,11 +70,10 @@ CURRENCY_CHOICES = (
     (3, 'IDR'),
     (4, 'HKD'),
     (5, 'AUD'),
-    (6, 'THB'),
-    (7, 'MYR'),
-    (8, 'VND'),
-    (9, 'MMK'),
-    (10, 'XBT')
+    (6, 'MYR'),
+    (7, 'VND'),
+    (8, 'MMK'),
+    (9, 'XBT')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -501,21 +500,17 @@ HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-# TODO: update this after payzod production credentials have been provided
-# if os.getenv("ENV") != "local":  # fetch prod credentials from s3
-#     PAYZOD_API_URL = "https://api.astropaycard.com"
-#     PAYZOD_MERCHANT_ID = keys["ASTROPAY"]["X_LOGIN"]
-#     PAYZOD_MERCHANT_NAME = keys["ASTROPAY"]["X_TRANS_KEY"]
-#     PAYZOD_PASSKEY = keys["ASTROPAY"]["SECRET"]
-# else:  # payzod sandbox
-PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
-PAYZOD_MERCHANT_ID = 1008779364
-PAYZOD_MERCHANT_NAME = "ibet2019"
-PAYZOD_PASSKEY = "dgr8mM7akMtL"
-
 # payzod production
-
-
+if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+    PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
+else:  # payzod sandbox
+    PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
 
 
 GAME_FILTER_OPTION = [
