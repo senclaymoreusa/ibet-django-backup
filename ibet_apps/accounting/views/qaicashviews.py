@@ -722,7 +722,7 @@ class getDepositTransaction(generics.GenericAPIView):
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
 def transactionConfirm(request):
     body = json.loads(request.body)
-    print(body)
+    logger.info(body)
     orderId = body.get('orderId')
     Status = body.get('status') 
     cur_status = statusConversion[Status]
