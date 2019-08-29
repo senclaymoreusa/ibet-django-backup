@@ -28,6 +28,7 @@ logger = logging.getLogger('django')
 # creates record of deposit request, status set to CREATED
 def create_deposit(request):
     if request.method == "GET":
+        # print(request.META['HTTP_REFERER'])
         return HttpResponse("You are at the endpoint for ScratchCard reserve payment.")
 
     if request.method == "POST":  # can only allow post requests
@@ -38,7 +39,7 @@ def create_deposit(request):
         serial = body["serial"]
         operator = body["operator"]
         amount = str(body["amount"])
-
+        # print(request.META['HTTP_REFERER'])
         message = bytes(SCRATCHCARD_PARTNER_ID+operator+pin+serial+amount, 'utf-8')
         secret = bytes(SCRATCHCARD_CODE, 'utf-8')
         sign = hmac.new(secret, msg=message, digestmod=hashlib.sha256).hexdigest()

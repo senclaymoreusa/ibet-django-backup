@@ -1,4 +1,4 @@
-import requests,json, os, datetime, time, hmac, hashlib, base64, logging, uuid
+import requests,json, os, datetime, time, hmac, hashlib, base64, logging, uuid, random
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -14,9 +14,8 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes,renderer_classes
-
+from django.core.exceptions import ObjectDoesNotExist
 from utils.constants import *
-from django.utils import timezone
 
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
@@ -310,12 +309,21 @@ class submitDeposit(generics.GenericAPIView):
         dateTime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%z')
         curr = self.request.POST.get('currency')
         currency = currencyConversion[curr]
-        orderId = "ibet" + strftime("%Y%m%d%H%M%S", gmtime())
+        userId = self.request.POST.get('user_id')
+        user = CustomUser.objects.get(pk=userId)
+        trans_id = user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+        #orderId = "ibet" + strftime("%Y%m%d%H%M%S", gmtime())
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
-        userId = self.request.POST.get('user_id')
+        
         mymethod = self.request.POST.get('method')
-        list = [merchantId, orderId, amount, currency, dateTime, userId, mymethod]
+        
+        depositorBank = self.request.POST.get('bank')
+        depositorEmail = user.email
+        depositorName = user.first_name + " " + user.last_name
+        depositorPhone = user.phone
+            
+        list = [merchantId, trans_id, amount, currency, dateTime, userId, mymethod]
         message = '|'.join(str(x) for x in list)
         
         mymessage = bytes(message, 'utf-8')
@@ -326,9 +334,18 @@ class submitDeposit(generics.GenericAPIView):
         first_name = self.request.GET.get('first_name')
         email = self.request.GET.get('email')
         
+        delay = kwargs.get("delay", 5)
+        if request.user_agent.is_pc:
+            deviceType = 'PC'
+        else:
+            deviceType = 'MOBILE'
+
+        #retry
+        success = False
         
+
         r = requests.post(url, headers=headers, data = {
-            'orderId' : orderId,
+            'orderId' : trans_id,
             'amount' : amount,
             'currency' : currency,
             'dateTime': dateTime,
@@ -336,30 +353,46 @@ class submitDeposit(generics.GenericAPIView):
             'depositorUserId': userId,
             'depositorTier': '0',
             'depositMethod':  mymethod,
-            'depositorEmail': CustomUser.objects.filter(email=email),
-            'depositorName': CustomUser.objects.filter(first_name=first_name),
+            'depositorEmail': depositorEmail,
+            'depositorName': depositorName,
+            'depositorBank':depositorBank,
+            'depositorPhone':depositorPhone,
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'http://128dbbc7.ngrok.io/accounting/api/qaicash/transaction_status',
+            'callbackUrl': 'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
-        
         rdata = r.json()
-        logger.info(rdata)
+        if r.status_code == 200 or r.status_code == 201:
+            success = True
+        if r.status_code == 400 or r.status_code == 401:
+            logger.info("There was something wrong with the result")
+            logger.info(r.text)
+            logger.info("Failed to complete a request for retrieving available deposit methods..")
+            logger.error(r.text)
+            return Response(rdata)
+        if r.status_code == 500:
+            logger.info('Request failed {} time(s)'.format(x+1))
+            logger.debug("wating for %s seconds before retrying again")
+            sleep(delay) 
         
-        create = Transaction.objects.create(
-            order_id= rdata['depositTransaction']['orderId'],
-            transaction_id=rdata["depositTransaction"]["transactionId"],
-            amount=rdata["depositTransaction"]["amount"],
-            status=2,
-            user_id=CustomUser.objects.get(pk=userId),
-            method= rdata["depositTransaction"]["depositMethod"],
-            currency= curr,
-            transaction_type=0,
-            channel=3,
-            request_time=rdata["depositTransaction"]["dateCreated"],
-        )
         
-        return Response(rdata)
+        if not success:
+            logger.info("Failed to complete a request for deposit")
+            return Response({"error" : "Qaicash API returned a status code of 500", "message": r.text})
+        else:
+            create = Transaction.objects.create(
+                order_id= rdata["depositTransaction"]["transactionId"],
+                transaction_id=rdata['depositTransaction']['orderId'],
+                amount=rdata["depositTransaction"]["amount"],
+                status=2,
+                user_id=CustomUser.objects.get(pk=userId),
+                method= rdata["depositTransaction"]["depositMethod"],
+                currency= curr,
+                transaction_type=0,
+                channel=3,
+                request_time=rdata["depositTransaction"]["dateCreated"],
+            )
+            return Response(rdata)
  
 class submitPayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -392,8 +425,10 @@ class submitPayout(generics.GenericAPIView):
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
+        user = CustomUser.objects.get(username=userId)
+        trans_id = userId+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
         mymethod = self.request.POST.get('method')
-        list = [merchantId, orderId, amount, currency, dateTime, userId]
+        list = [merchantId, trans_id, amount, currency, dateTime, userId]
         message = '|'.join(str(x) for x in list)
         
         mymessage = bytes(message, 'utf-8')
@@ -406,7 +441,7 @@ class submitPayout(generics.GenericAPIView):
          #retry
         success = False
         r = requests.post(url, headers=headers, data = {
-            'orderId' : orderId,
+            'orderId' : trans_id,
             'amount' : amount,
             'currency' : currency,
             'dateTime': dateTime,
@@ -414,9 +449,11 @@ class submitPayout(generics.GenericAPIView):
             'userId': userId,
             'depositorTier': '0',
             'payoutMethod':  mymethod,
-            'withdrawerEmail': CustomUser.objects.filter(email=email),
-            'withdrawerName': CustomUser.objects.filter(first_name=first_name),
+            'withdrawerEmail': user.email,
+            'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
+            'withdrawerEmail':user.email,
+            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -431,8 +468,9 @@ class submitPayout(generics.GenericAPIView):
             for y in Transaction._meta.get_field('status').choices:
                 if rdata["payoutTransaction"]["status"] ==y[1]:
                     cur_status = y[0] 
-            create = Transaction.objects.get_or_create(
-                order_id= rdata["payoutTransaction"]['orderId'],
+            create = Transaction.objects.create(
+                transaction_id= rdata["payoutTransaction"]['orderId'],
+                order_id=rdata["payoutTransaction"]["transactionId"],
                 amount=rdata["payoutTransaction"]["amount"],
                 status=cur_status,
                 user_id=user,
@@ -641,25 +679,26 @@ class getDepositTransaction(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = payoutTransactionSerialize(self.queryset, many=True)
         
-        orderId = self.request.POST['order_id']
-        message = bytes(merchantId + '|' + orderId, 'utf-8')
+        trans_id = self.request.POST.get('order_id')
+        print(trans_id)
+        message = bytes(merchantId + '|' + trans_id, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         
         my_hmac = generateHash(secret, message)
-        url =  api + apiVersion +'/' + merchantId + '/deposit/' + orderId + '/mac/' + my_hmac
+        url =  api + apiVersion +'/' + merchantId + '/deposit/' + trans_id + '/mac/' + my_hmac
         headers = {'Accept': 'application/json'}
          #retry
         success = False
-        for x in range(3):
-            try:
-                r = requests.get(url, headers=headers)
-                if r.status_code == 200:
-                    success = True
-                    break
-            except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
-                sleep(delay) 
+        
+        try:
+            r = requests.get(url, headers=headers)
+            if r.status_code == 200:
+                success = True
+                
+        except ValueError:
+            logger.info('Request failed {} time(s)'.format(x+1))
+            logger.debug("wating for %s seconds before retrying again")
+            sleep(delay) 
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
@@ -671,37 +710,59 @@ class getDepositTransaction(generics.GenericAPIView):
 
             if rdata['currency'] == x[1]:
                 cur_val = x[0]
-        
-        update_data = Transaction.objects.get(order_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
-        update_data.status=statusConversion[rdata["status"]]
-        update_data.last_updated=rdata["dateUpdated"]
-        update_data.save()
+        if success:
+            update_data = Transaction.objects.get(transaction_id=rdata['orderId'],amount=rdata["amount"],method= rdata["depositMethod"],status=2)
+            update_data.status=statusConversion[rdata["status"]]
+            update_data.last_updated=rdata["dateUpdated"]
+            update_data.save()
       
         return Response(rdata)
-@api_view(['POST'])
-@permission_classes((AllowAny,))   
+# @api_view(['POST'])
+# @permission_classes((AllowAny,))   
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
-def transactionStatusUpdate(request):
-    print("callback")
-    orderId = request.data.get('orderId')
-    Status = request.POST.get('status') 
-    for x in Transaction._meta.get_field('status').choices:
-            if Status == x[1]:
-                cur_status = x[0]
-    try: 
-        order_id = Transaction.objects.filter(order_id=orderId)
+def transactionConfirm(request):
+    body = json.loads(request.body)
+    logger.info(body)
+    orderId = body.get('orderId')
+    Status = body.get('status') 
+    cur_status = statusConversion[Status]
+    try:
+        order_id = Transaction.objects.filter(transaction_id=orderId)
     except Transaction.DoesNotExist:
         order_id = None
+        return HttpResponse("Transaction does not exist", content_type="text/plain")
 
     if order_id: 
-        update = order_id.update(status=cur_status)
-        status_code = status.HTTP_200_OK
+        update = order_id.update(
+            status=cur_status,
+            last_updated=timezone.now(),
+        )
+
         if cur_status == 0:
-            update = order_id.update(arrive_time=timezone.now())
-        return HttpResponse({'Status': Status}, status=status_code)
-    else:
-        status_code = status.HTTP_404_NOT_FOUND 
-        return HttpResponse({'Error': 'Can not find the order.'}, status=status_code)
+            update = order_id.update(
+                arrive_time=timezone.now(),
+                remark = 'Transaction success!')
+            
+        else :
+            update = order_id.update(
+                remark = 'Transaction ' + Status)
+    return HttpResponse("Transaction is " + Status, content_type="text/plain")
+
+@api_view(['POST'])
+@permission_classes((AllowAny,))   
+def get_transaction_status(request):
+    trans_id = request.data.get('trans_id')
+    try:
+        transaction = Transaction.objects.get(
+            transaction_id=trans_id
+        )
+        logger.info(transaction)
+        status = transaction.status
+        return Response({"status": status})
+    except ObjectDoesNotExist as e:
+        logger.error(e)
+        logger.info("matching transaction not found / does not exist")
+        return Response({"message": "Could not find matching transaction"})
 
 
 # class transactionStatusUpdate(generics.GenericAPIView):

@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounting', '0046_auto_20190822_1744'),
+        # ('accounting', '0045_auto_20190819_0918'),
         ('accounting', '0045_auto_20190819_1625'),
     ]
 
