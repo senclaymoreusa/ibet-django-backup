@@ -507,7 +507,7 @@ class GameRequestsModel(models.Model):
     SettleDT       = models.CharField(max_length=30)
 
     # AG model
-    
+
     sessionToken    = models.CharField(max_length=100, blank=True)
     currency        = models.CharField(max_length=100, blank=True)
     value           = models.CharField(max_length=100, blank=True)
@@ -538,4 +538,6 @@ class GameRequestsModel(models.Model):
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return self.MemberID + ' ' + self. TransType
+        username = self.MemberID if self.MemberID else self.playname
+        transtype = self.TransType if self.TransType else self.transactionType
+        return  username + ' ' + transtype
