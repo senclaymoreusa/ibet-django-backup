@@ -105,7 +105,8 @@ class UserDetailView(CommAdminView):
                     'amount': tran['fields']['amount'],
                     'balance': tran['fields']['amount'],
                     'status': statusMap[tran['fields']['status']],
-                    'bank': str(tran['fields']['bank']),
+                    # 'bank': str(tran['fields']['bank']),
+                    'bank': "",
                     'channel': channelMap[tran['fields']['channel']],
                     'method': tran['fields']['method'],
                 }
@@ -179,7 +180,8 @@ class UserDetailView(CommAdminView):
                     'time': time,
                     'amount': deposit['fields']['amount'],
                     'status': statusMap[deposit['fields']['status']],
-                    'bank': str(deposit['fields']['bank']),
+                    # 'bank': str(deposit['fields']['bank']),
+                    'bank': "",
                     'channel': channelMap[deposit['fields']['channel']],
                     'method': deposit['fields']['method'],
                 }
@@ -210,7 +212,8 @@ class UserDetailView(CommAdminView):
                     'time': time,
                     'amount': withdraw['fields']['amount'],
                     'status': statusMap[withdraw['fields']['status']],
-                    'bank': str(withdraw['fields']['bank']),
+                    # 'bank': str(withdraw['fields']['bank']),
+                    'bank': "",
                     'channel': channelMap[withdraw['fields']['channel']],
                     'method': withdraw['fields']['method'],
                 }
