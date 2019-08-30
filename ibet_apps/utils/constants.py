@@ -995,3 +995,5 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+
+PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
