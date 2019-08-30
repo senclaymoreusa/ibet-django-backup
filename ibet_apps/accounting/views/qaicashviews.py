@@ -16,7 +16,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes,renderer_classes
 from django.core.exceptions import ObjectDoesNotExist
 from utils.constants import *
-from django.utils import timezone
 
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
@@ -359,7 +358,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorBank':depositorBank,
             'depositorPhone':depositorPhone,
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/transaction_status',
+            'callbackUrl': 'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         rdata = r.json()
@@ -454,7 +453,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/transaction_status',
+            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -721,7 +720,7 @@ class getDepositTransaction(generics.GenericAPIView):
 # @api_view(['POST'])
 # @permission_classes((AllowAny,))   
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
-def transactionStatusUpdate(request):
+def transactionConfirm(request):
     body = json.loads(request.body)
     print(body)
     orderId = body.get('orderId')
@@ -751,7 +750,7 @@ def transactionStatusUpdate(request):
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))   
-def confirm_transaction(request):
+def get_transaction_status(request):
     trans_id = request.data.get('trans_id')
     try:
         transaction = Transaction.objects.get(
