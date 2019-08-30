@@ -430,7 +430,7 @@ $(document).ready(function() {
       'search': '',
       'pageSize': 20,
       'offset': 1,
-      'block': 2
+      'tab': 2
   };
 
   var parsedUrl = new URL(window.location.href);
@@ -443,11 +443,11 @@ $(document).ready(function() {
   if (parsedUrl.searchParams.get("offset") !== null) {
       paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
   }
-  if (parsedUrl.searchParams.get("block") !== null) {
-      paramsMap['block'] = Number(parsedUrl.searchParams.get("block"));
+  if (parsedUrl.searchParams.get("tab") !== null) {
+      paramsMap['tab'] = Number(parsedUrl.searchParams.get("tab"));
   }
 
-  if (parsedUrl.searchParams.get("block") == 0) {
+  if (parsedUrl.searchParams.get("tab") == 0) {
     $("#automated-messages").addClass('active');
     $("#automated-message").addClass('tab-pane fade in active');
     $("#sent-messages").removeClass('active');
@@ -456,7 +456,7 @@ $(document).ready(function() {
     $("#drafts").removeClass('active');
     $("#draft").removeClass('tab-pane fade in active');
     $("#draft").addClass('tab-pane fade');
-  } else if(parsedUrl.searchParams.get("block") == 1) {
+  } else if(parsedUrl.searchParams.get("tab") == 1) {
     $("#drafts").addClass('active');
     $("#draft").addClass('tab-pane fade in active');
     $("#automated-messages").removeClass('active');
@@ -479,17 +479,17 @@ $(document).ready(function() {
   $("a[data-toggle='tab']").click(function() {
     var active = $(this).attr("href");
     if (active == "#sent-message") {
-      paramsMap['block'] = 2;
+      paramsMap['tab'] = 2;
     } else if (active == "#draft") {
-        paramsMap['block'] = 1;
+        paramsMap['tab'] = 1;
     } else {
-        paramsMap['block'] = 0;
+        paramsMap['tab'] = 0;
     }
     var pageSize = paramsMap['pageSize'];
 
-    var block = paramsMap['block'];
+    var tab = paramsMap['tab'];
     
-    window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+    window.location.href = getUserListRedirectUrl(pageSize, 0, tab, "");
   });
 
   $('#pagination_value').val(paramsMap['pageSize']);
@@ -519,16 +519,16 @@ $(document).ready(function() {
   $('#pagination_value').change(function() {
     var pageSize = this.value;
     var offset = paramsMap['offset'];
-    var block = paramsMap['block'];
+    var tab = paramsMap['tab'];
 
-    window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+    window.location.href = getUserListRedirectUrl(pageSize, 0, tab, "");
   });
 
   $("#search-btn").click(function() {
     var pageSize = $("#pagination_value").val();
     var search = $('#search').val();
-    var block = paramsMap['block'];
-    window.location.href = getUserListRedirectUrl(pageSize, 0, block, search);
+    var tab = paramsMap['tab'];
+    window.location.href = getUserListRedirectUrl(pageSize, 0, tab, search);
   });
 
   $("#search").on('keyup', function () {
@@ -538,8 +538,8 @@ $(document).ready(function() {
 
   function searchOpen() {
     var search = $('#search').val();
-    var block = paramsMap['block'];
-    var url = "{% url 'notification-search' %}" + "?search=" + search + "&block=" + block;
+    var tab = paramsMap['tab'];
+    var url = "{% url 'notification-search' %}" + "?search=" + search + "&tab=" + tab;
     $.ajax({
       url: url,
       type: 'GET',
@@ -618,9 +618,9 @@ $(document).ready(function() {
     var pageSize = paramsMap['pageSize'];
     var oldFromItem = paramsMap['offset'];
     var newFromItem = Number(oldFromItem) + Number(pageSize);
-    var block = paramsMap['block'];
+    var tab = paramsMap['tab'];
     
-    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
   }
 
   getPervious = function () {
@@ -630,13 +630,13 @@ $(document).ready(function() {
       var pageSize = paramsMap['pageSize'];
       var oldFromItem = paramsMap['offset'];
       var newFromItem = Number(oldFromItem) - Number(pageSize);
-      var block = paramsMap['block'];
+      var tab = paramsMap['tab'];
       
-      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
   }
 });
 
-function getUserListRedirectUrl(pageSize, offset, block, search) {
+function getUserListRedirectUrl(pageSize, offset, tab, search) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
   
@@ -644,7 +644,7 @@ function getUserListRedirectUrl(pageSize, offset, block, search) {
   redirectUrl += '?search=' + search;
   redirectUrl += "&pageSize=" + pageSize;
   redirectUrl += '&offset=' + offset;
-  redirectUrl += '&block=' + block;
+  redirectUrl += '&tab=' + tab;
 
   return redirectUrl;
 }

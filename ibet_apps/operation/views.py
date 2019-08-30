@@ -109,11 +109,11 @@ class createMessage(View):
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
-        block = request.GET.get('block')
+        tab = request.GET.get('tab')
 
         logger.info('Search notification, key: ' + search)
 
-        search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=block))
+        search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
         # search_body = Notification.objects.filter(content_text__contains=search)
 
         search_subject = serializers.serialize('json', search_subject)
@@ -150,7 +150,7 @@ class NotificationView(CommAdminView):
         search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
-        block = request.GET.get('block')
+        tab = request.GET.get('tab')
 
         if pageSize is None:
             pageSize = 20
@@ -162,10 +162,10 @@ class NotificationView(CommAdminView):
         else:
             offset = int(offset)
 
-        if block is None:
-            block = MESSAGE_APPROVED
+        if tab is None:
+            tab = MESSAGE_APPROVED
         else:
-            block = int(block)
+            tab = int(tab)
 
         # set context
         context = super().get_context()
@@ -178,9 +178,9 @@ class NotificationView(CommAdminView):
         context['waiting_list'] = Notification.objects.filter(auditor=self.user.pk).count()
         if search:
             logger.info('Search notification, key: ' + search)
-            queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=block))
+            queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
         else:
-            queryset = Notification.objects.filter(status=block)
+            queryset = Notification.objects.filter(status=tab)
 
         notification_list = []
         for msg in queryset:
