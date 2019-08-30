@@ -2,7 +2,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Q
 from django.views import View
 from django.core import serializers
 from django.core.paginator import Paginator
@@ -110,7 +110,7 @@ class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET['search']
 
-        logger.info('Search user, key: ' + search)
+        logger.info('Search notification, key: ' + search)
 
         search_subject = Notification.objects.filter(subject__contains=search)
         # search_body = Notification.objects.filter(content_text__contains=search)
@@ -131,11 +131,11 @@ class NotificationSearchAutocomplete(View):
         response["subject"] = subject_data
 
         # body_data = []
-        # for notification in subject_body:
+        # for notification in search_body:
         #     notificationMap = {}
         #     notificationMap['body'] = notification['body']
-        #     subject_data.append(notificationMap)
-        # response['body'] = subject_data
+        #     body_data.append(notificationMap)
+        # response['body'] = body_data
 
         logger.info('Search response: ' + json.dumps(response))
         return HttpResponse(json.dumps(response), content_type='application/json')
@@ -233,6 +233,7 @@ class NotificationView(CommAdminView):
     serializer_class = NotificationSerializer
 
     def get(self, request, *arg, **kwargs):
+        search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
         block = request.GET.get('block')
@@ -243,7 +244,7 @@ class NotificationView(CommAdminView):
             pageSize = int(pageSize)
 
         if offset is None:
-            offset = 0
+            offset = 1
         else:
             offset = int(offset)
 
@@ -259,44 +260,41 @@ class NotificationView(CommAdminView):
         context["title"] = title
         context['time'] = timezone.now()
 
-        context['current_user'] = self.user
         context['all_user'] = CustomUser.objects.all()
-        context['auditors'] = CustomUser.objects.filter(is_admin=True)
-        # context['topics'] = AWSTopic.objects.all()
         context['waiting_list'] = Notification.objects.filter(auditor=self.user.pk).count()
+        if search:
+            logger.info('Search notification, key: ' + search)
+            queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=block))
+        else:
+            queryset = Notification.objects.filter(status=block)
 
-        queryset = Notification.objects.filter(status=block)
-        # paginator = Paginator(queryset, pageSize)
-        # context["queryset"] = paginator.get_page(offset)
         notification_list = []
-        for sent_msg in queryset:
+        for msg in queryset:
             notification_item = {}
-            notification_item['pk'] = sent_msg.pk
-            notification_item['subject'] = sent_msg.subject
-            # notification_item["content_text"] = sent_msg.content_text
-            # print(sent_msg.content_text)
-            notification_item['campaign'] = sent_msg.campaign
-            # notification_item["creator"] = sent_msg.creator
-            # notification_item["publish_on"] = sent_msg.publish_on
-            # notifiers = NotificationToUsers.objects.filter(notification_id=sent_msg.pk)
-            # if len(notifiers) > 1:
-            #     notification_item["notifiers"] = len(notifiers)
-            # else:
-            #     notification_item["notifiers"] = notifiers
-            # notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=sent_msg.pk).count()
-            # notification_item["sent_count"] = notifiers
-            # print(notification_item)
+            notification_item['pk'] = msg.pk
+            notification_item['subject'] = msg.subject
+            notification_item['campaign'] = msg.campaign
+            notification_item["creator"] = msg.creator
+            notification_item["publish_on"] = msg.publish_on
+            notification_item["status"] = msg.status
+            notifiers = NotificationToUsers.objects.filter(notification_id=msg.pk)
+            if len(notifiers) > 1:
+                notification_item["notifiers"] = len(notifiers)
+            else:
+                notification_item["notifiers"] = notifiers
+            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
 
             notification_list.append(notification_item)
 
-        # paginator = Paginator(notification_list, pageSize)
-        # context["queryset"] = paginator.get_page(offset)
-        # context["notifications"] = paginator.get_page(offset)
-        context['notifications'] = notification_list
-        print(notification_list)
+        paginator = Paginator(notification_list, pageSize)
+        context["notifications"] = paginator.get_page(offset)
 
-        drafts = Notification.objects.filter(status=MESSAGE_PENDING)
-        context["drafts"] = drafts
+        # auto_messages = Notification.objects.all()
+        # paginator = Paginator(auto_messages, pageSize)
+        # context['auto_messages'] = paginator.get_page(page)
+
+        # drafts = Notification.objects.filter(status=MESSAGE_PENDING)
+        # context["drafts"] = drafts
 
         # serializer = NotificationSerializer(queryset, many=True)
 
