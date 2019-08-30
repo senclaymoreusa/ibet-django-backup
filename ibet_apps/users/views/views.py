@@ -1556,6 +1556,7 @@ class MarketingSettings(View):
         response.update(socialMedia=user.social_media)
 
         # print(response)
+        logger.info("Sending marketing settings response: {}".format(json.dumps(response)))
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
     def post(self, request, *args, **kwargs):
@@ -1589,6 +1590,9 @@ class MarketingSettings(View):
         user.contact_methods = contact_methods_str
         user.save()
 
+        logger.info("Marketing settings for user: {}".format(str(user.username)))
+        logger.info("Email: {}, Phone: {}, SMS: {}, Mail: {}, Social Media: {}".format(email, phone, sms, postal_mail, social_media))
+
         return HttpResponse(('Successfully set the marketing setting'), status = 200)
 
 
@@ -1602,6 +1606,8 @@ class PrivacySettings(View):
             "bonus": user.bonusesProgram,
             "vip": user.vipProgram
         }
+
+        logger.info("Sending privacy settings response: {}".format(json.dumps(response)))
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
@@ -1616,5 +1622,8 @@ class PrivacySettings(View):
         user.bonusesProgram = bonuses
         user.vipProgram = vip
         user.save()
+
+        logger.info("Privacy setting for user: {}".format(str(user.username)))
+        logger.info("Bonuses: {}, VIP: {}".format(bonuses, vip))
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
