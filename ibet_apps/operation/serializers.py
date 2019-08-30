@@ -2,7 +2,7 @@ import logging
 
 from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
-from .models import AWSTopic, Notification, NotificationLog, NotificationUsers, UserToAWSTopic
+from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
 # from .views import getThirdPartyKeys
 
 logger = logging.getLogger("notification.create.error")
@@ -56,19 +56,20 @@ class UserToAWSTopicSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('pk', 'account_type', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date',
-         'notification_choice', 'notification_type', 'notification_method', 'topic', 'notifiers',  'publish_on')
-        read_only_fields = ['pk', 'create_on']
+        fields = ('pk', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date', 'campaign','bonus', 
+        'is_direct_message','is_email_message', 'is_sms_message', 'is_push_message', 'publish_on', 'status')
+        read_only_fields = ['pk', 'account_type', 'audit_date', 'create_on']
 
 
 class NotificationLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationLog
-        fields = ('pk', 'notification_id', 'action')
-        read_only_fields = ['pk', 'notification_id', 'actor_id', 'action', 'act_on']
+        fields = ('pk', 'notification_id', 'actor_id')
+        read_only_fields = ['pk', 'notification_id', 'actor_id']
 
 
-class NotificationUsersSerializer(serializers.ModelSerializer):
+class NotificationToUsersSerializer(serializers.ModelSerializer):
     class Meta:
-        model = NotificationUsers
-        fields = ('pk', 'notification_id', 'notifier_id')
+        model = NotificationToUsers
+        fields = ('pk', 'notification_id', 'notifier_id', 'is_read')
+        read_only_fields = ['pk', 'notification_id', 'notifier_id', 'is_read']

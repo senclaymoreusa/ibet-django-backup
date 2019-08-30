@@ -3,6 +3,75 @@
 {% endblock %}
 {% block content %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+<style>
+form {
+  padding: 0 16px 16px 16px;
+}
+
+label {
+  height: 13px;
+  font-family: Helvetica;
+  font-size: 11px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+thead {
+  height: 12px;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+td {
+  border: solid 4px #ffffff;
+}
+
+tbody>tr:nth-child(odd)>td, 
+tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+.form-group {
+  padding-top: 20px;
+}
+
+.modal-header {
+  border-radius: 4px;
+  border: solid 1px #bdbdbd;
+  background-color: #f5f5f5;
+}
+
+.modal-header .close {
+  margin-top: -16px;
+}
+
+.row {
+  margin: 0 0 0 0;
+}
+
+.form-check-label {
+  margin-right: 20px;
+}
+
+#editor {
+  height: 393px;
+  border: solid 1px;
+}
+</style>
+
 <div class="row">
   <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
   <a role="button" class="btn btn-primary" href="/xadmin/audit">
@@ -10,7 +79,7 @@
   </a>
 
   <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div id="mydialog" class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title">New Message</h3>
@@ -18,59 +87,49 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form action="{% url 'xadmin:notification' %}" method="post" style="margin: 10px 10px 10px 10px">
+        <form action="{% url 'xadmin:notification' %}" method="post" id="myform">
         {% csrf_token %}
           <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
             <select name="campaign" class="form-control">
-              <option selected disabled hidden>SELECT CAMPAIGN...</option>
+              <option>SELECT CAMPAIGN...</option>
               <option value="CAMPAIGN1">CAMPAIGN1</option>
               <option value="CAMPAIGN2">CAMPAIGN2</option>
               <option value="CAMPAIGN3">CAMPAIGN3</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="subject">SEND TO</label>
-            <input type="text" class="form-control" name="notifiers" placeholder="Enter ID, username, name, phone or email" required>
+            <label for="notifiers">SEND TO</label>
+            <select id="notifiers" name="notifiers" class="form-control" multiple>
+              <option selected disabled hidden>Choose a notifier...</option>
+              {% for user in all_user %}
+              <option value="{{ user.id }}">{{ user }}</option>
+              {% endfor %}
+            </select>
           </div>
           <div class="form-group">
             <label for="subject">MESSAGE SUBJECT</label>
             <input type="text" class="form-control" name="subject" placeholder="Subject..." required>
           </div>
           <div class="form-group">
-            <label for="content_text">MESSAGE BODY</label>
-            <textarea class="form-control" name="content_text" rows="20" placeholder="Message..." required></textarea>
+            <label for="tags">MESSAGE BODY</label>
+            <textarea name="content_text" id="editor" rows="30">This is some sample content.</textarea>
           </div>
-          <!--<div class="form-group">
-            <label for="creator">Creator</label>
-            <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
-          </div>
-          <div class="form-group">
-            <label for="auditor">Auditor</label>
-            <select name="auditor" class="form-control">
-              <option selected disabled hidden>Choose an auditor...</option>
-              {% for auditor in auditors %}
-              <option value="{{ auditor.id }}">{{ auditor }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="notification_choice">Notification Choice</label>
-            <select id="notification_choice" name="notification_choice" class="form-control" onchange="showUser()">
-              <option selected disabled hidden>Choose a notification range...</option>
-              <option value="U">Unicast</option>
-              <option value="M">Multicast</option>
-              <option value="B">Broadcast</option>
-            </select>
-          </div>
-          <div class="form-group" id="usrlist" hidden>
-            <label for="notifiers">User List</label>
-            <select id="notifiers" name="notifiers" class="form-control">
-              <option selected disabled hidden>Choose a notifier...</option>
-              {% for user in all_user %}
-              <option value="{{ user.id }}">{{ user }}</option>
-              {% endfor %}
-            </select>
+          {% comment %} <div class="form-group">
+            <label for="content">MESSAGE BODY</label>
+            <div name="content_text" id="content" class="row" contenteditable="true">
+              This text can be edited by the user.
+            </div>
+            <div class="row" style="border: 1px solid">
+              <button type="button" class="btn btn-secondary" id="italic"><i class="fa fa-italic"></i></button>
+              <button type="button" class="btn btn-secondary" id="bold"><i class="fa fa-bold"></i></button>
+              <button type="button" class="btn btn-secondary" id="underline"><i class="fa fa-underline"></i></button>
+              <!--<label class="btn btn-secondary btn-file">
+                <i class="fa fa-apple"></i><input type="file" style="display: none;">
+              </label>-->
+              <button type="button" class="btn btn-secondary" id="" disabled><i class="far fa-image"></i></button>
+              <button type="button" class="btn btn-secondary" id="" disabled><i class="fas fa-percentage"></i></button>
+            </div>
           </div>
           <div class="form-group" id="topiclist" hidden>
             <label for="topic">Group List</label>
@@ -80,60 +139,35 @@
               <option value="{{ topic.pk}}">{{ topic }}</option>
               {% endfor %}
             </select>
-          </div>
-          <div class="form-group">
-            <label for="publishOn" class="col-2 col-form-label">Publish On</label>
-            <div class="col-10">
-              <input class="form-control" type="datetime-local" value="" id="publishOn">
-            </div>
-          </div>
+          </div>{% endcomment %}
           <div class="form-group">
             <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
-            <div class="form-check">
+            <div class="form-check row">
               <input class="form-check-input" type="checkbox" name="direct_check">
               <label class="form-check-label" for="direct_check">
                   Direct Message
               </label>
-            </div>
-            <div class="form-check">
               <input class="form-check-input" type="checkbox" name="email_check">
               <label class="form-check-label" for="email_check">
                   Email
               </label>
-            </div>
-            <div class="form-check">
               <input class="form-check-input" type="checkbox" name="SMS_check">
               <label class="form-check-label" for="SMS_check">
                   SMS
               </label>
-            </div>
-            <div class="form-check">
               <input class="form-check-input" type="checkbox" name="push_check">
               <label class="form-check-label" for="push_check">
                   Push Notification
               </label>
             </div>
-          </div>-->
-          <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-            <button type="button" class="btn btn-secondary">1</button>
-            <button type="button" class="btn btn-secondary">2</button>
-
-            <div class="btn-group" role="group">
-              <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Dropdown
-              </button>
-              <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                <a class="dropdown-item" href="#">Dropdown link</a>
-                <a class="dropdown-item" href="#">Dropdown link</a>
-              </div>
-            </div>
           </div>
           <button type="submit" class="btn btn-primary">Create Message</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
         </form>
       </div>
     </div>
   </div>
-<div class="row" style="padding-top: 2em">
+<div class="row">
   <div class='col-md-3'>
     <div class="input-group">
       <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword..." >
@@ -175,46 +209,48 @@
 
 <div style="margin-top:40px;">
   <ul class="nav nav-tabs">
-    <li class="active" id="sent-messages"><a data-toggle="tab" class="tab-label" href="#sent-message">SENT MESSAGES</a></li>
+    <li id="sent-messages"><a data-toggle="tab" class="tab-label" href="#sent-message">SENT MESSAGES</a></li>
     <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AUTOMATED MESSAGES</a></li>
     <li id="drafts"><a data-toggle="tab"  class="tab-label" href="#draft">DRAFTS</a></li>
   </ul>
   <div class="tab-content">
-    <div id="sent-message" class="tab-pane fade in active">
-      <table class="table table-bordered table-striped">
-        <thead>
+    <div id="sent-message" class="tab-pane fade">
+      <table>
+        <thead class="thead-dark">
           <tr>
-            <th style="width: 15%;">SUBJECT</th>
+            <th style="width: 3%;">#</th>
+            <th style="width: 20%;">SUBJECT</th>
             <th style="width: 10%;">CAMPAIGN</th>
             <th style="width: 12%;">SENT TO</th>
             <th style="width: 5%;">BONUS</th>
             <th style="width: 15%;">SENT TIME</th>
             <th style="width: 13%;">AUTHOR</th>
             <th style="width: 5%;">SENT</th>
-            {% comment %} <th style="word-break: break-all; width:6%;">DEPOSIT/<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th> {% endcomment %}
-            {% comment %} <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th> {% endcomment %}
             <th style="width: 5%;">OPENED</th>
             <th style="width: 5%;">OPEN RATE</th>
             <th style="width: 7%;">BONUS CTR</th>
           </tr>
         </thead>
         <tbody>
-          {% for notification in queryset %} 
+          {% for notification in notifications %}
             <tr>
+              <td>{{ forloop.counter }}</td>
               <td>{{ notification.subject }}</td>
-              <td>CAMPAIGN</td>
+              <td>{{ notification.campaign }}</td>
               {% if notification.notifiers %}
-              <td>{{ notification.notifiers }}</td>
+              {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
+              <td>{{ notification.sent_count }}</td>
               {% else %}
               <td>{{ notification.topic }}</td>
               {% endif %}
               <td>BONUS</td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
-              <td>1</td>
-              <td>2</td>
-              <td>3</td>
-              <td><a class="btn btn-primary" href="#" role="button"><i class="fa fa-search"></i></a></td>
+              <td>{{ notification.sent_count }}</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td>
             </tr>
           {% endfor %}
         </tbody>
@@ -224,7 +260,8 @@
       <table>
         <thead class="thead-dark">
           <tr>
-            <th style="width: 15%;">SUBJECT</th>
+            <th style="width: 3%;">#</th>
+            <th style="width: 20%;">SUBJECT</th>
             <th style="width: 10%;">CAMPAIGN</th>
             <th style="width: 12%;">GROUP</th>
             <th style="width: 5%;">BONUS</th>
@@ -236,31 +273,30 @@
             <th style="width: 7%;">BONUS CTR</th>
           </tr>
         </thead>
-        <tbody id='user_list_tbody'>
-          {% for notification in queryset %} 
+        <tbody>
+          {% for notification in auto_messages %}
             <tr>
+              <td>{{ forloop.counter }}</td>
               <td>{{ notification.subject }}</td>
-              <td>CAMPAIGN</td>
-              {% if notification.notifiers %}
-              <td>{{ notification.notifiers }}</td>
-              {% else %}
-              <td>{{ notification.topic }}</td>
-              {% endif %}
+              <td>{{ notification.campaign }}</td>
+              <!--<td>{{ notification.sent_count }}</td>-->
+              <td>GROUP</td>
               <td>BONUS</td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
-              <td>1</td>
-              <td>2</td>
-              <td>3</td>
-              <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
+              <td>{{ notification.sent_count }}</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
     <div id="draft" class="tab-pane fade">
-      <table>
-        <thead class="thead-dark">
+      <table class="table table-bordered table-striped">
+        <thead>
           <tr>
             <th style="width: 25%;">SUBJECT</th>
             <th style="width: 15%;">CAMPAIGN</th>
@@ -272,14 +308,15 @@
           </tr>
         </thead>
         <tbody id='user_list_tbody'>
-          {% for notification in queryset %} 
+          {% for notification in notifications %} 
             <tr>
               <td>{{ notification.subject }}</td>
-              <td>CAMPAIGN</td>
+              <td>{{ notification.campaign }}</td>
               <td>{{ notification.topic }}</td>
-              <td>BONUS</td>
+              <td>{{ notification.bonus }}</td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
+              <td>{{ notification.status }}</td>
               <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
             </tr>
           {% endfor %}
@@ -290,316 +327,328 @@
 </div>
 
 <div class="row user-list-control-group">
-    <!-- <div class="bottom-align-text"> -->
-    <div class='col-md-9' style="margin-right: 70px"></div>
-    <div class='col-md-1' style="width:10%">
-        <div>SHOW ROWS</div>
-        <select id="pagination_value"  class="form-control">
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-        </select>
-    </div>
-    <div class='col-md-1'>
-      <div>&nbsp;</div>
-      <ul class="pagination" style="margin:0px;">
-          {% if isFirstPage is True %}
-              <li class="page-item disabled" id='perviousPage'>
+  <div class='col-md-9' style="margin-right: 70px"></div>
+  <div class='col-md-1' style="width:10%">
+    <div>SHOW ROWS</div>
+    <select id="pagination_value"  class="form-control">
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="250">250</option>
+    </select>
+  </div>
+  <div class='col-md-1'>
+    <div>&nbsp;</div>
+    <ul class="pagination" style="margin:0px;">
+        {% if notifications.has_previous  %}
+            <li class="page-item " id='perviousPage'>
               <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
-              </li>
-          {% else %}
-              <li class="page-item " id='perviousPage'>
-                  <a class="page-link" href="javascript:getPervious();"><i class='fas fa-caret-left'></i></a>
-              </li>
-          {% endif %}
-          {% if isLastPage is True %}
-              <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-          {% else %}
-              <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-          {% endif %}
-      </ul>
-    </div>
-  </div>
-<h2>{{ current_user }}</h2>
-<!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
-{% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
-<a role="button" class="btn btn-primary" href="/xadmin/audit">
-  Notifications <span class="badge badge-light">{{ waiting_list }}</span>
-</a>
-<!--<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <form action="{% url 'xadmin:notification' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
-      {% csrf_token %}
-        <div class="form-group">
-          <label for="subject">Subject</label>
-          <input type="text" class="form-control" name="subject" placeholder="Subject">
-        </div>
-        <div class="form-group">
-          <label for="content_text">Content</label>
-          <textarea class="form-control" name="content_text" placeholder="Message..." required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="creator">Creator</label>
-          <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
-        </div>
-        <div class="form-group">
-          <label for="auditor">Auditor</label>
-          <select name="auditor" class="form-control">
-            <option selected disabled hidden>Choose an auditor...</option>
-            {% for auditor in auditors %}
-            <option value="{{ auditor.id }}">{{ auditor }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="notification_type">Notification Type</label>
-          <select name="notification_type" class="form-control">
-            <option selected disabled hidden>Choose a notification type...</option>
-            <option value=1>ALTER</option>
-            <option value=2>BONUS</option>
-            <option value=3>COUPON</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="notification_choice">Notification Choice</label>
-          <select id="notification_choice" name="notification_choice" class="form-control" onchange="showUser()">
-            <option selected disabled hidden>Choose a notification range...</option>
-            <option value="U">Unicast</option>
-            <option value="M">Multicast</option>
-            <option value="B">Broadcast</option>
-          </select>
-        </div>
-        <div class="form-group" id="usrlist" hidden>
-          <label for="notifiers">User List</label>
-          <select id="notifiers" name="notifiers" class="form-control">
-            <option selected disabled hidden>Choose a notifier...</option>
-            {% for user in all_user %}
-            <option value="{{ user.id }}">{{ user }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group" id="topiclist" hidden>
-          <label for="topic">Group List</label>
-          <select id="topic" name="topic" class="form-control">
-            <option selected disabled hidden>Choose a notification type...</option>
-            {% for topic in topics %}
-            <option value="{{ topic.pk}}">{{ topic }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="publishOn" class="col-2 col-form-label">Publish On</label>
-          <div class="col-10">
-            <input class="form-control" type="datetime-local" value="" id="publishOn">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="direct_check">
-            <label class="form-check-label" for="direct_check">
-                Direct Message
-            </label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="email_check">
-            <label class="form-check-label" for="email_check">
-                Email
-            </label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="SMS_check">
-            <label class="form-check-label" for="SMS_check">
-                SMS
-            </label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="push_check">
-            <label class="form-check-label" for="push_check">
-                Push Notification
-            </label>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Create Message</button>
-      </form>
-    </div>
-  </div>
-</div>-->
-
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form action="{% url 'xadmin:notification' %}" method="put" style="margin: 2.5em 2.5em 2.5em 2.5em">
-        {% csrf_token %}
-            <div class="form-group">
-            <label for="subject">Subject</label>
-            <input type="text" class="form-control" name="subject" placeholder="Subject">
-            </div>
-            <div class="form-group">
-            <label for="content_text">Content</label>
-            <textarea class="form-control" name="content_text" placeholder="Message..." required></textarea>
-            </div>
-            <div class="form-group">
-            <label for="creator">Creator</label>
-            <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
-            </div>
-            <div class="form-group">
-            <label for="auditor">Auditor</label>
-            <select name="auditor" class="form-control">
-                <option selected disabled hidden>Choose an auditor...</option>
-                {% for auditor in auditors %}
-                <option value="{{ auditor.id }}">{{ auditor }}</option>
-                {% endfor %}
-            </select>
-            </div>
-            <div class="form-group">
-            <label for="notification_type">Notification Type</label>
-            <select name="notification_type" class="form-control">
-                <option selected disabled hidden>Choose a notification type...</option>
-                <option value=1>ALTER</option>
-                <option value=2>BONUS</option>
-                <option value=3>COUPON</option>
-            </select>
-            </div>
-            <div class="form-group">
-            <label for="notification_choice">Notification Choice</label>
-            <select id="notification_choice" name="notification_choice" class="form-control" onchange="showUser()">
-                <option selected disabled hidden>Choose a notification range...</option>
-                <option value="U">Unicast</option>
-                <option value="M">Multicast</option>
-                <option value="B">Broadcast</option>
-            </select>
-            </div>
-            <div class="form-group" id="usrlist" hidden>
-            <label for="notifiers">User List</label>
-            <select id="notifiers" name="notifiers" class="form-control">
-                <option selected disabled hidden>Choose a notifier...</option>
-                {% for user in all_user %}
-                <option value="{{ user.id }}">{{ user }}</option>
-                {% endfor %}
-            </select>
-            </div>
-            <div class="form-group" id="topiclist" hidden>
-            <label for="topic">Group List</label>
-            <select id="topic" name="topic" class="form-control">
-                <option selected disabled hidden>Choose a notification type...</option>
-                {% for topic in topics %}
-                <option value="{{ topic.pk }}">{{ topic.pk }}</option>
-                {% endfor %}
-            </select>
-            </div>
-            <div class="form-group">
-              <label for="publishOn" class="col-2 col-form-label">Publish On</label>
-              <div class="col-10">
-                <input class="form-control" type="datetime-local" value="" id="publishOn">
-              </div>
-            </div>
-            <div class="form-group">
-            <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="direct_check">
-                <label class="form-check-label" for="direct_check">
-                    Direct Message
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="email_check">
-                <label class="form-check-label" for="email_check">
-                    Email
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="SMS_check">
-                <label class="form-check-label" for="SMS_check">
-                    SMS
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="push_check">
-                <label class="form-check-label" for="push_check">
-                    Push Notification
-                </label>
-            </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Update User</button>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
+            </li>
+        {% else %}
+            <li class="page-item disabled" id='previousPage'>
+              <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+            </li>
+        {% endif %}
+        {% if notifications.has_next %}
+            <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+        {% else %}
+            <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+        {% endif %}
+    </ul>
   </div>
 </div>
 
-
-<table class="table table-bordered table-striped table-hover">
-  <caption>Notication Messages</caption>
-  <tr>
-    <th>SUNJECT</th>
-    <th>CAMPAIGN</th>
-    <th>SEND TO</th>
-    <th>BONUS</th>
-    <th>SENT DATE</th>
-    <th>AUTHOR</th>
-    <th>SENT</th>
-    <th>OPENED</th>
-    <th>OPEN RATE</th>
-    <th>DETAIL</th>
-  </tr>
-  {% for notification in queryset %}
-    <tr>
-      <td>{{ notification.subject }}</td>
-      <td>{{ notification.account_type }}</td>
-      {% if notification.notifiers %}
-        <td>{{ notification.notifiers }}</td>
-      {% else %}
-        <td>{{ notification.topic }}</td>
-      {% endif %}
-      <td>{{ notification.notification_type }}</td>
-      <td>{{ notification.create_on }}</td>
-      <td>{{ notification.creator }}</td>
-      <td>{{ notification.auditor }}</td>
-      <td>{{ notification.audit_date }}</td>
-      <td>66.67%</td>
-      <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-info"></i></a></td>
-      <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
-        <i class="fa fa-info"></i>
-      </button></td>-->
-    </tr>
-    <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
-  {% endfor %}
-</table>
-
 <script>
-function showUser() {
-  var nchoice = document.getElementById("notification_choice");
-  var userlist = document.getElementById("usrlist");
-  if(nchoice.value == "U") {
-    userlist.hidden = false;
-  } else {
-    document.getElementById("notifiers").selectedIndex = "0";
-    userlist.hidden = true;
+/*
+// Instantiate the Bloodhound suggestion engine
+var movies = new Bloodhound({
+  datumTokenizer: function (datum) {
+    return Bloodhound.tokenizers.whitespace(datum.value);
+  },
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  remote: {
+    url: 'http://api.themoviedb.org/3/search/movie?query=%QUERY&api_key=f22e6ce68f5e5002e71c20bcba477e7d',
+    filter: function (movies) {
+      // Map the remote source JSON array to a JavaScript object array
+      return $.map(movies.results, function (movie) {
+          return {
+              value: movie.original_title
+          };
+      });
+    }
+  }
+});
+
+// Initialize the Bloodhound suggestion engine
+movies.initialize();
+
+// Instantiate the Typeahead UI
+$('.typeahead').typeahead(null, {
+  displayKey: 'value',
+  source: movies.ttAdapter()
+});
+
+$( function() {
+    var availableTags = [
+      "ActionScript",
+      "AppleScript",
+      "Asp",
+      "BASIC",
+      "C",
+      "C++",
+      "Clojure",
+      "COBOL",
+      "ColdFusion",
+      "Erlang",
+      "Fortran",
+      "Groovy",
+      "Haskell",
+      "Java",
+      "JavaScript",
+      "Lisp",
+      "Perl",
+      "PHP",
+      "Python",
+      "Ruby",
+      "Scala",
+      "Scheme"
+    ];
+    $( "#tags" ).autocomplete({
+      source: availableTags
+    });
+  });
+
+  $("#tags").autocomplete({
+    appendTo: "#mydialog"
+  });
+*/
+
+$(document).ready(function() {
+  var previousURL = document.referrer;
+  // parse url
+  paramsMap = {
+      'search': '',
+      'pageSize': 20,
+      'offset': 1,
+      'tab': 2
+  };
+
+  var parsedUrl = new URL(window.location.href);
+  if (parsedUrl.searchParams.get("search") !== null) {
+      paramsMap['search'] = parsedUrl.searchParams.get("search");
+  }
+  if (parsedUrl.searchParams.get("pageSize") !== null) {
+      paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
+  }
+  if (parsedUrl.searchParams.get("offset") !== null) {
+      paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
+  }
+  if (parsedUrl.searchParams.get("tab") !== null) {
+      paramsMap['tab'] = Number(parsedUrl.searchParams.get("tab"));
   }
 
-  var topiclist = document.getElementById("topiclist");
-  if(nchoice.value == "M") {
-    topiclist.hidden = false;
+  if (parsedUrl.searchParams.get("tab") == 0) {
+    $("#automated-messages").addClass('active');
+    $("#automated-message").addClass('tab-pane fade in active');
+    $("#sent-messages").removeClass('active');
+    $("#sent-message").removeClass('tab-pane fade in active');
+    $("#sent-message").addClass('tab-pane fade');
+    $("#drafts").removeClass('active');
+    $("#draft").removeClass('tab-pane fade in active');
+    $("#draft").addClass('tab-pane fade');
+  } else if(parsedUrl.searchParams.get("tab") == 1) {
+    $("#drafts").addClass('active');
+    $("#draft").addClass('tab-pane fade in active');
+    $("#automated-messages").removeClass('active');
+    $("#automated-message").removeClass('tab-pane fade in active');
+    $("#automated-message").addClass('tab-pane fade');
+    $("#sent-messages").removeClass('active');
+    $("#sent-message").removeClass('tab-pane fade in active');
+    $("#sent-message").addClass('tab-pane fade');
   } else {
-    document.getElementById("topic").selectedIndex = "0";
-    topiclist.hidden = true;
+    $("#sent-messages").addClass('active');
+    $("#sent-message").addClass('tab-pane fade in active')
+    $("#automated-messages").removeClass('active');
+    $("#automated-message").removeClass('tab-pane fade in active');
+    $("#automated-message").addClass('tab-pane fade');
+    $("#drafts").removeClass('active');
+    $("#draft").removeClass('tab-pane fade in active');
+    $("#draft").addClass('tab-pane fade');
   }
+
+  $("a[data-toggle='tab']").click(function() {
+    var active = $(this).attr("href");
+    if (active == "#sent-message") {
+      paramsMap['tab'] = 2;
+    } else if (active == "#draft") {
+        paramsMap['tab'] = 1;
+    } else {
+        paramsMap['tab'] = 0;
+    }
+    var pageSize = paramsMap['pageSize'];
+
+    var tab = paramsMap['tab'];
+    
+    window.location.href = getUserListRedirectUrl(pageSize, 0, tab, "");
+  });
+
+  $('#pagination_value').val(paramsMap['pageSize']);
+  
+  $('#italic').click(function() {
+    document.execCommand('italic');
+  });
+
+  $('#bold').click(function() {
+    document.execCommand('bold');
+  });
+
+  $('#underline').click(function() {
+    document.execCommand('underline');
+  });
+
+  // CKEditor
+  ClassicEditor
+  .create( document.querySelector( '#editor' ) )
+  .then( editor => {
+    console.log( editor );
+  } )
+  .catch( error => {
+    console.error( error );
+  } );
+
+  $('#pagination_value').change(function() {
+    var pageSize = this.value;
+    var offset = paramsMap['offset'];
+    var tab = paramsMap['tab'];
+
+    window.location.href = getUserListRedirectUrl(pageSize, 0, tab, "");
+  });
+
+  $("#search-btn").click(function() {
+    var pageSize = $("#pagination_value").val();
+    var search = $('#search').val();
+    var tab = paramsMap['tab'];
+    window.location.href = getUserListRedirectUrl(pageSize, 0, tab, search);
+  });
+
+  $("#search").on('keyup', function () {
+    if( this.value.length < 2 ) return;
+      searchOpen();
+  });
+
+  function searchOpen() {
+    var search = $('#search').val();
+    var tab = paramsMap['tab'];
+    var url = "{% url 'notification-search' %}" + "?search=" + search + "&tab=" + tab;
+    $.ajax({
+      url: url,
+      type: 'GET',
+      success: function (data) {
+        searchResult(data, search);
+      },
+      error: function () {
+        // console.log('error');
+      }
+    });
+  }
+
+  function searchResult(data, term) {
+    var subject = data['subject'];
+    // var content = data['body'];
+
+    var sourceList = [];
+
+    if (subject.length > 0) {
+      sourceList.push({
+        'type': 'category',
+        'label': term,
+        'value': 'MESSAGE RESULTS'
+      });
+      for (var i = 0; i < subject.length; i++) {
+        sourceList.push({
+          'type': 'subject',
+          'label': term,
+          'value': subject[i]['subject'],
+        });
+      }
+    }
+    /*
+    if (content.length > 0) {
+      sourceList.push({
+        'type': 'category',
+        'label': term,
+        'value': 'MESSAGE RESULTS'
+      });
+      for (var i = 0; i < content.length; i++) {
+        sourceList.push({
+          'type': 'message body',
+          'label': term,
+          'value': content[i]['body'],
+        });
+      }
+    }
+    */
+    $( "#search" ).autocomplete({
+      source: sourceList,
+      create: function () {
+        $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+          if (item.type === 'category') {
+            return $('<li class="ui-state-disabled search-result" style="margin: 0px 13px;">')
+            .append(item.value)
+            .appendTo(ul);
+            // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
+          } else {
+            //var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
+            var url = ""
+            if (item.type == 'subject') {
+              return $('<li>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .appendTo(ul);
+            }
+          }
+        };
+      }
+    });
+  }
+
+  getNext = function() {
+    if ($('#nextPage').hasClass('disabled')) {
+        return;
+    }
+    var pageSize = paramsMap['pageSize'];
+    var oldFromItem = paramsMap['offset'];
+    var newFromItem = Number(oldFromItem) + Number(pageSize);
+    var tab = paramsMap['tab'];
+    
+    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
+  }
+
+  getPervious = function () {
+      if ($('#perviousPage').hasClass('disabled')) {
+          return;
+      }
+      var pageSize = paramsMap['pageSize'];
+      var oldFromItem = paramsMap['offset'];
+      var newFromItem = Number(oldFromItem) - Number(pageSize);
+      var tab = paramsMap['tab'];
+      
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
+  }
+});
+
+function getUserListRedirectUrl(pageSize, offset, tab, search) {
+  var curUrl = window.location.href;
+  var parts = curUrl.split('?');
+  
+  var redirectUrl = parts[0]; 
+  redirectUrl += '?search=' + search;
+  redirectUrl += "&pageSize=" + pageSize;
+  redirectUrl += '&offset=' + offset;
+  redirectUrl += '&tab=' + tab;
+
+  return redirectUrl;
 }
+
 </script>
 {% comment %} You have visited this page {{ num_visits }} times. {% endcomment %}
 
