@@ -108,11 +108,12 @@ class createMessage(View):
     '''
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
-        search = request.GET['search']
+        search = request.GET.get('search')
+        block = request.GET.get('block')
 
         logger.info('Search notification, key: ' + search)
 
-        search_subject = Notification.objects.filter(subject__contains=search)
+        search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=block))
         # search_body = Notification.objects.filter(content_text__contains=search)
 
         search_subject = serializers.serialize('json', search_subject)
@@ -139,93 +140,6 @@ class NotificationSearchAutocomplete(View):
 
         logger.info('Search response: ' + json.dumps(response))
         return HttpResponse(json.dumps(response), content_type='application/json')
-
-'''
-class NotificationSearchAutocomplete(View):
-    def get(self, request, *args, **kwargs):
-        search = request.GET['search']
-        # block = request.GET['block'] == 'true'
-
-        logger.info('Search user, key: ' + search)
-        # search_id = CustomUser.objects.filter(Q(pk__contains=search)&Q(block=block))
-        # search_username = CustomUser.objects.filter(Q(username__contains=search)&Q(block=block))
-        # search_email = CustomUser.objects.filter(Q(email__contains=search)&Q(block=block))
-        # search_phone = CustomUser.objects.filter(Q(phone__contains=search)&Q(block=block))
-        # search_first_name = CustomUser.objects.filter(Q(first_name__contains=search)&Q(block=block))
-        # search_last_name = CustomUser.objects.filter(Q(last_name__contains=search)&Q(block=block))
-
-        search_id = CustomUser.objects.filter(pk__contains=search)
-        search_username = CustomUser.objects.filter(username__contains=search)
-        search_email = CustomUser.objects.filter(email__contains=search)
-        search_phone = CustomUser.objects.filter(phone__contains=search)
-        search_first_name = CustomUser.objects.filter(first_name__contains=search)
-        search_last_name = CustomUser.objects.filter(last_name__contains=search)
-
-        search_id = serializers.serialize('json', search_id)
-        search_username = serializers.serialize('json', search_username)
-        search_email = serializers.serialize('json', search_email)
-        search_phone = serializers.serialize('json', search_phone)
-        search_first_name = serializers.serialize('json', search_first_name)
-        search_last_name = serializers.serialize('json', search_last_name)
-
-        search_id = json.loads(search_id)
-        search_username = json.loads(search_username)
-        search_email = json.loads(search_email)
-        search_phone = json.loads(search_phone)
-        search_first_name = json.loads(search_first_name)
-        search_last_name = json.loads(search_last_name)
-        response = {}
-
-        id_data = []
-        for user in search_id:
-            userMap = {}
-            userMap['id'] = user['pk']
-            id_data.append(userMap)
-        response['id'] = id_data
-
-        username_data = []
-        for user in search_username:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['username'] = user['fields']['username']
-            username_data.append(userMap)
-        response['username'] = username_data
-
-        email_data = []
-        for user in search_email:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['email'] = user['fields']['email']
-            email_data.append(userMap)
-        response['email'] = email_data
-
-        phone_data = []
-        for user in search_phone:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['phone'] = user['fields']['phone']
-            phone_data.append(userMap)
-        response['phone'] = phone_data
-
-        first_name_data = []
-        for user in search_first_name:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['firstName'] = user['fields']['first_name']
-            first_name_data.append(userMap)
-        response['firstName'] = first_name_data
-
-        last_name_data = []
-        for user in search_last_name:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['lastName'] = user['fields']['last_name']
-            last_name_data.append(userMap)
-        response['lastName'] = last_name_data
-        # print(str(response))
-        logger.info('Search response: ' + json.dumps(response))
-        return HttpResponse(json.dumps(response), content_type='application/json')
-'''
 
 
 class NotificationView(CommAdminView):
@@ -400,7 +314,6 @@ class AuditNotificationView(CommAdminView):
         notification = Notification.objects.get(pk=notification_id)
         # All messages
         queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
-
         # notification_methods = message.notification_method
 
         # connect AWS S3
@@ -432,22 +345,23 @@ class AuditNotificationView(CommAdminView):
                 logger.error("Unexpected error: %s" % e)
                 return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
-            # Email Notification
-            if NOTIFICATION_EMAIL in notification_methods:
-                # AWS SNS Topic
-                topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
-                topic.publish(
-                    Message=message.content_text,
-                    Subject='iBet Notification',
-                )
-                logger.info("Enabled Email Notification")
+        # Email Notification
+        if notification.is_email_message:
+            # AWS SNS Topic
+            topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
+            topic.publish(
+                Message=message.content_text,
+                Subject='iBet Notification',
+            )
+            logger.info("Enabled Email Notification")
 
+        try:
             Notification.objects.filter(pk=notification_id).update(status=MESSAGE_APPROVED)
             logger.info('create notification message')
             return HttpResponseRedirect(reverse('xadmin:notification'))
-        else:
-            logger.error("Message error!:" + serializer.errors)
-            return HttpResponse(serializer.errors)
+        except Exception as e:
+            logger.error("Audit message error")
+            return HttpResponse(e)
 
 
 class AWSTopicView(CommAdminView):

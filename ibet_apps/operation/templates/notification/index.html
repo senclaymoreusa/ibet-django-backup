@@ -538,7 +538,8 @@ $(document).ready(function() {
 
   function searchOpen() {
     var search = $('#search').val();
-    var url = "{% url 'notification-search' %}" + "?search=" + search;
+    var block = paramsMap['block'];
+    var url = "{% url 'notification-search' %}" + "?search=" + search + "&block=" + block;
     $.ajax({
       url: url,
       type: 'GET',
