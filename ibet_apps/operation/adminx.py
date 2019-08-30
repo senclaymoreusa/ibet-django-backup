@@ -5,7 +5,6 @@ from .models import Notification, AWSTopic
 from .views import NotificationView, NotificationDetailView, AWSTopicView, AuditNotificationView
 from django.utils.translation import ugettext_lazy as _
 
-
 class NoticeAdmin(object):
     model_icon = 'fa fa-tasks'
 
@@ -15,7 +14,7 @@ class NotificationAdmin(object):
 
 
 class GroupAdmin(object):
-    model_icon = 'fa fa-cloud'
+    model_icon = 'fab fa-aws'
 
 
 class AuditAdmin(object):

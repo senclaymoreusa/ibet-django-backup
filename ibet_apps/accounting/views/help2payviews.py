@@ -1,12 +1,9 @@
-import requests, json, logging, hashlib, base64, datetime, pytz, socket
+import requests, json, logging, random, hashlib, base64, datetime, pytz, socket
 
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from django.utils import timezone
-
-from users.models import CustomUser
-from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 
 from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
@@ -15,15 +12,18 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 
-from ..serializers import help2payDepositSerialize, help2payDepositResultSerialize
-from django.conf import settings
-from time import sleep
-from des import DesKey
-from decimal import *
-from time import gmtime, strftime, strptime
-
+from users.models import CustomUser
+from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from utils.constants import *
 import utils.helpers as helpers
+
+from ..serializers import help2payDepositSerialize, help2payDepositResultSerialize
+from django.conf import settings
+from des import DesKey
+from decimal import *
+from time import gmtime, strftime, strptime, sleep
+
+
 
 logger = logging.getLogger("django")
 currencyConversion = {
@@ -144,6 +144,7 @@ class DepositResult(generics.GenericAPIView):
         update_data.order_id = depositID
         update_data.arrive_time = timezone.now()
         update_data.last_updated = timezone.now()
+        update_data.remark = result
         update_data.save()
         
         return Response({

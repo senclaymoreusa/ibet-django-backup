@@ -376,7 +376,7 @@ $(document).ready(function() {
             create: function () {
                 $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
                     if (item.type === 'category') {
-                        return $('<li class="ui-state-disabled member-search-result" style="margin: 0px 13px;">')
+                        return $('<li class="ui-state-disabled search-result" style="margin: 0px 13px;">')
                         .append(item.value)
                         .appendTo(ul);
                         // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
