@@ -109,13 +109,13 @@ class WithdrawChannel(ThirdParty):
 
 
 class Transaction(models.Model):
-    transaction_id = models.CharField(
+    transaction_id = models.CharField(     #request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         max_length=200, default=0, verbose_name=_("Transaction id")
     )
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("Member")
     )
-    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id"))
+    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id")) #third party refo
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name=_("Apply Amount")
     )
@@ -173,6 +173,8 @@ class Transaction(models.Model):
 
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
+
+
 
     class Meta:
         verbose_name = "Transaction"
