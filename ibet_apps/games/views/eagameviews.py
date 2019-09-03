@@ -14,6 +14,8 @@ from utils.constants import *
 import random
 import hashlib 
 import logging
+import datetime
+from datetime import date
 
 logger = logging.getLogger('django')
 
@@ -668,12 +670,13 @@ class AutoCashierLoginEA(View):
         
         data = request.body
         dic = xmltodict.parse(data)
-        response = json.dumps(dic)
-        print(response)
+        # response = json.dumps(dic)
+        # print(response)
 
-        action = response["request"]["@action"]
-        requestId = response["request"]["element"]["@id"]
-        properties = response["request"]["element"]["properties"]
+        action = dic["request"]["@action"]
+        requestId = dic["request"]["element"]["@id"]
+        properties = dic["request"]["element"]["properties"]
+        
         username = ""
         date = ""
         sign = ""
@@ -687,11 +690,12 @@ class AutoCashierLoginEA(View):
                 sign = i["#text"]
 
         statusCode = "0"
-        today = dateime.date.today()
+        today = datetime.date.today()
         today = today.strftime("%Y/%m/%d")
+        # print(today)
         signStr = username + today + KEY
-        result = hashlib.md5(stsignStrr.encode()) 
-
+        result = hashlib.md5(signStr.encode()) 
+        # print(result.hexdigest())
         if sign != result.hexdigest():
             statusCode = "614"
         else:
@@ -702,41 +706,35 @@ class AutoCashierLoginEA(View):
             except:
                 statusCode = "611"
 
-            data = {
-                "request": {
-                    "@action": action,
-                    "element": {
-                        "@id": requestId,
-                            "properties": [
-                            {
-                                "@name": "id",
-                                "#text": requestId
-                            },
-                            {
-                                "@name": "status",
-                                "#text": statusCode
-                            },
-                            {
-                                "@name": "username",
-                                "#text": username
-                            },
-                            {
-                                "@name": "ticket",
-                                "#text": "ticketnumber"
-                            }
-                        ]
-                    }
-                } 
-            }
-
-
-
-
-
-        
+        data = {
+            "request": {
+                "@action": action,
+                "element": {
+                    "@id": requestId,
+                        "properties": [
+                        {
+                            "@name": "id",
+                            "#text": requestId
+                        },
+                        {
+                            "@name": "status",
+                            "#text": str(statusCode)
+                        },
+                        {
+                            "@name": "username",
+                            "#text": username
+                        },
+                        {
+                            "@name": "ticket",
+                            "#text": "ticketnumber"
+                        }
+                    ]
+                }
+            } 
+        }
         
 
-
+        response = xmltodict.unparse(data, pretty=True)
         return HttpResponse(response, content_type='text/xml')
 
 
