@@ -15,6 +15,8 @@ from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 import simplejson as json
 import datetime
+from django.http import HttpResponseRedirect, HttpResponse
+from users.views.helper import set_loss_limitation, set_deposit_limitation, set_temporary_timeout, set_permanent_timeout, get_old_limitations
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from system.models import UserToUserGroup
 from django.views import View
@@ -103,7 +105,8 @@ class UserDetailView(CommAdminView):
                     'amount': tran['fields']['amount'],
                     'balance': tran['fields']['amount'],
                     'status': statusMap[tran['fields']['status']],
-                    'bank': str(tran['fields']['bank']),
+                    # 'bank': str(tran['fields']['bank']),
+                    'bank': "",
                     'channel': channelMap[tran['fields']['channel']],
                     'method': tran['fields']['method'],
                 }
@@ -177,7 +180,8 @@ class UserDetailView(CommAdminView):
                     'time': time,
                     'amount': deposit['fields']['amount'],
                     'status': statusMap[deposit['fields']['status']],
-                    'bank': str(deposit['fields']['bank']),
+                    # 'bank': str(deposit['fields']['bank']),
+                    'bank': "",
                     'channel': channelMap[deposit['fields']['channel']],
                     'method': deposit['fields']['method'],
                 }
@@ -208,7 +212,8 @@ class UserDetailView(CommAdminView):
                     'time': time,
                     'amount': withdraw['fields']['amount'],
                     'status': statusMap[withdraw['fields']['status']],
-                    'bank': str(withdraw['fields']['bank']),
+                    # 'bank': str(withdraw['fields']['bank']),
+                    'bank': "",
                     'channel': channelMap[withdraw['fields']['channel']],
                     'method': withdraw['fields']['method'],
                 }
@@ -286,6 +291,67 @@ class UserDetailView(CommAdminView):
         context['limitation'] = limitationDict
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
+
+        userJson = serializers.serialize('json', [customUser])
+        userJson = json.loads(userJson)
+
+        
+        temporaryBlockRes = {}
+        if customUser.temporary_block_interval:
+            temporaryBlock = customUser.temporary_block_interval
+            # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
+            # time = timeList[0]
+            # temporaryBlock = int(time)
+            if temporaryBlock == INTERVAL_PER_DAY:
+                temporaryStr = "one day"
+                temporaryCode = customUser.temporary_block_interval
+            elif temporaryBlock == INTERVAL_PER_WEEK:
+                temporaryStr = "one week"
+                temporaryCode = INTERVAL_PER_WEEK
+            elif temporaryBlock == INTERVAL_PER_MONTH:
+                temporaryStr = "one month"
+                temporaryCode = INTERVAL_PER_MONTH
+            else:
+                temporaryCode = ""
+                temporaryStr = ""
+            
+            temporaryBlockRes = {
+                'temporaryStr': temporaryStr,
+                'temporaryCode': temporaryCode
+            }
+        
+        
+        permanentBlockRes = {}
+        if customUser.permanent_block_interval:
+            permanentBlock = customUser.permanent_block_interval
+            # timeList = userJson[0]['fields']['permanent_block_timespan'].split(' ')
+            # time = timeList[0]
+            # permanentBlock = int(time)
+            if permanentBlock == INTERVAL_PER_SIX_MONTH:
+                permanentStr = "six months"
+                permanentCode = INTERVAL_PER_SIX_MONTH
+            elif permanentBlock == INTERVAL_PER_ONE_YEAR:
+                permanentStr = "one year"
+                permanentCode = INTERVAL_PER_ONE_YEAR
+            elif permanentBlock == INTERVAL_PER_THREE_YEAR:
+                permanentStr = "three years"
+                permanentCode = INTERVAL_PER_THREE_YEAR
+            elif permanentBlock == INTERVAL_PER_FIVE_YEAR:
+                permanentStr = "five years"
+                permanentCode = INTERVAL_PER_FIVE_YEAR
+            else:
+                permanentStr = ""
+                permanentCode = ""
+            
+            permanentBlockRes = {
+                'permanentStr': permanentStr,
+                'permanentCode': permanentCode
+            }
+        
+
+        context['temperaryBlock'] = temporaryBlockRes
+        context['permanentBlock'] = permanentBlockRes
+        # print(temporaryBlock, permanentBlock)
         
         return render(request, 'user_detail.html', context)
 
@@ -433,69 +499,60 @@ class UserDetailView(CommAdminView):
 
         elif post_type == 'limitation_setting':
             
-            # bet_limitation = request.POST.getlist('bet_limit[]')
-            # bet_product = request.POST.getlist('game_type[]')
-            # bet_product = list(map(lambda x : int(x), bet_product))
-            # print("passing data.....")
-            # print("user: " + str(user_id))
-            loss_limitation = request.POST.getlist('loss_limit[]')
+            loss_limitation = request.POST.getlist('loss_limit')
             loss_limitation = [item for item in loss_limitation if len(item) > 0]
             # print("loss_limitation type: " + str(type(loss_limitation)))
             # print("origin loss_limitation: " + str(loss_limitation))
-            loss_interval = request.POST.getlist('loss_limit_interval[]')
+            loss_interval = request.POST.getlist('loss_limit_interval')
             # print("origin loss_interval: " + str(loss_interval))
             # loss_interval = list(map(lambda x : int(x) if x >= 0, loss_interval))
             loss_interval = [item for item in loss_interval if int(item) >= 0]
-            deposit_limitation = request.POST.getlist('deposit_limit[]')
+            deposit_limitation = request.POST.getlist('deposit_limit')
             # deposit_limitation = [float(item) for item in deposit_limitation if float(item) >= 0]
-            deposit_interval = request.POST.getlist('deposit_limit_interval[]')
+            deposit_interval = request.POST.getlist('deposit_limit_interval')
             # deposit_interval = list(map(lambda x : int(x), deposit_interval))
             deposit_interval = [int(item) for item in deposit_interval if int(item) >= 0]
-            withdraw_limitation = request.POST.getlist('withdraw_limit[]')
+            withdraw_limitation = request.POST.getlist('withdraw_limit')
+            # print("withdraw_limitation type: " + str(withdraw_limitation))
             # deposit_limitation = [float(item) for item in withdraw_limitation if float(item) >= 0]
-            withdraw_interval = request.POST.getlist('withdraw_limit_interval[]')
+            withdraw_interval = request.POST.getlist('withdraw_limit_interval')
             withdraw_interval = [int(item) for item in withdraw_interval if int(item) >= 0]
 
             reason = request.POST.get('reasonTextarea')
+
+            temporary_time = request.POST.get('temporary_time')
+            permanent_time = request.POST.get('permanent_time')
+            # print(temporary_time, permanent_time)
+            # print("reason type: " + str(reason))
             # print(str(reason))
 
-            # withdraw_interval = list(map(lambda x : int(x), withdraw_interval))
-
-            # print("loss data.....")
-            # print("loss_limitation: " + str(loss_limitation))
-            # print("loss_interval: " + str(loss_interval))
-
-            # print("deposit data.....")
-            # print("deposit_limitation: " + str(deposit_limitation))
-            # print("deposit_interval: " + str(deposit_interval))
-
-            # print("withdraw data.....")
-            # print("withdraw_limitation: " + str(withdraw_limitation))
-            # print("withdraw_interval: " + str(withdraw_interval))
-
             access_deny_tags = request.POST.get('access_deny_tags')
-            access_deny_tags = json.loads(access_deny_tags)
+            if access_deny_tags:
+                access_deny_tags = json.loads(access_deny_tags)
             # print(str(access_deny_tags))
             user = CustomUser.objects.get(pk=user_id)
+            oldLimitMap = get_old_limitations(user_id)
 
-            oldLimitMap = {
-                LIMIT_TYPE_BET: {},
-                LIMIT_TYPE_LOSS: {},
-                LIMIT_TYPE_DEPOSIT: {},
-                LIMIT_TYPE_WITHDRAW: {},
-                LIMIT_TYPE_ACCESS_DENY: {}
-            }
+            # oldLimitMap = {
+            #     LIMIT_TYPE_BET: {},
+            #     LIMIT_TYPE_LOSS: {},
+            #     LIMIT_TYPE_DEPOSIT: {},
+            #     LIMIT_TYPE_WITHDRAW: {},
+            #     LIMIT_TYPE_ACCESS_DENY: {}
+            # }
 
-            limitations = Limitation.objects.filter(user=user)
-            for limit in limitations:
-                limitType = limit.limit_type
-                if limitType == LIMIT_TYPE_ACCESS_DENY:
-                    oldLimitMap[limitType][limit.product] = limit.amount
-                else:
-                    # oldLimitMap[limitType]['amount'] = limit.amount
-                    oldLimitMap[limitType][limit.interval] = limit.amount
-
-
+            # limitations = Limitation.objects.filter(user=user)
+            # for limit in limitations:
+            #     limitType = limit.limit_type
+            #     if limitType == LIMIT_TYPE_ACCESS_DENY:
+            #         oldLimitMap[limitType][limit.product] = limit.amount
+            #     else:
+            #         # oldLimitMap[limitType]['amount'] = limit.amount
+            #         oldLimitMap[limitType][limit.interval] = limit.amount
+            if temporary_time:
+                set_temporary_timeout(user_id, temporary_time)
+            if permanent_time:
+                set_permanent_timeout(user_id, permanent_time)
             # print("oldLimitMap: " + str(oldLimitMap))
             # if bet_limitation:
 
@@ -541,93 +598,19 @@ class UserDetailView(CommAdminView):
             else:
                 Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY).delete()
                 
-
-            if loss_interval:
-                # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).exists():
-                #     logger.info('Update loss limitation')
-                #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=loss_limitation)
-                # else:
-                #     logger.info('Create a loss limitation')
-                #     limitation = Limitation(
-                #             user= user,
-                #             limit_type=LIMIT_TYPE_LOSS,
-                #             amount=loss_limitation,
-                #         )
-                #     limitation.save()
-
-                # delete
-                for intervalType in oldLimitMap[LIMIT_TYPE_LOSS]:
-                    if intervalType not in loss_interval:
-                        logger.info('Deleting loss limit for interval type: ' + str(intervalType))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).delete()
-
-                # insert or update
-                for i in range(len(loss_limitation)):
-                    if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=loss_interval[i]).exists():
-                        logger.info('Update loss limit for interval type: ' + str(user))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=loss_interval[i]).update(amount=loss_limitation[i])
-                    else:
-                        logger.info('Create new bet limit for product type for' + str(user))
-                        limitation = Limitation(
-                            user= user,
-                            limit_type=LIMIT_TYPE_LOSS,
-                            amount=loss_limitation[i],
-                            interval=loss_interval[i],
-                        )
-                        limitation.save()
+            
+            # set_loss_deposit_limitation(user_id, loss_limitation, loss_interval, deposit_limitation, deposit_interval, oldLimitMap)
+            if loss_limitation:
+                set_loss_limitation(user_id, loss_limitation, loss_interval, oldLimitMap, user)
             else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).delete()
+                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=None)
 
-            if deposit_interval:
-                # logger.info('Update deposit limitation')
-                # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).exists():
-                #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=deposit_limitation)
-                # else:
-                #     logger.info('Create deposit limitation')
-                #     limitation = Limitation(
-                #             user= user,
-                #             limit_type=LIMIT_TYPE_DEPOSIT,
-                #             amount=deposit_limitation,
-                #         )
-                #     limitation.save()
-
-                # delete
-                for intervalType in oldLimitMap[LIMIT_TYPE_DEPOSIT]:
-                    if intervalType not in deposit_interval:
-                        logger.info('Deleting loss limit for interval type: ' + str(intervalType))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).delete()
-
-                # insert or update
-                for i in range(len(deposit_limitation)):
-                    # print("index: " + str(i))
-                    if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=deposit_interval[i]).exists():
-                        logger.info('Update loss limit for interval type: ' + str(user))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=deposit_interval[i]).update(amount=deposit_limitation[i])
-                    else:
-                        logger.info('Create new bet limit for product type for' + str(user))
-                        limitation = Limitation(
-                            user= user,
-                            limit_type=LIMIT_TYPE_DEPOSIT,
-                            amount=deposit_limitation[i],
-                            interval=deposit_interval[i],
-                        )
-                        limitation.save()
+            if deposit_limitation:
+                set_deposit_limitation(user_id, deposit_limitation, deposit_interval, oldLimitMap, user)
             else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).delete()
+                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=None)
 
             if withdraw_interval:
-                # if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).exists():
-                #     logger.info('Update withdraw limitation')
-                #     Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).update(amount=withdraw_limitation)
-                # else:
-                #     logger.info('Create withdraw limitation')
-                #     limitation = Limitation(
-                #             user= user,
-                #             limit_type=LIMIT_TYPE_WITHDRAW,
-                #             amount=withdraw_limitation,
-                #         )
-                #     limitation.save()
-
                 # delete
                 for intervalType in oldLimitMap[LIMIT_TYPE_WITHDRAW]:
                     if intervalType not in withdraw_interval:
@@ -669,7 +652,7 @@ class UserDetailView(CommAdminView):
                         'errorCode': '1001',
                         'message': str(message)
                     }
-                    print(json.dumps(error))
+                    # print(json.dumps(error))
                     return HttpResponse(json.dumps(error), content_type="application/json")
 
                 user.block = True
