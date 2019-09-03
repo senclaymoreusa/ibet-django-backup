@@ -45,6 +45,9 @@ def send_message(notification_id):
             Message=notification.content_text,
         )
         logger.info("Enabled Push Notification")
+    else:
+        logger.error("Sending push notification error!:")
+        return HttpResponse("Can not send Message!")
         
     # SMS Notification
     if notification.is_sms_message:
@@ -59,53 +62,57 @@ def send_message(notification_id):
             logger.error("Unexpected error: %s" % e)
             return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
-        # Email Notification
-        if NOTIFICATION_EMAIL in notification_methods:
-            # AWS SNS Topic
-            topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
-            topic.publish(
-                Message=message.content_text,
-                Subject='iBet Notification',
-            )
-            logger.info("Enabled Email Notification")
+    # Email Notification
+    if notification.is_email_message:
+        # AWS SNS Topic
+        topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
+        topic.publish(
+            Message=message.content_text,
+            Subject='iBet Notification',
+        )
+        logger.info("Enabled Email Notification")
 
         Notification.objects.filter(pk=notification_id).update(status=MESSAGE_APPROVED)
         logger.info('create notification message')
         # return HttpResponseRedirect(reverse('xadmin:notification'))
     else:
-        logger.error("Sending Message API error!:")
+        logger.error("Sending Email Notification error!")
         return HttpResponse("Can not send Message!")
 
 
-'''
-class createMessage(View):
-    self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False
+class SMSNotificationAPI(View):
+    def post(self, request, *args, **kwargs):
+    # self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False
     # create Notification Object
-    message = {
-        "subject": request.POST.get('subject'),
-        "content_text": request.POST.get('content_text'),
-        "creator": self.user,
-        "notifiers": request.POST.getlist('notifiers'),
-        "groups": request.POST.getlist('notifiers'),
-    }
+        data = {
+            "campaign": request.POST.get('campaign'),
+            "subject": request.POST.get('subject'),
+            "content_text": request.POST.get('content_text'),
+            "creator": self.user,
+            "is_sms_message": True,
+            "status": MESSAGE_APPROVED,
+        }
 
-    notification_serializer = NotificationSerializer(data=message)
+        serializer = NotificationSerializer(data=data)
+        
+        if serializer.is_valid():
+            notification = serializer.save()
+            logger.info("create a SMS notification")
+            notifiers = request.POST.get('notifiers')
 
-    if serializer.is_valid():
-        notification = serializer.save()
-        logger.info("create a notification")
-        return HttpResponse(json.dumps(response), content_type='application/json')
-    else:
-        return 
+            for notifier in notifiers:
+                log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
+                log.save()
+            logger.info("Save notification log")
+
+            end_message(notification.pk)
+
+            return HttpResponseRedirect(reverse('xadmin:notification'))
+        else:
+            logger.error("Sending SMS Notification error!")
+            return HttpResponse("Can not send SMS Message!")
 
 
-    # n_user_serializer = NotificationToUsersSerializer()
-    for notifier in notifiers:
-        log = NotificationToUsers(notification_id=notification.pk, notifier_id=notifier.pk)
-
-    logger.info("added notification-to-users log")
-
-    '''
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
