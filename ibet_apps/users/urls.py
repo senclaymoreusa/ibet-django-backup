@@ -1,5 +1,9 @@
 from django.urls import path
 from . import views
+
+import users.views.gbsportsintegrationviews as gbsportsintegrationviews
+import users.views.agintegrationviews as agintegrationviews
+
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
 from django.views.decorators.csrf import csrf_exempt
@@ -52,16 +56,10 @@ urlpatterns += [
     path('api/validateandresetpassword/', views.ValidateAndResetPassowrd.as_view(), name='validate_and_reset_password'),
     path('api/cancelregistration/', views.CancelRegistration.as_view(), name='cancel_registration'),
     path('api/getusernamebyreferid/', views.GetUsernameByReferid.as_view(), name = 'get_user'),
-    path('api/walletgeneral/', views.WalletGeneralAPI.as_view(), name='wallet_general'),
-    path('api/walletbet/', views.WalletBetAPIURL.as_view(), name='wallet_bet'),
-    path('api/walletsettle/', views.WalletSettleAPIURL.as_view(), name='wallet_settle'),
-    path('api/posttransferforbet/', views.PostTransferforBet.as_view(), name='post_transfer_for_bet'),
-    path('api/posttransferforwin/', views.PostTransferforWin.as_view(), name='post_transfer_for_win'),
-    path('api/posttransferforlose/', views.PostTransferforLose.as_view(), name='post_transfer_for_lose'),
-    path('api/posttransferfordraw/', views.PostTransferforDraw.as_view(), name='post_transfer_for_draw'),
-    path('api/posttransferforrefund/', views.PostTransferforRefund.as_view(), name='post_transfer_for_refund'),
-    path('api/posttransferforbalance/', views.PostTransferforGetBalance.as_view(), name='post_transfer_for_balance'),
-    path('api/posttransferforwithdraw/', views.PostTransferforWithdraw.as_view(), name='post_transfer_for_widthdraw'),
-    path('api/posttransferfordeposit/', views.PostTransferforDeposit.as_view(), name='post_transfer_for_deposit'),
-    path('api/posttransferforrollback/', views.PostTransferforRollback.as_view(), name='post_transfer_for_rollback')
+    path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
+    path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
+    path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
+    path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
+    path('api/marketing-settings/', csrf_exempt(views.MarketingSettings.as_view()), name="market_settings"),
+    path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings")
 ]

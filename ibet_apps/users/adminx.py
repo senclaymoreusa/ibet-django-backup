@@ -5,7 +5,9 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
-from .views import AgentView, AgentDetailView, OneclickRegister 
+# from .views import AgentView, AgentDetailView, OneclickRegister 
+from users.views.adminview import *
+from users.views.views import *
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -50,6 +52,22 @@ class GlobalSettings(object):
                         'title': 'Affiliate Overview',
                         'url': '/xadmin/agent_view',
                         'icon': 'fa fa-cny'
+                    },
+                )
+            },
+            {
+                'title': 'System admin',
+                'icon': 'fa-fw fa fa-cog',
+                'menus': (
+                    {
+                        'title': 'Users',
+                        'url': '/xadmin/permission/',
+                        'icon': 'fa fa-user-circle-o'
+                    },
+                    {
+                        'title': 'Roles',
+                        'url': '/xadmin/roles/',
+                        'icon': 'fa fa-id-badge'
                     },
                 )
             }
@@ -224,10 +242,11 @@ class UserActionAdmin(object):
 
 
 
-from .views import UserDetailView, UserListView
+# from .views import UserDetailView, UserListView
 xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'userdetail/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'users/', UserListView, name='user_list')
+xadmin.site.register_view(r'profile/', UserProfileView, name='user_profile')
 
 from xadmin.views import CommAdminView
 # xadmin.site.register(CommAdminView, GlobalSettings)

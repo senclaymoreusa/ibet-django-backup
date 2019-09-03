@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import ThirdParty, Transaction, DepositChannel, WithdrawChannel
+from accounting.models import ThirdParty, Transaction, DepositChannel, WithdrawChannel
 from utils.constants import *
 
 class depositMethodSerialize(serializers.Serializer):
     # specify what fields are required when we save object into database
-    thridParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
+    thirdParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.CharField(required=True)
     min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
@@ -24,7 +24,7 @@ class bankListSerialize(serializers.Serializer):
 
 class bankLimitsSerialize(serializers.Serializer):
     bank = serializers.CharField(required=True)
-    thridParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
+    thirdParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
     currency = serializers.CharField(required=True)
     method = serializers.CharField(required=True)
     min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
@@ -33,17 +33,17 @@ class bankLimitsSerialize(serializers.Serializer):
         return DepositChannel.objects.get_or_create(**validated_data)
 
     
-class submitDepositSerialize(serializers.ModelSerializer):
-    # transaction_id         = serializers.UUIDField(format='hex')
-    # amount            = serializers.DecimalField(max_digits = 10, decimal_places=2, required=True)
-    # currency        = serializers.CharField(required=True)
-    # language       = serializers.CharField(required=True)
-    # user_id        = serializers.CharField(required=True)
-    # method            = serializers.CharField(required=True)
-    class Meta:
-        model = Transaction
-        fields = ('order_id','amount', 'currency','language','user_id','method')
+class submitDepositSerialize(serializers.Serializer):
+    
+    amount            = serializers.DecimalField(max_digits = 10, decimal_places=2, required=True)
+    currency        = serializers.CharField(required=True)
+    language       = serializers.CharField(required=True)
+    user_id        = serializers.CharField(required=True)
+    method            = serializers.CharField(required=True)
+    bank           = serializers.CharField(required=False)
 
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
 
 class submitPayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
@@ -81,23 +81,21 @@ class approvePayoutSerialize(serializers.Serializer):
         instance.save() 
         return instance
 class depositThirdPartySerialize(serializers.Serializer):
-    order_id         = serializers.CharField(required=True)
-    user_id        = serializers.CharField(required=True)
-    method        = serializers.CharField(required=True)
-    amount        = serializers.CharField(required=True)
-    status        = serializers.CharField(required=True)
+    orderId         = serializers.CharField(required=False)
+    transactionId        = serializers.CharField(required=False)
+    dateCreated        = serializers.CharField(required=False)
+    depositMethod        = serializers.CharField(required=False)
+    processor  = serializers.CharField(required=False)
+    amount        = serializers.CharField(required=False)
+    currency     = serializers.CharField(required=False)
+    status      = serializers.CharField(required=False)
+    dateUpdated    = serializers.CharField(required=False)
+    depositorUserId   = serializers.CharField(required=False)
+    notes     = serializers.CharField(required=False)
+    channel    = serializers.CharField(required=False)
+    messageAuthenticationCode   = serializers.CharField(required=False)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-
-        instance.order_id = validated_data.get('order_id', instance.order_id)
-        instance.user_id = validated_data.get('user_id', instance.user_id)
-        instance.method = validated_data.get('method', instance.method)
-        instance.amount = validated_data.get('amount', instance.amount)
-        instance.status = validated_data.get('status', instance.status)
-        instance.save() 
-        return instance
 class payoutMethodSerialize(serializers.Serializer):
      
     currency         = serializers.CharField(required=True)
@@ -234,6 +232,21 @@ class help2payDepositResultSerialize(serializers.Serializer):
     ActualAmount  = serializers.CharField(required=False)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
+class fgateChargeCardSerialize(serializers.Serializer):
+    pin  = serializers.CharField(required=True)
+    serial  = serializers.CharField(required=True)
+    user = serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
+class asiapayPayoutArriveSerialize(serializers.Serializer):
+    Cmd = serializers.CharField(required=True)
+    OrderID= serializers.CharField(required=True)
+    TrustIUser= serializers.CharField(required=True)
+    SignCode= serializers.CharField(required=False)
+    CashType= serializers.CharField(required=True)
+    def create(self, validated_data):
+        return Transaction.objects.create(**validated_data)
+
 
 
     

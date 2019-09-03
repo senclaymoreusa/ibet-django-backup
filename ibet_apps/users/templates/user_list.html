@@ -74,7 +74,7 @@
                         <th style="word-break: break-all; width:6%;">BONUS/<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>TURNOVER</th>
                         <th >COUNTRIBUTION ($)</th>
                         <th >ACTIVE DAYS</th>
-                        <th >BET PLATFORM</th>
+                        <th >IS ADMIN</th>
                     </tr>
                 </thead>
                 <tbody id='user_list_tbody'>
@@ -101,10 +101,10 @@
                             <i class="fa fa-phone" style="margin-left: -3px;"></i>
                             </button>
                             <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fa fa-bank" style="margin-left: -3px;"></i>
+                            <i class="fas fa-university" style="margin-left: -3px;"></i>
                             </button>
                             <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fa fa-id-card-o" style="margin-left: -4px;"></i>
+                            <i class="fas fa-id-card" style="margin-left: -4px;"></i>
                             </button>
                             <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
                             <i class="fa fa-globe" style="margin-left: -3px;"></i>
@@ -114,8 +114,9 @@
                         <td>{{ user.bonus_turnover }}</td>
                         <td>{{ user.contribution }}</td>
                         <td>{{ user.active_days }}</td>
-                        <td>
-                            <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
+                        <td>{{ user.is_admin }}</td>
+                        <!-- <td> -->
+                            <!-- <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
                             <span style="margin-left: -3px;">W</span>
                             </a>
                             <a href="#" class="btn btn-info btn-sm" style="background-color:#6666ff; border-color: #6666ff;">
@@ -126,8 +127,8 @@
                             </a>
                             <a href="#" class="btn btn-info btn-sm" style="background-color:#556b2f; border-color: #556b2f;">
                             <span style="margin-left: -1px;">T</span>
-                            </a>
-                        </td>
+                            </a> -->
+                        <!-- </td> -->
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -178,8 +179,6 @@
 <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 
 <script>
@@ -377,7 +376,7 @@ $(document).ready(function() {
             create: function () {
                 $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
                     if (item.type === 'category') {
-                        return $('<li class="ui-state-disabled member-search-result" style="margin: 0px 13px;">')
+                        return $('<li class="ui-state-disabled search-result" style="margin: 0px 13px;">')
                         .append(item.value)
                         .appendTo(ul);
                         // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
@@ -397,7 +396,7 @@ $(document).ready(function() {
                             .appendTo(ul);
                         } else if (item.type == 'name') {
                             return $('<li>')
-                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fa fa-id-card"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+                            .append('<div style="margin: 0px 13px;"><a href="' + url + '"><i class="fas fa-id-card"  style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
                             .appendTo(ul);
                         }
                     }
@@ -471,7 +470,7 @@ $(document).ready(function() {
     });
 
     $("#search-btn").click(function(){
-        var pageSize = $("#pagination_value").val();;
+        var pageSize = $("#pagination_value").val();
         // var oldFromItem = paramsMap['offset'];
         var search = $('#search').val();
         var block = paramsMap['block'];

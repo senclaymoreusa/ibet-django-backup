@@ -37,6 +37,8 @@ urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     path('users/', include('users.urls')),
     path('operation/', include('operation.urls')),
+    path('games/', include('games.urls')),
+    path('system/', include('system.urls')),
     path('users/', include('django.contrib.auth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('accounting/', include('accounting.urls')),
@@ -59,3 +61,7 @@ urlpatterns += [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
+#Add ckeditor urls
+urlpatterns += [
+    path('ckeditor/', include('ckeditor_uploader.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

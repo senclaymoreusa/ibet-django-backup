@@ -35,14 +35,14 @@ class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image')
+        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url')
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency')
-        read_only_fields = ('username', )
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration')
+        read_only_fields = ('pk', )
 
 
 class RegisterSerializer(serializers.Serializer):

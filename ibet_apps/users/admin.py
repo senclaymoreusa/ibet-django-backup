@@ -8,8 +8,10 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, Config, NoticeMessage, Bonus, BonusRequirement, UserBonus, GBSportWalletBet, BetKenoList, BetKenoBalls, GBSportWalletSettle, SettleKenoList, SettleKenoBalls, AGGamemodels
+from .models import Language, Category, Status, Game, Config, NoticeMessage,  AGGamemodels, GBSportWallet
 from .forms import UserCreationForm
+
+# Bonus, BonusRequirement, UserBonus,
 
 class UserAdmin(BaseUserAdmin):
 	add_form = UserCreationForm
@@ -18,7 +20,7 @@ class UserAdmin(BaseUserAdmin):
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'language', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'language', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code', 'contact_methods', 'social_media')}),
 			('Permissions', {'fields': ('is_admin', 'is_staff')})
 		)
 	search_fields = ('username','email')
@@ -34,15 +36,7 @@ admin.site.register(Status)
 admin.site.register(Game)
 admin.site.register(Config)
 admin.site.register(NoticeMessage)
-admin.site.register(Bonus)
-admin.site.register(BonusRequirement)
-admin.site.register(UserBonus)
-admin.site.register(GBSportWalletBet)
-admin.site.register(BetKenoList)
-admin.site.register(BetKenoBalls)
-admin.site.register(GBSportWalletSettle)
-admin.site.register(SettleKenoList)
-admin.site.register(SettleKenoBalls)
+admin.site.register(GBSportWallet)
 admin.site.register(AGGamemodels)
 
 
