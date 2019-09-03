@@ -1352,7 +1352,7 @@ class SetLimitation(View):
         user = CustomUser.objects.get(pk=user_id)
 
         oldLimitMap = get_old_limitations(user_id)
-        print(oldLimitMap)
+        # print(oldLimitMap)
 
         if limit_type == 'loss':
             otherLimits = oldLimitMap[LIMIT_TYPE_LOSS]

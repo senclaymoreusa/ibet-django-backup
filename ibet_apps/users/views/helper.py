@@ -18,17 +18,16 @@ def set_loss_limitation(userId, lossLimit, lossLimitInterval, oldLimitMap, user)
     # delete
     for intervalType in oldLimitMap[LIMIT_TYPE_LOSS]:
         if intervalType not in lossLimitInterval:
-            logger.info('Deleting loss limit for interval type: ' + str(intervalType))
             # Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).delete()
             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=intervalType).update(amount=None)
+            logger.info('Deleting loss limit for interval type: ' + str(intervalType))
 
     # insert or update
     for i in range(len(lossLimit)):
         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).exists():
-            logger.info('Update loss limit for interval type: ' + str(user))
             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).update(amount=lossLimit[i])
+            logger.info('Update loss limit for interval type: ' + str(user))
         else:
-            logger.info('Create new bet limit for product type for ' + str(user))
             limitation = Limitation(
                 user= user,
                 limit_type=LIMIT_TYPE_LOSS,
@@ -36,6 +35,7 @@ def set_loss_limitation(userId, lossLimit, lossLimitInterval, oldLimitMap, user)
                 interval=lossLimitInterval[i],
             )
             limitation.save()
+            logger.info('Create new bet limit for product type for ' + str(user))
 
 def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitMap, user):
     # user = CustomUser.objects.get(pk=userId)
@@ -43,18 +43,17 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
     # delete
     for intervalType in oldLimitMap[LIMIT_TYPE_DEPOSIT]:
         if intervalType not in depositLimitInterval:
-            logger.info('Deleting deposit limit for interval type: ' + str(intervalType))
             # Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).delete()
             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=intervalType).update(amount=None)
+            logger.info('Deleting deposit limit for interval type: ' + str(intervalType))
 
     # insert or update
     for i in range(len(depositLimitInterval)):
         # print("index: " + str(i))
         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).exists():
-            logger.info('Update deposit limit for interval type: ' + str(user))
             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).update(amount=depositLimit[i])
+            logger.info('Update deposit limit for interval type: ' + str(user))
         else:
-            logger.info('Create new bet limit for product type for' + str(user))
             limitation = Limitation(
                 user= user,
                 limit_type=LIMIT_TYPE_DEPOSIT,
@@ -62,6 +61,7 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
                 interval=depositLimitInterval[i],
             )
             limitation.save()
+            logger.info('Create new bet limit for product type for' + str(user))
 
 
 
