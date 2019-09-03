@@ -21,9 +21,23 @@ from accounting.models import Transaction
 
 def verify_user(request):
     if request.method == "POST":
-        print("Hi")
+        print("received post for verify/user")
+        return JsonResponse({"msg": "hi"})
 
-        return JsonResponse({
 
-        })
+def authorize(request):
+    if request.method == "POST":
+        print("received post for authorize")
+        return JsonResponse({"msg": "hi"})
 
+
+def transfer(request):
+    if request.method == "POST":
+        print("received post for transfer")
+        return JsonResponse({"msg": "hi"})
+
+
+def cancel(request):
+    if request.method == "POST":
+        print("received post for cancel")
+        return JsonResponse({"msg": "hi"})
