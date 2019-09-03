@@ -572,6 +572,7 @@ class EASingleLoginValidation(View):
         }
         response = xmltodict.unparse(response, pretty=True)
         return HttpResponse(response, content_type='text/xml')
+        # return HttpResponse("hello")
 
 
 class TestView(View):
@@ -581,8 +582,8 @@ class TestView(View):
         # response = checkEAAffiliateRequest(1)
         data = request.body
         dic = xmltodict.parse(data)
-        response = json.dumps(dic)
-
+        # response = json.dumps(dic)
+        response = xmltodict.unparse(dic, pretty=True)
         return HttpResponse(response, content_type='text/xml')
 
 
@@ -672,8 +673,10 @@ class AutoCashierLoginEA(View):
         print(response)
 
         action = response["request"]["@action"]
+        print(action)
         requestId = response["request"]["element"]["@id"]
         properties = response["request"]["element"]["properties"]
+        
         username = ""
         date = ""
         sign = ""
@@ -681,10 +684,13 @@ class AutoCashierLoginEA(View):
         for i in properties:
             if i["@name"] == "username":
                 username = i["#text"]
+                print(username)
             elif i["@name"] == "date":
                 date = i["#text"]
+                print(date)
             elif i["@name"] == "sign":
                 sign = i["#text"]
+                print(sign)
 
         statusCode = "0"
         today = dateime.date.today()
@@ -714,7 +720,7 @@ class AutoCashierLoginEA(View):
                             },
                             {
                                 "@name": "status",
-                                "#text": statusCode
+                                "#text": str(statusCode)
                             },
                             {
                                 "@name": "username",
@@ -728,12 +734,6 @@ class AutoCashierLoginEA(View):
                     }
                 } 
             }
-
-
-
-
-
-        
         
 
 
