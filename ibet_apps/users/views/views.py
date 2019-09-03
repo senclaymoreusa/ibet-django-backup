@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse, reverse_lazy
 
 from django.views import generic
@@ -33,6 +33,7 @@ from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render
 from django.dispatch import receiver
@@ -282,10 +283,10 @@ class LoginView(GenericAPIView):
 
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
-            print("user block")
+            # print("user block")
             raise BlockedUserException
         if self.user.active == False:
-            print('User not active')
+            # print('User not active')
             raise InactiveUserException
 
         if getattr(settings, 'REST_USE_JWT', False):
@@ -1336,6 +1337,202 @@ class CancelRegistration(APIView):
         user.delete()
         return Response(status=status.HTTP_200_OK)
 
+from users.views.helper import set_loss_limitation, set_deposit_limitation, set_temporary_timeout, set_permanent_timeout, get_old_limitations
+
+class SetLimitation(View):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        limit = data['limit']
+        interval = data['interval']
+        limit_type = data['type']
+        
+        # print(limit, interval, user_id, limit_type)
+        user = CustomUser.objects.get(pk=user_id)
+
+        oldLimitMap = get_old_limitations(user_id)
+        # print(oldLimitMap)
+
+        if limit_type == 'loss':
+            otherLimits = oldLimitMap[LIMIT_TYPE_LOSS]
+            set_loss_limitation(user_id, limit, interval, oldLimitMap, user)
+        elif limit_type == 'deposit':
+            set_deposit_limitation(user_id, limit, interval, oldLimitMap, user)
+
+        return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
+
+class DeleteLimitation(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        # limit = data['limit']
+        interval = data['interval']
+        limit_type = data['type']
+        limit_id = data['id']
+        
+        if limit_type == 'deposit':
+            limit_type = LIMIT_TYPE_DEPOSIT
+        elif limit_type == 'loss':
+            limit_type = LIMIT_TYPE_LOSS
+
+        user = CustomUser.objects.get(pk=user_id)
+
+        limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
+        time = timezone.now() + datetime.timedelta(days=1)
+        limit.expiration_time = time
+        limit.temporary_amount = limit.amount
+        limit.amount = None
+        limit.save()
+        # return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
+        message = 'Successfully delete the {} limitation and interval is {}'.format(limit_type, interval)
+        current_tz = timezone.get_current_timezone()
+        time = time.astimezone(current_tz)
+        expiration_timeStr = str(time.astimezone(current_tz))
+
+        
+        response = {
+            "expire_time": expiration_timeStr,
+            "message": message
+        }
+        
+        return JsonResponse(response, status = 200)
+
+
+class CancelDeleteLimitation(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        # limit = data['limit']
+        interval = data['interval']
+        limit_type = data['type']
+        limit_id = data['id']
+
+        if limit_type == 'deposit':
+            limit_type = LIMIT_TYPE_DEPOSIT
+        elif limit_type == 'loss':
+            limit_type = LIMIT_TYPE_LOSS
+
+        user = CustomUser.objects.get(pk=user_id)
+
+        limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
+        limit.expiration_time = None
+        limit.amount = limit.temporary_amount
+        limit.temporary_amount = None
+        limit.save()
+
+        return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
+
+
+class GetLimitation(View):
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET.get('id')
+        # limit_type = request.GET.get('type')
+        # limit_type = limit_type.capitalize()
+        # limitDict = dict(LIMIT_TYPE)
+        # for key, value in limitDict.items():
+        #     if value == limit_type:
+        #         limit_type = key
+
+        user = CustomUser.objects.get(pk=user_id)
+        userJson = serializers.serialize('json', [user])
+        userJson = json.loads(userJson)
+        # print(userJson)
+
+        # print(user)
+        userLimitation = Limitation.objects.filter(user=user)
+
+        intervalMap = {}
+        for t in Limitation._meta.get_field('interval').choices:
+            intervalMap[t[0]] = t[1]
+
+        limitationDict = {
+            'bet': [],
+            'loss': [],
+            'deposit': [],
+            'withdraw': [],
+            'tempBlock': {},
+            'permBlock': {}
+        }
+        for limitation in userLimitation:
+            temporary_amount = decimal.Decimal(0) if limitation.temporary_amount is None else  decimal.Decimal(limitation.temporary_amount)
+            amount = None if limitation.amount is None else decimal.Decimal(limitation.amount)
+            expiration_timeStr = ''
+            if limitation.expiration_time:
+                current_tz = timezone.get_current_timezone()
+                expiration_time = limitation.expiration_time.astimezone(current_tz)
+                expiration_timeStr = str(limitation.expiration_time.astimezone(current_tz))
+
+            if limitation.amount is None and limitation.expiration_time and expiration_time <= timezone.now():
+                continue
+            # print(limitation.expiration_time)
+            # expiration_time = None if limitation.expiration_time is None else str(limitation.expiration_time)
+            # print(expiration_time)
+            
+            if limitation.limit_type == LIMIT_TYPE_LOSS:
+                lossMap = {
+                    'amount': amount,
+                    'intervalValue': limitation.interval,
+                    'interval': intervalMap[limitation.interval],
+                    'limitId': limitation.pk,
+                    'temporary_amount': temporary_amount,
+                    'expiration_time': expiration_timeStr
+                }
+                limitationDict['loss'].append(lossMap)
+            elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
+                
+                depositMap = {
+                    'amount': amount,
+                    'intervalValue': limitation.interval,
+                    'interval': intervalMap[limitation.interval],
+                    'limitId': limitation.pk,
+                    'temporary_amount': temporary_amount,
+                    'expiration_time': expiration_timeStr
+                }
+                limitationDict['deposit'].append(depositMap)
+    
+        if user.temporary_block_interval:
+            # print(user.temporary_block_timespan)
+            # print(userJson[0]['fields']['temporary_block_timespan'])
+            # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
+            # time = timeList[0]
+            # time = int(time)
+            tempMap = {
+                'temporary_block': user.temporary_block_interval
+            }
+            limitationDict['tempBlock'] = tempMap
+
+        if user.permanent_block_interval:
+            permanentMap = {
+                'permanent_block': user.permanent_block_interval
+            }
+            limitationDict['permBlock'] = permanentMap
+            # print(limitationDict)
+
+        return HttpResponse(json.dumps(limitationDict, cls=DjangoJSONEncoder), content_type="application/json", status = 200)
+
+class SetBlockTime(View):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        lock_timespan = data['timespan']
+        user_id = data['userId']
+        # lock_type = data['type']
+        tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
+        # print(user_id, lock_type, lock_timespan)
+        if lock_timespan not in tempIntervals:
+            set_permanent_timeout(user_id, lock_timespan)
+            set_temporary_timeout(user_id, -1)
+        else:
+            set_temporary_timeout(user_id, lock_timespan)
+            set_permanent_timeout(user_id, -1)
+        
+        return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(user_id, lock_timespan)), status = 200)
  
 class MarketingSettings(View):
 
@@ -1359,6 +1556,7 @@ class MarketingSettings(View):
         response.update(socialMedia=user.social_media)
 
         # print(response)
+        logger.info("Sending marketing settings response: {}".format(json.dumps(response)))
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
     def post(self, request, *args, **kwargs):
@@ -1392,6 +1590,9 @@ class MarketingSettings(View):
         user.contact_methods = contact_methods_str
         user.save()
 
+        logger.info("Marketing settings for user: {}".format(str(user.username)))
+        logger.info("Email: {}, Phone: {}, SMS: {}, Mail: {}, Social Media: {}".format(email, phone, sms, postal_mail, social_media))
+
         return HttpResponse(('Successfully set the marketing setting'), status = 200)
 
 
@@ -1405,6 +1606,8 @@ class PrivacySettings(View):
             "bonus": user.bonusesProgram,
             "vip": user.vipProgram
         }
+
+        logger.info("Sending privacy settings response: {}".format(json.dumps(response)))
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
@@ -1420,6 +1623,7 @@ class PrivacySettings(View):
         user.vipProgram = vip
         user.save()
 
-        return HttpResponse(('Successfully set the privacy setting'), status = 200)
-    
+        logger.info("Privacy setting for user: {}".format(str(user.username)))
+        logger.info("Bonuses: {}, VIP: {}".format(bonuses, vip))
 
+        return HttpResponse(('Successfully set the privacy setting'), status = 200)
