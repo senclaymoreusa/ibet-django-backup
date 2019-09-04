@@ -485,7 +485,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
                     playname         = playname, 
-                    TransType  = transactionType, 
+                    TransType        = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
                     amount           = amount, 
@@ -539,7 +539,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
                     playname         = playname, 
-                    TransType  =  transactionType, 
+                    TransType        =  transactionType, 
                     transactionID    = transactionType, 
                     currency         = transactionType, 
                     amount           = amount, 

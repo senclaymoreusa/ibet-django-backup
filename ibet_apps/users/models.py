@@ -464,18 +464,18 @@ class GameRequestsModel(models.Model):
         ('0', '0'),
     ]
 
-    Trans_Type = [
-        ('Bet', 'Bet'),
-        ('Discard', 'Discard'),
-        ('Settle', 'Settle'),
-        ('Balance', 'Balance')
-    ]
+    # Trans_Type = [
+    #     ('Bet', 'Bet'),
+    #     ('Discard', 'Discard'),
+    #     ('Settle', 'Settle'),
+    #     ('Balance', 'Balance')
+    # ]
 
     # GB Sports
 
     Method         = models.CharField(max_length=30)
     Success        = models.CharField(choices=Success_Status, max_length=1)
-    TransType      = models.CharField(choices=Trans_Type, max_length=20)
+    TransType      = models.CharField(max_length=30)
     ThirdPartyCode = models.CharField(max_length=30)
     BetTotalCnt    = models.CharField(max_length=30)
     BetTotalAmt    = models.CharField(max_length=30)
