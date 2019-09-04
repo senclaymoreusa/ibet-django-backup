@@ -72,7 +72,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken    = sessionToken,
                     currency        = currency,
-                    playname        = playname,
+                    MemberID        = playname,
                     agentCode       = agentCode,
                     betTime         = betTime,
                     transactionID   = transactionID,
@@ -136,7 +136,7 @@ class PostTransferforAG(APIView):
                     currency        = currency,
                     netAmount       = netAmount,
                     validBetAmount  = validBetAmount, 
-                    playname        = playname, 
+                    MemberID        = playname, 
                     agentCode       = agentCode, 
                     settletime      = settletime, 
                     transactionID   = transactionID, 
@@ -198,7 +198,7 @@ class PostTransferforAG(APIView):
                     currency        = currency, 
                     netAmount       = netAmount, 
                     validBetAmount  = validBetAmount, 
-                    playname        = playname, 
+                    MemberID        = playname, 
                     agentCode       = agentCode, 
                     settletime      = settletime, 
                     transactionID   = transactionID, 
@@ -261,7 +261,7 @@ class PostTransferforAG(APIView):
                     currency         = currency, 
                     netAmount        = netAmount, 
                     validBetAmount   =  validBetAmount, 
-                    playname         =  playname, 
+                    MemberID         =  playname, 
                     agentCode        =  agentCode, 
                     settletime       = settletime, 
                     transactionID    = transactionID, 
@@ -324,7 +324,7 @@ class PostTransferforAG(APIView):
                     sessionToken    = sessionToken, 
                     currency        = currency, 
                     value           = value, 
-                    playname        = playname, 
+                    MemberID        = playname, 
                     agentCode       = agentCode, 
                     betTime         = betTime, 
                     transactionID   = transactionID, 
@@ -372,7 +372,7 @@ class PostTransferforAG(APIView):
 
                 GameRequestsModel.objects.create(
                     sessionToken = sessionToken,
-                    playname     = playname,
+                    MemberID     = playname,
                     TransType    = transactionType
                 )
 
@@ -427,7 +427,7 @@ class PostTransferforAG(APIView):
 
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
-                    playname         = playname, 
+                    MemberID         = playname, 
                     TransType        = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
@@ -484,7 +484,7 @@ class PostTransferforAG(APIView):
 
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
-                    playname         = playname, 
+                    MemberID         = playname, 
                     TransType        = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
@@ -538,7 +538,7 @@ class PostTransferforAG(APIView):
 
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
-                    playname         = playname, 
+                    MemberID         = playname, 
                     TransType        =  transactionType, 
                     transactionID    = transactionType, 
                     currency         = transactionType, 

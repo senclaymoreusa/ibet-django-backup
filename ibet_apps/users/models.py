@@ -511,7 +511,7 @@ class GameRequestsModel(models.Model):
     sessionToken    = models.CharField(max_length=100, blank=True)
     currency        = models.CharField(max_length=100, blank=True)
     value           = models.CharField(max_length=100, blank=True)
-    playname        = models.CharField(max_length=100, blank=True)
+    #playname        = models.CharField(max_length=100, blank=True)
     agentCode       = models.CharField(max_length=100, blank=True)
     betTime         = models.CharField(max_length=100, blank=True)
     transactionID   = models.CharField(max_length=100, blank=True)
