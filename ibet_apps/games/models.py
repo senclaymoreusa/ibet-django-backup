@@ -1,8 +1,9 @@
 from django.db import models
-import uuid
 from users import models as usersModel
 from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
+from django.utils import timezone
+import uuid
 
 
 # Create your models here.
@@ -108,3 +109,10 @@ class Game(models.Model):
 
 #     def __str__(self):
 #         return '{0}: {1}'.format(self.name, self.get_category_display())
+
+
+# create a ticket per user per session to ensure valid request
+class EATicket(models.Model):
+    
+    ticket = models.UUIDField()
+    created_time = models.DateTimeField(default=timezone.now)
