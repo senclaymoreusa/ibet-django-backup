@@ -16,6 +16,10 @@ import hashlib
 import logging
 import datetime
 from datetime import date
+from django.utils import timezone
+import uuid
+from  games.models import *
+
 
 logger = logging.getLogger('django')
 
@@ -706,6 +710,9 @@ class AutoCashierLoginEA(View):
             except:
                 statusCode = "611"
 
+        UUID = uuid.uuid4()
+        EATicket.objects.create(ticket=UUID)
+
         data = {
             "request": {
                 "@action": action,
@@ -726,15 +733,12 @@ class AutoCashierLoginEA(View):
                         },
                         {
                             "@name": "ticket",
-                            "#text": "ticketnumber"
+                            "#text": str(UUID)   #generate 15 seconds response ticket
                         }
                     ]
                 }
             } 
         }
         
-
         response = xmltodict.unparse(data, pretty=True)
         return HttpResponse(response, content_type='text/xml')
-
-
