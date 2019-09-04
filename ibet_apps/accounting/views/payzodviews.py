@@ -18,8 +18,10 @@ from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
 from users.models import CustomUser
-from utils.constants import *
 from accounting.models import Transaction
+from utils.constants import *
+import utils.helpers as helpers
+
 
 load_dotenv()
 logger = logging.getLogger('django')
@@ -33,34 +35,23 @@ def generate_md5(code):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_qr_code(request):
-    if request.method =="POST":
+    if request.method == "POST":
         logger.info("Attempting to get QR Code to make deposit via Payzod...")
         body = json.loads(request.body)
         amount = body.get("amount")
         url = PAYZOD_API_URL
-        now = datetime.now()
-        ref_no = "test-payzod-order-" + request.user.username + str(random.randint(0, 1000))
+        now = timezone.datetime.today()
+        ref_no = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         ref_date = now.strftime("%Y%m%d%H%M%S")
-        if os.getenv("ENV") == "local":
-            payload = {
-                "merchant_id": PAYZOD_MERCHANT_ID,
-                "paytype": "QR",
-                "ref_no": ref_no,
-                "ref_date": ref_date,
-                "passkey": generate_md5(ref_no+ref_date+PAYZOD_PASSKEY),
-                "amount": amount,
-                "merchant_name": "ibet2019"
-            }
-        else:  # use dev credentials
-            payload = {
-                "merchant_id": PAYZOD_MERCHANT_ID,
-                "paytype": "QR",
-                "ref_no": ref_no,
-                "ref_date": ref_date,
-                "passkey": generate_md5(ref_no + ref_date + PAYZOD_PASSKEY),
-                "amount": amount,
-                "merchant_name": "ibet2019"
-            }
+        payload = {
+            "merchant_id": PAYZOD_MERCHANT_ID,
+            "paytype": "QR",
+            "ref_no": ref_no,
+            "ref_date": ref_date,
+            "passkey": generate_md5(ref_no + ref_date + PAYZOD_PASSKEY),
+            "amount": amount,
+            "merchant_name": PAYZOD_MERCHANT_NAME
+        }
         logger.info(payload)
         for x in range(3):
             if os.getenv("ENV") == "local":
@@ -110,32 +101,50 @@ def confirm_payment(request):
         logger.info("Hello, POST request received on payzod confirm_payment()")
         logger.info(request.POST)
         req = request.POST
-        print("HELLO POST")
-        print(request.POST)
         try:
             matching_transaction = Transaction.objects.get(
                 transaction_id=req.get("ref_no"),
                 amount=req.get("amount")
             )
             logger.info("Found matching transaction!")
+            if matching_transaction.order_id != '0':
+                return JsonResponse({
+                    "responseCode": "202",
+                    "responseMesg": "Transaction already exists"
+                })
 
+            # success
             if req.get("response_code") == "001":
                 matching_transaction.status = 0
                 matching_transaction.remark = req.get("response_msg")
-            else:
+                matching_transaction.order_id = req.get("transaction_no")
+                matching_transaction.arrive_time = timezone.now()
+                matching_transaction.last_updated = timezone.now()
+                matching_transaction.save()
+                logger.info("Finished updating transaction in DB!")
+
+                logger.info("Updating user balance...")
+                helpers.addOrWithdrawBalance(matching_transaction.user_id, req.get("amount"), "add")
+
+                return JsonResponse({
+                    "responseCode": "000",
+                    "responseMesg": req.get("response_msg")
+                })
+            else:  # failure
                 matching_transaction.status = 1
                 matching_transaction.remark = req.get("response_msg")
+                matching_transaction.order_id = req.get("transaction_no")
+                matching_transaction.arrive_time = timezone.now()
+                matching_transaction.last_updated = timezone.now()
+                matching_transaction.save()
+                logger.info("Finished updating transaction in DB!")
 
-            matching_transaction.order_id = req.get("transaction_no")
-            matching_transaction.arrive_time = timezone.now()
-            matching_transaction.last_updated = timezone.now()
-            matching_transaction.save()
-            logger.info("Received confirmation of payment!")
+                return JsonResponse({
+                    "responseCode": "888",
+                    "responseMesg": req.get("response_msg")
+                })
 
-            return JsonResponse({
-                "responseCode": req.get("response_code"),
-                "responseMesg": req.get("response_msg")
-            })
+
         except ObjectDoesNotExist as e:
             logger.error(e)
             return JsonResponse({"message": "Could not find matching transaction"})

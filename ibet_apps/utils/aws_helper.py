@@ -20,12 +20,12 @@ def getThirdPartyKeys(bucket, file):
 
 
 def getAWSClient(service_name, third_party_keys):
-    service = boto3.resource(service_name)
     try:
         client = boto3.client(
             service_name,
-            aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
+            region_name='eu-west-2',
+            aws_access_key_id=third_party_keys["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=third_party_keys["AWS_SECRET_ACCESS_KEY"],
         )
     except ClientError as e:
         logger.error(e)
@@ -36,8 +36,9 @@ def getAWSClient(service_name, third_party_keys):
 
     return client 
 
-def getSQSQueue(third_party_keys, queue_name):
-    sqs = boto3.resource('sqs')
+
+def getSQSQueue(queue_name):
+    sqs = boto3.resource('sqs', region_name='eu-west-2')
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except ClientError as e:
