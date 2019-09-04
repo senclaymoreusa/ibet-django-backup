@@ -1,30 +1,26 @@
+import datetime, pytz, base64, hmac, requests, json, logging, time, struct, hashlib, xmltodict, xml.etree.ElementTree as ET
+
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from users.models import CustomUser
+
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
+from accounting.serializers import fgateChargeCardSerialize
+
+from rest_framework import parsers, renderers, status,generics
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
-from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
+
 from utils.constants import *
-#from djauth.third_party_keys import *
-from rest_framework import generics
-from accounting.serializers import fgateChargeCardSerialize
-from django.conf import settings
-import requests,json
-import logging, time, struct, hashlib, xml.etree.ElementTree as ET
-from time import sleep
 from des import DesKey
-import base64,hmac
-from time import gmtime, strftime, strptime
-import datetime, pytz
+from time import gmtime, strftime, strptime, sleep
 from decimal import *
-import xmltodict
 from django.utils import timezone
+
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
