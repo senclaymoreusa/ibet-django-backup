@@ -81,7 +81,7 @@ class PostTransferforAG(APIView):
                     gametype        = gametype,
                     gameCode        = gameCode,
                     tableCode       = tableCode,
-                    transactionType = transactionType,
+                    TransType       = transactionType,
                     transactionCode = transactionCode,
                     deviceType      = deviceType, 
                     playtype        = playtype
@@ -143,7 +143,7 @@ class PostTransferforAG(APIView):
                     billNo          = billNo, 
                     gametype        = gametype, 
                     gameCode        = gameCode, 
-                    transactionType = transactionType, 
+                    TransType       = transactionType, 
                     transactionCode = transactionCode, 
                     ticketStatus    = ticketStatus, 
                     gameResult      = gameResult, 
@@ -205,7 +205,7 @@ class PostTransferforAG(APIView):
                     billNo          = billNo, 
                     gametype        = gametype, 
                     gameCode        = gameCode, 
-                    transactionType = transactionType, 
+                    TransType       = transactionType, 
                     transactionCode = transactionCode, 
                     ticketStatus    = ticketStatus, 
                     gameResult      = gameResult, 
@@ -268,7 +268,7 @@ class PostTransferforAG(APIView):
                     billNo           =  billNo, 
                     gametype         =  gametype, 
                     gameCode         =  gameCode, 
-                    transactionType  =  transactionType, 
+                    TransType        =  transactionType, 
                     transactionCode  =  transactionCode, 
                     ticketStatus     =  ticketStatus, 
                     gameResult       =   gameResult, 
@@ -320,20 +320,20 @@ class PostTransferforAG(APIView):
 
 
                 GameRequestsModel.objects.create(
-                    ticketStatus = ticketStatus, 
-                    sessionToken = sessionToken, 
-                    currency     = currency, 
-                    value        = value, 
-                    playname     = playname, 
-                    agentCode    = agentCode, 
-                    betTime      = betTime, 
-                    transactionID = transactionID, 
-                    platformType  = platformType, 
-                    Round         = Round, 
-                    gametype      = gametype, 
-                    gameCode      = gameCode, 
-                    tableCode     = tableCode, 
-                    transactionType = transactionType, 
+                    ticketStatus    = ticketStatus, 
+                    sessionToken    = sessionToken, 
+                    currency        = currency, 
+                    value           = value, 
+                    playname        = playname, 
+                    agentCode       = agentCode, 
+                    betTime         = betTime, 
+                    transactionID   = transactionID, 
+                    platformType    = platformType, 
+                    Round           = Round, 
+                    gametype        = gametype, 
+                    gameCode        = gameCode, 
+                    tableCode       = tableCode, 
+                    TransType       = transactionType, 
                     transactionCode = transactionCode, 
                     playtype = playtype
                 )
@@ -373,7 +373,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken = sessionToken,
                     playname     = playname,
-                    transactionType = transactionType
+                    TransType    = transactionType
                 )
 
             except:
@@ -428,7 +428,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
                     playname         = playname, 
-                    transactionType  = transactionType, 
+                    TransType        = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
                     amount           = amount, 
@@ -485,7 +485,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
                     playname         = playname, 
-                    transactionType  = transactionType, 
+                    TransType  = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
                     amount           = amount, 
@@ -539,7 +539,7 @@ class PostTransferforAG(APIView):
                 GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
                     playname         = playname, 
-                    transactionType  =  transactionType, 
+                    TransType  =  transactionType, 
                     transactionID    = transactionType, 
                     currency         = transactionType, 
                     amount           = amount, 

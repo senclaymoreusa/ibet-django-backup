@@ -1422,4 +1422,3 @@ class PrivacySettings(View):
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
     
-

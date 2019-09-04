@@ -520,7 +520,7 @@ class GameRequestsModel(models.Model):
     gametype        = models.CharField(max_length=100, blank=True)
     gameCode        = models.CharField(max_length=100, blank=True)
     tableCode       = models.CharField(max_length=100, blank=True)
-    transactionType = models.CharField(max_length=100, blank=True)
+    #transactionType = models.CharField(max_length=100, blank=True)
     transactionCode = models.CharField(max_length=100, blank=True)
     deviceType      = models.CharField(max_length=100, blank=True)
     playtype        = models.CharField(max_length=100, blank=True)
@@ -541,3 +541,4 @@ class GameRequestsModel(models.Model):
         username = self.MemberID if self.MemberID else self.playname
         transtype = self.TransType if self.TransType else self.transactionType
         return  username + ' ' + transtype
+
