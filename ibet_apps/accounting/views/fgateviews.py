@@ -34,25 +34,27 @@ class chargeCard(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = fgateChargeCardSerialize
     permission_classes = [IsAuthenticated, ]
+
     def post(self, request, *args, **kwargs):
         user = self.request.POST.get("user")
         pin = self.request.POST.get("pin")
         serial = self.request.POST.get("serial")
-        order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
-        message = bytes(order_id + pin + serial + FGATE_TYPE, 'utf-8')
+        transaction_id = "ibet" + strftime("%Y%m%d%H%M%S", gmtime())
+        message = bytes(transaction_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
         data = {
             "pin": pin,
             "serial": serial,
-            "tran_id": order_id,
+            "tran_id": transaction_id,
             "type": FGATE_TYPE,
             "token": token,
             "partner_id": FGATE_PARTNERID,
         }
         delay = kwargs.get("delay", 5)
+
         success = False
-        #retry
+        # retry
         for x in range(3):
             r = requests.post(FGATE_URL,  data=data)
             rdata = r.json()
@@ -63,7 +65,7 @@ class chargeCard(generics.GenericAPIView):
             if r.status_code == 400 or r.status_code == 401:
                 success = True
                 # Handle error
-                logger.info("Failed to complete a request for getDepositMethod...")
+                logger.info("Failed to complete a request for Fgo Deposit...")
                 logger.info(rdata)
                 return Response(rdata)
             if r.status_code == 500:
@@ -72,10 +74,10 @@ class chargeCard(generics.GenericAPIView):
                 sleep(delay)
         if rdata["error_code"] == '00' and rdata["status"] == 1:
             create = Transaction.objects.create(
-                order_id=order_id,
+                transaction_id=transaction_id,
                 amount=rdata["amount"],
                 user_id=CustomUser.objects.get(username=user),
-                method= 'Fgo',
+                method='Fgo',
                 transaction_type=0,
                 channel=0,
                 request_time=timezone.now(),
@@ -83,7 +85,7 @@ class chargeCard(generics.GenericAPIView):
             )
         else:
             return Response(rdata)
-        return  Response(rdata)
+        return Response(rdata)
 
 
 
