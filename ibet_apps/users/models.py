@@ -486,7 +486,8 @@ class GameRequestsModel(models.Model):
     GBSN           = models.CharField(max_length=30)
     MemberID       = models.CharField(max_length=30)
     CurCode        = models.CharField(max_length=30)
-    BetDT          = models.CharField(max_length=100)
+    #BetDT          = models.CharField(max_length=100)
+    time            = models.CharField(max_length=100, blank=True)
     BetType        = models.CharField(max_length=20)
     BetTypeParam1  = models.CharField(max_length=20)
     BetTypeParam2  = models.CharField(max_length=20)
@@ -513,7 +514,7 @@ class GameRequestsModel(models.Model):
     value           = models.CharField(max_length=100, blank=True)
     #playname        = models.CharField(max_length=100, blank=True)
     agentCode       = models.CharField(max_length=100, blank=True)
-    betTime         = models.CharField(max_length=100, blank=True)
+    #betTime         = models.CharField(max_length=100, blank=True)
     transactionID   = models.CharField(max_length=100, blank=True)
     platformType    = models.CharField(max_length=100, blank=True)
     Round           = models.CharField(max_length=100, blank=True)
@@ -526,7 +527,7 @@ class GameRequestsModel(models.Model):
     playtype        = models.CharField(max_length=100, blank=True)
     netAmount       = models.CharField(max_length=100, blank=True)
     validBetAmount  = models.CharField(max_length=100, blank=True)
-    settletime      = models.CharField(max_length=100, blank=True)
+    #settletime      = models.CharField(max_length=100, blank=True)
     billNo          = models.CharField(max_length=100, blank=True)
     ticketStatus    = models.CharField(max_length=100, blank=True)
     gameResult      = models.CharField(max_length=100, blank=True)
@@ -534,7 +535,7 @@ class GameRequestsModel(models.Model):
     remark          = models.CharField(max_length=100, blank=True)
     amount          = models.CharField(max_length=100, blank=True)
     gameId          = models.CharField(max_length=100, blank=True)
-    time            = models.CharField(max_length=100, blank=True)
+    
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
