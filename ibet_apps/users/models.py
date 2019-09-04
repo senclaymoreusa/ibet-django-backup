@@ -466,13 +466,13 @@ class GameRequestsModel(models.Model):
 
     # GB Sports and AG
 
-    MemberID       = models.CharField(max_length=30)               # Same as Username
-    TransType      = models.CharField(max_length=30)               # Transaction Type
-    time            = models.CharField(max_length=100, blank=True)
+    MemberID       = models.CharField(max_length=30)                 # Same as Username
+    TransType      = models.CharField(max_length=30)                 # Transaction Type
+    time            = models.CharField(max_length=100, blank=True)   # Current Time
 
     # GB Sports only
 
-    Method         = models.CharField(max_length=30)                            # GB sports only
+    Method         = models.CharField(max_length=30)                            
     Success        = models.CharField(choices=Success_Status, max_length=1)
                               
     ThirdPartyCode = models.CharField(max_length=30)
@@ -531,7 +531,5 @@ class GameRequestsModel(models.Model):
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        username = self.MemberID if self.MemberID else self.playname
-        transtype = self.TransType if self.TransType else self.transactionType
-        return  username + ' ' + transtype
+        return  self.MemberID + ' ' + self.TransType
 
