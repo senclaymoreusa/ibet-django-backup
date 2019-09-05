@@ -80,39 +80,6 @@ def send_message(notification_id):
         return HttpResponse("Can not send Message!")
 
 
-class SMSNotificationAPI(View):
-    def post(self, request, *args, **kwargs):
-    # self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False
-    # create Notification Object
-        data = {
-            "campaign": request.POST.get('campaign'),
-            "subject": request.POST.get('subject'),
-            "content_text": request.POST.get('content_text'),
-            "creator": self.user,
-            "is_sms_message": True,
-            "status": MESSAGE_APPROVED,
-        }
-
-        serializer = NotificationSerializer(data=data)
-        
-        if serializer.is_valid():
-            notification = serializer.save()
-            logger.info("create a SMS notification")
-            notifiers = request.POST.get('notifiers')
-
-            for notifier in notifiers:
-                log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
-                log.save()
-            logger.info("Save notification log")
-
-            end_message(notification.pk)
-
-            return HttpResponseRedirect(reverse('xadmin:notification'))
-        else:
-            logger.error("Sending SMS Notification error!")
-            return HttpResponse("Can not send SMS Message!")
-
-
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
@@ -146,7 +113,10 @@ class NotificationSearchAutocomplete(View):
         # response['body'] = body_data
 
         logger.info('Search response: ' + json.dumps(response))
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        try:
+            return HttpResponse(json.dumps(response), content_type='application/json')
+        except Exception as e:
+            logger.error(e)
 
 
 class NotificationView(CommAdminView):
@@ -563,6 +533,65 @@ class AWSTopicAPIView(GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class SMSNotificationAPI(View):
+    lookup_field = 'pk'
+    queryset = ''
+    serializer_class = NotificationSerializer
+    permission_classes = [AllowAny, ]
+    def post(self, request, *args, **kwargs):
+        # create Notification Object
+        data = {
+            "subject": request.POST.get('subject'),
+            "content_text": request.POST.get('content_text'),
+            "creator": request.POST.get('creator'),
+            "is_sms_message": True,
+            "status": MESSAGE_APPROVED,
+        }
+
+        serializer = NotificationSerializer(data=data)
+        
+        if serializer.is_valid():
+            notification = serializer.save()
+            logger.info("create a SMS notification")
+            notifiers = request.POST.get('notifiers')
+
+            for notifier in notifiers:
+                log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
+                log.save()
+            logger.info("Save notification log")
+
+            end_message(notification.pk)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            logger.error("Sending SMS Notification error!")
+            return Response("Can not send SMS Message!")
+
+
+class NotificationsForUserAPIView(View):
+    def get(self, request, *args, **kwargs):
+        notification_list = request.GET.get('notification_list')
+        queryset = []
+        for notification_id in notification_list:
+            query = Notification.object.get(pk=notification_id)
+            queryset.append(query)
+        
+        return Response(queryset)
+
+
+class NotificationDetailAPIView(ListAPIView):
+    lookup_field = 'pk'
+    queryset = ''
+    permission_classes = [AllowAny, ]
+
+    def get(self, request, *args, **kwargs):
+        notification_id = self.kwargs.get('pk')
+        queryset = Notification.objects.get(pk=notification_id)
+        serializer = NotificationSerializer(queryset, many=False)
+
+        return Response(serializer.data)
+
+
 class NotificationLogView(ListAPIView):
     serializer_class = NotificationLogSerializer
     queryset = NotificationLog.objects.all()
@@ -571,6 +600,60 @@ class NotificationLogView(ListAPIView):
 class NotificationToUsersView(ListAPIView):
     serializer_class = NotificationToUsersSerializer
     queryset = NotificationToUsers.objects.all()
+
+
+class NotificationToUsersDetailView(View):
+    lookup_field = 'pk'
+    permission_classes = [AllowAny, ]
+
+    def get(self, request, *args, **kwargs):
+        notifier_id = self.kwargs.get('pk')
+
+        response = {}
+        response['unread_list'] = []
+        unread_list = NotificationToUsers.objects.filter(notifier_id=notifier_id).order_by('-pk')
+
+        for unread in unread_list:
+            notification = Notification.objects.get(pk=unread.notification_id.pk)
+            message = {}
+            message["pk"] = notification.pk
+            message["subject"] = notification.subject
+            message["content"] = notification.content_text
+            publish_on_str = ''
+            if notification.publish_on:
+                current_tz = timezone.get_current_timezone()
+                publish_time = notification.publish_on.astimezone(current_tz)
+                publish_on_str = str(notification.publish_on.astimezone(current_tz))
+            message["publish_on"] = publish_on_str
+            response['unread_list'].append(message)
+
+        # read_list = NotificationToUsers.objects.filter()
+        # for read in read_list:
+        #     notification = Notification.objects.get(pk=unread.notification_id.pk)
+        #     message = {}
+        #     message["pk"] = notification.pk
+        #     message["subject"] = notification.subject
+        #     message["content"] = notification.content_text
+        #     publish_on_str = ''
+        #     if notification.publish_on:
+        #         current_tz = timezone.get_current_timezone()
+        #         publish_time = notification.publish_on.astimezone(current_tz)
+        #         publish_on_str = str(notification.publish_on.astimezone(current_tz))
+        #     message["publish_on"] = publish_on_str
+        #     response['unread_list'].append(message)
+
+        # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+
+class NotificationToUsersUnreadCountView(ListAPIView):
+    permission_classes = [AllowAny, ]
+
+    def get(self, request, *args, **kwargs):
+        notifier_id = self.kwargs.get('pk')
+        count = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_read=False)).count()
+
+        return Response(count)
 
 
 class UserToAWSTopicView(ListAPIView):
