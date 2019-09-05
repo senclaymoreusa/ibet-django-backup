@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ..models import CustomUser, AGGamemodels
+from ..models import CustomUser, GameRequestsModel
 from django.utils import timezone
 import decimal
 import xmltodict
@@ -69,19 +69,19 @@ class PostTransferforAG(APIView):
                         Status = status.HTTP_400_BAD_REQUEST
                         ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken    = sessionToken,
                     currency        = currency,
-                    playname        = playname,
+                    MemberID        = username,
                     agentCode       = agentCode,
-                    betTime         = betTime,
+                    time           = betTime,
                     transactionID   = transactionID,
                     platformType    = platformType,
                     Round           = Round,
                     gametype        = gametype,
                     gameCode        = gameCode,
                     tableCode       = tableCode,
-                    transactionType = transactionType,
+                    TransType       = transactionType,
                     transactionCode = transactionCode,
                     deviceType      = deviceType, 
                     playtype        = playtype
@@ -131,19 +131,19 @@ class PostTransferforAG(APIView):
                     Status = status.HTTP_400_BAD_REQUEST
                     ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken    = sessionToken,
                     currency        = currency,
                     netAmount       = netAmount,
                     validBetAmount  = validBetAmount, 
-                    playname        = playname, 
+                    MemberID        = username, 
                     agentCode       = agentCode, 
-                    settletime      = settletime, 
+                    time            = settletime, 
                     transactionID   = transactionID, 
                     billNo          = billNo, 
                     gametype        = gametype, 
                     gameCode        = gameCode, 
-                    transactionType = transactionType, 
+                    TransType       = transactionType, 
                     transactionCode = transactionCode, 
                     ticketStatus    = ticketStatus, 
                     gameResult      = gameResult, 
@@ -193,19 +193,19 @@ class PostTransferforAG(APIView):
                     Status = status.HTTP_400_BAD_REQUEST
                     ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken    = sessionToken, 
                     currency        = currency, 
                     netAmount       = netAmount, 
                     validBetAmount  = validBetAmount, 
-                    playname        = playname, 
+                    MemberID        = username, 
                     agentCode       = agentCode, 
-                    settletime      = settletime, 
+                    time            = settletime, 
                     transactionID   = transactionID, 
                     billNo          = billNo, 
                     gametype        = gametype, 
                     gameCode        = gameCode, 
-                    transactionType = transactionType, 
+                    TransType       = transactionType, 
                     transactionCode = transactionCode, 
                     ticketStatus    = ticketStatus, 
                     gameResult      = gameResult, 
@@ -256,19 +256,19 @@ class PostTransferforAG(APIView):
                     ResponseCode = 'INVALID_DATA'
 
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
                     currency         = currency, 
                     netAmount        = netAmount, 
                     validBetAmount   =  validBetAmount, 
-                    playname         =  playname, 
+                    MemberID         =  username, 
                     agentCode        =  agentCode, 
-                    settletime       = settletime, 
+                    time             = settletime, 
                     transactionID    = transactionID, 
                     billNo           =  billNo, 
                     gametype         =  gametype, 
                     gameCode         =  gameCode, 
-                    transactionType  =  transactionType, 
+                    TransType        =  transactionType, 
                     transactionCode  =  transactionCode, 
                     ticketStatus     =  ticketStatus, 
                     gameResult       =   gameResult, 
@@ -319,21 +319,21 @@ class PostTransferforAG(APIView):
                     ResponseCode = 'INVALID_DATA'
 
 
-                AGGamemodels.objects.create(
-                    ticketStatus = ticketStatus, 
-                    sessionToken = sessionToken, 
-                    currency     = currency, 
-                    value        = value, 
-                    playname     = playname, 
-                    agentCode    = agentCode, 
-                    betTime      = betTime, 
-                    transactionID = transactionID, 
-                    platformType  = platformType, 
-                    Round         = Round, 
-                    gametype      = gametype, 
-                    gameCode      = gameCode, 
-                    tableCode     = tableCode, 
-                    transactionType = transactionType, 
+                GameRequestsModel.objects.create(
+                    ticketStatus    = ticketStatus, 
+                    sessionToken    = sessionToken, 
+                    currency        = currency, 
+                    value           = value, 
+                    MemberID        = username, 
+                    agentCode       = agentCode, 
+                    time            = betTime, 
+                    transactionID   = transactionID, 
+                    platformType    = platformType, 
+                    Round           = Round, 
+                    gametype        = gametype, 
+                    gameCode        = gameCode, 
+                    tableCode       = tableCode, 
+                    TransType       = transactionType, 
                     transactionCode = transactionCode, 
                     playtype = playtype
                 )
@@ -370,10 +370,10 @@ class PostTransferforAG(APIView):
                     Status = status.HTTP_400_BAD_REQUEST
                     ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken = sessionToken,
-                    playname     = playname,
-                    transactionType = transactionType
+                    MemberID     = username,
+                    TransType    = transactionType
                 )
 
             except:
@@ -425,10 +425,10 @@ class PostTransferforAG(APIView):
                     Status = status.HTTP_400_BAD_REQUEST
                     ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
-                    playname         = playname, 
-                    transactionType  = transactionType, 
+                    MemberID         = username, 
+                    TransType        = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
                     amount           = amount, 
@@ -482,10 +482,10 @@ class PostTransferforAG(APIView):
                     Status = status.HTTP_400_BAD_REQUEST
                     ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
-                    playname         = playname, 
-                    transactionType  = transactionType, 
+                    MemberID         = username, 
+                    TransType        = transactionType, 
                     transactionID    = transactionID, 
                     currency         = currency, 
                     amount           = amount, 
@@ -536,10 +536,10 @@ class PostTransferforAG(APIView):
                     Status = status.HTTP_400_BAD_REQUEST
                     ResponseCode = 'INVALID_DATA'
 
-                AGGamemodels.objects.create(
+                GameRequestsModel.objects.create(
                     sessionToken     = sessionToken, 
-                    playname         = playname, 
-                    transactionType  =  transactionType, 
+                    MemberID         = username, 
+                    TransType        =  transactionType, 
                     transactionID    = transactionType, 
                     currency         = transactionType, 
                     amount           = amount, 
