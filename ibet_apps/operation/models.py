@@ -75,3 +75,4 @@ class NotificationToUsers(models.Model):
     notification_id = models.ForeignKey(Notification, on_delete=models.CASCADE)
     notifier_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_read = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
