@@ -206,6 +206,7 @@ tbody>tr:nth-child(odd)>th {
         </div> -->
         <!-- {% endblock %} -->
     <!-- </div> -->
+<button id="api">API</button>
 
 <div style="margin-top:40px;">
   <ul class="nav nav-tabs">
@@ -515,6 +516,25 @@ $(document).ready(function() {
   .catch( error => {
     console.error( error );
   } );
+
+  $('#api').click(function() {
+    $.ajax({
+      type: 'POST',
+      url: 'http://localhost:8000/operation/api/send-sms',
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        subject: "subject",
+        content_text: "sms",
+        notifiers: 9,
+      },
+      success: function (data) {
+        alert("done");
+      },
+      error: function () {
+        alert("Fail");
+      }
+    });
+  });
 
   $('#pagination_value').change(function() {
     var pageSize = this.value;

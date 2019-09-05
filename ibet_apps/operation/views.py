@@ -35,7 +35,7 @@ def send_message(notification_id):
 
     # AWS SNS Client
     sns = boto3.resource('sns')
-    client = getAWSClient('sns', third_party_keys)
+    client = getAWSClient('sns', third_party_keys, 'us-east-1')
 
     # Push Notification
     if notification.is_push_message:
@@ -54,8 +54,8 @@ def send_message(notification_id):
         try:
             for message in queryset:
                 notifier = CustomUser.objects.get(pk=message.notifier_id)
-                phone = notifier.phone
-                client.publish(PhoneNumber=phone, Message=notification.content_text)
+                phone = str(notifier.phone)
+                client.publish(PhoneNumber=14803818247, Message=notification.content_text)
 
             logger.info("Enabled SMS Notification")
         except Exception as e:
@@ -534,38 +534,50 @@ class AWSTopicAPIView(GenericAPIView):
 
 
 class SMSNotificationAPI(View):
-    lookup_field = 'pk'
-    queryset = ''
-    serializer_class = NotificationSerializer
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
         # create Notification Object
         data = {
             "subject": request.POST.get('subject'),
             "content_text": request.POST.get('content_text'),
-            "creator": request.POST.get('creator'),
+            "creator": self.user.pk,
             "is_sms_message": True,
             "status": MESSAGE_APPROVED,
         }
-
+ 
         serializer = NotificationSerializer(data=data)
         
         if serializer.is_valid():
             notification = serializer.save()
             logger.info("create a SMS notification")
-            notifiers = request.POST.get('notifiers')
+            notifier_id = request.POST.get('notifier')
+            notifier = CustomUser.objects.get(pk=notifier_id)
 
-            for notifier in notifiers:
-                log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
-                log.save()
+            log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
+
             logger.info("Save notification log")
 
-            end_message(notification.pk)
+            # connect AWS S3
+            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # AWS SNS Client
+            sns = boto3.resource('sns')
+            client = getAWSClient('sns', third_party_keys, 'us-east-1')
+
+            try:
+                phone = str(notifier.phone)
+                client.publish(PhoneNumber=phone, Message=notification.content_text)
+    
+                logger.info("Enabled SMS Notification")
+            except Exception as e:
+                logger.error("Unexpected error: %s" % e)
+                return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
+
+            # return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return HttpResponse("Success", status=200)
         else:
-            logger.error("Sending SMS Notification error!")
-            return Response("Can not send SMS Message!")
+            logger.error("Sending SMS Notification Data Format Incorrect Error!")
+            return HttpResponse("Data Format Incorrect!", status=500)
 
 
 class NotificationsForUserAPIView(View):
