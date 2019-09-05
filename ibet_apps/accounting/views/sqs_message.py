@@ -1,6 +1,7 @@
 import boto3
 import asyncio
 import logging
+import json
 
 from botocore.exceptions import ClientError
 from utils.constants import *
@@ -9,12 +10,11 @@ from users.models import CustomUser
 
 from django.conf import settings
 from pytz import timezone
-
+import decimal
+ # Set up logging
 logger = logging.getLogger("django")
 
 # example for deposit with Astropay
-
-
 async def send_message_sqs(**tranDict):
     third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/sqs_access.json")
     client = getAWSClient("sqs", third_party_keys, "eu-west-2")
@@ -25,10 +25,6 @@ async def send_message_sqs(**tranDict):
     currency_type = dict(CURRENCY_CHOICES).get(tranDict["currency"])
     arrive_time = tranDict["arrive_time"].astimezone(timezone(settings.TIME_ZONE))
 
-    # Set up logging
-    # logging.basicConfig(level=logging.DEBUG,
-    #                     format='%(levelname)s: %(asctime)s: %(message)s')
-
     # Send message to SQS queue
     # userid - user id(pk)
     # transtype - transaction type : deposit, withdrawal, bet placed
@@ -38,39 +34,31 @@ async def send_message_sqs(**tranDict):
     # transtime - the transaction arrive time
     # currency - the currency type
     # product - game types choice Sports, Games, Live Casino
+
+    msg = json.dumps(
+        {
+            "userid": tranDict["user_id"].pk, 
+            "bonuswallet": decimal.Decimal(tranDict["user_id"].bonus_wallet),
+            "product": str(tranDict["product"]), 
+            "amount": decimal.Decimal(tranDict["amount"]),
+            "mainwallet": decimal.Decimal(tranDict["user_id"].main_wallet),
+            "transtype": str(transaction_type), 
+            "transtime": str(arrive_time),
+            "currency": str(currency_type)
+        },default=decimal_default
+    )
+    
     try:
         msg = client.send_message(
             QueueUrl=bonus_queue.url,
-            # DelaySeconds=10,
-            MessageAttributes={
-                "userid": {
-                    "DataType": "Number",
-                    "StringValue": str(tranDict["user_id"].pk),
-                },
-                "transtype": {"DataType": "String", "StringValue": transaction_type},
-                "amount": {
-                    "DataType": "Number",
-                    "StringValue": str(tranDict["amount"]),
-                },
-                "mainwallet": {
-                    "DataType": "Number",
-                    "StringValue": str(tranDict["user_id"].main_wallet),
-                },
-                "bonuswallet": {
-                    "DataType": "Number",
-                    "StringValue": str(tranDict["user_id"].bonus_wallet),
-                },
-                "transtime": {
-                    "DataType": "String.datetime",
-                    "StringValue": str(arrive_time),
-                },
-                "currency": {"DataType": "String", "StringValue": currency_type},
-                "product": {"DataType": "String", "StringValue": tranDict["product"]},
-            },
-            MessageBody=("Deposit Transaction(Astropay)"),
+            MessageBody=(msg)
         )
-    except ClientError as e:
-        logger.error("Client Error. {}".format(e))
-        return None
-    return msg
+        logger.info("Sent message: %s" % msg['MessageId'])
+    except Exception as e:
+        logger.error("Sent message error: %s" % e)
 
+
+def decimal_default(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    raise TypeError
