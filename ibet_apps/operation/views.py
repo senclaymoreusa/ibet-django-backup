@@ -538,10 +538,9 @@ class AWSTopicAPIView(GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def send_sms(subject, content_text, notifier):
+def send_sms(content_text, notifier):
         data = {
-            "subject": subject,
-            "content_text": content,
+            "content_text": content_text,
             "creator": SYSTEM_USER,
             "is_sms_message": True,
             "status": MESSAGE_APPROVED,
