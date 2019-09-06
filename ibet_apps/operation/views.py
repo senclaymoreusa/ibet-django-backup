@@ -134,7 +134,7 @@ class NotificationView(CommAdminView):
         else: 
             pageSize = int(pageSize)
 
-        if offset is None:
+        if offset is None or int(offset) < 1:
             offset = 1
         else:
             offset = int(offset)
@@ -174,6 +174,11 @@ class NotificationView(CommAdminView):
             else:
                 notification_item["notifiers"] = notifiers
             notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
+            notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg.pk)&Q(is_read=True)).count()
+            if(notification_item["sent_count"] == 0):
+                notification_item["rate"] = ""
+            else:
+                notification_item["rate"] = str(notification_item["open"] / notification_item["sent_count"]) + '%'
 
             notification_list.append(notification_item)
 
@@ -221,7 +226,7 @@ class NotificationView(CommAdminView):
 
         notifiers = request.POST.getlist("notifiers")
 
-        if len(notifiers) < 2:
+        if len(notifiers) < 1000:
             data["status"] = MESSAGE_APPROVED
 
         serializer = NotificationSerializer(data=data)
@@ -533,17 +538,14 @@ class AWSTopicAPIView(GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SMSNotificationAPI(View):
-    permission_classes = [AllowAny, ]
-    def post(self, request, *args, **kwargs):
+def send_sms(content_text, notifier):
         data = {
-            "subject": request.POST.get('subject'),
-            "content_text": request.POST.get('content_text'),
-            "creator": request.POST.get('creator'),
+            "content_text": content_text,
+            "creator": SYSTEM_USER,
             "is_sms_message": True,
             "status": MESSAGE_APPROVED,
         }
- 
+
         serializer = NotificationSerializer(data=data)
         
         if serializer.is_valid():
@@ -570,13 +572,21 @@ class SMSNotificationAPI(View):
                 logger.info("Enabled SMS Notification")
             except Exception as e:
                 logger.error("Unexpected error: %s" % e)
-                return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
+                return "AWS ERROR!"
 
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return HttpResponse("Success", status=200)
+            logger.info("send sms notification: ", notification)
+            return "Success"
         else:
             logger.error("Sending SMS Notification Data Format Incorrect Error!")
-            return HttpResponse("Data Format Incorrect!", status=500)
+            return "Data Format Incorrect!"
+
+
+class NotificationUserIsReadAPI(View):
+    def post(self, request, *args, **kwargs):
+        notification_to_user_id = self.kwargs.get('pk')
+        NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
+
+        return HttpResponse(status=200)
 
 
 class NotificationsForUserAPIView(View):
