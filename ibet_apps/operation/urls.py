@@ -1,6 +1,7 @@
 
 from . import views
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     # path('api/games/', views.GameAPIListView.as_view(), name='api_games'),
@@ -12,7 +13,8 @@ urlpatterns = [
     # path('api/reset-password/verify-token/', views.CustomPasswordTokenVerificationView.as_view(), name='password_reset_verify_token'),
     # path('api/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     # path('api/language/', views.LanguageView.as_view(), name='language'),
-    path('api/send-sms', views.SMSNotificationAPI.as_view(), name="sms-notification"),
+    path('api/read_message/<int:pk>', csrf_exempt(views.NotificationUserIsReadAPI.as_view()), name="read_message"),
+    # path('api/send-sms', csrf_exempt(views.SMSNotificationAPI.as_view()), name="sms-notification"),
     path('api/notification-detail/<int:pk>', views.NotificationDetailAPIView.as_view(), name='notification-detail'),
     path('api/notification', views.NotificationAPIView.as_view(), name='notification'),
     path('api/notification-log', views.NotificationLogView.as_view(), name='notification-log'),
