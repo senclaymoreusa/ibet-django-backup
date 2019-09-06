@@ -622,12 +622,12 @@ class NotificationToUsersDetailView(View):
 
         response = {}
         response['unread_list'] = []
-        unread_list = NotificationToUsers.objects.filter(notifier_id=notifier_id).order_by('-pk')
+        unread_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_read=False)).order_by('-pk')
 
         for unread in unread_list:
             notification = Notification.objects.get(pk=unread.notification_id.pk)
             message = {}
-            message["pk"] = notification.pk
+            message["pk"] = unread.pk
             message["subject"] = notification.subject
             message["content"] = notification.content_text
             publish_on_str = ''
