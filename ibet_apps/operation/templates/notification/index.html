@@ -206,7 +206,6 @@ tbody>tr:nth-child(odd)>th {
         </div> -->
         <!-- {% endblock %} -->
     <!-- </div> -->
-<button id="api">API</button>
 
 <div style="margin-top:40px;">
   <ul class="nav nav-tabs">
@@ -517,6 +516,7 @@ $(document).ready(function() {
     console.error( error );
   } );
 
+  /*
   $('#api').click(function() {
     $.ajax({
       type: 'POST',
@@ -535,6 +535,7 @@ $(document).ready(function() {
       }
     });
   });
+  */
 
   $('#pagination_value').change(function() {
     var pageSize = this.value;

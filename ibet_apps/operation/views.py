@@ -536,11 +536,10 @@ class AWSTopicAPIView(GenericAPIView):
 class SMSNotificationAPI(View):
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
-        # create Notification Object
         data = {
             "subject": request.POST.get('subject'),
             "content_text": request.POST.get('content_text'),
-            "creator": self.user.pk,
+            "creator": request.POST.get('creator'),
             "is_sms_message": True,
             "status": MESSAGE_APPROVED,
         }
