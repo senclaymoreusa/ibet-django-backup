@@ -55,7 +55,7 @@ def send_message(notification_id):
             for message in queryset:
                 notifier = CustomUser.objects.get(pk=message.notifier_id)
                 phone = str(notifier.phone)
-                client.publish(PhoneNumber=14803818247, Message=notification.content_text)
+                client.publish(PhoneNumber=phone, Message=notification.content_text)
 
             logger.info("Enabled SMS Notification")
         except Exception as e:
