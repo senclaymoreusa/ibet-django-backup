@@ -589,6 +589,17 @@ class NotificationUserIsReadAPI(View):
         return HttpResponse(status=200)
 
 
+class NotificationUserIsDeleteAPI(View):
+    def post(self, request, *args, **kwargs):
+        notification_to_user_id = self.kwargs.get('pk')
+        try:
+            NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_deleted=True)
+        except Exception as e:
+            logger.error("delete message error:", e)
+
+        return HttpResponse(status=200)
+
+
 class NotificationsForUserAPIView(View):
     def get(self, request, *args, **kwargs):
         notification_list = request.GET.get('notification_list')
@@ -632,12 +643,14 @@ class NotificationToUsersDetailView(View):
 
         response = {}
         response['unread_list'] = []
-        unread_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_read=False)).order_by('-pk')
+        response['read_list'] = []
+        
+        message_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_deleted=False)).order_by('-pk')
 
-        for unread in unread_list:
-            notification = Notification.objects.get(pk=unread.notification_id.pk)
+        for msg in message_list:
+            notification = Notification.objects.get(pk=msg.notification_id.pk)
             message = {}
-            message["pk"] = unread.pk
+            message["pk"] = msg.pk
             message["subject"] = notification.subject
             message["content"] = notification.content_text
             publish_on_str = ''
@@ -646,22 +659,10 @@ class NotificationToUsersDetailView(View):
                 publish_time = notification.publish_on.astimezone(current_tz)
                 publish_on_str = str(notification.publish_on.astimezone(current_tz))
             message["publish_on"] = publish_on_str
-            response['unread_list'].append(message)
-
-        # read_list = NotificationToUsers.objects.filter()
-        # for read in read_list:
-        #     notification = Notification.objects.get(pk=unread.notification_id.pk)
-        #     message = {}
-        #     message["pk"] = notification.pk
-        #     message["subject"] = notification.subject
-        #     message["content"] = notification.content_text
-        #     publish_on_str = ''
-        #     if notification.publish_on:
-        #         current_tz = timezone.get_current_timezone()
-        #         publish_time = notification.publish_on.astimezone(current_tz)
-        #         publish_on_str = str(notification.publish_on.astimezone(current_tz))
-        #     message["publish_on"] = publish_on_str
-        #     response['unread_list'].append(message)
+            if msg.is_read:
+                response['read_list'].append(message)
+            else:
+                response['unread_list'].append(message)
 
         # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
