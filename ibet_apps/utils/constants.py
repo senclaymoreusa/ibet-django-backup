@@ -58,7 +58,8 @@ CHANNEL_CHOICES = (
     (6, 'Payzod'),
     (7, 'CirclePay'),
     (8, 'Fgate'),
-    (9, 'ScratchCard')
+    (9, 'ScratchCard'),
+    (10, 'PaymentIQ')
 )
 
 currency_cny = 0
@@ -73,7 +74,11 @@ CURRENCY_CHOICES = (
     (6, 'MYR'),
     (7, 'VND'),
     (8, 'MMK'),
-    (9, 'XBT')
+    (9, 'XBT'),
+    (10, 'NOK'),
+    (11, 'SEK'),
+    (12, 'GBP'),
+    (13, 'EUR')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
