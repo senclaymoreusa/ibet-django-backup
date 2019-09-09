@@ -128,8 +128,8 @@ def checkUserBlock(userId):
     elif user.temporary_block_time or user.permanent_block_time:
         expried_time = ''
         blocked_time = ''
-        blocked_time = user.temporary_block_time or user.permanent_block_time
-        if user.temporary_block_time:
+        if user.temporary_block_time is not None:
+            blocked_time =  user.temporary_block_time
             expried_time = user.temporary_block_time
             if user.temporary_block_interval == INTERVAL_PER_DAY:
                 expried_time = expried_time + datetime.timedelta(days=1)
@@ -138,7 +138,8 @@ def checkUserBlock(userId):
             elif user.temporary_block_interval == INTERVAL_PER_MONTH:
                 expried_time = expried_time + datetime.timedelta(days=30)
             
-        elif user.permanent_block_time:
+        elif user.permanent_block_time is not None:
+            blocked_time =  user.permanent_block_time
             expried_time = user.permanent_block_time
             if user.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
                 expried_time = expried_time + datetime.timedelta(6*365/12)
@@ -154,10 +155,11 @@ def checkUserBlock(userId):
 
         # print(str(timezone.now()))
         if expried_time > timezone.now():
-            # print("Yes")
+            logger.info("The account is blocked")
             return True
         else:
             # print("No")
+            logger.info("The account is not blocked")
             user.temporary_block_time = None
             user.permanent_block_time = None
             return False
