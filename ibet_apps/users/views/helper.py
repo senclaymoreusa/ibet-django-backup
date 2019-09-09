@@ -118,3 +118,49 @@ def get_old_limitations(userId):
     # print(oldLimitMap)
     logger.info("Getting old limitations of user: {}, and limitations are {}".format(str(user.username), json.dumps(oldLimitMap, cls=DjangoJSONEncoder)))
     return oldLimitMap
+
+
+def checkUserBlock(userId):
+
+    user = CustomUser.objects.get(pk=userId)
+    if user.block is True:
+        return True
+    elif user.temporary_block_time or user.permanent_block_time:
+        expried_time = ''
+        blocked_time = ''
+        blocked_time = user.temporary_block_time or user.permanent_block_time
+        if user.temporary_block_time:
+            expried_time = user.temporary_block_time
+            if user.temporary_block_interval == INTERVAL_PER_DAY:
+                expried_time = expried_time + datetime.timedelta(days=1)
+            elif user.temporary_block_interval == INTERVAL_PER_WEEK:
+                expried_time = expried_time + datetime.timedelta(days=7)
+            elif user.temporary_block_interval == INTERVAL_PER_MONTH:
+                expried_time = expried_time + datetime.timedelta(days=30)
+            
+        elif user.permanent_block_time:
+            expried_time = user.permanent_block_time
+            if user.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
+                expried_time = expried_time + datetime.timedelta(6*365/12)
+            elif user.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
+                expried_time = expried_time + datetime.timedelta(365)
+            elif user.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
+                expried_time = expried_time + datetime.timedelta(365*3)
+            elif user.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
+                expried_time = expried_time + datetime.timedelta(365*5)
+
+        logger.info("Blocked time: " + str(blocked_time))   
+        logger.info("Expried time: " + str(expried_time))
+
+        # print(str(timezone.now()))
+        if expried_time > timezone.now():
+            # print("Yes")
+            return True
+        else:
+            # print("No")
+            user.temporary_block_time = None
+            user.permanent_block_time = None
+            return False
+
+    return False
+    

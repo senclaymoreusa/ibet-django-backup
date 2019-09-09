@@ -24,6 +24,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
+from users.views.helper import *
 
 import requests
 import logging
@@ -45,13 +46,47 @@ class UserDetailView(CommAdminView):
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
-        if customUser.block == True:
+        context['block'] = False
+        if customUser.block is True:
             blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
             data = {
                 'date': blockLimitationDeatil.created_time,
                 'admin': blockLimitationDeatil.admin,
             }
             context['blockDetail'] = data
+            context['block'] = True
+
+        elif checkUserBlock(self.kwargs.get('pk')) is True:
+            expried_time = ""
+            blocked_time = ""
+            blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
+            if customUser.temporary_block_time:
+                expried_time = customUser.temporary_block_time
+                if customUser.temporary_block_interval == INTERVAL_PER_DAY:
+                    expried_time = expried_time + datetime.timedelta(days=1)
+                elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
+                    expried_time = expried_time + datetime.timedelta(days=7)
+                elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
+                    expried_time = expried_time + datetime.timedelta(days=30)
+                
+            elif customUser.permanent_block_time:
+                expried_time = customUser.permanent_block_time
+                if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
+                    expried_time = expried_time + datetime.timedelta(6*365/12)
+                elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
+                    expried_time = expried_time + datetime.timedelta(365)
+                elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
+                    expried_time = expried_time + datetime.timedelta(365*3)
+                elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
+                    expried_time = expried_time + datetime.timedelta(365*5)
+
+            data = {
+                "expried_time": expried_time,
+                "date": blocked_time,
+                "admin": "User themselve"
+            }
+            context['blockDetail'] = data
+            context['block'] = True
 
         riskLevelMap = {}
         for t in CustomUser._meta.get_field('risk_level').choices:
@@ -292,12 +327,11 @@ class UserDetailView(CommAdminView):
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
 
-        userJson = serializers.serialize('json', [customUser])
-        userJson = json.loads(userJson)
+        # userJson = serializers.serialize('json', [customUser])
+        # userJson = json.loads(userJson)
 
-        
         temporaryBlockRes = {}
-        if customUser.temporary_block_interval:
+        if customUser.temporary_block_interval is not None:
             temporaryBlock = customUser.temporary_block_interval
             # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
             # time = timeList[0]
@@ -322,7 +356,7 @@ class UserDetailView(CommAdminView):
         
         
         permanentBlockRes = {}
-        if customUser.permanent_block_interval:
+        if customUser.permanent_block_interval is not None:
             permanentBlock = customUser.permanent_block_interval
             # timeList = userJson[0]['fields']['permanent_block_timespan'].split(' ')
             # time = timeList[0]
@@ -350,6 +384,7 @@ class UserDetailView(CommAdminView):
         
 
         context['temperaryBlock'] = temporaryBlockRes
+        # print("!!!! temperaryBlock: " + str(temporaryBlockRes))
         context['permanentBlock'] = permanentBlockRes
         # print(temporaryBlock, permanentBlock)
         
