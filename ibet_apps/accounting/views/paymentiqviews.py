@@ -38,16 +38,16 @@ cyConversion = {
 }
 
 
-# This method is called by PaymentIQ to verify that a user is properly authenticated and retrieve user data like
-# name, address, birth-date etc. The user data is needed internally by PaymentIQ for various fraud checks and also to
-# enrich the data sent to the Payment Provider. Please note that the minimum required response for verify user
-# needs to contain Balance (can be zero), BalanceCy, UserId and Success. The other parameter requirements will
-# depend on they type of transaction.
+
 def verify_user(request):
     """
-    Function called by PIQ for
-    :param request:
-    :return:
+    This method is called by PaymentIQ to verify that a user is properly authenticated and retrieve user data like
+    name, address, birth-date etc. The user data is needed internally by PaymentIQ for various fraud checks and also to
+    enrich the data sent to the Payment Provider. Please note that the minimum required response for verify user
+    needs to contain Balance (can be zero), BalanceCy, UserId and Success. The other parameter requirements will
+    depend on they type of transaction.
+    :param request: HTTP Request containing UserId and SessionId
+    :return: JSON response containing User KYC info to be sent to Payment Provider
     """
     if request.method == "POST":
         print("received post for verify/user")
@@ -56,7 +56,8 @@ def verify_user(request):
         print(post_data)
         try:
             user = CustomUser.objects.get(username=post_data["userId"])
-            return JsonResponse({
+            print("Found user")
+            result = {
                 "userId": str(user),
                 "success": True,
                 "userCat": user.member_status,  # ?
@@ -67,34 +68,37 @@ def verify_user(request):
                 "street": (user.street_address_1 + user.street_address_2) or "UNKNOWN",
                 "city": user.city or "UNKNOWN",
                 "state": user.state or "UNKNOWN",
-                "zip": username.zipcode or "UNKNOWN",
-                "country": username.country or "UNKNOWN",
+                "zip": user.zipcode or "UNKNOWN",
+                "country": user.country or "UNKNOWN",
                 "email": user.email or "UNKNOWN",
                 "dob": user.date_of_birth or "UNKNOWN",
                 "mobile": user.phone or "UNKNOWN",
                 "balance": user.main_wallet or "UNKNOWN",
-                "balanceCy": user.currency or "UNKNOWN"
+                "balanceCy": user.currency or "UNKNOWN",
                 # "locale": "en_GB",
                 # "attributes": {
-                #     "allow_manual_payout": "true"
+                #     "transaction_type": post_data["attributes"]["transactionMethod"]
                 # }
-            })
+            }
+            return JsonResponse(result)
         except ObjectDoesNotExist as e:
             logger.error(e)
-            return JsonResponse({
+            print("No user found")
+            result = {
                 "success": False,
                 "errCode": "001",  # custom error code (used internally by ibet)
                 "errMsg": "Transaction failed: UserID does not exist"  # message explaining error
-            })
+            }
+            return JsonResponse(result)
 
 
-# This method is called by PaymentIQ so the Operator Platform can authorize a payment before it is getting processed.
-# The Operator Platform should verify that the user is allowed to process and also reserve amount for future debit
-# and check that the user account will not be over debited. If the Operator Platform response is success,
-# then PaymentIQ will continue with processing of the payment transaction.
-# If not, then PaymentIQ will decline the transaction with the status code returned by the Operator Platform.
 def authorize(request):
     """
+    This method is called by PaymentIQ so the Operator Platform can authorize a payment before it is getting processed.
+    The Operator Platform should verify that the user is allowed to process and also reserve amount for future debit
+    and check that the user account will not be over debited. If the Operator Platform response is success,
+    then PaymentIQ will continue with processing of the payment transaction.
+    If not, then PaymentIQ will decline the transaction with the status code returned by the Operator Platform.
     :param request: dictionary object containing user info and deposit/withdraw amount
         Example request:
         {
@@ -174,10 +178,11 @@ def transfer(request):
     This method is called by PaymentIQ after a successfully processed transaction to credit (increase) or debit (decrease)
     a user's account balance. Note: The Operator Platform must always accept a transfer request, even if it results in
     a negative user balance because the payment transaction has already been processed by the payment provider.
-    :param request:
+    :param request: HTTP request containing user info & transaction data
     :return:
     """
     if request.method == "POST":
+
         print("received post for transfer")
         return JsonResponse({"msg": "hi"})
 
