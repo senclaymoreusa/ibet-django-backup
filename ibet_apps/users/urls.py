@@ -3,6 +3,7 @@ from . import views
 
 import users.views.gbsportsintegrationviews as gbsportsintegrationviews
 import users.views.agintegrationviews as agintegrationviews
+import users.views.yggdrasilintegrationviews as yggdrasilintegrationviews
 
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
@@ -60,6 +61,7 @@ urlpatterns += [
     path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
     path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
+    path('api/Yggdrasil/',yggdrasilintegrationviews.YggdrasilAPI.as_view(), name='Yggdrasil_api'),
     path('api/set-limitations/',csrf_exempt(views.SetLimitation.as_view()), name='set_limitation'),
     path('api/delete-limitation/', csrf_exempt(views.DeleteLimitation.as_view()), name='delete_limitation'),
     path('api/get-limitations/', csrf_exempt(views.GetLimitation.as_view()), name='get_limitation'),
