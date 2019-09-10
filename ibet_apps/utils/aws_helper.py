@@ -19,11 +19,11 @@ def getThirdPartyKeys(bucket, file):
     return config
 
 
-def getAWSClient(service_name, third_party_keys):
+def getAWSClient(service_name, third_party_keys, region):
     try:
         client = boto3.client(
             service_name,
-            region_name='eu-west-2',
+            region_name=region,
             aws_access_key_id=third_party_keys["AWS_ACCESS_KEY_ID"],
             aws_secret_access_key=third_party_keys["AWS_SECRET_ACCESS_KEY"],
         )
