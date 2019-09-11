@@ -1195,14 +1195,11 @@ class GenerateActivationCode(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-
         username = request.data['username']
-        # username = 'Bobby'
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
 
-        print(str(random_num))
         send_sms(str(random_num), user[0].pk)
     
         return Response(status=status.HTTP_200_OK)
