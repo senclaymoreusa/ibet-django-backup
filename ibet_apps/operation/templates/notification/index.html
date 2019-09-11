@@ -6,6 +6,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
 <style>
 form {
   padding: 0 16px 16px 16px;
@@ -73,7 +76,7 @@ tbody>tr:nth-child(odd)>th {
 </style>
 
 <div class="row">
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New message</button>
   <a role="button" class="btn btn-primary" href="/xadmin/audit">
     Notifications <span class="badge badge-light">{{ waiting_list }}</span>
   </a>
@@ -167,45 +170,44 @@ tbody>tr:nth-child(odd)>th {
       </div>
     </div>
   </div>
-<div class="row">
-  <div class='col-md-3'>
+<div class="row" style="margin-top: 36px">
+  <div class='col-md-4' style="padding-left: 0">
     <div class="input-group">
-      <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword..." >
+      <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword...">
       <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
     </div>
   </div>
+  <div class='col-md-2' style="padding-left: 0">
+  </div>
+  <div class='col-md-6'>
+    <!-- {% block time_search %} -->
+    {% comment %} <label>Date Range</label> {% endcomment %}
+    <div class="row">
+        <div class='col-md-5'>
+            <div class='input-group'>
+              <input type='text' class="form-control" placeholder="From" id='notification_time_from' />
+                {% comment %} <input type='date' class="form-control" placeholder="From"> {% endcomment %}
+            </div>
+        </div>
+        <div class='col-md-5'>
+            <div class='input-group'>
+              <input type='text' class="form-control" placeholder="To"  id='notification_time_to'/>
+            </div>
+        </div>
+        <div class='col-md-2'>
+            <button id="date-search-btn" type="button" class="btn btn-primary"><i class="fa fa-search"></i></button>
+            {% comment %} <span id="date-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span> {% endcomment %}
+        </div>
+    </div>
+      <!-- {% endblock %} -->
+    </div>
 </div>
 <div class="col-md-3">
     {% if searchError %}
         <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
     {% endif %}
 </div>
-    <!-- <div class='col-md-8'> -->
-        <!-- {% block time_search %} -->
-        <!-- <label>Date Range</label>
-        <div class="row">
-            <div class='col-md-4'>
-                <div class='input-group date' id='user_list_time_from'>
-                    <input type='text' class="form-control" placeholder="From" id='user_list_time_from_input' />
-                    <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <div class='input-group date' id='user_list_time_to'>
-                    <input type='text' class="form-control" placeholder="To"  id='user_list_time_to_input'/>
-                    <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <button id="user_list_time_submit" type="submit" class="btn btn-primary">Submit</button>
-            </div>
-        </div> -->
-        <!-- {% endblock %} -->
-    <!-- </div> -->
+
 
 <div style="margin-top:40px;">
   <ul class="nav nav-tabs">
@@ -243,7 +245,7 @@ tbody>tr:nth-child(odd)>th {
               {% else %}
               <td>{{ notification.topic }}</td>
               {% endif %}
-              <td>BONUS</td>
+              <td><i class="far fa-money-bill-alt"></i></td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
               <td>{{ notification.sent_count }}</td>
@@ -428,6 +430,8 @@ $(document).ready(function() {
   // parse url
   paramsMap = {
       'search': '',
+      'from': '',
+      'to': '',
       'pageSize': 20,
       'offset': 1,
       'tab': 2
@@ -436,6 +440,12 @@ $(document).ready(function() {
   var parsedUrl = new URL(window.location.href);
   if (parsedUrl.searchParams.get("search") !== null) {
       paramsMap['search'] = parsedUrl.searchParams.get("search");
+  }
+  if (parsedUrl.searchParams.get("from") !== null) {
+      paramsMap['from'] = parsedUrl.searchParams.get("from");
+  }
+  if (parsedUrl.searchParams.get("search") !== null) {
+      paramsMap['to'] = parsedUrl.searchParams.get("to");
   }
   if (parsedUrl.searchParams.get("pageSize") !== null) {
       paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
@@ -489,10 +499,16 @@ $(document).ready(function() {
 
     var tab = paramsMap['tab'];
     
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, "");
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, "", "", "");
   });
 
   $('#pagination_value').val(paramsMap['pageSize']);
+
+  $('#search').val(paramsMap['search']);
+
+  $('#notification_time_from').datetimepicker({date: paramsMap['from']});
+
+  $('#notification_time_to').datetimepicker({date: paramsMap['to']});
   
   $('#italic').click(function() {
     document.execCommand('italic');
@@ -516,45 +532,63 @@ $(document).ready(function() {
     console.error( error );
   } );
 
-  /*
-  $('#api').click(function() {
-    $.ajax({
-      type: 'POST',
-      url: 'http://localhost:8000/operation/api/send-sms',
-      data: {
-        csrfmiddlewaretoken: "{{ csrf_token }}",
-        subject: "subject",
-        content_text: "sms",
-        notifiers: 9,
-      },
-      success: function (data) {
-        alert("done");
-      },
-      error: function () {
-        alert("Fail");
-      }
-    });
-  });
-  */
-
   $('#pagination_value').change(function() {
     var pageSize = this.value;
     var offset = paramsMap['offset'];
     var tab = paramsMap['tab'];
-
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, "");
+    var search = paramsMap['search'];
+    var t_from = paramsMap['from'];
+    var t_to = paramsMap['to'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search, t_from, t_to);
   });
 
   $("#search-btn").click(function() {
     var pageSize = $("#pagination_value").val();
     var search = $('#search').val();
     var tab = paramsMap['tab'];
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search);
+    var t_from = paramsMap['from'];
+    var t_to = paramsMap['to'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search), t_from, t_to;
   });
 
   $("#search").on('keyup', function () {
     if( this.value.length < 2 ) return;
       searchOpen();
+  });
+
+  $(function () {
+    $('#notification_time_from').datetimepicker();
+    $('#notification_time_to').datetimepicker();
+  });
+
+  $("#date-search-btn").click(function() {
+    var time_from = $('#notification_time_from').val();
+    time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
+    console.log(time_from);
+    // time_from = time_from.format('YYYY-MM-DD HH:mm');
+    var time_to = $('#notification_time_to').val();
+    time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
+    console.log(time_to);
+
+    var search = $('#search').val();
+    var pageSize = $("#pagination_value").val();
+    var tab = paramsMap['tab'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search, time_from, time_to);    
+
+  /*
+    $.ajax({
+      type:'GET',
+      url:"{% url 'xadmin:notification' %}",
+      data:{ 
+        'type': 'user_list_time_range_filter',
+        'from': time_from,
+        'to': time_to
+      },
+      success:function(data) {
+        console.log(data);
+        //getUserList(data);
+      }
+    });*/
   });
 
   function searchOpen() {
@@ -641,8 +675,11 @@ $(document).ready(function() {
     // var newFromItem = Number(oldFromItem) + Number(pageSize);
     var newFromItem = Number(oldFromItem) + 1;
     var tab = paramsMap['tab'];
+    var search = paramsMap['search'];
+    var t_from = paramsMap['from'];
+    var t_to = paramsMap['to'];
     
-    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
+    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, search, t_from, t_to);
   }
 
   getPrevious = function () {
@@ -654,17 +691,24 @@ $(document).ready(function() {
       // var newFromItem = Number(oldFromItem) - Number(pageSize);
       var newFromItem = Number(oldFromItem) - 1;
       var tab = paramsMap['tab'];
+      var search = paramsMap['search'];
+      var t_from = paramsMap['from'];
+      var t_to = paramsMap['to'];
       
-      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, search, t_from, t_to);
   }
 });
 
-function getUserListRedirectUrl(pageSize, offset, tab, search) {
+function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
+
+  console.log(parts);
   
   var redirectUrl = parts[0]; 
   redirectUrl += '?search=' + search;
+  redirectUrl += '&from=' + t_from;
+  redirectUrl += '&to=' + t_to;
   redirectUrl += "&pageSize=" + pageSize;
   redirectUrl += '&offset=' + offset;
   redirectUrl += '&tab=' + tab;

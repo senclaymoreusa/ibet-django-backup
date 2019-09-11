@@ -10,6 +10,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
+
+import datetime
 import boto3
 import json
 import logging
@@ -119,12 +121,23 @@ class NotificationSearchAutocomplete(View):
             logger.error(e)
 
 
+def isTimeFormat(time_str):
+    try:
+        datetime.datetime.strptime(time_str, "%Y-%m-%d %H:%M")
+        return True
+    except ValueError:
+        return False
+
+
 class NotificationView(CommAdminView):
     lookup_field = 'pk'
     serializer_class = NotificationSerializer
 
     def get(self, request, *arg, **kwargs):
         search = request.GET.get('search')
+        # time_range = request.GET.get('time_range')
+        start_time = request.GET.get('from')
+        end_time = request.GET.get('to')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
         tab = request.GET.get('tab')
@@ -153,11 +166,40 @@ class NotificationView(CommAdminView):
 
         context['all_user'] = CustomUser.objects.all()
         context['waiting_list'] = Notification.objects.filter(auditor=self.user.pk).count()
+
+        # set filter
+        msg_filter = Q(status=tab)
+
         if search:
             logger.info('Search notification, key: ' + search)
-            queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
-        else:
-            queryset = Notification.objects.filter(status=tab)
+            msg_filter = msg_filter & Q(subject__contains=search)
+            # queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
+            # queryset = Notification.objects.filter(status=tab)
+
+        if isTimeFormat(start_time):
+            current_tz = timezone.get_current_timezone()
+            start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M").astimezone(current_tz)
+                
+            msg_filter = msg_filter & Q(publish_on__gt=start_time)
+
+        if isTimeFormat(end_time):
+            current_tz = timezone.get_current_timezone()
+            end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M").astimezone(current_tz)
+                
+            msg_filter = msg_filter & Q(publish_on__lt=end_time)
+
+        # if start_time:
+        #     try:
+        #         current_tz = timezone.get_current_timezone()
+        #         start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M").astimezone(current_tz)
+        #         end_time =  datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M").astimezone(current_tz)
+
+        #         msg_filter = msg_filter & Q(publish_on__range=(start_time, end_time))
+        #         # queryset = Notification.objects.filter(publish_on__range=(start_time, end_time))
+        #     except Exception as e:
+        #         logger.error(e)
+
+        queryset = Notification.objects.filter(msg_filter)
 
         notification_list = []
         for msg in queryset:
@@ -178,7 +220,7 @@ class NotificationView(CommAdminView):
             if(notification_item["sent_count"] == 0):
                 notification_item["rate"] = ""
             else:
-                notification_item["rate"] = str(notification_item["open"] / notification_item["sent_count"]) + '%'
+                notification_item["rate"] = str((notification_item["open"] / notification_item["sent_count"]) * 100) + '%'
 
             notification_list.append(notification_item)
 
@@ -512,6 +554,15 @@ class CreateNotificationAPIView(CreateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class NotificationDateFilterAPI(View):
+    def get(self, request, *arg, **kwargs):
+        start_date = request.GET.get('date')
+        end_date = request.GET.get('date')
+
+        queryset = Notification.objects.filter(date__range=[start_date, end_date])
+        return HttpResponse(status=200)
+
+
 class AWSTopicAPIView(GenericAPIView):
     lookup_field = 'pk'
     serializer_class = AWSTopicSerializer
@@ -584,9 +635,12 @@ def send_sms(content_text, notifier):
 class NotificationUserIsReadAPI(View):
     def post(self, request, *args, **kwargs):
         notification_to_user_id = self.kwargs.get('pk')
-        NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
-
-        return HttpResponse(status=200)
+        message = NotificationToUsers.objects.get(pk=notification_to_user_id)
+        if message.is_read:
+            return HttpResponse(status=200)
+        else:
+            NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
+            return HttpResponse(status=201)
 
 
 class NotificationUserIsDeleteAPI(View):
@@ -641,9 +695,9 @@ class NotificationToUsersDetailView(View):
     def get(self, request, *args, **kwargs):
         notifier_id = self.kwargs.get('pk')
 
-        response = {}
-        response['unread_list'] = []
-        response['read_list'] = []
+        response = []
+        # response['unread_list'] = []
+        # response['read_list'] = []
         
         message_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_deleted=False)).order_by('-pk')
 
@@ -659,10 +713,9 @@ class NotificationToUsersDetailView(View):
                 publish_time = notification.publish_on.astimezone(current_tz)
                 publish_on_str = str(notification.publish_on.astimezone(current_tz))
             message["publish_on"] = publish_on_str
-            if msg.is_read:
-                response['read_list'].append(message)
-            else:
-                response['unread_list'].append(message)
+            message["is_read"] = msg.is_read
+            message["is_deleted"] = False
+            response.append(message)
 
         # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
@@ -673,7 +726,7 @@ class NotificationToUsersUnreadCountView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
         notifier_id = self.kwargs.get('pk')
-        count = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_read=False)).count()
+        count = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_read=False)&Q(is_deleted=False)).count()
 
         return Response(count)
 
