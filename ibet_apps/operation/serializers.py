@@ -71,5 +71,5 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 class NotificationToUsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationToUsers
-        fields = ('pk', 'notification_id', 'notifier_id', 'is_read')
-        read_only_fields = ['pk', 'notification_id', 'notifier_id', 'is_read']
+        fields = ('pk', 'notification_id', 'notifier_id', 'is_read', "is_deleted")
+        read_only_fields = ['pk', 'notification_id', 'notifier_id', 'is_read', "is_deleted"]
