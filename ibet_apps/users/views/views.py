@@ -58,6 +58,8 @@ from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
 
+from operation.views import send_sms
+
 import datetime
 import logging
 import os
@@ -1187,8 +1189,6 @@ class CheckUsernameExist(View):
             return HttpResponse(status=400)
         return HttpResponse(status=200)
 
-
-from operation.views import send_sms
 
 class GenerateActivationCode(APIView):
 
