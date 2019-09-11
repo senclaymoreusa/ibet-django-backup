@@ -219,7 +219,8 @@ class NotificationView(CommAdminView):
 
         serializer = NotificationSerializer(data=data)
 
-        if serializer.is_valid():           
+        if serializer.is_valid():
+            send_sms(data["content_text"], notifiers[0])
             notification = serializer.save()
             logger.info("Save notification message")
             # store notification data in NotificationLog
@@ -533,8 +534,8 @@ def send_sms(content_text, notifier):
         if serializer.is_valid():
             notification = serializer.save()
             logger.info("create a SMS notification")
-            notifier_id = request.POST.get('notifier')
-            notifier = CustomUser.objects.get(pk=notifier_id)
+            # notifier_id = notifier.pk
+            notifier = CustomUser.objects.get(pk=notifier)
 
             log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
 
@@ -556,7 +557,7 @@ def send_sms(content_text, notifier):
                 logger.error("Unexpected error: %s" % e)
                 return "AWS ERROR!"
 
-            logger.info("send sms notification: ", notification)
+            # logger.info("send sms notification: ", notification)
             return "Success"
         else:
             logger.error("Sending SMS Notification Data Format Incorrect Error!")
