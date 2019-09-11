@@ -156,6 +156,8 @@ class CustomUser(AbstractBaseUser):
     permanent_block_timespan = models.DurationField(null=True, blank=True)
     permanent_block_interval = models.SmallIntegerField(choices=PERMANENT_INTERVAL, null=True, blank=True)
 
+    activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
+
     ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
     department = models.SmallIntegerField(null=True, blank=True)
@@ -276,6 +278,7 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
+    image_url = models.CharField(max_length=500, null=True, blank=True)
     game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
