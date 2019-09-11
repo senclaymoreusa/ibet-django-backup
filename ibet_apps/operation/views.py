@@ -522,6 +522,7 @@ class AWSTopicAPIView(GenericAPIView):
 
 
 def send_sms(content_text, notifier):
+        print(1)
         data = {
             "content_text": content_text,
             "creator": SYSTEM_USER,
