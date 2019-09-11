@@ -278,6 +278,7 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
+    image_url = models.CharField(max_length=500, null=True, blank=True)
     game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
