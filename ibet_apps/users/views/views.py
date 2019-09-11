@@ -58,6 +58,8 @@ from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
 
+from operation.views import send_sms
+
 import datetime
 import logging
 import os
@@ -1193,19 +1195,13 @@ class GenerateActivationCode(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
+
         username = request.data['username']
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
+        send_sms(str(random_num), user[0].pk)
     
-        DOMAIN = settings.DOMAIN
-        r = requests.post(DOMAIN + 'operation/api/notification', {
-            'content':               random_num, 
-            'notification_choice':   'U',
-            'notification_method':   'S',
-            'notifiers':             user[0].pk
-        })
-        
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):

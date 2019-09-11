@@ -539,7 +539,7 @@ def send_sms(content_text, notifier):
 
             log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
 
-            logger.info("Save notification log")
+            #logger.info("Save notification log")
 
             # connect AWS S3
             third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
