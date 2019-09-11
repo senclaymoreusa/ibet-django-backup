@@ -271,5 +271,30 @@ def transfer(request):
 
 def cancel(request):
     if request.method == "POST":
-        print("received post for cancel")
-        return JsonResponse({"msg": "hi"})
+        post_data = json.loads(request.body)
+        try:
+            matching_transaction = Transaction.objects.get(
+                user_id=user,
+                order_id=post_data["txId"],
+                amount=float(post_data["txAmount"]),
+                method=post_data["provider"] + ": " + post_data["txName"],
+                currency=cyConversion[post_data["txAmountCy"]],
+                channel=10,  # 10 = PaymentIQ
+            )
+            matching_transaction.status = 5  # 5 = CANCELED
+            matching_transaction.last_updated = timezone.now()
+            matching_transaction.remark = "PSP(" + post_data["provider"] + ") rejected this " + post_data["txName"] + " request"
+            result = {
+                "userId": post_data["userId"],
+                "success": True,
+            }
+            return JsonResponse(result)
+        except ObjectDoesNotExist as e:
+            logger.info(e)
+            return JsonResponse({
+                "userId": post_data["userId"],
+                "success": False,
+                "merchantTxId": trans_id,
+                "errCode": "001",  # custom error code (used internally by ibet)
+                "errMsg": "Transfer failed: Transaction does not exist"  # message explaining error
+            })
