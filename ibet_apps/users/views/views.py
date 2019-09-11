@@ -1623,3 +1623,27 @@ class PrivacySettings(View):
         logger.info("Bonuses: {}, VIP: {}".format(bonuses, vip))
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
+
+class ActivityCheckSetting(View):
+
+
+    def get(self, request, *args, **kwargs):
+        userId= request.GET['userId']
+        user = CustomUser.objects.get(pk=userId)
+        response = {
+            "activityOpt": user.activity_check
+        }
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        userId = data['userId']
+        activityOpt = data['activityOpt']
+
+        user = CustomUser.objects.get(pk=userId)
+        user.activity_check = activityOpt
+        user.save()
+        logger.info("Activity check setting for user: {}, and time option is: {}".format(str(user.username), activityOpt))
+
+        return HttpResponse(('Successfully set the activity check setting'), status = 200)

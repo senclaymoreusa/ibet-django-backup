@@ -156,6 +156,8 @@ class CustomUser(AbstractBaseUser):
     permanent_block_timespan = models.DurationField(null=True, blank=True)
     permanent_block_interval = models.SmallIntegerField(choices=PERMANENT_INTERVAL, null=True, blank=True)
 
+    activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
+
     ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
     department = models.SmallIntegerField(null=True, blank=True)
