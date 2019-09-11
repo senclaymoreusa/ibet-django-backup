@@ -29,7 +29,6 @@ def send_message(notification_id):
     notification = Notification.objects.get(pk=notification_id)
     # All messages
     queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
-
     # connect AWS S3
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
@@ -39,21 +38,21 @@ def send_message(notification_id):
 
     # Push Notification
     if notification.is_push_message:
-        platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
-        
-        platform_endpoint.publish(
-            Message=notification.content_text,
-        )
-        logger.info("Enabled Push Notification")
-    else:
-        logger.error("Sending push notification error!:")
-        return HttpResponse("Can not send Message!")
+        try:
+            platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
+            
+            platform_endpoint.publish(
+                Message=notification.content_text,
+            )
+            logger.info("Enabled Push Notification")
+        except Exception as e:
+            logger.error("Sending push notification error!:", e)
         
     # SMS Notification
     if notification.is_sms_message:
         try:
             for message in queryset:
-                notifier = CustomUser.objects.get(pk=message.notifier_id)
+                notifier = CustomUser.objects.get(username=message.notifier_id)
                 phone = str(notifier.phone)
                 client.publish(PhoneNumber=phone, Message=notification.content_text)
 
@@ -67,7 +66,7 @@ def send_message(notification_id):
         # AWS SNS Topic
         topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
         topic.publish(
-            Message=message.content_text,
+            Message=notification.content_text,
             Subject='iBet Notification',
         )
         logger.info("Enabled Email Notification")
@@ -220,7 +219,6 @@ class NotificationView(CommAdminView):
         serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():
-            send_sms(data["content_text"], notifiers[0])
             notification = serializer.save()
             logger.info("Save notification message")
             # store notification data in NotificationLog
@@ -524,7 +522,6 @@ class AWSTopicAPIView(GenericAPIView):
 def send_sms(content_text, notifier):
         data = {
             "content_text": content_text,
-            "creator": SYSTEM_USER,
             "is_sms_message": True,
             "status": MESSAGE_APPROVED,
         }
@@ -534,12 +531,12 @@ def send_sms(content_text, notifier):
         if serializer.is_valid():
             notification = serializer.save()
             logger.info("create a SMS notification")
-            # notifier_id = notifier.pk
+
             notifier = CustomUser.objects.get(pk=notifier)
 
             log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
 
-            #logger.info("Save notification log")
+            logger.info("Save notification log")
 
             # connect AWS S3
             third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
@@ -557,7 +554,6 @@ def send_sms(content_text, notifier):
                 logger.error("Unexpected error: %s" % e)
                 return "AWS ERROR!"
 
-            # logger.info("send sms notification: ", notification)
             return "Success"
         else:
             logger.error("Sending SMS Notification Data Format Incorrect Error!")
