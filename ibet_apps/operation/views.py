@@ -659,5 +659,3 @@ class NotificationToUsersUnreadCountView(ListAPIView):
 class UserToAWSTopicView(ListAPIView):
     serializer_class = UserToAWSTopicSerializer
     queryset = UserToAWSTopic.objects.all()
-
-#send_sms('Hello', 2)
