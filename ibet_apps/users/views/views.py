@@ -1188,6 +1188,8 @@ class CheckUsernameExist(View):
         return HttpResponse(status=200)
 
 
+from operation.views import send_sms
+
 class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
@@ -1197,14 +1199,9 @@ class GenerateActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
+
+        send_sms(random_num, user[0].pk)
     
-        DOMAIN = settings.DOMAIN
-        r = requests.post(DOMAIN + 'operation/api/notification', {
-            'content':               random_num, 
-            'notification_choice':   'U',
-            'notification_method':   'S',
-            'notifiers':             user[0].pk
-        })
         
         return Response(status=status.HTTP_200_OK)
 

@@ -533,12 +533,11 @@ def send_sms(content_text, notifier):
         if serializer.is_valid():
             notification = serializer.save()
             logger.info("create a SMS notification")
-            notifier_id = request.POST.get('notifier')
-            notifier = CustomUser.objects.get(pk=notifier_id)
+            notifier = CustomUser.objects.get(pk=notifier)
 
             log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
 
-            logger.info("Save notification log")
+            #logger.info("Save notification log")
 
             # connect AWS S3
             third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
@@ -660,3 +659,5 @@ class NotificationToUsersUnreadCountView(ListAPIView):
 class UserToAWSTopicView(ListAPIView):
     serializer_class = UserToAWSTopicSerializer
     queryset = UserToAWSTopic.objects.all()
+
+#send_sms('Hello', 2)
