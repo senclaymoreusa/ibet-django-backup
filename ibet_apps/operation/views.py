@@ -33,7 +33,7 @@ def send_message(notification_id):
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
     # AWS SNS Client
-    sns = boto3.resource('sns')
+    sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
     client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
     # Push Notification
@@ -285,7 +285,7 @@ class AuditNotificationView(CommAdminView):
         third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
         # AWS SNS Client
-        sns = boto3.resource('sns')
+        sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
         client = getAWSClient('sns', third_party_keys)
 
         # Push Notification
@@ -453,7 +453,7 @@ class CreateNotificationAPIView(CreateAPIView):
                 third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
                 # AWS SNS Client
-                sns = boto3.resource('sns')
+                sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
                 client = getAWSClient('sns', third_party_keys)
 
                 # Push Notification
@@ -542,7 +542,7 @@ def send_sms(content_text, notifier):
             third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
             # AWS SNS Client
-            sns = boto3.resource('sns')
+            sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
             client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
             try:
