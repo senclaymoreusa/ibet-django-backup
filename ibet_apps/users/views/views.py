@@ -284,7 +284,7 @@ class LoginView(GenericAPIView):
         # print('login language code: ' + languageCode)
 
         self.user = self.serializer.validated_data['user']
-        if checkUserBlock:
+        if checkUserBlock(self.user.pk):
             # print("user block")
             raise BlockedUserException
         if self.user.active == False:
