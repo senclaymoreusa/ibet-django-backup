@@ -58,6 +58,8 @@ from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
 
+from operation.views import send_sms
+
 import datetime
 import logging
 import os
@@ -1197,15 +1199,9 @@ class GenerateActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
+
+        send_sms(str(random_num), user[0].pk)
     
-        DOMAIN = settings.DOMAIN
-        r = requests.post(DOMAIN + 'operation/api/notification', {
-            'content':               random_num, 
-            'notification_choice':   'U',
-            'notification_method':   'S',
-            'notifiers':             user[0].pk
-        })
-        
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):
@@ -1628,6 +1624,7 @@ class PrivacySettings(View):
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
 
+
 class GetBetHistory(View):
 
     #permission_classes = (IsAuthenticated, )
@@ -1640,3 +1637,28 @@ class GetBetHistory(View):
         }
         
         return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+
+class ActivityCheckSetting(View):
+
+
+    def get(self, request, *args, **kwargs):
+        userId= request.GET['userId']
+        user = CustomUser.objects.get(pk=userId)
+        response = {
+            "activityOpt": user.activity_check
+        }
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        userId = data['userId']
+        activityOpt = data['activityOpt']
+
+        user = CustomUser.objects.get(pk=userId)
+        user.activity_check = activityOpt
+        user.save()
+        logger.info("Activity check setting for user: {}, and time option is: {}".format(str(user.username), activityOpt))
+
+        return HttpResponse(('Successfully set the activity check setting'), status = 200)
+

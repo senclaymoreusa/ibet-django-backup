@@ -29,29 +29,31 @@ def send_message(notification_id):
     notification = Notification.objects.get(pk=notification_id)
     # All messages
     queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
-
     # connect AWS S3
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
     # AWS SNS Client
-    sns = boto3.resource('sns')
-    client = getAWSClient('sns', third_party_keys)
+    sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
+    client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
     # Push Notification
     if notification.is_push_message:
-        platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
-        
-        platform_endpoint.publish(
-            Message=notification.content_text,
-        )
-        logger.info("Enabled Push Notification")
+        try:
+            platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
+            
+            platform_endpoint.publish(
+                Message=notification.content_text,
+            )
+            logger.info("Enabled Push Notification")
+        except Exception as e:
+            logger.error("Sending push notification error!:", e)
         
     # SMS Notification
     if notification.is_sms_message:
         try:
             for message in queryset:
-                notifier = CustomUser.objects.get(pk=message.notifier_id)
-                phone = notifier.phone
+                notifier = CustomUser.objects.get(username=message.notifier_id)
+                phone = str(notifier.phone)
                 client.publish(PhoneNumber=phone, Message=notification.content_text)
 
             logger.info("Enabled SMS Notification")
@@ -59,53 +61,24 @@ def send_message(notification_id):
             logger.error("Unexpected error: %s" % e)
             return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
 
-        # Email Notification
-        if NOTIFICATION_EMAIL in notification_methods:
-            # AWS SNS Topic
-            topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
-            topic.publish(
-                Message=message.content_text,
-                Subject='iBet Notification',
-            )
-            logger.info("Enabled Email Notification")
+    # Email Notification
+    if notification.is_email_message:
+        # AWS SNS Topic
+        topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
+        topic.publish(
+            Message=notification.content_text,
+            Subject='iBet Notification',
+        )
+        logger.info("Enabled Email Notification")
 
         Notification.objects.filter(pk=notification_id).update(status=MESSAGE_APPROVED)
         logger.info('create notification message')
         # return HttpResponseRedirect(reverse('xadmin:notification'))
     else:
-        logger.error("Sending Message API error!:")
+        logger.error("Sending Email Notification error!")
         return HttpResponse("Can not send Message!")
 
 
-'''
-class createMessage(View):
-    self, subject, content, creator, notifiers, groups, is_direct=False, is_sms=False, is_email=False, is_push=False
-    # create Notification Object
-    message = {
-        "subject": request.POST.get('subject'),
-        "content_text": request.POST.get('content_text'),
-        "creator": self.user,
-        "notifiers": request.POST.getlist('notifiers'),
-        "groups": request.POST.getlist('notifiers'),
-    }
-
-    notification_serializer = NotificationSerializer(data=message)
-
-    if serializer.is_valid():
-        notification = serializer.save()
-        logger.info("create a notification")
-        return HttpResponse(json.dumps(response), content_type='application/json')
-    else:
-        return 
-
-
-    # n_user_serializer = NotificationToUsersSerializer()
-    for notifier in notifiers:
-        log = NotificationToUsers(notification_id=notification.pk, notifier_id=notifier.pk)
-
-    logger.info("added notification-to-users log")
-
-    '''
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
@@ -139,13 +112,13 @@ class NotificationSearchAutocomplete(View):
         # response['body'] = body_data
 
         logger.info('Search response: ' + json.dumps(response))
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        try:
+            return HttpResponse(json.dumps(response), content_type='application/json')
+        except Exception as e:
+            logger.error(e)
 
 
 class NotificationView(CommAdminView):
-    lookup_field = 'pk'
-    serializer_class = NotificationSerializer
-
     def get(self, request, *arg, **kwargs):
         search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
@@ -157,7 +130,7 @@ class NotificationView(CommAdminView):
         else: 
             pageSize = int(pageSize)
 
-        if offset is None:
+        if offset is None or int(offset) < 1:
             offset = 1
         else:
             offset = int(offset)
@@ -196,21 +169,17 @@ class NotificationView(CommAdminView):
                 notification_item["notifiers"] = len(notifiers)
             else:
                 notification_item["notifiers"] = notifiers
-            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
+                notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
+                notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg.pk)&Q(is_read=True)).count()
+            if(notification_item["sent_count"] == 0):
+                notification_item["rate"] = ""
+            else:
+                notification_item["rate"] = str(notification_item["open"] / notification_item["sent_count"]) + '%'
 
             notification_list.append(notification_item)
 
         paginator = Paginator(notification_list, pageSize)
         context["notifications"] = paginator.get_page(offset)
-
-        # auto_messages = Notification.objects.all()
-        # paginator = Paginator(auto_messages, pageSize)
-        # context['auto_messages'] = paginator.get_page(page)
-
-        # drafts = Notification.objects.filter(status=MESSAGE_PENDING)
-        # context["drafts"] = drafts
-
-        # serializer = NotificationSerializer(queryset, many=True)
 
         logger.info("GET NotificationView")
         return render(request, 'notification/index.html', context)
@@ -244,12 +213,12 @@ class NotificationView(CommAdminView):
 
         notifiers = request.POST.getlist("notifiers")
 
-        if len(notifiers) < 2:
+        if len(notifiers) < NOTIFICATION_CONSTRAINTS_QUANTITY:
             data["status"] = MESSAGE_APPROVED
 
         serializer = NotificationSerializer(data=data)
 
-        if serializer.is_valid():           
+        if serializer.is_valid():
             notification = serializer.save()
             logger.info("Save notification message")
             # store notification data in NotificationLog
@@ -293,10 +262,6 @@ class NotificationDetailView(CommAdminView):
 
 
 class AuditNotificationView(CommAdminView):
-    lookup_field = 'pk'
-    serializer_class = NotificationSerializer
-    permission_classes = [AllowAny, ]
-
     def get(self, request, *arg, **kwargs):
         context = super().get_context()
         title = 'message'
@@ -320,7 +285,7 @@ class AuditNotificationView(CommAdminView):
         third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
         # AWS SNS Client
-        sns = boto3.resource('sns')
+        sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
         client = getAWSClient('sns', third_party_keys)
 
         # Push Notification
@@ -365,9 +330,6 @@ class AuditNotificationView(CommAdminView):
 
 
 class AWSTopicView(CommAdminView):
-    lookup_field = 'pk'
-    serializer_class = AWSTopicSerializer
-
     def get(self, request, *arg, **kwargs):
         context = super().get_context()
         title = 'message'
@@ -491,7 +453,7 @@ class CreateNotificationAPIView(CreateAPIView):
                 third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
                 # AWS SNS Client
-                sns = boto3.resource('sns')
+                sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
                 client = getAWSClient('sns', third_party_keys)
 
                 # Push Notification
@@ -551,9 +513,84 @@ class AWSTopicAPIView(GenericAPIView):
         serializer = AWSTopicSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            logger.info("saved awstopic")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def send_sms(content_text, notifier):
+        data = {
+            "content_text": content_text,
+            "is_sms_message": True,
+            "status": MESSAGE_APPROVED,
+        }
+
+        serializer = NotificationSerializer(data=data)
+        
+        if serializer.is_valid():
+            notification = serializer.save()
+            logger.info("create a SMS notification")
+
+            notifier = CustomUser.objects.get(pk=notifier)
+
+            log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
+
+            logger.info("Save notification log")
+
+            # connect AWS S3
+            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+            # AWS SNS Client
+            sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
+            client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+
+            try:
+                phone = str(notifier.phone)
+                client.publish(PhoneNumber=phone, Message=notification.content_text)
+    
+                logger.info("Enabled SMS Notification")
+            except Exception as e:
+                logger.error("Unexpected error: %s" % e)
+                return "AWS ERROR!"
+
+            return "Success"
+        else:
+            logger.error("Sending SMS Notification Data Format Incorrect Error!")
+            return "Data Format Incorrect!"
+
+
+class NotificationUserIsReadAPI(View):
+    def post(self, request, *args, **kwargs):
+        notification_to_user_id = self.kwargs.get('pk')
+        NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
+        
+        logger.info("message is read")
+
+        return HttpResponse(status=200)
+
+
+class NotificationsForUserAPIView(View):
+    def get(self, request, *args, **kwargs):
+        notification_list = request.GET.get('notification_list')
+        queryset = []
+        for notification_id in notification_list:
+            query = Notification.object.get(pk=notification_id)
+            queryset.append(query)
+        
+        return Response(queryset)
+
+
+class NotificationDetailAPIView(ListAPIView):
+    queryset = ''
+    permission_classes = [AllowAny, ]
+
+    def get(self, request, *args, **kwargs):
+        notification_id = self.kwargs.get('pk')
+        queryset = Notification.objects.get(pk=notification_id)
+        serializer = NotificationSerializer(queryset, many=False)
+
+        return Response(serializer.data)
 
 
 class NotificationLogView(ListAPIView):
@@ -564,6 +601,57 @@ class NotificationLogView(ListAPIView):
 class NotificationToUsersView(ListAPIView):
     serializer_class = NotificationToUsersSerializer
     queryset = NotificationToUsers.objects.all()
+
+
+class NotificationToUsersDetailView(View):
+    def get(self, request, *args, **kwargs):
+        notifier_id = self.kwargs.get('pk')
+
+        response = {}
+        response['unread_list'] = []
+        unread_list = NotificationToUsers.objects.filter(notifier_id=notifier_id).order_by('-pk')
+
+        for unread in unread_list:
+            notification = Notification.objects.get(pk=unread.notification_id.pk)
+            message = {}
+            message["pk"] = unread.pk
+            message["subject"] = notification.subject
+            message["content"] = notification.content_text
+            publish_on_str = ''
+            if notification.publish_on:
+                current_tz = timezone.get_current_timezone()
+                publish_time = notification.publish_on.astimezone(current_tz)
+                publish_on_str = str(notification.publish_on.astimezone(current_tz))
+            message["publish_on"] = publish_on_str
+            response['unread_list'].append(message)
+
+        # read_list = NotificationToUsers.objects.filter()
+        # for read in read_list:
+        #     notification = Notification.objects.get(pk=unread.notification_id.pk)
+        #     message = {}
+        #     message["pk"] = notification.pk
+        #     message["subject"] = notification.subject
+        #     message["content"] = notification.content_text
+        #     publish_on_str = ''
+        #     if notification.publish_on:
+        #         current_tz = timezone.get_current_timezone()
+        #         publish_time = notification.publish_on.astimezone(current_tz)
+        #         publish_on_str = str(notification.publish_on.astimezone(current_tz))
+        #     message["publish_on"] = publish_on_str
+        #     response['unread_list'].append(message)
+
+        # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+
+class NotificationToUsersUnreadCountView(ListAPIView):
+    permission_classes = [AllowAny, ]
+
+    def get(self, request, *args, **kwargs):
+        notifier_id = self.kwargs.get('pk')
+        count = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_read=False)).count()
+
+        return Response(count)
 
 
 class UserToAWSTopicView(ListAPIView):
