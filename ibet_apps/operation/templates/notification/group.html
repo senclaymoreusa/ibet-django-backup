@@ -8,7 +8,7 @@ form {
   padding: 0 16px 16px 16px;
 }
 
-label {
+p, label {
   height: 13px;
   font-family: Helvetica;
   font-size: 11px;
@@ -38,6 +38,12 @@ label {
   padding-top: 20px;
   border-bottom: 0;
 }
+
+#details {
+  width: 95%;
+  background-color: #f3f3f3;
+  margin: 16px 16px 16px 16px;
+}
 </style>
 
 <h2 id="demo"></h2>
@@ -65,7 +71,7 @@ label {
             {% csrf_token %}
               <div class="form-group">
                 <label for="topic_name">NAME</label>
-                <input type="text" class="form-control" name="topic_name" placeholder="Give your group a descriptive name">
+                <input type="text" class="form-control" name="topic_name" placeholder="Give your group a descriptive name" required>
               </div>
               <div class="row" style="margin-top: 30px">
                 <strong>FILTER TO DEFINE YOUR GROUP (LEAVE BLANK TO IGNORE FILTER)</strong>
@@ -74,33 +80,33 @@ label {
                 <label for="product">PRODUCT</label>
                 <br/>
                 <div class="btn-group">
-                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                  <button type="button" id="product" name="product" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                     Select...
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu">
-                      <li><a href="#">Sports</a></li>
-                      <li><a href="#">Live Casino</a></li>
-                      <li><a href="#">Games</a></li>
-                      <li><a href="#">Lotto</a></li>
+                      <li id="sports" class="product-item"><a href="#">Sports</a></li>
+                      <li class="product-item"><a href="#">Live Casino</a></li>
+                      <li class="product-item"><a href="#">Games</a></li>
+                      <li class="product-item"><a href="#">Lotto</a></li>
                   </ul>
                 </div>
               </div>
               <div class="form-group">
                 <div class="row">
-                  <div class="col-md-4" style="padding-left: 0">
+                  <div class="col-md-4" id="daystotal" style="padding-left: 0">
                     <label style="margin-left:36px">LAST ACTIVE DATE</label>
                     <div class="input-group">
-                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio"></span>
+                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" name="days" value="total"></span>
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">≤</span>
                       <input type="text" class="form-control" placeholder="Pick a time...">
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">Days ago</span>
                     </div>
                   </div>
-                  <div class="col-md-8" style="padding-left: 0">
+                  <div class="col-md-8" id="daysrange" style="padding-left: 0">
                     <label style="margin-left:36px">LAST ACTIVE DATE</label>
                     <div class="input-group">
-                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio"></span>
+                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" name="days" id="range"></span>
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
                       <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
@@ -110,24 +116,26 @@ label {
                 </div>
               </div>
               <div class="form-group">
-                <div class="col-md-8" style="padding-left: 0">
-                  <label>REGISTRATION DATE</label>
-                  <div class="input-group">
-                    <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
-                    <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
-                    <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
-                    <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                <div class="row">
+                  <div class="col-md-8" style="padding-left: 0">
+                    <label>REGISTRATION DATE</label>
+                    <div class="input-group">
+                      <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
+                      <input type="text" id="reg-from" class="form-control" placeholder="Pick a time...">
+                      <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
+                      <input type="text" id="reg-to" class="form-control" placeholder="Pick a time...">
+                    </div>
                   </div>
                 </div>
               </div>
               <div class="form-group">
-                <input class="form-check-input" type="checkbox" id="gridCheck">
+                <input class="form-check-input" type="checkbox" id="onlyactive" checked disabled>
                 <label class="form-check-label" for="gridCheck">
                   Only active members (you can override this filter by adding members manually)
                 </label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="gridCheck">
+                <input class="form-check-input" type="checkbox" id="onlydeposited">
                 <label class="form-check-label" for="gridCheck">
                   Only members who has deposited
                 </label>
@@ -135,102 +143,40 @@ label {
               <div class="form-group">
                 <label for="vip">VIP LEVEL</label>
                 <div class="dropdown">
-                  <button class="btn btn-default dropdown-toggle" type="button" 
-                          id="dropdownMenu1" data-toggle="dropdown" 
-                          aria-haspopup="true" aria-expanded="true">
-                    Select...
+                  <button id="vipbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                    <span>Select...</span>
                     <span class="caret"></span>
                   </button>
-                  <ul class="dropdown-menu checkbox-menu allow-focus" aria-labelledby="dropdownMenu1">
-                    <li >
-                      <label>
-                        <input type="checkbox"> ALL
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> Normal
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP1
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP2
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP3
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP4
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP5
-                      </label>
-                    </li>
+                  <ul id="vip" class="dropdown-menu">
+                    <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
+                    <li><a href="#" class="small" data-value="Normal" tabIndex="-1"><input type="checkbox"/>&nbsp;Normal</a></li>
+                    <li><a href="#" class="small" data-value="VIP1" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP1</a></li>
+                    <li><a href="#" class="small" data-value="VIP2" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP2</a></li>
+                    <li><a href="#" class="small" data-value="VIP3" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP3</a></li>
+                    <li><a href="#" class="small" data-value="VIP4" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP4</a></li>
+                    <li><a href="#" class="small" data-value="VIP5" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP5</a></li>
                   </ul>
                 </div>
               </div>
               <div class="form-group">
-                <label for="usrs">RISK LEVEL</label>
+                <label for="risk">RISK LEVEL</label>
                 <div class="dropdown">
-                  <button class="btn btn-default dropdown-toggle" type="button" 
-                          id="dropdownMenu1" data-toggle="dropdown" 
-                          aria-haspopup="true" aria-expanded="true">
+                  <button id="riskbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
                     Select...
                     <span class="caret"></span>
                   </button>
-                  <ul class="dropdown-menu checkbox-menu allow-focus" aria-labelledby="dropdownMenu1">
-                    <li >
-                      <label>
-                        <input type="checkbox"> ALL
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> Normal
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP1
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP2
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP3
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP4
-                      </label>
-                    </li>
-                    <li >
-                      <label>
-                        <input type="checkbox"> VIP5
-                      </label>
-                    </li>
+                  <ul id="risk" class="dropdown-menu">
+                    <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
+                    <li><a href="#" class="small" data-value="E1" tabIndex="-1"><input type="checkbox"/>&nbsp;E1</a></li>
+                    <li><a href="#" class="small" data-value="E2" tabIndex="-1"><input type="checkbox"/>&nbsp;E2</a></li>
+                    <li><a href="#" class="small" data-value="W" tabIndex="-1"><input type="checkbox"/>&nbsp;W</a></li>
+                    <li><a href="#" class="small" data-value="F" tabIndex="-1"><input type="checkbox"/>&nbsp;F</a></li>
                   </ul>
                 </div>
               </div>
               <hr/>
               <div class="form-group" style="padding-top: 0">
-                <h4>Add members manually</h4>
+                <strong>ADD MEMBERS MANUALLY</strong>
                 <p>Manually added members will stay in the groups regardless of filter settings.</p>
                 <p>You have added 0 members manually.</p>
                 <button type="button" class="btn btn-primary">Add members</button>
@@ -239,7 +185,7 @@ label {
               <div class="form-group" style="padding-top: 0">
                 <label>Members in group</label>
                 <div class="row" style="background-color:#f3f3f3">
-                  <span>1,000</span>
+                  <span><a href="#" data-toggle="modal" data-target="#view-group">&nbsp;{{ users }}</a></span>
                 </div>
               </div>
               <div class="row">
@@ -256,37 +202,28 @@ label {
   </div>
 </div>
 
+{% comment %} <div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">View group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <label>GROUP DETAILS</label>
+      <table id="details">
+        <tbody>
+          <tr>
+            <td>TBD</td>
+            <td>TBD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div> {% endcomment %}
 
-<table>
-  <thead class="thead-dark">
-    <tr>
-      <th style="width: 3%;">#</th>
-      <th style="width: 25%;">NAME</th>
-      <th style="width: 10%;">MEMBERS</th>
-      <th style="width: 10%;">TIME USED</th>
-      <th style="width: 15%;">CREATOR</th>
-      <th>OPEN RATE</th>
-    </tr>
-  </thead>
-  <tbody class="table table-striped table-hover">
-    {% for topic in queryset %}
-    <tr>
-      <td>{{ forloop.counter }}</td>
-      <td>{{ topic }}</td>
-      <td>TBD</td>
-      <td>TBD</td>
-      <td>{{ topic.creator }}</td>
-      <td>66.67%</td>
-      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' topic.pk %}" role="button" disabled>Edit</a></td>
-      <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
-      <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
-        <i class="fa fa-info"></i>
-      </button></td>-->
-    </tr>
-    <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
-    {% endfor %}
-  </tbody>
-</table>
 
 <table class="table table-bordered table-striped table-hover">
   <tr>
@@ -315,6 +252,97 @@ label {
   {% endfor %}
 </table>
 <script>
+$(document).ready(function() {
+  $('#reg-from').datepicker();
+  $('#reg-to').datepicker();
+
+  $('.product-item').click(function() {
+  $("#product:first-child").text($(this).text());
+  $("#product:first-child").val($(this).text());
+  // var val = $("prduct").val;
+  // console.log(val);
+  });
+
+  $('input:radio[name="days"]').change(function() {
+    if ($(this).is(':checked') && $(this).val() == 'total') {
+      $('#daysrange').prop("disabled", true);
+    }
+  });
+
+  var options = [];
+
+  $('#vip.dropdown-menu a').on('click', function(event) {
+    var $target = $(event.currentTarget),
+        val = $target.attr('data-value'),
+        $inp = $target.find('input'),
+        idx;
+
+    if(val == "ALL") {
+      if($inp.prop('checked')) {
+        $('#vip li input[type=checkbox]').each(function() {
+          this.checked = true;
+          options.push(this);
+        });
+      } else {
+        $('#vip li input[type=checkbox]').each(function() {
+          this.checked = false;
+          options.pop(this);
+        });
+      }
+    }
+
+    if((idx = options.indexOf(val)) > -1) {
+      options.splice(idx, 1);
+      setTimeout(function() { $inp.prop('checked', false)}, 0);
+    } else {
+      options.push(val);
+      setTimeout(function() { $inp.prop('checked', true)}, 0);
+    }
+    
+    $(event.target).blur();
+    
+    console.log(options)
+
+    $("#vipbtn").html(options.length + " Selected " + '<span class="caret"></span>');
+
+    return false;
+  });
+
+  var riskOptions = [];
+
+  $('#risk.dropdown-menu a').on('click', function(event) {
+    var $target = $(event.currentTarget),
+        val = $target.attr('data-value'),
+        $inp = $target.find('input'),
+        idx;
+
+    if(val == "ALL") {
+      var isAll = $inp.prop('checked');
+
+      $('#risk li input[type=checkbox]').each(function() {
+        this.checked = isAll;
+      });
+    }
+
+    if((idx = riskOptions.indexOf(val)) > -1) {
+      riskOptions.splice(idx, 1);
+      setTimeout(function() { $inp.prop('checked', false)}, 0);
+    } else {
+      riskOptions.push(val);
+      setTimeout(function() { $inp.prop('checked', true)}, 0);
+    }
+    
+    $(event.target).blur();
+    
+    //console.log(options)
+
+    $("#riskbtn").html(riskOptions.length + " Selected " + '<span class="caret"></span>');
+
+    return false;
+  });
+
+});
+
 
 </script>
 {% endblock %}

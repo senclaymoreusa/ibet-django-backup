@@ -383,7 +383,7 @@ class MessageUserGroupView(CommAdminView):
         context["title"] = title
         context['time'] = timezone.now()
         
-        # context['users'] = CustomUser.objects.all()
+        context['users'] = CustomUser.objects.all().count()
         # queryset = AWSTopic.objects.all()
         # context['queryset'] = queryset
         logger.info("GET AWSTopicView")
