@@ -3,46 +3,259 @@
 {% endblock %}
 {% block content %}
 
+<style>
+form {
+  padding: 0 16px 16px 16px;
+}
 
-<h2>{{ current_user }}</h2>
+label {
+  height: 13px;
+  font-family: Helvetica;
+  font-size: 11px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+.modal-header {
+  border-radius: 4px;
+  border: solid 1px #bdbdbd;
+  background-color: #f5f5f5;
+}
+
+.modal-header .close {
+  margin-top: -16px;
+}
+
+.row {
+  margin: 0 0 0 0;
+}
+
+.form-group {
+  padding-top: 20px;
+  border-bottom: 0;
+}
+</style>
+
 <h2 id="demo"></h2>
 <!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New Group</button>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New group</button>
 
 <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <form action="{% url 'xadmin:awstopic' %}" method="post" style="margin: 2.5em 2.5em 2.5em 2.5em">
-      {% csrf_token %}
-        <div class="form-group">
-          <label for="topic_name">Group Name</label>
-          <input type="text" class="form-control" name="topic_name" placeholder="Group Name">
+      <div class="modal-header">
+        <h3 class="modal-title">New group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <ul class="nav nav-tabs">
+        <li id="member-group"><a data-toggle="tab" class="tab-label active" href="#membergroup">MEMBER GROUP</a></li>
+        <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AUTOMATED MESSAGES</a></li>
+      </ul>
+      <div class="tab-content">
+        <div id="membergroup" class="tab-pane active">
+          <form action="{% url 'xadmin:awstopic' %}" method="post">
+            {% csrf_token %}
+              <div class="form-group">
+                <label for="topic_name">NAME</label>
+                <input type="text" class="form-control" name="topic_name" placeholder="Give your group a descriptive name">
+              </div>
+              <div class="row" style="margin-top: 30px">
+                <strong>FILTER TO DEFINE YOUR GROUP (LEAVE BLANK TO IGNORE FILTER)</strong>
+              </div>
+              <div class="form-group">
+                <label for="product">PRODUCT</label>
+                <br/>
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    Select...
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu">
+                      <li><a href="#">Sports</a></li>
+                      <li><a href="#">Live Casino</a></li>
+                      <li><a href="#">Games</a></li>
+                      <li><a href="#">Lotto</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-md-4" style="padding-left: 0">
+                    <label style="margin-left:36px">LAST ACTIVE DATE</label>
+                    <div class="input-group">
+                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio"></span>
+                      <span class="input-group-addon" style="background-color:#f3f3f3; color:black">≤</span>
+                      <input type="text" class="form-control" placeholder="Pick a time...">
+                      <span class="input-group-addon" style="background-color:#f3f3f3; color:black">Days ago</span>
+                    </div>
+                  </div>
+                  <div class="col-md-8" style="padding-left: 0">
+                    <label style="margin-left:36px">LAST ACTIVE DATE</label>
+                    <div class="input-group">
+                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio"></span>
+                      <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
+                      <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                      <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
+                      <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-md-8" style="padding-left: 0">
+                  <label>REGISTRATION DATE</label>
+                  <div class="input-group">
+                    <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
+                    <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                    <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
+                    <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <input class="form-check-input" type="checkbox" id="gridCheck">
+                <label class="form-check-label" for="gridCheck">
+                  Only active members (you can override this filter by adding members manually)
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="gridCheck">
+                <label class="form-check-label" for="gridCheck">
+                  Only members who has deposited
+                </label>
+              </div>
+              <div class="form-group">
+                <label for="vip">VIP LEVEL</label>
+                <div class="dropdown">
+                  <button class="btn btn-default dropdown-toggle" type="button" 
+                          id="dropdownMenu1" data-toggle="dropdown" 
+                          aria-haspopup="true" aria-expanded="true">
+                    Select...
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu checkbox-menu allow-focus" aria-labelledby="dropdownMenu1">
+                    <li >
+                      <label>
+                        <input type="checkbox"> ALL
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> Normal
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP1
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP2
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP3
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP4
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP5
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="usrs">RISK LEVEL</label>
+                <div class="dropdown">
+                  <button class="btn btn-default dropdown-toggle" type="button" 
+                          id="dropdownMenu1" data-toggle="dropdown" 
+                          aria-haspopup="true" aria-expanded="true">
+                    Select...
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu checkbox-menu allow-focus" aria-labelledby="dropdownMenu1">
+                    <li >
+                      <label>
+                        <input type="checkbox"> ALL
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> Normal
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP1
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP2
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP3
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP4
+                      </label>
+                    </li>
+                    <li >
+                      <label>
+                        <input type="checkbox"> VIP5
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <hr/>
+              <div class="form-group" style="padding-top: 0">
+                <h4>Add members manually</h4>
+                <p>Manually added members will stay in the groups regardless of filter settings.</p>
+                <p>You have added 0 members manually.</p>
+                <button type="button" class="btn btn-primary">Add members</button>
+              </div>
+              <hr/>
+              <div class="form-group" style="padding-top: 0">
+                <label>Members in group</label>
+                <div class="row" style="background-color:#f3f3f3">
+                  <span>1,000</span>
+                </div>
+              </div>
+              <div class="row">
+                  <button type="cancel" class="btn btn-primary">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save</button>
+              </div>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="creator">Group Creator</label>
-          <input type="text" class="form-control" name="creator" value="{{ current_user }}" readonly>
+        <div id="automated-message" class="tab-pane fade">
+          abc
         </div>
-        <div class="form-group">
-          <label for="valid_until" class="col-2 col-form-label">Valid Until</label>
-          <div class="col-10">
-            <input class="form-control" type="datetime-local" value="" id="valid_until" name="valid_un">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="usrs">Add Users</label>
-          <select name="usrs" class="form-control" multiple="multiple">
-            {% for user in users %}
-            <option value="{{ user.pk }}">{{ user }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <hr/>
-        <button type="submit" class="btn btn-primary">Create Group</button>
-      </form>
+      </div>
     </div>
   </div>
 </div>
+
 
 <table>
   <thead class="thead-dark">

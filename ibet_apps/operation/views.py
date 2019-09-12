@@ -20,6 +20,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView,
 from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer
 from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
 from users.models import CustomUser
+from system.models import UserGroup
 from xadmin.views import CommAdminView
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys, getAWSClient
@@ -121,6 +122,8 @@ class NotificationSearchAutocomplete(View):
 
 
 def isTimeFormat(time_str):
+    if time_str is None:
+        return False
     try:
         datetime.datetime.strptime(time_str, "%Y-%m-%d %H:%M")
         return True
@@ -211,8 +214,9 @@ class NotificationView(CommAdminView):
                 notification_item["notifiers"] = len(notifiers)
             else:
                 notification_item["notifiers"] = notifiers
-                notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
-                notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg.pk)&Q(is_read=True)).count()
+
+            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
+            notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg.pk)&Q(is_read=True)).count()
             if(notification_item["sent_count"] == 0):
                 notification_item["rate"] = ""
             else:
@@ -369,6 +373,22 @@ class AuditNotificationView(CommAdminView):
         except Exception as e:
             logger.error("Audit message error")
             return HttpResponse(e)
+
+
+class MessageUserGroupView(CommAdminView):
+    def get(self, request, *arg, **kwargs):
+        context = super().get_context()
+        title = 'message'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context["title"] = title
+        context['time'] = timezone.now()
+        
+        # context['users'] = CustomUser.objects.all()
+        # queryset = AWSTopic.objects.all()
+        # context['queryset'] = queryset
+        logger.info("GET AWSTopicView")
+        # return HttpResponse("MessageUserGroup")
+        return render(request, 'notification/group.html', context)
 
 
 class AWSTopicView(CommAdminView):
@@ -614,7 +634,6 @@ def send_sms(content_text, notifier):
 class NotificationUserIsReadAPI(View):
     def post(self, request, *args, **kwargs):
         notification_to_user_id = self.kwargs.get('pk')
-<<<<<<< HEAD
         message = NotificationToUsers.objects.get(pk=notification_to_user_id)
         if message.is_read:
             return HttpResponse(status=200)
@@ -630,11 +649,6 @@ class NotificationUserIsDeleteAPI(View):
             NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_deleted=True)
         except Exception as e:
             logger.error("delete message error:", e)
-=======
-        NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
-        
-        logger.info("message is read")
->>>>>>> e81892695f3c110c67b7b9337805ce808111bab5
 
         return HttpResponse(status=200)
 
