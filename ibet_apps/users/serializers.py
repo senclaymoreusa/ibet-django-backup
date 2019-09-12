@@ -15,8 +15,10 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers, exceptions
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils.functional import Promise
+from django.utils.encoding import force_text
+from django.core.serializers.json import DjangoJSONEncoder
 import datetime
-
 
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -423,3 +425,9 @@ class BalanceSerializer(serializers.Serializer):
     type = serializers.CharField()
     balance = serializers.FloatField()
     username = serializers.CharField()
+
+class LazyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            return force_text(obj)
+        return super(LazyEncoder, self).default(obj)

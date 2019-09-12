@@ -51,12 +51,14 @@ from allauth.account import app_settings as allauth_settings
 
 from dateutil.relativedelta import relativedelta
 from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
 from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
 from games.models import Game as NewGame
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
+from users.views.helper import *
 
 import datetime
 import logging
@@ -282,7 +284,7 @@ class LoginView(GenericAPIView):
         # print('login language code: ' + languageCode)
 
         self.user = self.serializer.validated_data['user']
-        if self.user.block is True:
+        if checkUserBlock:
             # print("user block")
             raise BlockedUserException
         if self.user.active == False:
@@ -1368,6 +1370,14 @@ class DeleteLimitation(View):
         
         data = json.loads(request.body)
         user_id = data['user_id']
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+        
         # limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
@@ -1407,6 +1417,14 @@ class CancelDeleteLimitation(View):
         
         data = json.loads(request.body)
         user_id = data['user_id']
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+
         # limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
@@ -1427,7 +1445,6 @@ class CancelDeleteLimitation(View):
 
         return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
 
-
 class GetLimitation(View):
 
     def get(self, request, *args, **kwargs):
@@ -1438,6 +1455,13 @@ class GetLimitation(View):
         # for key, value in limitDict.items():
         #     if value == limit_type:
         #         limit_type = key
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
 
         user = CustomUser.objects.get(pk=user_id)
         userJson = serializers.serialize('json', [user])
@@ -1522,6 +1546,15 @@ class SetBlockTime(View):
         data = json.loads(request.body)
         lock_timespan = data['timespan']
         user_id = data['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+
         # lock_type = data['type']
         tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
         # print(user_id, lock_type, lock_timespan)
@@ -1538,6 +1571,15 @@ class MarketingSettings(View):
 
     def get(self, request, *args, **kwargs):
         user_id = request.GET['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+
         user = CustomUser.objects.get(pk=user_id)
         contact_methods = user.contact_methods
 
@@ -1568,6 +1610,14 @@ class MarketingSettings(View):
         postal_mail = data['postalMail']
         social_media = data['socialMedia']
         user_id = data['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
 
         contact_methods = []
         # print(email, phone, sms, postal_mail, social_media, user_id)
@@ -1601,6 +1651,15 @@ class PrivacySettings(View):
 
     def get(self, request, *args, **kwargs):
         user_id = request.GET['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+        
         user = CustomUser.objects.get(pk=user_id)
         response = {
             "bonus": user.bonusesProgram,
@@ -1617,6 +1676,13 @@ class PrivacySettings(View):
         bonuses = data['bonuses']
         vip = data['vip']
         user_id = data['userId']
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
 
         user = CustomUser.objects.get(pk=user_id)
         user.bonusesProgram = bonuses
