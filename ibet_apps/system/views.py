@@ -855,9 +855,10 @@ class LogStreamToS3(APIView):
         return firehose_role_arn
     
     
-    def create_firehose_to_s3( self, firehose_name, s3_bucket_arn, iam_role_name,
-                              firehose_src_type='DirectPut',
-                              firehose_src_stream=None):
+    def create_firehose_to_s3( self, firehose_name, s3_bucket_arn, 
+                               iam_role_name, source,
+                               firehose_src_type='DirectPut', 
+                               firehose_src_stream=None):
         """Create a Kinesis Firehose delivery stream to S3
     
         The data source can be either a Kinesis Data Stream or puts sent directly
@@ -888,12 +889,23 @@ class LogStreamToS3(APIView):
         # Create the S3 configuration dictionary
         # Both BucketARN and RoleARN are required
         # Set the buffer interval=60 seconds (Default=300 seconds)
+        #
+        #    'CloudWatchLoggingOptions': {
+        #        'Enabled': True,
+        #        'LogGroupName': prefix,
+        #        'LogStreamName': 'string'
+        #    }
+        # default: 300 seconds or 5 MB, whichever comes first
+        #    'BufferingHints': {
+        #        'SizeInMBs': 123,
+        #        'IntervalInSeconds': 60, 
+        #    },
+        #
+        prefix = source + '/'
         s3_config = {
             'BucketARN': s3_bucket_arn,
             'RoleARN': iam_role,
-            'BufferingHints': {
-                'IntervalInSeconds': 60,
-            },
+            'Prefix': prefix,
         }
     
         # Create the delivery stream
@@ -950,7 +962,15 @@ class LogStreamToS3(APIView):
     def post(self, request, *args, **kwargs):
         
         line = request.data['line']
-        
+        #
+        # Limit source in ['Android','Ibetweb']?
+        #
+        source = ''
+        if request.data['source']:
+            source = request.data['source']
+        else:
+            source = 'Unknown'
+            
         """Exercise Kinesis Firehose methods"""
         
         # Set up logging
@@ -959,11 +979,11 @@ class LogStreamToS3(APIView):
 
         # Assign these values before running the program
         # If the specified IAM role does not exist, it will be created
-        firehose_name = 'SimpleDeliveryStream'
+        firehose_name = source + 'DeliveryStream'
         iam_role_name = 'firehose_delivery_role'
         
         bucket_arn = 'arn:aws:s3:::ibet-admin-dev'
-        if "ENV" in os.environ:
+        if "ENV" in os.environ and os.environ["ENV"] != 'local':
             bucket_arn = 'arn:aws:s3:::ibet-admin-' + os.environ["ENV"]
         
         logging.info('Bucket ARN is {}'.format(bucket_arn))
@@ -972,7 +992,7 @@ class LogStreamToS3(APIView):
         if not self.firehose_exists(firehose_name):
             # Create a Firehose delivery stream to S3. The Firehose will receive
             # data from direct puts.
-            firehose_arn = self.create_firehose_to_s3(firehose_name, bucket_arn, iam_role_name)
+            firehose_arn = self.create_firehose_to_s3(firehose_name, bucket_arn, iam_role_name, source)
             if firehose_arn is None:
                 exit(1)
             logging.info('Created Firehose delivery stream to S3: {}'.format(firehose_arn))
@@ -996,9 +1016,9 @@ class LogStreamToS3(APIView):
             exit(1)
         
         
-        logging.info('Logs sent to Firehose stream')
+        #logging.info('Logs sent to Firehose stream')
         
-        return Response({'status': '124'})
+        return Response({'Status': 'Successfully sent to ' + firehose_name})
     
 
         
