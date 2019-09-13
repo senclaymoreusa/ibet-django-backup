@@ -294,6 +294,7 @@ def transfer(request):
 def cancel(request):
     if request.method == "POST":
         post_data = json.loads(request.body)
+        user = CustomUser.objects.get(username=post_data["userId"])
         try:
             matching_transaction = Transaction.objects.get(
                 user_id=user,
