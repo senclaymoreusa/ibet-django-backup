@@ -21,7 +21,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView,
 from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer
 from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
 from users.models import CustomUser
-from system.models import UserGroup
+from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys, getAWSClient
@@ -391,6 +391,10 @@ class MessageUserGroupView(CommAdminView):
         # return HttpResponse("MessageUserGroup")
         return render(request, 'notification/group.html', context)
 
+    def post(self, request, *arg, **kwargs):
+        group_name = request.POST.get('group_name')
+        users = request.POST.getList('group_users')
+
 
 class AWSTopicView(CommAdminView):
     def get(self, request, *arg, **kwargs):
@@ -568,7 +572,6 @@ class MessageGroupUserAPI(View):
     def get(self, request, *arg, **kwargs):
         product = request.GET.get('product')
         active = request.GET.get('active')
-        print(active)
         group_filter = Q()
         if product != None:
             group_filter = group_filter & Q(product_attribute=product)
@@ -581,7 +584,6 @@ class MessageGroupUserAPI(View):
         user_count = CustomUser.objects.filter(group_filter).count()
 
         return HttpResponse(user_count)
-
 
 
 class AWSTopicAPIView(GenericAPIView):

@@ -70,8 +70,8 @@ p, label {
           <form action="{% url 'xadmin:awstopic' %}" method="post">
             {% csrf_token %}
               <div class="form-group">
-                <label for="topic_name">NAME</label>
-                <input type="text" class="form-control" name="topic_name" placeholder="Give your group a descriptive name" required>
+                <label for="group_name">NAME</label>
+                <input type="text" class="form-control" name="group_name" placeholder="Give your group a descriptive name" required>
               </div>
               <div class="row" style="margin-top: 30px">
                 <strong>FILTER TO DEFINE YOUR GROUP (LEAVE BLANK TO IGNORE FILTER)</strong>
@@ -176,7 +176,7 @@ p, label {
               </div>
               <hr/>
               <div class="form-group" style="padding-top: 0">
-                <strong>ADD MEMBERS MANUALLY</strong>
+                <p style="font-size: 14px"><strong>ADD MEMBERS MANUALLY</strong></p>
                 <p>Manually added members will stay in the groups regardless of filter settings.</p>
                 <p>You have added 0 members manually.</p>
                 <button type="button" class="btn btn-primary">Add members</button>
@@ -189,8 +189,9 @@ p, label {
                 </div>
               </div>
               <div class="row">
-                  <button type="cancel" class="btn btn-primary">Cancel</button>
                   <button type="submit" class="btn btn-primary">Save</button>
+                  {% comment %} <button type="button" class="close" data-dismiss="modal">&times;</button> {% endcomment %}
+                  <button type="reset" class="btn btn-primary">Cancel</button>
               </div>
           </form>
         </div>
@@ -267,10 +268,17 @@ $(document).ready(function() {
 
   $('#reg-from').datepicker({
     onClose: function() {
-      console.log($(this).val());
+      userFilter['register_from'] = $(this).val();
+      groupFilter();
     }
   });
-  $('#reg-to').datepicker();
+
+  $('#reg-to').datepicker({
+    onClose: function() {
+      userFilter['register_from'] = $(this).val();
+      groupFilter();
+    }
+  });
 
   $('.product-item').click(function() {
     $("#product").html($(this).text() + '<span class="caret"></span>');
@@ -285,7 +293,6 @@ $(document).ready(function() {
       $('#daysrange').prop("disabled", true);
     }
   });
-
 
   $('#days').focusout(function() {
     userFilter['active'] = $(this).val();
@@ -308,24 +315,26 @@ $(document).ready(function() {
     if(val == "ALL") {
       if($inp.prop('checked')) {
         $('#vip li input[type=checkbox]').each(function() {
-          this.checked = true;
-          options.push(this);
+          this.checked = $inp.prop('checked');
+          options.push($(this).parent().attr('data-value'));
         });
       } else {
         $('#vip li input[type=checkbox]').each(function() {
-          this.checked = false;
-          options.pop(this);
+          this.checked = $inp.prop('checked');
+          options.pop();
         });
       }
-    }
-
-    if((idx = options.indexOf(val)) > -1) {
-      options.splice(idx, 1);
-      setTimeout(function() { $inp.prop('checked', false)}, 0);
     } else {
-      options.push(val);
-      setTimeout(function() { $inp.prop('checked', true)}, 0);
+      if((idx = options.indexOf(val)) > -1) {
+        options.splice(idx, 1);
+        // $('#vip-all').prop('checked', false);
+        setTimeout(function() { $inp.prop('checked', false)}, 0);
+      } else {
+        options.push(val);
+        setTimeout(function() { $inp.prop('checked', true)}, 0);
+      }
     }
+    
     
     $(event.target).blur();
     
@@ -333,7 +342,6 @@ $(document).ready(function() {
 
     $("#vipbtn").html(options.length + " Selected " + '<span class="caret"></span>');
 
-    return false;
   });
 
   var riskOptions = [];
