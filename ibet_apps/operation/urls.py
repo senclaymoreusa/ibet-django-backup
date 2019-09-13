@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/create-message', views.CreateNotificationAPIView.as_view(), name='create-message'),
     path('api/notification-search/', views.NotificationSearchAutocomplete.as_view(), name='notification-search'),
     path('api/timerange/', views.NotificationDateFilterAPI.as_view(), name='timerange'),
+    path('api/group-filter', views.MessageGroupUserAPI.as_view(), name='group-filter'),
     # path('api/referral/', views.ReferralAward.as_view(), name='referral'),
     # path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
     # path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),

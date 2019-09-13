@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.test import APIRequestFactory
 
 import datetime
+from datetime import timedelta
 import boto3
 import json
 import logging
@@ -561,6 +562,26 @@ class NotificationDateFilterAPI(View):
 
         queryset = Notification.objects.filter(date__range=[start_date, end_date])
         return HttpResponse(status=200)
+
+
+class MessageGroupUserAPI(View):
+    def get(self, request, *arg, **kwargs):
+        product = request.GET.get('product')
+        active = request.GET.get('active')
+        print(active)
+        group_filter = Q()
+        if product != None:
+            group_filter = group_filter & Q(product_attribute=product)
+
+        if active.isdigit():
+            end_date = timezone.now()
+            start_date = end_date - timedelta(hours=24 * int(active))
+            group_filter = group_filter & Q(time_of_registration__range=(start_date, end_date))
+
+        user_count = CustomUser.objects.filter(group_filter).count()
+
+        return HttpResponse(user_count)
+
 
 
 class AWSTopicAPIView(GenericAPIView):
