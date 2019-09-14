@@ -906,6 +906,9 @@ class LogStreamToS3(APIView):
             'BucketARN': s3_bucket_arn,
             'RoleARN': iam_role,
             'Prefix': prefix,
+            'BufferingHints': {
+                'IntervalInSeconds': 60, 
+            },
         }
     
         # Create the delivery stream
@@ -961,7 +964,7 @@ class LogStreamToS3(APIView):
         
     def post(self, request, *args, **kwargs):
         
-        line = request.data['line']
+        line = request.data['line'] + "\n"
         #
         # Limit source in ['Android','Ibetweb']?
         #
