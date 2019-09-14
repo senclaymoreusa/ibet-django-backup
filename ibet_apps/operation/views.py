@@ -589,8 +589,19 @@ class MessageGroupUserAPI(View):
             start_date = end_date - timedelta(hours=24 * int(active))
             group_filter = group_filter & Q(time_of_registration__range=(start_date, end_date))
 
+        response = {}
         user_count = CustomUser.objects.filter(group_filter).count()
+        queryset = CustomUser.objects.filter(group_filter)
+        user_list = []
 
+        for user in queryset:
+            item = {}
+            item["pk"] = user.pk
+            item["username"] = user.username
+            user_list.push(item)
+
+        response["user_count"] = user_count
+        response["user"] = user_list
         return HttpResponse(user_count)
 
 
