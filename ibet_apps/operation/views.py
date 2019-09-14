@@ -384,8 +384,16 @@ class MessageUserGroupView(CommAdminView):
         context["title"] = title
         context['time'] = timezone.now()
         
-        context['users'] = CustomUser.objects.all().count()
-        # queryset = AWSTopic.objects.all()
+        context['users_count'] = CustomUser.objects.all().count()
+        queryset = CustomUser.objects.all()
+        user_list = []
+        for user in user_list:
+            item = {}
+            item["pk"] = user.pk
+            item["username"] = user.username
+            user_list.push(item)
+
+        context['user_list'] = user_list
         # context['queryset'] = queryset
         logger.info("GET AWSTopicView")
         # return HttpResponse("MessageUserGroup")
