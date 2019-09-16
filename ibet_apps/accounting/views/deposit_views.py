@@ -8,11 +8,11 @@ from django.template.loader import render_to_string
 from accounting.models import *
 from users.models import CustomUser
 from django.core import serializers
+from django.utils import timezone
 from django.utils.timezone import timedelta
 from utils.constants import *
 
 import simplejson as json
-import datetime
 import logging
 
 logger = logging.getLogger("django")
@@ -41,7 +41,7 @@ class DepositView(CommAdminView):
 
         elif get_type == "getLatestDeposit":
             user = request.GET.get("user")
-            within_this_month = datetime.date.today() - datetime.timedelta(days=30)
+            within_this_month = timezone.now() - timezone.timedelta(days=30)
             latest_deposit = Transaction.objects.filter(
                 Q(user_id_id=user)
                 & Q(transaction_type=TRANSACTION_DEPOSIT)
@@ -255,5 +255,5 @@ class DepositView(CommAdminView):
             return HttpResponseRedirect(reverse("xadmin:deposit_view"))
 
 def myconverter(o):
-    if isinstance(o, datetime.date):
+    if isinstance(o, timezone.date):
         return o.__str__()

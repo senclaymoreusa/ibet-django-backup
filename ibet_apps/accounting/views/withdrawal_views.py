@@ -6,8 +6,8 @@ from django.db.models import Q, Sum, Count
 from django.db.models.functions import Coalesce
 from accounting.models import *
 from users.models import CustomUser
+from django.utils import timezone
 
-import datetime
 import simplejson as json
 import logging
 
@@ -37,7 +37,7 @@ class WithdrawalView(CommAdminView):
 
         elif get_type == "getLatestWithdraw":
             user = request.GET.get("user")
-            within_this_month = datetime.date.today() - datetime.timedelta(days=30)
+            within_this_month = timezone.now() - timezone.timedelta(days=30)
             latest_withdraw = Transaction.objects.filter(
                 Q(user_id_id=user)
                 & Q(transaction_type=TRANSACTION_WITHDRAW)
@@ -122,7 +122,7 @@ class WithdrawalView(CommAdminView):
                 # withdrawal today
                 pendingDict["withdrawal_today"] = (
                     pending_trans.filter(
-                        Q(arrive_time__gte=datetime.date.today())
+                        Q(arrive_time__gte=timezone.now())
                         & Q(user_id_id=pending_transaction.user_id_id)
                     )
                     .values("amount")
@@ -132,7 +132,7 @@ class WithdrawalView(CommAdminView):
                     pendingDict["withdrawal_today"] = "0"
 
                 pendingDict["withdrawal_count_today"] = pending_trans.filter(
-                    Q(arrive_time__gte=datetime.date.today())
+                    Q(arrive_time__gte=timezone.now())
                     & Q(user_id_id=pending_transaction.user_id_id)
                 ).aggregate(count=Count("amount"))['count']
 
@@ -289,5 +289,5 @@ class WithdrawalView(CommAdminView):
             return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))
 
 def myconverter(o):
-    if isinstance(o, datetime.date):
+    if isinstance(o, timezone.date):
         return o.__str__()

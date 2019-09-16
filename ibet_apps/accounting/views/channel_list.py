@@ -11,7 +11,6 @@ from accounting.models import *
 from users.models import CustomUser
 
 import simplejson as json
-import datetime
 import logging
 from django.core import serializers
 from django.utils.timezone import timedelta
@@ -115,7 +114,7 @@ class ChannelListView(CommAdminView):
             channel_id = request.POST.get("channel_id_number")
             channel_status = request.POST.get("channel_status")
 
-            min_deposit = request.POST.get("min_deposit")
+            min_deposit = request.POST.get('min_deposit')
             max_deposit = request.POST.get("max_deposit")
 
             transaction_fee = request.POST.get("transaction_fee")
@@ -131,18 +130,32 @@ class ChannelListView(CommAdminView):
                 channel = DepositChannel.objects.filter(pk=channel_id)
             else:
                 channel = WithdrawChannel.objects.filter(pk=channel_id)
-                
-            channel.update(
-                min_amount=min_deposit,
-                max_amount=max_deposit,
-                transaction_fee=transaction_fee,
-                transaction_fee_per=transaction_fee_per,
-                switch=channel_status,
-                limit_access = limit_access,
-                new_user_volume = new_user_volume,
-                volume = volume, 
-            )
-            logger.info("Update Channel '%s' details" % channel)
+
+            if min_deposit == '':
+                return JsonResponse({ "code": 1, "message": "Please Fill MINIMUM DEPOSIT"})
+            elif max_deposit == '':
+                return JsonResponse({ "code": 1, "message": "Please Fill MAXIMUM DEPOSIT"})
+            elif transaction_fee == '':
+                return JsonResponse({ "code": 1, "message": "Please Fill TRANSACTION FEE"})
+            elif transaction_fee_per == '':
+                return JsonResponse({ "code": 1, "message": "Please Fill TRANSACTION FEE PERCENTAGE"})
+            elif volume == '':
+                return JsonResponse({ "code": 1, "message": "Please Fill VOLUME"})
+            elif new_user_volume == '':
+                return JsonResponse({ "code": 1, "message": "Please Fill NEW USER VOLUME"})
+            else:
+                channel.update(
+                    min_amount=min_deposit,
+                    max_amount=max_deposit,
+                    transaction_fee=transaction_fee,
+                    transaction_fee_per=transaction_fee_per,
+                    switch=channel_status,
+                    limit_access = limit_access,
+                    new_user_volume = new_user_volume,
+                    volume = volume, 
+                )
+                logger.info("Update Channel '%s' details" % channel)
+                return HttpResponseRedirect(reverse("xadmin:channel_list"))
             # Delete Channel
             # elif post_type == "deleteChannel":
             #     deposit_channel = request.POST.get("deposit_channel")
@@ -156,7 +169,7 @@ class ChannelListView(CommAdminView):
             #         DepositChannel, thirdParty_name=deposit_channel_label
             #     )
             #     delete_channel.delete()
-            return HttpResponseRedirect(reverse("xadmin:channel_list"))
+            
 def decimal_default(obj):
     if isinstance(obj, Decimal):
         return float(obj)

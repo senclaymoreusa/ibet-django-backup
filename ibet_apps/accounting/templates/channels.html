@@ -48,7 +48,7 @@
         </form> -->
 
         <div class="datatable">
-            <table id="deposit_channels" class="table-striped table-bordered hover" style="width:100%;">
+            <table class="table-striped table-bordered hover" id="deposit_channels" style="width:100%;">
                 <thead>
                     <tr>
                         <th>METHOD</th>
@@ -64,7 +64,7 @@
                         <th>REQUIRED VERIFICATIONS</th>
                         <th>VIP LEVEL</th>
                         <th>RISK LEVEL</th>
-                        <th>NEW USERS volume</th>
+                        <th>NEW USERS VOLUME</th>
                         <th>STATUS</th>
                         <th style="display: none">pk</th>
                         <th></th>
@@ -107,7 +107,7 @@
                         <h4 class="modal-title">Edit payment method</h4>
                     </div>
                     <div class="modal-body">
-                        <form action="{% url 'xadmin:channel_list' %}" method="POST">
+                        <form action="{% url 'xadmin:channel_list' %}" method="POST" id="editChannelForm">
                             {% csrf_token %}
                             <!-- <p id="channel_name"></p><br> -->
                             <input type="hidden" name="type" value="edit_channel_detail"></input>
@@ -151,10 +151,10 @@
                                     </div>
                                     <div class="row bridge">
                                         <div class="col-md-4">
-                                            <input type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
+                                            <input class="form-control" type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
                                         </div>
                                         <div class="col-md-4">
-                                            <input type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
+                                            <input class="form-control" type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
                                         </div>
                                     </div>
 
@@ -164,11 +164,11 @@
                                     </div>
                                     <div class="row bridge">
                                         <div class="col-md-4">
-                                            <input type=number min=0 step=0.01 id="transaction_fee"
+                                            <input class="form-control" type=number min=0 step=0.01 id="transaction_fee"
                                                 name="transaction_fee">
                                         </div>
                                         <div class="col-md-4">
-                                            <input type=number min=0 step=0.01 id="transaction_fee_per"
+                                            <input class="form-control" type=number min=0 step=0.01 id="transaction_fee_per"
                                                 name="transaction_fee_per">
                                         </div>
                                     </div>
@@ -176,9 +176,9 @@
                                     <div class="row">
                                         <div class="col-md-6 channel-data">VOLUME</div>
                                     </div>
-                                    <div class="row bridge">
+                                    <div class="row bridge form-inline">
                                         <div class="col-md-6">
-                                            &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="volume"
+                                            &#8806;<input class="form-control" style="width: 130px;" type=number min=0 step=0.01 id="volume"
                                                 name="volume">&#37;
                                         </div>
                                     </div>
@@ -197,10 +197,10 @@
                                 <input type="checkbox" class="form-check-input" id="newUserCheck" checked>
                                 <label class="form-check-label" for="newUserCheck">New users</label>
 
-                                <div id="new_user_volume_info">
+                                <div id="new_user_volume_info" class="form-inline">
                                     NEW USERS VOLUME(%)
                                     <br>
-                                    &#8806;<input style="width: 130px;" type=number min=0 step=0.01 id="new_user_volume"
+                                    &#8806;<input class="form-control" style="width: 130px;" type=number min=0 step=0.01 id="new_user_volume"
                                         name="new_user_volume">&#37;
                                 </div><br>
 
@@ -224,7 +224,8 @@
                             </button><br> -->
 
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <p id='errorMessage'>&nbsp;</p>
+                                <button id="submitButton" type="submit" class="btn btn-primary">Save</button>
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                             </div>
                         </form>
@@ -358,6 +359,26 @@
                     });
                 }
             })
+        });
+
+        $("#editChannelForm").submit(function (e) {
+
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+            var form = $(this);
+            var data = form.serialize()
+            $.ajax({
+                type: "POST",
+                data: data,
+                success: function (data) {
+                    if (data.code === 1) {
+                        $('#errorMessage').text(data.message);
+                        $('#errorMessage').css('color', 'red');
+                    } else {
+                        window.location.reload();
+                    }
+                }
+            });
+
         });
 
         // channel filter
