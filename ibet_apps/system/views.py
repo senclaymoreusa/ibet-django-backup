@@ -705,7 +705,7 @@ class LogStreamToS3(APIView):
         """
     
         # Try to get the description of the Firehose
-        firehose_client = boto3.client('firehose')
+        firehose_client = boto3.client('firehose', region_name="us-east-2")
         try:
             result = firehose_client.describe_delivery_stream(DeliveryStreamName=firehose_name)
         except ClientError as e:
@@ -913,7 +913,7 @@ class LogStreamToS3(APIView):
     
         # Create the delivery stream
         # By default, the DeliveryStreamType='DirectPut'
-        firehose_client = boto3.client('firehose')
+        firehose_client = boto3.client('firehose', region_name="us-east-2")
         try:
             if firehose_src_type == 'KinesisStreamAsSource':
                 # Define the Kinesis Data Stream configuration
@@ -945,7 +945,7 @@ class LogStreamToS3(APIView):
         """
     
         # Wait until the stream is active
-        firehose_client = boto3.client('firehose')
+        firehose_client = boto3.client('firehose', region_name="us-east-2")
         while True:
             try:
                 # Get the stream's current status
@@ -990,9 +990,9 @@ class LogStreamToS3(APIView):
         firehose_name = source + 'DeliveryStream'
         iam_role_name = 'firehose_delivery_role'
         
-        bucket_arn = 'arn:aws:s3:::ibet-admin-dev'
-        if "ENV" in os.environ and os.environ["ENV"] != 'local':
-            bucket_arn = 'arn:aws:s3:::ibet-admin-' + os.environ["ENV"]
+        bucket_arn = 'arn:aws:s3:::ibet-admin-eudev'
+#         if "ENV" in os.environ and os.environ["ENV"] != 'local':
+#             bucket_arn = 'arn:aws:s3:::ibet-admin-' + os.environ["ENV"]
         
         logging.info('Bucket ARN is {}'.format(bucket_arn))
     
@@ -1010,7 +1010,7 @@ class LogStreamToS3(APIView):
                 exit(1)
             logging.info('Firehose stream is active')
     
-        firehose_client = boto3.client('firehose')
+        firehose_client = boto3.client('firehose', region_name="us-east-2")
         #
         # Put the record into the Firehose stream
         #
