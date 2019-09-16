@@ -3,7 +3,7 @@ import logging
 from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
 from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
-# from .views import getThirdPartyKeys
+from system.models import UserGroup
 
 logger = logging.getLogger("notification.create.error")
 
@@ -73,3 +73,10 @@ class NotificationToUsersSerializer(serializers.ModelSerializer):
         model = NotificationToUsers
         fields = ('pk', 'notification_id', 'notifier_id', 'is_read', "is_deleted")
         read_only_fields = ['pk', 'notification_id', 'notifier_id', 'is_read', "is_deleted"]
+
+
+class MessageUserGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserGroup
+        fields = ('pk', 'name', 'description', 'groupType', 'created_time', 'approvals')
+        read_only_fields = ['pk', 'created_time', 'approvals']

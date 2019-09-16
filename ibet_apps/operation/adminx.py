@@ -35,7 +35,7 @@ xadmin.site.register_view(r'notification/', NotificationView, name='notification
 # xadmin.site.register_view(r'userdetail/(?P<pk>\d+)/$', UserDetailView, name='user_detail')
 xadmin.site.register_view(r'awstopic/(?P<pk>\d+)/$', AWSTopicView, name='awstopic')
 xadmin.site.register_view(r'awstopic/', AWSTopicView, name='awstopic')
-xadmin.site.register_view(r'messagegroups/', MessageUserGroupView, name='message-group')
+xadmin.site.register_view(r'messagegroups/', MessageUserGroupView, name='messagegroups')
 
 # xadmin.site.register(Notification, NotificationAdmin)
 # xadmin.site.register(UserGroup, MessageGroupAdmin)

@@ -18,7 +18,7 @@ import json
 import logging
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
-from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer
+from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer
 from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
 from users.models import CustomUser
 from system.models import UserGroup, UserToUserGroup
@@ -127,6 +127,16 @@ def isTimeFormat(time_str):
         return False
     try:
         datetime.datetime.strptime(time_str, "%Y-%m-%d %H:%M")
+        return True
+    except ValueError:
+        return False
+
+
+def isDateFormat(date_str):
+    if date_str is None:
+        return False
+    try:
+        datetime.datetime.strptime(date_str, "%m/%d/%Y")
         return True
     except ValueError:
         return False
@@ -385,23 +395,53 @@ class MessageUserGroupView(CommAdminView):
         context['time'] = timezone.now()
         
         context['users_count'] = CustomUser.objects.all().count()
-        queryset = CustomUser.objects.all()
-        user_list = []
-        for user in user_list:
-            item = {}
-            item["pk"] = user.pk
-            item["username"] = user.username
-            user_list.push(item)
+        # queryset = CustomUser.objects.all()
+        # user_list = []
+        # for user in user_list:
+        #     item = {}
+        #     item["pk"] = user.pk
+        #     item["username"] = user.username
+        #     user_list.push(item)
 
-        context['user_list'] = user_list
-        # context['queryset'] = queryset
+        # context['user_list'] = user_list
+        groups = UserGroup.objects.all()
+        message_groups = []
+        for group in groups:
+            group_item = {}
+            group_item['pk'] = group.pk
+            group_item['name'] = group.name
+            group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
+            group_item['time_used'] = group.time_used
+            group_item['creator'] = group.creator
+            message_groups.append(group_item)
+
+        context['message_groups'] = message_groups
         logger.info("GET AWSTopicView")
         # return HttpResponse("MessageUserGroup")
         return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
         group_name = request.POST.get('group_name')
-        users = request.POST.getList('group_users')
+        pk_list = request.POST.getlist('pk[]')
+
+        data = {
+            "name": group_name,
+            "groupType": MESSAGE_GROUP,
+        }
+
+        serializer = MessageUserGroupSerializer(data=data)
+        if serializer.is_valid():
+            group = serializer.save()
+            logger.info("saved message user group")
+            for pk in pk_list:
+                user = CustomUser.objects.get(pk=int(pk))
+                log = UserToUserGroup.objects.create(group=group, user=user)
+                
+            logger.info("saved message user group log")
+            return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+        else:
+            logger.error(serializer.errors)
+            return HttpResponse(serializer.errors)
 
 
 class AWSTopicView(CommAdminView):
@@ -580,6 +620,15 @@ class MessageGroupUserAPI(View):
     def get(self, request, *arg, **kwargs):
         product = request.GET.get('product')
         active = request.GET.get('active')
+        active_from = request.GET.get('active_from')
+        active_to = request.GET.get('active_to')
+        print(active_from)
+        print(active_to)
+        register_from = request.GET.get('register_from')
+        # print(register_from)
+        register_to = request.GET.get('register_to')
+        # print(register_to)
+
         group_filter = Q()
         if product != None:
             group_filter = group_filter & Q(product_attribute=product)
@@ -589,20 +638,45 @@ class MessageGroupUserAPI(View):
             start_date = end_date - timedelta(hours=24 * int(active))
             group_filter = group_filter & Q(time_of_registration__range=(start_date, end_date))
 
+        if isDateFormat(active_from):
+            current_tz = timezone.get_current_timezone()
+            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").astimezone(current_tz)
+            group_filter = group_filter & Q(time_of_registration__gt=active_from)
+
+        if isDateFormat(active_to):
+            current_tz = timezone.get_current_timezone()
+            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").astimezone(current_tz)
+            group_filter = group_filter & Q(time_of_registration__lt=active_to)
+
+        if isDateFormat(register_from):
+            current_tz = timezone.get_current_timezone()
+            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").astimezone(current_tz)
+            group_filter = group_filter & Q(time_of_registration__gt=register_from)
+
+        if isDateFormat(register_to):
+            current_tz = timezone.get_current_timezone()
+            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").astimezone(current_tz)
+            group_filter = group_filter & Q(time_of_registration__lt=register_to)
+
+        queryset = CustomUser.objects.filter(group_filter)
+
         response = {}
         user_count = CustomUser.objects.filter(group_filter).count()
-        queryset = CustomUser.objects.filter(group_filter)
         user_list = []
+        pk_list = []
 
         for user in queryset:
             item = {}
             item["pk"] = user.pk
+            pk_list.append(user.pk)
             item["username"] = user.username
-            user_list.push(item)
+            user_list.append(item)
 
         response["user_count"] = user_count
         response["user"] = user_list
-        return HttpResponse(user_count)
+        response["pk_list"] = pk_list
+        # return HttpResponse(response)
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
 class AWSTopicAPIView(GenericAPIView):

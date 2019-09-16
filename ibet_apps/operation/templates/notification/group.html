@@ -20,6 +20,27 @@ p, label {
   color: #4a4a4a;
 }
 
+thead {
+  height: 12px;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+td {
+  border: solid 4px #ffffff;
+}
+
+tbody>tr:nth-child(odd)>td, 
+tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
 .modal-header {
   border-radius: 4px;
   border: solid 1px #bdbdbd;
@@ -44,15 +65,19 @@ p, label {
   background-color: #f3f3f3;
   margin: 16px 16px 16px 16px;
 }
+
+#csv_file {
+  display: none;
+}
 </style>
 
 <h2 id="demo"></h2>
 <!--<a href="/notification/create_message.html" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Create a new message</a>-->
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New group</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group">New group</button>
 
-<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div class="modal fade bd-example-modal-lg" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -67,7 +92,7 @@ p, label {
       </ul>
       <div class="tab-content">
         <div id="membergroup" class="tab-pane active">
-          <form action="{% url 'xadmin:awstopic' %}" method="post">
+          <form id="newgroup">
             {% csrf_token %}
               <div class="form-group">
                 <label for="group_name">NAME</label>
@@ -97,7 +122,7 @@ p, label {
                   <div class="col-md-5" id="daystotal" style="padding-left: 0">
                     <label style="margin-left:36px">LAST ACTIVE DATE</label>
                     <div class="input-group">
-                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" name="days" value="total"></span>
+                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" id="total" name="days" value="total" checked></span>
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">≤</span>
                       <input type="number" id="days" class="form-control" min="1">
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">Days ago</span>
@@ -106,11 +131,11 @@ p, label {
                   <div class="col-md-7" id="daysrange" style="padding-left: 0">
                     <label style="margin-left:36px">LAST ACTIVE DATE</label>
                     <div class="input-group">
-                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" name="days" id="range"></span>
+                      <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" id="range" name="days" id="range"></span>
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
-                      <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                      <input type="text" id="from_date" class="form-control" placeholder="Pick a time..." disabled>
                       <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
-                      <input type="text" id="from_date" class="form-control" placeholder="Pick a time...">
+                      <input type="text" id="to_date" class="form-control" placeholder="Pick a time..." disabled>
                     </div>
                   </div>
                 </div>
@@ -179,18 +204,18 @@ p, label {
                 <p style="font-size: 14px"><strong>ADD MEMBERS MANUALLY</strong></p>
                 <p>Manually added members will stay in the groups regardless of filter settings.</p>
                 <p>You have added 0 members manually.</p>
-                <button type="button" class="btn btn-primary">Add members</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manually">Add members</button>
               </div>
               <hr/>
               <div class="form-group" style="padding-top: 0">
                 <label>Members in group</label>
                 <div class="row" style="background-color:#f3f3f3">
-                  <span><a href="#" data-toggle="modal" data-target="#view-group">&nbsp;{{ users_count }}</a></span>
+                  <span><a href="#" id="member_count" data-toggle="modal" data-target="#view-group">&nbsp;{{ users_count }}</a></span>
                 </div>
               </div>
               <div class="row">
-                  {% comment %} <button type="submit" class="btn btn-primary">Save</button> {% endcomment %}
-                  <button type="button" class="btn btn-primary">Save</button>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                  {% comment %} <button type="button" id="create_group" class="btn btn-primary">Save</button> {% endcomment %}
                   <button type="reset" class="btn btn-primary">Cancel</button>
               </div>
           </form>
@@ -225,25 +250,59 @@ p, label {
   </div>
 </div> {% endcomment %}
 
+<div class="modal fade bd-example-modal-lg" id="manually" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add manually to group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="row" style="margin-top: 31px; margin-left: 16px">
+        <div class='col-md-9' style="padding-left: 0">
+          <div class="input-group">
+            <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword...">
+            <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+          </div>
+        </div>
+        <div class='col-md-3' style="padding-left: 0">
+          <button class="btn btn-primary" id="csv_btn">Upload CSV</button>
+          <input type="file" id="csv_file">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top: 20px; margin-left: 16px">Add member to group</button>
+      <table id="details">
+        <tbody>
+          <tr>
+            <td>TBD</td>
+            <td>TBD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-<table class="table table-bordered table-striped table-hover">
-  <tr>
-    <th>NAME</th>
-    <th>MEMBERS</th>
-    <th>TIMES USED</th>
-    <th>CREATOR</th>
-    <th>OPEN RATE</th>
-    <th>EDIT</th>
-    <th>VIEW</th>
-  </tr>
-  {% for topic in queryset %}
+<table>
+  <thead class="thead-dark">
     <tr>
-      <td>{{ topic }}</td>
-      <td>TBD</td>
-      <td>TBD</td>
-      <td>{{ topic.creator }}</td>
+      <th style="width: 40%;">NAME</th>
+      <th style="width: 15%;">MEMBERS</th>
+      <th style="width: 15%;">TIMES USED</th>
+      <th style="width: 15%;">CREATOR</th>
+      <th style="width: 15%;">OPEN RATE</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for group in message_groups %}
+    <tr>
+      <td>{{ group.name }}</td>
+      <td>{{ group.members }}</td>
+      <td>{{ group.time_used }}</td>
+      <td>{{ group.creator }}</td>
       <td>66.67%</td>
-      <td><a class="btn btn-primary" href="{% url 'xadmin:awstopic' topic.pk %}" role="button" disabled>Edit</a></td>
+      <td><a class="btn btn-primary" href="#" role="button" disabled>Edit</a></td>
       <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
       <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
         <i class="fa fa-info"></i>
@@ -251,8 +310,11 @@ p, label {
     </tr>
     <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
   {% endfor %}
+  </tbody>
 </table>
 <script>
+var pk_list;
+
 $(document).ready(function() {
   var userFilter = {
     'product': null,
@@ -266,8 +328,40 @@ $(document).ready(function() {
     'risk': null,
   }
 
-  var user_list;
-  groupFilter();
+  var user_list = [];
+
+  $('.product-item').click(function() {
+    $("#product").html($(this).text() + '<span class="caret"></span>');
+    $("#product").val($(this).text());
+    userFilter['product'] = $('#product').val();
+    groupFilter();
+  });
+
+  $('#from_date').datepicker({
+    onClose: function() {
+      userFilter['active_from'] = $(this).val();
+      groupFilter();
+    }
+  });
+
+  $('#to_date').datepicker({
+    onClose: function() {
+      userFilter['active_to'] = $(this).val();
+      groupFilter();
+    }
+  });
+
+  $('#total').change(function() {
+    $('#days').prop('disabled', false);
+    $('#from_date').prop('disabled', true);
+    $('#to_date').prop('disabled', true);
+  });
+
+  $('#range').change(function() {
+    $('#days').prop('disabled', true);
+    $('#from_date').prop('disabled', false);
+    $('#to_date').prop('disabled', false);
+  });
 
   $('#reg-from').datepicker({
     onClose: function() {
@@ -278,18 +372,12 @@ $(document).ready(function() {
 
   $('#reg-to').datepicker({
     onClose: function() {
-      userFilter['register_from'] = $(this).val();
+      userFilter['register_to'] = $(this).val();
       groupFilter();
     }
   });
 
-  $('.product-item').click(function() {
-    $("#product").html($(this).text() + '<span class="caret"></span>');
-    $("#product").val($(this).text());
-    userFilter['product'] = $('#product').val();
-    console.log(userFilter);
-    groupFilter();
-  });
+
 
   $('input:radio[name="days"]').change(function() {
     if ($(this).is(':checked') && $(this).val() == 'total') {
@@ -301,11 +389,6 @@ $(document).ready(function() {
     userFilter['active'] = $(this).val();
     groupFilter()
   })
-
-  {% comment %} $('#reg-from').close(function() {
-    console.log($(this).val());
-    userFilter['register_from'] = $(this).val();
-  }) {% endcomment %}
 
   var options = [];
 
@@ -380,32 +463,72 @@ $(document).ready(function() {
     return false;
   });
 
+  $('#csv_file').change(function(e) {
+    var fileName = e.target.files[0].name;
+    alert('The file "' + fileName +  '" has been selected.');
+
+    readFile = function() {
+      var reader = new FileReader();
+      reader.onload = function() {
+        console.log(reader.result);
+      };
+
+      reader.readAsBinaryString(fileInput.files[0]);
+    };
+
+    console.log(readFile);
+  });
+
+  $('#csv_btn').click(function() {
+    $('#csv_file').click();
+  });
+
+  $('#newgroup').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var group_name = form.find('input[name="group_name"]').val();
+
+    $.ajax({
+      type: "POST",
+      url: "{% url 'xadmin:messagegroups' %}",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        group_name: group_name,
+        pk: pk_list,
+      },
+      success: function(data)
+        {
+          console.log("Success");
+          {% comment %} if (data.code === 1) {
+              $('#errorMessage').text(data.message); 
+              $('#errorMessage').css('color', 'red'); 
+          } else {
+              window.location.reload();
+          } {% endcomment %}
+        }
+    });
+  });
+
   function groupFilter() {
+    console.log(userFilter['product']);
+    console.log(userFilter['active']);
+    console.log(userFilter['register_from']);
     $.ajax({
       type: 'GET',
       url: "{% url 'group-filter' %}",
       data: { 
         'product': userFilter['product'],
         'active': userFilter['active'],
+        'active_from': userFilter['active_from'],
+        'active_to': userFilter['active_to'],
+        'register_from': userFilter['register_from'],
+        'register_to': userFilter['register_to'],
       },
       success: function(data) {
         console.log(data);
-        user_list = data;
-      }
-    });
-  }
-
-  function createGroup() {
-    $.ajax({
-      type: 'POST',
-      url: "{% url 'group-filter' %}",
-      data: { 
-        'group_name': $("#group_name").val(),
-        'user_list': user_list,
-      },
-      success:function(data) {
-        console.log(data);
-        user_list = data;
+        $('#member_count').html("&nbsp;" + data["user_count"]);
+        user_list = data["user"];
+        pk_list = data["pk_list"];
       }
     });
   }
