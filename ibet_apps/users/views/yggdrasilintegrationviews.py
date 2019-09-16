@@ -47,7 +47,6 @@ class YggdrasilAPI(APIView):
         gameid              = self.request.query_params.get('gameid', '')
         
         if sessiontoken and org and playerid and amount and currency and reference and subreference and description and prepaidticketid and prepaidvalue and prepaidcost and prepaidref and jackpotcontribution and cat and tag and lang and version:
-            
   
             try:
                 user = CustomUser.objects.filter(username = playerid)
@@ -82,5 +81,30 @@ class YggdrasilAPI(APIView):
                         "code": 1003,
                         'msg': 'User_Not_Exist'
                     }
+
+
+        elif playerid and reference and subreference and org and version and not amount:
+
+            user = CustomUser.objects.filter(username = playerid)
+            balance = user[0].main_wallet
+
+            data = {
+                    "code": 0,
+                    "data":{
+                        "organization":         org,
+                        "playerId":             playerid,
+                        "currency":             currency,
+                        "balance":              balance,
+                        "nickName":             user[0].username,
+                        "bonus":                "",
+                    }
+                }
+        else:
+            
+    
+
+
+
+
         
         return Response(data)
