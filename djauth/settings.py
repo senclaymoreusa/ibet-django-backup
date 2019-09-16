@@ -96,7 +96,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
-    'bonus.apps.BonusConfig',      # Bobby
+    'bonus.apps.BonusConfig',
     'games.apps.GamesConfig',
     'accounting.apps.AccountingConfig',
     'system.apps.SystemConfig',
@@ -112,9 +112,20 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
+    'ckeditor',                    # ckeditor
+    'ckeditor_uploader',           # ckeditor
     'django_user_agents',
-    
 ]
+
+CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': 300,
+    },
+}
 
 SITE_ID = 1                        # Stephen
 
@@ -169,31 +180,14 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-# if 'RDS_DB_NAME' in os.environ:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': os.environ['RDS_DB_NAME'],
-#             'USER': os.environ['RDS_USERNAME'],
-#             'PASSWORD': os.environ['RDS_PASSWORD'],
-#             'HOST': os.environ['RDS_HOSTNAME'],
-#             'PORT': os.environ['RDS_PORT'],
-#         }
-#     }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         }
-#     }
-
 # To accommodate bucket names across all regions, need to remove hard-coded value
 # 
 # ENV: 
 #     USA: dev / prod
 #     EU:  eudev / euprod
 #
+
+
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
     DATABASES = {
@@ -202,7 +196,6 @@ if os.getenv("ENV") == "local":
             'NAME': 'ibetlocal',
             'USER': '',
             'PASSWORD': '',
-            'HOST': '',
             'HOST': '',
             'PORT': 5432,
         }
@@ -292,7 +285,7 @@ SESSION_COOKIE_HTTPONLY = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
 # djauth/settings.py
 # LOGIN_REDIRECT_URL = '/'

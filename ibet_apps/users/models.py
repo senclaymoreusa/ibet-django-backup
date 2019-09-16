@@ -156,6 +156,8 @@ class CustomUser(AbstractBaseUser):
     permanent_block_timespan = models.DurationField(null=True, blank=True)
     permanent_block_interval = models.SmallIntegerField(choices=PERMANENT_INTERVAL, null=True, blank=True)
 
+    activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
+
     ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
     department = models.SmallIntegerField(null=True, blank=True)
@@ -276,6 +278,7 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
+    image_url = models.CharField(max_length=500, null=True, blank=True)
     game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
@@ -457,23 +460,24 @@ class Limitation(models.Model):
     )
 
 
-class GBSportWallet(models.Model):
+class GameRequestsModel(models.Model):
 
     Success_Status = [
         ('1', '1'),
         ('0', '0'),
     ]
 
-    Trans_Type = [
-        ('Bet', 'Bet'),
-        ('Discard', 'Discard'),
-        ('Settle', 'Settle'),
-        ('Balance', 'Balance')
-    ]
+    # GB Sports and AG
 
-    Method         = models.CharField(max_length=30)
+    MemberID       = models.CharField(max_length=30)                 # Same as Username
+    TransType      = models.CharField(max_length=30)                 # Transaction Type
+    time            = models.CharField(max_length=100, blank=True)   # Current Time
+
+    # GB Sports only
+
+    Method         = models.CharField(max_length=30)                            
     Success        = models.CharField(choices=Success_Status, max_length=1)
-    TransType      = models.CharField(choices=Trans_Type, max_length=20)
+                              
     ThirdPartyCode = models.CharField(max_length=30)
     BetTotalCnt    = models.CharField(max_length=30)
     BetTotalAmt    = models.CharField(max_length=30)
@@ -482,9 +486,7 @@ class GBSportWallet(models.Model):
     BetGrpNO       = models.CharField(max_length=50)
     TPCode         = models.CharField(max_length=30)
     GBSN           = models.CharField(max_length=30)
-    MemberID       = models.CharField(max_length=30)
     CurCode        = models.CharField(max_length=30)
-    BetDT          = models.CharField(max_length=100)
     BetType        = models.CharField(max_length=20)
     BetTypeParam1  = models.CharField(max_length=20)
     BetTypeParam2  = models.CharField(max_length=20)
@@ -504,30 +506,23 @@ class GBSportWallet(models.Model):
     TicketWLAmt    = models.CharField(max_length=30)
     SettleDT       = models.CharField(max_length=30)
 
-    def __str__(self):
-        return self.MemberID + ' ' + self. TransType
+    # AG only
 
-
-class AGGamemodels(models.Model):
     sessionToken    = models.CharField(max_length=100, blank=True)
     currency        = models.CharField(max_length=100, blank=True)
     value           = models.CharField(max_length=100, blank=True)
-    playname        = models.CharField(max_length=100, blank=True)
     agentCode       = models.CharField(max_length=100, blank=True)
-    betTime         = models.CharField(max_length=100, blank=True)
     transactionID   = models.CharField(max_length=100, blank=True)
     platformType    = models.CharField(max_length=100, blank=True)
     Round           = models.CharField(max_length=100, blank=True)
     gametype        = models.CharField(max_length=100, blank=True)
     gameCode        = models.CharField(max_length=100, blank=True)
     tableCode       = models.CharField(max_length=100, blank=True)
-    transactionType = models.CharField(max_length=100, blank=True)
     transactionCode = models.CharField(max_length=100, blank=True)
     deviceType      = models.CharField(max_length=100, blank=True)
     playtype        = models.CharField(max_length=100, blank=True)
     netAmount       = models.CharField(max_length=100, blank=True)
     validBetAmount  = models.CharField(max_length=100, blank=True)
-    settletime      = models.CharField(max_length=100, blank=True)
     billNo          = models.CharField(max_length=100, blank=True)
     ticketStatus    = models.CharField(max_length=100, blank=True)
     gameResult      = models.CharField(max_length=100, blank=True)
@@ -535,8 +530,9 @@ class AGGamemodels(models.Model):
     remark          = models.CharField(max_length=100, blank=True)
     amount          = models.CharField(max_length=100, blank=True)
     gameId          = models.CharField(max_length=100, blank=True)
-    time            = models.CharField(max_length=100, blank=True)
+    
     roundId         = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return self.playname + ' ' + self.transactionType
+        return  self.MemberID + ' ' + self.TransType
+

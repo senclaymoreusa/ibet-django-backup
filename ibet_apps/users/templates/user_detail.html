@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block content %} 
-    {% if customuser.block == True %}
+    {% if blockDetail %}
     <div style="width:100%; height:65px; border-radius: 4px; border: solid 2px #d9534f; margin-left: 3px; background-color: rgb(249, 225, 225);">
         <div style="margin-left:2%; margin-top:10px;">
             <div class="row">
@@ -1489,7 +1489,7 @@
                                                 <div class="member-limit-info">Loss limit {{ forloop.counter }}</div>
                                             </div>
                                             <div class="col-md-8">
-                                                <div class="member-limit-text">$ {{ limit.amount }} {{ limit.interval }}</div>
+                                                <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                             </div>
                                         </div>
                                     {% endfor %}
@@ -1510,7 +1510,7 @@
                                             <div class="member-limit-info">Deposit limit {{ forloop.counter }}</div>
                                         </div>
                                         <div class="col-md-8">
-                                            <div class="member-limit-text">$ {{ limit.amount }} {{ limit.interval }}</div>
+                                            <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                         </div>
                                     </div>
                                     {% endfor %}
@@ -1531,7 +1531,7 @@
                                             <div class="member-limit-info">Withdraw limit {{ forloop.counter }}</div>
                                         </div>
                                         <div class="col-md-8">
-                                            <div class="member-limit-text">$ {{ limit.amount }} {{ limit.interval }}</div>
+                                            <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                         </div>
                                     </div>
                                     {% endfor %}
@@ -1548,17 +1548,17 @@
                                 <div style="margin:55px 0px 30px 0px;">
                                     <div class="row">
                                         <div class="member-limitation-title" style="margin-left:15px;">EXCLUSIONS</div>
-                                        <div class="col-md-4">
-                                            <div class="payment-info">Time-out</div>
+                                        <div class="col-md-6">
+                                            <div class="payment-info">Temporary time-out</div>
                                         </div>
-                                        <div class="col-md-8">
-                                            <div class="payment-text">Done</div>
+                                        <div class="col-md-6">
+                                            <div class="payment-text">{{ temperaryBlock.temporaryStr }}</div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="payment-info">Self-exclusion</div>
+                                        <div class="col-md-6">
+                                            <div class="payment-info">Permanent time-out</div>
                                         </div>
-                                        <div class="col-md-8">
-                                            <div class="payment-text">Done</div>
+                                        <div class="col-md-6">
+                                            <div class="payment-text">{{ permanentBlock.permanentStr }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1688,11 +1688,11 @@
                                 <div class="row" style="margin-top:20px;">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">LOSS LIMIT</div>
-                                        <input class="form-control" name="loss_limit[]" value="{{ loss.amount }}">
+                                        <input class="form-control" name="loss_limit" value="{{ loss.amount }}">
                                     </div>
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">LOSS LIMIT INTERVAL</div>
-                                        <select class="form-control" name="loss_limit_interval[]">
+                                        <select class="form-control" name="loss_limit_interval">
                                             <option value="-1">select...</option>
                                             <option value="0" {% if loss.intervalValue == 0 %} selected="selected"{% endif %}>per day</option>
                                             <option value="1" {% if loss.intervalValue == 1 %} selected="selected"{% endif %}>per week</option>
@@ -1711,11 +1711,11 @@
                             <div class="row">
                                 <div class="col-md-3 bet-limit-block">
                                     <div class="bet-limit-text">LOSS LIMIT</div>
-                                    <input class="form-control" name="loss_limit[]" value="">
+                                    <input class="form-control" name="loss_limit" value="">
                                 </div>
                                 <div class="col-md-3 bet-limit-block">
                                     <div class="bet-limit-text">LOSS LIMIT INTERVAL</div>
-                                    <select class="form-control" name="loss_limit_interval[]">
+                                    <select class="form-control" name="loss_limit_interval">
                                         <option value="-1">select...</option>
                                         <option value="0">per day</option>
                                         <option value="1">per week</option>
@@ -1741,11 +1741,11 @@
                                 <div class="row" style="margin-top:20px;">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">DEPOSIT LIMIT</div>
-                                        <input class="form-control" id="deposit_limit" name="deposit_limit[]" value="{{ deposit.amount }}">
+                                        <input class="form-control" id="deposit_limit" name="deposit_limit" value="{{ deposit.amount }}">
                                     </div>
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">DEPOSIT INTERVAL</div>
-                                        <select class="form-control" id="deposit_limit_interval" name="deposit_limit_interval[]">
+                                        <select class="form-control" id="deposit_limit_interval" name="deposit_limit_interval">
                                             <option value="-1">select...</option>
                                             <option value="0" {% if deposit.intervalValue == 0 %} selected="selected"{% endif %}>per day</option>
                                             <option value="1" {% if deposit.intervalValue == 1 %} selected="selected"{% endif %}>per week</option>
@@ -1764,11 +1764,11 @@
                                 <div class="row">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">DEPOSIT LIMIT</div>
-                                        <input class="form-control" id="deposit_limit" name="deposit_limit[]" value="">
+                                        <input class="form-control" id="deposit_limit" name="deposit_limit" value="">
                                     </div>
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">DEPOSIT INTERVAL</div>
-                                        <select class="form-control" id="deposit_limit_interval" name="deposit_limit_interval[]">
+                                        <select class="form-control" id="deposit_limit_interval" name="deposit_limit_interval">
                                             <option value="-1">select...</option>
                                             <option value="0">per day</option>
                                             <option value="1">per week</option>
@@ -1794,11 +1794,11 @@
                                 <div class="row" style="margin-top:20px;">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">WITHDRAW LIMIT</div>
-                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit[]" value="{{ withdraw.amount }}">
+                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit" value="{{ withdraw.amount }}">
                                     </div>
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">WITHDRAW INTERVAL</div>
-                                        <select class="form-control" id="withdraw_interval" name="withdraw_limit_interval[]">
+                                        <select class="form-control" id="withdraw_interval" name="withdraw_limit_interval">
                                             <option value="-1">select...</option>
                                             <option value="0" {% if withdraw.intervalValue == 0 %} selected="selected"{% endif %}>per day</option>
                                             <option value="1" {% if withdraw.intervalValue == 1 %} selected="selected"{% endif %}>per week</option>
@@ -1817,11 +1817,11 @@
                                 <div class="row">
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">WITHDRAW LIMIT</div>
-                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit[]" value="{{ withdraw.amount }}">
+                                        <input class="form-control" id="withdraw_limit" name="withdraw_limit" value="{{ withdraw.amount }}">
                                     </div>
                                     <div class="col-md-3 bet-limit-block">
                                         <div class="bet-limit-text">WITHDRAW INTERVAL</div>
-                                        <select class="form-control" id="withdraw_interval" name="withdraw_limit_interval[]">
+                                        <select class="form-control" id="withdraw_interval" name="withdraw_limit_interval">
                                             <option value="-1">select...</option>
                                             <option value="0">per day</option>
                                             <option value="1">per week</option>
@@ -1850,7 +1850,7 @@
                                 <div class="col-md-5">
                                     <div class="bet-limit-text">TEMPORARY TIME-OUT</div>
                                     <select class="form-control" name="temporary_time">
-                                        <option value="">select...</option>
+                                        <option value="-1">select...</option>
                                         <option value="0">per day</option>
                                         <option value="1">per week</option>
                                         <option value="2">per month</option>
@@ -1861,7 +1861,7 @@
                                 <div class="col-md-5">
                                     <div class="bet-limit-text">PERMANENT TIME-OUT</div>
                                     <select class="form-control" name="permanent_time">
-                                        <option value="">select...</option>
+                                        <option value="-1">select...</option>
                                         <option value="3">6 months</option>
                                         <option value="4">1 year</option>
                                         <option value="5">3 years</option>
@@ -2107,8 +2107,8 @@ $(document).ready(function() {
     $('.add_loss_field').click(function(e){
         e.preventDefault();
         var x = $('#loss-container').find('button').length;
-        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT</div><input class="form-control" name="loss_limit[]" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT INTERVAL</div><select class="form-control" name="loss_limit_interval[]"><option value="-1">select...</option><option value="0">per day</option><option value="1">per week</option><option value="2">per month</option></select></div>';
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT</div><input class="form-control" name="loss_limit" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">LOSS LIMIT INTERVAL</div><select class="form-control" name="loss_limit_interval"><option value="-1">select...</option><option value="0">per day</option><option value="1">per week</option><option value="2">per month</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#loss-container").append(content);
         x++;
@@ -2130,8 +2130,8 @@ $(document).ready(function() {
     $('.add_deposit_field').click(function(e){
         e.preventDefault();
         var x = $('#deposit-container').find('button').length;
-        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT LIMIT</div><input class="form-control" name="deposit_limit[]" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT INTERVAL</div><select class="form-control" name="deposit_limit_interval[]"><option value="-1">select...</option><option value="0">per day</option><option value="1">per week</option><option value="2">per month</option></select></div>';
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT LIMIT</div><input class="form-control" name="deposit_limit" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">DEPOSIT INTERVAL</div><select class="form-control" name="deposit_limit_interval"><option value="-1">select...</option><option value="0">per day</option><option value="1">per week</option><option value="2">per month</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#deposit-container").append(content);
         x++;
@@ -2153,8 +2153,8 @@ $(document).ready(function() {
     $('.add_withdraw_field').click(function(e){
         e.preventDefault();
         var x = $('#withdraw-container').find('button').length;
-        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW LIMIT</div><input class="form-control" name="withdraw_limit[]" value=""></div>';
-        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW INTERVAL</div><select class="form-control" name="withdraw_limit_interval[]"><option value="-1">select...</option><option value="0">per day</option><option value="1">per week</option><option value="2">per month</option></select></div>';
+        var content = '<div class="row" style="margin-top:20px;"><div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW LIMIT</div><input class="form-control" name="withdraw_limit" value=""></div>';
+        content += '<div class="col-md-3 bet-limit-block"><div class="bet-limit-text">WITHDRAW INTERVAL</div><select class="form-control" name="withdraw_limit_interval"><option value="-1">select...</option><option value="0">per day</option><option value="1">per week</option><option value="2">per month</option></select></div>';
         content += '<div class="col-md-2"><div class="bet-limit-text">&nbsp;</div><button type="button" class="btn btn-default delete" style="background-color:rgb(199, 89, 82)"><span class="glyphicon glyphicon-trash" style="color:white"></span> </button></div></div>';
         $("#withdraw-container").append(content);
         x++;
@@ -2338,15 +2338,21 @@ $(document).ready(function() {
     });
 
     $('#limitForm').on('submit', function(e) {
+        // e.preventDefault();
+        // var form = $(this);
+        // var url = form.attr('action');
+        // var data = form.serialize();
+        // console.log(data);
+        // console.log(url);
         var regex = /[0-9]|\./;
-        $(this).find('input[name="loss_limit[]"]').each(function() {
-            if (!regex.test(this.value)) {
-                this.focus();             
-                alert("format not correct for this field");
-                e.preventDefault();      
-                return false;
-            }
-        });
+        // $(this).find('input[name="loss_limit"]').each(function() {
+        //     if (!regex.test(this.value)) {
+        //         this.focus();             
+        //         alert("format not correct for this field");
+        //         e.preventDefault();      
+        //         return false;
+        //     }
+        // });
         var lossValue = $("input[name=loss_limit]").val();
         var depositValue = $("input[name=deposit_limit]").val();
         var withdrawValue = $("input[name=withdraw_limit]").val();
