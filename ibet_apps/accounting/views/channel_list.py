@@ -132,10 +132,6 @@ class ChannelListView(CommAdminView):
             else:
                 channel = WithdrawChannel.objects.filter(pk=channel_id)
                 
-
-            # channel.min_amount = min_deposit,
-            # channel.max_amount = max_deposit,
-            # channel.transaction_fee = transaction_fee,
             channel.update(
                 min_amount=min_deposit,
                 max_amount=max_deposit,
