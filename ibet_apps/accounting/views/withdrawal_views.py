@@ -4,11 +4,14 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q, Sum, Count
 from django.db.models.functions import Coalesce
-import datetime
-import simplejson as json
-
 from accounting.models import *
 from users.models import CustomUser
+
+import datetime
+import simplejson as json
+import logging
+
+logger = logging.getLogger("django")
 
 
 class WithdrawalView(CommAdminView):
@@ -18,6 +21,7 @@ class WithdrawalView(CommAdminView):
         if get_type == "getMemberInfo":
             user_id = request.GET.get("user")
             user = CustomUser.objects.get(pk=user_id)
+            logger.info("Get user" + str(user))
             response_data = {
                 "id": user_id,
                 "username": user.username,
@@ -39,10 +43,7 @@ class WithdrawalView(CommAdminView):
                 & Q(transaction_type=TRANSACTION_WITHDRAW)
                 & Q(request_time__gte=within_this_month)
             )
-
-            def myconverter(o):
-                if isinstance(o, datetime.date):
-                    return o.__str__()
+            logger.info('Find ' + str(latest_withdraw.count()) + ' latest withdrawals')
 
             response_withdraw_data = []
             for withdraw in latest_withdraw:
@@ -73,7 +74,6 @@ class WithdrawalView(CommAdminView):
                 content_type="application/json",
             )
 
-
         else:
             context = super().get_context()
             title = "Finance / Withdrawals"
@@ -82,7 +82,6 @@ class WithdrawalView(CommAdminView):
 
             # WITHDRAWAL TRANSACTIONS
             withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAW)
-
 
             # PENDING
             pending_trans = withdrawal_trans.filter(review_status=REVIEW_PEND) 
@@ -140,7 +139,6 @@ class WithdrawalView(CommAdminView):
                 pendingDict["channel"] = pending_transaction.get_channel_display()
                 pending_tran.append(pendingDict)
             context["pending_tran"] = pending_tran
-
 
             # approved transaction
             approved_tran = []
@@ -277,11 +275,19 @@ class WithdrawalView(CommAdminView):
             current_tran.update(remark=withdraw_notes)
             if 'withdraw-review-app' in request.POST:
                 current_tran.update(review_status=REVIEW_APP)
+                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Approve')
             elif 'withdraw-review-rej' in request.POST:
                 current_tran.update(review_status=REVIEW_REJ)
+                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
             elif 'withdraw-review-appnext' in request.POST:
                 current_tran.update(review_status=REVIEW_APP)
+                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Approve')
             elif 'withdraw-review-rejnext' in request.POST:
                 current_tran.update(review_status=REVIEW_REJ)
+                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
 
             return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))
+
+def myconverter(o):
+    if isinstance(o, datetime.date):
+        return o.__str__()

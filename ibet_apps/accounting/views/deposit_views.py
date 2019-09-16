@@ -7,13 +7,15 @@ from django.template.loader import render_to_string
 
 from accounting.models import *
 from users.models import CustomUser
+from django.core import serializers
+from django.utils.timezone import timedelta
+from utils.constants import *
 
 import simplejson as json
 import datetime
-from django.core import serializers
-from django.utils.timezone import timedelta
+import logging
 
-from utils.constants import *
+logger = logging.getLogger("django")
 
 
 class DepositView(CommAdminView):
@@ -23,6 +25,7 @@ class DepositView(CommAdminView):
         if get_type == "getMemberInfo":
             user_id = request.GET.get("user")
             user = CustomUser.objects.get(pk=user_id)
+            logger.info("Get user" + str(user))
             response_data = {
                 "id": user_id,
                 "username": user.username,
@@ -30,7 +33,7 @@ class DepositView(CommAdminView):
                 "last_name": user.last_name,
                 "balance": user.main_wallet,
                 "risk_level": user.get_risk_level_display(),
-                "vip_level": "Normal"
+                "vip_level": "Normal",
             }
             return HttpResponse(
                 json.dumps(response_data), content_type="application/json"
@@ -44,10 +47,7 @@ class DepositView(CommAdminView):
                 & Q(transaction_type=TRANSACTION_DEPOSIT)
                 & Q(request_time__gte=within_this_month)
             )
-
-            def myconverter(o):
-                if isinstance(o, datetime.date):
-                    return o.__str__()
+            logger.info('Find ' + str(latest_deposit.count()) + ' latest deposits')
 
             response_deposit_data = []
             for deposit in latest_deposit:
@@ -83,12 +83,14 @@ class DepositView(CommAdminView):
 
         else:
             context = super().get_context()
-            title = 'Finance / Deposits'
+            title = "Finance / Deposits"
             context["breadcrumbs"].append({"title": title})
             context["title"] = title
-            context['time'] = timezone.now()
+            context["time"] = timezone.now()
 
-            deposit_trans = Transaction.objects.filter(transaction_type=TRANSACTION_DEPOSIT)
+            deposit_trans = Transaction.objects.filter(
+                transaction_type=TRANSACTION_DEPOSIT
+            )
 
             # PENDING DEPOSIT
             pending_trans = deposit_trans.filter(review_status=REVIEW_PEND)
@@ -109,14 +111,14 @@ class DepositView(CommAdminView):
                 pendingDict["payment"] = pending_transaction.get_channel_display()
                 pendingDict["tran_no"] = pending_transaction.transaction_id
                 pendingDict["app_time"] = pending_transaction.request_time
-                
+
                 user_account = pending_transaction.user_bank_account
                 if user_account == None:
-                    pendingDict["bank"] = ''
-                    pendingDict["branch"] = ''
-                    pendingDict["city"] = ''
-                    pendingDict["name"] = ''
-                    pendingDict["account"] = ''
+                    pendingDict["bank"] = ""
+                    pendingDict["branch"] = ""
+                    pendingDict["city"] = ""
+                    pendingDict["name"] = ""
+                    pendingDict["account"] = ""
                 else:
                     bank = user_account.bank
                     pendingDict["bank"] = bank.name
@@ -145,11 +147,11 @@ class DepositView(CommAdminView):
 
                 user_account = success_transaction.user_bank_account
                 if user_account == None:
-                    successDict["bank"] = ''
-                    successDict["branch"] = ''
-                    successDict["city"] = ''
-                    successDict["name"] = ''
-                    successDict["account"] = ''
+                    successDict["bank"] = ""
+                    successDict["branch"] = ""
+                    successDict["city"] = ""
+                    successDict["name"] = ""
+                    successDict["account"] = ""
                 else:
                     bank = user_account.bank
                     successDict["bank"] = bank.name
@@ -178,11 +180,11 @@ class DepositView(CommAdminView):
 
                 user_account = fail_transaction.user_bank_account
                 if user_account == None:
-                    failDict["bank"] = ''
-                    failDict["branch"] = ''
-                    failDict["city"] = ''
-                    failDict["name"] = ''
-                    failDict["account"] = ''
+                    failDict["bank"] = ""
+                    failDict["branch"] = ""
+                    failDict["city"] = ""
+                    failDict["name"] = ""
+                    failDict["account"] = ""
                 else:
                     bank = user_account.bank
                     failDict["bank"] = bank.name
@@ -210,11 +212,11 @@ class DepositView(CommAdminView):
 
                 user_account = cancelled_transaction.user_bank_account
                 if user_account == None:
-                    cancelledDict["bank"] = ''
-                    cancelledDict["branch"] = ''
-                    cancelledDict["city"] = ''
-                    cancelledDict["name"] = ''
-                    cancelledDict["account"] = ''
+                    cancelledDict["bank"] = ""
+                    cancelledDict["branch"] = ""
+                    cancelledDict["city"] = ""
+                    cancelledDict["name"] = ""
+                    cancelledDict["account"] = ""
                 else:
                     bank = user_account.bank
                     cancelledDict["bank"] = bank.name
@@ -238,14 +240,20 @@ class DepositView(CommAdminView):
             dep_trans_no = request.POST.get("dep_trans_no")
             current_tran = Transaction.objects.filter(pk=dep_trans_no)
             current_tran.update(remark=deposit_notes)
-            if 'deposit-review-app' in request.POST:
+            if "deposit-review-app" in request.POST:
                 current_tran.update(review_status=REVIEW_APP)
-            elif 'deposit-review-rej' in request.POST:
+                logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Approve')
+            elif "deposit-review-rej" in request.POST:
                 current_tran.update(review_status=REVIEW_REJ)
-            elif 'deposit-review-appnext' in request.POST:
+                logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Reject')
+            elif "deposit-review-appnext" in request.POST:
                 current_tran.update(review_status=REVIEW_APP)
-            elif 'deposit-review-rejnext' in request.POST:
+                logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Approve')
+            elif "deposit-review-rejnext" in request.POST:
                 current_tran.update(review_status=REVIEW_REJ)
+                logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Reject')
+            return HttpResponseRedirect(reverse("xadmin:deposit_view"))
 
-            return HttpResponseRedirect(reverse('xadmin:deposit_view'))
-        
+def myconverter(o):
+    if isinstance(o, datetime.date):
+        return o.__str__()

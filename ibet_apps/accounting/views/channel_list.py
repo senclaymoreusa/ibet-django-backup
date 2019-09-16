@@ -5,18 +5,21 @@ from django.urls import reverse, reverse_lazy
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.core import exceptions
+from decimal import Decimal
 
 from accounting.models import *
 from users.models import CustomUser
 
 import simplejson as json
 import datetime
+import logging
 from django.core import serializers
 from django.utils.timezone import timedelta
 
 from utils.constants import *
 from itertools import chain
 
+logger = logging.getLogger("django")
 
 
 class ChannelListView(CommAdminView):
@@ -37,12 +40,13 @@ class ChannelListView(CommAdminView):
             context[
                 "current_channel_name"
             ] = current_channel.get_thirdParty_name_display()
+            logger.info('Get Channel ' + str(context["current_channel_name"]) + ' info')
 
             response_data = {
                 "channel_id": str(current_channel),
                 "name": current_channel.get_thirdParty_name_display(),
                 "channel_status": current_channel.get_switch_display(),
-                "min_deposit": current_channel.min_amount,
+                "min_deposit": str(current_channel.min_amount),
                 "max_deposit": current_channel.max_amount,
                 "transaction_fee": current_channel.transaction_fee,
                 "transaction_fee_per": current_channel.transaction_fee_per,
@@ -56,8 +60,9 @@ class ChannelListView(CommAdminView):
                 "market": current_channel.get_market_display(),
                 "supplier": current_channel.supplier
             }
+            logger.info('Append Channel ' + str(context["current_channel_name"]) + ' details')
             return HttpResponse(
-                json.dumps(response_data), content_type="application/json"
+                json.dumps(response_data, default=decimal_default), content_type="application/json"
             )
 
         else:
@@ -98,7 +103,6 @@ class ChannelListView(CommAdminView):
                 channelDict["status"] = channel.get_switch_display()
                 channel_data.append(channelDict)
             context["channel_data"] = channel_data
-
             context["markets_choices"] = MARKET_CHOICES
             context["types_choices"] = ("Deposit", "Withdrawal")
             context["status_choices"] = THIRDPARTY_STATUS_CHOICES
@@ -142,20 +146,24 @@ class ChannelListView(CommAdminView):
                 new_user_volume = new_user_volume,
                 volume = volume, 
             )
-        # Delete Channel
-        # elif post_type == "deleteChannel":
-        #     deposit_channel = request.POST.get("deposit_channel")
-        #     # find choice label from choice value
-        #     deposit_channel_label = None
-        #     for channel_id, name in CHANNEL_CHOICES:
-        #         if name == deposit_channel:
-        #             deposit_channel_label = str(channel_id)
-        #             break
-        #     delete_channel = get_object_or_404(
-        #         DepositChannel, thirdParty_name=deposit_channel_label
-        #     )
-        #     delete_channel.delete()
+            logger.info("Update Channel '%s' details" % channel)
+            # Delete Channel
+            # elif post_type == "deleteChannel":
+            #     deposit_channel = request.POST.get("deposit_channel")
+            #     # find choice label from choice value
+            #     deposit_channel_label = None
+            #     for channel_id, name in CHANNEL_CHOICES:
+            #         if name == deposit_channel:
+            #             deposit_channel_label = str(channel_id)
+            #             break
+            #     delete_channel = get_object_or_404(
+            #         DepositChannel, thirdParty_name=deposit_channel_label
+            #     )
+            #     delete_channel.delete()
             return HttpResponseRedirect(reverse("xadmin:channel_list"))
-
+def decimal_default(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    logger.info(TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__))
         
 
