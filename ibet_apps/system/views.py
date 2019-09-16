@@ -965,6 +965,7 @@ class LogStreamToS3(APIView):
     def post(self, request, *args, **kwargs):
         
         line = request.data['line'] + "\n"
+        source = request.data['source']
             
         """Exercise Kinesis Firehose methods"""
         
@@ -975,10 +976,10 @@ class LogStreamToS3(APIView):
         #
         # Limit source in ['Android','Ibetweb']?
         #
-        source = ''
+        streamPrefix = 'Unknown'
         for src in ['Android','Ibetweb']:
             if re.match(src, request.data['source'], re.IGNORECASE):
-                source = src
+                streamPrefix = src
                 break
         
         if not source:
@@ -987,14 +988,11 @@ class LogStreamToS3(APIView):
             
         # Assign these values before running the program
         # If the specified IAM role does not exist, it will be created
-        firehose_name = source + 'DeliveryStream'
+        firehose_name = streamPrefix + 'DeliveryStream'
         iam_role_name = 'firehose_delivery_role'
-        
         bucket_arn = 'arn:aws:s3:::ibet-admin-eudev'
-#         if "ENV" in os.environ and os.environ["ENV"] != 'local':
-#             bucket_arn = 'arn:aws:s3:::ibet-admin-' + os.environ["ENV"]
         
-        logging.info('Bucket ARN is {}'.format(bucket_arn))
+        logging.info('Firehose Name is {}, Bucket ARN is {}'.format(firehose_name, bucket_arn))
     
         # If Firehose doesn't exist, create it
         if not self.firehose_exists(firehose_name):
