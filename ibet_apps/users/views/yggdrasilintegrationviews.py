@@ -13,8 +13,6 @@ class YggdrasilAPI(APIView):
 
     def get(self, request, *args, **kwargs):
 
-        print(self.request.query_params)
-
         org                 = self.request.query_params.get('org', '')
         sessiontoken        = self.request.query_params.get('sessiontoken', '')
         cat                 = ','.join([self.request.query_params.get(item, '') for item in  ['cat1', 'cat2', 'cat3', 'cat4', 'cat5', 'cat6', 'cat7', 'cat8', 'cat9']])     
@@ -47,20 +45,42 @@ class YggdrasilAPI(APIView):
         last                = self.request.query_params.get('last', '')
 
         gameid              = self.request.query_params.get('gameid', '')
-
- 
         
+        if sessiontoken and org and playerid and amount and currency and reference and subreference and description and prepaidticketid and prepaidvalue and prepaidcost and prepaidref and jackpotcontribution and cat and tag and lang and version:
+            
+  
+            try:
+                user = CustomUser.objects.filter(username = playerid)
+                temp = user[0].main_wallet
+                if temp >= decimal.Decimal(amount):
+                    current_balance = temp-decimal.Decimal(amount)
+                    user.update(main_wallet=current_balance)
+                    data = {
+                        "code": 0,
+                        "data":{
+                            "organization":         org,
+                            "playerId":             playerid,
+                            "currency":             currency,
+                            "applicableBonus":      "",
+                            "homeCurrency":         "",
+                            "balance":              current_balance,
+                            "nickName":             user[0].username,
+                            "bonus":                "",
+                            "gameHistorySessionId": "",
+                            "gameHistoryTicketId":  ""
+                        }
+                    }
 
-
-
-
-
-
-
-
-
-
-
-        Status = status.HTTP_200_OK
-
-        return Response(status=Status)
+                else:
+                    data = {
+                        "code": 1002,
+                        'msg': 'Insufficient_Balance'
+                    }
+            except:
+ 
+                data = {
+                        "code": 1003,
+                        'msg': 'User_Not_Exist'
+                    }
+        
+        return Response(data)
