@@ -529,7 +529,7 @@ class GameRequestsModel(models.Model):
     gameId          = models.CharField(max_length=100, blank=True)
     roundId         = models.CharField(max_length=100, blank=True)
 
-    # Yggfrasil
+    # Yggdrasil
 
     organization    = models.CharField(max_length=100, blank=True)
     version         = models.CharField(max_length=100, blank=True)

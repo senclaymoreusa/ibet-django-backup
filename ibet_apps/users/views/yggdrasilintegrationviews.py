@@ -46,13 +46,34 @@ class YggdrasilAPI(APIView):
 
         gameid              = self.request.query_params.get('gameid', '')
         
+        # Bet API
         if sessiontoken and org and playerid and amount and currency and reference and subreference and description and prepaidticketid and prepaidvalue and prepaidcost and prepaidref and jackpotcontribution and cat and tag and lang and version:
   
+            GameRequestsModel.objects.create(
+                sessionToken        = sessiontoken,
+                organization        = org,
+                MemberID            = playerid,
+                value               = amount,
+                currency            = currency,
+                reference           = reference,
+                subreference        = subreference,
+                description         = description,
+                prepaidticketid     = prepaidticketid,
+                prepaidvalue        = prepaidvalue,
+                prepaidcost         = prepaidcost,
+                prepaidref          = prepaidref,
+                jackpotcontribution = jackpotcontribution,
+                cat                 = cat,
+                tag                 = tag,
+                lang                = lang,
+                version             = version
+            )
+
             try:
                 user = CustomUser.objects.filter(username = playerid)
                 temp = user[0].main_wallet
                 if temp >= decimal.Decimal(amount):
-                    current_balance = temp-decimal.Decimal(amount)
+                    current_balance = temp - decimal.Decimal(amount)
                     user.update(main_wallet=current_balance)
                     data = {
                         "code": 0,
