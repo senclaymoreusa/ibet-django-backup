@@ -11,7 +11,7 @@
     <li class="{% if bk.selected %}active {% endif %}{% if bk.edit_url %}with_menu_btn{% endif %}">
       <a href="{{bk.url}}" title="{{bk.title}}"><i class="fa fa-bookmark"></i> {{bk.title}}</a>
       {% if bk.edit_url and has_change_permission_bookmark %}
-        <a href="{{bk.edit_url}}" class="dropdown-menu-btn"><i class="fa fa-pencil"></i></a>
+        <a href="{{bk.edit_url}}" class="dropdown-menu-btn"><i class="fas fa-pencil"></i></a>
       {% endif %}
     </li>
     {% empty %}

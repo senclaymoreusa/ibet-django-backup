@@ -1,0 +1,49 @@
+{% extends 'xadmin/base_site.html' %}
+{% block content-nav %}
+{% endblock %}
+{% block content %}
+
+<h1>View Message</h1>
+<table class="table table-bordered table-striped table-hover">
+  <tr>
+    <td>Campaign</td>
+    <td>{{ queryset.campaign }}</td>
+  </tr>
+  <tr>
+    <td>Subject</td>
+    <td>{{ queryset.subject }}</td>
+  </tr>
+  <tr>
+    <td>Author</td>
+    <td>{{ queryset.creator }}</td>
+  </tr>
+  <tr>
+    <td>Sent at</td>
+    <td>{{ queryset.publish_on }}</td>
+  </tr>
+  <tr>
+    <td>Sent to</td>
+    <td>{% if queryset.notifiers %}
+          {{ queryset.notifiers }}
+        {% elif queryset.topic %}
+          {{ queryset.topic }}
+        {% endif %}
+    </td>
+  </tr>
+</table>
+<hr/>
+<div class="form-group">
+  <label for="editor">MESSAGE BODY</label>
+  <textarea name="content_text" id="editor" rows="20" readonly>{{ queryset.content_text }}</textarea>
+</div>
+<script>
+ClassicEditor
+  .create( document.querySelector( '#editor' ) )
+  .then( editor => {
+    console.log( editor );
+  } )
+  .catch( error => {
+    console.error( error );
+  } );
+</script>
+{% endblock %}

@@ -11,10 +11,49 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import boto3
+import json
+import logging
+import datetime
+import sys
+
+from botocore.exceptions import ClientError, NoCredentialsError
+from dotenv import load_dotenv
+from django.utils.translation import ugettext_lazy as _
+
+logger = logging.getLogger('django')
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print("[" + str(datetime.datetime.now()) + "] Trying to load environment variables...")
+if os.path.exists("/tmp/ibetenv/.env") or os.path.exists(BASE_DIR+"/.env"):
+    print("[" + str(datetime.datetime.now()) + "] .env file found!")
+else:
+    print("[" + str(datetime.datetime.now()) + "] No .env file was found")
+
+load_dotenv()
+if "ENV" in os.environ:
+    print("[" + str(datetime.datetime.now()) + "] Environment is: " + os.getenv("ENV"))
+else:
+    print("[" + str(datetime.datetime.now()) + "] Environment not specified!")
+
+
+def getKeys(bucket, file):
+    s3 = boto3.client('s3')
+    try:
+        keys = s3.get_object(Bucket=bucket, Key=file)
+        config = json.loads(keys['Body'].read())
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+        return None
+    
+    return config
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -33,17 +72,15 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
 # CORS_ORIGIN_ALLOW_ALL=True     # Stephen
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
-CRSF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 
 
-import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_app'))
-sys.path.insert(0,os.path.join(BASE_DIR, 'apps'))
+sys.path.insert(0,os.path.join(BASE_DIR, 'ibet_apps'))
 
 # Application definition
 
@@ -59,8 +96,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
+    'bonus.apps.BonusConfig',
     'games.apps.GamesConfig',
     'accounting.apps.AccountingConfig',
+    'system.apps.SystemConfig',
     'rest_framework',              # Stephen
     'corsheaders',                 # Stephen
     'rest_auth',                   # Stephen
@@ -74,7 +113,20 @@ INSTALLED_APPS = [
     'django_nose',
     'reversion',
     'table',
+    'ckeditor',                    # ckeditor
+    'ckeditor_uploader',           # ckeditor
+    'django_user_agents',
 ]
+
+CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': 300,
+    },
+}
 
 SITE_ID = 1                        # Stephen
 
@@ -82,9 +134,7 @@ ACCOUNT_EMAIL_REQUIRED = False                # Stephen
 ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
 ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
-AUTH_USER_MODEL = 'users.CustomUser' # new
-
-
+AUTH_USER_MODEL = 'users.CustomUser' # new???
 
 DOMAIN = 'http://localhost:8000/'
 HOST_URL = 'http://localhost:3000/'
@@ -101,6 +151,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'djauth.urls'
@@ -130,24 +181,44 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if 'RDS_DB_NAME' in os.environ:
+# To accommodate bucket names across all regions, need to remove hard-coded value
+# 
+# ENV: 
+#     USA: dev / prod
+#     EU:  eudev / euprod
+#
+
+
+if os.getenv("ENV") == "local":
+    print("[" + str(datetime.datetime.now()) + "] Using local db")
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'ibetlocal',
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': 5432,
         }
     }
-else:
+elif "ENV" in os.environ:
+    print("[" + str(datetime.datetime.now()) + "] Using db of " + os.environ["ENV"])
+    AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.environ["ENV"]
+    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
+    
+    print("DB HOST: " + db_data['RDS_HOSTNAME'])
+    
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_data['RDS_DB_NAME'],
+            'USER': db_data['RDS_USERNAME'],
+            'PASSWORD': db_data['RDS_PASSWORD'],
+            'HOST': db_data['RDS_HOSTNAME'],
+            'PORT': db_data['RDS_PORT'],
         }
     }
+
 
 
 # Password validation
@@ -178,6 +249,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
+
 }
 
 
@@ -187,14 +259,14 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 # LANGUAGE_CODE = 'zh-hans'
 
-from django.utils.translation import ugettext_lazy as _
+
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
     ('fr', _('Franch')),
 )
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -214,7 +286,7 @@ SESSION_COOKIE_HTTPONLY = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
 # djauth/settings.py
 # LOGIN_REDIRECT_URL = '/'
@@ -237,37 +309,78 @@ os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
 
 # Logging setup added by Stephen
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+if os.getenv("ENV") == "local":
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'file':
+                {
+                    'level': 'DEBUG',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/debug.log',
+                    'when': 'midnight', # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                },
+            'error':
+                {
+                    'level': 'ERROR',
+                    'class': 'logging.handlers.TimedRotatingFileHandler',
+                    'filename': 'logs/error.log',
+                    'when': 'midnight',  # Log file rollover at midnight
+                    'interval': 1,  # Interval as 1 day
+                    'backupCount': 10,  # how many backup file to keep, 10 days
+                    'formatter': 'verbose',
+                }
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+        'loggers': {
+            'django': {
+                'handlers': ['file', 'error'],
+                # 'level': 'DEBUG',
+                'propagate': True,
+            },
         },
-    }, 
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'logs/debug.log',
-            'when': 'midnight', # Log file rollover at midnight
-            'interval': 1, # Interval as 1 day
-            'backupCount': 10, # how many backup file to keep, 10 days
-            'formatter': 'verbose',
+    }
+else:
+    print("AWS Logging to sys.stderr")
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        }, 
+        'handlers': {
+            'stderr': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stderr,
+            }
         },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+        'loggers': {
+            'django': {
+                'handlers': ['stderr'],
+                'level': 'DEBUG',
+            }
+        }
+    }
+
 
 TIME_ZONE = 'America/Los_Angeles'
 
@@ -292,22 +405,8 @@ STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
 ]
-#qaicash-payment
-QAICASH_URL = 'https://public-services.qaicash.com/ago/integration/'
-MERCHANTID = '1'
-CURRENCY = 'IDR'
-MERCHANTAPIKEY = 'secret'
-APIVERSION = 'v2.0'
-METHOD = 'LBT_ONLINE'
-DEPOSIT_URL = '/deposit/routing/'
-PAYOUT_URL = '/payout/routing/'
 
-#paypal-payment
-
-PAYPAL_MODE = 'sandbox'   # sandbox or live
-PAYPAL_CLIENT_ID = 'AXoM7FKTdT8rfh-SI66SlAWd_P85YSsNfTvm0zjB0-AhJhUhUHTuXi4L87DcgkxLSLPYKCMO5DVl2pDD'
-PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-hxq6cS6sevLU5TB3SMfq85wSB'
-PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
+AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
+PATH_TO_KEYS = 'config/thirdPartyKeys.json'
 
 
-AWS_S3_ADMIN_BUCKET = 'ibet-admin'
