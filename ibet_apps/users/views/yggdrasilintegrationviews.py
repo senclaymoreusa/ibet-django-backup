@@ -95,16 +95,50 @@ class YggdrasilAPI(APIView):
                         "playerId":             playerid,
                         "currency":             currency,
                         "balance":              balance,
+                        "bonus":                "",
+                    }
+                }
+
+        elif org and playerid and amount and isJackpotWin and bonusprize and currency and reference and subreference and description and cat and tag and lang and version:
+
+            user = CustomUser.objects.filter(username = playerid)
+            balance = user[0].main_wallet
+
+            data = {
+                    "code": 0,
+                    "data":{
+                        "organization":         org,
+                        "playerId":             playerid,
+                        "currency":             currency,
+                        "applicableBonus":      "",
+                        "homeCurrency":         "",
+                        "balance":              balance,
                         "nickName":             user[0].username,
                         "bonus":                "",
                     }
                 }
-        else:
-            
-    
 
+        elif org and playerid and amount and isJackpotWin and bonusprize and currency and tickets and reference and subreference and description and cat and tag and lang and version and prepaidref and prepaidticketid and singleWin and totalWin and roundCount and ruleType:
+            user = CustomUser.objects.filter(username = playerid)
+            balance = user[0].main_wallet
 
+            current_balance = balance + decimal.Decimal(totalWin)
+            user.update(main_wallet=current_balance)
+ 
+            data = {
+                    "code": 0,
+                    "data":{
+                        "organization":         org,
+                        "playerId":             playerid,
+                        "currency":             currency,
+                        "applicableBonus":      "",
+                        "homeCurrency":         "",
+                        "balance":              current_balance,
+                        "nickName":             user[0].username,
+                        "gameSessionBalance":   "",
+                        "gameParticipation":    "",
+                        "gamePrizes":           ""
+                    }
+                }
 
-
-        
         return Response(data)
