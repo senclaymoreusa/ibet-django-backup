@@ -91,6 +91,8 @@ class YggdrasilAPI(APIView):
                         }
                     }
 
+                    Status = status.HTTP_200_OK
+
                 else:
                     data = {
                         "code": 1002,
@@ -130,6 +132,9 @@ class YggdrasilAPI(APIView):
                             "bonus":                "",
                         }
                     }
+
+                Status = status.HTTP_200_OK
+
             except:
 
                 data = {
@@ -175,6 +180,8 @@ class YggdrasilAPI(APIView):
                             "bonus":                "",
                         }
                     }
+
+                Status = status.HTTP_200_OK
 
             except:
 
@@ -233,6 +240,8 @@ class YggdrasilAPI(APIView):
                         }
                     }
 
+                Status = status.HTTP_200_OK
+
             except:
 
                 data = {
@@ -286,6 +295,8 @@ class YggdrasilAPI(APIView):
                         }
                     }
 
+                Status = status.HTTP_200_OK
+
             except:
 
                 data = {
@@ -322,6 +333,9 @@ class YggdrasilAPI(APIView):
                             "bonus":                ""
                         }
                     }
+
+                Status = status.HTTP_200_OK
+                
             except:
 
                 data = {
