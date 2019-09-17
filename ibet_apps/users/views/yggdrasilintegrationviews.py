@@ -85,101 +85,147 @@ class YggdrasilAPI(APIView):
 
         elif playerid and reference and subreference and org and version and not amount:
 
-            user = CustomUser.objects.filter(username = playerid)
-            balance = user[0].main_wallet
+            try:
 
-            data = {
-                    "code": 0,
-                    "data":{
-                        "organization":         org,
-                        "playerId":             playerid,
-                        "currency":             currency,
-                        "balance":              balance,
-                        "bonus":                "",
+                user = CustomUser.objects.filter(username = playerid)
+                balance = user[0].main_wallet
+
+                data = {
+                        "code": 0,
+                        "data":{
+                            "organization":         org,
+                            "playerId":             playerid,
+                            "currency":             currency,
+                            "balance":              balance,
+                            "bonus":                "",
+                        }
                     }
-                }
+            except:
+
+                data = {
+                        "code": 1003,
+                        'msg': 'User_Not_Exist'
+                    }
+
 
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and reference and subreference and description and cat and tag and lang and version:
 
-            user = CustomUser.objects.filter(username = playerid)
-            balance = user[0].main_wallet
 
-            data = {
-                    "code": 0,
-                    "data":{
-                        "organization":         org,
-                        "playerId":             playerid,
-                        "currency":             currency,
-                        "applicableBonus":      "",
-                        "homeCurrency":         "",
-                        "balance":              balance,
-                        "nickName":             user[0].username,
-                        "bonus":                "",
+            try:
+
+                user = CustomUser.objects.filter(username = playerid)
+                balance = user[0].main_wallet
+
+                data = {
+                        "code": 0,
+                        "data":{
+                            "organization":         org,
+                            "playerId":             playerid,
+                            "currency":             currency,
+                            "applicableBonus":      "",
+                            "homeCurrency":         "",
+                            "balance":              balance,
+                            "nickName":             user[0].username,
+                            "bonus":                "",
+                        }
                     }
-                }
+
+            except:
+
+                data = {
+                        "code": 1003,
+                        'msg': 'User_Not_Exist'
+                    }
 
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and tickets and reference and subreference and description and cat and tag and lang and version and prepaidref and prepaidticketid and singleWin and totalWin and roundCount and ruleType:
-            user = CustomUser.objects.filter(username = playerid)
-            balance = user[0].main_wallet
+            
+            try: 
 
-            current_balance = balance + decimal.Decimal(totalWin)
-            user.update(main_wallet=current_balance)
- 
-            data = {
-                    "code": 0,
-                    "data":{
-                        "organization":         org,
-                        "playerId":             playerid,
-                        "currency":             currency,
-                        "applicableBonus":      "",
-                        "homeCurrency":         "",
-                        "balance":              current_balance,
-                        "nickName":             user[0].username,
-                        "gameSessionBalance":   "",
-                        "gameParticipation":    "",
-                        "gamePrizes":           ""
+                user = CustomUser.objects.filter(username = playerid)
+                balance = user[0].main_wallet
+
+                current_balance = balance + decimal.Decimal(totalWin)
+                user.update(main_wallet=current_balance)
+    
+                data = {
+                        "code": 0,
+                        "data":{
+                            "organization":         org,
+                            "playerId":             playerid,
+                            "currency":             currency,
+                            "applicableBonus":      "",
+                            "homeCurrency":         "",
+                            "balance":              current_balance,
+                            "nickName":             user[0].username,
+                            "gameSessionBalance":   "",
+                            "gameParticipation":    "",
+                            "gamePrizes":           ""
+                        }
                     }
-                }
-        
+
+            except:
+
+                data = {
+                        "code": 1003,
+                        'msg': 'User_Not_Exist'
+                    }
+
         elif cash and campaignref and last and prepaidref and prepaidticketid and singleWin:
 
-            user = CustomUser.objects.filter(username = playerid)
-            balance = user[0].main_wallet
+            try:
 
-            current_balance = balance + decimal.Decimal(totalWin)
-            user.update(main_wallet=current_balance)
+                user = CustomUser.objects.filter(username = playerid)
+                balance = user[0].main_wallet
 
-            data = {
-                    "code": 0,
-                    "data":{
-                        "organization":         org,
-                        "playerId":             playerid,
-                        "currency":             currency,
-                        "applicableBonus":      "",
-                        "homeCurrency":         "",
-                        "balance":              current_balance,
-                        "nickName":             user[0].username
+                current_balance = balance + decimal.Decimal(totalWin)
+                user.update(main_wallet=current_balance)
+
+                data = {
+                        "code": 0,
+                        "data":{
+                            "organization":         org,
+                            "playerId":             playerid,
+                            "currency":             currency,
+                            "applicableBonus":      "",
+                            "homeCurrency":         "",
+                            "balance":              current_balance,
+                            "nickName":             user[0].username
+                        }
                     }
-                }
+
+            except:
+
+                data = {
+                        "code": 1003,
+                        'msg': 'User_Not_Exist'
+                    }
 
         elif org and sessiontoken and playerid and gameid and description and not amount and not version and not lang and not totalWin:
 
-            user = CustomUser.objects.filter(username = playerid)
-            balance = user[0].main_wallet
- 
-            data = {
-                    "code": 0,
-                    "data":{
-                        "organization":         org,
-                        "playerId":             playerid,
-                        "currency":             currency,
-                        "applicableBonus":      "",
-                        "homeCurrency":         "",
-                        "balance":              balance,
-                        "nickName":             user[0].username,
-                        "bonus":                ""
+            try:
+
+                user = CustomUser.objects.filter(username = playerid)
+                balance = user[0].main_wallet
+    
+                data = {
+                        "code": 0,
+                        "data":{
+                            "organization":         org,
+                            "playerId":             playerid,
+                            "currency":             currency,
+                            "applicableBonus":      "",
+                            "homeCurrency":         "",
+                            "balance":              balance,
+                            "nickName":             user[0].username,
+                            "bonus":                ""
+                        }
                     }
-                }
+            except:
+
+                data = {
+                        "code": 1003,
+                        'msg': 'User_Not_Exist'
+                    }
 
 
         return Response(data)
