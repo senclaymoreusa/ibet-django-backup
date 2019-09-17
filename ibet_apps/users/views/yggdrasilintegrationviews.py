@@ -140,5 +140,46 @@ class YggdrasilAPI(APIView):
                         "gamePrizes":           ""
                     }
                 }
+        
+        elif cash and campaignref and last and prepaidref and prepaidticketid and singleWin:
+
+            user = CustomUser.objects.filter(username = playerid)
+            balance = user[0].main_wallet
+
+            current_balance = balance + decimal.Decimal(totalWin)
+            user.update(main_wallet=current_balance)
+
+            data = {
+                    "code": 0,
+                    "data":{
+                        "organization":         org,
+                        "playerId":             playerid,
+                        "currency":             currency,
+                        "applicableBonus":      "",
+                        "homeCurrency":         "",
+                        "balance":              current_balance,
+                        "nickName":             user[0].username
+                    }
+                }
+
+        elif org and sessiontoken and playerid and gameid and description and not amount and not version and not lang and not totalWin:
+
+            user = CustomUser.objects.filter(username = playerid)
+            balance = user[0].main_wallet
+ 
+            data = {
+                    "code": 0,
+                    "data":{
+                        "organization":         org,
+                        "playerId":             playerid,
+                        "currency":             currency,
+                        "applicableBonus":      "",
+                        "homeCurrency":         "",
+                        "balance":              balance,
+                        "nickName":             user[0].username,
+                        "bonus":                ""
+                    }
+                }
+
 
         return Response(data)
