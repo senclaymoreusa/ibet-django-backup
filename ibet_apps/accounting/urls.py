@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 
@@ -7,6 +8,7 @@ import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
+import accounting.views.deposit_views as deposit
 import accounting.views.help2payviews as help2pay
 import accounting.views.circlepayviews as circlepay
 import accounting.views.payzodviews as payzod
@@ -68,3 +70,5 @@ urlpatterns = [
     path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
     path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
 ]
+
+
