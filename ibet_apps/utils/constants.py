@@ -6,6 +6,8 @@ import json
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError, NoCredentialsError
 import utils.aws_helper
+from django.utils.translation import ugettext_lazy as _
+
 
 
 AWS_S3_ADMIN_BUCKET = ""
@@ -61,19 +63,34 @@ CHANNEL_CHOICES = (
     (9, 'ScratchCard')
 )
 
-currency_cny = 0
+CURRENCY_CNY = 0
+CURRENCY_USD = 1
+CURRENCY_THB = 2
+CURRENCY_IDR = 3
+CURRENCY_HKD = 4
+CURRENCY_AUD = 5
+CURRENCY_MYR = 6
+CURRENCY_VND = 7
+CURRENCY_MMK = 8
+CURRENCY_XBT = 9
+CURRENCY_EUR = 10
+CURRENCY_NOK = 11
+CURRENCY_GBP = 12
 
 CURRENCY_CHOICES = (
-    (0, 'CNY'),
-    (1, 'USD'),
-    (2, 'THB'),
-    (3, 'IDR'),
-    (4, 'HKD'),
-    (5, 'AUD'),
-    (6, 'MYR'),
-    (7, 'VND'),
-    (8, 'MMK'),
-    (9, 'XBT')
+    (CURRENCY_CNY, 'CNY'),
+    (CURRENCY_USD, 'USD'),
+    (CURRENCY_THB, 'THB'),
+    (CURRENCY_IDR, 'IDR'),
+    (CURRENCY_HKD, 'HKD'),
+    (CURRENCY_AUD, 'AUD'),
+    (CURRENCY_MYR, 'MYR'),
+    (CURRENCY_VND, 'VND'),
+    (CURRENCY_MMK, 'MMK'),
+    (CURRENCY_XBT, 'XBT'),
+    (CURRENCY_EUR, 'EUR'),
+    (CURRENCY_NOK, 'NOK'),
+    (CURRENCY_GBP, 'GBP')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -107,20 +124,26 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-transaction_deposit = 0
-transaction_withdrawl = 1
+TRANSACTION_TYPE_DEPOSIT = 0
+TRANSACTION_TYPE_WITHDRAW = 1
+TRANSACTION_TYPE_BET_PLACED = 2
+TRANSACTION_TYPE_BET_SETTLED = 3
+TRANSACTION_TYPE_TRANSFER = 4
+TRANSACTION_TYPE_BONUS = 5
+TRANSACTION_TYPE_ADJUSTMENT = 6
+TRANSACTION_TYPE_COMMISSION = 7
 
 TRANSACTION_TYPE_CHOICES = (
-    (0, 'Deposit'),
-    (1, 'Withdrawal'),
-    (2, 'Bet Placed'),
-    (3, 'Bet Settled'),
-    (4, 'Transfer In'),
-    (5, 'Transfer Out'),
-    (6, 'Bonus'),
-    (7, 'Adjustment'),
-    (8, 'Commission')
+    (TRANSACTION_TYPE_DEPOSIT, 'Deposit'),
+    (TRANSACTION_TYPE_WITHDRAW, 'Withdrawal'),
+    (TRANSACTION_TYPE_BET_PLACED, 'Bet Placed'),
+    (TRANSACTION_TYPE_BET_SETTLED, 'Bet Settled'),
+    (TRANSACTION_TYPE_TRANSFER, 'Transfer'),
+    (TRANSACTION_TYPE_BONUS, 'Bonus'),
+    (TRANSACTION_TYPE_ADJUSTMENT, 'Adjustment'),
+    (TRANSACTION_TYPE_COMMISSION, 'Commission')
 )
+
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
     ('zh-Hans', 'Chinese Simplified'),
@@ -403,6 +426,23 @@ GAME_ATTRIBUTES = (
 )
 
 
+EVENT_CHOICES_LOGIN = 0
+EVENT_CHOICES_LOGOUT = 1
+EVENT_CHOICES_REGISTER = 2
+EVENT_CHOICES_PAGE_VISIT = 3
+
+EVENT_CHOICES = (
+    (EVENT_CHOICES_LOGIN, _('Login')),
+    (EVENT_CHOICES_LOGOUT, _('Logout')),
+    (EVENT_CHOICES_REGISTER, _('Register')),
+    # (3, _('Deposit')),
+    # (4, _('Withdraw')),
+    (EVENT_CHOICES_PAGE_VISIT, _('Page Visit')),
+    # (6, _('bet'))
+)
+
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -570,6 +610,8 @@ COUNTRY_CODE_FINAND = 'FI'
 COUNTRY_CODE_NORWAY = 'NO'
 COUNTRY_CODE_THAILAND = 'THB'
 COUNTRY_CODE_VIETNAM = 'VN'
+COUNTRY_CODE_NETHERLANDS = 'NL'
+COUNTRY_CODE_UNITED_KINGDOM = 'UK'
 
 MARKET_OPTIONS = {
     'ibetMarket_options': [
@@ -578,7 +620,9 @@ MARKET_OPTIONS = {
         COUNTRY_CODE_FINAND,
         COUNTRY_CODE_NORWAY,
         COUNTRY_CODE_THAILAND,
-        COUNTRY_CODE_VIETNAM
+        COUNTRY_CODE_VIETNAM,
+        COUNTRY_CODE_NETHERLANDS,
+        COUNTRY_CODE_UNITED_KINGDOM
     ],
     'letouMarket_options': [
         COUNTRY_CODE_CHINA,
@@ -593,7 +637,10 @@ COUNTRY_CODE_TO_IMG_PREFIX = {
     COUNTRY_CODE_FINAND: 'finland',
     COUNTRY_CODE_NORWAY: 'norway',
     COUNTRY_CODE_THAILAND: 'thailand',
-    COUNTRY_CODE_VIETNAM: 'vietnam'
+    COUNTRY_CODE_VIETNAM: 'vietnam',
+    COUNTRY_CODE_NETHERLANDS: 'netherlands',
+    COUNTRY_CODE_UNITED_KINGDOM: 'united-kingdom'
+
 }
 
 DEPARTMENT_LIST = [

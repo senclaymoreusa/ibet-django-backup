@@ -70,6 +70,17 @@ class GlobalSettings(object):
                         'icon': 'fa fa-id-badge'
                     },
                 )
+            },
+            {
+                'title': 'Reports',
+                'icon': 'fa-fw fa fa-cog',
+                'menus': (
+                    {
+                        'title': 'Performance reports',
+                        'url': '/xadmin/performance-report/',
+                        'icon': 'fa fa-user-circle-o'
+                    },
+                )
             }
         ]
                     

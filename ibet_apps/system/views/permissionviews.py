@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 
-from .models import UserGroup, PermissionGroup, UserToUserGroup, UserPermission
+from system.models import UserGroup, PermissionGroup, UserToUserGroup, UserPermission
 
 from users.models import CustomUser
 from utils.constants import *
@@ -12,7 +12,7 @@ import simplejson as json
 from django.views import View
 from django.urls import reverse
 from django.core import serializers
-from .models import *
+from system.models import *
 import re
 from django.db.models import Q
 

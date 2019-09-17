@@ -329,16 +329,6 @@ class Config(models.Model):
     
 class UserAction(models.Model):
     
-    EVENT_CHOICES = (
-        (0, _('Login')),
-        (1, _('Logout')),
-        (2, _('Register')),
-        # (3, _('Deposit')),
-        # (4, _('Withdraw')),
-        (3, _('Page Visit')),
-        # (6, _('bet'))
-    )
-
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
@@ -349,7 +339,7 @@ class UserAction(models.Model):
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),
-        auto_now_add=True,
+        default=timezone.now,
         editable=False,
     )
     class Meta:

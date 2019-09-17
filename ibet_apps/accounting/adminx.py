@@ -5,7 +5,7 @@ from .models import Transaction, DepositAccessManagement, DepositChannel, Withdr
 from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
 
 class TransactionAdmin(object):
-    list_display = ('user_id', 'order_id','transaction_id','transaction_type', 'amount', 'status', 'method','channel', 'request_time', 'arrive_time', 'review_status', 'remark')
+    list_display = ('user_id', 'order_id','transaction_id','transaction_type', 'amount', 'status', 'method','channel', 'request_time', 'arrive_time', 'review_status', 'remark', 'currency')
     list_filter = ('transaction_type', 'status', 'channel', 'review_status', 'request_time', 'arrive_time')
     search_fields = ('user_id__username',)
     model_icon = 'fa fa-money'
