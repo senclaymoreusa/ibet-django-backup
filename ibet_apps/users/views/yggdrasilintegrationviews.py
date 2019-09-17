@@ -359,4 +359,4 @@ class YggdrasilAPI(APIView):
                 Status = status.HTTP_400_BAD_REQUEST
 
 
-        return Response(data)
+        return Response(data, status=Status)
