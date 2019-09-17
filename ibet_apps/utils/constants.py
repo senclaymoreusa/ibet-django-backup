@@ -58,7 +58,8 @@ CHANNEL_CHOICES = (
     (6, 'Payzod'),
     (7, 'CirclePay'),
     (8, 'Fgate'),
-    (9, 'ScratchCard')
+    (9, 'ScratchCard'),
+    (10, 'PaymentIQ')
 )
 
 currency_cny = 0
@@ -73,7 +74,11 @@ CURRENCY_CHOICES = (
     (6, 'MYR'),
     (7, 'VND'),
     (8, 'MMK'),
-    (9, 'XBT')
+    (9, 'XBT'),
+    (10, 'NOK'),
+    (11, 'SEK'),
+    (12, 'GBP'),
+    (13, 'EUR')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -471,8 +476,6 @@ FGATE_TYPE = keys["FGO"]["TYPE"]
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
-# TODO: RETRIEVE API KEYS FROM AWS S3
 # circlepay
 CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
 CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
@@ -512,6 +515,7 @@ BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
 # payzod production
+# TODO: Will need to update Production credentials because these credentials are temporary
 if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
