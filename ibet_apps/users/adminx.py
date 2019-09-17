@@ -83,7 +83,7 @@ class GlobalSettings(object):
                     {
                         'title': 'Groups',
                         'url': '/xadmin/operation/messagegroups/',
-                        'icon': 'fa fa-id-badge'
+                        'icon': 'fas fa-user-friends'
                     },
                 )
             },

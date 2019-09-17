@@ -78,5 +78,5 @@ class NotificationToUsersSerializer(serializers.ModelSerializer):
 class MessageUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserGroup
-        fields = ('pk', 'name', 'description', 'groupType', 'created_time', 'approvals')
+        fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals')
         read_only_fields = ['pk', 'created_time', 'approvals']

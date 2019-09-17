@@ -83,6 +83,83 @@ def send_message(notification_id):
         return HttpResponse("Can not send Message!")
 
 
+class NotifierTagsInput(View):
+    def get(self, request, *args, **kwargs):
+    
+        search_member = CustomUser.objects.all()
+        search_group = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
+
+        search_member = serializers.serialize('json', search_member)
+        search_group = serializers.serialize('json', search_group)
+
+        search_member = json.loads(search_member)
+        search_group = json.loads(search_group)
+    
+        response = {}
+    
+        member_data = []
+        for member in search_member:
+            memberMap = {}
+            memberMap["type"] = "member"
+            # memberMap["pk"] = member["fields"]["pk"]
+            memberMap["name"] = member["fields"]["username"]
+            member_data.append(memberMap)
+        response["member"] = member_data
+    
+        group_data = []
+        for group in search_group:
+            groupMap = {}
+            groupMap["type"] = "group"
+            # groupMap["pk"] = group["fields"]["pk"]
+            groupMap["name"] = group["fields"]["name"]
+            group_data.append(groupMap)
+
+        response["group"] = group_data
+    
+        logger.info('Search response: ' + json.dumps(response))
+        try:
+            return HttpResponse(json.dumps(response), content_type='application/json')
+        except Exception as e:
+            logger.error(e)
+
+class NotifierSearchAutocomplete(View):
+    def get(self, request, *args, **kwargs):
+        search = request.GET.get('search')
+    
+        logger.info('Search notification, key: ' + search)
+    
+        search_member = CustomUser.objects.filter(Q(username__contains=search))
+        # search_body = Notification.objects.filter(content_text__contains=search)
+
+        search_member = serializers.serialize('json', search_member)
+        # search_body = serializers.serialize('json', search_body)
+
+        search_member = json.loads(search_member)
+        # search_body = json.loads(search_body)
+    
+        response = {}
+    
+        member_data = []
+        for member in search_member:
+            memberMap = {}
+            memberMap["member"] = member["fields"]["username"]
+            member_data.append(memberMap)
+        response["member_data"] = member_data
+    
+        # body_data = []
+        # for notification in search_body:
+        #     notificationMap = {}
+        #     notificationMap['body'] = notification['body']
+        #     body_data.append(notificationMap)
+        # response['body'] = body_data
+    
+        logger.info('Search response: ' + json.dumps(response))
+        try:
+            return HttpResponse(json.dumps(response), content_type='application/json')
+        except Exception as e:
+            logger.error(e)
+
+
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
@@ -388,6 +465,19 @@ class AuditNotificationView(CommAdminView):
 
 class MessageUserGroupView(CommAdminView):
     def get(self, request, *arg, **kwargs):
+        pageSize = request.GET.get('pageSize')
+        offset = request.GET.get('offset')
+
+        if pageSize is None:
+            pageSize = 20
+        else: 
+            pageSize = int(pageSize)
+
+        if offset is None or int(offset) < 1:
+            offset = 1
+        else:
+            offset = int(offset)
+
         context = super().get_context()
         title = 'message'
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
@@ -415,9 +505,11 @@ class MessageUserGroupView(CommAdminView):
             group_item['creator'] = group.creator
             message_groups.append(group_item)
 
-        context['message_groups'] = message_groups
-        logger.info("GET AWSTopicView")
-        # return HttpResponse("MessageUserGroup")
+        paginator = Paginator(message_groups, pageSize)
+        context['message_groups'] = paginator.get_page(offset)
+
+        logger.info("GET MessageUserGroupView")
+
         return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
@@ -427,6 +519,7 @@ class MessageUserGroupView(CommAdminView):
         data = {
             "name": group_name,
             "groupType": MESSAGE_GROUP,
+            "creator": self.user.pk
         }
 
         serializer = MessageUserGroupSerializer(data=data)
@@ -440,6 +533,7 @@ class MessageUserGroupView(CommAdminView):
             logger.info("saved message user group log")
             return HttpResponseRedirect(reverse('xadmin:messagegroups'))
         else:
+            print(2)
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
@@ -622,12 +716,10 @@ class MessageGroupUserAPI(View):
         active = request.GET.get('active')
         active_from = request.GET.get('active_from')
         active_to = request.GET.get('active_to')
-        print(active_from)
-        print(active_to)
         register_from = request.GET.get('register_from')
-        # print(register_from)
         register_to = request.GET.get('register_to')
-        # print(register_to)
+        vip = request.GET.getlist('vip[]')
+        risk = request.GET.getlist('risk[]')
 
         group_filter = Q()
         if product != None:
@@ -636,17 +728,17 @@ class MessageGroupUserAPI(View):
         if active.isdigit():
             end_date = timezone.now()
             start_date = end_date - timedelta(hours=24 * int(active))
-            group_filter = group_filter & Q(time_of_registration__range=(start_date, end_date))
+            group_filter = group_filter & Q(last_betting_time__range=(start_date, end_date))
 
         if isDateFormat(active_from):
             current_tz = timezone.get_current_timezone()
             active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").astimezone(current_tz)
-            group_filter = group_filter & Q(time_of_registration__gt=active_from)
+            group_filter = group_filter & Q(last_betting_time__gt=active_from)
 
         if isDateFormat(active_to):
             current_tz = timezone.get_current_timezone()
             active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").astimezone(current_tz)
-            group_filter = group_filter & Q(time_of_registration__lt=active_to)
+            group_filter = group_filter & Q(last_betting_time__lt=active_to)
 
         if isDateFormat(register_from):
             current_tz = timezone.get_current_timezone()
@@ -658,6 +750,14 @@ class MessageGroupUserAPI(View):
             register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").astimezone(current_tz)
             group_filter = group_filter & Q(time_of_registration__lt=register_to)
 
+        if len(vip) > 0:
+            if 'VIP1' in vip:
+                print("vip")
+
+        if len(risk) > 0:
+            if 'E1' in risk:
+                print("risk")
+        
         queryset = CustomUser.objects.filter(group_filter)
 
         response = {}

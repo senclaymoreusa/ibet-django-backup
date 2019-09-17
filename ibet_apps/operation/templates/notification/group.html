@@ -69,6 +69,11 @@ tbody>tr:nth-child(odd)>th {
 #csv_file {
   display: none;
 }
+
+#member-table {
+  width: 95%;
+  margin: 16px 12px 16px 12px;
+}
 </style>
 
 <h2 id="demo"></h2>
@@ -210,7 +215,7 @@ tbody>tr:nth-child(odd)>th {
               <div class="form-group" style="padding-top: 0">
                 <label>Members in group</label>
                 <div class="row" style="background-color:#f3f3f3">
-                  <span><a href="#" id="member_count" data-toggle="modal" data-target="#view-group">&nbsp;{{ users_count }}</a></span>
+                  <span><a href="#" id="member_count" data-toggle="modal" data-target="#member-list">&nbsp;{{ users_count }}</a></span>
                 </div>
               </div>
               <div class="row">
@@ -228,7 +233,7 @@ tbody>tr:nth-child(odd)>th {
   </div>
 </div>
 
-{% comment %} <div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -248,7 +253,36 @@ tbody>tr:nth-child(odd)>th {
       </table>
     </div>
   </div>
-</div> {% endcomment %}
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="member-list" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Members list</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <table id="member-table">
+        <thead class="thead-dark">
+          <tr>
+            <th style="width: 6%;">#</th>
+            <th style="width: 34%;">MEMBER ID</th>
+            <th style="width: 60%;">USERNAME</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>TBD</td>
+            <td>TBD</td>
+            <td>TBD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade bd-example-modal-lg" id="manually" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -272,7 +306,7 @@ tbody>tr:nth-child(odd)>th {
         </div>
       </div>
       <button class="btn btn-primary" style="margin-top: 20px; margin-left: 16px">Add member to group</button>
-      <table id="details">
+      <table>
         <tbody>
           <tr>
             <td>TBD</td>
@@ -312,10 +346,69 @@ tbody>tr:nth-child(odd)>th {
   {% endfor %}
   </tbody>
 </table>
+
+<div class="row user-list-control-group">
+  <div class='col-md-9' style="margin-right: 70px"></div>
+  <div class='col-md-1' style="width:10%">
+    <div>SHOW ROWS</div>
+    <select id="pagination_value"  class="form-control">
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="250">250</option>
+    </select>
+  </div>
+  <div class='col-md-1'>
+    <div>&nbsp;</div>
+    <ul class="pagination" style="margin:0px;">
+        {% if notifications.has_previous  %}
+            <li class="page-item " id='previousPage'>
+              <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+            </li>
+        {% else %}
+            <li class="page-item disabled" id='previousPage'>
+              <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+            </li>
+        {% endif %}
+        {% if notifications.has_next %}
+            <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+        {% else %}
+            <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+        {% endif %}
+    </ul>
+  </div>
+</div>
+
 <script>
 var pk_list;
 
 $(document).ready(function() {
+  var previousURL = document.referrer;
+  // parse url
+  paramsMap = {
+      'pageSize': 20,
+      'offset': 1,
+  };
+
+  var parsedUrl = new URL(window.location.href);
+
+  if (parsedUrl.searchParams.get("pageSize") !== null) {
+    console.log(1);
+    paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
+  }
+  if (parsedUrl.searchParams.get("offset") !== null) {
+    console.log(2);
+    paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
+  }
+
+  $('#pagination_value').val(paramsMap['pageSize']);
+
+  $('#pagination_value').change(function() {
+    var pageSize = this.value;
+    var offset = paramsMap['offset'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1);
+  });
+
   var userFilter = {
     'product': null,
     'active': null,
@@ -324,8 +417,6 @@ $(document).ready(function() {
     'register_from': null,
     'register_to': null,
     'deposit': false,
-    'vip': null,
-    'risk': null,
   }
 
   var user_list = [];
@@ -377,20 +468,18 @@ $(document).ready(function() {
     }
   });
 
-
-
-  $('input:radio[name="days"]').change(function() {
+  {% comment %} $('input:radio[name="days"]').change(function() {
     if ($(this).is(':checked') && $(this).val() == 'total') {
       $('#daysrange').prop("disabled", true);
     }
-  });
+  }); {% endcomment %}
 
   $('#days').focusout(function() {
     userFilter['active'] = $(this).val();
-    groupFilter()
+    groupFilter();
   })
 
-  var options = [];
+  var vipOptions = [];
 
   $('#vip.dropdown-menu a').on('click', function(event) {
     var $target = $(event.currentTarget),
@@ -401,33 +490,34 @@ $(document).ready(function() {
     if(val == "ALL") {
       if($inp.prop('checked')) {
         $('#vip li input[type=checkbox]').each(function() {
+          if(this.checked == false) {
+            vipOptions.push($(this).parent().attr('data-value'));
+          }
           this.checked = $inp.prop('checked');
-          options.push($(this).parent().attr('data-value'));
         });
       } else {
         $('#vip li input[type=checkbox]').each(function() {
           this.checked = $inp.prop('checked');
-          options.pop();
+          vipOptions.pop();
         });
       }
     } else {
-      if((idx = options.indexOf(val)) > -1) {
-        options.splice(idx, 1);
-        // $('#vip-all').prop('checked', false);
+      if((idx = vipOptions.indexOf(val)) > -1) {
+        vipOptions.splice(idx, 1);
+        $('#vip li:first input[type=checkbox]').prop('checked', false);
         setTimeout(function() { $inp.prop('checked', false)}, 0);
       } else {
-        options.push(val);
+        vipOptions.push(val);
         setTimeout(function() { $inp.prop('checked', true)}, 0);
       }
     }
     
     
     $(event.target).blur();
+
+    $("#vipbtn").html(vipOptions.length + " Selected " + '<span class="caret"></span>');
     
-    console.log(options)
-
-    $("#vipbtn").html(options.length + " Selected " + '<span class="caret"></span>');
-
+    groupFilter();
   });
 
   var riskOptions = [];
@@ -439,28 +529,35 @@ $(document).ready(function() {
         idx;
 
     if(val == "ALL") {
-      var isAll = $inp.prop('checked');
-
-      $('#risk li input[type=checkbox]').each(function() {
-        this.checked = isAll;
-      });
-    }
-
-    if((idx = riskOptions.indexOf(val)) > -1) {
-      riskOptions.splice(idx, 1);
-      setTimeout(function() { $inp.prop('checked', false)}, 0);
+      if($inp.prop('checked')) {
+        $('#risk li input[type=checkbox]').each(function() {
+          if(this.checked == false) {
+            riskOptions.push($(this).parent().attr('data-value'));
+          }
+          this.checked = $inp.prop('checked');
+        });
+      } else {
+        $('#risk li input[type=checkbox]').each(function() {
+          this.checked = $inp.prop('checked');
+          riskOptions.pop();
+        });
+      }
     } else {
-      riskOptions.push(val);
-      setTimeout(function() { $inp.prop('checked', true)}, 0);
+      if((idx = riskOptions.indexOf(val)) > -1) {
+        riskOptions.splice(idx, 1);
+        $('risk li:first input[type=checkbox]').prop('checked', false);
+        setTimeout(function() { $inp.prop('checked', false)}, 0);
+      } else {
+        riskOptions.push(val);
+        setTimeout(function() { $inp.prop('checked', true)}, 0);
+      }
     }
     
     $(event.target).blur();
-    
-    //console.log(options)
 
     $("#riskbtn").html(riskOptions.length + " Selected " + '<span class="caret"></span>');
 
-    return false;
+    groupFilter();
   });
 
   $('#csv_file').change(function(e) {
@@ -510,9 +607,9 @@ $(document).ready(function() {
   });
 
   function groupFilter() {
-    console.log(userFilter['product']);
-    console.log(userFilter['active']);
-    console.log(userFilter['register_from']);
+    console.log(vipOptions);
+    console.log(riskOptions);
+
     $.ajax({
       type: 'GET',
       url: "{% url 'group-filter' %}",
@@ -523,18 +620,63 @@ $(document).ready(function() {
         'active_to': userFilter['active_to'],
         'register_from': userFilter['register_from'],
         'register_to': userFilter['register_to'],
+        'vip': vipOptions,
+        'risk': riskOptions
       },
       success: function(data) {
         console.log(data);
         $('#member_count').html("&nbsp;" + data["user_count"]);
         user_list = data["user"];
         pk_list = data["pk_list"];
+        createTable(user_list);
       }
     });
   }
 
+  function createTable(data) {
+    $('#member-table tbody').empty();
+    for(var i=0; i<data.length; i++) {
+      var row = '<tr><td style="width: 6%;">' + (i+1) + '</td><td style="width: 34%;">' + data[i]['pk'] + '</td><td style="width: 60%;">' + data[i]['username'] + '</td></tr>'
+      $('#member-table tbody').append(row);
+    }
+  }
+
+  getNext = function() {
+    if ($('#nextPage').hasClass('disabled')) {
+        return;
+    }
+    var pageSize = paramsMap['pageSize'];
+    var oldFromItem = paramsMap['offset'];
+    // var newFromItem = Number(oldFromItem) + Number(pageSize);
+    var newFromItem = Number(oldFromItem) + 1;
+    
+    window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+  }
+
+  getPrevious = function () {
+      if ($('#previousPage').hasClass('disabled')) {
+          return;
+      }
+      var pageSize = paramsMap['pageSize'];
+      var oldFromItem = paramsMap['offset'];
+      // var newFromItem = Number(oldFromItem) - Number(pageSize);
+      var newFromItem = Number(oldFromItem) - 1;
+      
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+  }
 });
 
+function getUserListRedirectUrl(pageSize, offset) {
+  var curUrl = window.location.href;
+  var parts = curUrl.split('?');
+
+  var redirectUrl = parts[0]; 
+      //redirectUrl += '?search=' + search;
+      redirectUrl += "?pageSize=" + pageSize;
+      redirectUrl += '&offset=' + offset;
+
+  return redirectUrl;
+}
 
 </script>
 {% endblock %}
