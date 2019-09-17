@@ -96,7 +96,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
-    'bonus.apps.BonusConfig',      # Bobby
+    'bonus.apps.BonusConfig',
     'games.apps.GamesConfig',
     'accounting.apps.AccountingConfig',
     'system.apps.SystemConfig',
@@ -112,9 +112,20 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
+    'ckeditor',                    # ckeditor
+    'ckeditor_uploader',           # ckeditor
     'django_user_agents',
-    
 ]
+
+CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': 300,
+    },
+}
 
 SITE_ID = 1                        # Stephen
 
@@ -185,7 +196,6 @@ if os.getenv("ENV") == "local":
             'NAME': 'ibetlocal',
             'USER': '',
             'PASSWORD': '',
-            'HOST': '',
             'HOST': '',
             'PORT': 5432,
         }
@@ -275,7 +285,7 @@ SESSION_COOKIE_HTTPONLY = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
 # djauth/settings.py
 # LOGIN_REDIRECT_URL = '/'

@@ -19,13 +19,13 @@ def getThirdPartyKeys(bucket, file):
     return config
 
 
-def getAWSClient(service_name, third_party_keys, region_name):
+def getAWSClient(service_name, third_party_keys, region):
     try:
         client = boto3.client(
             service_name,
-            aws_access_key_id = third_party_keys["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key = third_party_keys["AWS_SECRET_ACCESS_KEY"],
-            region_name = region_name
+            region_name=region,
+            aws_access_key_id=third_party_keys["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=third_party_keys["AWS_SECRET_ACCESS_KEY"],
         )
     except ClientError as e:
         logger.error(e)

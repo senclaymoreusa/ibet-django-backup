@@ -70,11 +70,10 @@ CURRENCY_CHOICES = (
     (3, 'IDR'),
     (4, 'HKD'),
     (5, 'AUD'),
-    (6, 'THB'),
-    (7, 'MYR'),
-    (8, 'VND'),
-    (9, 'MMK'),
-    (10, 'XBT')
+    (6, 'MYR'),
+    (7, 'VND'),
+    (8, 'MMK'),
+    (9, 'XBT')
 )
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
@@ -95,12 +94,17 @@ REVIEW_STATE_CHOICES = (
 )
 
 DEPOSIT_METHOD_CHOICES = (
-    (0, "LBT_ONLINE"),
-    (1, "LBT_ATM"),
-    (2, "LBT_OTC"),
-    (3, "DIRECT_PAYMENT"),
+    (0, "ONLINE_DEBIT"),
+    (1, "ALIPAY"),
+    (2, "WECHAT_PAY"),
+    (3, "CUP_QR"),
     (4, "BANK_TRANSFER"),
-    (5, "IBT")
+    (5, "ALIPAY_H5"),
+    (6, "WECHAT_PAY_H5"),
+    (7, "CUP"),
+    (8, "CUP_MOBILE"),
+    (9, "JDWALLET"),
+
 )
 
 transaction_deposit = 0
@@ -398,6 +402,18 @@ GAME_ATTRIBUTES = (
     (GAME_ATTRIBUTES_THEME, 'Theme'),
 )
 
+ACTIVITY_CHECK_FIVE_MIN = 0
+ACTIVITY_CHECK_HALF_HOUR = 1
+ACTIVITY_CHECK_ONE_HOUR = 2
+ACTIVITY_CHECK_TWO_HOURS = 3
+
+ACTIVITY_CHECK = (
+    (ACTIVITY_CHECK_FIVE_MIN, '5 minutes'),
+    (ACTIVITY_CHECK_HALF_HOUR, '30 minutes'),
+    (ACTIVITY_CHECK_ONE_HOUR, '60 minutes'),
+    (ACTIVITY_CHECK_TWO_HOURS, '120 minutes'),
+)
+
 
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
@@ -437,7 +453,6 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
- 
 else:
     # astroPay sandbox keys:
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
@@ -496,21 +511,17 @@ HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
-# TODO: update this after payzod production credentials have been provided
-# if os.getenv("ENV") != "local":  # fetch prod credentials from s3
-#     PAYZOD_API_URL = "https://api.astropaycard.com"
-#     PAYZOD_MERCHANT_ID = keys["ASTROPAY"]["X_LOGIN"]
-#     PAYZOD_MERCHANT_NAME = keys["ASTROPAY"]["X_TRANS_KEY"]
-#     PAYZOD_PASSKEY = keys["ASTROPAY"]["SECRET"]
-# else:  # payzod sandbox
-PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
-PAYZOD_MERCHANT_ID = 1008779364
-PAYZOD_MERCHANT_NAME = "ibet2019"
-PAYZOD_PASSKEY = "dgr8mM7akMtL"
-
 # payzod production
-
-
+if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+    PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
+else:  # payzod sandbox
+    PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
 
 
 GAME_FILTER_OPTION = [
@@ -543,26 +554,21 @@ GAME_FILTER_OPTION = [
     },
 ]
 # Notification
-MESSAGE_ALERT  = 1
-MESSAGE_DIRECT = 2
+MESSAGE_REJECTED = 0
+MESSAGE_PENDING  = 1
+MESSAGE_APPROVED = 2
 
-NOTIFICATION_TYPE = (
-    (MESSAGE_ALERT, 'ALERT'),
-    (MESSAGE_DIRECT, 'DIRECT'),
-    # (3, 'REFERRAL')
+NOTIFICATION_STATUS = (
+    (MESSAGE_REJECTED, 'REJECTED'),
+    (MESSAGE_PENDING, 'PENDING'),
+    (MESSAGE_APPROVED, 'APPROVED')
 )
 
-NOTIFICATION_DIRECT = 'D'
-NOTIFICATION_PUSH   = 'P'
-NOTIFICATION_SMS    = 'S'
-NOTIFICATION_EMAIL  = 'E' 
+SYSTEM_USER = 1
 
-NOTIFICATION_METHOD = (
-    (NOTIFICATION_DIRECT, 'direct'),
-    (NOTIFICATION_PUSH, 'push'),
-    (NOTIFICATION_SMS, 'sms'),
-    (NOTIFICATION_EMAIL, 'email')
-)
+NOTIFICATION_CONSTRAINTS_QUANTITY = 1000
+
+AWS_SMS_REGION = 'eu-west-1'
 
 COUNTRY_CODE_CHINA = 'CNY'
 COUNTRY_CODE_GERMANY = 'DE'
@@ -996,3 +1002,5 @@ PERMISSION_CODE = [
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
+
+PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"

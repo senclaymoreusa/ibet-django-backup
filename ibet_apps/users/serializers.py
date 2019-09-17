@@ -15,8 +15,10 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers, exceptions
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils.functional import Promise
+from django.utils.encoding import force_text
+from django.core.serializers.json import DjangoJSONEncoder
 import datetime
-
 
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,14 +37,14 @@ class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url')
+        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url', 'image_url')
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration')
-        read_only_fields = ('username', )
+        read_only_fields = ('pk', )
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -423,3 +425,9 @@ class BalanceSerializer(serializers.Serializer):
     type = serializers.CharField()
     balance = serializers.FloatField()
     username = serializers.CharField()
+
+class LazyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            return force_text(obj)
+        return super(LazyEncoder, self).default(obj)

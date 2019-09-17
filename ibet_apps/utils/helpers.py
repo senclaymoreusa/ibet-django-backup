@@ -9,7 +9,7 @@ from users.models import CustomUser
 logger = logging.getLogger("django")
 def addOrWithdrawBalance(username, balance, type_balance):
     user = CustomUser.objects.filter(username=username)
-    logger.info("Updating " + user + " (" + username + ") balance (" + type_balance + " " + balance + ")")
+    logger.info("Updating " + user[0].username + " balance (" + type_balance + " " + balance + ")")
     current_balance = user[0].main_wallet
     # if balance.isdigit() == False:
     #     return HttpResponse('Failed')

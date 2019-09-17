@@ -61,4 +61,4 @@ async def send_message_sqs(**tranDict):
 def decimal_default(obj):
     if isinstance(obj, decimal.Decimal):
         return float(obj)
-    raise TypeError
+    logger.error("TypeError")

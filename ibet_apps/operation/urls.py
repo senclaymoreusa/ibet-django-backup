@@ -1,6 +1,7 @@
 
 from . import views
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     # path('api/games/', views.GameAPIListView.as_view(), name='api_games'),
@@ -12,9 +13,18 @@ urlpatterns = [
     # path('api/reset-password/verify-token/', views.CustomPasswordTokenVerificationView.as_view(), name='password_reset_verify_token'),
     # path('api/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     # path('api/language/', views.LanguageView.as_view(), name='language'),
+    path('api/read_message/<int:pk>', csrf_exempt(views.NotificationUserIsReadAPI.as_view()), name="read_message"),
+    # path('api/send-sms', csrf_exempt(views.SMSNotificationAPI.as_view()), name="sms-notification"),
+    path('api/notification-detail/<int:pk>', views.NotificationDetailAPIView.as_view(), name='notification-detail'),
     path('api/notification', views.NotificationAPIView.as_view(), name='notification'),
     path('api/notification-log', views.NotificationLogView.as_view(), name='notification-log'),
-    path('api/create-topic', views.AWSTopicView.as_view(), name='create-topic')
+    path('api/notification-count/<int:pk>', views.NotificationToUsersUnreadCountView.as_view(), name='notification-count'),
+    path('api/notificationsforuser', views.NotificationsForUserAPIView.as_view(), name='notificationsforuser'),
+    path('api/notification-users/<int:pk>', views.NotificationToUsersDetailView.as_view(), name='notification-users'),
+    path('api/notification-users', views.NotificationToUsersView.as_view(), name='notification-users'),
+    path('api/create-topic', views.AWSTopicView.as_view(), name='create-topic'),
+    path('api/create-message', views.CreateNotificationAPIView.as_view(), name='create-message'),
+    path('api/notification-search/', views.NotificationSearchAutocomplete.as_view(), name='notification-search'),
     # path('api/referral/', views.ReferralAward.as_view(), name='referral'),
     # path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
     # path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),
