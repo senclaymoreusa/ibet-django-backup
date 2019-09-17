@@ -1483,16 +1483,17 @@ class GetLimitation(View):
             temporary_amount = decimal.Decimal(0) if limitation.temporary_amount is None else  decimal.Decimal(limitation.temporary_amount)
             amount = None if limitation.amount is None else decimal.Decimal(limitation.amount)
             expiration_timeStr = ''
+            expiration_time = ""
             if limitation.expiration_time:
                 current_tz = timezone.get_current_timezone()
                 expiration_time = limitation.expiration_time.astimezone(current_tz)
                 expiration_timeStr = str(limitation.expiration_time.astimezone(current_tz))
 
-            if limitation.amount is None and limitation.expiration_time and expiration_time <= timezone.now():
+            if not limitation.amount and not expiration_time:
                 continue
-            # print(limitation.expiration_time)
-            # expiration_time = None if limitation.expiration_time is None else str(limitation.expiration_time)
-            # print(expiration_time)
+            else:
+                if expiration_time and expiration_time <= timezone.now():
+                    continue
             
             if limitation.limit_type == LIMIT_TYPE_LOSS:
                 lossMap = {
