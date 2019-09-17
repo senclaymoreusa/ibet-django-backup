@@ -104,7 +104,16 @@ class YggdrasilAPI(APIView):
                     }
 
 
+        # Cancel
         elif playerid and reference and subreference and org and version and not amount:
+
+            GameRequestsModel.objects.create(
+                MemberID     = playerid,
+                reference    = reference,
+                subreference = subreference,
+                organization = org,
+                version      = version
+            )
 
             try:
 
