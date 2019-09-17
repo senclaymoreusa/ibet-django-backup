@@ -80,7 +80,7 @@ class ReportView(CommAdminView):
                 elif timePeriod == "3":
                     dateRangeFrom = now - relativedelta(days=90)
 
-                data = getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency)
+                data = getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market)
                 return HttpResponse(json.dumps(data), content_type='application/json', status=200)
 
             else:

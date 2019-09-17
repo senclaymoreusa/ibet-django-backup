@@ -444,7 +444,7 @@ $(document).ready(function() {
             }
         }
 
-        if (!marketArray) {
+        if (marketArray.length == 0) {
             error = true;
             alert("please choose the market");
             return;
