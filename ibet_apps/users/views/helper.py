@@ -25,7 +25,7 @@ def set_loss_limitation(userId, lossLimit, lossLimitInterval, oldLimitMap, user)
     # insert or update
     for i in range(len(lossLimit)):
         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).exists():
-            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).update(amount=lossLimit[i])
+            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).update(amount=lossLimit[i], expiration_time=None)
             logger.info('Update loss limit for interval type: ' + str(user))
         else:
             limitation = Limitation(
@@ -51,7 +51,7 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
     for i in range(len(depositLimitInterval)):
         # print("index: " + str(i))
         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).exists():
-            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).update(amount=depositLimit[i])
+            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).update(amount=depositLimit[i], expiration_time=None)
             logger.info('Update deposit limit for interval type: ' + str(user))
         else:
             limitation = Limitation(
