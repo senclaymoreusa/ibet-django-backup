@@ -240,7 +240,30 @@ class YggdrasilAPI(APIView):
                         'msg': 'User_Not_Exist'
                     }
 
+        #  campaignpayout
         elif cash and campaignref and last and prepaidref and prepaidticketid and singleWin:
+
+            GameRequestsModel.objects.create(
+                organization    = org,
+                MemberID        = playerid,
+                cash            = cash,
+                bonus           = bonus,
+                currency        = currency,
+                reference       = reference,
+                description     = description,
+                cat             = cat,
+                tag             = tag,
+                campaignref     = campaignref,
+                last            = last,
+                lang            = lang,
+                version         = version,
+                prepaidref      = prepaidref,
+                prepaidticketid = prepaidticketid,
+                singleWin       = singleWin,
+                totalWin        = totalWin,
+                roundCount      = roundCount,
+                ruleType        = ruleType
+            )
 
             try:
 
