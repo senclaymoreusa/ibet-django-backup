@@ -138,8 +138,24 @@ class YggdrasilAPI(APIView):
                     }
 
 
+        # Append
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and reference and subreference and description and cat and tag and lang and version:
-
+           
+           GameRequestsModel.objects.create(
+               organization = org,
+               MemberID     = playerid,
+               value        = amount,
+               isJackpotWin = isJackpotWin,
+               bonusprize   = bonusprize,
+               currency     = currency,
+               reference    = reference,
+               subreference = subreference,
+               description  = description,
+               cat          = cat,
+               tag          = tag,
+               lang         = lang,
+               version      = version
+           )
 
             try:
 
