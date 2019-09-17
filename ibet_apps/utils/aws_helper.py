@@ -36,9 +36,8 @@ def getAWSClient(service_name, third_party_keys, region):
 
     return client 
 
-
 def getSQSQueue(queue_name):
-    sqs = boto3.resource('sqs', region_name='eu-west-2')
+    sqs = boto3.resource('sqs', region_name = "eu-west-2")
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except ClientError as e:

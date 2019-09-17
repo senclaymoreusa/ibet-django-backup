@@ -573,6 +573,7 @@ SYSTEM_USER = 1
 NOTIFICATION_CONSTRAINTS_QUANTITY = 1000
 
 AWS_SMS_REGION = 'eu-west-1'
+AWS_SQS_REGION = 'eu-west-2'
 
 COUNTRY_CODE_CHINA = 'CNY'
 COUNTRY_CODE_GERMANY = 'DE'
@@ -1005,5 +1006,6 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"

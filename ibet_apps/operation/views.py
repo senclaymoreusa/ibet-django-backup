@@ -286,7 +286,7 @@ class AuditNotificationView(CommAdminView):
 
         # AWS SNS Client
         sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
-        client = getAWSClient('sns', third_party_keys)
+        client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
         # Push Notification
         if notification.is_push_message:
@@ -350,7 +350,7 @@ class AWSTopicView(CommAdminView):
         
         # create AWS Topic
         third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-        client = getAWSClient("sns", third_party_keys)
+        client = getAWSClient("sns", third_party_keys, AWS_SMS_REGION)
         topicArn = client.create_topic(Name=topic_name)
         topic_arn = topicArn["TopicArn"]
 
@@ -454,7 +454,7 @@ class CreateNotificationAPIView(CreateAPIView):
 
                 # AWS SNS Client
                 sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
-                client = getAWSClient('sns', third_party_keys)
+                client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
                 # Push Notification
                 if NOTIFICATION_PUSH in notification_methods:
