@@ -94,10 +94,13 @@ class YggdrasilAPI(APIView):
                     Status = status.HTTP_200_OK
 
                 else:
+
                     data = {
                         "code": 1002,
                         'msg': 'Insufficient_Balance'
                     }
+
+                    Status = status.HTTP_400_BAD_REQUEST
             except:
  
                 data = {
@@ -105,6 +108,7 @@ class YggdrasilAPI(APIView):
                         'msg': 'User_Not_Exist'
                     }
 
+                Status = status.HTTP_400_BAD_REQUEST
 
         # Cancel
         elif playerid and reference and subreference and org and version and not amount:
@@ -141,6 +145,8 @@ class YggdrasilAPI(APIView):
                         "code": 1003,
                         'msg': 'User_Not_Exist'
                     }
+
+                Status = status.HTTP_400_BAD_REQUEST
 
 
         # Append
@@ -189,6 +195,8 @@ class YggdrasilAPI(APIView):
                         "code": 1003,
                         'msg': 'User_Not_Exist'
                     }
+
+                Status = status.HTTP_400_BAD_REQUEST
 
         # End bet
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and tickets and reference and subreference and description and cat and tag and lang and version and prepaidref and prepaidticketid and singleWin and totalWin and roundCount and ruleType:
@@ -249,6 +257,8 @@ class YggdrasilAPI(APIView):
                         'msg': 'User_Not_Exist'
                     }
 
+                Status = status.HTTP_400_BAD_REQUEST
+
         #  campaignpayout
         elif cash and campaignref and last and prepaidref and prepaidticketid and singleWin:
 
@@ -303,6 +313,9 @@ class YggdrasilAPI(APIView):
                         "code": 1003,
                         'msg': 'User_Not_Exist'
                     }
+
+                Status = status.HTTP_400_BAD_REQUEST
+
         # getbalance
 
         elif org and sessiontoken and playerid and gameid and description and not amount and not version and not lang and not totalWin:
@@ -335,13 +348,15 @@ class YggdrasilAPI(APIView):
                     }
 
                 Status = status.HTTP_200_OK
-                
+
             except:
 
                 data = {
                         "code": 1003,
                         'msg': 'User_Not_Exist'
                     }
+
+                Status = status.HTTP_400_BAD_REQUEST
 
 
         return Response(data)
