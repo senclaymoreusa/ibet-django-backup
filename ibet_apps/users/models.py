@@ -527,8 +527,33 @@ class GameRequestsModel(models.Model):
     remark          = models.CharField(max_length=100, blank=True)
     amount          = models.CharField(max_length=100, blank=True)
     gameId          = models.CharField(max_length=100, blank=True)
-    
     roundId         = models.CharField(max_length=100, blank=True)
+
+    # Yggfrasil
+
+    organization    = models.CharField(max_length=100, blank=True)
+    version         = models.CharField(max_length=100, blank=True)
+    reference       = models.CharField(max_length=100, blank=True)
+    subreference    = models.CharField(max_length=100, blank=True)
+    description     = models.CharField(max_length=100, blank=True)
+    prepaidticketid = models.CharField(max_length=100, blank=True)
+    prepaidvalue    = models.CharField(max_length=100, blank=True)
+    prepaidcost     =models.CharField(max_length=100, blank=True)
+    prepaidref      = models.CharField(max_length=100, blank=True)
+    jackpotcontribution = models.CharField(max_length=100, blank=True)
+    isJackpotWin    = models.CharField(max_length=100, blank=True)
+    bonusprize      = models.CharField(max_length=100, blank=True)
+    tickets         = models.CharField(max_length=100, blank=True)
+    singleWin       = models.CharField(max_length=100, blank=True)
+    totalWin        = models.CharField(max_length=100, blank=True)
+    roundCount      = models.CharField(max_length=100, blank=True)
+    ruleType        = models.CharField(max_length=100, blank=True)
+    cash            = models.CharField(max_length=100, blank=True)
+    bonus           = models.CharField(max_length=100, blank=True)
+    campaignref     = models.CharField(max_length=100, blank=True)
+    lang            = models.CharField(max_length=100, blank=True)
+    last            = models.CharField(max_length=100, blank=True)
+
 
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
