@@ -141,7 +141,7 @@ class YggdrasilAPI(APIView):
         # Append
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and reference and subreference and description and cat and tag and lang and version:
            
-           GameRequestsModel.objects.create(
+            GameRequestsModel.objects.create(
                organization = org,
                MemberID     = playerid,
                value        = amount,
@@ -155,7 +155,7 @@ class YggdrasilAPI(APIView):
                tag          = tag,
                lang         = lang,
                version      = version
-           )
+            )
 
             try:
 
@@ -292,8 +292,17 @@ class YggdrasilAPI(APIView):
                         "code": 1003,
                         'msg': 'User_Not_Exist'
                     }
+        # getbalance
 
         elif org and sessiontoken and playerid and gameid and description and not amount and not version and not lang and not totalWin:
+         
+            GameRequestsModel.objects.create(
+                organization    = org,
+                MemberID        = playerid,
+                sessionToken    = sessiontoken,
+                gameId          = gameid,
+                description     = description
+            )
 
             try:
 
