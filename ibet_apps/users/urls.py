@@ -67,5 +67,6 @@ urlpatterns += [
     path('api/cancel-delete-limitation/', csrf_exempt(views.CancelDeleteLimitation.as_view()), name='cancel-delete-limitation'),
     path('api/marketing-settings/', csrf_exempt(views.MarketingSettings.as_view()), name="market_settings"),
     path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings"),
+    path('api/bet-history/',views.GetBetHistory.as_view(), name="get_bet_history"),
     path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check")
-]
+
