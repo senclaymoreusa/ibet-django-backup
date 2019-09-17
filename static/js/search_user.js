@@ -1,24 +1,25 @@
 import { API_URL } from './config.js';
 
 ;(function($){
-$("#user-search").on('keyup', function () {
+$("#user-search").on('keyup', function (e) {
     if( this.value.length < 2 ) return;
-    searchOpen();
+    var doamin = e.view.location.origin;
+    searchOpen(doamin);
 });
 
-function searchOpen() {
+function searchOpen(doamin) {
     // var domain = "{{ DOMAIN }}";
     var search = $('#user-search').val();
     var block = '';
     // console.log(API_URL);
-    var url = API_URL + "users/api/userSearch/?search=" + search + "&block=" + block;
+    var url = doamin + "/users/api/userSearch/?search=" + search + "&block=" + block;
     // console.log(url);
     $.ajax({
         url: url,
         type: 'GET',
         success: function (data) {
             // console.log(data);
-            searchResult(data, search);
+            searchResult(data, search, doamin);
         },
         error: function () {
             // console.log('error');
@@ -27,7 +28,7 @@ function searchOpen() {
     });
 }
 
-function searchResult(data, term) {
+function searchResult(data, term, domain) {
     
     var ids = data['id'];
     var usernames = data['username'];
@@ -121,6 +122,7 @@ function searchResult(data, term) {
         }
     }
     // console.log(sourceList);
+    
     $( "#user-search" ).autocomplete({
         source: sourceList,
         create: function () {
@@ -132,8 +134,8 @@ function searchResult(data, term) {
                     // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
                 } else {
                     // var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
-                    var domain = API_URL.substring(0, API_URL.length - 1);
                     var newUrl = domain + url + item.id;
+                    // console.log(newUrl);
                     // console.log(newUrl);
                     if (item.type == 'username') {
                         return $('<li>')
@@ -158,15 +160,16 @@ function searchResult(data, term) {
     });
 }
 
-$("#search-btn-icon").click(function(){
+$("#search-btn-icon").click(function(e){
+    var doamin = e.view.location.origin;
     var pageSize = $("#pagination_value").val();
     var search = $('#user-search').val();
     var block = false;
-    window.location.href = getUserListRedirectUrl(pageSize, 0, block, search);
+    window.location.href = getUserListRedirectUrl(pageSize, 0, block, search, doamin);
 });
 
-function getUserListRedirectUrl(pageSize, offset, block, search) {
-    var curUrl = API_URL + "xadmin/users/";
+function getUserListRedirectUrl(pageSize, offset, block, search, doamin) {
+    var curUrl = doamin + "/xadmin/users/";
     // console.log(curUrl);
     var parts = curUrl.split('?');
     // console.log(parts);
