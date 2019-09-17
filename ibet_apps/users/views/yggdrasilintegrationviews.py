@@ -183,8 +183,32 @@ class YggdrasilAPI(APIView):
                         'msg': 'User_Not_Exist'
                     }
 
+        # End bet
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and tickets and reference and subreference and description and cat and tag and lang and version and prepaidref and prepaidticketid and singleWin and totalWin and roundCount and ruleType:
             
+            GameRequestsModel.objects.create(
+                organization    = org,
+                MemberID        = playerid,
+                value           = amount,
+                isJackpotWin    = isJackpotWin,
+                bonusprize      = bonusprize,
+                currency        = currency,
+                tickets         = tickets,
+                reference       = reference,
+                subreference    = subreference,
+                description     = description,
+                cat             = cat,
+                tag             = tag,
+                lang            = lang,
+                version         = version,
+                prepaidref      = prepaidref,
+                prepaidticketid = prepaidticketid,
+                singleWin       = singleWin,
+                totalWin        = totalWin,
+                roundCount      = roundCount,
+                ruleType        = ruleType
+            )
+
             try: 
 
                 user = CustomUser.objects.filter(username = playerid)
