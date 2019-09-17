@@ -119,20 +119,27 @@ class ReportView(CommAdminView):
 
 def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
     marketCode = []
+    marketArr = []
     if market:
         for i in market:
             if i == "CNY" and CURRENCY_CNY not in marketCode:
                 marketCode.append(CURRENCY_CNY)
+                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_CNY))
             elif (i == "DE" or i == "FI" or i == "NL") and CURRENCY_EUR not in marketCode:
                 marketCode.append(CURRENCY_EUR)
+                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_EUR))
             elif i == "NO" and CURRENCY_NOK not in marketCode:
                 marketCode.append(CURRENCY_NOK)
+                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_NOK))
             elif i == "UK" and CURRENCY_GBP not in marketCode:
                 marketCode.append(CURRENCY_GBP)
+                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_GBP))
             elif i == "VN" and CURRENCY_VND not in marketCode:
                 marketCode.append(CURRENCY_VND)
+                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_VND))
             elif i == "THB" and CURRENCY_THB not in marketCode:
                 marketCode.append(CURRENCY_THB)
+                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_THB))
 
     current_tz = timezone.get_current_timezone()
     tz = pytz.timezone(str(current_tz))
@@ -141,9 +148,9 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         "rangeFrom": dateRangeFrom.strftime("%b %e %Y"),
         "rangeTo": dateRangeTo.strftime("%b %e %Y"),
         "currency": currency,
+        "currencyCode": marketArr,
         "data": []
     }
-    # currency = getCurrency(currency)
 
     min_all_date_time = tz.localize(datetime.combine(dateRangeFrom, time.min)) 
     max_all_date_time = tz.localize(datetime.combine(dateRangeTo, time.max))  

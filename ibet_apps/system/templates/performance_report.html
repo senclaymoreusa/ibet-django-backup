@@ -505,6 +505,7 @@ $(document).ready(function() {
                     // console.log(data);
                     $('#data-block').removeClass("hide");
                     var text = data.rangeFrom + ' - ' + data.rangeTo
+                    var currencyArr = data.currencyCode;
                     $('#period').text(text);
                     var marketStr = "";
                     if (marketArray) {
@@ -523,6 +524,10 @@ $(document).ready(function() {
                     $('#channel').text(channelStr);
                     $('#currency').text(data["currency"]);
                     var currencyOverall = data["currency"];
+                    // if (currencyOverall === "Local") {
+                    //     $('#currency').text(data["currency"]);
+                    // }
+
                     $("#user_list_tbody").empty();
                     var data = data.data;
                     var totalRegister = 0;
@@ -631,6 +636,9 @@ $(document).ready(function() {
                     }
 
                     $("#user_list_tbody").append(context);
+                    if (currencyOverall === "Local") {
+                        $('#currency').text(currencyArr.join(", "));
+                    }
                 }
             });
 
