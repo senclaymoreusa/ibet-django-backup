@@ -3,23 +3,23 @@ import { API_URL } from './config.js';
 ;(function($){
 $("#user-search").on('keyup', function (e) {
     if( this.value.length < 2 ) return;
-    var doamin = e.view.location.origin;
-    searchOpen(doamin);
+    var domain = e.view.location.origin;
+    searchOpen(domain);
 });
 
-function searchOpen(doamin) {
+function searchOpen(domain) {
     // var domain = "{{ DOMAIN }}";
     var search = $('#user-search').val();
     var block = '';
     // console.log(API_URL);
-    var url = doamin + "/users/api/userSearch/?search=" + search + "&block=" + block;
+    var url = domain + "/users/api/userSearch/?search=" + search + "&block=" + block;
     // console.log(url);
     $.ajax({
         url: url,
         type: 'GET',
         success: function (data) {
             // console.log(data);
-            searchResult(data, search, doamin);
+            searchResult(data, search, domain);
         },
         error: function () {
             // console.log('error');
@@ -161,15 +161,15 @@ function searchResult(data, term, domain) {
 }
 
 $("#search-btn-icon").click(function(e){
-    var doamin = e.view.location.origin;
+    var domain = e.view.location.origin;
     var pageSize = $("#pagination_value").val();
     var search = $('#user-search').val();
     var block = false;
-    window.location.href = getUserListRedirectUrl(pageSize, 0, block, search, doamin);
+    window.location.href = getUserListRedirectUrl(pageSize, 0, block, search, domain);
 });
 
-function getUserListRedirectUrl(pageSize, offset, block, search, doamin) {
-    var curUrl = doamin + "/xadmin/users/";
+function getUserListRedirectUrl(pageSize, offset, block, search, domain) {
+    var curUrl = domain + "/xadmin/users/";
     // console.log(curUrl);
     var parts = curUrl.split('?');
     // console.log(parts);
