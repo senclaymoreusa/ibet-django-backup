@@ -705,7 +705,7 @@ class LogStreamToS3(APIView):
         """
     
         # Try to get the description of the Firehose
-        firehose_client = boto3.client('firehose', region_name="us-east-2")
+        firehose_client = boto3.client('firehose', region_name="eu-west-2")
         try:
             result = firehose_client.describe_delivery_stream(DeliveryStreamName=firehose_name)
         except ClientError as e:
@@ -913,7 +913,7 @@ class LogStreamToS3(APIView):
     
         # Create the delivery stream
         # By default, the DeliveryStreamType='DirectPut'
-        firehose_client = boto3.client('firehose', region_name="us-east-2")
+        firehose_client = boto3.client('firehose', region_name="eu-west-2")
         try:
             if firehose_src_type == 'KinesisStreamAsSource':
                 # Define the Kinesis Data Stream configuration
@@ -945,7 +945,7 @@ class LogStreamToS3(APIView):
         """
     
         # Wait until the stream is active
-        firehose_client = boto3.client('firehose', region_name="us-east-2")
+        firehose_client = boto3.client('firehose', region_name="eu-west-2")
         while True:
             try:
                 # Get the stream's current status
@@ -1008,7 +1008,7 @@ class LogStreamToS3(APIView):
                 exit(1)
             logging.info('Firehose stream is active')
     
-        firehose_client = boto3.client('firehose', region_name="us-east-2")
+        firehose_client = boto3.client('firehose', region_name="eu-west-2")
         #
         # Put the record into the Firehose stream
         #
