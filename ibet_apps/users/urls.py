@@ -70,3 +70,4 @@ urlpatterns += [
     path('api/bet-history/',views.GetBetHistory.as_view(), name="get_bet_history"),
     path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check")
 
+]
