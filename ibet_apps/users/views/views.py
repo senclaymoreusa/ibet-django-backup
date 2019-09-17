@@ -57,7 +57,7 @@ from dateutil.relativedelta import relativedelta
 from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
-from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
+from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GameRequestsModel
 from games.models import Game as NewGame
 from accounting.models import Transaction
 from threading import Timer
@@ -1695,6 +1695,20 @@ class PrivacySettings(View):
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
 
+
+class GetBetHistory(View):
+
+    #permission_classes = (IsAuthenticated, )
+    def get(self, request, *args, **kwargs):
+        user_name = request.GET['username']
+        bet = GameRequestsModel.objects.filter(MemberID=user_name)
+        #print(bet)
+        response = {
+            "bet": list(bet.values())
+        }
+        
+        return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+
 class ActivityCheckSetting(View):
 
 
@@ -1716,4 +1730,6 @@ class ActivityCheckSetting(View):
         user.activity_check = activityOpt
         user.save()
         logger.info("Activity check setting for user: {}, and time option is: {}".format(str(user.username), activityOpt))
+
         return HttpResponse(('Successfully set the activity check setting'), status = 200)
+
