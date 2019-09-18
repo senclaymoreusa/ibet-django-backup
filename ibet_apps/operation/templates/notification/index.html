@@ -243,13 +243,13 @@ tbody>tr:nth-child(odd)>th {
               {% else %}
               <td>{{ notification.topic }}</td>
               {% endif %}
-              <td><i class="far fa-money-bill-alt"></i></td>
+              <td></td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
               <td>{{ notification.sent_count }}</td>
               <td>{{ notification.open }}</td>
               <td>{{ notification.rate }}</td>
-              <td>N/A</td>
+              <td></td>
               <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td>
             </tr>
           {% endfor %}
@@ -281,7 +281,7 @@ tbody>tr:nth-child(odd)>th {
               <td>{{ notification.campaign }}</td>
               <!--<td>{{ notification.sent_count }}</td>-->
               <td>GROUP</td>
-              <td>BONUS</td>
+              <td>{{ notification.bonus }}</td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
               <td>{{ notification.sent_count }}</td>
