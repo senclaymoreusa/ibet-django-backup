@@ -12,10 +12,11 @@ from rest_framework import status
 from rest_framework.test import APIRequestFactory
 
 import datetime
-from datetime import timedelta
+from datetime import timedelta, time
 import boto3
 import json
 import logging
+import pytz
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer
@@ -167,8 +168,8 @@ class NotificationSearchAutocomplete(View):
 
         logger.info('Search notification, key: ' + search)
 
-        search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
-        # search_body = Notification.objects.filter(content_text__contains=search)
+        search_subject = Notification.objects.filter(Q(subject__icontains=search)&Q(status=tab))
+        search_campaign = Notification.objects.filter(Q(campaign__icontains=search))
 
         search_subject = serializers.serialize('json', search_subject)
         # search_body = serializers.serialize('json', search_body)
@@ -182,8 +183,19 @@ class NotificationSearchAutocomplete(View):
         for notification in search_subject:
             notificationMap = {}
             notificationMap["subject"] = notification["fields"]["subject"]
+            notificationMap["id"] = notification["pk"]
             subject_data.append(notificationMap)
         response["subject"] = subject_data
+
+        campaign_data = []
+        for campaign in search_campaign:
+            campaignMap = {}
+            campaignMap["campaign"] = campaign.campaign
+            campaignMap["id"] = campaign.pk
+            campaign_data.append(campaignMap)
+        response["campaign"] = campaign_data
+
+
 
         # body_data = []
         # for notification in search_body:
@@ -259,20 +271,20 @@ class NotificationView(CommAdminView):
 
         if search:
             logger.info('Search notification, key: ' + search)
-            msg_filter = msg_filter & Q(subject__contains=search)
+            msg_filter = msg_filter & (Q(subject__icontains=search) | Q(campaign__icontains=search))
             # queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
             # queryset = Notification.objects.filter(status=tab)
 
-        if isTimeFormat(start_time):
-            current_tz = timezone.get_current_timezone()
-            start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M").astimezone(current_tz)
-                
+        current_tz = timezone.get_current_timezone()
+        tz = pytz.timezone(str(current_tz))
+        if start_time:
+            start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d")
+            start_time = tz.localize(datetime.datetime.combine(start_time, time())) 
             msg_filter = msg_filter & Q(publish_on__gt=start_time)
 
-        if isTimeFormat(end_time):
-            current_tz = timezone.get_current_timezone()
-            end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M").astimezone(current_tz)
-                
+        if end_time:
+            end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d")
+            end_time = tz.localize(datetime.datetime.combine(end_time, time())) 
             msg_filter = msg_filter & Q(publish_on__lt=end_time)
 
         # if start_time:
@@ -325,7 +337,7 @@ class NotificationView(CommAdminView):
             "content_text": request.POST.get('content_text'),
             "creator": self.user.id,
         }
-
+        
         direct_check = request.POST.get('direct_check')
         email_check = request.POST.get('email_check')
         SMS_check = request.POST.get('SMS_check')
@@ -345,8 +357,10 @@ class NotificationView(CommAdminView):
             data["is_push_message"] = True
         '''
 
-        notifiers = request.POST.getlist("member_list[]")
-        groups = request.POST.getlist("group_list[]")
+        notifiers = request.POST.get("member_list")
+        groups = request.POST.get("group_list")
+        notifiers = json.loads(notifiers)
+        groups = json.loads(groups)
 
         total_num = len(notifiers)
 
@@ -374,7 +388,7 @@ class NotificationView(CommAdminView):
 
                 
             for notifier in notifiers:
-                NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
+                NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(username=notifier))
 
             logger.info("Save notification log")
 
