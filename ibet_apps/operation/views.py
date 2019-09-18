@@ -958,7 +958,7 @@ class NotificationToUsersDetailView(View):
             if notification.publish_on:
                 current_tz = timezone.get_current_timezone()
                 publish_time = notification.publish_on.astimezone(current_tz)
-                publish_on_str = str(notification.publish_on.astimezone(current_tz))
+                publish_on_str = notification.publish_on.astimezone(current_tz).strftime("%b %d, %Y")
             message["publish_on"] = publish_on_str
             message["is_read"] = msg.is_read
             message["is_deleted"] = False
