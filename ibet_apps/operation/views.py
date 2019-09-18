@@ -553,6 +553,7 @@ class MessageUserGroupView(CommAdminView):
             "creator": self.user.pk
         }
 
+
         serializer = MessageUserGroupSerializer(data=data)
         if serializer.is_valid():
             group = serializer.save()
@@ -564,8 +565,8 @@ class MessageUserGroupView(CommAdminView):
             logger.info("saved message user group log")
             return HttpResponseRedirect(reverse('xadmin:messagegroups'))
         else:
-            logger.error(serializer.errors)
-            return HttpResponse(serializer.errors)
+            logger.error(serializer.errors['name'][0])
+            return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
 
 
 class AWSTopicView(CommAdminView):
