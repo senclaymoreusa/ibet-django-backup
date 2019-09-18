@@ -226,7 +226,7 @@ tbody>tr:nth-child(odd)>th {
               <div class="row">
                   <button type="submit" class="btn btn-primary">Save</button>
                   {% comment %} <button type="button" id="create_group" class="btn btn-primary">Save</button> {% endcomment %}
-                  <button type="reset" class="btn btn-primary">Cancel</button>
+                  <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
               </div>
           </form>
         </div>
@@ -285,6 +285,39 @@ tbody>tr:nth-child(odd)>th {
           </tr>
         </tbody>
       </table>
+      <!--<div class="row">
+        <div class='col-md-4'>
+          <div>SHOW ROWS</div>
+          <select id="page_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
+        <div class='col-md-4'>
+          <span>1 -20 of 9</span>
+        </div>
+        <div class='col-md-4'>
+          <div>&nbsp;</div>
+            <ul class="pagination" style="margin:0px;">
+                {% if notifications.has_previous  %}
+                    <li class="page-item " id='previousPage'>
+                      <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled" id='previousPage'>
+                      <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% endif %}
+                {% if notifications.has_next %}
+                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% else %}
+                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% endif %}
+            </ul>
+          </div>
+        </div>-->
     </div>
   </div>
 </div>
@@ -312,7 +345,7 @@ tbody>tr:nth-child(odd)>th {
       </div>
       <button id="add-btn" class="btn btn-primary" style="margin-top: 20px; margin-left: 16px" disabled>Add member to group</button>
       <table id="manually-table">
-        <thead class="thead-dark">
+        <thead class="thead-dark" hidden>
           <tr>
             <th style="width: 10%;">ALL<input type="checkbox"></th>
             <th style="width: 30%;">MEMBER ID</th>
@@ -327,9 +360,9 @@ tbody>tr:nth-child(odd)>th {
           <button id="remove-btn" class="btn btn-primary" style="display: none">Remove selected</button>
         </div>
       </div>
-      <div class="row" style="margin-top: 31px; margin-left: 16px">
+      <div class="row" style="margin: 31px 0 16px 16px">
           <button id="save-btn" type="button" class="btn btn-primary">Save</button>
-          <button type="reset" class="btn btn-primary">Cancel</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
@@ -353,7 +386,7 @@ tbody>tr:nth-child(odd)>th {
       <td>{{ group.time_used }}</td>
       <td>{{ group.creator }}</td>
       <td>66.67%</td>
-      <td><a class="btn btn-primary" href="#" role="button" disabled>Edit</a></td>
+      <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button">Edit</a></td>
       <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
       <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
         <i class="fa fa-info"></i>
@@ -378,7 +411,7 @@ tbody>tr:nth-child(odd)>th {
   <div class='col-md-1'>
     <div>&nbsp;</div>
     <ul class="pagination" style="margin:0px;">
-        {% if notifications.has_previous  %}
+        {% if message_groups.has_previous  %}
             <li class="page-item " id='previousPage'>
               <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
             </li>
@@ -387,7 +420,7 @@ tbody>tr:nth-child(odd)>th {
               <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
             </li>
         {% endif %}
-        {% if notifications.has_next %}
+        {% if message_groups.has_next %}
             <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
         {% else %}
             <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
@@ -399,6 +432,7 @@ tbody>tr:nth-child(odd)>th {
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script>
 var pk_list;
+var user_list;
 
 $(document).ready(function() {
   var previousURL = document.referrer;
@@ -411,11 +445,9 @@ $(document).ready(function() {
   var parsedUrl = new URL(window.location.href);
 
   if (parsedUrl.searchParams.get("pageSize") !== null) {
-    console.log(1);
     paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
   }
   if (parsedUrl.searchParams.get("offset") !== null) {
-    console.log(2);
     paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
   }
 
@@ -435,9 +467,11 @@ $(document).ready(function() {
     'register_from': null,
     'register_to': null,
     'deposit': false,
+    'pageSize': null,
+    'offset': null,
   }
 
-  var user_list = [];
+  groupFilter();
 
   $('.product-item').click(function() {
     $("#product").html($(this).text() + '<span class="caret"></span>');
@@ -563,7 +597,7 @@ $(document).ready(function() {
     } else {
       if((idx = riskOptions.indexOf(val)) > -1) {
         riskOptions.splice(idx, 1);
-        $('risk li:first input[type=checkbox]').prop('checked', false);
+        $('#risk li:first input[type=checkbox]').prop('checked', false);
         setTimeout(function() { $inp.prop('checked', false)}, 0);
       } else {
         riskOptions.push(val);
@@ -578,11 +612,8 @@ $(document).ready(function() {
     groupFilter();
   });
 
-  function upload(e) {
-
-  }
-
   $('#csv_file').change(function(e) {
+    $("#manually-table tbody").empty();
     var data = null;
     var file = e.target.files[0];
 
@@ -593,21 +624,25 @@ $(document).ready(function() {
 
         var parsedCSV = d3.csv.parseRows(csvData);
 
-        console.log(parsedCSV);
-
-        $("add-btn").prop("disabled", false);
-        $("remove-btn").css("display", "block");
+        if(parsedCSV.length > 0) {
+          $("#manually-table thead").prop("hidden", false);
+          $("#add-btn").prop("disabled", false);
+          $("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
+          $("#remove-btn").css("display", "block");
+        }
 
         parsedCSV.forEach(function (d, i) {
             if (i == 0) return true; // skip the header
             $("#manually-table").find('tbody')
               .append($('<tr>')
-                .append($('<td><input type="checkbox"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
+                .append($('<td><input class="member-checkbox" type="checkbox"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
               )
         });
-
-
     }
+  });
+
+  $('td input[type=checkbox]').click(function() {
+    alert(1);
   });
 
   $('#csv_btn').click(function() {
@@ -641,9 +676,8 @@ $(document).ready(function() {
   });
 
   function groupFilter() {
-    console.log(vipOptions);
-    console.log(riskOptions);
-
+    // console.log(vipOptions);
+    // console.log(riskOptions);
     $.ajax({
       type: 'GET',
       url: "{% url 'group-filter' %}",

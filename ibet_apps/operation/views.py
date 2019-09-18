@@ -366,17 +366,12 @@ class NotificationView(CommAdminView):
             logger.info("Save notification message")
             # # store notification data in NotificationLog
             for group in groups:
-                print(1)
                 group = UserGroup.objects.get(name=group)
-                print(group)
                 NotificationToGroup.objects.create(notification=notification, group=group)
-                print(3)
                 group_users = UserToUserGroup.objects.filter(group=group)
-                print(group_users)
                 for group_user in group_users:
                     NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=group_user.user)
 
-            print(4)
                 
             for notifier in notifiers:
                 NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
@@ -743,6 +738,19 @@ class MessageGroupUserAPI(View):
         vip = request.GET.getlist('vip[]')
         risk = request.GET.getlist('risk[]')
 
+        # pageSize = request.GET.get('pageSize')
+        # offset = request.GET.get('offset')
+
+        # if pageSize is None:
+        #     pageSize = 20
+        # else: 
+        #     pageSize = int(pageSize)
+
+        # if offset is None or int(offset) < 1:
+        #     offset = 1
+        # else:
+        #     offset = int(offset)
+
         group_filter = Q()
         if product != None:
             group_filter = group_filter & Q(product_attribute=product)
@@ -773,12 +781,16 @@ class MessageGroupUserAPI(View):
             group_filter = group_filter & Q(time_of_registration__lt=register_to)
 
         if len(vip) > 0:
-            if 'VIP1' in vip:
-                print("vip")
+            if 'NORMAL' in vip:
+                group_filter = group_filter & Q(last_betting_time__range=(start_date, end_date))
 
         if len(risk) > 0:
             if 'E1' in risk:
-                print("risk")
+                group_filter = group_filter & Q(risk_level=RISK_LEVEL_E1)
+            if 'E2' in risk:
+                group_filter = group_filter & Q(risk_level=RISK_LEVEL_E2)
+            if 'F' in risk:
+                group_filter = group_filter & Q(risk_level=RISK_LEVEL_F)
         
         queryset = CustomUser.objects.filter(group_filter)
 
@@ -793,6 +805,9 @@ class MessageGroupUserAPI(View):
             pk_list.append(user.pk)
             item["username"] = user.username
             user_list.append(item)
+
+        # paginator = Paginator(user_list, pageSize)
+        # context["notifications"] = paginator.get_page(offset)
 
         response["user_count"] = user_count
         response["user"] = user_list
