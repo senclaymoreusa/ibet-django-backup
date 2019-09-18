@@ -550,7 +550,6 @@ class MessageUserGroupView(CommAdminView):
             logger.info("saved message user group log")
             return HttpResponseRedirect(reverse('xadmin:messagegroups'))
         else:
-            print(2)
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
 
