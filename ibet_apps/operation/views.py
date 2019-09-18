@@ -19,7 +19,7 @@ import logging
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer
-from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
+from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic
 from users.models import CustomUser
 from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
@@ -331,8 +331,7 @@ class NotificationView(CommAdminView):
         SMS_check = request.POST.get('SMS_check')
         push_check = request.POST.get('push_check')
 
-        notification_method = ""
-
+        '''
         if direct_check != None:
             data["is_direct_message"] = True
 
@@ -344,10 +343,20 @@ class NotificationView(CommAdminView):
 
         if push_check != None:
             data["is_push_message"] = True
+        '''
 
-        notifiers = request.POST.getlist("notifiers")
+        notifiers = request.POST.getlist("member_list[]")
+        groups = request.POST.getlist("group_list[]")
 
-        if len(notifiers) < NOTIFICATION_CONSTRAINTS_QUANTITY:
+        total_num = len(notifiers)
+
+        for group in groups:
+            group = UserGroup.objects.get(name=group)
+            total_num = total_num + UserToUserGroup.objects.filter(group=group).count()
+
+        logger.info("message send to %s members", total_num)
+
+        if total_num < NOTIFICATION_CONSTRAINTS_QUANTITY:
             data["status"] = MESSAGE_APPROVED
 
         serializer = NotificationSerializer(data=data)
@@ -355,14 +364,27 @@ class NotificationView(CommAdminView):
         if serializer.is_valid():
             notification = serializer.save()
             logger.info("Save notification message")
-            # store notification data in NotificationLog
+            # # store notification data in NotificationLog
+            for group in groups:
+                print(1)
+                group = UserGroup.objects.get(name=group)
+                print(group)
+                NotificationToGroup.objects.create(notification=notification, group=group)
+                print(3)
+                group_users = UserToUserGroup.objects.filter(group=group)
+                print(group_users)
+                for group_user in group_users:
+                    NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=group_user.user)
+
+            print(4)
+                
             for notifier in notifiers:
-                log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
-                log.save()
+                NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier))
+
             logger.info("Save notification log")
 
-            if(notification.status == MESSAGE_APPROVED):
-                send_message(notification.pk)
+            # if(notification.status == MESSAGE_APPROVED):
+            #     send_message(notification.pk)
 
             return HttpResponseRedirect(reverse('xadmin:notification'))
         else:

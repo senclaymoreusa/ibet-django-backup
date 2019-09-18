@@ -74,6 +74,11 @@ tbody>tr:nth-child(odd)>th {
   width: 95%;
   margin: 16px 12px 16px 12px;
 }
+
+#manually-table {
+  width: 95%;
+  margin: 16px 12px 16px 12px;
+}
 </style>
 
 <h2 id="demo"></h2>
@@ -305,15 +310,27 @@ tbody>tr:nth-child(odd)>th {
           <input type="file" id="csv_file">
         </div>
       </div>
-      <button class="btn btn-primary" style="margin-top: 20px; margin-left: 16px">Add member to group</button>
-      <table>
-        <tbody>
+      <button id="add-btn" class="btn btn-primary" style="margin-top: 20px; margin-left: 16px" disabled>Add member to group</button>
+      <table id="manually-table">
+        <thead class="thead-dark">
           <tr>
-            <td>TBD</td>
-            <td>TBD</td>
+            <th style="width: 10%;">ALL<input type="checkbox"></th>
+            <th style="width: 30%;">MEMBER ID</th>
+            <th style="width: 60%;">USERNAME</th>
           </tr>
+        </thead>
+        <tbody>
         </tbody>
       </table>
+      <div class="row" style="margin-top: 31px">
+        <div class='col-md-4'>
+          <button id="remove-btn" class="btn btn-primary" style="display: none">Remove selected</button>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 31px; margin-left: 16px">
+          <button id="save-btn" type="button" class="btn btn-primary">Save</button>
+          <button type="reset" class="btn btn-primary">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
@@ -379,6 +396,7 @@ tbody>tr:nth-child(odd)>th {
   </div>
 </div>
 
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script>
 var pk_list;
 
@@ -560,20 +578,36 @@ $(document).ready(function() {
     groupFilter();
   });
 
+  function upload(e) {
+
+  }
+
   $('#csv_file').change(function(e) {
-    var fileName = e.target.files[0].name;
-    alert('The file "' + fileName +  '" has been selected.');
+    var data = null;
+    var file = e.target.files[0];
 
-    readFile = function() {
-      var reader = new FileReader();
-      reader.onload = function() {
-        console.log(reader.result);
-      };
+    var reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function (event) {
+        var csvData = event.target.result;
 
-      reader.readAsBinaryString(fileInput.files[0]);
-    };
+        var parsedCSV = d3.csv.parseRows(csvData);
 
-    console.log(readFile);
+        console.log(parsedCSV);
+
+        $("add-btn").prop("disabled", false);
+        $("remove-btn").css("display", "block");
+
+        parsedCSV.forEach(function (d, i) {
+            if (i == 0) return true; // skip the header
+            $("#manually-table").find('tbody')
+              .append($('<tr>')
+                .append($('<td><input type="checkbox"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
+              )
+        });
+
+
+    }
   });
 
   $('#csv_btn').click(function() {
@@ -647,7 +681,6 @@ $(document).ready(function() {
     }
     var pageSize = paramsMap['pageSize'];
     var oldFromItem = paramsMap['offset'];
-    // var newFromItem = Number(oldFromItem) + Number(pageSize);
     var newFromItem = Number(oldFromItem) + 1;
     
     window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
@@ -659,7 +692,6 @@ $(document).ready(function() {
       }
       var pageSize = paramsMap['pageSize'];
       var oldFromItem = paramsMap['offset'];
-      // var newFromItem = Number(oldFromItem) - Number(pageSize);
       var newFromItem = Number(oldFromItem) - 1;
       
       window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
