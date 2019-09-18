@@ -7,8 +7,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
-<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+<!-- <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+
+
 <style>
 form {
   padding: 0 16px 16px 16px;
@@ -77,7 +81,13 @@ tbody>tr:nth-child(odd)>th {
   height: 393px;
   border: solid 1px #bdbdbd;
 }
+.twitter-typeahead {
+    width:100%;
+}
 
+.tt-input {
+    width: 100% !important;
+}
 .tt-suggestion {
   font-size: 14px;
 }
@@ -115,8 +125,8 @@ tbody>tr:nth-child(odd)>th {
           </div>
           <div class="form-group">
             <label for="notifiers">SEND TO</label>
-            <div class="input-group">
-              <input type="text" id="sendto" class="form-control" placeholder="Enter ID username, name, phone or email">
+            <div class="input-group" >
+              <input type="text" id="sendto" class="form-control" placeholder="Enter ID username, name, phone or email" autocomplete="None">
               <span id="search-notifier-btn" class="input-group-addon" style="background-color: #ffffff; color:#2e2e2e"><span class="glyphicon glyphicon-search"></span></span>
             </div>
           </div>
@@ -175,24 +185,23 @@ tbody>tr:nth-child(odd)>th {
       <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
     </div>
   </div>
-  <div class='col-md-2' style="padding-left: 0">
+  <div class='col-md-5' style="padding-left: 0">
   </div>
-  <div class='col-md-6'>
+  <div class='col-md-3'>
     <!-- {% block time_search %} -->
-    {% comment %} <label>Date Range</label> {% endcomment %}
+    <label class="detail-info">DATE RANGE</label>
     <div class="row">
-        <div class='col-md-5'>
+        <div class='col-md-5' style="padding: 0px;">
             <div class='input-group'>
               <input type='text' class="form-control" placeholder="From" id='notification_time_from' />
-                {% comment %} <input type='date' class="form-control" placeholder="From"> {% endcomment %}
             </div>
         </div>
-        <div class='col-md-5'>
+        <div class='col-md-5' style="padding-left: 5px; padding-right: 0px;">
             <div class='input-group'>
               <input type='text' class="form-control" placeholder="To"  id='notification_time_to'/>
             </div>
         </div>
-        <div class='col-md-2'>
+        <div class='col-md-2' style="padding-left: 7px;">
             <button id="date-search-btn" type="button" class="btn btn-primary"><i class="fa fa-search"></i></button>
             {% comment %} <span id="date-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span> {% endcomment %}
         </div>
@@ -213,7 +222,7 @@ tbody>tr:nth-child(odd)>th {
     <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AUTOMATED MESSAGES</a></li>
     <li id="drafts"><a data-toggle="tab"  class="tab-label" href="#draft">DRAFTS</a></li>
   </ul>
-  <div class="tab-content">
+  <div class="tab-content" style="margin-top:30px;">
     <div id="sent-message" class="tab-pane fade">
       <table>
         <thead class="thead-dark">
@@ -427,7 +436,7 @@ $.ajax({
     type:'GET',
     url:"{% url 'notifier-tags' %}",
     success:function(data) {
-      console.log(data);
+    //   console.log(data);
       var group = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
         queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -499,7 +508,7 @@ $(document).ready(function() {
   if (parsedUrl.searchParams.get("from") !== null) {
       paramsMap['from'] = parsedUrl.searchParams.get("from");
   }
-  if (parsedUrl.searchParams.get("search") !== null) {
+  if (parsedUrl.searchParams.get("to") !== null) {
       paramsMap['to'] = parsedUrl.searchParams.get("to");
   }
   if (parsedUrl.searchParams.get("pageSize") !== null) {
@@ -561,10 +570,17 @@ $(document).ready(function() {
 
   $('#search').val(paramsMap['search']);
 
-  $('#notification_time_from').datetimepicker({date: paramsMap['from']});
+  $('#notification_time_from').datepicker({
+        autoclose: true, 
+        todayHighlight: true,
+        endDate: new Date()
+    }).val("");
 
-  $('#notification_time_to').datetimepicker({date: paramsMap['to']});
-  
+  $('#notification_time_to').datepicker({ autoclose: true, 
+        todayHighlight: true,
+        endDate: new Date()
+    }).val("");
+
   $('#italic').click(function() {
     document.execCommand('italic');
   });
@@ -605,7 +621,7 @@ $(document).ready(function() {
     var tab = paramsMap['tab'];
     var t_from = paramsMap['from'];
     var t_to = paramsMap['to'];
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search), t_from, t_to;
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search, t_from, t_to);
   });
 
   $("#search").on('keyup', function () {
@@ -614,19 +630,24 @@ $(document).ready(function() {
   });
 
   $(function () {
-    $('#notification_time_from').datetimepicker();
-    $('#notification_time_to').datetimepicker();
+    $('#notification_time_from').datepicker();
+    $('#notification_time_to').datepicker();
   });
 
   $("#date-search-btn").click(function() {
     var time_from = $('#notification_time_from').val();
-    time_from = moment(time_from).format('YYYY-MM-DD HH:mm');
-    console.log(time_from);
+    time_from = moment(time_from).format('YYYY-MM-DD');
+    // console.log(time_from);
     // time_from = time_from.format('YYYY-MM-DD HH:mm');
     var time_to = $('#notification_time_to').val();
-    time_to = moment(time_to).format('YYYY-MM-DD HH:mm');
-    console.log(time_to);
-
+    time_to = moment(time_to).format('YYYY-MM-DD');
+    // console.log(time_to);
+    if (time_from.indexOf("Invalid") >= 0) {
+        time_from = '';
+    }
+    if (time_to.indexOf("Invalid") >= 0) {
+        time_to = '';
+    }
     var search = $('#search').val();
     var pageSize = $("#pagination_value").val();
     var tab = paramsMap['tab'];
@@ -641,45 +662,12 @@ $(document).ready(function() {
     $("#newmsg").submit();
   });
 
-  $("#newmsg").submit(function(e) {
-      e.preventDefault();
-      var form = $(this);
-      var subject = form.find('input[name="subject"]').val();
-      var content_text = $('#content_text').html();
 
-    $.ajax({
-      type: "POST",
-      url: "{% url 'xadmin:notification' %}",
-      data: {
-        csrfmiddlewaretoken: "{{ csrf_token }}",
-        subject: subject,
-        content_text: content_text,
-        group_list: group_list,
-        member_list: member_list
-      },
-      success: function(data)
-        {
-          console.log("Success");
-          {% comment %} if (data.code === 1) {
-              $('#errorMessage').text(data.message); 
-              $('#errorMessage').css('color', 'red'); 
-          } else {
-              window.location.reload();
-          } {% endcomment %}
-        }
-    });
-  });
-
-/*
-  $("#sendto").on('keyup', function () {
-    if( this.value.length < 2 ) return;
-      searchUsers();
-  });
-*/
   var member_list = [];
   var group_list = [];
 
   $("#sendto").on('itemAdded', function(event) {
+      
     var data = event.item;
     if(data.type == "member") {
       member_list.push(data.name);
@@ -705,6 +693,38 @@ $(document).ready(function() {
     }
   });
 
+  $("#newmsg").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var subject = form.find('input[name="subject"]').val();
+    var content_text = $('#content_text').html();
+    var campaign = form.find('select[name="campaign"]').val();
+    $.ajax({
+      type: "POST",
+      url: "{% url 'xadmin:notification' %}",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        campaign: campaign,
+        subject: subject,
+        content_text: content_text,
+        group_list: JSON.stringify(group_list),
+        member_list: JSON.stringify(member_list)
+      },
+      success: function(data)
+        {
+        //   console.log("Success");
+          window.location.reload();
+        }
+    });
+  });
+
+/*
+  $("#sendto").on('keyup', function () {
+    if( this.value.length < 2 ) return;
+      searchUsers();
+  });
+*/
+
   $("#search-notifier-btn").click(function() {
     console.log($('#sendto').val());
     console.log(member_list);
@@ -720,7 +740,7 @@ $(document).ready(function() {
       url: url,
       type: 'GET',
       success: function (data) {
-        console.log(data);
+        // console.log(data);
         tagsAuto(data);
         //get data pass to json
         //searchNotifier(data, search);
@@ -790,6 +810,7 @@ $(document).ready(function() {
       url: url,
       type: 'GET',
       success: function (data) {
+        // console.log(data);
         searchResult(data, search);
       },
       error: function () {
@@ -800,6 +821,7 @@ $(document).ready(function() {
 
   function searchResult(data, term) {
     var subject = data['subject'];
+    var campaign = data['campaign'];
     // var content = data['body'];
 
     var sourceList = [];
@@ -815,6 +837,22 @@ $(document).ready(function() {
           'type': 'subject',
           'label': term,
           'value': subject[i]['subject'],
+          'id': subject[i]['id'],
+        });
+      }
+    }
+    if (campaign.length > 0) {
+      sourceList.push({
+        'type': 'category',
+        'label': term,
+        'value': 'CAMPAIGN RESULTS'
+      });
+      for (var i = 0; i < campaign.length; i++) {
+        sourceList.push({
+          'type': 'campaign',
+          'label': term,
+          'value': campaign[i]['campaign'],
+          'id': campaign[i]['id'],
         });
       }
     }
@@ -844,11 +882,15 @@ $(document).ready(function() {
             .appendTo(ul);
             // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
           } else {
-            //var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
-            var url = ""
+            var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
+            // var url = ""
             if (item.type == 'subject') {
               return $('<li>')
               .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .appendTo(ul);
+            } else if (item.type == 'campaign') {
+              return $('<li>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
             }
           }
@@ -894,9 +936,9 @@ function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
 
-  console.log(parts);
+  console.log(t_from, t_to);
   
-  var redirectUrl = parts[0]; 
+  var redirectUrl = parts[0];
   redirectUrl += '?search=' + search;
   redirectUrl += '&from=' + t_from;
   redirectUrl += '&to=' + t_to;
@@ -908,6 +950,4 @@ function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
 }
 
 </script>
-{% comment %} You have visited this page {{ num_visits }} times. {% endcomment %}
-
 {% endblock %}
