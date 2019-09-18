@@ -71,22 +71,23 @@ class CustomUser(AbstractBaseUser):
         ('French', 'French')
     )
 
-    language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     # add additional fields in here
     username = models.CharField(
-					max_length=255,
-					validators = [
-						RegexValidator(regex = USERNAME_REGEX,
-										message='Username must be alphanumeric or contain numbers',
-										code='invalid_username'
-							)],
-					unique=True
-				)
+        max_length=255,
+        validators=[
+            RegexValidator(
+                regex=USERNAME_REGEX,
+                message='Username must be alphanumeric or contain numbers',
+                code='invalid_username'
+            )
+        ],
+        unique=True
+    )
     email = models.EmailField(
-			max_length=255,
-			unique=True,
-			verbose_name='email address'
-		)
+        max_length=255,
+        unique=True,
+        verbose_name='email address'
+    )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
     user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
     user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
@@ -103,14 +104,13 @@ class CustomUser(AbstractBaseUser):
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
-    referred_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='referees')
+    referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
     active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
-        
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
     title = models.CharField(max_length=10, blank=True)
     over_eighteen = models.BooleanField(default=False)
@@ -137,7 +137,8 @@ class CustomUser(AbstractBaseUser):
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
-
+    bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    
     # agent
     agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
     commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
@@ -195,7 +196,7 @@ class CustomUser(AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            temp =  str(self.generate_verification_code())[2:-1]
+            temp = str(self.generate_verification_code())[2:-1]
             while get_user_model().objects.filter(referral_id=temp):   # make sure no duplicates
                 temp = str(self.generate_verification_code())[2:-1]
             self.referral_id = temp
@@ -206,12 +207,12 @@ class CustomUser(AbstractBaseUser):
         return self.username
 
     def get_short_name(self):
-	    # The user is identified by their email address
-	    return self.email
+        # The user is identified by their email address
+        return self.email
 
     def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-		# Simplest possible answer: Yes, always
+        # Does the user have a specific permission?
+        # Simplest possible answer: Yes, always
         return True
 
     def has_perms(self, perm_list, obj=None):
@@ -221,7 +222,7 @@ class CustomUser(AbstractBaseUser):
         return True
 
     def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
+        # Does the user have permissions to view the app `app_label`?
         # Simplest possible answer: Yes, always
         return True
 

@@ -56,6 +56,27 @@ class GlobalSettings(object):
                 )
             },
             {
+                'title': 'Finance',
+                'icon': 'fa fa-credit-card',
+                'menus': (
+                    {
+                        'title': 'Deposits',
+                        'url': '/xadmin/deposit',
+                        'icon': 'fa fa-arrow-right'
+                    },
+                    {
+                        'title': 'Withdrawals',
+                        'url': '/xadmin/withdrawal',
+                        'icon': 'fa fa-arrow-left'
+                    },
+                    {
+                        'title': 'Settings',
+                        'url': '/xadmin/channel_list',
+                        'icon': 'fa fa-cog'
+                    },
+                )
+            },
+            {
                 'title': 'System admin',
                 'icon': 'fa-fw fa fa-cog',
                 'menus': (
