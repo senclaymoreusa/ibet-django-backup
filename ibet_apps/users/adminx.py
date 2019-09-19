@@ -92,6 +92,22 @@ class GlobalSettings(object):
                     },
                 )
             },
+            {
+                'title': 'Messaging',
+                'icon': 'far fa-envelope',
+                'menus': (
+                    {
+                        'title': 'Messages',
+                        'url': '/xadmin/operation/notification/',
+                        'icon': 'far fa-envelope'
+                    },
+                    {
+                        'title': 'Groups',
+                        'url': '/xadmin/operation/messagegroups/',
+                        'icon': 'fas fa-user-friends'
+                    },
+                )
+            },
         ]
                     
 from django.contrib import admin

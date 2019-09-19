@@ -41,7 +41,7 @@ class Notification(models.Model):
     audit_date = models.DateTimeField('Audit Date', null=True)
     campaign = models.CharField(max_length=100, blank=True, null=True)
     bonus = models.ForeignKey(Bonus, blank=True, null=True, on_delete=models.CASCADE)
-    is_direct_message = models.BooleanField(default=False)
+    is_direct_message = models.BooleanField(default=True)
     is_email_message = models.BooleanField(default=False)
     is_sms_message = models.BooleanField(default=False)
     is_push_message = models.BooleanField(default=False)
@@ -69,3 +69,8 @@ class NotificationToUsers(models.Model):
     notifier_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_read = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
+
+
+class NotificationToGroup(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)

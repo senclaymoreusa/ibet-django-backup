@@ -224,9 +224,11 @@ AGENT_STATUS = (
 
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
+MESSAGE_GROUP = 2
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
+    (MESSAGE_GROUP, 'message'),
     (OTHER_GROUP, 'other')
 )
 

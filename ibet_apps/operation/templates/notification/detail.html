@@ -23,11 +23,9 @@
   </tr>
   <tr>
     <td>Sent to</td>
-    <td>{% if queryset.notifiers %}
-          {{ queryset.notifiers }}
-        {% elif queryset.topic %}
-          {{ queryset.topic }}
-        {% endif %}
+    <td>{% for notifier in notifiers %}
+      {{notifier.notifier_id}}
+      {% endfor %}
     </td>
   </tr>
 </table>
