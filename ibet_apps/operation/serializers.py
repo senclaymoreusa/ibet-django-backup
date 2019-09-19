@@ -4,6 +4,7 @@ from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
 from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
 from system.models import UserGroup
+from utils.constants import *
 
 logger = logging.getLogger("notification.create.error")
 
@@ -76,6 +77,12 @@ class NotificationToUsersSerializer(serializers.ModelSerializer):
 
 
 class MessageUserGroupSerializer(serializers.ModelSerializer):
+
+    def validate_name(self, value):
+        if UserGroup.objects.filter(name=value, groupType=MESSAGE_GROUP):
+            raise serializers.ValidationError("The group name already exist.")
+        return value
+
     class Meta:
         model = UserGroup
         fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals')
