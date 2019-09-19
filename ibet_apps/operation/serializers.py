@@ -81,7 +81,7 @@ class MessageUserGroupSerializer(serializers.ModelSerializer):
     def validate_name(self, value):
         if UserGroup.objects.filter(name=value, groupType=MESSAGE_GROUP):
             raise serializers.ValidationError("The group name already exist.")
-        return data
+        return value
 
     class Meta:
         model = UserGroup

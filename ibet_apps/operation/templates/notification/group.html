@@ -715,8 +715,10 @@ $(document).ready(function() {
             if (data.errorCode === 1) {
                 $('#errorMessage').text(data.error);
                 $('#errorMessage').css('color', 'red');
+            } else {
+                window.location.reload();
             }
-        //   window.location.reload();
+        //  
         }
     });
   });
