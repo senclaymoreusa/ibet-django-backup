@@ -568,13 +568,24 @@ class MessageUserGroupView(CommAdminView):
     def post(self, request, *arg, **kwargs):
         group_name = request.POST.get('group_name')
         pk_list = request.POST.getlist('pk[]')
+        product = request.POST.get("product")
+        active_from = request.POST.get("active_from")
+        active_to = request.GET.get('active_to')
+        register_from = request.GET.get('register_from')
+        register_to = request.GET.get('register_to')
 
         data = {
             "name": group_name,
             "groupType": MESSAGE_GROUP,
-            "creator": self.user.pk
+            "creator": self.user.pk,
+            "product": product,
+            "active_from": active_from,
+            "active_to": active_to,
+            "register_from": register_from,
+            "register_to": register_to
         }
 
+        print(data)
 
         serializer = MessageUserGroupSerializer(data=data)
         if serializer.is_valid():
