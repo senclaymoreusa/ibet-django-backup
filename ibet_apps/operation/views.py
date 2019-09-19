@@ -81,7 +81,7 @@ def send_message(notification_id):
         # return HttpResponseRedirect(reverse('xadmin:notification'))
     else:
         logger.error("Sending Email Notification error!")
-        return HttpResponse("Can not send Message!")
+        return HttpResponse("Can not send Email!")
 
 
 class NotifierTagsInput(View):
@@ -343,19 +343,19 @@ class NotificationView(CommAdminView):
         SMS_check = request.POST.get('SMS_check')
         push_check = request.POST.get('push_check')
 
-        '''
-        if direct_check != None:
+
+        if direct_check == "true":
             data["is_direct_message"] = True
 
-        if email_check != None:
+        if email_check == "true":
             data["is_email_message"] = True
 
-        if SMS_check != None:
+        if SMS_check == "true":
             data["is_sms_message"] = True
 
-        if push_check != None:
-            data["is_push_message"] = True
-        '''
+        # if push_check == "true":
+        #     data["is_push_message"] = True
+        
 
         notifiers = request.POST.get("member_list")
         groups = request.POST.get("group_list")
@@ -392,8 +392,8 @@ class NotificationView(CommAdminView):
 
             logger.info("Save notification log")
 
-            # if(notification.status == MESSAGE_APPROVED):
-            #     send_message(notification.pk)
+            if(notification.status == MESSAGE_APPROVED):
+                send_message(notification.pk)
 
             return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
