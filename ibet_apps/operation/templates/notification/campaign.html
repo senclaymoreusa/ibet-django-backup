@@ -1,0 +1,797 @@
+{% extends 'xadmin/base_site.html' %}
+{% block content-nav %}
+{% endblock %}
+{% block content %}
+
+<style>
+form {
+  padding: 0 16px 16px 16px;
+}
+
+p, label {
+  height: 13px;
+  font-family: Helvetica;
+  font-size: 11px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+thead {
+  height: 12px;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+td {
+  border: solid 4px #ffffff;
+}
+
+tbody>tr:nth-child(odd)>td, 
+tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+.modal-header {
+  border-radius: 4px;
+  border: solid 1px #bdbdbd;
+  background-color: #f5f5f5;
+}
+
+.modal-header .close {
+  margin-top: -16px;
+}
+
+.row {
+  margin: 0 0 0 0;
+}
+
+.form-group {
+  padding-top: 20px;
+  border-bottom: 0;
+}
+
+#details {
+  width: 95%;
+  background-color: #f3f3f3;
+  margin: 16px 16px 16px 16px;
+}
+
+#csv_file {
+  display: none;
+}
+
+#member-table {
+  width: 95%;
+  margin: 16px 12px 16px 12px;
+}
+
+#manually-table {
+  width: 95%;
+  margin: 16px 12px 16px 12px;
+}
+
+hr {
+    width:100%;
+}
+</style>
+
+{% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;">New group</button>
+
+<div style="margin-top:30px">
+    <table>
+        <thead class="thead-dark">
+            <tr>
+            <th style="width: 40%;">NAME</th>
+            <th style="width: 15%;">MEMBERS</th>
+            <th style="width: 15%;">TIMES USED</th>
+            <th style="width: 15%;">CREATOR</th>
+            <th style="width: 15%;">OPEN RATE</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for group in message_groups %}
+            <tr>
+            <td>{{ group.name }}</td>
+            <td>{{ group.members }}</td>
+            <td>{{ group.time_used }}</td>
+            <td>{{ group.creator }}</td>
+            <td>66.67%</td>
+            <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button">Edit</a></td>
+            <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
+            <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
+                <i class="fa fa-info"></i>
+            </button></td>-->
+            </tr>
+            <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
+        {% endfor %}
+        </tbody>
+    </table>
+              
+    <div class="row user-list-control-group">
+        <div class='col-md-9' style="margin-right: 70px"></div>
+        <div class='col-md-1' style="width:10%">
+            <div>SHOW ROWS</div>
+            <select id="pagination_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            </select>
+        </div>
+        <div class='col-md-1'>
+            <div>&nbsp;</div>
+            <ul class="pagination" style="margin:0px;">
+                {% if message_groups.has_previous  %}
+                    <li class="page-item " id='previousPage'>
+                    <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled" id='previousPage'>
+                    <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% endif %}
+                {% if message_groups.has_next %}
+                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% else %}
+                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-lg" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" style="width:48%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">New group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div style="padding:5px; margin-top:10px;">
+        <ul class="nav nav-tabs">
+            <li id="member-group"><a data-toggle="tab" class="tab-label active" href="#membergroup">MEMBER GROUP</a></li>
+            <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AFFILATE GROUP</a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="membergroup" class="tab-pane active">
+                <form id="newgroup">
+                {% csrf_token %}
+                    <div class="form-group">
+                    <label for="group_name">NAME</label>
+                    <input type="text" class="form-control" name="group_name" placeholder="Give your group a descriptive name" required>
+                    </div>
+                    <div class="row" style="margin-top: 30px">
+                    <strong>FILTER TO DEFINE YOUR GROUP (LEAVE BLANK TO IGNORE FILTER)</strong>
+                    </div>
+                    <!-- <div class="form-group">
+                    <label for="product">PRODUCT</label>
+                    <br/> -->
+                    <!-- <div class="btn-group">
+                        <button type="button" id="product" name="product" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        Select...
+                        <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li class="product-item"><a href="#">Sports</a></li>
+                            <li class="product-item"><a href="#">Live Casino</a></li>
+                            <li class="product-item"><a href="#">Games</a></li>
+                            <li class="product-item"><a href="#">Lotto</a></li>
+                        </ul>
+                    </div> -->
+                    <div class="form-group" style="width:30%;">
+                        <label for="product">PRODUCT</label>
+                        <select class="form-control" id="product" name="product">
+                            <option selected value="">Select...</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Live Casino">Live Casino</option>
+                            <option value="Games">Games</option>
+                            <option value="Lotto">Lotto</option>
+                        </select>
+                    </div>
+                    <!-- </div> -->
+                    <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-5" id="daystotal" style="padding-left: 0">
+                        <label style="margin-left:36px">LAST ACTIVE DATE</label>
+                        <div class="input-group">
+                            <span class="input-group-addon" style="background-color:transparent; border: 0; padding-left:0px; padding-right:10px;"><input type="radio" id="total" name="days" value="total" checked></span>
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">≤</span>
+                            <input type="number" id="days" class="form-control" min="1">
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">Days ago</span>
+                        </div>
+                        </div>
+                        <div class="col-md-7" id="daysrange" style="padding-left: 0">
+                        <label style="margin-left:36px">LAST ACTIVE DATE</label>
+                        <div class="input-group">
+                            <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" id="range" name="days" id="range"></span>
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
+                            <input type="text" id="from_date" class="form-control" placeholder="Pick a date..." disabled>
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
+                            <input type="text" id="to_date" class="form-control" placeholder="Pick a date..." disabled>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-8" style="padding-left: 0">
+                        <label>REGISTRATION DATE</label>
+                        <div class="input-group">
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
+                            <input type="text" id="reg-from" class="form-control" placeholder="Pick a date...">
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
+                            <input type="text" id="reg-to" class="form-control" placeholder="Pick a date...">
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="form-group">
+                    <input class="form-check-input" type="checkbox" id="onlyactive" checked disabled>
+                    <label class="form-check-label" for="gridCheck">
+                        Only active members (you can override this filter by adding members manually)
+                    </label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="onlydeposited">
+                    <label class="form-check-label" for="gridCheck">
+                        Only members who has deposited
+                    </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="vip">VIP LEVEL</label>
+                        <div class="dropdown" >
+                            <button id="vipbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" style="width:30%; text-align: left;">
+                            <span>Select...</span>
+                            <span class="caret" style="float: right; margin-top:8px;"></span>
+                            </button>
+                            <ul id="vip" class="dropdown-menu" style="width:30%;">
+                            <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
+                            <li><a href="#" class="small" data-value="Normal" tabIndex="-1"><input type="checkbox"/>&nbsp;Normal</a></li>
+                            <li><a href="#" class="small" data-value="VIP1" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP1</a></li>
+                            <li><a href="#" class="small" data-value="VIP2" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP2</a></li>
+                            <li><a href="#" class="small" data-value="VIP3" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP3</a></li>
+                            <li><a href="#" class="small" data-value="VIP4" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP4</a></li>
+                            <li><a href="#" class="small" data-value="VIP5" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP5</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    <label for="risk">RISK LEVEL</label>
+                    <div class="dropdown">
+                        <button id="riskbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"  style="width:30%; text-align: left;">
+                        Select...
+                        <span class="caret" style="float: right; margin-top:8px;"></span>
+                        </button>
+                        <ul id="risk" class="dropdown-menu">
+                        <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
+                        <li><a href="#" class="small" data-value="E1" tabIndex="-1"><input type="checkbox"/>&nbsp;E1</a></li>
+                        <li><a href="#" class="small" data-value="E2" tabIndex="-1"><input type="checkbox"/>&nbsp;E2</a></li>
+                        <li><a href="#" class="small" data-value="W" tabIndex="-1"><input type="checkbox"/>&nbsp;W</a></li>
+                        <li><a href="#" class="small" data-value="F" tabIndex="-1"><input type="checkbox"/>&nbsp;F</a></li>
+                        </ul>
+                    </div>
+                    </div>
+                    <hr/>
+                    <div class="form-group" style="padding-top: 0">
+                    <p style="font-size: 14px"><strong>ADD MEMBERS MANUALLY</strong></p>
+                    <p>Manually added members will stay in the groups regardless of filter settings.</p>
+                    <p>You have added 0 members manually.</p>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manually">Add members</button>
+                    </div>
+                    <hr/>
+                    <div class="form-group" style="padding-top: 0">
+                    <label>Members in group</label>
+                    <div class="row" style="background-color:#f3f3f3; height:30px;">
+                        <span><a href="#" id="member_count" data-toggle="modal" data-target="#member-list">&nbsp;{{ users_count }}</a></span>
+                    </div>
+                    </div>
+                    <div id="errorMessage"></div>
+                    <div style="margin-top:30px;">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        <div id="automated-message" class="tab-pane fade">
+            abc
+        </div>
+        </div>
+
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">View group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <label>GROUP DETAILS</label>
+      <table id="details">
+        <tbody>
+          <tr>
+            <td>TBD</td>
+            <td>TBD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="member-list" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Members list</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <table id="member-table">
+        <thead class="thead-dark">
+          <tr>
+            <th style="width: 6%;">#</th>
+            <th style="width: 34%;">MEMBER ID</th>
+            <th style="width: 60%;">USERNAME</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>TBD</td>
+            <td>TBD</td>
+            <td>TBD</td>
+          </tr>
+        </tbody>
+      </table>
+      <!--<div class="row">
+        <div class='col-md-4'>
+          <div>SHOW ROWS</div>
+          <select id="page_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
+        <div class='col-md-4'>
+          <span>1 -20 of 9</span>
+        </div>
+        <div class='col-md-4'>
+          <div>&nbsp;</div>
+            <ul class="pagination" style="margin:0px;">
+                {% if notifications.has_previous  %}
+                    <li class="page-item " id='previousPage'>
+                      <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled" id='previousPage'>
+                      <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% endif %}
+                {% if notifications.has_next %}
+                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% else %}
+                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% endif %}
+            </ul>
+          </div>
+        </div>-->
+    </div>
+  </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="manually" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add manually to group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="row" style="margin-top: 31px; margin-left: 16px">
+        <div class='col-md-9' style="padding-left: 0">
+          <div class="input-group">
+            <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword...">
+            <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+          </div>
+        </div>
+        <div class='col-md-3' style="padding-left: 0">
+          <button class="btn btn-primary" id="csv_btn">Upload CSV</button>
+          <input type="file" id="csv_file">
+        </div>
+      </div>
+      <button id="add-btn" class="btn btn-primary" style="margin-top: 20px; margin-left: 16px" disabled>Add member to group</button>
+      <table id="manually-table">
+        <thead class="thead-dark" hidden>
+          <tr>
+            <th style="width: 10%;">ALL<input type="checkbox"></th>
+            <th style="width: 30%;">MEMBER ID</th>
+            <th style="width: 60%;">USERNAME</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <div class="row" style="margin-top: 31px">
+        <div class='col-md-4'>
+          <button id="remove-btn" class="btn btn-primary" style="display: none">Remove selected</button>
+        </div>
+      </div>
+      <div class="row" style="margin: 31px 0 16px 16px">
+          <button id="save-btn" type="button" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+var pk_list;
+var user_list;
+
+$(document).ready(function() {
+  var previousURL = document.referrer;
+
+  $('#create_group').on('show.bs.modal', function (e) {
+    $("#member-group").addClass('active');
+    })
+//   if($("#create_group").data('modal') && $("#create_group").data('modal').isShown ) {
+//       console.log("!!!!!");
+//     $("#member-group").addClass('active');
+//   }
+//   if (!$('#create_group').attr('aria-hidden')) {
+//     $("#member-group").addClass('active');
+//   }
+
+  if ($("#automated-messages").hasClass('active')) {
+    $("#member-group").removeClass('active');
+  }
+
+  // parse url
+  paramsMap = {
+      'pageSize': 20,
+      'offset': 1,
+  };
+
+  var parsedUrl = new URL(window.location.href);
+
+  if (parsedUrl.searchParams.get("pageSize") !== null) {
+    paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
+  }
+  if (parsedUrl.searchParams.get("offset") !== null) {
+    paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
+  }
+
+  $('#pagination_value').val(paramsMap['pageSize']);
+
+  $('#pagination_value').change(function() {
+    var pageSize = this.value;
+    var offset = paramsMap['offset'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1);
+  });
+
+  var userFilter = {
+    'product': null,
+    'active': null,
+    'active_from': null,
+    'active_to': null,
+    'register_from': null,
+    'register_to': null,
+    'deposit': false,
+    'pageSize': null,
+    'offset': null,
+  }
+
+  groupFilter();
+
+//   $('.product-item').click(function() {
+//     $("#product").html($(this).text() + '<span class="caret"></span>');
+//     $("#product").val($(this).text());
+//     userFilter['product'] = $('#product').val();
+//     groupFilter();
+//   });
+
+  $('#product').on('change', function() {
+        var product = $('#product').val();
+        userFilter['product'] = product
+        groupFilter();
+    });
+
+  $('#from_date').datepicker({
+    autoclose: true, 
+    todayHighlight: true,
+    endDate: new Date(),
+  }).on('change', function(ev){
+    userFilter['active_from'] = $(this).val();
+    groupFilter();
+  });
+
+  $('#to_date').datepicker({
+    autoclose: true, 
+    todayHighlight: true,
+    endDate: new Date(),
+  }).on('change', function(ev){
+    userFilter['active_to'] = $(this).val();
+    groupFilter();
+  });
+
+  $('#total').change(function() {
+    $('#days').prop('disabled', false);
+    $('#from_date').prop('disabled', true);
+    $('#to_date').prop('disabled', true);
+  });
+
+  $('#range').change(function() {
+    $('#days').prop('disabled', true);
+    $('#from_date').prop('disabled', false);
+    $('#to_date').prop('disabled', false);
+  });
+
+  $('#reg-from').datepicker({
+    autoclose: true, 
+    todayHighlight: true,
+    endDate: new Date(),
+  }).on('change', function(ev){
+    userFilter['register_from'] = $(this).val();
+    groupFilter();
+  });
+
+  $('#reg-to').datepicker({
+    autoclose: true, 
+    todayHighlight: true,
+    endDate: new Date(),
+  }).on('change', function(ev){
+    userFilter['register_to'] = $(this).val();
+    groupFilter();
+  });
+
+  {% comment %} $('input:radio[name="days"]').change(function() {
+    if ($(this).is(':checked') && $(this).val() == 'total') {
+      $('#daysrange').prop("disabled", true);
+    }
+  }); {% endcomment %}
+
+  $('#days').focusout(function() {
+    userFilter['active'] = $(this).val();
+    groupFilter();
+  })
+
+  var vipOptions = [];
+
+  $('#vip.dropdown-menu a').on('click', function(event) {
+    var $target = $(event.currentTarget),
+        val = $target.attr('data-value'),
+        $inp = $target.find('input'),
+        idx;
+
+    if(val == "ALL") {
+      if($inp.prop('checked')) {
+        $('#vip li input[type=checkbox]').each(function() {
+          if(this.checked == false) {
+            vipOptions.push($(this).parent().attr('data-value'));
+          }
+          this.checked = $inp.prop('checked');
+        });
+      } else {
+        $('#vip li input[type=checkbox]').each(function() {
+          this.checked = $inp.prop('checked');
+          vipOptions.pop();
+        });
+      }
+    } else {
+      if((idx = vipOptions.indexOf(val)) > -1) {
+        vipOptions.splice(idx, 1);
+        $('#vip li:first input[type=checkbox]').prop('checked', false);
+        setTimeout(function() { $inp.prop('checked', false)}, 0);
+      } else {
+        vipOptions.push(val);
+        setTimeout(function() { $inp.prop('checked', true)}, 0);
+      }
+    }
+    
+    
+    $(event.target).blur();
+
+    $("#vipbtn").html(vipOptions.length + " Selected " + '<span class="caret"></span>');
+    
+    groupFilter();
+  });
+
+  var riskOptions = [];
+
+  $('#risk.dropdown-menu a').on('click', function(event) {
+    var $target = $(event.currentTarget),
+        val = $target.attr('data-value'),
+        $inp = $target.find('input'),
+        idx;
+
+    if(val == "ALL") {
+      if($inp.prop('checked')) {
+        $('#risk li input[type=checkbox]').each(function() {
+          if(this.checked == false) {
+            riskOptions.push($(this).parent().attr('data-value'));
+          }
+          this.checked = $inp.prop('checked');
+        });
+      } else {
+        $('#risk li input[type=checkbox]').each(function() {
+          this.checked = $inp.prop('checked');
+          riskOptions.pop();
+        });
+      }
+    } else {
+      if((idx = riskOptions.indexOf(val)) > -1) {
+        riskOptions.splice(idx, 1);
+        $('#risk li:first input[type=checkbox]').prop('checked', false);
+        setTimeout(function() { $inp.prop('checked', false)}, 0);
+      } else {
+        riskOptions.push(val);
+        setTimeout(function() { $inp.prop('checked', true)}, 0);
+      }
+    }
+    
+    $(event.target).blur();
+
+    $("#riskbtn").html(riskOptions.length + " Selected " + '<span class="caret"></span>');
+
+    groupFilter();
+  });
+
+  $('#csv_file').change(function(e) {
+    $("#manually-table tbody").empty();
+    var data = null;
+    var file = e.target.files[0];
+
+    var reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function (event) {
+        var csvData = event.target.result;
+
+        var parsedCSV = d3.csv.parseRows(csvData);
+
+        if(parsedCSV.length > 0) {
+          $("#manually-table thead").prop("hidden", false);
+          $("#add-btn").prop("disabled", false);
+          $("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
+          $("#remove-btn").css("display", "block");
+        }
+
+        parsedCSV.forEach(function (d, i) {
+            if (i == 0) return true; // skip the header
+            $("#manually-table").find('tbody')
+              .append($('<tr>')
+                .append($('<td><input class="member-checkbox" type="checkbox"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
+              )
+        });
+    }
+  });
+
+  $('td input[type=checkbox]').click(function() {
+    alert(1);
+  });
+
+  $('#csv_btn').click(function() {
+    $('#csv_file').click();
+  });
+
+  $('#newgroup').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var group_name = form.find('input[name="group_name"]').val();
+
+    $.ajax({
+      type: "POST",
+      url: "{% url 'xadmin:messagegroups' %}",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        group_name: group_name,
+        pk: pk_list,
+      },
+      success: function(data)
+        {
+            if (data.errorCode === 1) {
+                $('#errorMessage').text(data.error);
+                $('#errorMessage').css('color', 'red');
+            } else {
+                window.location.reload();
+            }
+        //  
+        }
+    });
+  });
+
+  function groupFilter() {
+    // console.log(vipOptions);
+    // console.log(riskOptions);
+    $.ajax({
+      type: 'GET',
+      url: "{% url 'group-filter' %}",
+      data: { 
+        'product': userFilter['product'],
+        'active': userFilter['active'],
+        'active_from': userFilter['active_from'],
+        'active_to': userFilter['active_to'],
+        'register_from': userFilter['register_from'],
+        'register_to': userFilter['register_to'],
+        'vip': vipOptions,
+        'risk': riskOptions
+      },
+      success: function(data) {
+        // console.log(data);
+        $('#member_count').html("&nbsp;" + data["user_count"]);
+        user_list = data["user"];
+        pk_list = data["pk_list"];
+        createTable(user_list);
+      }
+    });
+  }
+
+  function createTable(data) {
+    $('#member-table tbody').empty();
+    for(var i=0; i<data.length; i++) {
+      var row = '<tr><td style="width: 6%;">' + (i+1) + '</td><td style="width: 34%;">' + data[i]['pk'] + '</td><td style="width: 60%;">' + data[i]['username'] + '</td></tr>'
+      $('#member-table tbody').append(row);
+    }
+  }
+
+  getNext = function() {
+    if ($('#nextPage').hasClass('disabled')) {
+        return;
+    }
+    var pageSize = paramsMap['pageSize'];
+    var oldFromItem = paramsMap['offset'];
+    var newFromItem = Number(oldFromItem) + 1;
+    
+    window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+  }
+
+  getPrevious = function () {
+      if ($('#previousPage').hasClass('disabled')) {
+          return;
+      }
+      var pageSize = paramsMap['pageSize'];
+      var oldFromItem = paramsMap['offset'];
+      var newFromItem = Number(oldFromItem) - 1;
+      
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+  }
+});
+
+function getUserListRedirectUrl(pageSize, offset) {
+  var curUrl = window.location.href;
+  var parts = curUrl.split('?');
+
+  var redirectUrl = parts[0]; 
+      //redirectUrl += '?search=' + search;
+      redirectUrl += "?pageSize=" + pageSize;
+      redirectUrl += '&offset=' + offset;
+
+  return redirectUrl;
+}
+
+</script>
+{% endblock %}
