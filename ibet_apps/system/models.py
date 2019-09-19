@@ -20,6 +20,13 @@ class UserGroup(models.Model):
     )
     time_used = models.IntegerField(default=0)
     approvals = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+
+    product = models.IntegerField(blank=True, null=True)
+    active_from = models.DateField('Active From', blank=True, null=True)
+    active_to = models.DateField('Register From', blank=True, null=True)
+    register_from = models.DateField('Register From', blank=True, null=True)
+    register_to = models.DateField('Register From', blank=True, null=True)
+
     
 # many to many relation for permission and user group
 class PermissionGroup(models.Model):
