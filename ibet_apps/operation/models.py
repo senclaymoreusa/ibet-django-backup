@@ -74,3 +74,10 @@ class NotificationToUsers(models.Model):
 class NotificationToGroup(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+
+
+class Campaign(models.Model):
+    name =  models.CharField(max_length=200, default='')
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+    create_on = models.DateTimeField('Create Time', auto_now_add=True, blank=False)
+    creator = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE)

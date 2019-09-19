@@ -19,8 +19,8 @@ import logging
 import pytz
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
-from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer
-from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic
+from operation.serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer, CampaignSerializer
+from operation.models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic, Campaign
 from users.models import CustomUser
 from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
@@ -590,6 +590,43 @@ class MessageUserGroupView(CommAdminView):
             logger.error(serializer.errors['name'][0])
             return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
 
+class CampaignView(CommAdminView):
+    def get(self, request, *arg, **kwargs):
+        pageSize = request.GET.get('pageSize')
+        offset = request.GET.get('offset')
+
+        if pageSize is None:
+            pageSize = 20
+        else: 
+            pageSize = int(pageSize)
+
+        if offset is None or int(offset) < 1:
+            offset = 1
+        else:
+            offset = int(offset)
+
+        context = super().get_context()
+        title = 'message'
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context["title"] = title
+        context['time'] = timezone.now()
+        
+        campaigns = Campaign.objects.all()
+        campaign_data = []
+        for campaign in campaigns:
+            campaign_item = {}
+            campaign_item['pk'] = campaign.pk
+            campaign_item['name'] = campaign.name
+            campaign_item['creator'] = campaign.creator
+            campaign_data.append(campaign_item)
+
+        paginator = Paginator(campaign_data, pageSize)
+        context['campaign'] = paginator.get_page(offset)
+
+        logger.info("GET CampaignView")
+
+        return render(request, 'notification/campaign.html', context)
+
 
 class AWSTopicView(CommAdminView):
     def get(self, request, *arg, **kwargs):
@@ -638,6 +675,7 @@ class AWSTopicView(CommAdminView):
         else:
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
+
 
 # Operation Apps API Views
 class NotificationAPIView(GenericAPIView):

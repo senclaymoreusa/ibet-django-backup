@@ -2,7 +2,7 @@ import logging
 
 from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
-from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
+from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic, Campaign
 from system.models import UserGroup
 from utils.constants import *
 
@@ -87,3 +87,10 @@ class MessageUserGroupSerializer(serializers.ModelSerializer):
         model = UserGroup
         fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals')
         read_only_fields = ['pk', 'created_time', 'approvals']
+
+
+class CampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = ('pk', 'name', 'group', 'create_on', 'creator')
+        read_only_fields = ['pk', 'created_on']
