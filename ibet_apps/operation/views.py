@@ -365,7 +365,7 @@ class NotificationView(CommAdminView):
         total_num = len(notifiers)
 
         for group in groups:
-            group = UserGroup.objects.get(name=group)
+            group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
             total_num = total_num + UserToUserGroup.objects.filter(group=group).count()
 
         logger.info("message send to %s members", total_num)
@@ -496,52 +496,72 @@ class AuditNotificationView(CommAdminView):
 
 class MessageUserGroupView(CommAdminView):
     def get(self, request, *arg, **kwargs):
-        pageSize = request.GET.get('pageSize')
-        offset = request.GET.get('offset')
+        getType = request.GET.get('type')
+        if getType == "get_member_info":
+            groupName = request.GET.get('group_name')
+            # print(groupName)
 
-        if pageSize is None:
-            pageSize = 20
-        else: 
-            pageSize = int(pageSize)
+            group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+            allUsers = UserToUserGroup.objects.filter(group=group)
 
-        if offset is None or int(offset) < 1:
-            offset = 1
+            users = []
+            for i in allUsers:
+                data = {
+                    "id": i.user.pk,
+                    "username": i.user.username
+                }
+                users.append(data)
+
+            return HttpResponse(json.dumps(users), content_type='application/json')
+
         else:
-            offset = int(offset)
+            pageSize = request.GET.get('pageSize')
+            offset = request.GET.get('offset')
 
-        context = super().get_context()
-        title = 'message'
-        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
-        context["title"] = title
-        context['time'] = timezone.now()
-        
-        context['users_count'] = CustomUser.objects.all().count()
-        # queryset = CustomUser.objects.all()
-        # user_list = []
-        # for user in user_list:
-        #     item = {}
-        #     item["pk"] = user.pk
-        #     item["username"] = user.username
-        #     user_list.push(item)
+            if pageSize is None:
+                pageSize = 20
+            else: 
+                pageSize = int(pageSize)
 
-        # context['user_list'] = user_list
-        groups = UserGroup.objects.all()
-        message_groups = []
-        for group in groups:
-            group_item = {}
-            group_item['pk'] = group.pk
-            group_item['name'] = group.name
-            group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
-            group_item['time_used'] = group.time_used
-            group_item['creator'] = group.creator
-            message_groups.append(group_item)
+            if offset is None or int(offset) < 1:
+                offset = 1
+            else:
+                offset = int(offset)
 
-        paginator = Paginator(message_groups, pageSize)
-        context['message_groups'] = paginator.get_page(offset)
+            context = super().get_context()
+            title = 'message'
+            context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+            context["title"] = title
+            context['time'] = timezone.now()
+            context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
+            
+            context['users_count'] = CustomUser.objects.all().count()
+            # queryset = CustomUser.objects.all()
+            # user_list = []
+            # for user in user_list:
+            #     item = {}
+            #     item["pk"] = user.pk
+            #     item["username"] = user.username
+            #     user_list.push(item)
 
-        logger.info("GET MessageUserGroupView")
+            # context['user_list'] = user_list
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
+            message_groups = []
+            for group in groups:
+                group_item = {}
+                group_item['pk'] = group.pk
+                group_item['name'] = group.name
+                group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
+                group_item['time_used'] = group.time_used
+                group_item['creator'] = group.creator
+                message_groups.append(group_item)
 
-        return render(request, 'notification/group.html', context)
+            paginator = Paginator(message_groups, pageSize)
+            context['message_groups'] = paginator.get_page(offset)
+
+            logger.info("GET MessageUserGroupView")
+
+            return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
         group_name = request.POST.get('group_name')

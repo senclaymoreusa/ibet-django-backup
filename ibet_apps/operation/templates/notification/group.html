@@ -104,9 +104,9 @@ hr {
         {% for group in message_groups %}
             <tr>
             <td>{{ group.name }}</td>
-            <td>{{ group.members }}</td>
+            <td><a onclick="return getMemberInfo('{{ group.name }}')">{{ group.members }}</a></td>
             <td>{{ group.time_used }}</td>
-            <td>{{ group.creator }}</td>
+            <td><a onclick="return getCreator('{{ group.creator }}')">{{ group.creator }}</a></td>
             <td>66.67%</td>
             <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button">Edit</a></td>
             <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
@@ -151,6 +151,21 @@ hr {
         </div>
     </div>
 </div>
+
+<!-- <div class="modal fade" id="getMemberInfo" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Member list</h4>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+        </div>
+        
+    </div>
+</div> -->
 <div class="modal fade bd-example-modal-lg" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" style="width:48%;">
     <div class="modal-content">
@@ -398,6 +413,114 @@ hr {
         </div>-->
     </div>
   </div>
+</div>
+
+
+<div class="modal fade bd-example-modal-lg" id="user-group-name" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Members list</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <table id="member-table">
+            <thead class="thead-dark">
+            <tr>
+                <th style="width: 6%;">#</th>
+                <th style="width: 34%;">MEMBER ID</th>
+                <th style="width: 60%;">USERNAME</th>
+            </tr>
+            </thead>
+            <tbody id="member-list-table">
+            <tr>
+                <td>TBD</td>
+                <td>TBD</td>
+                <td>TBD</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewUser" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">User Profile</h4>
+            </div>
+            <div class="modal-body" style="height: 545px;">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="{{ imagePath }}happyface.png" alt="happyface" style="width: 100%;height: 100%;">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="name-title" id="viewName">Martin Sandstrom</div>
+                        <div class="name-username" id="viewUsername">msandstrom</div>
+                    </div>
+                </div>
+                <div style="background-color: #f5f5f5; height: 98px; margin-top: 20px">
+                    <div class="row" style="padding: 20px 15px;">
+                        <div class="col-md-2">Email: </div>
+                        <div class="view-text col-md-10" id="viewEmail">ibet@gmail.com</div>
+                    </div>
+                    <div class="row" style="padding: 0px 15px;">
+                        <div class="col-md-2">Phone: </div>
+                        <div class="view-text col-md-10" id="viewPhone">3332929292</div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        MARKET
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        ibet
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewIbetMarket">
+                        <!-- <div>FE</div> -->
+                        <div class="inline icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                        <div class="inline sec-icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        Letou
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewLetouMarket">
+                        FO
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        ROLE
+                    </div>
+                    <div class="col-md-9 profile-info" id="viewRole">
+                        ROLE
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        DEPARTMENT
+                    </div>
+                    <div class="col-md-9 profile-info"  id="viewDepartment">
+                        DEPARTMENT
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+            </div>
+        </div>
+        
+    </div>
 </div>
 
 <div class="modal fade bd-example-modal-lg" id="manually" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -790,6 +913,93 @@ function getUserListRedirectUrl(pageSize, offset) {
       redirectUrl += '&offset=' + offset;
 
   return redirectUrl;
+}
+
+function getMemberInfo(groupName) {
+    // console.log(groupName);
+    $('#user-group-name').modal({'show' : true});
+
+    $.ajax({
+        type: "GET",
+        url: "{% url 'xadmin:messagegroups' %}",
+        data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+            group_name: groupName,
+            type: "get_member_info"
+        },
+        success: function(data)
+        {   
+            // console.log(data);
+            $("#member-list-table").empty();
+            var content = ""
+            for (var i = 0; i < data.length; i++) {
+                content = content + "<tr>";
+                content = content + "<td>" + Number(i+1) + "</td>";
+                content = content + "<td>" + data[i].id + "</td>";
+                content = content + "<td>" + data[i].username + "</td>";
+                content = content + "</tr>";
+            }
+            $("#member-list-table").append(content);
+        }
+    });
+}
+
+function getCreator(username) {
+    $('#viewUser').modal({'show' : true});
+
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_admin_profile' %}",
+        data:{ 
+            'username': username,
+        },
+        success: function(response)
+        {   
+            // console.log(response);
+            var data = response.data;
+            if (response.code === 0) {
+                var username = data.username;
+                var firstName = data.first_name;
+                var lastName = data.last_name;
+                var email = data.email;
+                var phone = data.phone;
+                var role = data.roleName;
+                var department = data.department;
+                var ibetMarkets = data.ibetMarkets;
+                var letouMarkets = data.letouMarkets;
+                $('#viewEmail').text(email);
+                $('#viewPhone').text(phone);
+                $('#viewRole').text(role);
+                $('#viewDepartment').text(department);
+                if (!firstName && !lastName) {
+                    $('#viewName').text(username);
+                    $('#viewUsername').text('');
+                } else {
+                    $('#viewName').text(firstName + ' ' + lastName);
+                    $('#viewUsername').text(username);
+                }
+                
+                var content = '';
+                for (var i = 0; i < ibetMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + ibetMarkets[i].name + '.svg" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewIbetMarket').empty();
+                $('#viewIbetMarket').append(content);
+
+
+                var content = '';
+                for (var i = 0; i < letouMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + letouMarkets[i].name + '.svg" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewLetouMarket').empty();
+                $('#viewLetouMarket').append(content);
+            }
+        }
+    });
 }
 
 </script>
