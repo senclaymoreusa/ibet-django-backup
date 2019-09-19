@@ -415,9 +415,11 @@ class NotificationDetailView(CommAdminView):
         # context['topics'] = AWSTopic.objects.all()
         
         queryset = Notification.objects.get(pk=notification_id)
-
         serializer = NotificationSerializer(queryset, many=False)
         context["queryset"] = queryset
+
+        notifiers = NotificationToUsers.objects.filter(notification_id=queryset)
+        context["notifiers"] = notifiers
 
         try:
             logger.info("GET NotificationDetailView")
@@ -654,12 +656,11 @@ class NotificationAPIView(GenericAPIView):
             logger.info("Save notification log")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            logger.error("can not create notification message! " + serializer.errors)
+            logger.error("can not create notification message: ", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateNotificationAPIView(CreateAPIView):
-    lookup_field = 'pk'
     serializer_class = NotificationSerializer
     permission_classes = [AllowAny, ]
 
@@ -669,65 +670,21 @@ class CreateNotificationAPIView(CreateAPIView):
             "subject": request.POST.get('subject'),
             "content_text": request.POST.get('content_text'),
             "creator": request.POST.get('creator'),
-            "auditor": request.POST.get('auditor'),
-            "notification_method": request.POST.get("notification_method"),
-            "notifiers": request.POST.get("notifiers"),
-            "topic": request.POST.get("topic")
+            "is_direct_message": request.POST.get('is_direct_message'),
+            "is_email_message": request.POST.get('is_email_message'),
+            "is_sms_message":request.POST.get('is_sms_message'),
+            "is_push_message": request.POST.get('is_push_message')
         }
 
         serializer = NotificationSerializer(data=data)
-        notification_methods = data["notification_method"]
 
         if serializer.is_valid():
             notification = serializer.save()
             logger.info("Save notification message")
-            # store notification data in NotificationLog
-            log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, group_id = notification.topic)
-
-            log.save()
-            logger.info("Save notification log")
-
-            if notification_methods != None:
-                # connect AWS S3
-                third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-
-                # AWS SNS Client
-                sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
-                client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
-
-                # Push Notification
-                if NOTIFICATION_PUSH in notification_methods:
-                    platform_endpoint = sns.PlatformEndpoint(third_party_keys["SNS_PLATFORM_ENDPOINT_ARN"])
-                    
-                    platform_endpoint.publish(
-                        Message=notification.content_text,
-                    )
-                    logger.info("Enabled Push Notification")
-                
-                # SMS Notification
-                if NOTIFICATION_SMS in notification_methods:
-                    try:
-                        notifier = CustomUser.objects.get(pk=notification.notifiers.pk)
-                        phone = notifier.phone
-                        client.publish(PhoneNumber=phone, Message=notification.content_text)
-                        logger.info("Enabled SMS Notification")
-                    except Exception as e:
-                        logger.error("Unexpected error: %s" % e)
-                        return Response("INVAILD SNS CLIENT", status=status.HTTP_401_UNAUTHORIZED)
-
-                # Email Notification
-                if NOTIFICATION_EMAIL in notification_methods:
-                    # AWS SNS Topic
-                    topic = sns.Topic(third_party_keys["SNS_TOPIC_ARN"])
-                    topic.publish(
-                        Message=notification.content_text,
-                        Subject='iBet Notification',
-                    )
-                    logger.info("Enabled Email Notification")
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            logger.error("can not create notification message! " + serializer.errors)
+            logger.error("can not create notification message! ", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
