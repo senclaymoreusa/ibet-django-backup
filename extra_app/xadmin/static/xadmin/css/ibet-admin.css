@@ -59,18 +59,11 @@ hr {
 }
 
 
-.table_block {
-    background-color: rgb(243, 243, 243); 
-    margin-left:12px;
-    margin-bottom: 20px;
-    height: 80px;
-    padding-top: 20px;
-}
 .commission_detail {
     padding-left: 15px;
     padding-top: 20px;
 }
-.downline_status {
+.commission_status {
     padding-left: 15px;
     padding-top: 20px;
 }
@@ -96,8 +89,7 @@ hr {
     background-color: #f3f3f3;
     font-size: 13px;
     height: 24.9%;
-    padding-left: 12px;
-    padding-top: 10px;
+    padding: 12px;
 }
 
 

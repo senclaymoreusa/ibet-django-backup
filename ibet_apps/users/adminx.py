@@ -8,6 +8,7 @@ from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationFo
 # from .views import AgentView, AgentDetailView, OneclickRegister 
 from users.views.adminview import *
 from users.views.views import *
+from users.views.agentview import *
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -50,7 +51,7 @@ class GlobalSettings(object):
                 'menus': (
                     {
                         'title': 'Affiliate Overview',
-                        'url': '/xadmin/agent_view',
+                        'url': '/xadmin/agentview',
                         'icon': 'fa fa-cny'
                     },
                 )
@@ -282,6 +283,6 @@ xadmin.site.register(UserTag,TagAdmin)
 xadmin.site.register(UserWithTag,UserWithTagAdmin)
 xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
-xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
-xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentview/$', AgentView, name='agentview')
 xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')

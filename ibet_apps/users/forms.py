@@ -135,10 +135,3 @@ class IdImageForm(forms.ModelForm):
         model = CustomUser
         fields = ('id_image', )
 
-
-class EditAffiliateForm(forms.ModelForm):
-    level = forms.ChoiceField(choices=AFFILIATE_LEVEL, widget=forms.RadioSelect)
-    status = forms.ChoiceField(choices=AFFILIATE_STATUS, widget=forms.RadioSelect)
-    commission_set = forms.ChoiceField(choices=COMMISSION_SET, widget=forms.RadioSelect)
-
-

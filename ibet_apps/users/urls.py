@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from users.views.agentview import fsearch
 
 import users.views.gbsportsintegrationviews as gbsportsintegrationviews
 import users.views.agintegrationviews as agintegrationviews
@@ -18,6 +19,7 @@ urlpatterns += [
     path('games/', views.GameListView.as_view(), name='games'),
     path('all_search_list_view/', views.AllSearchListView.as_view(), name='all_search_list_view'),
     path('profile', views.profile, name='profile'),
+    path('fsearch', fsearch, name='fsearch'),
 ]
 
 urlpatterns += [

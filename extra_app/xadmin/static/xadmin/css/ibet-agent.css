@@ -1,3 +1,127 @@
+
+
+.overview-subtitle {
+    font-size: 11px;
+}
+
+table.dataTable {
+    border-spacing: 0;
+}
+
+.datatable table thead tr th {
+    font-family: Helvetica;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.table-block {
+    background-color: rgb(243, 243, 243); 
+    margin-right: 5px;
+    height: 84px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.affliates-count-font {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.affliates-count-ftd-title {
+    margin-left: 5px;
+}
+
+.active-ggr-title {
+    margin-left: -17px;
+}
+
+.affliates-acquired-title {
+    margin-left: 50px;
+    width: 20%;
+}
+
+.affliates-count-block {
+    margin-left:20px;
+    width:25%;
+}
+
+.ftd-active-block {
+    width:15%;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 42px; 
+}
+
+.ggr-acquired-block {
+    width:20%;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 42px; 
+}
+
+.first-row {
+    margin-bottom: 20px;
+}
+
+#audit-affiliate-application-btn, #audit-commission-btn {
+    height: 100%;
+    width: 100%;
+    background-color: #428bca;
+    color: #ffffff;
+}
+
+#audit_commission_pop {
+    width: 80%;
+}
+
+.commission-info {
+    margin: 20px;
+    background-color:rgb(243, 243, 243);
+    padding: 10px;
+}
+
+#commission-audit-button {
+    margin-left: 200px;
+    padding-bottom: 4px;   
+}
+
+#commission_detail {
+    margin-bottom: 50px;
+}
+
+
+/* Affiliate application pop up */
+
+#audit_affiliate_app_pop {
+    width: 50%;
+}
+
+.user-application-info {
+    margin: 10px;
+}
+
+#affiliate_application_remark {
+    width: 95%;
+    height: 80px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+
+
+
 .agent_detail {
     padding-left: 15px;
 }
@@ -71,14 +195,19 @@
     border-top-left-radius: 3px;
 }
 
-.table_block {
-    background-color: rgb(243, 243, 243); 
-    margin-left:12px;
-    margin-bottom: 20px;
-    height: 90px;
-    padding-top: 15px;
-    padding-bottom: 20px;
+.table-title {
+    font-family: Helvetica;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    width: 100%;
 }
+
+
 
 .block_style {
     background-color: rgb(243, 243, 243);
@@ -91,3 +220,4 @@
 
 ul.ui-autocomplete {
     z-index: 1100;
+}

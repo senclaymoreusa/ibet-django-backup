@@ -3,9 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from utils.constants import *
 
-# from users.models import CustomUser
+from utils.constants import *
 
 import uuid
 
@@ -177,20 +176,29 @@ class Transaction(models.Model):
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
+    # commission tracsaction
+    month = models.DateField(null=True, blank=False)
+    commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
+
     class Meta:
         verbose_name = "Transaction"
         verbose_name_plural = verbose_name
 
-    def __str__(self):
-        return "User ID: {0}, \n \
-            Transaction Type: {1}, \n \
-            Transaction Gateway: {2}, \n \
-            Transaction Method: {3}, \n \
-            Internal ID: {4}, \n \
-            External ID: {5}, \n \
-            Status: {6} \
-            ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
+    # def __str__(self):
+    #     return "User ID: {0}, \n \
+    #         Transaction Type: {1}, \n \
+    #         Transaction Gateway: {2}, \n \
+    #         Transaction Method: {3}, \n \
+    #         Internal ID: {4}, \n \
+    #         External ID: {5}, \n \
+    #         Status: {6} \
+    #         ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
 
+    @property
+    def Month(self):
+        if self.Date:
+            return self.Date.strftime("%B")
+        return "No date entry"
 
 class DepositAccessManagement(models.Model):
     user_id = models.ForeignKey(

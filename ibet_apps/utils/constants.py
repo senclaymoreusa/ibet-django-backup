@@ -136,6 +136,13 @@ DEPOSIT_METHOD_CHOICES = (
 
 TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAW = 1
+TRANSACTION_BET_PLACED = 2
+TRANSACTION_BET_SETTLED = 3
+TRANSACTION_TRANSFER_IN = 4
+TRANSACTION_TRANSFER_OUT = 5
+TRANSACTION_BONUS = 6
+TRANSACTION_ADJUSTMENT = 7
+TRANSACTION_COMMISSION = 8
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),
@@ -202,19 +209,24 @@ COUNTRY_CHOICES = (
     ('TH', 'Thailand'),
     ('JP', 'Japan'),
 )
-
+ACTIVITY_OPERATION = 0
+ACTIVITY_REMARK = 1
+ACTIVITY_CHAT = 2
+ACTIVITY_NOTE= 3
+ACTIVITY_AFFILIATE_APPLICATION= 4
 ACTIVITY_TYPE = (
     (0, 'Operation'),
     (1, 'Remark'),
     (2, 'Chat'),
     (3, 'Note'),
+    (4, 'Affiliate Application'),
 )
 
-AGENT_LEVEL = (
-    ('Premium', 'Premium'),
-    ('Invalid', 'Invalid'),
-    ('Normal', 'Normal'),
+AFFILIATE_STATUS = (
+    ('Active', 'Active'),
+    ('VIP', 'VIP'),
     ('Negative', 'Negative'),
+    ('Deactivated', 'Deactivated'),
 )
 
 AGENT_STATUS = (
@@ -1034,15 +1046,12 @@ COMMISSION_SET = (
     ('Personal', 'Personal'),
 )
 
-AFFILIATE_STATUS = (
-    ('Enabled', 'Enabled'),
-    ('Disabled', 'Disabled'),
-)
-
 AFFILIATE_LEVEL = (
     ('Normal', 'Normal'),
     ('VIP', 'VIP'),
 )
+
+MONTHLY_COMMISSION_SETTLE_DATE = "05"
 
 
 BONUS_QUEUE_NAME = "bonus_queue"

@@ -149,19 +149,19 @@ class CustomUser(AbstractBaseUser):
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     
     # agent
-    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, null=True)
-    commision_status = models.BooleanField(default=False)
-    user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
+    # affiliate = models.BooleanField(default=False)              #if a user is agent or not
+    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
-    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AFFILIATE_STATUS, default='Enabled')
+    user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
+    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
-    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, default='Enabled')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
     managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
 
     #commission
+    commision_status = models.BooleanField(default=False)               # for current month
     commission_id = models.ForeignKey(Commission, on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
