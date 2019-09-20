@@ -62,6 +62,8 @@ tbody>tr:nth-child(odd)>th {
 
 .block {
     height: 33px;
+    margin: 1px;
+    width: 33%;
     background-color: #f3f3f3;
 }
 </style>
@@ -263,7 +265,7 @@ tbody>tr:nth-child(odd)>th {
 
 
 <div class="modal fade bd-example-modal-lg" id="view_campaign_info" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" style="width:48%;">
+    <div class="modal-dialog modal-lg" style="width:50%;">
         <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title">View campaign</h3>
@@ -272,7 +274,6 @@ tbody>tr:nth-child(odd)>th {
             </button>
         </div>
         <div style="padding:5px; margin-top:10px;">
-            <input hidden id="hidden_tags" value="[]">
             <div id="viewCampaign" class="tab-pane active">
                 <div class="row" style="margin-top:10px">
                     <div class="col-md-3">Name</div>
@@ -290,10 +291,49 @@ tbody>tr:nth-child(odd)>th {
                     <div class="col-md-3">Groups</div>
                     <div class="col-md-9">Name</div>
                 </div>
-                <div class="row" style="margin-top:20px">
-                    <div class="col-md-4 block">MESSAGES SENT</div>
-                    <div class="col-md-4 block">MESSAGES OPEND</div>
-                    <div class="col-md-4 block">OPEN RATE</div>
+                <div style="margin: 0px 10px;">
+                    <div class="row" style="margin-top:20px;">
+                        <div class="col-md-4" style="padding-left:0px;">MESSAGES SENT</div>
+                        <div class="col-md-4" style="padding-left:0px;">MESSAGES OPEND</div>
+                        <div class="col-md-4" style="padding-left:0px;">OPEN RATE</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 block"></div>
+                        <div class="col-md-4 block"></div>
+                        <div class="col-md-4 block"></div>
+                    </div>
+                </div>
+                <hr style="width:98%; background-color: black; height: 1px; border: 0;">
+                <div style="margin: 0px 10px;">
+                    MESSAGES
+                </div>
+                <div style="margin: 10px;">
+                    <table>
+                        <thead class="thead-dark">
+                            <tr>
+                            <th style="width: 25%;">SUBJECT</th>
+                            <th style="width: 15%;">BONUS</th>
+                            <th style="width: 15%;">SENT</th>
+                            <th style="width: 5%;">AUTHOR</th>
+                            <th style="width: 15%;">SENT</th>
+                            <th style="width: 13%;">OPEN</th>
+                            <th style="width: 12%;">OPEN RATE</th>
+                            </tr>
+                        </thead>
+                        <tbody id='user_list_tbody'>
+                            <tr>
+                                <td>{{ notification.subject }}</td>
+                                <td>{{ notification.campaign }}</td>
+                                <td>{{ notification.topic }}</td>
+                                <td>{{ notification.bonus }}</td>
+                                <td>{{ notification.publish_on }}</td>
+                                <td>{{ notification.creator }}</td>
+                                <td>{{ notification.status }}</td>
+                                <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
+                                <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#view_campaign_info"><span class="glyphicon glyphicon-search"></span></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
