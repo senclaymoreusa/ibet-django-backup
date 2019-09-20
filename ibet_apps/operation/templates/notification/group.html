@@ -60,6 +60,10 @@ tbody>tr:nth-child(odd)>th {
   border-bottom: 0;
 }
 
+.btn-danger {
+  display: none;
+}
+
 #details {
   width: 95%;
   background-color: #f3f3f3;
@@ -182,7 +186,7 @@ hr {
         </ul>
         <div class="tab-content">
             <div id="membergroup" class="tab-pane active">
-                <form id="newgroup">
+                <form id="newgroup" action="{% url 'xadmin:messagegroups' %}">
                 {% csrf_token %}
                     <div class="form-group">
                     <label for="group_name">NAME</label>
@@ -316,6 +320,7 @@ hr {
                     <div id="errorMessage"></div>
                     <div style="margin-top:30px;">
                         <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
                         <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -826,6 +831,8 @@ $(document).ready(function() {
     var group_name = form.find('input[name="group_name"]').val();
     var is_range = $('#range').prop("checked");
     var is_deposit = $('#onlydeposited').prop("checked");
+
+    url = form.attr('action');
     /*
     var product = $('#product').val();
     var active_from = $('#from_date').val();
@@ -834,12 +841,12 @@ $(document).ready(function() {
     var register_to = $('#reg-to').val();
     */
 
-    console.log(userFilter['register_from'])
-    console.log(userFilter['register_to'])
+    // console.log(userFilter['register_from'])
+    // console.log(userFilter['register_to'])
 
     $.ajax({
       type: "POST",
-      url: "{% url 'xadmin:messagegroups' %}",
+      url: url,
       data: {
         'csrfmiddlewaretoken': "{{ csrf_token }}",
         'group_name': group_name,
@@ -935,7 +942,6 @@ function createTable(data) {
 }
 
 function getMemberInfo(groupName) {
-    // console.log(groupName);
     $('#user-group-name').modal({'show' : true});
 
     $.ajax({
@@ -948,7 +954,6 @@ function getMemberInfo(groupName) {
         },
         success: function(data)
         {   
-            // console.log(data);
             $("#member-list-table").empty();
             var content = ""
             for (var i = 0; i < data.length; i++) {
@@ -974,7 +979,6 @@ function getCreator(username) {
         },
         success: function(response)
         {   
-            // console.log(response);
             var data = response.data;
             if (response.code === 0) {
                 var username = data.username;
@@ -1031,9 +1035,7 @@ function getGroup(groupId) {
       },
       success: function(data)
       {   
-          console.log(data);
           var fields = JSON.parse(data["group"])[0]["fields"];
-          console.log(fields);
           user_list = data["user_list"];
           $("#newgroup").trigger("reset");
 
@@ -1050,6 +1052,8 @@ function getGroup(groupId) {
           $('#member_count').html("&nbsp;" + user_list.length);
           
           createTable(user_list);
+          // $('.btn-danger').css("display", "inline: block");
+          $("#newgroup").attr('action', '{% url {} %}');
       }
   });
 }

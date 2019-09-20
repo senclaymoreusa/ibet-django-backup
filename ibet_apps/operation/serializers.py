@@ -93,5 +93,5 @@ class MessageUserGroupSerializer(serializers.ModelSerializer):
 class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
-        fields = ('pk', 'name', 'group', 'create_on', 'creator')
+        fields = ('pk', 'name', 'create_on', 'creator')
         read_only_fields = ['pk', 'created_on']
