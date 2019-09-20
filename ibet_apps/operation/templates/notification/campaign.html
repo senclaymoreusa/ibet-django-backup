@@ -60,56 +60,43 @@ tbody>tr:nth-child(odd)>th {
   border-bottom: 0;
 }
 
-#details {
-  width: 95%;
-  background-color: #f3f3f3;
-  margin: 16px 16px 16px 16px;
-}
-
-#csv_file {
-  display: none;
-}
-
-#member-table {
-  width: 95%;
-  margin: 16px 12px 16px 12px;
-}
-
-#manually-table {
-  width: 95%;
-  margin: 16px 12px 16px 12px;
-}
-
-hr {
-    width:100%;
+.block {
+    height: 33px;
+    background-color: #f3f3f3;
 }
 </style>
 
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;">New group</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_campaign" style="width:10%;" onclick="createNewCampaign()">New campaign</button>
 
 <div style="margin-top:30px">
     <table>
         <thead class="thead-dark">
             <tr>
-            <th style="width: 40%;">NAME</th>
-            <th style="width: 15%;">MEMBERS</th>
-            <th style="width: 15%;">TIMES USED</th>
+            <th style="width: 15%;">NAME</th>
+            <th style="width: 15%;">GROUPS</th>
+            <th style="width: 15%;">MESSAGES</th>
+            <th style="width: 15%;">CREATED</th>
             <th style="width: 15%;">CREATOR</th>
+            <th style="width: 15%;">SEND</th>
+            <th style="width: 15%;">OPEN</th>
             <th style="width: 15%;">OPEN RATE</th>
             </tr>
         </thead>
         <tbody>
-        {% for group in message_groups %}
+        {% for campaign in campaigns %}
             <tr>
-            <td>{{ group.name }}</td>
+            <td>{{ campaign.name }}</td>
+            <td>{{ campaign.groups|join:", " }}</td>
             <td>{{ group.members }}</td>
-            <td>{{ group.time_used }}</td>
-            <td>{{ group.creator }}</td>
+            <td>{{ campaign.created_time }}</td>
+            <td><a onclick="return getCreator('{{ campaign.creator }}')">{{ campaign.creator }}</a></td>
+            <td>{{ group.members }}</td>
             <td>66.67%</td>
-            <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button">Edit</a></td>
-            <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
+            <td>66.67%</td>
+            <td><a class="btn btn-primary" onclick='viewGampaign("{{ campaign.name }}")'>Edit</a></td>
+            <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#view_campaign_info"><span class="glyphicon glyphicon-search"></span></button></td>
             <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
                 <i class="fa fa-info"></i>
             </button></td>-->
@@ -151,647 +138,411 @@ hr {
         </div>
     </div>
 </div>
-<div class="modal fade bd-example-modal-lg" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div class="modal fade bd-example-modal-lg" id="create_campaign" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" style="width:48%;">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">New group</h3>
+        <h3 class="modal-title">New campaign</h3>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div style="padding:5px; margin-top:10px;">
-        <ul class="nav nav-tabs">
-            <li id="member-group"><a data-toggle="tab" class="tab-label active" href="#membergroup">MEMBER GROUP</a></li>
-            <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AFFILATE GROUP</a></li>
-        </ul>
-        <div class="tab-content">
-            <div id="membergroup" class="tab-pane active">
-                <form id="newgroup">
+            <input hidden id="hidden_tags" value="[]">
+            <div id="newCampaign" class="tab-pane active">
+                <form id="newCampaignForm">
                 {% csrf_token %}
+                    <input type="hidden" name="type" value="create_new_campaign" id="formAction"></input>
+                    <input type="hidden" name="ids" value="[]" id="campaignIds"></input>
                     <div class="form-group">
-                    <label for="group_name">NAME</label>
-                    <input type="text" class="form-control" name="group_name" placeholder="Give your group a descriptive name" required>
+                        <label for="campaign_name">NAME</label>
+                        <input type="text" class="form-control" name="campaign_name" required>
                     </div>
-                    <div class="row" style="margin-top: 30px">
-                    <strong>FILTER TO DEFINE YOUR GROUP (LEAVE BLANK TO IGNORE FILTER)</strong>
+                    <div class="form-group">
+                        <label for="campaign_send_to">SEND TO</label>
+                        <div class="input-group" >
+                            <input type="text" id="sendto" class="form-control" placeholder="Select groups(s)">
+                            <span id="search-notifier-btn" class="input-group-addon" style="background-color: #ffffff; color:#2e2e2e"><span class="glyphicon glyphicon-search"></span></span>
+                        </div>
                     </div>
-                    <!-- <div class="form-group">
-                    <label for="product">PRODUCT</label>
-                    <br/> -->
-                    <!-- <div class="btn-group">
-                        <button type="button" id="product" name="product" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        Select...
-                        <span class="caret"></span>
+                    <div style="margin-top:20px;">
+                        <button type="submit" id="save-btn" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-danger delete" style="background-color:rgb(199, 89, 82)">
+                            <span class="glyphicon glyphicon-trash" style='color:white'></span>Delete campaign
                         </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li class="product-item"><a href="#">Sports</a></li>
-                            <li class="product-item"><a href="#">Live Casino</a></li>
-                            <li class="product-item"><a href="#">Games</a></li>
-                            <li class="product-item"><a href="#">Lotto</a></li>
-                        </ul>
-                    </div> -->
-                    <div class="form-group" style="width:30%;">
-                        <label for="product">PRODUCT</label>
-                        <select class="form-control" id="product" name="product">
-                            <option selected value="">Select...</option>
-                            <option value="Sports">Sports</option>
-                            <option value="Live Casino">Live Casino</option>
-                            <option value="Games">Games</option>
-                            <option value="Lotto">Lotto</option>
-                        </select>
-                    </div>
-                    <!-- </div> -->
-                    <div class="form-group">
-                    <div class="row">
-                        <div class="col-md-5" id="daystotal" style="padding-left: 0">
-                        <label style="margin-left:36px">LAST ACTIVE DATE</label>
-                        <div class="input-group">
-                            <span class="input-group-addon" style="background-color:transparent; border: 0; padding-left:0px; padding-right:10px;"><input type="radio" id="total" name="days" value="total" checked></span>
-                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">≤</span>
-                            <input type="number" id="days" class="form-control" min="1">
-                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">Days ago</span>
-                        </div>
-                        </div>
-                        <div class="col-md-7" id="daysrange" style="padding-left: 0">
-                        <label style="margin-left:36px">LAST ACTIVE DATE</label>
-                        <div class="input-group">
-                            <span class="input-group-addon" style="background-color:#ffffff; border: 0"><input type="radio" id="range" name="days" id="range"></span>
-                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
-                            <input type="text" id="from_date" class="form-control" placeholder="Pick a date..." disabled>
-                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
-                            <input type="text" id="to_date" class="form-control" placeholder="Pick a date..." disabled>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="form-group">
-                    <div class="row">
-                        <div class="col-md-8" style="padding-left: 0">
-                        <label>REGISTRATION DATE</label>
-                        <div class="input-group">
-                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
-                            <input type="text" id="reg-from" class="form-control" placeholder="Pick a date...">
-                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
-                            <input type="text" id="reg-to" class="form-control" placeholder="Pick a date...">
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="form-group">
-                    <input class="form-check-input" type="checkbox" id="onlyactive" checked disabled>
-                    <label class="form-check-label" for="gridCheck">
-                        Only active members (you can override this filter by adding members manually)
-                    </label>
-                    </div>
-                    <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="onlydeposited">
-                    <label class="form-check-label" for="gridCheck">
-                        Only members who has deposited
-                    </label>
-                    </div>
-                    <div class="form-group">
-                        <label for="vip">VIP LEVEL</label>
-                        <div class="dropdown" >
-                            <button id="vipbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" style="width:30%; text-align: left;">
-                            <span>Select...</span>
-                            <span class="caret" style="float: right; margin-top:8px;"></span>
-                            </button>
-                            <ul id="vip" class="dropdown-menu" style="width:30%;">
-                            <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
-                            <li><a href="#" class="small" data-value="Normal" tabIndex="-1"><input type="checkbox"/>&nbsp;Normal</a></li>
-                            <li><a href="#" class="small" data-value="VIP1" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP1</a></li>
-                            <li><a href="#" class="small" data-value="VIP2" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP2</a></li>
-                            <li><a href="#" class="small" data-value="VIP3" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP3</a></li>
-                            <li><a href="#" class="small" data-value="VIP4" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP4</a></li>
-                            <li><a href="#" class="small" data-value="VIP5" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP5</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                    <label for="risk">RISK LEVEL</label>
-                    <div class="dropdown">
-                        <button id="riskbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"  style="width:30%; text-align: left;">
-                        Select...
-                        <span class="caret" style="float: right; margin-top:8px;"></span>
-                        </button>
-                        <ul id="risk" class="dropdown-menu">
-                        <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
-                        <li><a href="#" class="small" data-value="E1" tabIndex="-1"><input type="checkbox"/>&nbsp;E1</a></li>
-                        <li><a href="#" class="small" data-value="E2" tabIndex="-1"><input type="checkbox"/>&nbsp;E2</a></li>
-                        <li><a href="#" class="small" data-value="W" tabIndex="-1"><input type="checkbox"/>&nbsp;W</a></li>
-                        <li><a href="#" class="small" data-value="F" tabIndex="-1"><input type="checkbox"/>&nbsp;F</a></li>
-                        </ul>
-                    </div>
-                    </div>
-                    <hr/>
-                    <div class="form-group" style="padding-top: 0">
-                    <p style="font-size: 14px"><strong>ADD MEMBERS MANUALLY</strong></p>
-                    <p>Manually added members will stay in the groups regardless of filter settings.</p>
-                    <p>You have added 0 members manually.</p>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manually">Add members</button>
-                    </div>
-                    <hr/>
-                    <div class="form-group" style="padding-top: 0">
-                    <label>Members in group</label>
-                    <div class="row" style="background-color:#f3f3f3; height:30px;">
-                        <span><a href="#" id="member_count" data-toggle="modal" data-target="#member-list">&nbsp;{{ users_count }}</a></span>
-                    </div>
-                    </div>
-                    <div id="errorMessage"></div>
-                    <div style="margin-top:30px;">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
                     </div>
                 </form>
             </div>
-        <div id="automated-message" class="tab-pane fade">
-            abc
         </div>
-        </div>
-
-      </div>
-      
+      </div>   
     </div>
   </div>
 </div>
 
-<div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">View group</h3>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <label>GROUP DETAILS</label>
-      <table id="details">
-        <tbody>
-          <tr>
-            <td>TBD</td>
-            <td>TBD</td>
-          </tr>
-        </tbody>
-      </table>
+
+
+<div class="modal fade bd-example-modal-lg" id="view_campaign_info" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="width:48%;">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">View campaign</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div style="padding:5px; margin-top:10px;">
+            <input hidden id="hidden_tags" value="[]">
+            <div id="viewCampaign" class="tab-pane active">
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Name</div>
+                    <div class="col-md-9">Name</div>
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Author</div>
+                    <div class="col-md-9">Name</div>
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Created</div>
+                    <div class="col-md-9">Name</div>
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Groups</div>
+                    <div class="col-md-9">Name</div>
+                </div>
+                <div class="row" style="margin-top:20px">
+                    <div class="col-md-4 block">MESSAGES SENT</div>
+                    <div class="col-md-4 block">MESSAGES OPEND</div>
+                    <div class="col-md-4 block">OPEN RATE</div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<div class="modal fade bd-example-modal-lg" id="member-list" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Members list</h3>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <table id="member-table">
-        <thead class="thead-dark">
-          <tr>
-            <th style="width: 6%;">#</th>
-            <th style="width: 34%;">MEMBER ID</th>
-            <th style="width: 60%;">USERNAME</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>TBD</td>
-            <td>TBD</td>
-            <td>TBD</td>
-          </tr>
-        </tbody>
-      </table>
-      <!--<div class="row">
-        <div class='col-md-4'>
-          <div>SHOW ROWS</div>
-          <select id="page_value"  class="form-control">
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-          </select>
+<div class="modal fade" id="viewUser" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">User Profile</h4>
+            </div>
+            <div class="modal-body" style="height: 545px;">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="{{ imagePath }}happyface.png" alt="happyface" style="width: 100%;height: 100%;">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="name-title" id="viewName">Martin Sandstrom</div>
+                        <div class="name-username" id="viewUsername">msandstrom</div>
+                    </div>
+                </div>
+                <div style="background-color: #f5f5f5; height: 98px; margin-top: 20px">
+                    <div class="row" style="padding: 20px 15px;">
+                        <div class="col-md-2">Email: </div>
+                        <div class="view-text col-md-10" id="viewEmail">ibet@gmail.com</div>
+                    </div>
+                    <div class="row" style="padding: 0px 15px;">
+                        <div class="col-md-2">Phone: </div>
+                        <div class="view-text col-md-10" id="viewPhone">3332929292</div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        MARKET
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        ibet
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewIbetMarket">
+                        <!-- <div>FE</div> -->
+                        <div class="inline icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                        <div class="inline sec-icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        Letou
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewLetouMarket">
+                        FO
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        ROLE
+                    </div>
+                    <div class="col-md-9 profile-info" id="viewRole">
+                        ROLE
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        DEPARTMENT
+                    </div>
+                    <div class="col-md-9 profile-info"  id="viewDepartment">
+                        DEPARTMENT
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+            </div>
         </div>
-        <div class='col-md-4'>
-          <span>1 -20 of 9</span>
-        </div>
-        <div class='col-md-4'>
-          <div>&nbsp;</div>
-            <ul class="pagination" style="margin:0px;">
-                {% if notifications.has_previous  %}
-                    <li class="page-item " id='previousPage'>
-                      <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled" id='previousPage'>
-                      <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
-                    </li>
-                {% endif %}
-                {% if notifications.has_next %}
-                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-                {% else %}
-                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
-                {% endif %}
-            </ul>
-          </div>
-        </div>-->
+        
     </div>
-  </div>
-</div>
-
-<div class="modal fade bd-example-modal-lg" id="manually" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Add manually to group</h3>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="row" style="margin-top: 31px; margin-left: 16px">
-        <div class='col-md-9' style="padding-left: 0">
-          <div class="input-group">
-            <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword...">
-            <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
-          </div>
-        </div>
-        <div class='col-md-3' style="padding-left: 0">
-          <button class="btn btn-primary" id="csv_btn">Upload CSV</button>
-          <input type="file" id="csv_file">
-        </div>
-      </div>
-      <button id="add-btn" class="btn btn-primary" style="margin-top: 20px; margin-left: 16px" disabled>Add member to group</button>
-      <table id="manually-table">
-        <thead class="thead-dark" hidden>
-          <tr>
-            <th style="width: 10%;">ALL<input type="checkbox"></th>
-            <th style="width: 30%;">MEMBER ID</th>
-            <th style="width: 60%;">USERNAME</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-      <div class="row" style="margin-top: 31px">
-        <div class='col-md-4'>
-          <button id="remove-btn" class="btn btn-primary" style="display: none">Remove selected</button>
-        </div>
-      </div>
-      <div class="row" style="margin: 31px 0 16px 16px">
-          <button id="save-btn" type="button" class="btn btn-primary">Save</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+
 <script>
-var pk_list;
-var user_list;
-
 $(document).ready(function() {
-  var previousURL = document.referrer;
 
-  $('#create_group').on('show.bs.modal', function (e) {
-    $("#member-group").addClass('active');
-    })
-//   if($("#create_group").data('modal') && $("#create_group").data('modal').isShown ) {
-//       console.log("!!!!!");
-//     $("#member-group").addClass('active');
-//   }
-//   if (!$('#create_group').attr('aria-hidden')) {
-//     $("#member-group").addClass('active');
-//   }
-
-  if ($("#automated-messages").hasClass('active')) {
-    $("#member-group").removeClass('active');
-  }
-
-  // parse url
-  paramsMap = {
-      'pageSize': 20,
-      'offset': 1,
-  };
-
-  var parsedUrl = new URL(window.location.href);
-
-  if (parsedUrl.searchParams.get("pageSize") !== null) {
-    paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
-  }
-  if (parsedUrl.searchParams.get("offset") !== null) {
-    paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
-  }
-
-  $('#pagination_value').val(paramsMap['pageSize']);
-
-  $('#pagination_value').change(function() {
-    var pageSize = this.value;
-    var offset = paramsMap['offset'];
-    window.location.href = getUserListRedirectUrl(pageSize, 1);
-  });
-
-  var userFilter = {
-    'product': null,
-    'active': null,
-    'active_from': null,
-    'active_to': null,
-    'register_from': null,
-    'register_to': null,
-    'deposit': false,
-    'pageSize': null,
-    'offset': null,
-  }
-
-  groupFilter();
-
-//   $('.product-item').click(function() {
-//     $("#product").html($(this).text() + '<span class="caret"></span>');
-//     $("#product").val($(this).text());
-//     userFilter['product'] = $('#product').val();
-//     groupFilter();
-//   });
-
-  $('#product').on('change', function() {
-        var product = $('#product').val();
-        userFilter['product'] = product
-        groupFilter();
-    });
-
-  $('#from_date').datepicker({
-    autoclose: true, 
-    todayHighlight: true,
-    endDate: new Date(),
-  }).on('change', function(ev){
-    userFilter['active_from'] = $(this).val();
-    groupFilter();
-  });
-
-  $('#to_date').datepicker({
-    autoclose: true, 
-    todayHighlight: true,
-    endDate: new Date(),
-  }).on('change', function(ev){
-    userFilter['active_to'] = $(this).val();
-    groupFilter();
-  });
-
-  $('#total').change(function() {
-    $('#days').prop('disabled', false);
-    $('#from_date').prop('disabled', true);
-    $('#to_date').prop('disabled', true);
-  });
-
-  $('#range').change(function() {
-    $('#days').prop('disabled', true);
-    $('#from_date').prop('disabled', false);
-    $('#to_date').prop('disabled', false);
-  });
-
-  $('#reg-from').datepicker({
-    autoclose: true, 
-    todayHighlight: true,
-    endDate: new Date(),
-  }).on('change', function(ev){
-    userFilter['register_from'] = $(this).val();
-    groupFilter();
-  });
-
-  $('#reg-to').datepicker({
-    autoclose: true, 
-    todayHighlight: true,
-    endDate: new Date(),
-  }).on('change', function(ev){
-    userFilter['register_to'] = $(this).val();
-    groupFilter();
-  });
-
-  {% comment %} $('input:radio[name="days"]').change(function() {
-    if ($(this).is(':checked') && $(this).val() == 'total') {
-      $('#daysrange').prop("disabled", true);
-    }
-  }); {% endcomment %}
-
-  $('#days').focusout(function() {
-    userFilter['active'] = $(this).val();
-    groupFilter();
-  })
-
-  var vipOptions = [];
-
-  $('#vip.dropdown-menu a').on('click', function(event) {
-    var $target = $(event.currentTarget),
-        val = $target.attr('data-value'),
-        $inp = $target.find('input'),
-        idx;
-
-    if(val == "ALL") {
-      if($inp.prop('checked')) {
-        $('#vip li input[type=checkbox]').each(function() {
-          if(this.checked == false) {
-            vipOptions.push($(this).parent().attr('data-value'));
-          }
-          this.checked = $inp.prop('checked');
-        });
-      } else {
-        $('#vip li input[type=checkbox]').each(function() {
-          this.checked = $inp.prop('checked');
-          vipOptions.pop();
-        });
-      }
-    } else {
-      if((idx = vipOptions.indexOf(val)) > -1) {
-        vipOptions.splice(idx, 1);
-        $('#vip li:first input[type=checkbox]').prop('checked', false);
-        setTimeout(function() { $inp.prop('checked', false)}, 0);
-      } else {
-        vipOptions.push(val);
-        setTimeout(function() { $inp.prop('checked', true)}, 0);
-      }
-    }
-    
-    
-    $(event.target).blur();
-
-    $("#vipbtn").html(vipOptions.length + " Selected " + '<span class="caret"></span>');
-    
-    groupFilter();
-  });
-
-  var riskOptions = [];
-
-  $('#risk.dropdown-menu a').on('click', function(event) {
-    var $target = $(event.currentTarget),
-        val = $target.attr('data-value'),
-        $inp = $target.find('input'),
-        idx;
-
-    if(val == "ALL") {
-      if($inp.prop('checked')) {
-        $('#risk li input[type=checkbox]').each(function() {
-          if(this.checked == false) {
-            riskOptions.push($(this).parent().attr('data-value'));
-          }
-          this.checked = $inp.prop('checked');
-        });
-      } else {
-        $('#risk li input[type=checkbox]').each(function() {
-          this.checked = $inp.prop('checked');
-          riskOptions.pop();
-        });
-      }
-    } else {
-      if((idx = riskOptions.indexOf(val)) > -1) {
-        riskOptions.splice(idx, 1);
-        $('#risk li:first input[type=checkbox]').prop('checked', false);
-        setTimeout(function() { $inp.prop('checked', false)}, 0);
-      } else {
-        riskOptions.push(val);
-        setTimeout(function() { $inp.prop('checked', true)}, 0);
-      }
-    }
-    
-    $(event.target).blur();
-
-    $("#riskbtn").html(riskOptions.length + " Selected " + '<span class="caret"></span>');
-
-    groupFilter();
-  });
-
-  $('#csv_file').change(function(e) {
-    $("#manually-table tbody").empty();
-    var data = null;
-    var file = e.target.files[0];
-
-    var reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = function (event) {
-        var csvData = event.target.result;
-
-        var parsedCSV = d3.csv.parseRows(csvData);
-
-        if(parsedCSV.length > 0) {
-          $("#manually-table thead").prop("hidden", false);
-          $("#add-btn").prop("disabled", false);
-          $("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
-          $("#remove-btn").css("display", "block");
-        }
-
-        parsedCSV.forEach(function (d, i) {
-            if (i == 0) return true; // skip the header
-            $("#manually-table").find('tbody')
-              .append($('<tr>')
-                .append($('<td><input class="member-checkbox" type="checkbox"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
-              )
-        });
-    }
-  });
-
-  $('td input[type=checkbox]').click(function() {
-    alert(1);
-  });
-
-  $('#csv_btn').click(function() {
-    $('#csv_file').click();
-  });
-
-  $('#newgroup').submit(function(e) {
-    e.preventDefault();
-    var form = $(this);
-    var group_name = form.find('input[name="group_name"]').val();
+    var data = [];
+    var previousURL = document.referrer;
+    // parse url
+    paramsMap = {
+        'pageSize': 20,
+        'offset': 1,
+    };
 
     $.ajax({
-      type: "POST",
-      url: "{% url 'xadmin:messagegroups' %}",
-      data: {
-        csrfmiddlewaretoken: "{{ csrf_token }}",
-        group_name: group_name,
-        pk: pk_list,
-      },
-      success: function(data)
-        {
-            if (data.errorCode === 1) {
-                $('#errorMessage').text(data.error);
-                $('#errorMessage').css('color', 'red');
-            } else {
+        type:'GET',
+        url:"{% url 'xadmin:campaign' %}",
+        data: {
+            type: "get_all_group",
+        },
+        success: function(data) {
+            console.log(data);
+            var groups = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                local: data
+            });
+            
+            groups.initialize();
+
+            $('#sendto').tagsinput({
+                allowDuplicates: false,
+                // display: 'name',
+                // typeaheadjs: {
+                //     source: groups.ttAdapter()
+                // }
+                itemValue: "id",
+                itemText: "name",
+                typeaheadjs: {
+                    name: "name",
+                    displayKey: "name",
+                    source: groups.ttAdapter()
+                }
+            });
+
+        }
+    })
+
+    $("#sendto").on('beforeItemAdd', function(event) {
+        var tags = $('#hidden_tags').val();
+        tags = JSON.parse(tags);
+        tags.push(event.item.name);
+
+        $('#hidden_tags').val(JSON.stringify(tags));
+
+    });
+  
+
+    $('#sendto').on('itemRemoved', function(event) {
+        var tags = $('#hidden_tags').val();
+        tags = JSON.parse(tags);
+        array = removeByIndex(tags, event.item.name);
+        $('#hidden_tags').val(JSON.stringify(array));
+        
+    });
+
+
+    $("#newCampaignForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = "{% url 'xadmin:campaign' %}";
+        var tags = $('#hidden_tags').val();
+        // $(selector).serialize();
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form.serialize() + "&tags=" + tags,
+            success: function(data)
+            {
                 window.location.reload();
             }
-        //  
+        });
+    })
+
+
+    getNext = function() {
+        if ($('#nextPage').hasClass('disabled')) {
+            return;
         }
-    });
-  });
-
-  function groupFilter() {
-    // console.log(vipOptions);
-    // console.log(riskOptions);
-    $.ajax({
-      type: 'GET',
-      url: "{% url 'group-filter' %}",
-      data: { 
-        'product': userFilter['product'],
-        'active': userFilter['active'],
-        'active_from': userFilter['active_from'],
-        'active_to': userFilter['active_to'],
-        'register_from': userFilter['register_from'],
-        'register_to': userFilter['register_to'],
-        'vip': vipOptions,
-        'risk': riskOptions
-      },
-      success: function(data) {
-        // console.log(data);
-        $('#member_count').html("&nbsp;" + data["user_count"]);
-        user_list = data["user"];
-        pk_list = data["pk_list"];
-        createTable(user_list);
-      }
-    });
-  }
-
-  function createTable(data) {
-    $('#member-table tbody').empty();
-    for(var i=0; i<data.length; i++) {
-      var row = '<tr><td style="width: 6%;">' + (i+1) + '</td><td style="width: 34%;">' + data[i]['pk'] + '</td><td style="width: 60%;">' + data[i]['username'] + '</td></tr>'
-      $('#member-table tbody').append(row);
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        // var newFromItem = Number(oldFromItem) + Number(pageSize);
+        var newFromItem = Number(oldFromItem) + 1;
+        
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
     }
-  }
 
-  getNext = function() {
-    if ($('#nextPage').hasClass('disabled')) {
-        return;
+    getPrevious = function () {
+        if ($('#previousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        // var newFromItem = Number(oldFromItem) - Number(pageSize);
+        var newFromItem = Number(oldFromItem) - 1;
+        
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
     }
-    var pageSize = paramsMap['pageSize'];
-    var oldFromItem = paramsMap['offset'];
-    var newFromItem = Number(oldFromItem) + 1;
-    
-    window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
-  }
-
-  getPrevious = function () {
-      if ($('#previousPage').hasClass('disabled')) {
-          return;
-      }
-      var pageSize = paramsMap['pageSize'];
-      var oldFromItem = paramsMap['offset'];
-      var newFromItem = Number(oldFromItem) - 1;
-      
-      window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
-  }
 });
+
+
+function removeByIndex(array, index){
+    return array.filter(function(elem, _index){
+        return index != elem;
+    });
+}
 
 function getUserListRedirectUrl(pageSize, offset) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
-
-  var redirectUrl = parts[0]; 
-      //redirectUrl += '?search=' + search;
-      redirectUrl += "?pageSize=" + pageSize;
-      redirectUrl += '&offset=' + offset;
+  
+  var redirectUrl = parts[0];
+  redirectUrl += "?pageSize=" + pageSize;
+  redirectUrl += '&offset=' + offset;
 
   return redirectUrl;
 }
 
+
+function getCreator(username) {
+    $('#viewUser').modal({'show' : true});
+
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_admin_profile' %}",
+        data:{ 
+            'username': username,
+        },
+        success: function(response)
+        {   
+            // console.log(response);
+            var data = response.data;
+            if (response.code === 0) {
+                var username = data.username;
+                var firstName = data.first_name;
+                var lastName = data.last_name;
+                var email = data.email;
+                var phone = data.phone;
+                var role = data.roleName;
+                var department = data.department;
+                var ibetMarkets = data.ibetMarkets;
+                var letouMarkets = data.letouMarkets;
+                $('#viewEmail').text(email);
+                $('#viewPhone').text(phone);
+                $('#viewRole').text(role);
+                $('#viewDepartment').text(department);
+                if (!firstName && !lastName) {
+                    $('#viewName').text(username);
+                    $('#viewUsername').text('');
+                } else {
+                    $('#viewName').text(firstName + ' ' + lastName);
+                    $('#viewUsername').text(username);
+                }
+                
+                var content = '';
+                for (var i = 0; i < ibetMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + ibetMarkets[i].name + '.svg" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewIbetMarket').empty();
+                $('#viewIbetMarket').append(content);
+
+
+                var content = '';
+                for (var i = 0; i < letouMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + letouMarkets[i].name + '.svg" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewLetouMarket').empty();
+                $('#viewLetouMarket').append(content);
+            }
+        }
+    });
+}
+
+function createNewCampaign() {
+    $('#formAction').val('create_new_campaign');
+    $('input[name="campaign_name"]').val("");
+    $("#sendto").tagsinput('removeAll');
+    	
+    $( ".delete" ).css("display", "none");
+}
+
+
+function viewGampaign(name) {
+
+    $('#formAction').val('update_campaign');
+    $.ajax({
+        type: "GET",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'view_campaign',
+            'campaignName': name,
+        },
+        success: function(response)
+        {
+            $('#create_campaign').modal({'show' : true});
+            $('input[name="campaign_name"]').val(response.name);
+            $( ".delete" ).css("display", "auto");
+            $(".delete").attr('onClick','deleteCampaign("' + response.name + '")')
+            
+            $("#sendto").tagsinput('removeAll');
+            for (var i = 0; i < response.group.length; i++) {
+                $("#sendto").tagsinput('add', { "id": i , "name": response.group[i] });
+            
+            }
+            $('#campaignIds').val(JSON.stringify(response.campaignsIds))
+        }
+    });
+}
+
+
+function deleteCampaign(campaignName) {
+
+    // console.log(campaignName);
+    $.ajax({
+        type: "POST",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'delete_campaign',
+            'campaignName': campaignName,
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+        },
+        success: function(response)
+        {
+            window.location.reload();
+        }
+    });
+
+}
 </script>
 {% endblock %}

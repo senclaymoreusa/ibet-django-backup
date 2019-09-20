@@ -637,40 +637,121 @@ class MessageUserGroupView(CommAdminView):
 
 class CampaignView(CommAdminView):
     def get(self, request, *arg, **kwargs):
-        pageSize = request.GET.get('pageSize')
-        offset = request.GET.get('offset')
+        getType = request.GET.get('type')
+        if getType == 'view_campaign':
+            campaignName = request.GET.get('campaignName')
+            campaigns = Campaign.objects.filter(name=campaignName)
+            groups = []
+            ids = []
+            for i in campaigns:
+                groups.append(i.group.name)
+                ids.append(i.pk)
+            
+            data = {
+                "name": campaignName,
+                "group": groups,
+                "campaignsIds": ids
+            }
 
-        if pageSize is None:
-            pageSize = 20
-        else: 
-            pageSize = int(pageSize)
+            return HttpResponse(json.dumps(data), content_type='application/json')
 
-        if offset is None or int(offset) < 1:
-            offset = 1
+        elif getType == 'get_all_group':
+            data = []
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
+            for i in groups:
+                groupData = {
+                    'id': i.pk,
+                    'name': i.name
+                }
+                data.append(groupData)
+            return HttpResponse(json.dumps(data), content_type='application/json')
+
         else:
-            offset = int(offset)
 
-        context = super().get_context()
-        title = 'message'
-        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
-        context["title"] = title
-        context['time'] = timezone.now()
+            pageSize = request.GET.get('pageSize')
+            offset = request.GET.get('offset')
+
+            if pageSize is None:
+                pageSize = 20
+            else: 
+                pageSize = int(pageSize)
+
+            if offset is None or int(offset) < 1:
+                offset = 1
+            else:
+                offset = int(offset)
+
+            context = super().get_context()
+            title = 'message'
+            context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+            context["title"] = title
+            context['time'] = timezone.now()
+            context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
+            
+            campaigns = Campaign.objects.distinct('name')
+            
+            campaign_data = []
+            for campaign in campaigns:
+                campaign_item = {}
+                campaign_item['pk'] = campaign.pk
+                campaign_item['name'] = campaign.name
+                campaign_item['creator'] = campaign.creator
+                campaign_item['created_time'] = campaign.create_on
+                campaign_item['groups'] = []
+                allCampaign = Campaign.objects.filter(name=campaign.name)
+                for i in allCampaign:
+                    campaign_item['groups'].append(i.group.name)
+                campaign_data.append(campaign_item)
+
+            paginator = Paginator(campaign_data, pageSize)
+            context['campaigns'] = paginator.get_page(offset)
+
+            logger.info("GET CampaignView")
+
+            return render(request, 'notification/campaign.html', context)
+
+
+    def post(self, request, *arg, **kwargs):
+        postType = request.POST.get('type')
         
-        campaigns = Campaign.objects.all()
-        campaign_data = []
-        for campaign in campaigns:
-            campaign_item = {}
-            campaign_item['pk'] = campaign.pk
-            campaign_item['name'] = campaign.name
-            campaign_item['creator'] = campaign.creator
-            campaign_data.append(campaign_item)
+        if postType == "create_new_campaign":
+            campaignName = request.POST.get('campaign_name')
+            groups = request.POST.get('tags')
+            groups = json.loads(groups)
+            creator = CustomUser.objects.get(username=self.user.username)
+            objs = []
+            for groupName in groups:
+                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                Campaign.objects.get_or_create(group=group, name=campaignName, creator=creator)
 
-        paginator = Paginator(campaign_data, pageSize)
-        context['campaign'] = paginator.get_page(offset)
+            return HttpResponse("success")
+        
+        elif postType == "delete_campaign":
+            campaignName = request.POST.get('campaignName')
+            Campaign.objects.filter(name=campaignName).delete()
+            return HttpResponse("success delete")
 
-        logger.info("GET CampaignView")
+        elif postType == "update_campaign":
+            campaignName = request.POST.get('campaign_name')
+            groups = request.POST.get('tags')
+            ids = request.POST.get('ids')
+            groups = json.loads(groups)
+            ids = json.loads(ids)
+            print(groups, ids)
+            oldIds = []
+            oldCampaignName = Campaign.objects.get(pk=ids[0])
+            oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
 
-        return render(request, 'notification/campaign.html', context)
+            for i in ids:
+                campaign = Campaign.objects.get(pk=i)
+                if campaign.group.name in groups:
+                    campaign.name = campaignName
+                    campaign.save()
+                else:
+                    campaign.delete()
+
+            return HttpResponse("success update")
+
 
 
 class AWSTopicView(CommAdminView):
