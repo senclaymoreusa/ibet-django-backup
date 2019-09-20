@@ -999,6 +999,75 @@ class MessageGroupDetailAPI(View):
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
+class MessageGroupUpdateAPI(View):
+    def post(self, request, *arg, **kwargs):
+        group_id = request.POST.get('groupId')
+        group = UserGroup.objects.get(pk=group_id)
+
+        group_name = request.POST.get('group_name')
+        pk_list = request.POST.getlist('pk[]')
+        product = request.POST.get("product")
+        is_range = request.POST.get("is_range")
+        active_from = request.POST.get("active_from")
+        active_to = request.POST.get('active_to')
+        register_from = request.POST.get('register_from')
+        register_to = request.POST.get('register_to')
+        is_deposit = request.POST.get('is_deposit')
+
+        if is_range == "true":
+            is_range = True
+        else:
+            is_range = False
+
+        if isDateFormat(active_from):
+            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+        else:
+            active_from = None
+
+        if isDateFormat(active_to):
+            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+        else:
+            active_to = None
+
+        if isDateFormat(register_from):
+            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+        else:
+            register_from = None
+
+        if isDateFormat(register_to):
+            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+        else:
+            register_to = None
+
+        if is_deposit == "true":
+            is_deposit = True
+        else:
+            is_deposit = False
+
+
+        data = {
+            "name": group_name,
+            "groupType": MESSAGE_GROUP,
+            "creator": self.user.pk,
+            "is_range": is_range,
+            "product": product,
+            "active_from": active_from,
+            "active_to": active_to,
+            "register_from": register_from,
+            "register_to": register_to,
+            "is_deposit": is_deposit
+        }
+
+        serializer = MessageUserGroupSerializer(data=data)
+        if serializer.is_valid():
+            group.update(data=data)
+            return HttpResponse(status=200)
+        else:
+            logger.error("Invalid data")
+            return HttpResponse(status=400)
+
+
+
 class AWSTopicAPIView(GenericAPIView):
     lookup_field = 'pk'
     serializer_class = AWSTopicSerializer
