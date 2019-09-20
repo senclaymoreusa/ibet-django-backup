@@ -349,11 +349,6 @@ if os.getenv("ENV") == "local":
                 # 'level': 'DEBUG',
                 'propagate': True,
             },
-            'django.template': {
-                'handlers': ['file'],
-                'level': 'INFO',
-                'propagate': True,
-            },
         },
     }
 else:
@@ -381,7 +376,12 @@ else:
             'django': {
                 'handlers': ['stderr'],
                 'level': 'DEBUG',
-            }
+            },
+            'django.template': {
+                'handlers': ['file'],
+                'level': 'INFO',
+                'propagate': True,
+            },
         }
     }
 
