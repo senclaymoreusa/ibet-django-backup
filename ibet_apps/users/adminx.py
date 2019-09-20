@@ -16,6 +16,7 @@ from django.conf import settings
 # from xadmin.layout import Main, Fieldset, Row
 from xadmin.layout import *
 from xadmin.plugins.inline import Inline
+from django.contrib.auth.models import Permission
 
 
 DOMAIN = settings.DOMAIN
@@ -293,10 +294,11 @@ xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
 xadmin.site.unregister(Group)
-xadmin.site.register(CustomUser, MyUserAdmin)
-xadmin.site.register(UserTag,TagAdmin)
-xadmin.site.register(UserWithTag,UserWithTagAdmin)
-xadmin.site.register(UserAction, UserActionAdmin)
+xadmin.site.unregister(Permission)
+# xadmin.site.register(CustomUser, MyUserAdmin)
+# xadmin.site.register(UserTag,TagAdmin)
+# xadmin.site.register(UserWithTag,UserWithTagAdmin)
+# xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
 xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
 xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
