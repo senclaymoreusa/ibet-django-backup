@@ -1,6 +1,6 @@
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.db.models import Q
 from django.views import View
@@ -1032,10 +1032,24 @@ class MessageGroupDetailAPI(View):
 
 class MessageGroupUpdateAPI(View):
     def post(self, request, *arg, **kwargs):
-        group_id = request.POST.get('groupId')
-        group = UserGroup.objects.get(pk=group_id)
+        # group_id = self.kwargs.get('pk')
+        group_id = request.POST.get('group_id')
+        group = UserGroup.objects.get(pk=int(group_id))
+
+        if group is None:
+            logger.error("Can not find group with id:" + group_id)
+            return HttpResponse(status=404)
 
         group_name = request.POST.get('group_name')
+
+        if group_name != group.name:
+            # exsit = get_object_or_404(UserGroup, name=group_name)
+            # exsit = UserGroup.objects.get(name=group_name)
+            if UserGroup.objects.filter(name=group_name, groupType=MESSAGE_GROUP):
+                logger.error("group name already exist")
+                return HttpResponse(json.dumps({ "error": "group name already exist", "errorCode": 1}), content_type='application/json')
+
+
         pk_list = request.POST.getlist('pk[]')
         product = request.POST.get("product")
         is_range = request.POST.get("is_range")
@@ -1076,26 +1090,22 @@ class MessageGroupUpdateAPI(View):
             is_deposit = False
 
 
-        data = {
-            "name": group_name,
-            "groupType": MESSAGE_GROUP,
-            "creator": self.user.pk,
-            "is_range": is_range,
-            "product": product,
-            "active_from": active_from,
-            "active_to": active_to,
-            "register_from": register_from,
-            "register_to": register_to,
-            "is_deposit": is_deposit
-        }
+        try:
+            group.name = group_name
+            group.is_range = is_range
+            group.product = product
+            group.active_from = active_from
+            group.active_to = active_to
+            group.register_from = register_from
+            group.register_to = register_to
+            group.is_deposit = is_deposit
 
-        serializer = MessageUserGroupSerializer(data=data)
-        if serializer.is_valid():
-            group.update(data=data)
+            group.save()
+
             return HttpResponse(status=200)
-        else:
-            logger.error("Invalid data")
-            return HttpResponse(status=400)
+        except Exception as e:
+            logger.error(e)
+            return HttpResponse(e, status=500)
 
 
 

@@ -832,7 +832,14 @@ $(document).ready(function() {
     var is_range = $('#range').prop("checked");
     var is_deposit = $('#onlydeposited').prop("checked");
 
-    url = form.attr('action');
+    var action = form.attr('action');
+    var url = action.split('?')[0];
+    if(action.split('?').length > 1) {
+      var groupId = action.split('?')[1];
+      groupId = groupId.substring(groupId.indexOf('=') + 1);
+    }
+    console.log(url);
+    console.log(groupId);
     /*
     var product = $('#product').val();
     var active_from = $('#from_date').val();
@@ -849,6 +856,7 @@ $(document).ready(function() {
       url: url,
       data: {
         'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'group_id': groupId,
         'group_name': group_name,
         'pk': pk_list,
         'product': userFilter['product'],
@@ -1052,6 +1060,8 @@ function getGroup(groupId) {
           $('#member_count').html("&nbsp;" + user_list.length);
           
           createTable(user_list);
+          $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
+          console.log($('#newgroup').attr('action'));
           // $('.btn-danger').css("display", "inline: block");
       }
   });
