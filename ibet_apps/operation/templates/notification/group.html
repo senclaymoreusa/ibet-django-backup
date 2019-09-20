@@ -838,8 +838,7 @@ $(document).ready(function() {
       var groupId = action.split('?')[1];
       groupId = groupId.substring(groupId.indexOf('=') + 1);
     }
-    console.log(url);
-    console.log(groupId);
+
     /*
     var product = $('#product').val();
     var active_from = $('#from_date').val();
@@ -1061,7 +1060,6 @@ function getGroup(groupId) {
           
           createTable(user_list);
           $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
-          console.log($('#newgroup').attr('action'));
           // $('.btn-danger').css("display", "inline: block");
       }
   });
