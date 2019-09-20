@@ -265,6 +265,7 @@ class NotificationView(CommAdminView):
 
         context['all_user'] = CustomUser.objects.all()
         context['waiting_list'] = Notification.objects.filter(auditor=self.user.pk).count()
+        context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
 
         # set filter
         msg_filter = Q(status=tab)
