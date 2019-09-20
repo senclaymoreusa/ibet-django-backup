@@ -1,6 +1,6 @@
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.db.models import Q
 from django.views import View
@@ -19,8 +19,8 @@ import logging
 import pytz
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
-from .serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer
-from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic
+from operation.serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer, CampaignSerializer
+from operation.models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic, Campaign, CampaignToGroup
 from users.models import CustomUser
 from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
@@ -265,6 +265,7 @@ class NotificationView(CommAdminView):
 
         context['all_user'] = CustomUser.objects.all()
         context['waiting_list'] = Notification.objects.filter(auditor=self.user.pk).count()
+        context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
 
         # set filter
         msg_filter = Q(status=tab)
@@ -326,6 +327,11 @@ class NotificationView(CommAdminView):
 
         paginator = Paginator(notification_list, pageSize)
         context["notifications"] = paginator.get_page(offset)
+        campArr = []
+        appCamp = Campaign.objects.all().distinct('name')
+        for i in appCamp:
+            campArr.append({"id" :i.pk, "name": i.name})
+        context['campaignOpt'] = campArr
 
         logger.info("GET NotificationView")
         return render(request, 'notification/index.html', context)
@@ -568,13 +574,57 @@ class MessageUserGroupView(CommAdminView):
     def post(self, request, *arg, **kwargs):
         group_name = request.POST.get('group_name')
         pk_list = request.POST.getlist('pk[]')
+        product = request.POST.get("product")
+        is_range = request.POST.get("is_range")
+        active_from = request.POST.get("active_from")
+        active_to = request.POST.get('active_to')
+        register_from = request.POST.get('register_from')
+        register_to = request.POST.get('register_to')
+        is_deposit = request.POST.get('is_deposit')
+
+        if is_range == "true":
+            is_range = True
+        else:
+            is_range = False
+
+        if isDateFormat(active_from):
+            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+        else:
+            active_from = None
+
+        if isDateFormat(active_to):
+            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+        else:
+            active_to = None
+
+        if isDateFormat(register_from):
+            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+        else:
+            register_from = None
+
+        if isDateFormat(register_to):
+            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+        else:
+            register_to = None
+
+        if is_deposit == "true":
+            is_deposit = True
+        else:
+            is_deposit = False
+
 
         data = {
             "name": group_name,
             "groupType": MESSAGE_GROUP,
-            "creator": self.user.pk
+            "creator": self.user.pk,
+            "is_range": is_range,
+            "product": product,
+            "active_from": active_from,
+            "active_to": active_to,
+            "register_from": register_from,
+            "register_to": register_to,
+            "is_deposit": is_deposit
         }
-
 
         serializer = MessageUserGroupSerializer(data=data)
         if serializer.is_valid():
@@ -589,6 +639,155 @@ class MessageUserGroupView(CommAdminView):
         else:
             logger.error(serializer.errors['name'][0])
             return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+
+
+class CampaignView(CommAdminView):
+    def get(self, request, *arg, **kwargs):
+        getType = request.GET.get('type')
+        if getType == 'view_campaign':
+            campaignName = request.GET.get('campaignName')
+            campaigns = Campaign.objects.get(name=campaignName)
+            campaignToGroup = CampaignToGroup.objects.filter(campaign=campaigns)
+            groups = []
+            for group in campaignToGroup:
+                groupData = {
+                    "group": group.group.name,
+                    "id": group.group.pk
+                }
+                groups.append(groupData)
+
+            
+            # ids = []
+            # for i in campaigns:
+            #     groups.append(i.group.name)
+            #     ids.append(i.pk)
+            
+            data = {
+                "name": campaignName,
+                "group": groups,
+                "campaignId": campaigns.pk
+            }
+
+            return HttpResponse(json.dumps(data), content_type='application/json')
+
+        elif getType == 'get_all_group':
+            data = []
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
+            for i in groups:
+                groupData = {
+                    'id': i.pk,
+                    'name': i.name
+                }
+                data.append(groupData)
+            return HttpResponse(json.dumps(data), content_type='application/json')
+
+        else:
+
+            pageSize = request.GET.get('pageSize')
+            offset = request.GET.get('offset')
+
+            if pageSize is None:
+                pageSize = 20
+            else: 
+                pageSize = int(pageSize)
+
+            if offset is None or int(offset) < 1:
+                offset = 1
+            else:
+                offset = int(offset)
+
+            context = super().get_context()
+            title = 'message'
+            context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+            context["title"] = title
+            context['time'] = timezone.now()
+            context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
+            campaigns = []
+            campaigns = Campaign.objects.all()
+            # print(campaigns)
+            campaign_data = []
+            for campaign in campaigns:
+                campaign_item = {}
+                campaign_item['pk'] = campaign.pk
+                campaign_item['name'] = campaign.name
+                campaign_item['creator'] = campaign.creator
+                campaign_item['created_time'] = campaign.create_on
+                groupPerCamp = CampaignToGroup.objects.filter(campaign=campaign)
+                # print(groupPerCamp)
+                campaign_item['groups'] = []
+                for i in groupPerCamp:
+                    campaign_item['groups'].append(i.group.name)
+                # allCampaign = Campaign.objects.filter(name=campaign.name)
+                # for i in allCampaign:
+                #     campaign_item['groups'].append(i.group.name)
+                campaign_data.append(campaign_item)
+                messages = Notification.objects.filter(campaign=campaign)
+                campaign_item['messages'] =  messages.count()
+                sentUser = 0
+                for i in messages:
+                    sentUser += NotificationToUsers.objects.filter(notification_id=i.pk).count()
+                campaign_item['sent_count']= sentUser
+                
+            paginator = Paginator(campaign_data, pageSize)
+            context['campaigns'] = paginator.get_page(offset)
+
+            logger.info("GET CampaignView")
+
+            return render(request, 'notification/campaign.html', context)
+
+
+    def post(self, request, *arg, **kwargs):
+        postType = request.POST.get('type')
+        
+        if postType == "create_new_campaign":
+            campaignName = request.POST.get('campaign_name')
+            groups = request.POST.get('tags')
+            groups = json.loads(groups)
+            creator = CustomUser.objects.get(username=self.user.username)
+            objs = []
+            campaign = Campaign.objects.create(name=campaignName, creator=creator)
+            # print(groups)
+            for groupName in groups:
+                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                CampaignToGroup.objects.create(campaign=campaign, group=group)
+
+            return HttpResponse("success")
+        
+        elif postType == "delete_campaign":
+            campaignName = request.POST.get('campaignName')
+            Campaign.objects.filter(name=campaignName).delete()
+            return HttpResponse("success delete")
+
+        elif postType == "update_campaign":
+            campaignName = request.POST.get('campaign_name')
+            groups = request.POST.get('tags')
+            campaignId = request.POST.get('id')
+            groups = json.loads(groups)
+            camp = Campaign.objects.get(pk=campaignId)
+            camp.name = campaignName
+            camp.save()
+
+            CampaignToGroup.objects.filter(campaign=camp).delete()
+
+            for groupName in groups:
+                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                # print(group)
+                CampaignToGroup.objects.create(campaign=camp, group=group)
+            
+            # oldIds = []
+            # oldCampaignName = Campaign.objects.get(pk=ids[0])
+            # oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
+            # CampaignToGroup.objects.filter()
+            # for i in ids:
+            #     campaign = Campaign.objects.get(pk=i)
+            #     if campaign.group.name in groups:
+            #         campaign.name = campaignName
+            #         campaign.save()
+            #     else:
+            #         campaign.delete()
+
+            return HttpResponse("success update")
+
 
 
 class AWSTopicView(CommAdminView):
@@ -638,6 +837,7 @@ class AWSTopicView(CommAdminView):
         else:
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
+
 
 # Operation Apps API Views
 class NotificationAPIView(GenericAPIView):
@@ -805,6 +1005,108 @@ class MessageGroupUserAPI(View):
         response["pk_list"] = pk_list
         # return HttpResponse(response)
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+
+class MessageGroupDetailAPI(View):
+    def get(self, request, *arg, **kwargs):
+        group_id = request.GET.get('groupId')
+        group = UserGroup.objects.get(pk=group_id)
+
+        group_users = UserToUserGroup.objects.filter(group=group)
+
+        response = {}
+        
+        response["group"] = serializers.serialize('json', [group,])
+
+        user_list = []
+        for utog in group_users:
+            item = {}
+            item["pk"] = utog.user.pk
+            item["username"] = utog.user.username
+            user_list.append(item)
+
+        response["user_list"] = user_list
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+
+class MessageGroupUpdateAPI(View):
+    def post(self, request, *arg, **kwargs):
+        # group_id = self.kwargs.get('pk')
+        group_id = request.POST.get('group_id')
+        group = UserGroup.objects.get(pk=int(group_id))
+
+        if group is None:
+            logger.error("Can not find group with id:" + group_id)
+            return HttpResponse(status=404)
+
+        group_name = request.POST.get('group_name')
+
+        if group_name != group.name:
+            # exsit = get_object_or_404(UserGroup, name=group_name)
+            # exsit = UserGroup.objects.get(name=group_name)
+            if UserGroup.objects.filter(name=group_name, groupType=MESSAGE_GROUP):
+                logger.error("group name already exist")
+                return HttpResponse(json.dumps({ "error": "group name already exist", "errorCode": 1}), content_type='application/json')
+
+
+        pk_list = request.POST.getlist('pk[]')
+        product = request.POST.get("product")
+        is_range = request.POST.get("is_range")
+        active_from = request.POST.get("active_from")
+        active_to = request.POST.get('active_to')
+        register_from = request.POST.get('register_from')
+        register_to = request.POST.get('register_to')
+        is_deposit = request.POST.get('is_deposit')
+
+        if is_range == "true":
+            is_range = True
+        else:
+            is_range = False
+
+        if isDateFormat(active_from):
+            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+        else:
+            active_from = None
+
+        if isDateFormat(active_to):
+            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+        else:
+            active_to = None
+
+        if isDateFormat(register_from):
+            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+        else:
+            register_from = None
+
+        if isDateFormat(register_to):
+            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+        else:
+            register_to = None
+
+        if is_deposit == "true":
+            is_deposit = True
+        else:
+            is_deposit = False
+
+
+        try:
+            group.name = group_name
+            group.is_range = is_range
+            group.product = product
+            group.active_from = active_from
+            group.active_to = active_to
+            group.register_from = register_from
+            group.register_to = register_to
+            group.is_deposit = is_deposit
+
+            group.save()
+
+            return HttpResponse(status=200)
+        except Exception as e:
+            logger.error(e)
+            return HttpResponse(e, status=500)
+
 
 
 class AWSTopicAPIView(GenericAPIView):
