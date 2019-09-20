@@ -326,6 +326,11 @@ class NotificationView(CommAdminView):
 
         paginator = Paginator(notification_list, pageSize)
         context["notifications"] = paginator.get_page(offset)
+        campArr = []
+        appCamp = Campaign.objects.all().distinct('name')
+        for i in appCamp:
+            campArr.append({"id" :i.pk, "name": i.name})
+        context['campaignOpt'] = campArr
 
         logger.info("GET NotificationView")
         return render(request, 'notification/index.html', context)

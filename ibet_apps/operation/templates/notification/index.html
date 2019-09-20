@@ -117,10 +117,13 @@ tbody>tr:nth-child(odd)>th {
           <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
             <select name="campaign" class="form-control">
-              <option>SELECT CAMPAIGN...</option>
-              <option value="CAMPAIGN1">CAMPAIGN1</option>
+              <option value="-1">SELECT CAMPAIGN...</option>
+              {% for campaign in campaignOpt %}
+                <option value="{{ campaign.id }}">{{ campaign.name }}</option>
+              {% endfor %}
+              <!-- <option value="CAMPAIGN1">CAMPAIGN1</option>
               <option value="CAMPAIGN2">CAMPAIGN2</option>
-              <option value="CAMPAIGN3">CAMPAIGN3</option>
+              <option value="CAMPAIGN3">CAMPAIGN3</option> -->
             </select>
           </div>
           <div class="form-group">
@@ -699,30 +702,37 @@ $(document).ready(function() {
     var subject = form.find('input[name="subject"]').val();
     var content_text = $('#content_text').html();
     var campaign = form.find('select[name="campaign"]').val();
+    
     var direct = form.find('input[name="direct_check"]').prop('checked');
     var sms = form.find('input[name="SMS_check"]').prop('checked');
     var email = form.find('input[name="email_check"]').prop('checked');
     var push = form.find('input[name="push_check"]').prop('checked');
-    $.ajax({
-      type: "POST",
-      url: "{% url 'xadmin:notification' %}",
-      data: {
-        csrfmiddlewaretoken: "{{ csrf_token }}",
-        campaign: campaign,
-        subject: subject,
-        content_text: content_text,
-        group_list: JSON.stringify(group_list),
-        member_list: JSON.stringify(member_list),
-        direct_check: direct,
-        SMS_check: sms,
-        email_check: email,
-        push_check: push,
-      },
-      success: function(data)
-        {
-          window.location.reload();
-        }
-    });
+    if (campaign === "-1") {
+        alert("please select campaign")
+    } else {
+        console.log(campaign);
+        $.ajax({
+        type: "POST",
+        url: "{% url 'xadmin:notification' %}",
+        data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+            campaign: campaign,
+            subject: subject,
+            content_text: content_text,
+            group_list: JSON.stringify(group_list),
+            member_list: JSON.stringify(member_list),
+            direct_check: direct,
+            SMS_check: sms,
+            email_check: email,
+            push_check: push,
+        },
+        success: function(data)
+            {
+            window.location.reload();
+            }
+        });
+    }
+    
   });
 
 /*
