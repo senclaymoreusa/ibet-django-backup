@@ -569,23 +569,56 @@ class MessageUserGroupView(CommAdminView):
         group_name = request.POST.get('group_name')
         pk_list = request.POST.getlist('pk[]')
         product = request.POST.get("product")
+        is_range = request.POST.get("is_range")
         active_from = request.POST.get("active_from")
-        active_to = request.GET.get('active_to')
-        register_from = request.GET.get('register_from')
-        register_to = request.GET.get('register_to')
+        active_to = request.POST.get('active_to')
+        register_from = request.POST.get('register_from')
+        register_to = request.POST.get('register_to')
+        is_deposit = request.POST.get('is_deposit')
+
+        if is_range == "true":
+            is_range = True
+        else:
+            is_range = False
+
+        if isDateFormat(active_from):
+            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+        else:
+            active_from = None
+
+        if isDateFormat(active_to):
+            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+        else:
+            active_to = None
+
+        if isDateFormat(register_from):
+            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+        else:
+            register_from = None
+
+        if isDateFormat(register_to):
+            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+        else:
+            register_to = None
+
+        if is_deposit == "true":
+            is_deposit = True
+        else:
+            is_deposit = False
+
 
         data = {
             "name": group_name,
             "groupType": MESSAGE_GROUP,
             "creator": self.user.pk,
+            "is_range": is_range,
             "product": product,
             "active_from": active_from,
             "active_to": active_to,
             "register_from": register_from,
-            "register_to": register_to
+            "register_to": register_to,
+            "is_deposit": is_deposit
         }
-
-        print(data)
 
         serializer = MessageUserGroupSerializer(data=data)
         if serializer.is_valid():
@@ -600,6 +633,7 @@ class MessageUserGroupView(CommAdminView):
         else:
             logger.error(serializer.errors['name'][0])
             return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+
 
 class CampaignView(CommAdminView):
     def get(self, request, *arg, **kwargs):
@@ -853,6 +887,29 @@ class MessageGroupUserAPI(View):
         response["user"] = user_list
         response["pk_list"] = pk_list
         # return HttpResponse(response)
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+
+class MessageGroupDetailAPI(View):
+    def get(self, request, *arg, **kwargs):
+        group_id = request.GET.get('groupId')
+        group = UserGroup.objects.get(pk=group_id)
+
+        group_users = UserToUserGroup.objects.filter(group=group)
+
+        response = {}
+        
+        response["group"] = serializers.serialize('json', [group,])
+
+        user_list = []
+        for utog in group_users:
+            item = {}
+            item["pk"] = utog.user.pk
+            item["username"] = utog.user.username
+            user_list.append(item)
+
+        response["user_list"] = user_list
+
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 

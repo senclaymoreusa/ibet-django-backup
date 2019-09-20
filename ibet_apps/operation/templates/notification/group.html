@@ -108,7 +108,7 @@ hr {
             <td>{{ group.time_used }}</td>
             <td><a onclick="return getCreator('{{ group.creator }}')">{{ group.creator }}</a></td>
             <td>66.67%</td>
-            <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button">Edit</a></td>
+            <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button" onclick="return getGroup('{{ group.pk }}')">Edit</a></td>
             <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
             <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
                 <i class="fa fa-info"></i>
@@ -824,24 +824,33 @@ $(document).ready(function() {
     e.preventDefault();
     var form = $(this);
     var group_name = form.find('input[name="group_name"]').val();
+    var is_range = $('#range').prop("checked");
+    var is_deposit = $('#onlydeposited').prop("checked");
+    /*
     var product = $('#product').val();
     var active_from = $('#from_date').val();
     var active_to = $('#to_date').val();
     var register_from = $('#reg-from').val();
     var register_to = $('#reg-to').val();
+    */
+
+    console.log(userFilter['register_from'])
+    console.log(userFilter['register_to'])
 
     $.ajax({
       type: "POST",
       url: "{% url 'xadmin:messagegroups' %}",
       data: {
-        csrfmiddlewaretoken: "{{ csrf_token }}",
-        group_name: group_name,
-        pk: pk_list,
-        product: userFilter['product'],
-        active_from: userFilter['active_from'],
-        active_to: userFilter['active_to'],
-        register_from: userFilter['register_from'],
-        register_to: userFilter['register_to'],
+        'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'group_name': group_name,
+        'pk': pk_list,
+        'product': userFilter['product'],
+        'is_range': is_range,
+        'active_from': userFilter['active_from'],
+        'active_to': userFilter['active_to'],
+        'register_from': userFilter['register_from'],
+        'register_to': userFilter['register_to'],
+        'is_deposit': is_deposit,
       },
       success: function(data)
         {
@@ -881,14 +890,6 @@ $(document).ready(function() {
     });
   }
 
-  function createTable(data) {
-    $('#member-table tbody').empty();
-    for(var i=0; i<data.length; i++) {
-      var row = '<tr><td style="width: 6%;">' + (i+1) + '</td><td style="width: 34%;">' + data[i]['pk'] + '</td><td style="width: 60%;">' + data[i]['username'] + '</td></tr>'
-      $('#member-table tbody').append(row);
-    }
-  }
-
   getNext = function() {
     if ($('#nextPage').hasClass('disabled')) {
         return;
@@ -922,6 +923,15 @@ function getUserListRedirectUrl(pageSize, offset) {
       redirectUrl += '&offset=' + offset;
 
   return redirectUrl;
+}
+
+
+function createTable(data) {
+  $('#member-table tbody').empty();
+  for(var i=0; i<data.length; i++) {
+    var row = '<tr><td style="width: 6%;">' + (i+1) + '</td><td style="width: 34%;">' + data[i]['pk'] + '</td><td style="width: 60%;">' + data[i]['username'] + '</td></tr>'
+    $('#member-table tbody').append(row);
+  }
 }
 
 function getMemberInfo(groupName) {
@@ -1009,6 +1019,39 @@ function getCreator(username) {
             }
         }
     });
+}
+
+function getGroup(groupId) {
+  $('#create_group .modal-title').text("Edit Group");
+  $.ajax({
+      type: "GET",
+      url: "{% url 'group-detail' %}",
+      data: {
+        'groupId': groupId
+      },
+      success: function(data)
+      {   
+          console.log(data);
+          var fields = JSON.parse(data["group"])[0]["fields"];
+          console.log(fields);
+          user_list = data["user_list"];
+          $("#newgroup").trigger("reset");
+
+          $("#newgroup").find('input[name="group_name"]').val(fields["name"]);
+          $("#product").val(fields["product"]);
+          $('#range').prop("checked", fields["is_range"]);
+          $("#from_date").val(fields["active_from"]);
+          $("#to_date").val(fields["active_to"]);
+          $("#reg-from").val(fields["register_from"]);
+          $("#reg-to").val(fields["register_to"]);
+          $('#onlydeposited').prop("checked", fields["is_deposit"]);
+          
+
+          $('#member_count').html("&nbsp;" + user_list.length);
+          
+          createTable(user_list);
+      }
+  });
 }
 
 </script>
