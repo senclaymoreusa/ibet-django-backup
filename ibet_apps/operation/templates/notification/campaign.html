@@ -91,10 +91,10 @@ tbody>tr:nth-child(odd)>th {
             <tr>
             <td>{{ campaign.name }}</td>
             <td>{{ campaign.groups|join:", " }}</td>
-            <td>{{ group.members }}</td>
+            <td>{{ campaign.messages }}</td>
             <td>{{ campaign.created_time }}</td>
             <td><a onclick="return getCreator('{{ campaign.creator }}')">{{ campaign.creator }}</a></td>
-            <td>{{ group.members }}</td>
+            <td>{{ campaign.sent_count }}</td>
             <td>66.67%</td>
             <td>66.67%</td>
             <td><a class="btn btn-primary" onclick='viewGampaign("{{ campaign.name }}")'>Edit</a></td>
@@ -156,7 +156,7 @@ tbody>tr:nth-child(odd)>th {
                 <form id="newCampaignForm">
                 {% csrf_token %}
                     <input type="hidden" name="type" value="create_new_campaign" id="formAction"></input>
-                    <input type="hidden" name="ids" value="[]" id="campaignIds"></input>
+                    <input type="hidden" name="id" value="" id="campaignId"></input>
                     <div class="form-group">
                         <label for="campaign_name">NAME</label>
                         <input type="text" class="form-control" name="campaign_name" required>
@@ -415,13 +415,15 @@ $(document).ready(function() {
         var form = $(this);
         var url = "{% url 'xadmin:campaign' %}";
         var tags = $('#hidden_tags').val();
-        // $(selector).serialize();
+        var data = form.serialize() + "&tags=" + tags;
+        // console.log(data);
         $.ajax({
             type: "POST",
             url: url,
             data: form.serialize() + "&tags=" + tags,
             success: function(data)
             {
+                // console.log(data);
                 window.location.reload();
             }
         });
@@ -551,7 +553,8 @@ function viewGampaign(name) {
             'campaignName': name,
         },
         success: function(response)
-        {
+        {   
+            // console.log(response);
             $('#create_campaign').modal({'show' : true});
             $('input[name="campaign_name"]').val(response.name);
             $( ".delete" ).css("display", "auto");
@@ -559,10 +562,10 @@ function viewGampaign(name) {
             
             $("#sendto").tagsinput('removeAll');
             for (var i = 0; i < response.group.length; i++) {
-                $("#sendto").tagsinput('add', { "id": i , "name": response.group[i] });
+                $("#sendto").tagsinput('add', { "id": response.group[i].id , "name": response.group[i].group });
             
             }
-            $('#campaignIds').val(JSON.stringify(response.campaignsIds))
+            $('#campaignId').val(response.campaignId)
         }
     });
 }

@@ -20,7 +20,7 @@ import pytz
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from operation.serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer, CampaignSerializer
-from operation.models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic, Campaign
+from operation.models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic, Campaign, CampaignToGroup
 from users.models import CustomUser
 from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
@@ -646,17 +646,26 @@ class CampaignView(CommAdminView):
         getType = request.GET.get('type')
         if getType == 'view_campaign':
             campaignName = request.GET.get('campaignName')
-            campaigns = Campaign.objects.filter(name=campaignName)
+            campaigns = Campaign.objects.get(name=campaignName)
+            campaignToGroup = CampaignToGroup.objects.filter(campaign=campaigns)
             groups = []
-            ids = []
-            for i in campaigns:
-                groups.append(i.group.name)
-                ids.append(i.pk)
+            for group in campaignToGroup:
+                groupData = {
+                    "group": group.group.name,
+                    "id": group.group.pk
+                }
+                groups.append(groupData)
+
+            
+            # ids = []
+            # for i in campaigns:
+            #     groups.append(i.group.name)
+            #     ids.append(i.pk)
             
             data = {
                 "name": campaignName,
                 "group": groups,
-                "campaignsIds": ids
+                "campaignId": campaigns.pk
             }
 
             return HttpResponse(json.dumps(data), content_type='application/json')
@@ -693,9 +702,9 @@ class CampaignView(CommAdminView):
             context["title"] = title
             context['time'] = timezone.now()
             context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
-            
-            campaigns = Campaign.objects.distinct('name')
-            
+            campaigns = []
+            campaigns = Campaign.objects.all()
+            # print(campaigns)
             campaign_data = []
             for campaign in campaigns:
                 campaign_item = {}
@@ -703,12 +712,22 @@ class CampaignView(CommAdminView):
                 campaign_item['name'] = campaign.name
                 campaign_item['creator'] = campaign.creator
                 campaign_item['created_time'] = campaign.create_on
+                groupPerCamp = CampaignToGroup.objects.filter(campaign=campaign)
+                # print(groupPerCamp)
                 campaign_item['groups'] = []
-                allCampaign = Campaign.objects.filter(name=campaign.name)
-                for i in allCampaign:
+                for i in groupPerCamp:
                     campaign_item['groups'].append(i.group.name)
+                # allCampaign = Campaign.objects.filter(name=campaign.name)
+                # for i in allCampaign:
+                #     campaign_item['groups'].append(i.group.name)
                 campaign_data.append(campaign_item)
-
+                messages = Notification.objects.filter(campaign=campaign)
+                campaign_item['messages'] =  messages.count()
+                sentUser = 0
+                for i in messages:
+                    sentUser += NotificationToUsers.objects.filter(notification_id=i.pk).count()
+                campaign_item['sent_count']= sentUser
+                
             paginator = Paginator(campaign_data, pageSize)
             context['campaigns'] = paginator.get_page(offset)
 
@@ -726,9 +745,11 @@ class CampaignView(CommAdminView):
             groups = json.loads(groups)
             creator = CustomUser.objects.get(username=self.user.username)
             objs = []
+            campaign = Campaign.objects.create(name=campaignName, creator=creator)
+            # print(groups)
             for groupName in groups:
                 group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
-                Campaign.objects.get_or_create(group=group, name=campaignName, creator=creator)
+                CampaignToGroup.objects.create(campaign=campaign, group=group)
 
             return HttpResponse("success")
         
@@ -740,21 +761,30 @@ class CampaignView(CommAdminView):
         elif postType == "update_campaign":
             campaignName = request.POST.get('campaign_name')
             groups = request.POST.get('tags')
-            ids = request.POST.get('ids')
+            campaignId = request.POST.get('id')
             groups = json.loads(groups)
-            ids = json.loads(ids)
-            print(groups, ids)
-            oldIds = []
-            oldCampaignName = Campaign.objects.get(pk=ids[0])
-            oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
+            camp = Campaign.objects.get(pk=campaignId)
+            camp.name = campaignName
+            camp.save()
 
-            for i in ids:
-                campaign = Campaign.objects.get(pk=i)
-                if campaign.group.name in groups:
-                    campaign.name = campaignName
-                    campaign.save()
-                else:
-                    campaign.delete()
+            CampaignToGroup.objects.filter(campaign=camp).delete()
+
+            for groupName in groups:
+                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                # print(group)
+                CampaignToGroup.objects.create(campaign=camp, group=group)
+            
+            # oldIds = []
+            # oldCampaignName = Campaign.objects.get(pk=ids[0])
+            # oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
+            # CampaignToGroup.objects.filter()
+            # for i in ids:
+            #     campaign = Campaign.objects.get(pk=i)
+            #     if campaign.group.name in groups:
+            #         campaign.name = campaignName
+            #         campaign.save()
+            #     else:
+            #         campaign.delete()
 
             return HttpResponse("success update")
 
