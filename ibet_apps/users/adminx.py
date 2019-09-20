@@ -80,6 +80,11 @@ class GlobalSettings(object):
                         'url': '/xadmin/performance-report/',
                         'icon': 'fa fa-user-circle-o'
                     },
+                    {
+                        'title': 'Members reports',
+                        'url': '/xadmin/members-report/',
+                        'icon': 'fa fa-user-circle-o'
+                    },
                 )
             }
         ]

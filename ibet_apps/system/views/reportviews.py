@@ -28,7 +28,7 @@ import requests
 logger = logging.getLogger('django')
 
 
-class ReportView(CommAdminView): 
+class PerformanceReportView(CommAdminView): 
 
     def get(self, request):
         getType = request.GET.get('type')
@@ -263,3 +263,43 @@ def getCurrency(currency):
         currencyRes = currencyRes.json()
         currency = currencyRes["currency"]["code"]
     return currency
+
+
+
+
+
+class MembersReportView(CommAdminView): 
+
+
+    def get(self, request):
+        getType = request.GET.get('type')
+        if getType == "get_member_number":
+            members = request.GET.get('members')
+            # print(members)
+            members = json.loads(members)
+            data = {
+                "members": [],
+                "memberNumber": 0
+            }
+            memberArr = []
+            for member in members:
+                try:
+                    CustomUser.objects.filter(username=member)
+                    memberArr.push(member)
+                except:
+                    pass
+                
+            data["members"] = memberArr
+            data["memberNumber"] = len(memberArr)
+            return HttpResponse(json.dumps(data), status=200)
+
+        else:
+            context = super().get_context()
+            title = _('Group Permission')
+            context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+            context['title'] = title
+            context['time'] = timezone.now()
+            context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
+
+
+            return render(request, 'member_report.html', context)
