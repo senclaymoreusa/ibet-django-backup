@@ -16,6 +16,7 @@ from django.conf import settings
 # from xadmin.layout import Main, Fieldset, Row
 from xadmin.layout import *
 from xadmin.plugins.inline import Inline
+from django.contrib.auth.models import Permission
 
 
 DOMAIN = settings.DOMAIN
@@ -56,6 +57,27 @@ class GlobalSettings(object):
                 )
             },
             {
+                'title': 'Finance',
+                'icon': 'fa fa-credit-card',
+                'menus': (
+                    {
+                        'title': 'Deposits',
+                        'url': '/xadmin/deposit',
+                        'icon': 'fa fa-arrow-right'
+                    },
+                    {
+                        'title': 'Withdrawals',
+                        'url': '/xadmin/withdrawal',
+                        'icon': 'fa fa-arrow-left'
+                    },
+                    {
+                        'title': 'Settings',
+                        'url': '/xadmin/channel_list',
+                        'icon': 'fa fa-cog'
+                    },
+                )
+            },
+            {
                 'title': 'System admin',
                 'icon': 'fa-fw fa fa-cog',
                 'menus': (
@@ -86,7 +108,23 @@ class GlobalSettings(object):
                         'icon': 'fa fa-user-circle-o'
                     },
                 )
-            }
+            },
+            {
+                'title': 'Messaging',
+                'icon': 'far fa-envelope',
+                'menus': (
+                    {
+                        'title': 'Messages',
+                        'url': '/xadmin/operation/notification/',
+                        'icon': 'far fa-envelope'
+                    },
+                    {
+                        'title': 'Groups',
+                        'url': '/xadmin/operation/messagegroups/',
+                        'icon': 'fas fa-user-friends'
+                    },
+                )
+            },
         ]
                     
 from django.contrib import admin
@@ -272,10 +310,11 @@ xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
 xadmin.site.unregister(Group)
-xadmin.site.register(CustomUser, MyUserAdmin)
-xadmin.site.register(UserTag,TagAdmin)
-xadmin.site.register(UserWithTag,UserWithTagAdmin)
-xadmin.site.register(UserAction, UserActionAdmin)
+xadmin.site.unregister(Permission)
+# xadmin.site.register(CustomUser, MyUserAdmin)
+# xadmin.site.register(UserTag,TagAdmin)
+# xadmin.site.register(UserWithTag,UserWithTagAdmin)
+# xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
 xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
 xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')

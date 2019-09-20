@@ -13,7 +13,7 @@ from users.models import (
     CustomUser,
 )
 
-from utils.constants import TRANSACTION_TYPE_DEPOSIT, TRANSACTION_TYPE_WITHDRAW, currency_cny
+from utils.constants import TRANSACTION_TYPE_DEPOSIT, TRANSACTION_TYPE_WITHDRAW, CURRENCY_CNY
 
 import json
 from utils.constants import *
@@ -75,23 +75,41 @@ class AccountingModelTest(TestCase):
         deposit_transaction = Transaction.objects.create(
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
+<<<<<<< HEAD
             transaction_type=TRANSACTION_TYPE_DEPOSIT,
-            currency=currency_cny,
+            currency=CURRENCY_CNY,
             method="test_method",
             remark="test_remark",
         )
         self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_TYPE_DEPOSIT).count(), 1) 
+=======
+            transaction_type=TRANSACTION_TYPE_DEPOSIT,
+            currency=CURRENCY_CNY,
+            method="test_method",
+            remark="test_remark",
+        )
+        self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_TYPE_DEPOSIT).count(), 1) 
+>>>>>>> ae121f71dc19adc683835c34b47395db8f9d00d2
     
     def test_create_withdraw_transaction_from_admin(self):
         deposit_transaction = Transaction.objects.create(
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
+<<<<<<< HEAD
             transaction_type=TRANSACTION_TYPE_WITHDRAW,
-            currency=currency_cny,
+            currency=CURRENCY_CNY,
             method="test_method",
             remark="test_remark",
         )
         self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_TYPE_WITHDRAW).count(), 1)
+=======
+            transaction_type=TRANSACTION_TYPE_WITHDRAW,
+            currency=CURRENCY_CNY,
+            method="test_method",
+            remark="test_remark",
+        )
+        self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_TYPE_WITHDRAW).count(), 1)
+>>>>>>> ae121f71dc19adc683835c34b47395db8f9d00d2
     
     # create deposit channel from backend model
     def test_create_deposit_channel(self):

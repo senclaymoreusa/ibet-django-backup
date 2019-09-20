@@ -25,7 +25,7 @@ def set_loss_limitation(userId, lossLimit, lossLimitInterval, oldLimitMap, user)
     # insert or update
     for i in range(len(lossLimit)):
         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).exists():
-            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).update(amount=lossLimit[i])
+            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS, interval=lossLimitInterval[i]).update(amount=lossLimit[i], expiration_time=None)
             logger.info('Update loss limit for interval type: ' + str(user))
         else:
             limitation = Limitation(
@@ -51,7 +51,7 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
     for i in range(len(depositLimitInterval)):
         # print("index: " + str(i))
         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).exists():
-            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).update(amount=depositLimit[i])
+            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT, interval=depositLimitInterval[i]).update(amount=depositLimit[i], expiration_time=None)
             logger.info('Update deposit limit for interval type: ' + str(user))
         else:
             limitation = Limitation(
@@ -118,3 +118,51 @@ def get_old_limitations(userId):
     # print(oldLimitMap)
     logger.info("Getting old limitations of user: {}, and limitations are {}".format(str(user.username), json.dumps(oldLimitMap, cls=DjangoJSONEncoder)))
     return oldLimitMap
+
+
+def checkUserBlock(userId):
+
+    user = CustomUser.objects.get(pk=userId)
+    if user.block is True:
+        return True
+    elif user.temporary_block_time or user.permanent_block_time:
+        expried_time = ''
+        blocked_time = ''
+        if user.temporary_block_time is not None:
+            blocked_time =  user.temporary_block_time
+            expried_time = user.temporary_block_time
+            if user.temporary_block_interval == INTERVAL_PER_DAY:
+                expried_time = expried_time + datetime.timedelta(days=1)
+            elif user.temporary_block_interval == INTERVAL_PER_WEEK:
+                expried_time = expried_time + datetime.timedelta(days=7)
+            elif user.temporary_block_interval == INTERVAL_PER_MONTH:
+                expried_time = expried_time + datetime.timedelta(days=30)
+            
+        elif user.permanent_block_time is not None:
+            blocked_time =  user.permanent_block_time
+            expried_time = user.permanent_block_time
+            if user.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
+                expried_time = expried_time + datetime.timedelta(6*365/12)
+            elif user.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
+                expried_time = expried_time + datetime.timedelta(365)
+            elif user.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
+                expried_time = expried_time + datetime.timedelta(365*3)
+            elif user.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
+                expried_time = expried_time + datetime.timedelta(365*5)
+
+        logger.info("Blocked time: " + str(blocked_time))   
+        logger.info("Expried time: " + str(expried_time))
+
+        # print(str(timezone.now()))
+        if expried_time > timezone.now():
+            logger.info("The account is blocked")
+            return True
+        else:
+            # print("No")
+            logger.info("The account is not blocked")
+            user.temporary_block_time = None
+            user.permanent_block_time = None
+            return False
+
+    return False
+    

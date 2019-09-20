@@ -60,7 +60,8 @@ CHANNEL_CHOICES = (
     (6, 'Payzod'),
     (7, 'CirclePay'),
     (8, 'Fgate'),
-    (9, 'ScratchCard')
+    (9, 'ScratchCard'),
+    (10, 'PaymentIQ')
 )
 
 CURRENCY_CNY = 0
@@ -92,6 +93,17 @@ CURRENCY_CHOICES = (
     (CURRENCY_NOK, 'NOK'),
     (CURRENCY_GBP, 'GBP')
 )
+
+TRAN_SUCCESS_TYPE = 0
+TRAN_FAIL_TYPE = 1
+TRAN_CREATE_TYPE = 2
+TRAN_PENDING_TYPE = 3
+TRAN_APPROVED_TYPE = 4
+TRAN_CANCEL_TYPE = 5
+TRAN_COMPLETED_TYPE = 6
+TRAN_RESEND_TYPE = 7
+TRAN_REJECTED_TYPE = 8
+
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
@@ -104,10 +116,21 @@ STATE_CHOICES = (
     (8, 'REJECTED'),
     (9, 'HELD'),
 )
+
+REVIEW_APP = 0
+REVIEW_PEND = 1
+REVIEW_REJ = 2
+REVIEW_SUCCESS = 3
+REVIEW_FAIL = 4
+REVIEW_RESEND = 5
+
 REVIEW_STATE_CHOICES = (
-    (0, 'Approved'),
-    (1, 'Pending'),
-    (2, 'Rejected'),
+    (0, 'APPROVED'),
+    (1, 'PENDING'),
+    (2, 'REJECTED'),
+    (3, 'SUCCESSFUL'),
+    (4, 'FAILED'),
+    (5, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (
@@ -132,6 +155,7 @@ TRANSACTION_TYPE_TRANSFER = 4
 TRANSACTION_TYPE_BONUS = 5
 TRANSACTION_TYPE_ADJUSTMENT = 6
 TRANSACTION_TYPE_COMMISSION = 7
+
 
 TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_TYPE_DEPOSIT, 'Deposit'),
@@ -220,9 +244,11 @@ AGENT_STATUS = (
 
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
+MESSAGE_GROUP = 2
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
+    (MESSAGE_GROUP, 'message'),
     (OTHER_GROUP, 'other')
 )
 
@@ -425,6 +451,18 @@ GAME_ATTRIBUTES = (
     (GAME_ATTRIBUTES_THEME, 'Theme'),
 )
 
+ACTIVITY_CHECK_FIVE_MIN = 0
+ACTIVITY_CHECK_HALF_HOUR = 1
+ACTIVITY_CHECK_ONE_HOUR = 2
+ACTIVITY_CHECK_TWO_HOURS = 3
+
+ACTIVITY_CHECK = (
+    (ACTIVITY_CHECK_FIVE_MIN, '5 minutes'),
+    (ACTIVITY_CHECK_HALF_HOUR, '30 minutes'),
+    (ACTIVITY_CHECK_ONE_HOUR, '60 minutes'),
+    (ACTIVITY_CHECK_TWO_HOURS, '120 minutes'),
+)
+
 
 EVENT_CHOICES_LOGIN = 0
 EVENT_CHOICES_LOGOUT = 1
@@ -499,8 +537,6 @@ FGATE_TYPE = keys["FGO"]["TYPE"]
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
-# TODO: RETRIEVE API KEYS FROM AWS S3
 # circlepay
 CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
 CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
@@ -540,6 +576,7 @@ BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
 # payzod production
+# TODO: Will need to update Production credentials because these credentials are temporary
 if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
@@ -592,17 +629,12 @@ NOTIFICATION_STATUS = (
     (MESSAGE_APPROVED, 'APPROVED')
 )
 
-NOTIFICATION_DIRECT = 'D'
-NOTIFICATION_PUSH   = 'P'
-NOTIFICATION_SMS    = 'S'
-NOTIFICATION_EMAIL  = 'E' 
+SYSTEM_USER = 1
 
-NOTIFICATION_METHOD = (
-    (NOTIFICATION_DIRECT, 'direct'),
-    (NOTIFICATION_PUSH, 'push'),
-    (NOTIFICATION_SMS, 'sms'),
-    (NOTIFICATION_EMAIL, 'email')
-)
+NOTIFICATION_CONSTRAINTS_QUANTITY = 1000
+
+AWS_SMS_REGION = 'eu-west-1'
+AWS_SQS_REGION = 'eu-west-2'
 
 COUNTRY_CODE_CHINA = 'CNY'
 COUNTRY_CODE_GERMANY = 'DE'
@@ -1042,5 +1074,6 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"

@@ -51,12 +51,16 @@ from allauth.account import app_settings as allauth_settings
 
 from dateutil.relativedelta import relativedelta
 from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
-from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation
+from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GameRequestsModel
 from games.models import Game as NewGame
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
+from users.views.helper import *
+
+from operation.views import send_sms
 
 import datetime
 import logging
@@ -283,7 +287,7 @@ class LoginView(GenericAPIView):
         # print('login language code: ' + languageCode)
 
         self.user = self.serializer.validated_data['user']
-        if self.user.block is True:
+        if checkUserBlock(self.user.pk):
             # print("user block")
             raise BlockedUserException
         if self.user.active == False:
@@ -1200,15 +1204,9 @@ class GenerateActivationCode(APIView):
         user = get_user_model().objects.filter(username=username)
         random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         user.update(activation_code=random_num)
+
+        send_sms(str(random_num), user[0].pk)
     
-        DOMAIN = settings.DOMAIN
-        r = requests.post(DOMAIN + 'operation/api/notification', {
-            'content':               random_num, 
-            'notification_choice':   'U',
-            'notification_method':   'S',
-            'notifiers':             user[0].pk
-        })
-        
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):
@@ -1371,6 +1369,14 @@ class DeleteLimitation(View):
         
         data = json.loads(request.body)
         user_id = data['user_id']
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+        
         # limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
@@ -1410,6 +1416,14 @@ class CancelDeleteLimitation(View):
         
         data = json.loads(request.body)
         user_id = data['user_id']
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+
         # limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
@@ -1430,7 +1444,6 @@ class CancelDeleteLimitation(View):
 
         return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
 
-
 class GetLimitation(View):
 
     def get(self, request, *args, **kwargs):
@@ -1441,6 +1454,13 @@ class GetLimitation(View):
         # for key, value in limitDict.items():
         #     if value == limit_type:
         #         limit_type = key
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
 
         user = CustomUser.objects.get(pk=user_id)
         userJson = serializers.serialize('json', [user])
@@ -1466,16 +1486,17 @@ class GetLimitation(View):
             temporary_amount = decimal.Decimal(0) if limitation.temporary_amount is None else  decimal.Decimal(limitation.temporary_amount)
             amount = None if limitation.amount is None else decimal.Decimal(limitation.amount)
             expiration_timeStr = ''
+            expiration_time = ""
             if limitation.expiration_time:
                 current_tz = timezone.get_current_timezone()
                 expiration_time = limitation.expiration_time.astimezone(current_tz)
                 expiration_timeStr = str(limitation.expiration_time.astimezone(current_tz))
 
-            if limitation.amount is None and limitation.expiration_time and expiration_time <= timezone.now():
+            if not limitation.amount and not expiration_time:
                 continue
-            # print(limitation.expiration_time)
-            # expiration_time = None if limitation.expiration_time is None else str(limitation.expiration_time)
-            # print(expiration_time)
+            else:
+                if expiration_time and expiration_time <= timezone.now():
+                    continue
             
             if limitation.limit_type == LIMIT_TYPE_LOSS:
                 lossMap = {
@@ -1525,6 +1546,15 @@ class SetBlockTime(View):
         data = json.loads(request.body)
         lock_timespan = data['timespan']
         user_id = data['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+
         # lock_type = data['type']
         tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
         # print(user_id, lock_type, lock_timespan)
@@ -1541,6 +1571,15 @@ class MarketingSettings(View):
 
     def get(self, request, *args, **kwargs):
         user_id = request.GET['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+
         user = CustomUser.objects.get(pk=user_id)
         contact_methods = user.contact_methods
 
@@ -1571,6 +1610,14 @@ class MarketingSettings(View):
         postal_mail = data['postalMail']
         social_media = data['socialMedia']
         user_id = data['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
 
         contact_methods = []
         # print(email, phone, sms, postal_mail, social_media, user_id)
@@ -1604,6 +1651,15 @@ class PrivacySettings(View):
 
     def get(self, request, *args, **kwargs):
         user_id = request.GET['userId']
+
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+        
         user = CustomUser.objects.get(pk=user_id)
         response = {
             "bonus": user.bonusesProgram,
@@ -1620,6 +1676,13 @@ class PrivacySettings(View):
         bonuses = data['bonuses']
         vip = data['vip']
         user_id = data['userId']
+        if checkUserBlock(user_id):
+            blockMessage = _('Current user is blocked!')
+            data = {
+                "block": True,
+                "blockMessage": blockMessage
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
 
         user = CustomUser.objects.get(pk=user_id)
         user.bonusesProgram = bonuses
@@ -1630,3 +1693,42 @@ class PrivacySettings(View):
         logger.info("Bonuses: {}, VIP: {}".format(bonuses, vip))
 
         return HttpResponse(('Successfully set the privacy setting'), status = 200)
+
+
+class GetBetHistory(View):
+
+    #permission_classes = (IsAuthenticated, )
+    def get(self, request, *args, **kwargs):
+        user_name = request.GET['username']
+        bet = GameRequestsModel.objects.filter(MemberID=user_name)
+        #print(bet)
+        response = {
+            "bet": list(bet.values())
+        }
+        
+        return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+
+class ActivityCheckSetting(View):
+
+
+    def get(self, request, *args, **kwargs):
+        userId= request.GET['userId']
+        user = CustomUser.objects.get(pk=userId)
+        response = {
+            "activityOpt": user.activity_check
+        }
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        userId = data['userId']
+        activityOpt = data['activityOpt']
+
+        user = CustomUser.objects.get(pk=userId)
+        user.activity_check = activityOpt
+        user.save()
+        logger.info("Activity check setting for user: {}, and time option is: {}".format(str(user.username), activityOpt))
+
+        return HttpResponse(('Successfully set the activity check setting'), status = 200)
+

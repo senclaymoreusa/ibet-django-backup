@@ -32,23 +32,16 @@ class UserToAWSTopic(models.Model):
 
 # Notification Content
 class Notification(models.Model):
-    NOTIFICATION_CHOICE = (
-        ('U', _('Unicast')),
-        ('M', _('Multicast')),
-        ('B', _('Broadcast')),
-    )
-
     subject = models.CharField(max_length=200, default='')
     # content_text = models.CharField(max_length=1000, default='')
     content_text = RichTextUploadingField(blank=True, null=True)
-    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='creator')
+    creator = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE, related_name='creator')
     create_on = models.DateTimeField('Create Date', auto_now_add=True, blank=False)
     auditor = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE, related_name='auditor')
     audit_date = models.DateTimeField('Audit Date', null=True)
     campaign = models.CharField(max_length=100, blank=True, null=True)
     bonus = models.ForeignKey(Bonus, blank=True, null=True, on_delete=models.CASCADE)
-    # notification_method = models.CharField(max_length=4, default='D', blank=False)
-    is_direct_message = models.BooleanField(default=False)
+    is_direct_message = models.BooleanField(default=True)
     is_email_message = models.BooleanField(default=False)
     is_sms_message = models.BooleanField(default=False)
     is_push_message = models.BooleanField(default=False)
@@ -75,3 +68,9 @@ class NotificationToUsers(models.Model):
     notification_id = models.ForeignKey(Notification, on_delete=models.CASCADE)
     notifier_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_read = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+
+
+class NotificationToGroup(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)

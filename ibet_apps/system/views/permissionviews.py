@@ -19,6 +19,7 @@ from django.db.models import Q
 import logging
 logger = logging.getLogger('django')
 
+
 # Create your views here.
 class PermissionGroupView(CommAdminView): 
     def get(self, request):
@@ -681,4 +682,3 @@ class GetAdminProfile(View):
         # print(response)
         logger.info("Sending the user profile : " + str(username) + ', data: ' + json.dumps(response))
         return JsonResponse({ "code": 0, "data": response})
-        

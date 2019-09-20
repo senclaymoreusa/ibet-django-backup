@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 
@@ -7,6 +8,7 @@ import accounting.views.paypalviews as paypal
 import accounting.views.linepayviews as linepay
 import accounting.views.astropayviews as astropay
 import accounting.views.asiapayviews as asiapay
+import accounting.views.deposit_views as deposit
 import accounting.views.help2payviews as help2pay
 import accounting.views.circlepayviews as circlepay
 import accounting.views.payzodviews as payzod
@@ -60,8 +62,13 @@ urlpatterns = [
     path('api/payzod/deposit', csrf_exempt(payzod.get_qr_code), name="Payzod_Deposit"),
     path('api/payzod/confirm', csrf_exempt(payzod.confirm_payment), name="CirclePay_Confirm_Payment"),
     path('api/payzod/check_transtatus', csrf_exempt(payzod.get_qr_code), name="Payzod_Check_Status"),
-    path('api/paymentiq/verifyUser', csrf_exempt(paymentiq.verify_user), name="Verify_PaymentIQ_User"),
+    path('api/paymentiq/verifyuser', csrf_exempt(paymentiq.verify_user), name="PaymentIQ_Verify_User"),
+    path('api/paymentiq/authorize', csrf_exempt(paymentiq.authorize), name="Payment_IQ_Authorize"),
+    path('api/paymentiq/transfer', csrf_exempt(paymentiq.transfer), name="Payment_IQ_Transfer"),
+    path('api/paymentiq/cancel', csrf_exempt(paymentiq.cancel), name="Payment_IQ_Cancel"),
     path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card_Deposit"),
     path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
     path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
 ]
+
+
