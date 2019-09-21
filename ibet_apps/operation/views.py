@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
@@ -310,14 +310,14 @@ class NotificationView(CommAdminView):
             notification_item["creator"] = msg.creator
             notification_item["publish_on"] = msg.publish_on
             notification_item["status"] = msg.status
-            notifiers = NotificationToUsers.objects.filter(notification_id=msg.pk)
+            notifiers = NotificationToUsers.objects.filter(notification_id=msg)
             if len(notifiers) > 1:
                 notification_item["notifiers"] = len(notifiers)
             else:
                 notification_item["notifiers"] = notifiers
 
-            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
-            notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg.pk)&Q(is_read=True)).count()
+            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg).count()
+            notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg)&Q(is_read=True)).count()
             if(notification_item["sent_count"] == 0):
                 notification_item["rate"] = ""
             else:
@@ -680,6 +680,40 @@ class CampaignView(CommAdminView):
                 }
                 data.append(groupData)
             return HttpResponse(json.dumps(data), content_type='application/json')
+        
+        elif getType == 'view_campaign_info':
+            campaignId = request.GET.get('campaignId')
+            camp = Campaign.objects.get(pk=campaignId)
+            res = {
+                "campaignName": camp.name,
+                "campaignCreator": camp.creator.username,
+                "campaignCreatedTime": camp.create_on,
+            }
+            groups = []
+            campGroups = CampaignToGroup.objects.filter(campaign=camp)
+            for i in campGroups:
+                groups.append(i.group.name)
+            res["groups"] = groups
+
+            notificationArr = Notification.objects.filter(campaign=camp)
+            sentUser = 0
+            openMsg = 0
+            for i in notificationArr:
+                query = NotificationToUsers.objects.filter(notification_id=i)
+                sentUser += query.count()
+                openMsg += query.filter(is_read=True).count()
+
+            res["sent_count"] = sentUser
+            res["message_open"] = openMsg
+
+            if sentUser == 0:
+                res["open_rate"] = "0 %"
+            else:
+                res["open_rate"] = str((openMsg / sentUser) * 100) + '%'
+
+            # print(res)
+            return JsonResponse(res)
+
 
         else:
 
@@ -725,7 +759,7 @@ class CampaignView(CommAdminView):
                 campaign_item['messages'] =  messages.count()
                 sentUser = 0
                 for i in messages:
-                    sentUser += NotificationToUsers.objects.filter(notification_id=i.pk).count()
+                    sentUser += NotificationToUsers.objects.filter(notification_id=i).count()
                 campaign_item['sent_count']= sentUser
                 
             paginator = Paginator(campaign_data, pageSize)
