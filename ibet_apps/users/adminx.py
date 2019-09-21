@@ -107,6 +107,11 @@ class GlobalSettings(object):
                         'url': '/xadmin/operation/messagegroups/',
                         'icon': 'fas fa-user-friends'
                     },
+                    {
+                        'title': 'Campaign',
+                        'url': '/xadmin/operation/campaign/',
+                        'icon': 'fas fa-bullhorn'
+                    }
                 )
             },
         ]
