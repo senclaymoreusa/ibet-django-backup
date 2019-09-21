@@ -272,7 +272,7 @@ class NotificationView(CommAdminView):
 
         if search:
             logger.info('Search notification, key: ' + search)
-            msg_filter = msg_filter & (Q(subject__icontains=search) | Q(campaign__icontains=search))
+            msg_filter = msg_filter & (Q(subject__icontains=search)|Q(campaign__name__icontains=search))
             # queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
             # queryset = Notification.objects.filter(status=tab)
 
