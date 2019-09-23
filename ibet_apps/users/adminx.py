@@ -17,6 +17,7 @@ from django.conf import settings
 # from xadmin.layout import Main, Fieldset, Row
 from xadmin.layout import *
 from xadmin.plugins.inline import Inline
+from django.contrib.auth.models import Permission
 
 
 DOMAIN = settings.DOMAIN
@@ -91,6 +92,27 @@ class GlobalSettings(object):
                         'url': '/xadmin/roles/',
                         'icon': 'fa fa-id-badge'
                     },
+                )
+            },
+            {
+                'title': 'Messaging',
+                'icon': 'far fa-envelope',
+                'menus': (
+                    {
+                        'title': 'Messages',
+                        'url': '/xadmin/operation/notification/',
+                        'icon': 'far fa-envelope'
+                    },
+                    {
+                        'title': 'Groups',
+                        'url': '/xadmin/operation/messagegroups/',
+                        'icon': 'fas fa-user-friends'
+                    },
+                    {
+                        'title': 'Campaign',
+                        'url': '/xadmin/operation/campaign/',
+                        'icon': 'fas fa-bullhorn'
+                    }
                 )
             },
         ]
@@ -278,10 +300,11 @@ xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
 xadmin.site.unregister(Group)
-xadmin.site.register(CustomUser, MyUserAdmin)
-xadmin.site.register(UserTag,TagAdmin)
-xadmin.site.register(UserWithTag,UserWithTagAdmin)
-xadmin.site.register(UserAction, UserActionAdmin)
+xadmin.site.unregister(Permission)
+# xadmin.site.register(CustomUser, MyUserAdmin)
+# xadmin.site.register(UserTag,TagAdmin)
+# xadmin.site.register(UserWithTag,UserWithTagAdmin)
+# xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
 xadmin.site.register_view(r'agentview/$', AgentView, name='agentview')
 xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')

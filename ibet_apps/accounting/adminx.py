@@ -116,14 +116,14 @@ class WithdrawAccessManagementAdmin(object):
     def __str__(self):
         return '{0}'.format(self.user_id)
 
-xadmin.site.register(Transaction,TransactionAdmin)
+# xadmin.site.register(Transaction,TransactionAdmin)
 
-xadmin.site.register(DepositChannel,DepositChannelAdmin)
-xadmin.site.register(WithdrawChannel,WithdrawChannelAdmin)
-xadmin.site.register(DepositReview,DepositReviewAdmin)
-xadmin.site.register(WithdrawReview,WithdrawReviewAdmin)
-xadmin.site.register(DepositAccessManagement,DepositAccessManagementAdmin)
-xadmin.site.register(WithdrawAccessManagement,WithdrawAccessManagementAdmin)
+# xadmin.site.register(DepositChannel,DepositChannelAdmin)
+# xadmin.site.register(WithdrawChannel,WithdrawChannelAdmin)
+# xadmin.site.register(DepositReview,DepositReviewAdmin)
+# xadmin.site.register(WithdrawReview,WithdrawReviewAdmin)
+# xadmin.site.register(DepositAccessManagement,DepositAccessManagementAdmin)
+# xadmin.site.register(WithdrawAccessManagement,WithdrawAccessManagementAdmin)
 
 
 xadmin.site.register_view(r'deposit/$', DepositView, name='deposit_view')

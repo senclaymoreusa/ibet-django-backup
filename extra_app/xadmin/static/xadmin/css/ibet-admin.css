@@ -116,7 +116,7 @@ table.table-bordered > tbody > tr > td{
 }
 
 .user-list-control-group {
-    margin-top: 20px;
+    margin-top: 20px !important;
 }
 
 #life-time-rectangle {

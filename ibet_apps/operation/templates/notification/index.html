@@ -6,6 +6,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<!-- <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+
+
 <style>
 form {
   padding: 0 16px 16px 16px;
@@ -66,14 +73,32 @@ tbody>tr:nth-child(odd)>th {
   margin-right: 20px;
 }
 
-#editor {
-  height: 393px;
-  border: solid 1px;
+.btn-secondary {
+  margin: 10px 10px 10px 10px;
 }
+
+#content_text {
+  height: 393px;
+  border: solid 1px #bdbdbd;
+}
+.twitter-typeahead {
+    width:100%;
+}
+
+.tt-input {
+    width: 100% !important;
+}
+.tt-suggestion {
+  font-size: 14px;
+}
+
+
+.ui-autocomplete { z-index:2147483647; }
+
 </style>
 
 <div class="row">
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Create a new message</button>
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New message</button>
   <a role="button" class="btn btn-primary" href="/xadmin/audit">
     Notifications <span class="badge badge-light">{{ waiting_list }}</span>
   </a>
@@ -87,59 +112,47 @@ tbody>tr:nth-child(odd)>th {
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form action="{% url 'xadmin:notification' %}" method="post" id="myform">
+        <form action="{% url 'xadmin:notification' %}" method="post" id="newmsg">
         {% csrf_token %}
           <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
             <select name="campaign" class="form-control">
-              <option>SELECT CAMPAIGN...</option>
-              <option value="CAMPAIGN1">CAMPAIGN1</option>
+              <option value="-1">SELECT CAMPAIGN...</option>
+              {% for campaign in campaignOpt %}
+                <option value="{{ campaign.id }}">{{ campaign.name }}</option>
+              {% endfor %}
+              <!-- <option value="CAMPAIGN1">CAMPAIGN1</option>
               <option value="CAMPAIGN2">CAMPAIGN2</option>
-              <option value="CAMPAIGN3">CAMPAIGN3</option>
+              <option value="CAMPAIGN3">CAMPAIGN3</option> -->
             </select>
           </div>
           <div class="form-group">
             <label for="notifiers">SEND TO</label>
-            <select id="notifiers" name="notifiers" class="form-control" multiple>
-              <option selected disabled hidden>Choose a notifier...</option>
-              {% for user in all_user %}
-              <option value="{{ user.id }}">{{ user }}</option>
-              {% endfor %}
-            </select>
+            <div class="input-group" >
+              <input type="text" id="sendto" class="form-control" placeholder="Enter ID username, name, phone or email" autocomplete="None">
+              <span id="search-notifier-btn" class="input-group-addon" style="background-color: #ffffff; color:#2e2e2e"><span class="glyphicon glyphicon-search"></span></span>
+            </div>
           </div>
           <div class="form-group">
             <label for="subject">MESSAGE SUBJECT</label>
-            <input type="text" class="form-control" name="subject" placeholder="Subject..." required>
-          </div>
-          <div class="form-group">
-            <label for="tags">MESSAGE BODY</label>
-            <textarea name="content_text" id="editor" rows="30">This is some sample content.</textarea>
+            <input type="text" class="form-control" name="subject" placeholder="Subject...">
           </div>
           {% comment %} <div class="form-group">
+            <label for="tags">MESSAGE BODY</label>
+            <textarea name="content_text" id="editor" rows="30">This is some sample content.</textarea>
+          </div> {% endcomment %}
+          <div class="form-group">
             <label for="content">MESSAGE BODY</label>
-            <div name="content_text" id="content" class="row" contenteditable="true">
-              This text can be edited by the user.
+            <div name="content_text" id="content_text" class="row" contenteditable="true">
             </div>
-            <div class="row" style="border: 1px solid">
+            <div class="row" style="border: 1px solid #bdbdbd; background-color: #f4f4f4">
               <button type="button" class="btn btn-secondary" id="italic"><i class="fa fa-italic"></i></button>
               <button type="button" class="btn btn-secondary" id="bold"><i class="fa fa-bold"></i></button>
               <button type="button" class="btn btn-secondary" id="underline"><i class="fa fa-underline"></i></button>
-              <!--<label class="btn btn-secondary btn-file">
-                <i class="fa fa-apple"></i><input type="file" style="display: none;">
-              </label>-->
               <button type="button" class="btn btn-secondary" id="" disabled><i class="far fa-image"></i></button>
               <button type="button" class="btn btn-secondary" id="" disabled><i class="fas fa-percentage"></i></button>
             </div>
           </div>
-          <div class="form-group" id="topiclist" hidden>
-            <label for="topic">Group List</label>
-            <select id="topic" name="topic" class="form-control">
-              <option selected disabled hidden>Choose a notification type...</option>
-              {% for topic in topics %}
-              <option value="{{ topic.pk}}">{{ topic }}</option>
-              {% endfor %}
-            </select>
-          </div>{% endcomment %}
           <div class="form-group">
             <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
             <div class="form-check row">
@@ -161,59 +174,58 @@ tbody>tr:nth-child(odd)>th {
               </label>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Create Message</button>
+          <button type="button" id="send" class="btn btn-success">Send</button>
+          <button type="button" class="btn btn-primary" disabled>Automate</button>
           <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
         </form>
       </div>
     </div>
   </div>
-<div class="row">
-  <div class='col-md-3'>
+<div class="row" style="margin-top: 36px">
+  <div class='col-md-4' style="padding-left: 0">
     <div class="input-group">
-      <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword..." >
+      <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword...">
       <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
     </div>
   </div>
+  <div class='col-md-5' style="padding-left: 0">
+  </div>
+  <div class='col-md-3'>
+    <!-- {% block time_search %} -->
+    <label class="detail-info">DATE RANGE</label>
+    <div class="row">
+        <div class='col-md-5' style="padding: 0px;">
+            <div class='input-group'>
+              <input type='text' class="form-control" placeholder="From" id='notification_time_from' />
+            </div>
+        </div>
+        <div class='col-md-5' style="padding-left: 5px; padding-right: 0px;">
+            <div class='input-group'>
+              <input type='text' class="form-control" placeholder="To"  id='notification_time_to'/>
+            </div>
+        </div>
+        <div class='col-md-2' style="padding-left: 7px;">
+            <button id="date-search-btn" type="button" class="btn btn-primary"><i class="fa fa-search"></i></button>
+            {% comment %} <span id="date-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span> {% endcomment %}
+        </div>
+    </div>
+      <!-- {% endblock %} -->
+    </div>
 </div>
 <div class="col-md-3">
     {% if searchError %}
         <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
     {% endif %}
 </div>
-    <!-- <div class='col-md-8'> -->
-        <!-- {% block time_search %} -->
-        <!-- <label>Date Range</label>
-        <div class="row">
-            <div class='col-md-4'>
-                <div class='input-group date' id='user_list_time_from'>
-                    <input type='text' class="form-control" placeholder="From" id='user_list_time_from_input' />
-                    <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <div class='input-group date' id='user_list_time_to'>
-                    <input type='text' class="form-control" placeholder="To"  id='user_list_time_to_input'/>
-                    <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <button id="user_list_time_submit" type="submit" class="btn btn-primary">Submit</button>
-            </div>
-        </div> -->
-        <!-- {% endblock %} -->
-    <!-- </div> -->
 
-<div style="margin-top:40px;">
+
+<div style="margin-top:25px;">
   <ul class="nav nav-tabs">
     <li id="sent-messages"><a data-toggle="tab" class="tab-label" href="#sent-message">SENT MESSAGES</a></li>
     <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AUTOMATED MESSAGES</a></li>
     <li id="drafts"><a data-toggle="tab"  class="tab-label" href="#draft">DRAFTS</a></li>
   </ul>
-  <div class="tab-content">
+  <div class="tab-content" style="margin-top:30px;">
     <div id="sent-message" class="tab-pane fade">
       <table>
         <thead class="thead-dark">
@@ -236,20 +248,20 @@ tbody>tr:nth-child(odd)>th {
             <tr>
               <td>{{ forloop.counter }}</td>
               <td>{{ notification.subject }}</td>
-              <td>{{ notification.campaign }}</td>
+              <td>{{ notification.campaign.name }}</td>
               {% if notification.notifiers %}
               {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
               <td>{{ notification.sent_count }}</td>
               {% else %}
               <td>{{ notification.topic }}</td>
               {% endif %}
-              <td>BONUS</td>
+              <td></td>
               <td>{{ notification.publish_on }}</td>
-              <td>{{ notification.creator }}</td>
+              <td><a onclick="return getCreator('{{ notification.creator }}')">{{ notification.creator }}</a></td>
               <td>{{ notification.sent_count }}</td>
               <td>{{ notification.open }}</td>
               <td>{{ notification.rate }}</td>
-              <td>N/A</td>
+              <td></td>
               <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td>
             </tr>
           {% endfor %}
@@ -281,7 +293,7 @@ tbody>tr:nth-child(odd)>th {
               <td>{{ notification.campaign }}</td>
               <!--<td>{{ notification.sent_count }}</td>-->
               <td>GROUP</td>
-              <td>BONUS</td>
+              <td>{{ notification.bonus }}</td>
               <td>{{ notification.publish_on }}</td>
               <td>{{ notification.creator }}</td>
               <td>{{ notification.sent_count }}</td>
@@ -358,6 +370,84 @@ tbody>tr:nth-child(odd)>th {
   </div>
 </div>
 
+<div class="modal fade" id="viewUser" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">User Profile</h4>
+            </div>
+            <div class="modal-body" style="height: 545px;">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="{{ imagePath }}happyface.png" alt="happyface" style="width: 100%;height: 100%;">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="name-title" id="viewName">Martin Sandstrom</div>
+                        <div class="name-username" id="viewUsername">msandstrom</div>
+                    </div>
+                </div>
+                <div style="background-color: #f5f5f5; height: 98px; margin-top: 20px">
+                    <div class="row" style="padding: 20px 15px;">
+                        <div class="col-md-2">Email: </div>
+                        <div class="view-text col-md-10" id="viewEmail">ibet@gmail.com</div>
+                    </div>
+                    <div class="row" style="padding: 0px 15px;">
+                        <div class="col-md-2">Phone: </div>
+                        <div class="view-text col-md-10" id="viewPhone">3332929292</div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        MARKET
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        ibet
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewIbetMarket">
+                        <!-- <div>FE</div> -->
+                        <div class="inline icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                        <div class="inline sec-icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        Letou
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewLetouMarket">
+                        FO
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        ROLE
+                    </div>
+                    <div class="col-md-9 profile-info" id="viewRole">
+                        ROLE
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        DEPARTMENT
+                    </div>
+                    <div class="col-md-9 profile-info"  id="viewDepartment">
+                        DEPARTMENT
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
 <script>
 /*
 // Instantiate the Bloodhound suggestion engine
@@ -423,11 +513,70 @@ $( function() {
   });
 */
 
+$.ajax({
+    type:'GET',
+    url:"{% url 'notifier-tags' %}",
+    success:function(data) {
+    //   console.log(data);
+      var group = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["group"]
+      });
+
+      var member = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["member"]
+      });
+
+      group.initialize();
+      member.initialize();
+
+      $('#sendto').tagsinput({
+          itemValue: "name",
+          itemText: "name",
+          typeaheadjs: [{
+            highlight: false
+          },[{
+              name: 'member',
+              display: 'name',
+              source: member,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">MEMBER RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          },{
+              name: 'group',
+              display: 'name',
+              source: group,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">GROUP RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user-friends" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          }]],
+          freeInput: true
+      });
+    }
+});
+
+/*
+$('.tt-suggestion').click(function() {
+  alert("Hi");
+});
+*/
+
 $(document).ready(function() {
   var previousURL = document.referrer;
   // parse url
   paramsMap = {
       'search': '',
+      'from': '',
+      'to': '',
       'pageSize': 20,
       'offset': 1,
       'tab': 2
@@ -436,6 +585,12 @@ $(document).ready(function() {
   var parsedUrl = new URL(window.location.href);
   if (parsedUrl.searchParams.get("search") !== null) {
       paramsMap['search'] = parsedUrl.searchParams.get("search");
+  }
+  if (parsedUrl.searchParams.get("from") !== null) {
+      paramsMap['from'] = parsedUrl.searchParams.get("from");
+  }
+  if (parsedUrl.searchParams.get("to") !== null) {
+      paramsMap['to'] = parsedUrl.searchParams.get("to");
   }
   if (parsedUrl.searchParams.get("pageSize") !== null) {
       paramsMap['pageSize'] = Number(parsedUrl.searchParams.get("pageSize"));
@@ -489,11 +644,24 @@ $(document).ready(function() {
 
     var tab = paramsMap['tab'];
     
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, "");
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, "", "", "");
   });
 
   $('#pagination_value').val(paramsMap['pageSize']);
-  
+
+  $('#search').val(paramsMap['search']);
+
+  $('#notification_time_from').datepicker({
+        autoclose: true, 
+        todayHighlight: true,
+        endDate: new Date()
+    }).val("");
+
+  $('#notification_time_to').datepicker({ autoclose: true, 
+        todayHighlight: true,
+        endDate: new Date()
+    }).val("");
+
   $('#italic').click(function() {
     document.execCommand('italic');
   });
@@ -507,6 +675,7 @@ $(document).ready(function() {
   });
 
   // CKEditor
+  /*
   ClassicEditor
   .create( document.querySelector( '#editor' ) )
   .then( editor => {
@@ -515,47 +684,217 @@ $(document).ready(function() {
   .catch( error => {
     console.error( error );
   } );
-
-  /*
-  $('#api').click(function() {
-    $.ajax({
-      type: 'POST',
-      url: 'http://localhost:8000/operation/api/send-sms',
-      data: {
-        csrfmiddlewaretoken: "{{ csrf_token }}",
-        subject: "subject",
-        content_text: "sms",
-        notifiers: 9,
-      },
-      success: function (data) {
-        alert("done");
-      },
-      error: function () {
-        alert("Fail");
-      }
-    });
-  });
   */
 
   $('#pagination_value').change(function() {
     var pageSize = this.value;
     var offset = paramsMap['offset'];
     var tab = paramsMap['tab'];
-
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, "");
+    var search = paramsMap['search'];
+    var t_from = paramsMap['from'];
+    var t_to = paramsMap['to'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search, t_from, t_to);
   });
 
   $("#search-btn").click(function() {
     var pageSize = $("#pagination_value").val();
     var search = $('#search').val();
     var tab = paramsMap['tab'];
-    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search);
+    var t_from = paramsMap['from'];
+    var t_to = paramsMap['to'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search, t_from, t_to);
   });
 
   $("#search").on('keyup', function () {
     if( this.value.length < 2 ) return;
       searchOpen();
   });
+
+  $(function () {
+    $('#notification_time_from').datepicker();
+    $('#notification_time_to').datepicker();
+  });
+
+  $("#date-search-btn").click(function() {
+    var time_from = $('#notification_time_from').val();
+    time_from = moment(time_from).format('YYYY-MM-DD');
+    // console.log(time_from);
+    // time_from = time_from.format('YYYY-MM-DD HH:mm');
+    var time_to = $('#notification_time_to').val();
+    time_to = moment(time_to).format('YYYY-MM-DD');
+    // console.log(time_to);
+    if (time_from.indexOf("Invalid") >= 0) {
+        time_from = '';
+    }
+    if (time_to.indexOf("Invalid") >= 0) {
+        time_to = '';
+    }
+    var search = $('#search').val();
+    var pageSize = $("#pagination_value").val();
+    var tab = paramsMap['tab'];
+    window.location.href = getUserListRedirectUrl(pageSize, 1, tab, search, time_from, time_to);    
+  });
+
+  $("#send").click(function() {
+    $(this).text('Double click to send');
+  });
+
+  $("#send").dblclick(function() {
+    $("#newmsg").submit();
+  });
+
+
+  var member_list = [];
+  var group_list = [];
+
+  $("#sendto").on('itemAdded', function(event) {
+      
+    var data = event.item;
+    if(data.type == "member") {
+      member_list.push(data.name);
+    }
+    else if(data.type == "group") {
+      group_list.push(data.name);
+    }
+  });
+
+  $("#sendto").on('itemRemoved', function(event) {
+    var data = event.item;
+    if(data.type == "member") {
+      var index = member_list.indexOf(data.name);
+      if (index > -1) {
+        member_list.splice(index, 1);
+      }
+    }
+    else if(data.type == "group") {
+      var index = group_list.indexOf(data.name);
+      if (index > -1) {
+        group_list.splice(index, 1);
+      }
+    }
+  });
+
+  $("#newmsg").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var subject = form.find('input[name="subject"]').val();
+    var content_text = $('#content_text').html();
+    var campaign = form.find('select[name="campaign"]').val();
+    
+    var direct = form.find('input[name="direct_check"]').prop('checked');
+    var sms = form.find('input[name="SMS_check"]').prop('checked');
+    var email = form.find('input[name="email_check"]').prop('checked');
+    var push = form.find('input[name="push_check"]').prop('checked');
+    if (campaign === "-1") {
+        campaign = null;
+    }
+
+    $.ajax({
+    type: "POST",
+    url: "{% url 'xadmin:notification' %}",
+    data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        campaign: campaign,
+        subject: subject,
+        content_text: content_text,
+        group_list: JSON.stringify(group_list),
+        member_list: JSON.stringify(member_list),
+        direct_check: direct,
+        SMS_check: sms,
+        email_check: email,
+        push_check: push,
+    },
+    success: function(data)
+        {
+        window.location.reload();
+        }
+    });
+    
+  });
+
+/*
+  $("#sendto").on('keyup', function () {
+    if( this.value.length < 2 ) return;
+      searchUsers();
+  });
+*/
+
+  $("#search-notifier-btn").click(function() {
+    // console.log($('#sendto').val());
+    // console.log(member_list);
+    // console.log(group_list);
+  });
+
+
+  function searchUsers() {
+    var search = $('#sendto').val();
+    var url = "{% url 'notifier-search' %}" + "?search=" + search;
+
+    $.ajax({
+      url: url,
+      type: 'GET',
+      success: function (data) {
+        // console.log(data);
+        tagsAuto(data);
+        //get data pass to json
+        //searchNotifier(data, search);
+      },
+      error: function () {
+        // console.log('error');
+      }
+    });
+  }
+
+  //insert data to input in load page
+  /*
+  elt.tagsinput("add", {
+    value: 1,
+    text: "task 1",
+    continent: "task"
+  });
+  */
+
+  function searchNotifier(data, term) {
+    var member_data = data['member_data'];
+    // var content = data['body'];
+
+    var sourceList = [];
+
+    if (member_data.length > 0) {
+      sourceList.push({
+        'type': 'category',
+        'label': term,
+        'value': 'MEMBER RESULTS'
+      });
+      for (var i = 0; i < member_data.length; i++) {
+        sourceList.push({
+          'type': 'member',
+          'label': term,
+          'value': member_data[i]['member'],
+        });
+      }
+    }
+    $( "#sendto" ).autocomplete({
+      source: sourceList,
+      create: function () {
+        $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+          if (item.type === 'category') {
+            return $('<li class="ui-state-disabled search-result" style="margin: 0px 13px;">')
+            .append(item.value)
+            .appendTo(ul);
+            // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
+          } else {
+            var url = ""
+            if (item.type == 'member') {
+              return $('<li>')
+              .append('<div style="margin: 0px 13px;"><a href="#" class="tp"><i class="far fa-user" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .appendTo(ul);
+            }
+          }
+        };
+      }
+    });
+  }
 
   function searchOpen() {
     var search = $('#search').val();
@@ -565,6 +904,7 @@ $(document).ready(function() {
       url: url,
       type: 'GET',
       success: function (data) {
+        // console.log(data);
         searchResult(data, search);
       },
       error: function () {
@@ -575,6 +915,7 @@ $(document).ready(function() {
 
   function searchResult(data, term) {
     var subject = data['subject'];
+    var campaign = data['campaign'];
     // var content = data['body'];
 
     var sourceList = [];
@@ -590,6 +931,22 @@ $(document).ready(function() {
           'type': 'subject',
           'label': term,
           'value': subject[i]['subject'],
+          'id': subject[i]['id'],
+        });
+      }
+    }
+    if (campaign.length > 0) {
+      sourceList.push({
+        'type': 'category',
+        'label': term,
+        'value': 'CAMPAIGN RESULTS'
+      });
+      for (var i = 0; i < campaign.length; i++) {
+        sourceList.push({
+          'type': 'campaign',
+          'label': term,
+          'value': campaign[i]['campaign'],
+          'id': campaign[i]['id'],
         });
       }
     }
@@ -619,11 +976,15 @@ $(document).ready(function() {
             .appendTo(ul);
             // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
           } else {
-            //var url = "{% url 'xadmin:user_detail' 123 %}".replace('123', item.id);
-            var url = ""
+            var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
+            // var url = ""
             if (item.type == 'subject') {
               return $('<li>')
               .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .appendTo(ul);
+            } else if (item.type == 'campaign') {
+              return $('<li>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
             }
           }
@@ -641,8 +1002,11 @@ $(document).ready(function() {
     // var newFromItem = Number(oldFromItem) + Number(pageSize);
     var newFromItem = Number(oldFromItem) + 1;
     var tab = paramsMap['tab'];
+    var search = paramsMap['search'];
+    var t_from = paramsMap['from'];
+    var t_to = paramsMap['to'];
     
-    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
+    window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, search, t_from, t_to);
   }
 
   getPrevious = function () {
@@ -654,17 +1018,22 @@ $(document).ready(function() {
       // var newFromItem = Number(oldFromItem) - Number(pageSize);
       var newFromItem = Number(oldFromItem) - 1;
       var tab = paramsMap['tab'];
+      var search = paramsMap['search'];
+      var t_from = paramsMap['from'];
+      var t_to = paramsMap['to'];
       
-      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, "");
+      window.location.href = getUserListRedirectUrl(pageSize, newFromItem, tab, search, t_from, t_to);
   }
 });
 
-function getUserListRedirectUrl(pageSize, offset, tab, search) {
+function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
   
-  var redirectUrl = parts[0]; 
+  var redirectUrl = parts[0];
   redirectUrl += '?search=' + search;
+  redirectUrl += '&from=' + t_from;
+  redirectUrl += '&to=' + t_to;
   redirectUrl += "&pageSize=" + pageSize;
   redirectUrl += '&offset=' + offset;
   redirectUrl += '&tab=' + tab;
@@ -672,7 +1041,63 @@ function getUserListRedirectUrl(pageSize, offset, tab, search) {
   return redirectUrl;
 }
 
-</script>
-{% comment %} You have visited this page {{ num_visits }} times. {% endcomment %}
+function getCreator(username) {
+    // console.log(username);
+    $('#viewUser').modal({'show' : true});
 
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_admin_profile' %}",
+        data:{ 
+            'username': username,
+        },
+        success: function(response)
+        {   
+            // console.log(response);
+            var data = response.data;
+            if (response.code === 0) {
+                var username = data.username;
+                var firstName = data.first_name;
+                var lastName = data.last_name;
+                var email = data.email;
+                var phone = data.phone;
+                var role = data.roleName;
+                var department = data.department;
+                var ibetMarkets = data.ibetMarkets;
+                var letouMarkets = data.letouMarkets;
+                $('#viewEmail').text(email);
+                $('#viewPhone').text(phone);
+                $('#viewRole').text(role);
+                $('#viewDepartment').text(department);
+                if (!firstName && !lastName) {
+                    $('#viewName').text(username);
+                    $('#viewUsername').text('');
+                } else {
+                    $('#viewName').text(firstName + ' ' + lastName);
+                    $('#viewUsername').text(username);
+                }
+                
+                var content = '';
+                for (var i = 0; i < ibetMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + ibetMarkets[i].name + '.svg" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewIbetMarket').empty();
+                $('#viewIbetMarket').append(content);
+
+
+                var content = '';
+                for (var i = 0; i < letouMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + letouMarkets[i].name + '.svg" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewLetouMarket').empty();
+                $('#viewLetouMarket').append(content);
+            }
+        }
+    });
+}
+</script>
 {% endblock %}

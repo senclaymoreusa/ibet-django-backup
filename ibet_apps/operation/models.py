@@ -30,6 +30,16 @@ class UserToAWSTopic(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
 
+class Campaign(models.Model):
+    name =  models.CharField(max_length=200, default='')
+    create_on = models.DateTimeField('Create Time', auto_now_add=True, blank=False)
+    creator = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE)
+
+class CampaignToGroup(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+
+
 # Notification Content
 class Notification(models.Model):
     subject = models.CharField(max_length=200, default='')
@@ -39,9 +49,9 @@ class Notification(models.Model):
     create_on = models.DateTimeField('Create Date', auto_now_add=True, blank=False)
     auditor = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE, related_name='auditor')
     audit_date = models.DateTimeField('Audit Date', null=True)
-    campaign = models.CharField(max_length=100, blank=True, null=True)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.CASCADE)
     bonus = models.ForeignKey(Bonus, blank=True, null=True, on_delete=models.CASCADE)
-    is_direct_message = models.BooleanField(default=False)
+    is_direct_message = models.BooleanField(default=True)
     is_email_message = models.BooleanField(default=False)
     is_sms_message = models.BooleanField(default=False)
     is_push_message = models.BooleanField(default=False)
@@ -69,3 +79,8 @@ class NotificationToUsers(models.Model):
     notifier_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_read = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
+
+
+class NotificationToGroup(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
