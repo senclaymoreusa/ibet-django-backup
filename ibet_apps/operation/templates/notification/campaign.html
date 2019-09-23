@@ -98,7 +98,7 @@ tbody>tr:nth-child(odd)>th {
             <td>66.67%</td>
             <td>66.67%</td>
             <td><a class="btn btn-primary" onclick='viewGampaign("{{ campaign.name }}")'>Edit</a></td>
-            <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#view_campaign_info"><span class="glyphicon glyphicon-search"></span></button></td>
+            <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#view_campaign_info" onclick="viewGampaignInfo('{{ campaign.pk }}')"><span class="glyphicon glyphicon-search"></span></button></td>
             <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
                 <i class="fa fa-info"></i>
             </button></td>-->
@@ -277,19 +277,19 @@ tbody>tr:nth-child(odd)>th {
             <div id="viewCampaign" class="tab-pane active">
                 <div class="row" style="margin-top:10px">
                     <div class="col-md-3">Name</div>
-                    <div class="col-md-9">Name</div>
+                    <div class="col-md-9" id="campName">Name</div>
                 </div>
                 <div class="row" style="margin-top:10px">
                     <div class="col-md-3">Author</div>
-                    <div class="col-md-9">Name</div>
+                    <div class="col-md-9" id="campAuthor">Name</div>
                 </div>
                 <div class="row" style="margin-top:10px">
                     <div class="col-md-3">Created</div>
-                    <div class="col-md-9">Name</div>
+                    <div class="col-md-9" id="campTime">Name</div>
                 </div>
                 <div class="row" style="margin-top:10px">
                     <div class="col-md-3">Groups</div>
-                    <div class="col-md-9">Name</div>
+                    <div class="col-md-9" id="campGroup">Name</div>
                 </div>
                 <div style="margin: 0px 10px;">
                     <div class="row" style="margin-top:20px;">
@@ -298,9 +298,9 @@ tbody>tr:nth-child(odd)>th {
                         <div class="col-md-4" style="padding-left:0px;">OPEN RATE</div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 block"></div>
-                        <div class="col-md-4 block"></div>
-                        <div class="col-md-4 block"></div>
+                        <div class="col-md-4 block" id="messageSent"></div>
+                        <div class="col-md-4 block" id="messageOpen"></div>
+                        <div class="col-md-4 block" id="rate"></div>
                     </div>
                 </div>
                 <hr style="width:98%; background-color: black; height: 1px; border: 0;">
@@ -330,7 +330,7 @@ tbody>tr:nth-child(odd)>th {
                                 <td>{{ notification.creator }}</td>
                                 <td>{{ notification.status }}</td>
                                 <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
-                                <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#view_campaign_info"><span class="glyphicon glyphicon-search"></span></button></td>
+                                <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#aaa"><span class="glyphicon glyphicon-search"></span></button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -585,6 +585,33 @@ function deleteCampaign(campaignName) {
         success: function(response)
         {
             window.location.reload();
+        }
+    });
+
+}
+
+function viewGampaignInfo(campaignId) {
+    // console.log("!!!!" + campaignId);
+    $.ajax({
+        type: "GET",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'view_campaign_info',
+            'campaignId': campaignId,
+        },
+        success: function(response)
+        {
+            // console.log(response);
+            $("#campName").text(response.campaignName);
+            $("#campAuthor").text(response.campaignCreator);
+            $("#campTime").text(response.campaignCreatedTime);
+            var groups = response.groups;
+            var str = groups.join(", ");
+            $("#campGroup").text(str);
+            $("#messageSent").text(response.sent_count);
+            $("#messageOpen").text(response.message_open);
+            $("#rate").text(response.open_rate);
+            // window.location.reload();
         }
     });
 

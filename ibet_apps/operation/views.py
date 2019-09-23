@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
@@ -272,7 +272,7 @@ class NotificationView(CommAdminView):
 
         if search:
             logger.info('Search notification, key: ' + search)
-            msg_filter = msg_filter & (Q(subject__icontains=search) | Q(campaign__icontains=search))
+            msg_filter = msg_filter & (Q(subject__icontains=search)|Q(campaign__name__icontains=search))
             # queryset = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
             # queryset = Notification.objects.filter(status=tab)
 
@@ -310,18 +310,18 @@ class NotificationView(CommAdminView):
             notification_item["creator"] = msg.creator
             notification_item["publish_on"] = msg.publish_on
             notification_item["status"] = msg.status
-            notifiers = NotificationToUsers.objects.filter(notification_id=msg.pk)
+            notifiers = NotificationToUsers.objects.filter(notification_id=msg)
             if len(notifiers) > 1:
-                notification_item["notifiers"] = len(notifiers)
+                notification_item["notifiers"] = str(len(notifiers)) + " users"
             else:
-                notification_item["notifiers"] = notifiers
+                notification_item["notifiers"] = notifiers[0].notifier_id
 
-            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg.pk).count()
-            notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg.pk)&Q(is_read=True)).count()
+            notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg).count()
+            notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg)&Q(is_read=True)).count()
             if(notification_item["sent_count"] == 0):
                 notification_item["rate"] = ""
             else:
-                notification_item["rate"] = str((notification_item["open"] / notification_item["sent_count"]) * 100) + '%'
+                notification_item["rate"] = str(round((notification_item["open"] / notification_item["sent_count"]) * 100, 2)) + '%'
 
             notification_list.append(notification_item)
 
@@ -572,73 +572,80 @@ class MessageUserGroupView(CommAdminView):
             return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
-        group_name = request.POST.get('group_name')
-        pk_list = request.POST.getlist('pk[]')
-        product = request.POST.get("product")
-        is_range = request.POST.get("is_range")
-        active_from = request.POST.get("active_from")
-        active_to = request.POST.get('active_to')
-        register_from = request.POST.get('register_from')
-        register_to = request.POST.get('register_to')
-        is_deposit = request.POST.get('is_deposit')
+        postType = request.POST.get('type')
 
-        if is_range == "true":
-            is_range = True
-        else:
-            is_range = False
+        if postType == "create_new_usergroup":
+            group_name = request.POST.get('group_name')
+            pk_list = request.POST.getlist('pk[]')
+            product = request.POST.get("product")
+            is_range = request.POST.get("is_range")
+            active_from = request.POST.get("active_from")
+            active_to = request.POST.get('active_to')
+            register_from = request.POST.get('register_from')
+            register_to = request.POST.get('register_to')
+            is_deposit = request.POST.get('is_deposit')
 
-        if isDateFormat(active_from):
-            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
-        else:
-            active_from = None
+            if is_range == "true":
+                is_range = True
+            else:
+                is_range = False
 
-        if isDateFormat(active_to):
-            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
-        else:
-            active_to = None
+            if isDateFormat(active_from):
+                active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+            else:
+                active_from = None
 
-        if isDateFormat(register_from):
-            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
-        else:
-            register_from = None
+            if isDateFormat(active_to):
+                active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+            else:
+                active_to = None
 
-        if isDateFormat(register_to):
-            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
-        else:
-            register_to = None
+            if isDateFormat(register_from):
+                register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+            else:
+                register_from = None
 
-        if is_deposit == "true":
-            is_deposit = True
-        else:
-            is_deposit = False
+            if isDateFormat(register_to):
+                register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+            else:
+                register_to = None
 
+            if is_deposit == "true":
+                is_deposit = True
+            else:
+                is_deposit = False
 
-        data = {
-            "name": group_name,
-            "groupType": MESSAGE_GROUP,
-            "creator": self.user.pk,
-            "is_range": is_range,
-            "product": product,
-            "active_from": active_from,
-            "active_to": active_to,
-            "register_from": register_from,
-            "register_to": register_to,
-            "is_deposit": is_deposit
-        }
+            data = {
+                "name": group_name,
+                "groupType": MESSAGE_GROUP,
+                "creator": self.user.pk,
+                "is_range": is_range,
+                "product": product,
+                "active_from": active_from,
+                "active_to": active_to,
+                "register_from": register_from,
+                "register_to": register_to,
+                "is_deposit": is_deposit
+            }
 
-        serializer = MessageUserGroupSerializer(data=data)
-        if serializer.is_valid():
-            group = serializer.save()
-            logger.info("saved message user group")
-            for pk in pk_list:
-                user = CustomUser.objects.get(pk=int(pk))
-                log = UserToUserGroup.objects.create(group=group, user=user)
-                
-            logger.info("saved message user group log")
-            return HttpResponseRedirect(reverse('xadmin:messagegroups'))
-        else:
-            logger.error(serializer.errors['name'][0])
-            return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+            serializer = MessageUserGroupSerializer(data=data)
+            if serializer.is_valid():
+                group = serializer.save()
+                logger.info("saved message user group")
+                for pk in pk_list:
+                    user = CustomUser.objects.get(pk=int(pk))
+                    log = UserToUserGroup.objects.create(group=group, user=user)
+                    
+                logger.info("saved message user group log")
+                return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+            else:
+                logger.error(serializer.errors['name'][0])
+                return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+        
+        elif postType == "delete_group":
+            group_name = request.POST.get('group_name')
+            UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
+            return HttpResponse("success delete")
 
 
 class CampaignView(CommAdminView):
@@ -680,6 +687,40 @@ class CampaignView(CommAdminView):
                 }
                 data.append(groupData)
             return HttpResponse(json.dumps(data), content_type='application/json')
+        
+        elif getType == 'view_campaign_info':
+            campaignId = request.GET.get('campaignId')
+            camp = Campaign.objects.get(pk=campaignId)
+            res = {
+                "campaignName": camp.name,
+                "campaignCreator": camp.creator.username,
+                "campaignCreatedTime": camp.create_on,
+            }
+            groups = []
+            campGroups = CampaignToGroup.objects.filter(campaign=camp)
+            for i in campGroups:
+                groups.append(i.group.name)
+            res["groups"] = groups
+
+            notificationArr = Notification.objects.filter(campaign=camp)
+            sentUser = 0
+            openMsg = 0
+            for i in notificationArr:
+                query = NotificationToUsers.objects.filter(notification_id=i)
+                sentUser += query.count()
+                openMsg += query.filter(is_read=True).count()
+
+            res["sent_count"] = sentUser
+            res["message_open"] = openMsg
+
+            if sentUser == 0:
+                res["open_rate"] = "0 %"
+            else:
+                res["open_rate"] = str((openMsg / sentUser) * 100) + '%'
+
+            # print(res)
+            return JsonResponse(res)
+
 
         else:
 
@@ -725,7 +766,7 @@ class CampaignView(CommAdminView):
                 campaign_item['messages'] =  messages.count()
                 sentUser = 0
                 for i in messages:
-                    sentUser += NotificationToUsers.objects.filter(notification_id=i.pk).count()
+                    sentUser += NotificationToUsers.objects.filter(notification_id=i).count()
                 campaign_item['sent_count']= sentUser
                 
             paginator = Paginator(campaign_data, pageSize)
@@ -1275,3 +1316,10 @@ class NotificationToUsersUnreadCountView(ListAPIView):
 class UserToAWSTopicView(ListAPIView):
     serializer_class = UserToAWSTopicSerializer
     queryset = UserToAWSTopic.objects.all()
+
+class UserIsValidAPI(View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get("username")
+        user = get_object_or_404(CustomUser, username=username)
+        return HttpResponse(status=200)
+        

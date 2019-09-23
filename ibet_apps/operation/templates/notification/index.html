@@ -249,12 +249,12 @@ tbody>tr:nth-child(odd)>th {
               <td>{{ forloop.counter }}</td>
               <td>{{ notification.subject }}</td>
               <td>{{ notification.campaign.name }}</td>
-              {% if notification.notifiers %}
-              {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
+              {% comment %} {% if notification.notifiers %}
               <td>{{ notification.sent_count }}</td>
               {% else %}
               <td>{{ notification.topic }}</td>
-              {% endif %}
+              {% endif %} {% endcomment %}
+              <td>{{ notification.notifiers }}</td>
               <td></td>
               <td>{{ notification.publish_on }}</td>
               <td><a onclick="return getCreator('{{ notification.creator }}')">{{ notification.creator }}</a></td>
@@ -786,30 +786,29 @@ $(document).ready(function() {
     var email = form.find('input[name="email_check"]').prop('checked');
     var push = form.find('input[name="push_check"]').prop('checked');
     if (campaign === "-1") {
-        alert("please select campaign")
-    } else {
-        console.log(campaign);
-        $.ajax({
-        type: "POST",
-        url: "{% url 'xadmin:notification' %}",
-        data: {
-            csrfmiddlewaretoken: "{{ csrf_token }}",
-            campaign: campaign,
-            subject: subject,
-            content_text: content_text,
-            group_list: JSON.stringify(group_list),
-            member_list: JSON.stringify(member_list),
-            direct_check: direct,
-            SMS_check: sms,
-            email_check: email,
-            push_check: push,
-        },
-        success: function(data)
-            {
-            window.location.reload();
-            }
-        });
+        campaign = null;
     }
+
+    $.ajax({
+    type: "POST",
+    url: "{% url 'xadmin:notification' %}",
+    data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        campaign: campaign,
+        subject: subject,
+        content_text: content_text,
+        group_list: JSON.stringify(group_list),
+        member_list: JSON.stringify(member_list),
+        direct_check: direct,
+        SMS_check: sms,
+        email_check: email,
+        push_check: push,
+    },
+    success: function(data)
+        {
+        window.location.reload();
+        }
+    });
     
   });
 
@@ -821,9 +820,9 @@ $(document).ready(function() {
 */
 
   $("#search-notifier-btn").click(function() {
-    console.log($('#sendto').val());
-    console.log(member_list);
-    console.log(group_list);
+    // console.log($('#sendto').val());
+    // console.log(member_list);
+    // console.log(group_list);
   });
 
 
@@ -1030,8 +1029,6 @@ $(document).ready(function() {
 function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
-
-  console.log(t_from, t_to);
   
   var redirectUrl = parts[0];
   redirectUrl += '?search=' + search;
