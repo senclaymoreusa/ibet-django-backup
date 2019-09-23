@@ -114,8 +114,6 @@ table.dataTable {
     width: 95%;
     height: 80px;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 
@@ -147,7 +145,7 @@ table.dataTable {
     color:white;
 }
 
-.panel-default > .panel-heading-custom_affiliate_detail {
+.panel-default > .panel-affiliate-heading {
     background: #ffa313; color: #fff; 
 }
 
@@ -176,9 +174,6 @@ table.dataTable {
     margin-bottom: 30px;
 }
 
-.affiliate_bottom_button {
-    width: 106%;
-}
 
 
 .model-text-style{
@@ -220,4 +215,114 @@ table.dataTable {
 
 ul.ui-autocomplete {
     z-index: 1100;
+}
+
+
+
+
+
+/* Affiliate Detail Page */
+
+/* affiliate details */
+
+.panel-style {
+    padding: 0px; 
+    margin: 20px; 
+    width: 46%;
+    float:left; 
+}
+
+.affiliates_detail_commission {
+    background-color: #f3f3f3;
+    font-size: 13px;
+    padding: 12px;
+    height: 170px;
+}
+
+.affiliates_detail_commission .row{
+    margin-bottom: 5px;
+}
+
+
+.affiliate_details_title {
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.commission_col_style .col-md-2 {
+    font-size: 10px;
+    margin-right: 3px;
+}
+.commission_col_style .col-md-1 {
+    font-size: 10px;
+    margin-right: 3px;
+}
+
+#edit_affiliate_details {
+    width: 50%;
+}
+
+.commission_levels {
+    margin-left: 15px;
+    margin-bottom: 20px;
+}
+
+.commission_levels .row{
+    margin-top: 20px;
+}
+
+.commission_levels label{
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.commission_levels .row div{
+    padding: 5px;
+}
+
+.affiliate-audit-btn-group {
+    margin-left: 0px;
+    margin-top: 20px;
+}
+
+
+.dowline_col_style {
+    font-size: 13px;
+    margin-right: 3px;
+}
+
+#downline_list_table, #channel_report_table, #platform_winloss_table {
+    margin: 20px;
+    width: 100%;
+}
+
+#downline_list_table_wrapper .dt-buttons{
+    margin-left: 20px;
+}
+
+#downline_list_table, #channel_report_table, #platform_winloss_table thead {
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#make_adjustment_details .modal-body .adjustment_amount div{
+    margin-bottom: 20px;
 }

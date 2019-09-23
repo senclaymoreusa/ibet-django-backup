@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core import serializers
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.views import generic
@@ -22,7 +23,8 @@ from django.shortcuts import render_to_response
 from xadmin.views import CommAdminView
 from utils.constants import *
 from accounting.models import *
-from users.models import CustomUser, UserAction, Commission, UserActivity
+from users.models import CustomUser, UserAction, Commission, UserActivity, UserReferLink, ReferLink
+from operation.models import Notification
 
 
 import logging
@@ -62,7 +64,7 @@ class AgentView(CommAdminView):
                 tranDict['trans_pk'] = tran_commission.pk
                 tranDict['active_players'] = calculateActiveUser(user_id)
                 tranDict['downline_ftd'] = calculateFTD(
-                    tran_commission.user_id.referees.all(), date)
+                    tran_commission.user_id.referees.all(), date-relativedelta(months=1), date)
                 if tran_commission.user_id.commission_id in [None, '']:
                     tranDict['commission_rate'] = 0
                 else:
@@ -93,7 +95,7 @@ class AgentView(CommAdminView):
 
         elif get_type == "getAffiliateApplicationDetail":
             user_id = request.GET.get("user_id")
-            print("review user " + user_id + " Affiliate Application")
+            # print("review user " + user_id + " Affiliate Application")
             user_obj = CustomUser.objects.get(pk=user_id)
             user_detail = {}
             user_detail['id'] = user_id
@@ -120,7 +122,7 @@ class AgentView(CommAdminView):
             # user-affiliate-group
             users = get_user_model().objects.all()
             affiliates = get_user_model().objects.exclude(user_to_affiliate_time=None)
-            print("affiliates" + str(affiliates))
+            # print("affiliates" + str(affiliates))
             affiliate_has_referred = affiliates.filter(
                 referred_by_id__isnull=False)
 
@@ -267,7 +269,7 @@ class AgentView(CommAdminView):
         if get_type == "releaseCommission":
             # transaction pk list need to be released
             commissionList = request.POST.getlist("list[]")
-            print(commissionList)
+            # print(commissionList)
             if commissionList is not []:
                 for trans_id in commissionList:
                     current_trans = Transaction.objects.get(pk=trans_id)
@@ -280,48 +282,52 @@ class AgentView(CommAdminView):
                         current_trans.save()
             return HttpResponse(status=200)
         elif get_type == "affiliateApplication":
-            print("affiliateApplication")
             result = request.POST.get("result")
             remark = request.POST.get("remark")
             userID = request.POST.get("user_id")
             admin_user = request.POST.get("admin_user")
             user = CustomUser.objects.get(pk=userID)
             admin_user = CustomUser.objects.get(username=admin_user)
-            print(user)
+            # print(user)
             if result == "Yes":
                 user.user_to_affiliate_time=timezone.now()
             else:
                 user.user_application_time=None
             user.save()
-            print("save")
             activity = UserActivity.objects.create(
                 user = user,
                 admin = admin_user,
                 message = remark,
                 activity_type = ACTIVITY_AFFILIATE_APPLICATION,
             )
-            print("activity")
-            print(activity)
+            # print(activity)
             return HttpResponse(status=200)
 
 class AgentDetailView(CommAdminView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context()
+        # date
+        today = localtime(now()).date()
+        yesterday = today - timezone.timedelta(days=1)
+
         affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
+    
+        # print(affiliate)
         title = "Affiliate " + affiliate.username
-        downline = CustomUser.objects.all().filter(
-            referred_by_id=affiliate.id).values_list('id')
+        downline = affiliate.referees.all()
+        # CustomUser.objects.all().filter(
+        #     referred_by_id=affiliate.id).values_list('id')
         affiliates_list = CustomUser.objects.exclude(user_to_affiliate_time=None)
-        active_downline = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(
-            request_time__gte=(datetime.date.today().replace(day=1))))
+        active_downline = Transaction.objects.filter(Q(user_id__in=downline) & Q(
+            request_time__gte=yesterday))
         downline_current_month_ftd_number = 0
 
-        downline_deposit = Transaction.objects.all().filter(Q(user_id__in=downline) & Q(
+        downline_deposit = Transaction.objects.filter(Q(user_id__in=downline) & Q(
             transaction_type=TRANSACTION_DEPOSIT)).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
-        commission_tran = Transaction.objects.all().filter(
+        commission_tran = Transaction.objects.filter(
             Q(transaction_type=TRANSACTION_COMMISSION) & Q(user_id=affiliate.id))
-        current_affiliate_ip = UserAction.objects.all().filter(
+        current_affiliate_ip = UserAction.objects.filter(
             user=affiliate.pk).values('ip_addr')
 
         context["title"] = title
@@ -335,11 +341,11 @@ class AgentDetailView(CommAdminView):
         context["balance"] = affiliate.main_wallet
         # commission
         context["commission_this_month"] = commission_tran.filter(request_time__gte=(
-            datetime.date.today().replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-        context["commission_last_month"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1))) & Q(
-            request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-        context["commission_before_last"] = commission_tran.filter(Q(request_time__lte=(datetime.date.today().replace(day=1)+relativedelta(months=-1))) & Q(
-            request_time__gte=datetime.date.today().replace(day=1)+relativedelta(months=-2))).aggregate(comm=Coalesce(Sum('amount'), 0))
+            today.replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        context["commission_last_month"] = commission_tran.filter(Q(request_time__lte=(today.replace(day=1))) & Q(
+            request_time__gte=today.replace(day=1)+relativedelta(months=-1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+        context["commission_before_last"] = commission_tran.filter(Q(request_time__lte=(today.replace(day=1)+relativedelta(months=-1))) & Q(
+            request_time__gte=today.replace(day=1)+relativedelta(months=-2))).aggregate(comm=Coalesce(Sum('amount'), 0))
         # downline status
         context["downline_number"] = downline.aggregate(
             total_users=Count('id'))
@@ -364,69 +370,204 @@ class AgentDetailView(CommAdminView):
             related_affiliates_data.append(related_affiliates_info)
         context["related_affiliates"] = related_affiliates_data
 
-        # downline list
-        downline_list = []
-        for i in affiliate.referees.all():
-            downline_info = {}
-            affiliate_tran = Transaction.objects.all().filter(user_id_id=i.pk)
-            # print(affiliate_tran)
-            downline_info['affiliate_id'] = i.pk
-            downline_info['username'] = i.username
-            downline_info['time_of_registration'] = i.time_of_registration
-            downline_info['last_login_time'] = i.last_login_time
-            downline_info['ftd_time'] = i.ftd_time
-            downline_info['deposit'] = affiliate_tran.filter(
-                transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
-            downline_info['withdraw'] = affiliate_tran.filter(
-                transaction_type=1).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
-            downline_info['bouns'] = affiliate_tran.filter(
-                transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
-            downline_info['adjustment'] = affiliate_tran.filter(
-                transaction_type=7).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-            downline_info['balance'] = i.main_wallet
-            downline_list.append(downline_info)
-
-        context["downline_list"] = downline_list
+        # print("related affiliates")
+        
         context["affiliate_referee"] = affiliate.referees.all()
-
         # edit detail top
         context["affiliate_level"] = affiliate.affiliate_level
         # context["affiliate_status"] = affiliate.affiliate_status
         context["transerfer_between_levels"] = affiliate.transerfer_between_levels
-
         # edit detail bottom
-        # context["commission_type"] = Commission.objects.all().get(pk=affiliate.commission_id_id)
+        commission = Commission.objects.get(pk=affiliate.commission_id_id)
+        if commission is None:
+            context["commission_type"] = ""
+        else:
+            context["commission_type"] = commission
+        manager = affiliate.managed_by
+        if manager == None:
+            context["manager"] = ""
+        else:
+            context["manager"] = manager
+        
+        # ACTIVITY
+        user_activities = UserActivity.objects.filter(user=affiliate)
+        user_activities_list = []
+        for key, value in ACTIVITY_TYPE:
+            user_activities_list.append(value)
+        context["user_activities"] = user_activities
+        context["user_activities_list"] = user_activities_list
+        # print(user_activities_list)
 
+
+        # DOWNLINE LIST TABLE
+        downline_list = []
+        for i in affiliate.referees.all():
+            downline_info = {}
+            affiliate_tran = Transaction.objects.filter(user_id=i)
+            # print(affiliate_tran)
+            downline_info['affiliate_id'] = i.pk
+            downline_info['username'] = i.username
+            downline_info['time_of_registration'] = i.time_of_registration
+            if i.last_login_time is None:
+                downline_info['last_login_time'] = ""
+            else:
+                downline_info['last_login_time'] = i.last_login_time
+
+            if i.ftd_time is None:
+                downline_info['ftd_time'] = ""
+            else:
+                downline_info['ftd_time'] = i.ftd_time
+            
+            downline_info['channel'] = ""
+            downline_info['deposit'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_DEPOSIT).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
+            downline_info['withdraw'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_WITHDRAW).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
+            downline_info['bouns'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
+            downline_info['adjustment'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
+            downline_info['turnover'] = calculateTurnover(i)
+            downline_info['balance'] = i.main_wallet
+            downline_list.append(downline_info)
+        context["downline_list"] = downline_list
+
+        # CHANNEL REPORT TABLE
+        channel_repost = []
+        user_channel = UserReferLink.objects.filter(user=affiliate).values_list('link').distinct()
+        user_channel_list = ReferLink.objects.filter(pk__in=user_channel)
+        
+
+        
         # opeartion report
         # get current affiliate's transaction and sort by date
-        affiliate_tran_list = Transaction.objects.filter(user_id=affiliate.pk).annotate(
-            operation_date=TruncDate('arrive_time')).order_by('-operation_date').values('operation_date').distinct()
 
-        opeartion_report = []
-        for tran in affiliate_tran_list:
 
-            opeartion_info = {}
-            cur_operation_data = Transaction.objects.filter(
-                user_id=affiliate.pk).filter(arrive_time__lte=tran['operation_date'])
-            opeartion_info['date'] = tran['operation_date']
-            opeartion_info['cumulative_deposit'] = cur_operation_data.filter(
-                transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))['sum_deposit']
-            opeartion_info['cumulative_withdrawal'] = cur_operation_data.filter(
-                transaction_type=1).aggregate(sum_withdrawal=Coalesce(Sum('amount'), 0))['sum_withdrawal']
-            opeartion_info['system_bouns'] = cur_operation_data.filter(
-                transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))['sum_bouns']
-            # need calculate
-            opeartion_info['downline_transfer'] = 0
-            opeartion_info['turnover'] = 0
-            opeartion_report.append(opeartion_info)
-        context["opeartion_report"] = opeartion_report
+        # affiliate_tran_list = Transaction.objects.filter(user_id=affiliate.pk).annotate(
+        #     operation_date=TruncDate('arrive_time')).order_by('-operation_date').values('operation_date').distinct()
 
-        # get manager list and search for name
-        # global variable
-        manager_id_list = CustomUser.objects.values('managed_by').distinct()
-        manager_name_list = CustomUser.objects.filter(
-            pk__in=manager_id_list).values('username')
+        # opeartion_report = []
+        # for tran in affiliate_tran_list:
+
+        #     opeartion_info = {}
+        #     cur_operation_data = Transaction.objects.filter(
+        #         user_id=affiliate.pk).filter(arrive_time__lte=tran['operation_date'])
+        #     opeartion_info['date'] = tran['operation_date']
+        #     opeartion_info['cumulative_deposit'] = cur_operation_data.filter(
+        #         transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))['sum_deposit']
+        #     opeartion_info['cumulative_withdrawal'] = cur_operation_data.filter(
+        #         transaction_type=1).aggregate(sum_withdrawal=Coalesce(Sum('amount'), 0))['sum_withdrawal']
+        #     opeartion_info['system_bouns'] = cur_operation_data.filter(
+        #         transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))['sum_bouns']
+        #     # need calculate
+        #     opeartion_info['downline_transfer'] = 0
+        #     opeartion_info['turnover'] = 0
+        #     opeartion_report.append(opeartion_info)
+        # context["opeartion_report"] = opeartion_report
+        # # get manager list and search for name
+        # # global variable
+        # manager_id_list = CustomUser.objects.values('managed_by').distinct()
+        # manager_name_list = CustomUser.objects.filter(
+        #     pk__in=manager_id_list).values('username')
         return render(request, "agent_detail.html", context)
+
+
+    def post(self, request):
+        post_type = request.POST.get("type")
+        affiliate_id = request.POST.get("affiliate_id")
+        admin_user = request.POST.get('admin_user')
+        if post_type == 'activity_filter':
+            activity_type = request.POST.get('activity_type')
+            for key, value in ACTIVITY_TYPE:
+                if value == activity_type:
+                    activity_type = key
+            print(str(activity_type))
+            if activity_type == 'All':
+                activities = UserActivity.objects.filter(user=affiliate_id).order_by('-created_time')
+            else:
+                activities = UserActivity.objects.filter(Q(user=affiliate_id)&Q(activity_type=activity_type)).order_by('-created_time')
+            print(activities)
+            activities = serializers.serialize('json', activities)
+            activities = json.loads(activities)
+            response = []
+            for act in activities:
+                actDict = {}
+                try:
+                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                actDict['time'] = time
+                adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
+                actDict['adminUser'] = str(adminUser.username)
+                actDict['message'] = act['fields']['message']
+                response.append(actDict)
+            print(str(response))
+
+            return HttpResponse(json.dumps(response), content_type='application/json')
+        
+        elif post_type == 'update_message':
+            message = request.POST.get('message')
+
+            UserActivity.objects.create(
+                user = CustomUser.objects.filter(pk=affiliate_id).first(),
+                admin = CustomUser.objects.filter(username=admin_user).first(),
+                message = message,
+                activity_type = 3,
+            )
+            logger.info('Finished create activity to DB')
+            return HttpResponse(status=200)
+
+        elif post_type == 'make_adjustment':
+            print(admin_user)
+            print(affiliate_id)
+            admin_user = CustomUser.objects.get(username=admin_user)
+            affiliate_id = CustomUser.objects.get(pk=affiliate_id)
+            remark = request.POST.get('remark')
+            amount = request.POST.get('amount')
+            send = request.POST.get('send')
+            subject = request.POST.get('subject')
+            text = request.POST.get('text')
+            new_adjustment = Transaction.objects.create(
+                user_id = affiliate_id,
+                amount = amount,
+                status = TRAN_SUCCESS_TYPE,
+                transaction_type = TRANSACTION_ADJUSTMENT,
+                remark = remark,
+                release_by = admin_user,
+            )
+            new_adjustment.save()
+            logger.info(admin_user.username + " creates a new adjustment for affiliate " + affiliate_id.username + " with the amount " + amount)
+            if send == "true":
+                # create a message
+                print(subject)
+                print(text)
+                print(admin_user)
+                new_notication = Notification.objects.create(
+                    subject = subject,
+                    content_text = text,
+                    creator = admin_user,
+                )
+                new_notication.save()
+                print(new_notication)
+                # send it to affilite
+
+            
+
+            return HttpResponse(status=200)
+        
+        # elif post_type == 'send_message':
+        #     admin_user = CustomUser.objects.get(username=admin_user)
+        #     affiliate_id = CustomUser.objects.get(pk=affiliate_id)
+        #     subject = request.POST.get('subject')
+        #     text = request.POST.get('text')
+        #     print(subject)
+        #     print(text)
+        #     return HttpResponse(status=200)
+
+
+
+
 
 
 def fsearch(request):
@@ -440,7 +581,6 @@ def fsearch(request):
     for recontent in recontents:
         rejson.append(recontent.username)
     return HttpResponse(json.dumps(rejson), content_type='application/json')
-
 
 def calculateActiveUser(affiliate_id):
     # check affiliate_id first
@@ -456,15 +596,14 @@ def calculateActiveUser(affiliate_id):
                 affiliate_active_users += 1
         return affiliate_active_users
 
-
-def calculateFTD(user_group, end_date):
+def calculateFTD(user_group, start_date, end_date):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
-    ftd = user_group.filter(
-        Q(ftd_time__gte=end_date-relativedelta(months=1)) & Q(ftd_time__lte=end_date)).count()
+    ftd = user_group.filter(Q(ftd_time__gte=start_date) & Q(ftd_time__lte=end_date)).count()
     return ftd
 
-
+def calculateTurnover(user):
+    return 0
 # active_user_dict = {}
     # for user, affiliate in affiliates.values_list('id', 'referred_by'):
     #     if affiliate is None:

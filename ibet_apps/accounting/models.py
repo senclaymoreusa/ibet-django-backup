@@ -180,6 +180,8 @@ class Transaction(models.Model):
     month = models.DateField(null=True, blank=False)
     commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
 
+    # release bonus, adjustment to affiliate...
+    release_by = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, verbose_name=_('released_by'), related_name="manager", null=True, blank=True)
     class Meta:
         verbose_name = "Transaction"
         verbose_name_plural = verbose_name

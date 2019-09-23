@@ -85,73 +85,11 @@ hr {
 }
 
 
-.affiliates_detail_commission {
-    background-color: #f3f3f3;
-    font-size: 13px;
-    height: 24.9%;
-    padding: 12px;
-}
 
 
-.affiliate_details_title {
-    font-family: Helvetica;
-    font-size: 11px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
 
-.cancel_row_style {
-    margin-left: 0px; 
-    margin-right: 0px; 
-}
 
-.cancel_col_style {
-    padding-left: 0px;
-    padding-right: 0px;
-}
 
-.top_panel {
-    width: 48.5%; 
-    height: 46.6%
-}
-
-.commission_col_style {
-    font-size: 10px;
-    margin-right: 3px;
-}
-
-.dowline_col_style {
-    font-size: 13px;
-    margin-right: 3px;
-}
-
-.activity_type {
-    margin-top: 10px;
-    margin-left: 20px;
-}
-
-.activity_dropdown_style {
-    width:40%;
-    border-color: #4a4a4a;
-    text-align: left;
-}
-
-.line {
-    width: 95%;
-    border-radius: 4px;
-    border: solid 1px #bdbdbd;
-    background-color: #ffffff;
-    margin-top: 30px;
-    margin-bottom: 30px;
-}
-
-.affiliate_bottom_button {
-    width: 106%;
-}
 table.table-bordered{
     border:2px solid white;
     margin-top:20px;
