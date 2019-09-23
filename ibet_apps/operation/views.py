@@ -33,7 +33,7 @@ logger = logging.getLogger('django')
 def send_message(notification_id):
     notification = Notification.objects.get(pk=notification_id)
     # All messages
-    queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
+    queryset = NotificationToUsers.objects.filter(notification_id=notification)
     # connect AWS S3
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 

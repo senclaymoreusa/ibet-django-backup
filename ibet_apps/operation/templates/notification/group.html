@@ -60,10 +60,6 @@ tbody>tr:nth-child(odd)>th {
   border-bottom: 0;
 }
 
-.btn-danger {
-  display: none;
-}
-
 #details {
   width: 95%;
   background-color: #f3f3f3;
@@ -91,7 +87,7 @@ hr {
 
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;">New group</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
 
 <div style="margin-top:30px">
     <table>
@@ -320,13 +316,12 @@ hr {
                     <div id="errorMessage"></div>
                     <div style="margin-top:30px;">
                         <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+                        <button type="button" class="btn btn-danger" id="delete" onclick="deleteGroup()"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
                         <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                     </div>
                 </form>
             </div>
         <div id="automated-message" class="tab-pane fade">
-            abc
         </div>
         </div>
 
@@ -928,6 +923,10 @@ $(document).ready(function() {
   }
 });
 
+function newGroup() {
+  $("#delete").css("display", "none");
+}
+
 function getUserListRedirectUrl(pageSize, offset) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
@@ -1062,9 +1061,27 @@ function getGroup(groupId) {
           createTable(user_list);
           $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
           console.log($('#newgroup').attr('action'));
-          // $('.btn-danger').css("display", "inline: block");
+          $("#delete").css("display", "");
+          $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")')
       }
   });
+}
+
+function deleteGroup(groupName) {
+    $.ajax({
+        type: "POST",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'delete_campaign',
+            'campaignName': campaignName,
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+        },
+        success: function(response)
+        {
+            window.location.reload();
+        }
+    });
+
 }
 
 </script>
