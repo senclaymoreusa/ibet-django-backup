@@ -7,7 +7,7 @@
 <table class="table table-bordered table-striped table-hover">
   <tr>
     <td>Campaign</td>
-    <td>{{ queryset.campaign }}</td>
+    <td>{{ queryset.campaign.name }}</td>
   </tr>
   <tr>
     <td>Subject</td>
@@ -23,11 +23,9 @@
   </tr>
   <tr>
     <td>Sent to</td>
-    <td>{% if queryset.notifiers %}
-          {{ queryset.notifiers }}
-        {% elif queryset.topic %}
-          {{ queryset.topic }}
-        {% endif %}
+    <td>{% for notifier in notifiers %}
+      {{notifier.notifier_id}}
+      {% endfor %}
     </td>
   </tr>
 </table>

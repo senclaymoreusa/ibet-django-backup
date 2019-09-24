@@ -29,4 +29,4 @@ class LogAdmin(object):
     search_fields = ['ip_addr', 'message']
     model_icon = 'fa fa-cog'
 
-xadmin.site.register(Log, LogAdmin)
+# xadmin.site.register(Log, LogAdmin)

@@ -2,8 +2,9 @@ import logging
 
 from rest_framework import serializers, exceptions
 from users.serializers import UserDetailsSerializer
-from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic
+from .models import AWSTopic, Notification, NotificationLog, NotificationToUsers, UserToAWSTopic, Campaign
 from system.models import UserGroup
+from utils.constants import *
 
 logger = logging.getLogger("notification.create.error")
 
@@ -56,7 +57,7 @@ class UserToAWSTopicSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('pk', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date', 'campaign','bonus', 
+        fields = ('pk', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date', 'campaign', 'bonus', 
         'is_direct_message','is_email_message', 'is_sms_message', 'is_push_message', 'publish_on', 'status')
         read_only_fields = ['pk', 'account_type', 'audit_date', 'create_on']
 
@@ -76,7 +77,21 @@ class NotificationToUsersSerializer(serializers.ModelSerializer):
 
 
 class MessageUserGroupSerializer(serializers.ModelSerializer):
+
+    def validate_name(self, value):
+        if UserGroup.objects.filter(name=value, groupType=MESSAGE_GROUP):
+            raise serializers.ValidationError("The group name already exist.")
+        return value
+
     class Meta:
         model = UserGroup
-        fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals')
+        fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals', 
+        'product', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
         read_only_fields = ['pk', 'created_time', 'approvals']
+
+
+class CampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = ('pk', 'name', 'create_on', 'creator')
+        read_only_fields = ['pk', 'created_on']
