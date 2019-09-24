@@ -177,7 +177,7 @@ class Transaction(models.Model):
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
     # commission tracsaction
-    month = models.DateField(null=True, blank=False)
+    month = models.DateField(null=True, blank=True)
     commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
 
     # release bonus, adjustment to affiliate...

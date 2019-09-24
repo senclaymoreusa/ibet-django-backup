@@ -111,6 +111,65 @@
                             <div class="col-md-6">
                                 {{ balance }}
                             </div>
+                            <div style="float: right;">
+                                <button id="commission-detail-btn" type="button" data-toggle="modal"
+                                    data-target="#affiliate_commission_detail"
+                                    style="background-color: #428bca; color:white;margin-right: 3px;"><i
+                                        class="fa fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commission pop up -->
+            <div class="modal fade" id="affiliate_commission_detail" role="dialog">
+                <div id="audit_affiliate_commission_pop" class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            Commission history
+                        </div>
+                        <div class="commission-info">
+                            <div class="row">
+                                <div class="col-md-2"><strong>Affiliate ID</strong></div>
+                                <div class="col-md-6">{{ id }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2"><strong>Total commission</strong></div>
+                                <div class="col-md-6">{{ total_commission }}</div>
+                            </div>
+                        </div>
+
+                        <div class="modal-body">
+                            <div style="margin-bottom: 50px">
+                                <table class="table-striped" id="affiliate-monthly-commission-table"
+                                    style="width: 100%">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">MONTH</th>
+                                            <th scope="col">ACTIVE PLAYERS</th>
+                                            <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
+                                            <th scope="col">COMMISSION RATE</th>
+                                            <th scope="col">DEPOSIT</th>
+                                            <th scope="col">WITHDRAWAL</th>
+                                            <th scope="col">SYSTEM BONUS</th>
+                                            <th scope="col">TOTAL WINLOSS</th>
+                                            <th scope="col">COMMISSION</th>
+                                            <th scope="col">TIME OF RELEASE</th>
+                                            <th scope="col">OPERATOR</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for afffiliate in related_affiliates %}
+                                        <tr>
+                                            <td style="margin-right: 2px;">{{ afffiliate.member_id }}</td>
+                                            <td>{{ afffiliate.balance }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -251,19 +310,13 @@
             </div>
 
             <!-- Affiliate detail buttons -->
-            <div class='row' style="margin-top: 25px;">
-                <div class='col-md-3 '>
-                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                        data-target="#view_as_affiliate">View as affiliate</button>
-                </div>
-                <div class='col-md-3 '>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit
-                        details</button>
-                </div>
-                <div class='col-md-3 '>
-                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                        data-target="#make_adjustment">Make adjustment</button>
-                </div>
+            <div class='row' style="margin-top: 25px; margin-left: 0px;">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#view_as_affiliate">View
+                    as affiliate</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit
+                    details</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#make_adjustment">Make
+                    adjustment</button>
             </div>
 
             <!-- EDIT DETAILS -->
@@ -479,7 +532,7 @@
                                         <strong>Balance</strong>
                                     </div>
                                     <div class="col-md-6">
-                                        {{  balance }}
+                                        $ {{  balance }}
                                     </div>
                                 </div>
                             </div>
@@ -488,12 +541,13 @@
                                 <input type="number" id="adjustment_amount_input" style="width: 40%">
                             </div>
                             <div class="adjustment_message">
-                                <input id="adjustment_message_checkbox" type="checkbox"> Notify affiliate of adjustment
+                                <input id="adjustment_message_checkbox" type="checkbox" style="margin-top: 20px;">
+                                Notify affiliate of adjustment
                                 <p>MESSAGE SUBJECT</p>
-                                <input type="text" id="adjustment_message_subject" style="width: 90%">
+                                <input type="text" id="adjustment_message_subject" style="width: 100%">
                                 <p>MESSAGE TO AFFILIATE</p>
                                 <textarea type="text" id="adjustment_message_text" placeholder="Compose your message"
-                                    style="width: 90%;height: 40px;"></textarea>
+                                    class="form-control"></textarea>
                             </div>
                             <p>REASON FOR CHANGES</p>
                             <textarea type='text' id="reason_for_adjustment_changes" class="form-control"
@@ -530,7 +584,7 @@
                 </div>
             </div>
 
-            <div id="select-filter" class="activity_detail" style="overflow-y: auto; height:807px;">
+            <div id="select-filter" class="activity_detail">
                 {% for act in user_activities %}
                 <div class="note-author">{{ act.admin }}</div>
                 <div class="note-block">{{ act.message }}</div>
@@ -632,7 +686,7 @@
 
                 <!-- CHANNEL REPORT -->
                 <div id="menu1" class="tab-pane fade">
-                    <div class="tab-content">
+                    <div class="tab-content" style="margin-bottom: 50px">
                         <table id="channel_report_table" class="table-striped table-bordered hover compact">
                             <thead>
                                 <tr>
@@ -653,7 +707,7 @@
 
                 <!-- PLATFORM WINLOSS ANALYSIS -->
                 <div id="menu2" class="tab-pane fade">
-                    <div class="tab-content">
+                    <div class="tab-content" style="margin-bottom: 50px">
                         <table id="platform_winloss_table" class="table-striped table-bordered hover compact">
                             <thead>
                                 <tr>
@@ -737,9 +791,27 @@
                 },
             });
 
+            var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
+                responsive: true,
+                dom: 'B',
+                buttons: [
+                    'csv'
+                ],
+                "columnDefs": [{
+                    "searchable": false, "targets": [0, 1],
+                }],
+                "language": {
+                    "info": " _START_ - _END_ of _TOTAL_",
+                    "infoEmpty": " 0 - 0 of 0",
+                    "infoFiltered": "",
+                    "paginate": {
+                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    },
+                    "lengthMenu": "_MENU_",
+                },
+            })
             $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
-
-
 
             // date range search
             $.fn.dataTable.ext.search.push(
@@ -821,7 +893,7 @@
                     var text = $('#adjustment_message_text').val()
                     var remark = $('#reason_for_adjustment_changes').html();
                     var send = false;
-                    if ($('#adjustment_message_checkbox').prop("checked")){
+                    if ($('#adjustment_message_checkbox').prop("checked")) {
                         send = true;
                     }
                     console.log(remark);
@@ -834,9 +906,9 @@
                             'remark': remark,
                             'amount': adjustment_amount,
                             'affiliate_id': affiliate_id,
-                            'subject':subject,
-                            'text':text,
-                            'send':send,
+                            'subject': subject,
+                            'text': text,
+                            'send': send,
                         },
                         success: function (data) {
                             location.reload();

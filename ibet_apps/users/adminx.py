@@ -48,14 +48,8 @@ class GlobalSettings(object):
             },
             {
                 'title': 'Affiliate',
-                'icon': 'fa fa-bar-chart-o',
-                'menus': (
-                    {
-                        'title': 'Affiliate Overview',
-                        'url': '/xadmin/agentview',
-                        'icon': 'fa fa-cny'
-                    },
-                )
+                'icon': 'fa fa-smile-o',
+                'url': '/xadmin/agentview',
             },
             {
                 'title': 'Finance',

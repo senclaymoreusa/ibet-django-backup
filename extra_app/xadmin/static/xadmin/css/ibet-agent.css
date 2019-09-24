@@ -149,6 +149,13 @@ table.dataTable {
     background: #ffa313; color: #fff; 
 }
 
+#audit_affiliate_commission_pop .modal-header{
+    background: #ffa313; 
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
 .dowline_col_style {
     font-size: 13px;
     margin-right: 3px;
@@ -304,15 +311,17 @@ ul.ui-autocomplete {
 }
 
 #downline_list_table, #channel_report_table, #platform_winloss_table {
-    margin: 20px;
     width: 100%;
 }
-
-#downline_list_table_wrapper .dt-buttons{
+#platform_winloss_table {
     margin-left: 20px;
 }
 
-#downline_list_table, #channel_report_table, #platform_winloss_table thead {
+#downline_list_table_wrapper, #channel_report_table_wrapper, #platform_winloss_table_wrapper .dt-buttons{
+    margin-left: 20px;
+}
+
+#downline_list_table, #channel_report_table, #platform_winloss_table, #affiliate-monthly-commission-table thead {
     font-family: Helvetica;
     font-size: 11px;
     font-weight: normal;
@@ -323,6 +332,16 @@ ul.ui-autocomplete {
     color: #4a4a4a;
 }
 
-#make_adjustment_details .modal-body .adjustment_amount div{
-    margin-bottom: 20px;
+#make_adjustment_details p{
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+#audit_affiliate_commission_pop {
+    width: 70%;
+}
+
+#audit_affiliate_commission_pop .dt-buttons{
+    margin-bottom: -20px;
 }

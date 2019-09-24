@@ -7,7 +7,7 @@ from django.views import View
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncMonth, TruncDate, Coalesce
+from django.db.models.functions import TruncMonth, TruncYear, TruncDate, Coalesce
 from django.contrib import messages
 from django.shortcuts import render
 from django.template.defaulttags import register
@@ -24,7 +24,7 @@ from xadmin.views import CommAdminView
 from utils.constants import *
 from accounting.models import *
 from users.models import CustomUser, UserAction, Commission, UserActivity, UserReferLink, ReferLink
-from operation.models import Notification
+from operation.models import Notification, NotificationToUsers
 
 
 import logging
@@ -114,7 +114,8 @@ class AgentView(CommAdminView):
 
         else:
             context = super().get_context()
-            title = "affiliate Overview"
+            context['time'] = timezone.now()
+            title = "Affiliate overview"
             context["breadcrumbs"].append(
                 {'url': '/affiliate_overview/', 'title': title})
             context["title"] = title
@@ -310,7 +311,6 @@ class AgentDetailView(CommAdminView):
         # date
         today = localtime(now()).date()
         yesterday = today - timezone.timedelta(days=1)
-
         affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
     
         # print(affiliate)
@@ -325,13 +325,13 @@ class AgentDetailView(CommAdminView):
 
         downline_deposit = Transaction.objects.filter(Q(user_id__in=downline) & Q(
             transaction_type=TRANSACTION_DEPOSIT)).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
-        commission_tran = Transaction.objects.filter(
-            Q(transaction_type=TRANSACTION_COMMISSION) & Q(user_id=affiliate.id))
-        current_affiliate_ip = UserAction.objects.filter(
-            user=affiliate.pk).values('ip_addr')
+        user_transaction = Transaction.objects.filter(user_id=affiliate)
+        commission_tran = user_transaction.filter(transaction_type=TRANSACTION_COMMISSION)
+        current_affiliate_ip = UserAction.objects.filter(user=affiliate.pk).values('ip_addr')
 
         context["title"] = title
         context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
+        context['time'] = timezone.now()
         # affiliate details
         context["affiliate"] = affiliate
         context["name"] = affiliate.username
@@ -365,8 +365,7 @@ class AgentDetailView(CommAdminView):
         for related_affiliate in related_affiliate_list:
             related_affiliates_info = {}
             related_affiliates_info['member_id'] = related_affiliate['user']
-            related_affiliates_info['balance'] = CustomUser.objects.all().get(
-                pk=related_affiliate['user']).main_wallet
+            related_affiliates_info['balance'] = related_affiliate.main_wallet
             related_affiliates_data.append(related_affiliates_info)
         context["related_affiliates"] = related_affiliates_data
 
@@ -378,11 +377,11 @@ class AgentDetailView(CommAdminView):
         # context["affiliate_status"] = affiliate.affiliate_status
         context["transerfer_between_levels"] = affiliate.transerfer_between_levels
         # edit detail bottom
-        commission = Commission.objects.get(pk=affiliate.commission_id_id)
-        if commission is None:
+        try:
+            context["commission_type"] = Commission.objects.get(pk=affiliate.commission_id_id)
+        except ObjectDoesNotExist:
             context["commission_type"] = ""
-        else:
-            context["commission_type"] = commission
+       
         manager = affiliate.managed_by
         if manager == None:
             context["manager"] = ""
@@ -437,6 +436,14 @@ class AgentDetailView(CommAdminView):
         user_channel = UserReferLink.objects.filter(user=affiliate).values_list('link').distinct()
         user_channel_list = ReferLink.objects.filter(pk__in=user_channel)
         
+        # Total commission
+        total_commission = commission_tran.aggregate(total_commission=Coalesce(Sum('amount'), 0))['total_commission']
+        # TRANSACTION GROUP BY MONTH
+        # commission_monthly_record = user_transaction.annotate(y=TruncYear('arrive_time'),m=TruncMonth('arrive_time')).values('y')
+        # for trans in commission_monthly_record:
+        #     print(trans.request_time) 
+        #     print(trans.amount) 
+        #     print(trans.transaction_type) 
 
         
         # opeartion report
@@ -540,20 +547,18 @@ class AgentDetailView(CommAdminView):
             logger.info(admin_user.username + " creates a new adjustment for affiliate " + affiliate_id.username + " with the amount " + amount)
             if send == "true":
                 # create a message
-                print(subject)
-                print(text)
-                print(admin_user)
                 new_notication = Notification.objects.create(
                     subject = subject,
                     content_text = text,
                     creator = admin_user,
                 )
                 new_notication.save()
-                print(new_notication)
                 # send it to affilite
-
-            
-
+                new_log = NotificationToUsers.objects.create(
+                    notification_id = new_notication.pk,
+                    notifier_id = affiliate_id,
+                )
+                logger.info(admin_user.username + " send a message to affiliate " + affiliate_id.username + " with the subject " + subject)
             return HttpResponse(status=200)
         
         # elif post_type == 'send_message':
