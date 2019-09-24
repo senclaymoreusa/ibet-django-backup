@@ -386,7 +386,9 @@ class NotificationView(CommAdminView):
             logger.info("Save notification message")
             # # store notification data in NotificationLog
             for group in groups:
-                group = UserGroup.objects.get(name=group)
+                group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
+                group.time_used = group.time_used + 1
+                group.save()
                 NotificationToGroup.objects.create(notification=notification, group=group)
                 group_users = UserToUserGroup.objects.filter(group=group)
                 for group_user in group_users:
@@ -553,7 +555,7 @@ class MessageUserGroupView(CommAdminView):
             #     user_list.push(item)
 
             # context['user_list'] = user_list
-            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP).order_by('-created_time')
             message_groups = []
             for group in groups:
                 group_item = {}
@@ -562,6 +564,18 @@ class MessageUserGroupView(CommAdminView):
                 group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
                 group_item['time_used'] = group.time_used
                 group_item['creator'] = group.creator
+                total_messages = 0
+                read_messages = 0
+                users = UserToUserGroup.objects.filter(group=group)
+                # notifications = NotificationToGroup.objects.filter(group=group)
+                # for notification in notifications:
+                #     for user in users:
+                #         total_messages += NotificationToUsers.objects.filter(Q(notification_id=notification)&Q(notifier_id=user)).count()
+                #         read_messages += NotificationToUsers.objects.filter(Q(notification_id=notification)&Q(notifier_id=user)&Q(is_read=True)).count()
+
+                # print(total_messages)
+                # print(read_messages)
+
                 message_groups.append(group_item)
 
             paginator = Paginator(message_groups, pageSize)
@@ -723,7 +737,6 @@ class CampaignView(CommAdminView):
 
 
         else:
-
             pageSize = request.GET.get('pageSize')
             offset = request.GET.get('offset')
 
