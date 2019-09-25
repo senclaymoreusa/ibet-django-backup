@@ -1,6 +1,6 @@
-.multiselect {
+/* .multiselect {
     width: 200px;
-  }
+  } */
   
   .selectBox {
     position: relative;
@@ -37,8 +37,22 @@
  }
   
 
-.multiselect {
+/* .multiselect {
     width: 185px !important;
+} */
+
+/* .btn-group {
+    position: static !important; 
+    display: auto !important;   
+}
+
+.btn-group, .btn-group-vertical {
+    position: static !important;
+    float: none !important;
+} */
+
+.btn-group, .btn-group-vertical {
+    display: auto !important;   
 }
 
 

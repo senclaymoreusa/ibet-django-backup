@@ -19,6 +19,7 @@ from django.db.models import Q, Sum
 from utils.constants import *
 import logging
 from datetime import datetime, time
+from django.core.serializers.json import DjangoJSONEncoder
 from dateutil.relativedelta import *
 from django.core import serializers
 import pytz
@@ -96,21 +97,22 @@ class PerformanceReportView(CommAdminView):
             context['time'] = timezone.now()
             context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
 
-            markets = {
-                'ibetMarket_options': [],
-                'letouMarket_options': []
-            }
+            markets = getMarketOpt()
+            # markets = {
+            #     'ibetMarket_options': [],
+            #     'letouMarket_options': []
+            # }
 
-            for countryCode in MARKET_OPTIONS['ibetMarket_options']:
-                markets['ibetMarket_options'].append({
-                    'code': countryCode,
-                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
-                })
-            for countryCode in MARKET_OPTIONS['letouMarket_options']:
-                markets['letouMarket_options'].append({
-                    'code': countryCode,
-                    'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
-                })
+            # for countryCode in MARKET_OPTIONS['ibetMarket_options']:
+            #     markets['ibetMarket_options'].append({
+            #         'code': countryCode,
+            #         'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+            #     })
+            # for countryCode in MARKET_OPTIONS['letouMarket_options']:
+            #     markets['letouMarket_options'].append({
+            #         'code': countryCode,
+            #         'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+            #     })
 
             context['markets'] = markets
 
@@ -179,8 +181,8 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         min_pub_date_time = tz.localize(datetime.combine(date, time.min)) 
         max_pub_date_time = tz.localize(datetime.combine(date, time.max))
         transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
-        deposits = transactions.filter(transaction_type=TRANSACTION_TYPE_DEPOSIT)
-        withdraws = transactions.filter(transaction_type=TRANSACTION_TYPE_WITHDRAW)
+        deposits = transactions.filter(transaction_type=TRANSACTION_TYPE_DEPOSIT, status=TRAN_SUCCESS_TYPE)
+        withdraws = transactions.filter(transaction_type=TRANSACTION_TYPE_WITHDRAW, status=TRAN_APPROVED_TYPE)
 
         dateStr = date.strftime("%b %e %Y")
         dataPerUnit = {
@@ -283,15 +285,124 @@ class MembersReportView(CommAdminView):
             }
             memberArr = []
             for member in members:
-                try:
-                    CustomUser.objects.filter(username=member)
-                    memberArr.push(member)
-                except:
-                    pass
+                if CustomUser.objects.filter(username__iexact=member).exists():
+                    memberArr.append(member)
+                else:
+                   pass
                 
             data["members"] = memberArr
             data["memberNumber"] = len(memberArr)
-            return HttpResponse(json.dumps(data), status=200)
+            return HttpResponse(json.dumps(data), status=200, content_type='application/json')
+        
+        elif getType == "generate_member_report":
+            marketArray = request.GET.get('marketArray')
+            marketArray = json.loads(marketArray)
+            members = request.GET.get('members')
+            members = json.loads(members)
+            affiliatesCheckBox = request.GET.get('affiliatesCheckBox')
+            dataPerProductCheckBox = request.GET.get('dataPerProductCheckBox')
+            lastDateRangeFrom = request.GET.get('lastDateRangeFrom')
+            lastDateRangeTo = request.GET.get('lastDateRangeTo')
+            registrationFrom = request.GET.get('registrationFrom')
+            registrationTo = request.GET.get('registrationTo')
+            # print(marketArray)
+            # print(members)
+            # print(affiliatesCheckBox, dataPerProductCheckBox, lastDateRangeFrom, lastDateRangeTo, registrationFrom, registrationTo)
+
+            current_tz = timezone.get_current_timezone()
+            tz = pytz.timezone(str(current_tz))
+
+            dataObj = {
+                "lastActiveDateFrom": "",
+                "lastActiveDateTo": "",
+                "registrationFrom": "",
+                "registrationTo": "",
+                "status": "",
+                "affiliate": ""
+            }
+            
+            userActionFilter = Q()
+            
+            if len(members) > 0:
+                # print("members length greater than 0")
+                for member in members:
+                    userActionFilter &= Q(user__username__iexact=member)
+
+            if lastDateRangeFrom and lastDateRangeTo:
+                lastDateRangeFrom = datetime.strptime(lastDateRangeFrom, '%m/%d/%Y')
+                lastDateRangeTo= datetime.strptime(lastDateRangeTo, '%m/%d/%Y')
+                lastDateRangeFromTime = tz.localize(datetime.combine(lastDateRangeFrom, time.min)) 
+                lastDateRangeToTime = tz.localize(datetime.combine(lastDateRangeTo, time.min))
+                # UserAction.objects.filter(user__username__in=memberArr)
+                userActionFilter &= (Q(created_time__gt=lastDateRangeFromTime) & Q(created_time__lt=lastDateRangeToTime) & Q(event_type=EVENT_CHOICES_LOGIN))
+                dataObj["lastActiveDateFrom"] = lastDateRangeFrom.strftime("%b %e %Y")
+                dataObj["lastActiveDateTo"] = lastDateRangeTo.strftime("%b %e %Y")
+
+            
+            userArr = []
+            users = UserAction.objects.filter(userActionFilter).distinct('user')
+            for i in users:
+                userArr.append(i.user.username)
+
+            # print(userArr)
+
+            userfilter = Q(username__in=userArr)
+            
+            if registrationFrom and registrationTo:
+                registrationFrom = datetime.strptime(registrationFrom, '%m/%d/%Y')
+                registrationTo = datetime.strptime(registrationTo, '%m/%d/%Y')
+                registrationFromTime = tz.localize(datetime.combine(registrationFrom, time.min)) 
+                registrationToTime = tz.localize(datetime.combine(registrationTo, time.min))
+                userfilter &= Q(time_of_registration__gt=registrationFromTime, time_of_registration__lt=registrationToTime)
+                dataObj["registrationFrom"] = registrationFrom.strftime("%b %e %Y")
+                dataObj["registrationTo"] = registrationTo.strftime("%b %e %Y")
+
+            users = CustomUser.objects.filter(userfilter)
+            
+            data = []
+            for i in users:
+                user = CustomUser.objects.get(username=i.username)
+                lastDeposit = Transaction.objects.filter(user_id=user, transaction_type=TRANSACTION_TYPE_DEPOSIT).order_by('request_time').first()
+                requestTime = ""
+                lastActive = ""
+                current_tz = timezone.get_current_timezone()
+                if lastDeposit:
+                    requestTime = lastDeposit.request_time.astimezone(current_tz)
+                    lastActive = i.last_login_time.astimezone(current_tz)
+                    requestTime = requestTime.strftime("%b %e %Y")
+                    lastActive = lastActive.strftime("%b %e %Y")
+                dataPerUser = {
+                    'userId': i.pk,
+                    'username': i.username,
+                    'status': i.get_member_status_display(),
+                    'vipLevel': 'Normal',
+                    'channel': 'Desktop',
+                    'product': 'Sports',
+                    'country': i.country,
+                    'address': i.street_address_1 + " " + i.street_address_2 + " " + i.city,
+                    'phone': i.phone,
+                    'verified': "No",
+                    'ftd_date': i.ftd_time,
+                    'affiiateId': i.pk,
+                    'lastActiveDate': str(lastActive),
+                    'lastDepositDate': str(requestTime)
+                }
+                data.append(dataPerUser)
+            # print(data)
+            dataObj["data"] = data
+            return HttpResponse(json.dumps(dataObj, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+
+        elif getType == "generate_member_report_with_member_list":
+            
+            dataObj = {
+                "lastActiveDateFrom": "",
+                "lastActiveDateTo": "",
+                "registrationFrom": "",
+                "registrationTo": "",
+                "status": "",
+                "affiliate": ""
+            }
+            return HttpResponse(json.dumps(dataObj, cls=DjangoJSONEncoder), status=200, content_type='application/json')
 
         else:
             context = super().get_context()
@@ -300,6 +411,29 @@ class MembersReportView(CommAdminView):
             context['title'] = title
             context['time'] = timezone.now()
             context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
+            markets = getMarketOpt()
+            context['markets'] = markets
 
 
             return render(request, 'member_report.html', context)
+
+
+def getMarketOpt():
+
+    markets = {
+        'ibetMarket_options': [],
+        'letouMarket_options': []
+    }
+
+    for countryCode in MARKET_OPTIONS['ibetMarket_options']:
+        markets['ibetMarket_options'].append({
+            'code': countryCode,
+            'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+        })
+    for countryCode in MARKET_OPTIONS['letouMarket_options']:
+        markets['letouMarket_options'].append({
+            'code': countryCode,
+            'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
+        })
+
+    return markets

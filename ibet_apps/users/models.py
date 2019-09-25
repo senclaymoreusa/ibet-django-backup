@@ -131,7 +131,7 @@ class CustomUser(AbstractBaseUser):
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
-    member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+    member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
     risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
     # balance = main_wallet + other_game_wallet
