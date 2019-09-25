@@ -607,7 +607,6 @@ $.ajax({
 
 var pk_list;
 var user_list;
-var member_list;
 
 $(document).ready(function() {
   var previousURL = document.referrer;
@@ -818,10 +817,6 @@ $(document).ready(function() {
   });
 
   $('#csv_file').change(function(e) {
-    $("#manually-table tbody").empty();
-    $('#save-btn').css("display", "");
-    $('#cancel-btn').css("display", "");
-
     var data = null;
     var file = e.target.files[0];
 
@@ -837,7 +832,7 @@ $(document).ready(function() {
         if(parsedCSV.length > 0) {
           //$("#manually-table thead").prop("hidden", false);
           $("#add-btn").prop("disabled", false);
-          // $("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
+          $("#sendto").tagsinput("removeAll");
           $("#remove-btn").css("display", "block");
         }
 
@@ -886,6 +881,8 @@ $(document).ready(function() {
   });
 */
 
+  var member_list = [];
+
   $("#sendto").on('itemAdded', function(event) {
     var data = event.item;
     $.ajax({
@@ -895,11 +892,20 @@ $(document).ready(function() {
         'username': data
       },
       success: function() {
+        member_list.push(data);
         $("#manually-table thead").prop("hidden", false);
-        $("#manually-table").find('tbody')
-          .append($('<tr>')
-            .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + '********' +'</td><td>' + data + '</td>'))
-      )
+        $("#manually-table tbody").empty();
+        $('#save-btn').css("display", "");
+        $('#cancel-btn').css("display", "");
+        
+        for (var i = 0; i < member_list.length; i++) {
+            $("#manually-table").find('tbody')
+              .append($('<tr>')
+                .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + i +'</td><td>' + member_list[i] + '</td>'))
+              )
+        }
+
+        $("#add-btn").text("Add " + member_list.length + " members to group");
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         $("#sendto").tagsinput('remove', data);
@@ -911,17 +917,23 @@ $(document).ready(function() {
     // console.log(member_list);
     //$("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
   });
-/*
+
   $("#sendto").on('itemRemoved', function(event) {
     var data = event.item;
-    if(data.type == "member") {
-      var index = member_list.indexOf(data.name);
-      if (index > -1) {
-        member_list.splice(index, 1);
-      }
+    var index = member_list.indexOf(data);
+    if (index > -1) {
+      member_list.splice(index, 1);
+        $("#manually-table tbody").empty();
+        for (var i = 0; i < member_list.length; i++) {
+          $("#manually-table").find('tbody')
+            .append($('<tr>')
+              .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + i +'</td><td>' + member_list[i] + '</td>'))
+            )
+        }
+      $("#add-btn").text("Add " + member_list.length + " members to group");
     }
   });
-*/
+
 
   $('#newgroup').submit(function(e) {
     e.preventDefault();
