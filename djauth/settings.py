@@ -376,7 +376,12 @@ else:
             'django': {
                 'handlers': ['stderr'],
                 'level': 'DEBUG',
-            }
+            },
+            'django.template': {
+                'handlers': ['stderr'],
+                'level': 'INFO',
+                'propagate': True,
+            },
         }
     }
 

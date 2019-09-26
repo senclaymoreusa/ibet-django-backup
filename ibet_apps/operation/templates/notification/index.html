@@ -117,10 +117,13 @@ tbody>tr:nth-child(odd)>th {
           <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
             <select name="campaign" class="form-control">
-              <option>SELECT CAMPAIGN...</option>
-              <option value="CAMPAIGN1">CAMPAIGN1</option>
+              <option value="-1">SELECT CAMPAIGN...</option>
+              {% for campaign in campaignOpt %}
+                <option value="{{ campaign.id }}">{{ campaign.name }}</option>
+              {% endfor %}
+              <!-- <option value="CAMPAIGN1">CAMPAIGN1</option>
               <option value="CAMPAIGN2">CAMPAIGN2</option>
-              <option value="CAMPAIGN3">CAMPAIGN3</option>
+              <option value="CAMPAIGN3">CAMPAIGN3</option> -->
             </select>
           </div>
           <div class="form-group">
@@ -245,7 +248,7 @@ tbody>tr:nth-child(odd)>th {
             <tr>
               <td>{{ forloop.counter }}</td>
               <td>{{ notification.subject }}</td>
-              <td>{{ notification.campaign }}</td>
+              <td>{{ notification.campaign.name }}</td>
               {% if notification.notifiers %}
               {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
               <td>{{ notification.sent_count }}</td>
@@ -254,7 +257,7 @@ tbody>tr:nth-child(odd)>th {
               {% endif %}
               <td></td>
               <td>{{ notification.publish_on }}</td>
-              <td>{{ notification.creator }}</td>
+              <td><a onclick="return getCreator('{{ notification.creator }}')">{{ notification.creator }}</a></td>
               <td>{{ notification.sent_count }}</td>
               <td>{{ notification.open }}</td>
               <td>{{ notification.rate }}</td>
@@ -365,6 +368,84 @@ tbody>tr:nth-child(odd)>th {
         {% endif %}
     </ul>
   </div>
+</div>
+
+<div class="modal fade" id="viewUser" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">User Profile</h4>
+            </div>
+            <div class="modal-body" style="height: 545px;">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="{{ imagePath }}happyface.png" alt="happyface" style="width: 100%;height: 100%;">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="name-title" id="viewName">Martin Sandstrom</div>
+                        <div class="name-username" id="viewUsername">msandstrom</div>
+                    </div>
+                </div>
+                <div style="background-color: #f5f5f5; height: 98px; margin-top: 20px">
+                    <div class="row" style="padding: 20px 15px;">
+                        <div class="col-md-2">Email: </div>
+                        <div class="view-text col-md-10" id="viewEmail">ibet@gmail.com</div>
+                    </div>
+                    <div class="row" style="padding: 0px 15px;">
+                        <div class="col-md-2">Phone: </div>
+                        <div class="view-text col-md-10" id="viewPhone">3332929292</div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        MARKET
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        ibet
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewIbetMarket">
+                        <!-- <div>FE</div> -->
+                        <div class="inline icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                        <div class="inline sec-icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        Letou
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewLetouMarket">
+                        FO
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        ROLE
+                    </div>
+                    <div class="col-md-9 profile-info" id="viewRole">
+                        ROLE
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        DEPARTMENT
+                    </div>
+                    <div class="col-md-9 profile-info"  id="viewDepartment">
+                        DEPARTMENT
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+            </div>
+        </div>
+        
+    </div>
 </div>
 
 <script>
@@ -699,14 +780,19 @@ $(document).ready(function() {
     var subject = form.find('input[name="subject"]').val();
     var content_text = $('#content_text').html();
     var campaign = form.find('select[name="campaign"]').val();
+    
     var direct = form.find('input[name="direct_check"]').prop('checked');
     var sms = form.find('input[name="SMS_check"]').prop('checked');
     var email = form.find('input[name="email_check"]').prop('checked');
     var push = form.find('input[name="push_check"]').prop('checked');
+    if (campaign === "-1") {
+        campaign = null;
+    }
+
     $.ajax({
-      type: "POST",
-      url: "{% url 'xadmin:notification' %}",
-      data: {
+    type: "POST",
+    url: "{% url 'xadmin:notification' %}",
+    data: {
         csrfmiddlewaretoken: "{{ csrf_token }}",
         campaign: campaign,
         subject: subject,
@@ -717,12 +803,13 @@ $(document).ready(function() {
         SMS_check: sms,
         email_check: email,
         push_check: push,
-      },
-      success: function(data)
+    },
+    success: function(data)
         {
-          window.location.reload();
+        window.location.reload();
         }
     });
+    
   });
 
 /*
@@ -733,9 +820,9 @@ $(document).ready(function() {
 */
 
   $("#search-notifier-btn").click(function() {
-    console.log($('#sendto').val());
-    console.log(member_list);
-    console.log(group_list);
+    // console.log($('#sendto').val());
+    // console.log(member_list);
+    // console.log(group_list);
   });
 
 
@@ -942,8 +1029,6 @@ $(document).ready(function() {
 function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
   var curUrl = window.location.href;
   var parts = curUrl.split('?');
-
-  console.log(t_from, t_to);
   
   var redirectUrl = parts[0];
   redirectUrl += '?search=' + search;
@@ -956,5 +1041,63 @@ function getUserListRedirectUrl(pageSize, offset, tab, search, t_from, t_to) {
   return redirectUrl;
 }
 
+function getCreator(username) {
+    // console.log(username);
+    $('#viewUser').modal({'show' : true});
+
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_admin_profile' %}",
+        data:{ 
+            'username': username,
+        },
+        success: function(response)
+        {   
+            // console.log(response);
+            var data = response.data;
+            if (response.code === 0) {
+                var username = data.username;
+                var firstName = data.first_name;
+                var lastName = data.last_name;
+                var email = data.email;
+                var phone = data.phone;
+                var role = data.roleName;
+                var department = data.department;
+                var ibetMarkets = data.ibetMarkets;
+                var letouMarkets = data.letouMarkets;
+                $('#viewEmail').text(email);
+                $('#viewPhone').text(phone);
+                $('#viewRole').text(role);
+                $('#viewDepartment').text(department);
+                if (!firstName && !lastName) {
+                    $('#viewName').text(username);
+                    $('#viewUsername').text('');
+                } else {
+                    $('#viewName').text(firstName + ' ' + lastName);
+                    $('#viewUsername').text(username);
+                }
+                
+                var content = '';
+                for (var i = 0; i < ibetMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + ibetMarkets[i].name + '.svg" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewIbetMarket').empty();
+                $('#viewIbetMarket').append(content);
+
+
+                var content = '';
+                for (var i = 0; i < letouMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + letouMarkets[i].name + '.svg" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewLetouMarket').empty();
+                $('#viewLetouMarket').append(content);
+            }
+        }
+    });
+}
 </script>
 {% endblock %}

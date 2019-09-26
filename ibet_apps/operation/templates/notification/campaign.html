@@ -1,0 +1,620 @@
+{% extends 'xadmin/base_site.html' %}
+{% block content-nav %}
+{% endblock %}
+{% block content %}
+
+<style>
+form {
+  padding: 0 16px 16px 16px;
+}
+
+p, label {
+  height: 13px;
+  font-family: Helvetica;
+  font-size: 11px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+thead {
+  height: 12px;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4a4a4a;
+}
+
+td {
+  border: solid 4px #ffffff;
+}
+
+tbody>tr:nth-child(odd)>td, 
+tbody>tr:nth-child(odd)>th {
+   background-color: #f3f3f3;
+}
+
+.modal-header {
+  border-radius: 4px;
+  border: solid 1px #bdbdbd;
+  background-color: #f5f5f5;
+}
+
+.modal-header .close {
+  margin-top: -16px;
+}
+
+.row {
+  margin: 0 0 0 0;
+}
+
+.form-group {
+  padding-top: 20px;
+  border-bottom: 0;
+}
+
+.block {
+    height: 33px;
+    margin: 1px;
+    width: 33%;
+    background-color: #f3f3f3;
+}
+</style>
+
+{% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_campaign" style="width:10%;" onclick="createNewCampaign()">New campaign</button>
+
+<div style="margin-top:30px">
+    <table>
+        <thead class="thead-dark">
+            <tr>
+            <th style="width: 15%;">NAME</th>
+            <th style="width: 15%;">GROUPS</th>
+            <th style="width: 15%;">MESSAGES</th>
+            <th style="width: 15%;">CREATED</th>
+            <th style="width: 15%;">CREATOR</th>
+            <th style="width: 15%;">SEND</th>
+            <th style="width: 15%;">OPEN</th>
+            <th style="width: 15%;">OPEN RATE</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for campaign in campaigns %}
+            <tr>
+            <td>{{ campaign.name }}</td>
+            <td>{{ campaign.groups|join:", " }}</td>
+            <td>{{ campaign.messages }}</td>
+            <td>{{ campaign.created_time }}</td>
+            <td><a onclick="return getCreator('{{ campaign.creator }}')">{{ campaign.creator }}</a></td>
+            <td>{{ campaign.sent_count }}</td>
+            <td>66.67%</td>
+            <td>66.67%</td>
+            <td><a class="btn btn-primary" onclick='viewGampaign("{{ campaign.name }}")'>Edit</a></td>
+            <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#view_campaign_info" onclick="viewGampaignInfo('{{ campaign.pk }}')"><span class="glyphicon glyphicon-search"></span></button></td>
+            <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
+                <i class="fa fa-info"></i>
+            </button></td>-->
+            </tr>
+            <!--<li><strong>Notification:</strong> {{ notification }}</li>-->
+        {% endfor %}
+        </tbody>
+    </table>
+              
+    <div class="row user-list-control-group">
+        <div class='col-md-9' style="margin-right: 70px"></div>
+        <div class='col-md-1' style="width:10%">
+            <div>SHOW ROWS</div>
+            <select id="pagination_value"  class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            </select>
+        </div>
+        <div class='col-md-1'>
+            <div>&nbsp;</div>
+            <ul class="pagination" style="margin:0px;">
+                {% if message_groups.has_previous  %}
+                    <li class="page-item " id='previousPage'>
+                    <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled" id='previousPage'>
+                    <a class="page-link" href="javascript:getPrevious();"><i class='fas fa-caret-left'></i></a>
+                    </li>
+                {% endif %}
+                {% if message_groups.has_next %}
+                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% else %}
+                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="create_campaign" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" style="width:48%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">New campaign</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div style="padding:5px; margin-top:10px;">
+            <input hidden id="hidden_tags" value="[]">
+            <div id="newCampaign" class="tab-pane active">
+                <form id="newCampaignForm">
+                {% csrf_token %}
+                    <input type="hidden" name="type" value="create_new_campaign" id="formAction">
+                    <input type="hidden" name="id" value="" id="campaignId">
+                    <div class="form-group">
+                        <label for="campaign_name">NAME</label>
+                        <input type="text" class="form-control" name="campaign_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="campaign_send_to">SEND TO</label>
+                        <div class="input-group" >
+                            <input type="text" id="sendto" class="form-control" placeholder="Select groups(s)">
+                            <span id="search-notifier-btn" class="input-group-addon" style="background-color: #ffffff; color:#2e2e2e"><span class="glyphicon glyphicon-search"></span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:20px;">
+                        <button type="submit" id="save-btn" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-danger delete" style="background-color:rgb(199, 89, 82)">
+                            <span class="glyphicon glyphicon-trash" style='color:white'></span>Delete campaign
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      </div>   
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="viewUser" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">User Profile</h4>
+            </div>
+            <div class="modal-body" style="height: 545px;">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="{{ imagePath }}happyface.png" alt="happyface" style="width: 100%;height: 100%;">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="name-title" id="viewName">Martin Sandstrom</div>
+                        <div class="name-username" id="viewUsername">msandstrom</div>
+                    </div>
+                </div>
+                <div style="background-color: #f5f5f5; height: 98px; margin-top: 20px">
+                    <div class="row" style="padding: 20px 15px;">
+                        <div class="col-md-2">Email: </div>
+                        <div class="view-text col-md-10" id="viewEmail">ibet@gmail.com</div>
+                    </div>
+                    <div class="row" style="padding: 0px 15px;">
+                        <div class="col-md-2">Phone: </div>
+                        <div class="view-text col-md-10" id="viewPhone">3332929292</div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        MARKET
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        ibet
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewIbetMarket">
+                        <!-- <div>FE</div> -->
+                        <div class="inline icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                        <div class="inline sec-icon-margin"><img src="{{ imagePath }}china.svg" alt="china" class="flag-icon"><label style="margin-left:2%;">CNY</label></div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-1 profile-info">
+                        Letou
+                    </div>
+                    <div class="col-md-8 profile-info" id="viewLetouMarket">
+                        FO
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        ROLE
+                    </div>
+                    <div class="col-md-9 profile-info" id="viewRole">
+                        ROLE
+                    </div>
+                </div>
+                <div class="row" style="margin-top:25px;">
+                    <div class="col-md-3 profile-title">
+                        DEPARTMENT
+                    </div>
+                    <div class="col-md-9 profile-info"  id="viewDepartment">
+                        DEPARTMENT
+                    </div>
+                </div>
+                <div>
+                    <hr style="width: 100%">
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+
+
+
+<div class="modal fade bd-example-modal-lg" id="view_campaign_info" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="width:50%;">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">View campaign</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div style="padding:5px; margin-top:10px;">
+            <div id="viewCampaign" class="tab-pane active">
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Name</div>
+                    <div class="col-md-9" id="campName">Name</div>
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Author</div>
+                    <div class="col-md-9" id="campAuthor">Name</div>
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Created</div>
+                    <div class="col-md-9" id="campTime">Name</div>
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <div class="col-md-3">Groups</div>
+                    <div class="col-md-9" id="campGroup">Name</div>
+                </div>
+                <div style="margin: 0px 10px;">
+                    <div class="row" style="margin-top:20px;">
+                        <div class="col-md-4" style="padding-left:0px;">MESSAGES SENT</div>
+                        <div class="col-md-4" style="padding-left:0px;">MESSAGES OPEND</div>
+                        <div class="col-md-4" style="padding-left:0px;">OPEN RATE</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 block" id="messageSent"></div>
+                        <div class="col-md-4 block" id="messageOpen"></div>
+                        <div class="col-md-4 block" id="rate"></div>
+                    </div>
+                </div>
+                <hr style="width:98%; background-color: black; height: 1px; border: 0;">
+                <div style="margin: 0px 10px;">
+                    MESSAGES
+                </div>
+                <div style="margin: 10px;">
+                    <table>
+                        <thead class="thead-dark">
+                            <tr>
+                            <th style="width: 25%;">SUBJECT</th>
+                            <th style="width: 15%;">BONUS</th>
+                            <th style="width: 15%;">SENT</th>
+                            <th style="width: 5%;">AUTHOR</th>
+                            <th style="width: 15%;">SENT</th>
+                            <th style="width: 13%;">OPEN</th>
+                            <th style="width: 12%;">OPEN RATE</th>
+                            </tr>
+                        </thead>
+                        <tbody id='user_list_tbody'>
+                            <tr>
+                                <td>{{ notification.subject }}</td>
+                                <td>{{ notification.campaign }}</td>
+                                <td>{{ notification.topic }}</td>
+                                <td>{{ notification.bonus }}</td>
+                                <td>{{ notification.publish_on }}</td>
+                                <td>{{ notification.creator }}</td>
+                                <td>{{ notification.status }}</td>
+                                <td><a class="btn btn-primary" href="#" role="button">EDIT</a></td>
+                                <td style="width: 3%; padding: 0px;"><button class="btn btn-primary" data-toggle="modal" data-target="#aaa"><span class="glyphicon glyphicon-search"></span></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+
+<script>
+$(document).ready(function() {
+
+    var data = [];
+    var previousURL = document.referrer;
+    // parse url
+    paramsMap = {
+        'pageSize': 20,
+        'offset': 1,
+    };
+
+    $.ajax({
+        type:'GET',
+        url:"{% url 'xadmin:campaign' %}",
+        data: {
+            type: "get_all_group",
+        },
+        success: function(data) {
+            // console.log(data);
+            var groups = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                local: data
+            });
+            
+            groups.initialize();
+
+            $('#sendto').tagsinput({
+                allowDuplicates: false,
+                // display: 'name',
+                // typeaheadjs: {
+                //     source: groups.ttAdapter()
+                // }
+                itemValue: "id",
+                itemText: "name",
+                typeaheadjs: {
+                    name: "name",
+                    displayKey: "name",
+                    source: groups.ttAdapter()
+                }
+            });
+
+        }
+    })
+
+    $("#sendto").on('beforeItemAdd', function(event) {
+        var tags = $('#hidden_tags').val();
+        tags = JSON.parse(tags);
+        tags.push(event.item.name);
+
+        $('#hidden_tags').val(JSON.stringify(tags));
+
+    });
+  
+
+    $('#sendto').on('itemRemoved', function(event) {
+        var tags = $('#hidden_tags').val();
+        tags = JSON.parse(tags);
+        array = removeByIndex(tags, event.item.name);
+        $('#hidden_tags').val(JSON.stringify(array));
+        
+    });
+
+
+    $("#newCampaignForm").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var url = "{% url 'xadmin:campaign' %}";
+        var tags = $('#hidden_tags').val();
+        var data = form.serialize() + "&tags=" + tags;
+        // console.log(data);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form.serialize() + "&tags=" + tags,
+            success: function(data)
+            {
+                // console.log(data);
+                window.location.reload();
+            }
+        });
+    })
+
+
+    getNext = function() {
+        if ($('#nextPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        // var newFromItem = Number(oldFromItem) + Number(pageSize);
+        var newFromItem = Number(oldFromItem) + 1;
+        
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+    }
+
+    getPrevious = function () {
+        if ($('#previousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = paramsMap['pageSize'];
+        var oldFromItem = paramsMap['offset'];
+        // var newFromItem = Number(oldFromItem) - Number(pageSize);
+        var newFromItem = Number(oldFromItem) - 1;
+        
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem);
+    }
+});
+
+
+function removeByIndex(array, index){
+    return array.filter(function(elem, _index){
+        return index != elem;
+    });
+}
+
+function getUserListRedirectUrl(pageSize, offset) {
+  var curUrl = window.location.href;
+  var parts = curUrl.split('?');
+  
+  var redirectUrl = parts[0];
+  redirectUrl += "?pageSize=" + pageSize;
+  redirectUrl += '&offset=' + offset;
+
+  return redirectUrl;
+}
+
+
+function getCreator(username) {
+    // console.log(username);
+    $('#viewUser').modal({'show' : true});
+
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_admin_profile' %}",
+        data:{ 
+            'username': username,
+        },
+        success: function(response)
+        {   
+            // console.log(response);
+            var data = response.data;
+            if (response.code === 0) {
+                var username = data.username;
+                var firstName = data.first_name;
+                var lastName = data.last_name;
+                var email = data.email;
+                var phone = data.phone;
+                var role = data.roleName;
+                var department = data.department;
+                var ibetMarkets = data.ibetMarkets;
+                var letouMarkets = data.letouMarkets;
+                $('#viewEmail').text(email);
+                $('#viewPhone').text(phone);
+                $('#viewRole').text(role);
+                $('#viewDepartment').text(department);
+                if (!firstName && !lastName) {
+                    $('#viewName').text(username);
+                    $('#viewUsername').text('');
+                } else {
+                    $('#viewName').text(firstName + ' ' + lastName);
+                    $('#viewUsername').text(username);
+                }
+                
+                var content = '';
+                for (var i = 0; i < ibetMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + ibetMarkets[i].name + '.svg" alt="' + ibetMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewIbetMarket').empty();
+                $('#viewIbetMarket').append(content);
+
+
+                var content = '';
+                for (var i = 0; i < letouMarkets.length; i++) {
+                    // console.log(ibetMarkets[i].name);
+                    content += '<div class="inline" style="margin-left: -20px;"><img src="{{ imagePath }}' + letouMarkets[i].name + '.svg" alt="' + letouMarkets[i].name + '" class="flag-icon"><label style="margin-left:2%;">' + ibetMarkets[i].code + '</label></div>';
+                }
+                // console.log(content);
+                $('#viewLetouMarket').empty();
+                $('#viewLetouMarket').append(content);
+            }
+        }
+    });
+}
+
+function createNewCampaign() {
+    $('#formAction').val('create_new_campaign');
+    $('input[name="campaign_name"]').val("");
+    $("#sendto").tagsinput('removeAll');
+    	
+    $( ".delete" ).css("display", "none");
+}
+
+
+function viewGampaign(name) {
+
+    $('#formAction').val('update_campaign');
+    $.ajax({
+        type: "GET",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'view_campaign',
+            'campaignName': name,
+        },
+        success: function(response)
+        {   
+            // console.log(response);
+            $('#create_campaign').modal({'show' : true});
+            $('input[name="campaign_name"]').val(response.name);
+            $( ".delete" ).css("display", "auto");
+            $(".delete").attr('onClick','deleteCampaign("' + response.name + '")')
+            
+            $("#sendto").tagsinput('removeAll');
+            for (var i = 0; i < response.group.length; i++) {
+                $("#sendto").tagsinput('add', { "id": response.group[i].id , "name": response.group[i].group });
+            
+            }
+            $('#campaignId').val(response.campaignId)
+        }
+    });
+}
+
+
+function deleteCampaign(campaignName) {
+
+    // console.log(campaignName);
+    $.ajax({
+        type: "POST",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'delete_campaign',
+            'campaignName': campaignName,
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+        },
+        success: function(response)
+        {
+            window.location.reload();
+        }
+    });
+
+}
+
+function viewGampaignInfo(campaignId) {
+    // console.log("!!!!" + campaignId);
+    $.ajax({
+        type: "GET",
+        url: "{% url 'xadmin:campaign' %}",
+        data:{ 
+            'type': 'view_campaign_info',
+            'campaignId': campaignId,
+        },
+        success: function(response)
+        {
+            // console.log(response);
+            $("#campName").text(response.campaignName);
+            $("#campAuthor").text(response.campaignCreator);
+            $("#campTime").text(response.campaignCreatedTime);
+            var groups = response.groups;
+            var str = groups.join(", ");
+            $("#campGroup").text(str);
+            $("#messageSent").text(response.sent_count);
+            $("#messageOpen").text(response.message_open);
+            $("#rate").text(response.open_rate);
+            // window.location.reload();
+        }
+    });
+
+}
+</script>
+{% endblock %}

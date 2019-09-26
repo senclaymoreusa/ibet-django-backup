@@ -187,18 +187,23 @@ class submitDeposit(generics.GenericAPIView):
                     status=2,
                     method=bankidConversion[BankID],
                     request_time=timezone.now(),
+                    
                 )
                 if PayWay == ASIAPAY_QRPAYWAY or PayWay == '30':
                     rr = requests.get(paymentAPIURL, params={
                             "cid":ASIAPAY_CID,
                             "oid":"D" + trans_id
                         })
-                    
-                    rrdata = rr.json()
-                    logger.info(rrdata)
-                    print(rrdata)
-                    return Response(rrdata)
-               
+                    if BankID == '39':
+                        rrdata = rr.text
+                        logger.info(rrdata)
+                        print(rrdata)
+                        return HttpResponse(rrdata)
+                    else:
+                        rrdata = rr.json()
+                        return Response(rrdata)
+       
+                        
             else:
                 logger.info("There was something wrong with the result")
                 logger.info(StatusMsg)
@@ -396,14 +401,14 @@ class exchangeRate(generics.GenericAPIView):
 
 def depositArrive(request):
     if request.method == "POST":
-        print("HAHAHAHAHA")
-        print(request.POST)
+        # print("HAHAHAHAHA")
+        # print(request.POST)
         StatusCode = request.POST.get("StatusCode")
         RevCardNumber = request.POST.get("RevCardNumber")
         RevMoney = request.POST.get("amount")
         order_id = request.POST.get("OrderID")
         OrderID = order_id[1:]
-        print(OrderID)
+        # print(OrderID)
         uID = request.POST.get("uID")
         userid = uID.strip('n')
         logger.info(userid)
@@ -440,10 +445,11 @@ def depositArrive(request):
 
         try:
             trans = Transaction.objects.get(transaction_id=OrderID)
-            print(trans)
+            # print(trans)
             if StatusCode == '001':  
                 trans.status = 0
                 trans.arrive_time = timezone.now()
+                trans.remark = 'Transaction success'
                 trans.save()
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
@@ -553,11 +559,6 @@ class payoutArrive(generics.GenericAPIView):
                 return Response(ET.tostring(root2), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"detail" : "need a trust user please."}, status=HTTP_401_UNAUTHORIZED)
-
-
-
-
-
 
 
 
