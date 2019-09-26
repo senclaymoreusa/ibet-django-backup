@@ -23,19 +23,40 @@ class SAGetUserBalance(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        s = str(request.body, 'utf-8')
+        string = str(request.body, 'utf-8')
 
-        b_s = urllib.parse.unquote(s)
+        bytes_string = urllib.parse.unquote(string)
 
-        str_de = des_decrypt(b_s)
+        str_de = des_decrypt(bytes_string)
 
         str_de = str_de.decode("utf-8")
 
         dic = { query.split('=')[0]: query.split('=')[1] for query in str_de.split('&') }
 
-        Status = status.HTTP_200_OK
+        username = dic['username']
+        currency = dic['currency']
 
-        response_data = '''<?xml version="1.0" encoding="utf-8"?><RequestResponse><username>{}</username><currency>{}</currency><amount>{}</amount><error>{}</error></RequestResponse>'''.format('1','2','3','4')
+
+        GameRequestsModel.objects.create(
+            MemberID        = username,
+            currency        = currency
+        )
+
+        try:
+
+            user = CustomUser.objects.filter(username = username)
+            balance = user[0].main_wallet
+            error_code = 0
+
+            Status = status.HTTP_200_OK
+
+        except:
+
+            error_code = 1000
+            Status = status.HTTP_400_BAD_REQUEST
+
+
+        response_data = '''<?xml version="1.0" encoding="utf-8"?><RequestResponse><username>{}</username><currency>{}</currency><amount>{}</amount><error>{}</error></RequestResponse>'''.format(username, currency, balance, error_code)
 
         return Response(response_data, status=Status)
         
