@@ -187,8 +187,59 @@ class SAPlayerWin(APIView):
 
 
 
+class SAPlayerLost(APIView):
 
+permission_classes = (AllowAny, )
 
+    def post(self, request, *args, **kwargs):
+
+        string = str(request.body, 'utf-8')
+
+        bytes_string = urllib.parse.unquote(string)
+
+        str_de = des_decrypt(bytes_string)
+
+        str_de = str_de.decode("utf-8")
+
+        dic = { query.split('=')[0]: query.split('=')[1] for query in str_de.split('&') }
+
+        username = dic['username']
+        currency = dic['currency']
+        txnid    = dic['txnid']
+        gametype = dic['gametype']
+        gamecode = dic['gamecode']
+        Payouttime = dic['Payouttime']
+        hostid   = dic['hostid']
+        gameid   = dic['gameid']
+
+        GameRequestsModel.objects.create(
+            MemberID        = username,
+            currency        = currency,
+            txnid           = txnid,
+            gametype        = gametype,
+            gameCode        = gamecode,
+            time            = Payouttime
+            hostid          = hostid,
+            gameId          = gameid    
+        )
+
+        try:
+
+            user = CustomUser.objects.filter(username = username)
+            balance = user[0].main_wallet
+
+            error_code = 0
+            
+            Status = status.HTTP_200_OK
+
+        except:
+
+            error_code = 1000
+            Status = status.HTTP_400_BAD_REQUEST
+
+        response_data = '''<?xml version="1.0" encoding="utf-8"?><RequestResponse><username>{}</username><currency>{}</currency><amount>{}</amount><error>{}</error></RequestResponse>'''.format(username, currency, balance, error_code)
+
+        return Response(response_data, status=Status)
         
 
 
