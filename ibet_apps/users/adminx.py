@@ -95,17 +95,17 @@ class GlobalSettings(object):
             },
             {
                 'title': 'Reports',
-                'icon': 'fa-fw fa fa-cog',
+                'icon': 'fas fa-file-medical-alt',
                 'menus': (
                     {
                         'title': 'Performance reports',
                         'url': '/xadmin/performance-report/',
-                        'icon': 'fa fa-user-circle-o'
+                        'icon': 'fas fa-file-alt'
                     },
                     {
                         'title': 'Members reports',
                         'url': '/xadmin/members-report/',
-                        'icon': 'fa fa-user-circle-o'
+                        'icon': 'fas fa-users'
                     },
                 )
             },

@@ -17,8 +17,8 @@
     </div>
     <div class="row" style="margin-top:20px;">
         <div class="col-md-2">
-            <div style="width: 100%; height: 800px; background-color: #f3f3f3;">
-                <div style="padding:15px 10px;">
+            <div style="width: 100%; height: 550px; background-color: #f3f3f3;">
+                <div style="padding-left:15px; padding-right:15px; padding-top:15px;">
                     <label style="width:98%;" class="btn btn-primary" type="button">Upload CSV <input id="upload" type="file" style="display: none;"></label>
                     <div class="row" style="margin-top:15px;">
                         <div class="custom-file-label col-md-6"></div>
@@ -32,7 +32,7 @@
                 <input hidden id="hidden-input" value="[]"/>
                 <div id="displayMemberNums"  style='margin: 10px 10px; font-weight:600;'></div>
                 <div style="padding:0px 10px; margin-bottom:10px;" >
-                    <label class="role-title">MARKET</label>
+                    <label class="role-title" style="margin-right:40px;">MARKET</label>
                     <select id="market-select" multiple="multiple" class="form-control">
                         <optgroup label="ibet" class="ibetMarkets">   
                             <option value="ALL" id="ibetALL">ALL</option>
@@ -265,17 +265,19 @@ $(document).ready(function() {
         $('.delete').css("display", "");
     });
 
-    $(function() {
-        $('#device-select').multiselect({
-            includeSelectAllOption: true,
-        });
-    })
+    // $(function() {
+    //     $('#device-select').multiselect({
+    //         includeSelectAllOption: true,
+            
+    //     });
+    // })
 
-    $(function() {
-        $('#channel-select').multiselect({
-            includeSelectAllOption: true,
-        });
-    })
+    // $(function() {
+    //     $('#channel-select').multiselect({
+    //         includeSelectAllOption: true,
+    //     });
+    // })
+    // console.log($(window).width());
 
     $(function() {
         $('#market-select').multiselect({
@@ -289,6 +291,14 @@ $(document).ready(function() {
                     return '<img src="{{ imagePath }}' + $(element).attr('id') + '.svg" class="flag-icon"><label style="margin-left:10px">' + $(element).attr('value') + '</label>';
                 else
                     return $(element).attr('value')
+            },
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
             },
             // onChange: function(option, checked, select) {
             //     // console.log(option, checked, select);
