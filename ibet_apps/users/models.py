@@ -562,7 +562,7 @@ class GameRequestsModel(models.Model):
 
     txnid           = models.CharField(max_length=100, blank=True)
     hostid          = models.CharField(max_length=100, blank=True)
-
+    txn_reverse_id  = models.CharField(max_length=100, blank=True)
 
 
 
