@@ -125,6 +125,46 @@ class SAPlaceBet(APIView):
 
         return Response(response_data, status=Status)
 
+
+class SAPlayerWin(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+
+        string = str(request.body, 'utf-8')
+
+        bytes_string = urllib.parse.unquote(string)
+
+        str_de = des_decrypt(bytes_string)
+
+        str_de = str_de.decode("utf-8")
+
+        dic = { query.split('=')[0]: query.split('=')[1] for query in str_de.split('&') }
+
+        username   = dic['username']
+        currency   = dic['currency']
+        amount     = dic['amount']
+        txnid      = dic['txnid']
+        gametype   = dic['gametype']
+        gamecode   = dic['gamecode']
+        Payouttime = dic['Payouttime']
+        hostid     = dic['hostid']
+        gameid     = dic['gameid']
+
+        GameRequestsModel.objects.create(
+            MemberID        = username,
+            currency        = currency,
+            amount          = amount,
+            txnid           = txnid,
+            gametype        = gametype,
+            gameCode        = gamecode,
+            time            = Payouttime
+            hostid          = hostid,
+            gameId          = gameid    
+        )
+
+
         
 
 
