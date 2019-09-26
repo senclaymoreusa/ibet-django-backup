@@ -62,7 +62,7 @@ CHANNEL_CHOICES = (
     (10, 'PaymentIQ')
 )
 
-currency_cny = 0
+CURRENCY_CNY = 0
 
 CURRENCY_CHOICES = (
     (0, 'CNY'),
@@ -80,6 +80,17 @@ CURRENCY_CHOICES = (
     (12, 'GBP'),
     (13, 'EUR')
 )
+
+TRAN_SUCCESS_TYPE = 0
+TRAN_FAIL_TYPE = 1
+TRAN_CREATE_TYPE = 2
+TRAN_PENDING_TYPE = 3
+TRAN_APPROVED_TYPE = 4
+TRAN_CANCEL_TYPE = 5
+TRAN_COMPLETED_TYPE = 6
+TRAN_RESEND_TYPE = 7
+TRAN_REJECTED_TYPE = 8
+
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
@@ -92,10 +103,21 @@ STATE_CHOICES = (
     (8, 'REJECTED'),
     (9, 'HELD'),
 )
+
+REVIEW_APP = 0
+REVIEW_PEND = 1
+REVIEW_REJ = 2
+REVIEW_SUCCESS = 3
+REVIEW_FAIL = 4
+REVIEW_RESEND = 5
+
 REVIEW_STATE_CHOICES = (
-    (0, 'Approved'),
-    (1, 'Pending'),
-    (2, 'Rejected'),
+    (0, 'APPROVED'),
+    (1, 'PENDING'),
+    (2, 'REJECTED'),
+    (3, 'SUCCESSFUL'),
+    (4, 'FAILED'),
+    (5, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (
@@ -112,8 +134,8 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-transaction_deposit = 0
-transaction_withdrawl = 1
+TRANSACTION_DEPOSIT = 0
+TRANSACTION_WITHDRAW = 1
 
 TRANSACTION_TYPE_CHOICES = (
     (0, 'Deposit'),
@@ -202,9 +224,11 @@ AGENT_STATUS = (
 
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
+MESSAGE_GROUP = 2
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
+    (MESSAGE_GROUP, 'message'),
     (OTHER_GROUP, 'other')
 )
 
@@ -407,6 +431,18 @@ GAME_ATTRIBUTES = (
     (GAME_ATTRIBUTES_THEME, 'Theme'),
 )
 
+ACTIVITY_CHECK_FIVE_MIN = 0
+ACTIVITY_CHECK_HALF_HOUR = 1
+ACTIVITY_CHECK_ONE_HOUR = 2
+ACTIVITY_CHECK_TWO_HOURS = 3
+
+ACTIVITY_CHECK = (
+    (ACTIVITY_CHECK_FIVE_MIN, '5 minutes'),
+    (ACTIVITY_CHECK_HALF_HOUR, '30 minutes'),
+    (ACTIVITY_CHECK_ONE_HOUR, '60 minutes'),
+    (ACTIVITY_CHECK_TWO_HOURS, '120 minutes'),
+)
+
 
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
@@ -571,6 +607,7 @@ SYSTEM_USER = 1
 NOTIFICATION_CONSTRAINTS_QUANTITY = 1000
 
 AWS_SMS_REGION = 'eu-west-1'
+AWS_SQS_REGION = 'eu-west-2'
 
 COUNTRY_CODE_CHINA = 'CNY'
 COUNTRY_CODE_GERMANY = 'DE'
@@ -1003,5 +1040,6 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"

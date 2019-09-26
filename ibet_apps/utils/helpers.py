@@ -7,12 +7,13 @@ from users.models import CustomUser
 
 
 logger = logging.getLogger("django")
+
+
 def addOrWithdrawBalance(username, balance, type_balance):
     user = CustomUser.objects.filter(username=username)
     logger.info("Updating " + user[0].username + " balance (" + type_balance + " " + str(balance) + ")")
     current_balance = user[0].main_wallet
-    # if balance.isdigit() == False:
-    #     return HttpResponse('Failed')
+
     logger.info(current_balance)
     if type_balance == 'add':
         if user[0].ftd_time is None:
@@ -47,16 +48,16 @@ def addOrWithdrawBalance(username, balance, type_balance):
 
     else:
         if decimal.Decimal(balance) > currrent_balance:
-            return HttpResponse('The balance is not enough', status=200)
+            return False
 
         new_balance = currrent_balance - decimal.Decimal(balance)
         user.update(main_wallet=new_balance, modified_time=timezone.now())
 
-        obj, created = Transaction.objects.create(
-            user_id=CustomUser.objects.filter(username=username).first(),
-            amount=balance,
-            transaction_type=1
-        )
+        # obj, created = Transaction.objects.create(
+        #     user_id=CustomUser.objects.filter(username=username).first(),
+        #     amount=balance,
+        #     transaction_type=1
+        # )
 
         # action = UserAction(
         #     user= CustomUser.objects.filter(username=username).first(),

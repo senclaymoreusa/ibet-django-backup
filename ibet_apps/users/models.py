@@ -137,7 +137,8 @@ class CustomUser(AbstractBaseUser):
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
-
+    bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    
     # agent
     agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
     commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
@@ -155,6 +156,8 @@ class CustomUser(AbstractBaseUser):
     permanent_block_time = models.DateTimeField(null=True, blank=True)
     permanent_block_timespan = models.DurationField(null=True, blank=True)
     permanent_block_interval = models.SmallIntegerField(choices=PERMANENT_INTERVAL, null=True, blank=True)
+
+    activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
 
     ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)
@@ -276,6 +279,7 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
+    image_url = models.CharField(max_length=500, null=True, blank=True)
     game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
@@ -527,8 +531,33 @@ class GameRequestsModel(models.Model):
     remark          = models.CharField(max_length=100, blank=True)
     amount          = models.CharField(max_length=100, blank=True)
     gameId          = models.CharField(max_length=100, blank=True)
-    
     roundId         = models.CharField(max_length=100, blank=True)
+
+    # Yggdrasil
+
+    organization    = models.CharField(max_length=100, blank=True)
+    version         = models.CharField(max_length=100, blank=True)
+    reference       = models.CharField(max_length=100, blank=True)
+    subreference    = models.CharField(max_length=100, blank=True)
+    description     = models.CharField(max_length=100, blank=True)
+    prepaidticketid = models.CharField(max_length=100, blank=True)
+    prepaidvalue    = models.CharField(max_length=100, blank=True)
+    prepaidcost     =models.CharField(max_length=100, blank=True)
+    prepaidref      = models.CharField(max_length=100, blank=True)
+    jackpotcontribution = models.CharField(max_length=100, blank=True)
+    isJackpotWin    = models.CharField(max_length=100, blank=True)
+    bonusprize      = models.CharField(max_length=100, blank=True)
+    tickets         = models.CharField(max_length=100, blank=True)
+    singleWin       = models.CharField(max_length=100, blank=True)
+    totalWin        = models.CharField(max_length=100, blank=True)
+    roundCount      = models.CharField(max_length=100, blank=True)
+    ruleType        = models.CharField(max_length=100, blank=True)
+    cash            = models.CharField(max_length=100, blank=True)
+    bonus           = models.CharField(max_length=100, blank=True)
+    campaignref     = models.CharField(max_length=100, blank=True)
+    lang            = models.CharField(max_length=100, blank=True)
+    last            = models.CharField(max_length=100, blank=True)
+
 
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType

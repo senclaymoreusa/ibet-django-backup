@@ -3,10 +3,14 @@ from xadmin.layout import Main, Side, Fieldset
 
 from .models import Transaction, DepositAccessManagement, DepositChannel, WithdrawAccessManagement, WithdrawChannel
 from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
+from .views.deposit_views import *
+from .views.withdrawal_views import *
+from .views.channel_list import *
+
 
 class TransactionAdmin(object):
     list_display = ('user_id', 'order_id','transaction_id','transaction_type', 'amount', 'status', 'method','channel', 'request_time', 'arrive_time', 'review_status', 'remark')
-    list_filter = ('transaction_type', 'status', 'channel', 'review_status', 'request_time', 'arrive_time')
+    list_filter = ('transaction_type', 'status', 'review_status', 'request_time', 'arrive_time')
     search_fields = ('user_id__username',)
     model_icon = 'fa fa-money'
 
@@ -20,8 +24,8 @@ class DepositReview(Transaction):
         proxy=True
 
 class DepositReviewAdmin(object):
-    list_display = ('user_id', 'channel', 'amount', 'request_time', 'review_status', 'remark')
-    list_filter = ('channel', 'review_status',)
+    list_display = ('user_id', 'amount', 'request_time', 'review_status', 'remark')
+    list_filter = ('review_status',)
     model_icon='fa fa-user'
     search_fields = ['user_id']
 
@@ -55,15 +59,15 @@ class WithdrawReview(Transaction):
         proxy=True
 
 class WithdrawReviewAdmin(object):
-    list_display = ('user_id', 'channel', 'amount', 'request_time', 'review_status', 'remark')
-    list_filter = ('channel', 'review_status',)
+    list_display = ('user_id', 'amount', 'request_time', 'review_status', 'remark')
+    list_filter = ('review_status',)
     model_icon='fa fa-users'
     search_fields = ['user_id']
 
     form_layout = (
         Main(
             Fieldset("General Info",
-                    'user_id', 'amount', 'status', 'channel', 'request_time', 'arrive_time',
+                    'user_id', 'amount', 'status', 'request_time', 'arrive_time',
             ),
             Fieldset("Review",
                     'review_status', 'remark',
@@ -112,13 +116,16 @@ class WithdrawAccessManagementAdmin(object):
     def __str__(self):
         return '{0}'.format(self.user_id)
 
-xadmin.site.register(Transaction,TransactionAdmin)
+# xadmin.site.register(Transaction,TransactionAdmin)
 
-xadmin.site.register(DepositChannel,DepositChannelAdmin)
-xadmin.site.register(WithdrawChannel,WithdrawChannelAdmin)
-xadmin.site.register(DepositReview,DepositReviewAdmin)
-xadmin.site.register(WithdrawReview,WithdrawReviewAdmin)
-xadmin.site.register(DepositAccessManagement,DepositAccessManagementAdmin)
-xadmin.site.register(WithdrawAccessManagement,WithdrawAccessManagementAdmin)
+# xadmin.site.register(DepositChannel,DepositChannelAdmin)
+# xadmin.site.register(WithdrawChannel,WithdrawChannelAdmin)
+# xadmin.site.register(DepositReview,DepositReviewAdmin)
+# xadmin.site.register(WithdrawReview,WithdrawReviewAdmin)
+# xadmin.site.register(DepositAccessManagement,DepositAccessManagementAdmin)
+# xadmin.site.register(WithdrawAccessManagement,WithdrawAccessManagementAdmin)
 
 
+xadmin.site.register_view(r'deposit/$', DepositView, name='deposit_view')
+xadmin.site.register_view(r'withdrawal/$', WithdrawalView, name='withdrawal_view')
+xadmin.site.register_view(r'channel_list/$', ChannelListView, name='channel_list')

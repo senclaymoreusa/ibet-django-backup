@@ -51,10 +51,7 @@ def verify_user(request):
     :return: JSON response containing User KYC info to be sent to Payment Provider
     """
     if request.method == "POST":
-        print("received post for verify/user")
         post_data = json.loads(request.body)
-        print("POST request payload:")
-        print(post_data)
         try:
             user = CustomUser.objects.get(username=post_data["userId"])
             result = {
@@ -83,7 +80,6 @@ def verify_user(request):
             return JsonResponse(result)
         except ObjectDoesNotExist as e:
             logger.error(e)
-            print("No user found")
             result = {
                 "success": False,
                 "errCode": "000",  # custom error code (used internally by ibet)
@@ -114,15 +110,12 @@ def authorize(request):
     """
     if request.method == "POST":
         post_data = json.loads(request.body)
-        print("POST request payload for authorize")
-        print(post_data)
         auth_code = str(uuid1())
         try:
             user = CustomUser.objects.get(username=post_data["userId"])
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(
                 random.randint(0, 10000000))
             if "deposit" in post_data["txName"].lower():
-                print("Authorizing deposit request for user " + post_data["userId"] + "...")
                 created = Transaction.objects.create(
                     user_id=user,
                     transaction_id=trans_id,
@@ -135,7 +128,8 @@ def authorize(request):
                     status=2,  # 2 = CREATED
                     last_updated=timezone.now()
                 )
-                print(created)
+                logger.info("Recording deposit transaction request...")
+                logger.info(created)
                 return JsonResponse({
                     "userId": post_data["userId"],
                     "success": True,
@@ -144,28 +138,37 @@ def authorize(request):
                     "authCode": auth_code
                 })
             elif "withdraw" in post_data["txName"].lower():
-                print("Authorizing withdraw request for user " + post_data["userId"] + "...")
-                # TODO: Need to add logic to check if user has enough withdrawable balance
-                Transaction.objects.create(
+                if float(post_data["txAmount"]) > user.main_wallet:
+                    return JsonResponse({
+                        "userId": post_data["userId"],
+                        "success": False,
+                        "txId": post_data["txId"],
+                        "merchantTxId": trans_id,
+                        "authCode": auth_code,
+                        "errCode": "100",
+                        "errMsg": "Authorize failed: not enough withdraw balance"
+                    })
+
+                created = Transaction.objects.create(
                     user_id=post_data["userId"],
                     transaction_id=trans_id,
                     order_id=post_data["txId"],
                     amount=float(post_data["txAmount"]),
                     method=post_data["provider"] + ": " + post_data["txName"],
                     currency=cyConversion[post_data["txAmountCy"]],
-                    transaction_type=1,  # 0 = DEPOSIT
+                    transaction_type=1,  # 1 = WITHDRAW
                     channel=10,  # 10 = PaymentIQ
                     status=2,  # 2 = CREATED
                     last_updated=timezone.now()
                 )
+                logger.info("Recording withdraw transaction request...")
+                logger.info(created)
                 return JsonResponse({
                     "userId": post_data["userId"],
-                    "success": False,
+                    "success": True,
                     "txId": post_data["txId"],
                     "merchantTxId": trans_id,
                     "authCode": auth_code,
-                    "errCode": "100",
-                    "errMsg": "Authorize failed: not enough withdraw balance"
                 })
         except ObjectDoesNotExist as e:
             logger.info(e)
@@ -201,8 +204,6 @@ def transfer(request):
     """
     if request.method == "POST":
         post_data = json.loads(request.body)
-        print("POST request payload for transfer")
-        print(post_data)
         user = CustomUser.objects.get(username=post_data["userId"])
         try:
             if "deposit" in post_data["txName"].lower():
@@ -222,6 +223,7 @@ def transfer(request):
                         "errMsg": "Transfer failed: duplicate Transfer action"  # message explaining error
                     })
                 success = helpers.addOrWithdrawBalance(matching_transaction.user_id, matching_transaction.amount, "add")
+
                 matching_transaction.status = 0
                 matching_transaction.arrive_time = timezone.now()
                 matching_transaction.last_updated = timezone.now()
@@ -234,29 +236,50 @@ def transfer(request):
                     "txId": post_data["txId"],
                     "merchantTxId": matching_transaction.transaction_id,
                 }
-                print(result)
                 return JsonResponse(result)
 
             elif "withdraw" in post_data["txName"].lower():
-                Transaction.objects.create(
-                    user_id=post_data["userId"],
-                    transaction_id=trans_id,
+                matching_transaction = Transaction.objects.get(
+                    user_id=user,
+                    order_id=post_data["txId"],
                     amount=float(post_data["txAmount"]),
                     method=post_data["provider"] + ": " + post_data["txName"],
                     currency=cyConversion[post_data["txAmountCy"]],
-                    transaction_type=1,  # 1 = WITHDRAW
+                    transaction_type=0,  # 0 = DEPOSIT
                     channel=10,  # 10 = PaymentIQ
-                    status=2,  # 2 = CREATED
-                    last_updated=timezone.now()
                 )
-                return JsonResponse({
-                    "userId": post_data["userId"],
-                    "success": False,
-                    "txId": post_data["txId"],
-                    "merchantTxId": trans_id,
-                    "errCode": "001",
-                    "errMsg": "Authorize failed: not enough withdraw balance"
-                })
+                if matching_transaction.status != 2:
+                    return JsonResponse({
+                        "success": False,
+                        "errCode": "200",  # custom error code (used internally by ibet)
+                        "errMsg": "Transfer failed: duplicate Transfer action"  # message explaining error
+                    })
+
+                matching_transaction.status = 0
+                matching_transaction.arrive_time = timezone.now()
+                matching_transaction.last_updated = timezone.now()
+                matching_transaction.remark = "Successfully withdrew!"
+                matching_transaction.save()
+
+                success = helpers.addOrWithdrawBalance(matching_transaction.user_id, matching_transaction.amount, "withdraw")
+                if success:
+                    result = {
+                        "userId": post_data["userId"],
+                        "success": success,
+                        "txId": post_data["txId"],
+                        "merchantTxId": trans_id,
+                    }
+                    return JsonResponse(result)
+                else:
+                    result = {
+                        "userId": post_data["userId"],
+                        "success": success,
+                        "txId": post_data["txId"],
+                        "merchantTxId": trans_id,
+                        "errCode": "001",
+                        "errMsg": "Authorize failed: not enough withdraw balance"
+                    }
+                    return JsonResponse(result)
         except ObjectDoesNotExist as e:
             logger.info(e)
             return JsonResponse({
@@ -266,10 +289,35 @@ def transfer(request):
                 "errCode": "001",  # custom error code (used internally by ibet)
                 "errMsg": "Transfer failed: Transaction does not exist"  # message explaining error
             })
-        return JsonResponse({"msg": "hi"})
 
 
 def cancel(request):
     if request.method == "POST":
-        print("received post for cancel")
-        return JsonResponse({"msg": "hi"})
+        post_data = json.loads(request.body)
+        user = CustomUser.objects.get(username=post_data["userId"])
+        try:
+            matching_transaction = Transaction.objects.get(
+                user_id=user,
+                order_id=post_data["txId"],
+                amount=float(post_data["txAmount"]),
+                method=post_data["provider"] + ": " + post_data["txName"],
+                currency=cyConversion[post_data["txAmountCy"]],
+                channel=10,  # 10 = PaymentIQ
+            )
+            matching_transaction.status = 5  # 5 = CANCELED
+            matching_transaction.last_updated = timezone.now()
+            matching_transaction.remark = "PSP(" + post_data["provider"] + ") rejected this " + post_data["txName"] + " request"
+            result = {
+                "userId": post_data["userId"],
+                "success": True,
+            }
+            return JsonResponse(result)
+        except ObjectDoesNotExist as e:
+            logger.info(e)
+            return JsonResponse({
+                "userId": post_data["userId"],
+                "success": False,
+                "merchantTxId": trans_id,
+                "errCode": "001",  # custom error code (used internally by ibet)
+                "errMsg": "Transfer failed: Transaction does not exist"  # message explaining error
+            })
