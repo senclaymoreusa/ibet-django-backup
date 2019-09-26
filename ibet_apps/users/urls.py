@@ -67,6 +67,7 @@ urlpatterns += [
     path('api/saplacebet/', saintegrationviews.SAPlaceBet.as_view(), name='sa_place_bet'),
     path('api/saplayerwin/', saintegrationviews.SAPlayerWin.as_view(), name='sa_player_win'),
     path('api/saplayerlost/', saintegrationviews.SAPlayerLost.as_view(), name='sa_player_lost'),
+    path('api/saplayerbetcancel/', saintegrationviews.SAPlaceBetCancel.as_view(), name='sa_player_bet_cancel'),
     path('api/set-limitations/',csrf_exempt(views.SetLimitation.as_view()), name='set_limitation'),
     path('api/delete-limitation/', csrf_exempt(views.DeleteLimitation.as_view()), name='delete_limitation'),
     path('api/get-limitations/', csrf_exempt(views.GetLimitation.as_view()), name='get_limitation'),

@@ -278,13 +278,17 @@ class SAPlaceBetCancel(APIView):
             gameCode        = gamecode,
             time            = Payouttime,
             hostid          = hostid,
-            gameId          = gameid    
+            gameId          = gameid,
+            txn_reverse_id  = txn_reverse_id
         )
 
         try:
 
             user = CustomUser.objects.filter(username = username)
             balance = user[0].main_wallet
+
+            balance += decimal.Decimal(amount)
+            user.update(main_wallet=balance, modified_time=timezone.now())
 
             error_code = 0
             
