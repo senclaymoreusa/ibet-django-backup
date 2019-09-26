@@ -558,6 +558,13 @@ class GameRequestsModel(models.Model):
     lang            = models.CharField(max_length=100, blank=True)
     last            = models.CharField(max_length=100, blank=True)
 
+    # SA
+
+    txnid           = models.CharField(max_length=100, blank=True)
+    hostid          = models.CharField(max_length=100, blank=True)
+
+
+
 
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
