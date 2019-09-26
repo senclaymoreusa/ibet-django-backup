@@ -164,6 +164,30 @@ class SAPlayerWin(APIView):
             gameId          = gameid    
         )
 
+        try:
+
+            user = CustomUser.objects.filter(username = username)
+            balance = user[0].main_wallet
+
+            balance += decimal.Decimal(amount)
+            user.update(main_wallet=balance, modified_time=timezone.now())
+
+            error_code = 0
+            
+            Status = status.HTTP_200_OK
+
+        except:
+
+            error_code = 1000
+            Status = status.HTTP_400_BAD_REQUEST
+
+        response_data = '''<?xml version="1.0" encoding="utf-8"?><RequestResponse><username>{}</username><currency>{}</currency><amount>{}</amount><error>{}</error></RequestResponse>'''.format(username, currency, balance, error_code)
+
+        return Response(response_data, status=Status)
+
+
+
+
 
         
 
