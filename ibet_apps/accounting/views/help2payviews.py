@@ -50,10 +50,7 @@ class SubmitDeposit(generics.GenericAPIView):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
 
-        # trans_id = self.request.POST.get("order_id")
-        # order_id = "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
-
-        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
 
         amount = float(self.request.POST.get("amount"))
         amount = str('%.2f' % amount)
@@ -65,25 +62,27 @@ class SubmitDeposit(generics.GenericAPIView):
 
         ip = helpers.get_client_ip(request)
         currency = self.request.POST.get("currency")
-        
+
+        merchant_code = '123'
+        secret_key = '123'
+
         if currency == '2':
-            help2pay_merchant = HELP2PAY_MERCHANT_THB
-            help2pay_security = HELP2PAY_SECURITY_THB
+            merchant_code = HELP2PAY_MERCHANT_THB
+            secret_key = HELP2PAY_SECURITY_THB
         elif currency == '8':
-            help2pay_merchant = HELP2PAY_MERCHANT_VND
-            help2pay_security = HELP2PAY_SECURITY_VND
+            merchant_code = HELP2PAY_MERCHANT_VND
+            secret_key = HELP2PAY_SECURITY_VND
 
         data = {
-            "Merchant": help2pay_merchant,
+            "Merchant": merchant_code,
             "Customer": user_id,
             "Currency": currencyConversion[currency],
             "Reference": str(trans_id),
-            "Key": MD5(help2pay_merchant+str(trans_id)+str(user_id)+amount+currencyConversion[currency]+key_time+help2pay_security+ip),
+            "Key": MD5(merchant_code+trans_id+str(user_id)+amount+currencyConversion[currency]+key_time+secret_key+ip),
             "Amount": amount,
             "Datetime": Datetime,
-            "FrontURI": "https://03720ad2.ngrok.io/accounting/api/help2pay/deposit_success",
-            # "FrontURI": "https://03720ad2.ngrok.io/" + HELP2PAY_CONFIRM_PATH,
-            "BackURI": "https://03720ad2.ngrok.io/" + HELP2PAY_CONFIRM_PATH,
+            "FrontURI": API_DOMAIN + HELP2PAY_SUCCESS_PATH,
+            "BackURI": API_DOMAIN + HELP2PAY_CONFIRM_PATH,
             "Bank": bank,
             "Language": language,
             "ClientIP": ip,
