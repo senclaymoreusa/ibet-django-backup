@@ -526,7 +526,6 @@ ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
 ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
-# TODO: update this with if/else block after h2pproduction credentials have been provided
 # help2pay sandbox credentials & callback
 
 HELP2PAY_MERCHANT_THB = "M0513"

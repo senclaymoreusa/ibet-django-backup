@@ -964,7 +964,7 @@ class LogStreamToS3(APIView):
         
     def post(self, request, *args, **kwargs):
         
-        line = request.data['line'] + "\n"
+        line = str(request.data['line']) + "\n"
             
         """Exercise Kinesis Firehose methods"""
         
