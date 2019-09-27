@@ -44,7 +44,7 @@ class DepositView(CommAdminView):
             within_this_month = timezone.now() - timezone.timedelta(days=30)
             latest_deposit = Transaction.objects.filter(
                 Q(user_id_id=user)
-                & Q(transaction_type=TRANSACTION_TYPE_DEPOSIT)
+                & Q(transaction_type=TRANSACTION_DEPOSIT)
                 & Q(request_time__gte=within_this_month)
             )
             logger.info('Find ' + str(latest_deposit.count()) + ' latest deposits')
@@ -89,7 +89,7 @@ class DepositView(CommAdminView):
             context["time"] = timezone.now()
 
             deposit_trans = Transaction.objects.filter(
-                transaction_type=TRANSACTION_TYPE_DEPOSIT
+                transaction_type=TRANSACTION_DEPOSIT
             )
 
             # PENDING DEPOSIT

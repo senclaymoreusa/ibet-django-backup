@@ -181,8 +181,8 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         min_pub_date_time = tz.localize(datetime.combine(date, time.min)) 
         max_pub_date_time = tz.localize(datetime.combine(date, time.max))
         transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
-        deposits = transactions.filter(transaction_type=TRANSACTION_TYPE_DEPOSIT, status=TRAN_SUCCESS_TYPE)
-        withdraws = transactions.filter(transaction_type=TRANSACTION_TYPE_WITHDRAW, status=TRAN_APPROVED_TYPE)
+        deposits = transactions.filter(transaction_type=TRANSACTION_DEPOSIT, status=TRAN_SUCCESS_TYPE)
+        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL, status=TRAN_APPROVED_TYPE)
 
         dateStr = date.strftime("%b %e %Y")
         dataPerUnit = {
@@ -226,7 +226,7 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         # register_times = UserAction.objects.filter(user__currency__in=marketCode, event_type=EVENT_CHOICES_REGISTER, created_time__gt=min_pub_date_time, created_time__lt=max_pub_date_time).count()
         # transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
         # deposit_sum = 0
-        # deposits = transactions.filter(transaction_type=TRANSACTION_TYPE_DEPOSIT)
+        # deposits = transactions.filter(transaction_type=TRANSACTION_DEPOSIT)
         # print(deposits)
         # if market:
         #     deposits = deposits.filter(currency__in=marketCode)
@@ -234,7 +234,7 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         #     deposit_sum += currencyRateMap[deposit.currency] * float(deposit.amount)
         
         # withdraw_sum = 0
-        # withdraws = transactions.filter(transaction_type=TRANSACTION_TYPE_WITHDRAW)
+        # withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL)
         # if market:
         #     withdraws = withdraws.filter(currency__in=marketCode)
         # for withdraw in withdraws:
@@ -362,7 +362,7 @@ class MembersReportView(CommAdminView):
             data = []
             for i in users:
                 user = CustomUser.objects.get(username=i.username)
-                lastDeposit = Transaction.objects.filter(user_id=user, transaction_type=TRANSACTION_TYPE_DEPOSIT).order_by('request_time').first()
+                lastDeposit = Transaction.objects.filter(user_id=user, transaction_type=TRANSACTION_DEPOSIT).order_by('request_time').first()
                 requestTime = ""
                 lastActive = ""
                 current_tz = timezone.get_current_timezone()
