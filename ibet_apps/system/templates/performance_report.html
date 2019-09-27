@@ -454,9 +454,15 @@ $(document).ready(function() {
             return;
         }
 
-        if (dateRangeFrom && timePeriod !== '-1') {
+        if (!dateRangeFrom && !dateRangeTo && timePeriod === '-1') {
             error = true;
             alert("please choose the time range or time peroid");
+            return;
+        }
+
+        if (dateRangeFrom && timePeriod !== '-1') {
+            error = true;
+            alert("please choose one of the time range or time peroid");
             return;
         }
 
