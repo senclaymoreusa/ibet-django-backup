@@ -91,7 +91,7 @@ class PerformanceReportView(CommAdminView):
         
         else:
             context = super().get_context()
-            title = _('Group Permission')
+            title = _('Performance reports')
             context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
             context['title'] = title
             context['time'] = timezone.now()
@@ -406,7 +406,7 @@ class MembersReportView(CommAdminView):
 
         else:
             context = super().get_context()
-            title = _('Group Permission')
+            title = _('Members reports')
             context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
             context['title'] = title
             context['time'] = timezone.now()
