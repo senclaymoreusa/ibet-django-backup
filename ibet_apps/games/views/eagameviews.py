@@ -60,7 +60,7 @@ class EALiveCasinoClientLoginView(View):
             else:
                 propertiesPassword = i['#text']
 
-        print(action, requestId, propertiesUserId, propertiesPassword)
+        # print(action, requestId, propertiesUserId, propertiesPassword)
 
         statusCode = 0
         currencyCode = ""
@@ -209,11 +209,11 @@ def requestEADeposit(transId, username, amount, currency):
     response = requests.post(url, data=requestData, headers=headers)
 
     response = xmltodict.parse(response)
-    print(response)
+    # print(response)
     action  = dic['request']['@action']
-    print(action)
+    # print(action)
     requestId = dic['request']['element']['@id']
-    print(requestId)
+    # print(requestId)
 
     for i in dic['request']['element']['properties']:
         if i['@name'] == 'acode':
@@ -345,11 +345,11 @@ def requestEAWithdraw(transId, username, amount, currency):
     response = requests.post(url, data=requestData, headers=headers)
 
     response = xmltodict.parse(response)
-    print(response)
+    # print(response)
     action  = dic['request']['@action']
-    print(action)
+    # print(action)
     requestId = dic['request']['element']['@id']
-    print(requestId)
+    # print(requestId)
 
     for i in dic['request']['element']['properties']:
         if i['@name'] == 'acode':
@@ -380,7 +380,7 @@ def requestEAWithdraw(transId, username, amount, currency):
     
     # handle more error response message
     if propertiesStatus == "0":
-        print("withdraw successed")
+        # print("withdraw successed")
         logger.info("sucessfully withdraw money from EA")
         # update db status from pending to Approve and increase the balance
 
@@ -449,9 +449,9 @@ def getEAwalletBalance(userId, currency):
     response = xmltodict.parse(response)
 
     action  = dic['request']['@action']
-    print(action)
+    # print(action)
     requestId = dic['request']['element']['@id']
-    print(requestId)
+    # print(requestId)
 
     apiRespsonse = {}
     
