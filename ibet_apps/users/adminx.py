@@ -94,6 +94,22 @@ class GlobalSettings(object):
                 )
             },
             {
+                'title': 'Reports',
+                'icon': 'fas fa-file-medical-alt',
+                'menus': (
+                    {
+                        'title': 'Performance reports',
+                        'url': '/xadmin/performance-report/',
+                        'icon': 'fas fa-file-alt'
+                    },
+                    {
+                        'title': 'Members reports',
+                        'url': '/xadmin/members-report/',
+                        'icon': 'fas fa-users'
+                    },
+                )
+            },
+            {
                 'title': 'Messaging',
                 'icon': 'far fa-envelope',
                 'menus': (

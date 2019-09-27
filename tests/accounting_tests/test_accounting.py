@@ -92,7 +92,7 @@ class AccountingModelTest(TestCase):
             remark="test_remark",
         )
         self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL).count(), 1)
-    
+
     # create deposit channel from backend model
     def test_create_deposit_channel(self):
         deposit_channel = DepositChannel.objects.create(
