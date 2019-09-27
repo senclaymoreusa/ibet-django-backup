@@ -40,7 +40,7 @@ class WithdrawalView(CommAdminView):
             within_this_month = timezone.now() - timezone.timedelta(days=30)
             latest_withdraw = Transaction.objects.filter(
                 Q(user_id_id=user)
-                & Q(transaction_type=TRANSACTION_WITHDRAW)
+                & Q(transaction_type=TRANSACTION_WITHDRAWAL)
                 & Q(request_time__gte=within_this_month)
             )
             logger.info('Find ' + str(latest_withdraw.count()) + ' latest withdrawals')
@@ -81,7 +81,7 @@ class WithdrawalView(CommAdminView):
             context['time'] = timezone.now()
 
             # WITHDRAWAL TRANSACTIONS
-            withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAW)
+            withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL)
 
             # PENDING
             pending_trans = withdrawal_trans.filter(review_status=REVIEW_PEND) 
