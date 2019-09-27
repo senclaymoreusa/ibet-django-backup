@@ -831,9 +831,9 @@ $(document).ready(function() {
 
         if(parsedCSV.length > 0) {
           //$("#manually-table thead").prop("hidden", false);
-          $("#add-btn").prop("disabled", false);
+          //$("#add-btn").prop("disabled", false);
           $("#sendto").tagsinput("removeAll");
-          $("#remove-btn").css("display", "block");
+          //$("#remove-btn").css("display", "block");
         }
 
         parsedCSV.forEach(function (d, i) {
@@ -912,10 +912,6 @@ $(document).ready(function() {
         // alert("Status: " + textStatus); alert("Error: " + errorThrown);
       }
     });
-    
-
-    // console.log(member_list);
-    //$("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
   });
 
   $("#sendto").on('itemRemoved', function(event) {
@@ -923,14 +919,19 @@ $(document).ready(function() {
     var index = member_list.indexOf(data);
     if (index > -1) {
       member_list.splice(index, 1);
-        $("#manually-table tbody").empty();
+      $("#manually-table tbody").empty();
+      if(member_list.length > 0) {
         for (var i = 0; i < member_list.length; i++) {
           $("#manually-table").find('tbody')
             .append($('<tr>')
-              .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + i +'</td><td>' + member_list[i] + '</td>'))
+              .append($('<td>' + i +'</td><td>' + member_list[i] + '</td>'))
             )
         }
-      $("#add-btn").text("Add " + member_list.length + " members to group");
+        $("#add-btn").text("Add " + member_list.length + " members to group");
+      }
+      else {
+        $("#manually-table thead").prop("hidden", true);
+      }
     }
   });
 
