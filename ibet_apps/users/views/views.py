@@ -221,6 +221,7 @@ class RegisterView(CreateAPIView):
             user= customUser,
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=2,
+            created_time=timezone.now()
         )
         action.save()
 
@@ -304,6 +305,7 @@ class LoginView(GenericAPIView):
             user= customUser.first(),
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=0,
+            created_time=timezone.now()
         )
         action.save()
         customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
@@ -372,6 +374,7 @@ class LogoutView(APIView):
             user= CustomUser.objects.filter(username=self.user).first(),
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=1,
+            created_time=timezone.now()
         )
         action.save()
 
