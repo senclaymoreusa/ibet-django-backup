@@ -135,7 +135,7 @@ DEPOSIT_METHOD_CHOICES = (
 )
 
 TRANSACTION_DEPOSIT = 0
-TRANSACTION_WITHDRAW = 1
+TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
 TRANSACTION_BET_SETTLED = 3
 TRANSACTION_TRANSFER_IN = 4
@@ -209,17 +209,17 @@ COUNTRY_CHOICES = (
     ('TH', 'Thailand'),
     ('JP', 'Japan'),
 )
-ACTIVITY_OPERATION = 0
-ACTIVITY_REMARK = 1
-ACTIVITY_CHAT = 2
-ACTIVITY_NOTE= 3
-ACTIVITY_AFFILIATE_APPLICATION= 4
+
+ACTIVITY_SYSTEM = 0     # System Change
+ACTIVITY_REMARK = 1     # Remark in form
+ACTIVITY_MESSAGE = 2    # Inbox message
+ACTIVITY_NOTE= 3        # Note in activity
+
 ACTIVITY_TYPE = (
-    (0, 'Operation'),
+    (0, 'System'),
     (1, 'Remark'),
-    (2, 'Chat'),
+    (2, 'Message'),
     (3, 'Note'),
-    (4, 'Affiliate Application'),
 )
 
 AFFILIATE_STATUS = (
