@@ -13,11 +13,7 @@ from users.models import (
     CustomUser,
 )
 
-<<<<<<< HEAD
 from utils.constants import TRANSACTION_DEPOSIT, TRANSACTION_WITHDRAWAL, CURRENCY_CNY
-=======
-from utils.constants import TRANSACTION_DEPOSIT, TRANSACTION_WITHDRAWAL, CURRENCY_CNY
->>>>>>> 5956b84c0091f266a336e910041d814717f5587d
 
 import json
 from utils.constants import *
@@ -79,50 +75,24 @@ class AccountingModelTest(TestCase):
         deposit_transaction = Transaction.objects.create(
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
-<<<<<<< HEAD
             transaction_type=TRANSACTION_DEPOSIT,
             currency=CURRENCY_CNY,
             method="test_method",
             remark="test_remark",
         )
         self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_DEPOSIT).count(), 1) 
-=======
-            transaction_type=TRANSACTION_DEPOSIT,
-            currency=CURRENCY_CNY,
-            method="test_method",
-            remark="test_remark",
-        )
-        self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_DEPOSIT).count(), 1) 
->>>>>>> ae121f71dc19adc683835c34b47395db8f9d00d2
     
     def test_create_withdraw_transaction_from_admin(self):
         deposit_transaction = Transaction.objects.create(
             user_id=CustomUser.objects.get(id=1), 
             amount=100, 
-<<<<<<< HEAD
-<<<<<<< HEAD
             transaction_type=TRANSACTION_WITHDRAWAL,
             currency=CURRENCY_CNY,
             method="test_method",
             remark="test_remark",
         )
         self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL).count(), 1)
-=======
-            transaction_type=TRANSACTION_WITHDRAWAL,
-=======
-            transaction_type=TRANSACTION_WITHDRAWAL,
->>>>>>> 5956b84c0091f266a336e910041d814717f5587d
-            currency=CURRENCY_CNY,
-            method="test_method",
-            remark="test_remark",
-        )
-<<<<<<< HEAD
-        self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL).count(), 1)
->>>>>>> ae121f71dc19adc683835c34b47395db8f9d00d2
-=======
-        self.assertEqual(Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL).count(), 1)
->>>>>>> 5956b84c0091f266a336e910041d814717f5587d
-    
+
     # create deposit channel from backend model
     def test_create_deposit_channel(self):
         deposit_channel = DepositChannel.objects.create(

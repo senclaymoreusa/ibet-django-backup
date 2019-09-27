@@ -6,6 +6,7 @@ import json
 import time
 import boto3
 from botocore.exceptions import ClientError
+import re
 #import firehose_to_s3 as fh_s3
 
 import logging
