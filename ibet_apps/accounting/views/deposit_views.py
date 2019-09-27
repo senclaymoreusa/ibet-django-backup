@@ -21,9 +21,9 @@ logger = logging.getLogger("django")
 class DepositView(CommAdminView):
     def get(self, request):
         get_type = request.GET.get("type")
+        user_id = request.GET.get("user")
 
         if get_type == "getMemberInfo":
-            user_id = request.GET.get("user")
             user = CustomUser.objects.get(pk=user_id)
             logger.info("Get user" + str(user))
             response_data = {
@@ -40,7 +40,6 @@ class DepositView(CommAdminView):
             )
 
         elif get_type == "getLatestDeposit":
-            user = request.GET.get("user")
             within_this_month = timezone.now() - timezone.timedelta(days=30)
             latest_deposit = Transaction.objects.filter(
                 Q(user_id_id=user)

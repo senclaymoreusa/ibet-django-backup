@@ -156,7 +156,7 @@ class Transaction(models.Model):
     review_status = models.SmallIntegerField(
         choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
     )
-    remark = models.CharField(max_length=200, blank=True, verbose_name=_("Memo"))
+    remark = models.CharField(max_length=200, blank=True, verbose_name=_("Details"))
     transfer_from = models.CharField(
         max_length=200, null=True, blank=True, verbose_name=_("From")
     )
