@@ -46,6 +46,21 @@ class GlobalSettings(object):
                 )
             },
             {
+                'title': 'Groups',
+                'icon': 'fas fa-user-circle',
+                'menus': (
+                    {
+                        'title': 'Player directory',
+                        'icon': 'fas fa-book'
+                    },
+                    {
+                        'title': 'Groups',
+                        'url': '/xadmin/operation/messagegroups/',
+                        'icon': 'fas fa-user-friends'
+                    },
+                )
+            },
+            {
                 'title': 'Affiliate',
                 'icon': 'fa fa-bar-chart-o',
                 'menus': (
@@ -101,11 +116,6 @@ class GlobalSettings(object):
                         'title': 'Messages',
                         'url': '/xadmin/operation/notification/',
                         'icon': 'far fa-envelope'
-                    },
-                    {
-                        'title': 'Groups',
-                        'url': '/xadmin/operation/messagegroups/',
-                        'icon': 'fas fa-user-friends'
                     },
                     {
                         'title': 'Campaign',
