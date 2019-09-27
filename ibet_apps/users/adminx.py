@@ -35,90 +35,80 @@ class GlobalSettings(object):
     def get_site_menu(self): 
         return [
             {
-                'title': 'Members',
+                'title': _('Playres'),
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('Member List'),
+                        'title': _('Playre directory'),
                         'url': '/xadmin/users',
-                        'icon': 'fa fa-user'
-                    },
-                )
-            },
-            {
-                'title': 'Groups',
-                'icon': 'fas fa-user-circle',
-                'menus': (
-                    {
-                        'title': 'Player directory',
                         'icon': 'fas fa-book'
                     },
                     {
-                        'title': 'Groups',
+                        'title':  _('Player groups'),
                         'url': '/xadmin/operation/messagegroups/',
                         'icon': 'fas fa-user-friends'
                     },
                 )
             },
             {
-                'title': 'Affiliate',
+                'title': _('Affiliate'),
                 'icon': 'fa fa-bar-chart-o',
                 'menus': (
                     {
-                        'title': 'Affiliate Overview',
+                        'title': _('Affiliate Overview'),
                         'url': '/xadmin/agent_view',
                         'icon': 'fa fa-cny'
                     },
                 )
             },
             {
-                'title': 'Finance',
+                'title': _('Finance'),
                 'icon': 'fa fa-credit-card',
                 'menus': (
                     {
-                        'title': 'Deposits',
+                        'title': _('Deposits'),
                         'url': '/xadmin/deposit',
                         'icon': 'fa fa-arrow-right'
                     },
                     {
-                        'title': 'Withdrawals',
+                        'title': _('Withdrawals'),
                         'url': '/xadmin/withdrawal',
                         'icon': 'fa fa-arrow-left'
                     },
                     {
-                        'title': 'Settings',
+                        'title': _('Settings'),
                         'url': '/xadmin/channel_list',
                         'icon': 'fa fa-cog'
                     },
                 )
             },
             {
-                'title': 'System admin',
+                'title': _('System admin'),
                 'icon': 'fa-fw fa fa-cog',
                 'menus': (
                     {
-                        'title': 'Users',
+                        'title': _('Users'),
                         'url': '/xadmin/permission/',
                         'icon': 'fa fa-user-circle-o'
                     },
                     {
-                        'title': 'Roles',
+                        'title': _('Roles'),
                         'url': '/xadmin/roles/',
                         'icon': 'fa fa-id-badge'
                     },
                 )
             },
             {
-                'title': 'Messaging',
+                'title': _('Messaging'),
                 'icon': 'far fa-envelope',
                 'menus': (
                     {
-                        'title': 'Messages',
+                        'title': _('Messages'),
                         'url': '/xadmin/operation/notification/',
                         'icon': 'far fa-envelope'
                     },
                     {
-                        'title': 'Campaign',
+                        'title': _('Campaign'),
                         'url': '/xadmin/operation/campaign/',
                         'icon': 'fas fa-bullhorn'
                     }
