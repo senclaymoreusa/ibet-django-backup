@@ -140,8 +140,8 @@ class submitDeposit(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        logger.info(encryptDES(eString, sign_encryptKey, myIv))
-        logger.info(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        print(encryptDES(eString, sign_encryptKey, myIv))
+        print(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
       
         r = requests.post(url + "/standard/getway/depositiface", data={
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
@@ -243,8 +243,8 @@ class submitCashout(generics.GenericAPIView):
         logger.info(SignCode)
         currency = self.request.POST.get("currency")
         cashoutMethod = self.request.POST.get("cashoutMethod")
-        # logger.info(SignCode)
-        # logger.info(MD5(SignCode))
+        print(SignCode)
+        print(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "cID": ASIAPAY_CID,
@@ -310,11 +310,11 @@ class submitCashout(generics.GenericAPIView):
             'tempparam':''
         })
         rdata = r.text
-        logger.info(rdata)
+        print(rdata)
     
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
-        StatusMsg = tree.find('StatusMsg').text
+        StatusMsg = tree.find('StatusMsg').text.split('|')[0]
         logger.info(StatusMsg)
         if StatusCode == '50001':
             create = Transaction.objects.create(
@@ -328,11 +328,12 @@ class submitCashout(generics.GenericAPIView):
                 method=cashoutMethod,
                 request_time=timezone.now(),
             )
-            return Response(StatusCode)
+            return Response({"order_id": "W"+trans_id,"StatusCode":StatusCode, "StatusMsg": StatusMsg})
+
         else:
-            logger.info(StatusMsg)
+            return Response({"order_id": "W"+trans_id,"StatusCode":StatusCode, "StatusMsg": StatusMsg})
         
-        return Response(StatusCode)
+        return Response({"order_id": "W"+trans_id,"StatusCode":StatusCode, "StatusMsg": StatusMsg})
 
 #cancel deposit
 class depositfinish(generics.GenericAPIView):
@@ -401,8 +402,6 @@ class exchangeRate(generics.GenericAPIView):
 
 def depositArrive(request):
     if request.method == "POST":
-        # print("HAHAHAHAHA")
-        # print(request.POST)
         StatusCode = request.POST.get("StatusCode")
         RevCardNumber = request.POST.get("RevCardNumber")
         RevMoney = request.POST.get("amount")
@@ -454,6 +453,7 @@ def depositArrive(request):
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
                 trans.status = 1
+                trans.remark = 'Transaction failed'
                 trans.save()
                 return HttpResponse(ET.tostring(root1),content_type="text/xml")
 
@@ -520,45 +520,76 @@ def depositArrive(request):
 #         else:
 #             return Response(ET.tostring(root2), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class payoutArrive(generics.GenericAPIView):
-    queryset = Transaction.objects.all()
-    serializer_class = asiapayPayoutArriveSerialize
-    permission_classes = [AllowAny, ]
-    def post(self, request, *args, **kwargs):
-        TrustIUser = self.request.data.get('TrustIUser')
-        OrderID = self.request.data.get('OrderID')
+def payoutArrive(request):
+    if request.method == "POST":
+        Cmd = request.POST.get("Cmd")
+        PayOutCardNumber = request.POST.get("PayOutCardNumber")
+        PayOutBankName = request.POST.get("PayOutBankName")
+        PayOutMoney = request.POST.get("PayOutMoney")
+        TrustIUser = request.POST.get("TrustIUser")
+        FinishNumer = request.POST.get("FinishNumer")
+        PayOutFee = request.POST.get("PayOutFee")
+        SignCode = request.POST.get("SignCode")
+        CashType = request.POST.get("CashType")
+        OrderID = request.POST.get("OrderID")
         OrderID = order_id[1:]
-        findData = Transaction.objects.get(order_id=OrderID)
-        uID = findData.user_id
-        uID = 'n' + uID
-        amount = findData.amount
-        root = ET.Element("CashInfo")
+        # print(OrderID)
+        uID = request.POST.get("uID")
+        userid = uID.strip('n')
+        logger.info(userid)
+        # serializer = serializer_class(data=request.data)
+        # logger.info(serializer)
+        datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        
+        #if trans.order_id != '0':
+
+        # logger.info(serializer.is_valid())
+        if Cmd == "02":
+            StatusCode = "001"
+        elif Cmd == "07": #银行回报错误
+            StatusCode = "003"
+        else: 
+            StatusCode = "002"
+        
+        root = ET.Element("ProcessStatus")
         tr1 = ET.SubElement(root, "StatusCode")
-        tr1.text = "001"
-        tr2 = ET.SubElement(root, "uID")
-        tr2.text = uID
-        tr3 = ET.SubElement(root, "CashMoney")
-        tr3.text = amount
-        tr4 = ET.SubElement(root, "CashCardNumber")
-        tr4.text = CashCardNumber
-        tr5 = ET.SubElement(root, "ProccessTime")
-        tr5.text = timezone.now()
-        if TrustIUser == ASIAPAY_TRUSTUSER :
+        tr1.text = StatusCode
+        tr2 = ET.SubElement(root, "StatusMsg")
+        tr2.text = "success"
+        tr3 = ET.SubElement(root, "ProcessTime")
+        tr3.text = datetime
+        
+        root1 = ET.Element("ProcessStatus")
+        tr1 = ET.SubElement(root1, "StatusCode")
+        tr1.text = "002"
+        tr2 = ET.SubElement(root1, "StatusMsg")
+        tr2.text = "Parameter is not correct"
+        tr3 = ET.SubElement(root1, "ProcessTime")
+        tr3.text = datetime
 
-            if serializer.is_valid() and findData == OrderID:  
+        root2 = ET.Element("ProcessStatus")
+        tr1 = ET.SubElement(root2, "StatusCode")
+        tr1.text = "003"
+        tr2 = ET.SubElement(root2, "StatusMsg")
+        tr2.text = "Please send it again"
+        tr3 = ET.SubElement(root2, "ProcessTime")
+        tr3.text = datetime
 
-                saveData = Transaction.objects.get(user_id=userid, order_id=order_id) 
-                saveData.status = 6
-                saveData.arrive_time = timezone.now()
-                saveData.save()
-                
-                return Response(ET.tostring(root),status=status.HTTP_200_OK)
-            elif not serializer.is_valid():
-                return Response(ET.tostring(root1), status=status.ccc)
+        try:
+            trans = Transaction.objects.get(transaction_id=OrderID)
+            # print(trans)
+            if StatusCode == '001' and TrustIUser == ASIAPAY_TRUSTUSER :  
+                trans.status = 0
+                trans.arrive_time = timezone.now()
+                trans.remark = 'Transaction success'
+                trans.save()
+                return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
-                return Response(ET.tostring(root2), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response({"detail" : "need a trust user please."}, status=HTTP_401_UNAUTHORIZED)
+                trans.status = 1
+                trans.remark = 'Transaction failed'
+                trans.save()
+                return HttpResponse(ET.tostring(root1),content_type="text/xml")
 
-
-
+        except trans.DoesNotExist:
+            trans = None
+            return HttpResponse(ET.tostring(root2),content_type="text/xml")
