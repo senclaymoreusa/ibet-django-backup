@@ -1176,49 +1176,6 @@
         });
 
 
-
-
-        // $(document).ready(function () {
-        //     $('#search-text').keyup(function () {
-        //         $('#search-result').html('');
-        //         var q = $('#search-text').val();
-        //         $.get("{% url 'fsearch' %}", { 'q': q }, function (data) {
-        //             console.log(data)
-        //             for (var i = data.length - 1; i >= 0; i--) {
-        //                 $('#search-result').append('<li class="list-group-item">' + data[i] + '</li>')      // 加入到search-result部分显示
-        //             };
-        //         })
-        //     });
-        // });
-        // $(document).ready(function () {
-        //     $('#search-text').keyup(function () {
-        //         $('#search-result').html('');
-        //         var q = $('#search-text').val();
-        //         $.ajax({
-        //             url: "{% url 'fsearch' %}",
-        //             dataType: 'json',
-        //             type: 'GET',
-        //             data: { 'q': q },
-        //             success: function (data) {
-        //                 for (var i = data.length - 1; i >= 0; i--) {
-        //                     $('#search-result').append('<span class="list-group-item">' + data[i] + '</span>')      // 加入到search-result部分显示
-        //                 };
-        //             },
-        //             error: function (err) {
-        //                 alert("error");
-        //             }
-        //         })
-        //     });
-        //     $('#search-text').keydown(function () {
-        //         $('#search-result').empty();
-        //     })
-        //     $('#search-text').blur(function () {
-        //         $('#search-result').empty();
-        //     })
-        // });
-
-
-
         $(document).ready(function () {
             $('#search-result').click(function () {
                 console.log('bianleeeeeee')

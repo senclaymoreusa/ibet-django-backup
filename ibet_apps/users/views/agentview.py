@@ -185,10 +185,7 @@ class AgentView(CommAdminView):
 
             context["affiliates_acquired_this_month"] = affiliates.filter(
                 user_to_affiliate_time__gte=last_month).count()
-
-            # context["new_ftd"] = affiliates.filter(ftd_time__range=[yesterday, today]).count()
-            # context["most_new_player"] = affiliates_has_referred.values("referred_by_id").annotate(downline_number=Count("referred_by_id")).order_by("-referred_by_id")
-
+                
             # active users
             # user who has transaction within this month ???
 
@@ -445,44 +442,7 @@ class AgentDetailView(CommAdminView):
         
         # Total commission
         total_commission = commission_tran.aggregate(total_commission=Coalesce(Sum('amount'), 0))['total_commission']
-        # TRANSACTION GROUP BY MONTH
-        # commission_monthly_record = user_transaction.annotate(y=TruncYear('arrive_time'),m=TruncMonth('arrive_time')).values('y')
-        # for trans in commission_monthly_record:
-        #     print(trans.request_time) 
-        #     print(trans.amount) 
-        #     print(trans.transaction_type) 
-
         
-        # opeartion report
-        # get current affiliate's transaction and sort by date
-
-
-        # affiliate_tran_list = Transaction.objects.filter(user_id=affiliate.pk).annotate(
-        #     operation_date=TruncDate('arrive_time')).order_by('-operation_date').values('operation_date').distinct()
-
-        # opeartion_report = []
-        # for tran in affiliate_tran_list:
-
-        #     opeartion_info = {}
-        #     cur_operation_data = Transaction.objects.filter(
-        #         user_id=affiliate.pk).filter(arrive_time__lte=tran['operation_date'])
-        #     opeartion_info['date'] = tran['operation_date']
-        #     opeartion_info['cumulative_deposit'] = cur_operation_data.filter(
-        #         transaction_type=0).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))['sum_deposit']
-        #     opeartion_info['cumulative_withdrawal'] = cur_operation_data.filter(
-        #         transaction_type=1).aggregate(sum_withdrawal=Coalesce(Sum('amount'), 0))['sum_withdrawal']
-        #     opeartion_info['system_bouns'] = cur_operation_data.filter(
-        #         transaction_type=6).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))['sum_bouns']
-        #     # need calculate
-        #     opeartion_info['downline_transfer'] = 0
-        #     opeartion_info['turnover'] = 0
-        #     opeartion_report.append(opeartion_info)
-        # context["opeartion_report"] = opeartion_report
-        # # get manager list and search for name
-        # # global variable
-        # manager_id_list = CustomUser.objects.values('managed_by').distinct()
-        # manager_name_list = CustomUser.objects.filter(
-        #     pk__in=manager_id_list).values('username')
         return render(request, "agent_detail.html", context)
 
 
@@ -627,21 +587,14 @@ class AgentDetailView(CommAdminView):
             logger.info("Update info for affiliate " + affiliate.username)
             return HttpResponse(status=200)
         
-        
-        
-        
-        # elif post_type == 'send_message':
-        #     admin_user = CustomUser.objects.get(username=admin_user)
-        #     affiliate_id = CustomUser.objects.get(pk=affiliate_id)
-        #     subject = request.POST.get('subject')
-        #     text = request.POST.get('text')
-        #     print(subject)
-        #     print(text)
-        #     return HttpResponse(status=200)
-
-
-
-
+        elif post_type == 'send_message':
+            admin_user = CustomUser.objects.get(username=admin_user)
+            affiliate_id = CustomUser.objects.get(pk=affiliate_id)
+            subject = request.POST.get('subject')
+            text = request.POST.get('text')
+            print(subject)
+            print(text)
+            return HttpResponse(status=200)
 
 
 def fsearch(request):
