@@ -294,7 +294,10 @@ ul.ui-autocomplete {
     letter-spacing: normal;
     color: #4a4a4a;
 }
-
+#commission_level_label {
+    font-family: Helvetica;
+    font-size: 18px;
+}
 .commission_levels .row div{
     padding: 5px;
 }
@@ -342,6 +345,43 @@ ul.ui-autocomplete {
     width: 70%;
 }
 
-#audit_affiliate_commission_pop .dt-buttons{
+#audit_affiliate_commission_pop .dt-buttons {
     margin-bottom: -20px;
+}
+
+.promotion-link {
+    background-color: #f3f3f3; 
+    width: 80%; 
+    height: 30px; 
+    margin-left: 1px;
+}
+
+.promotion-link button {
+    height: 30px;
+    margin: 0px;
+    margin-left: 2px;
+    line-height: 15px;
+    float: right;
+}
+.promotion-link .col-md-5 {
+    padding-right: 0px;
+}
+
+#affiliate_channels_details .modal-header{
+    background: #ffa313;
+    color: #fff;
+}
+
+#affiliate_channels_details .modal-body>div:nth-of-type(even) {
+    background-color: #f3f3f3; 
+}
+
+.commission_level {
+    font-weight: bold;
+    font-size: 20px;
+    position: relative;
+    float: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }

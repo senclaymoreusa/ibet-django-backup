@@ -134,6 +134,8 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
+# transaction_deposit = 0
+# transaction_withdrawl = 1
 TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
@@ -1052,6 +1054,8 @@ AFFILIATE_LEVEL = (
     ('Normal', 'Normal'),
     ('VIP', 'VIP'),
 )
+
+LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
 
 MONTHLY_COMMISSION_SETTLE_DATE = "05"
 

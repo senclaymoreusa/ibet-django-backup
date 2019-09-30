@@ -195,7 +195,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td><a id="userID" href="{% url 'xadmin:user_detail' affiliate.pk %}">{{ affiliate.pk }}</a>
                         </td>
-                        <td>{{ affiliate.user_application_time }}</td>
+                        <td>{{ affiliate.user_application_time|date:'d/m/y H:i:s' }}</td>
                         <td><button id="audit-affiliate-application-btn" type="button" data-toggle="modal"
                                 data-target="#audit-affiliate-application">Review</button></td>
                     </tr>

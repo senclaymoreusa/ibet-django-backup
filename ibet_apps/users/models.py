@@ -13,6 +13,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
         if not email:
@@ -50,15 +53,6 @@ class UserTag(models.Model):
     
     def __str__(self):
         return self.name
-
-class Commission(models.Model):
-    
-    commission_set = models.CharField(_('Commission_set'), max_length=50, choices=COMMISSION_SET, default='System')
-    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
-    downline_commision_percentage = models.DecimalField(_('Downline Commision Percentage'), max_digits=20, decimal_places=2, default=0)
-    commission_level = models.IntegerField(default=1)
-    active_downline_needed = models.IntegerField(default=6)
-    monthly_downline_ftd_needed = models.IntegerField(default=6)
 
 class CustomUser(AbstractBaseUser):
 
@@ -111,7 +105,7 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
-    referral_id = models.CharField(max_length=300, blank=True, null=True)
+    # referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
@@ -162,7 +156,7 @@ class CustomUser(AbstractBaseUser):
 
     #commission
     commision_status = models.BooleanField(default=False)               # for current month
-    commission_id = models.ForeignKey(Commission, on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
+    commission_setting = models.CharField(max_length=50, choices=COMMISSION_SET, default='System')
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
     temporary_block_timespan = models.DurationField(null=True, blank=True)
@@ -206,18 +200,6 @@ class CustomUser(AbstractBaseUser):
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
 
-    def generate_verification_code(self):
-        return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            temp = str(self.generate_verification_code())[2:-1]
-            while get_user_model().objects.filter(referral_id=temp):   # make sure no duplicates
-                temp = str(self.generate_verification_code())[2:-1]
-            self.referral_id = temp
-
-        return super(CustomUser, self).save(*args, **kwargs)
-
     def __str__(self):
         return self.username
 
@@ -241,6 +223,41 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+class Commission(models.Model):
+    
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commision_percentage = models.DecimalField(_('Downline Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    commission_level = models.IntegerField(default=1)
+    active_downline_needed = models.IntegerField(default=6)
+    monthly_downline_ftd_needed = models.IntegerField(default=6)
+    
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            # Get the maximum display_id value from the database
+            last_id = Commission.objects.all().aggregate(largest=models.Max('commission_level'))['largest']
+
+            # aggregate can return None! Check it first.
+            # If it isn't none, just use the last ID specified (which should be the greatest) and add one to it
+            if last_id is not None:
+                self.commission_level = last_id + 1
+
+        super(Commission, self).save(*args, **kwargs)
+
+class ReferLink(models.Model):
+    
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
+    refer_link_name = models.CharField(max_length=50, default="default", unique=True)
+    ## time of this link was created
+    genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            code = generate_unique_verification_code()
+            self.refer_link_url = code
+        return super(ReferLink, self).save(*args, **kwargs)
 
 
 class UserWithTag(models.Model):
@@ -385,21 +402,7 @@ class UserActivity(models.Model):
         auto_now_add=True,
         editable=False,
     )
-class ReferLink(models.Model):
 
-    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    refer_link_url = models.URLField(max_length=200, unique=True)
-    refer_link_name = models.CharField(max_length=50, default="Default")
-    ## time of this link was created
-    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
-
-    
-# Mapping between User and ReferLinks
-# This is a 1:n relationship, a user can have at most 10 refer links
-class UserReferLink(models.Model):
-
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
-    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
 
 
 class LinkHistory(models.Model):
@@ -534,3 +537,35 @@ class GameRequestsModel(models.Model):
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
 
+
+
+@receiver(post_save, sender=CustomUser)
+def my_handler(sender, **kwargs):
+    if kwargs['created']:
+        user=kwargs['instance']
+        refer_link = ReferLink.objects.create(
+            user_id = user
+        )
+        logger.info("Auto created a refer link " + str(temp_refer_link_url) +  " for new user" + str(user.username))
+    
+
+def generate_verification_code():
+    return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
+
+def generate_unique_verification_code():
+    temp_refer_link_url = str(generate_verification_code())[2:-1]
+    while ReferLink.objects.filter(refer_link_url=temp_refer_link_url):   # make sure no duplicates
+        temp_refer_link_url = str(generate_verification_code())[2:-1]
+    return temp_refer_link_url
+
+
+#  def save(self, *args, **kwargs):
+#         if self.pk:
+#             temp = str(self.generate_verification_code())[2:-1]
+#             while ReferLink.objects.filter(refer_link_url=temp):   # make sure no duplicates
+#                 temp = str(self.generate_verification_code())[2:-1]
+#             self.refer_link_url = temp
+
+#         return super(ReferLink, self).save(*args, **kwargs)
+
+    

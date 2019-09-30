@@ -23,7 +23,7 @@ from django.shortcuts import render_to_response
 from xadmin.views import CommAdminView
 from utils.constants import *
 from accounting.models import *
-from users.models import CustomUser, UserAction, Commission, UserActivity, UserReferLink, ReferLink
+from users.models import CustomUser, UserAction, Commission, UserActivity, ReferLink
 from operation.models import Notification, NotificationToUsers
 
 
@@ -49,7 +49,7 @@ class AgentView(CommAdminView):
             deposit_tran = Transaction.objects.filter(
                 transaction_type=TRANSACTION_DEPOSIT)
             withdrawal_tran = Transaction.objects.filter(
-                transaction_type=TRANSACTION_WITHDRAW)
+                transaction_type=TRANSACTION_WITHDRAWAL)
             bonus_tran = Transaction.objects.filter(
                 transaction_type=TRANSACTION_BONUS)
             commission_tran = Transaction.objects.filter(
@@ -136,7 +136,7 @@ class AgentView(CommAdminView):
 
             downline_list = users.filter(referred_by_id__isnull=False)
             tran_for_active_user = Transaction.objects.filter(
-                Q(transaction_type=TRANSACTION_DEPOSIT) & Q(transaction_type=TRANSACTION_WITHDRAW))
+                Q(transaction_type=TRANSACTION_DEPOSIT) & Q(transaction_type=TRANSACTION_WITHDRAWAL))
 
             # commission transaction
             tran_commission = Transaction.objects.filter(
@@ -173,7 +173,7 @@ class AgentView(CommAdminView):
             # deposit - withdrawal - adjustment - commission (- bonus) ???
             tran_this_month_deposit_amount = tran_this_month.filter(transaction_type=TRANSACTION_DEPOSIT).aggregate(
                 total_deposit=Coalesce(Sum('amount'), 0))['total_deposit']
-            tran_this_month_withdrawal_amount = tran_this_month.filter(transaction_type=TRANSACTION_WITHDRAW).aggregate(
+            tran_this_month_withdrawal_amount = tran_this_month.filter(transaction_type=TRANSACTION_WITHDRAWAL).aggregate(
                 total_withdrawal=Coalesce(Sum('amount'), 0))['total_withdrawal']
             tran_this_month_adjustment_amount = tran_this_month.filter(transaction_type=TRANSACTION_ADJUSTMENT).aggregate(
                 total_adjustment=Coalesce(Sum('amount'), 0))['total_adjustment']
@@ -265,9 +265,9 @@ class AgentView(CommAdminView):
             return render(request, 'agent_list.html', context)
 
     def post(self, request):
-        get_type = request.POST.get("type")
+        post_type = request.POST.get("type")
 
-        if get_type == "releaseCommission":
+        if post_type == "releaseCommission":
             # transaction pk list need to be released
             commissionList = request.POST.getlist("list[]")
             # print(commissionList)
@@ -282,19 +282,23 @@ class AgentView(CommAdminView):
                         current_trans.arrive_time = timezone.now()
                         current_trans.save()
             return HttpResponse(status=200)
-        elif get_type == "affiliateApplication":
+        elif post_type == "affiliateApplication":
             result = request.POST.get("result")
             remark = request.POST.get("remark")
             userID = request.POST.get("user_id")
             admin_user = request.POST.get("admin_user")
             user = CustomUser.objects.get(pk=userID)
             admin_user = CustomUser.objects.get(username=admin_user)
-            # print(user)
             if result == "Yes":
                 user.user_to_affiliate_time=timezone.now()
             else:
                 user.user_application_time=None
             user.save()
+            affiliate_default_commission = Commission.objects.create(
+                user_id = user
+            )
+            logger.info("Auto add commission level 1 for new affiliate " + user.username)
+
             activity = UserActivity.objects.create(
                 user = user,
                 admin = admin_user,
@@ -352,8 +356,11 @@ class AgentDetailView(CommAdminView):
         context["active_users"] = active_downline.values(
             'user_id').distinct().count()
         context["downline_deposit"] = downline_deposit
-        context["promition_link"] = affiliate.referral_id
-
+        try:
+            context["promotion_link"] = ReferLink.objects.get(user_id=affiliate, refer_link_name="default").refer_link_url
+        except ObjectDoesNotExist:
+            context["promotion_link"] = ""
+        context["promotion_link_list"] = ReferLink.objects.filter(user_id=affiliate)
         # related affiliates
         # get this affiliate's all ip addresses
         # filer other affiliate who have use these addresses before
@@ -378,7 +385,7 @@ class AgentDetailView(CommAdminView):
         context["transerfer_between_levels"] = affiliate.transerfer_between_levels
         # edit detail bottom
         try:
-            context["commission_type"] = Commission.objects.get(pk=affiliate.commission_id_id)
+            context["commission_type"] = Commission.objects.filter(user_id=affiliate).order_by('commission_level')
         except ObjectDoesNotExist:
             context["commission_type"] = ""
        
@@ -421,7 +428,7 @@ class AgentDetailView(CommAdminView):
             downline_info['deposit'] = affiliate_tran.filter(
                 transaction_type=TRANSACTION_DEPOSIT).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
             downline_info['withdraw'] = affiliate_tran.filter(
-                transaction_type=TRANSACTION_WITHDRAW).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
+                transaction_type=TRANSACTION_WITHDRAWAL).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
             downline_info['bouns'] = affiliate_tran.filter(
                 transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
             downline_info['adjustment'] = affiliate_tran.filter(
@@ -433,7 +440,7 @@ class AgentDetailView(CommAdminView):
 
         # CHANNEL REPORT TABLE
         channel_repost = []
-        user_channel = UserReferLink.objects.filter(user=affiliate).values_list('link').distinct()
+        user_channel = ReferLink.objects.filter(user_id=affiliate).values_list('refer_link_url').distinct()
         user_channel_list = ReferLink.objects.filter(pk__in=user_channel)
         
         # Total commission
@@ -509,7 +516,6 @@ class AgentDetailView(CommAdminView):
                 actDict['adminUser'] = str(adminUser.username)
                 actDict['message'] = act['fields']['message']
                 response.append(actDict)
-            print(str(response))
 
             return HttpResponse(json.dumps(response), content_type='application/json')
         
@@ -526,8 +532,6 @@ class AgentDetailView(CommAdminView):
             return HttpResponse(status=200)
 
         elif post_type == 'make_adjustment':
-            print(admin_user)
-            print(affiliate_id)
             admin_user = CustomUser.objects.get(username=admin_user)
             affiliate_id = CustomUser.objects.get(pk=affiliate_id)
             remark = request.POST.get('remark')
@@ -560,6 +564,71 @@ class AgentDetailView(CommAdminView):
                 )
                 logger.info(admin_user.username + " send a message to affiliate " + affiliate_id.username + " with the subject " + subject)
             return HttpResponse(status=200)
+        
+        elif post_type == 'remove_refer_link':
+            link_id = request.POST.get('refer_link')
+            link_obj = ReferLink.objects.get(pk=link_id)
+            if link_obj:
+                link_obj.delete()
+            logger.info(str(admin_user) + " delete channel " + str(link_obj.refer_link_name) + " for affiliate " + str(affiliate_id))
+            print(str(admin_user) + " delete channel " + str(link_obj.refer_link_name) + " for affiliate " + str(affiliate_id))
+
+            return HttpResponse(status=200)
+
+        elif post_type == 'affiliate_audit':
+            affiliate_id = request.POST.get('affiliate_id')
+            affiliate_detail = request.POST.getlist('affiliate_detail[]')
+            admin_user = request.POST.get('admin_user')
+            level_detail = request.POST.get('level_details')
+            level_details = json.loads(level_detail)
+            affiliate = CustomUser.objects.get(pk=affiliate_id)
+            commission_list = []
+            # update commission levels
+            for i in level_details:
+                if i['pk'] == '':
+                    current_commission = Commission.objects.create(
+                        user_id = affiliate,
+                        commision_percentage = i['rate'],
+                        downline_commision_percentage = i['downline_rate'],
+                        commission_level = i['level'],
+                        active_downline_needed = i['active_downline'],
+                        monthly_downline_ftd_needed = i['downline_ftd']
+                    )
+                    current_commission.save()
+                    commission_list.append(current_commission.pk)
+                    logger.info("Create new commission level " + i['level'] + " for affiliate " + affiliate.username)
+                else:
+                    current_commission = Commission.objects.filter(pk=i['pk'])
+                    current_commission.update(
+                        commision_percentage = i['rate'],
+                        downline_commision_percentage = i['downline_rate'],
+                        commission_level = i['level'],
+                        active_downline_needed = i['active_downline'],
+                        monthly_downline_ftd_needed = i['downline_ftd']
+                    )
+                    logger.info("Update commission level " + i['level'] + " for affiliate " + affiliate.username)
+                    commission_list.append(i['pk'])
+            Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list).delete()
+            logger.info("Delete Commission Level")
+            # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
+            # update affilite attributes
+            manager = affiliate_detail[0]
+            affiliate.affiliate_level = affiliate_detail[1]
+            if affiliate_detail[2] == "Enable":
+                affiliate.affiliate_status = "Active"
+            else:
+                affiliate.affiliate_status = "Deactivated"
+            affiliate.commission_setting = affiliate_detail[3]
+            if affiliate_detail[4] == "Yes":
+                affiliate.transerfer_between_levels = True
+            else:
+                affiliate.transerfer_between_levels = False
+            affiliate.save()
+            logger.info("Update info for affiliate " + affiliate.username)
+            return HttpResponse(status=200)
+        
+        
+        
         
         # elif post_type == 'send_message':
         #     admin_user = CustomUser.objects.get(username=admin_user)
@@ -595,7 +664,7 @@ def calculateActiveUser(affiliate_id):
         return affiliate_active_users
     else:
         tran_for_active_user = Transaction.objects.filter(
-            Q(transaction_type=TRANSACTION_DEPOSIT) & Q(transaction_type=TRANSACTION_WITHDRAW))
+            Q(transaction_type=TRANSACTION_DEPOSIT) & Q(transaction_type=TRANSACTION_WITHDRAWALAL))
         for downline in downlines:
             if tran_for_active_user.filter(user_id=downline).exists():
                 affiliate_active_users += 1
@@ -609,47 +678,3 @@ def calculateFTD(user_group, start_date, end_date):
 
 def calculateTurnover(user):
     return 0
-# active_user_dict = {}
-    # for user, affiliate in affiliates.values_list('id', 'referred_by'):
-    #     if affiliate is None:
-    #         continue
-    #     elif (Transaction.objects.all().filter(Q(user_id=user) & Q(request_time__gte=last_month)).exists()):
-    #         active_user_dict.update({affiliate: active_user_dict.get(affiliate, 0) + 1})
-    # context["active_user_dict"] = active_user_dict
-
-    # downline deposit
-    # downline_deposit = {}
-    # for user, affiliate, balance in affiliates.values_list('id', 'referred_by', 'main_wallet'):
-    #     if affiliate is not None:
-    #         downline_deposit.update(
-    #             {affiliate: downline_deposit.get(affiliate, 0) + balance})
-    # context["downline_deposit"] = downline_deposit
-
-    # @register.filter(name='lookup')
-    # def lookup(dict, index):
-    #     if index in dict:
-    #         return dict[index]
-    #     return '0'
-
-    # commission_last_month = {}
-    # commission_month_before = {}
-    # for affiliate_name, affiliate_id in affiliates.values_list('username', 'id'):
-    #     try:
-    #         cur = tran_with_commission_this_month.get(
-    #             user_id_id=affiliate_id)
-    #         commission_last_month.update({affiliate_name: cur.amount})
-    #     except:
-    #         commission_last_month.update({affiliate_name: '0'})
-
-    # for affiliate_name, affiliate_id in affiliates.values_list('username', 'id'):
-    #     try:
-    #         last = tran_with_commission_this_month_before.get(
-    #             user_id_id=affiliate_id)
-    #         commission_month_before.update({affiliate_name: last.amount})
-    #     except:
-    #         commission_month_before.update({affiliate_name: '0'})
-
-    # context["commission_last_month"] = commission_last_month
-    # context["commission_month_before"] = commission_month_before
-
-    # premium application
