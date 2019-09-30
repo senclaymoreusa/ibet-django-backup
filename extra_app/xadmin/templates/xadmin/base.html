@@ -17,6 +17,12 @@
   <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/themes/bootstrap-xadmin.css" %}" />
   {% endif %}
   <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/accounting.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-permission.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-report.css" %}" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.0/css/all.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.0/css/v4-shims.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
   {% vendor 'font-awesome.css' 'xadmin.main.css' 'xadmin.plugins.css' 'xadmin.responsive.css' %}
   {{ media.css }}
   {% block extrastyle %}{% endblock %}
@@ -28,6 +34,14 @@
     window.__admin_language_code__ = "{{LANGUAGE_CODE}}";
   </script>
   <script type="text/javascript" src="{% url 'xadmin:jsi18n' %}"></script>
+  {% load staticfiles %}
+  <script type="module" src="{% static "js/search_user.js" %}"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <!-- <script src="{% static 'search_user.js' %}"></script>   -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+  <!--<script defer src="https://use.fontawesome.com/releases/v5.10.0/js/all.js"></script>-->
+  <script defer src="https://use.fontawesome.com/releases/v5.10.0/js/v4-shims.js"></script>
+  <script src="https://cdn.ckeditor.com/ckeditor5/12.3.1/classic/ckeditor.js"></script>
   {% block extrahead %}{% endblock %}
   {% view_block 'extrahead' %}
 </head>
