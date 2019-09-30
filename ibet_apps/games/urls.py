@@ -13,4 +13,7 @@ urlpatterns = [
     path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login")
 
+    # Inplay Matrix
+    # path('api/inplay/login', csrf_exempt())
+
 ]
