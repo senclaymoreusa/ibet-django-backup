@@ -35,10 +35,12 @@ admin.site.register(Status)
 admin.site.register(Game)
 admin.site.register(Config)
 admin.site.register(NoticeMessage)
+
 admin.site.register(GameRequestsModel)
 admin.site.register(Limitation)
 admin.site.register(Commission)
 admin.site.register(ReferLink)
+admin.site.register(UserAction)
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm

@@ -134,7 +134,7 @@ class CustomUser(AbstractBaseUser):
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
-    member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True)
+    member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
     risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
     # balance = main_wallet + other_game_wallet
@@ -365,16 +365,6 @@ class Config(models.Model):
     
 class UserAction(models.Model):
     
-    EVENT_CHOICES = (
-        (0, _('Login')),
-        (1, _('Logout')),
-        (2, _('Register')),
-        # (3, _('Deposit')),
-        # (4, _('Withdraw')),
-        (3, _('Page Visit')),
-        # (6, _('bet'))
-    )
-
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
@@ -385,7 +375,7 @@ class UserAction(models.Model):
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     created_time = models.DateTimeField(
         _('Created Time'),
-        auto_now_add=True,
+        default=timezone.now,
         editable=False,
     )
     class Meta:
@@ -532,6 +522,13 @@ class GameRequestsModel(models.Model):
     campaignref     = models.CharField(max_length=100, blank=True)
     lang            = models.CharField(max_length=100, blank=True)
     last            = models.CharField(max_length=100, blank=True)
+
+    # SA
+
+    txnid           = models.CharField(max_length=100, blank=True)
+    hostid          = models.CharField(max_length=100, blank=True)
+    txn_reverse_id  = models.CharField(max_length=100, blank=True)
+
 
 
     def __str__(self):

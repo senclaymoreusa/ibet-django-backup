@@ -33,7 +33,7 @@ logger = logging.getLogger('django')
 def send_message(notification_id):
     notification = Notification.objects.get(pk=notification_id)
     # All messages
-    queryset = NotificationToUsers.objects.filter(notification_id=notification_id)
+    queryset = NotificationToUsers.objects.filter(notification_id=notification)
     # connect AWS S3
     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
@@ -312,16 +312,16 @@ class NotificationView(CommAdminView):
             notification_item["status"] = msg.status
             notifiers = NotificationToUsers.objects.filter(notification_id=msg)
             if len(notifiers) > 1:
-                notification_item["notifiers"] = len(notifiers)
+                notification_item["notifiers"] = str(len(notifiers)) + " users"
             else:
-                notification_item["notifiers"] = notifiers
+                notification_item["notifiers"] = notifiers[0].notifier_id
 
             notification_item["sent_count"] = NotificationToUsers.objects.filter(notification_id=msg).count()
             notification_item["open"] = NotificationToUsers.objects.filter(Q(notification_id=msg)&Q(is_read=True)).count()
             if(notification_item["sent_count"] == 0):
                 notification_item["rate"] = ""
             else:
-                notification_item["rate"] = str((notification_item["open"] / notification_item["sent_count"]) * 100) + '%'
+                notification_item["rate"] = str(round((notification_item["open"] / notification_item["sent_count"]) * 100, 2)) + '%'
 
             notification_list.append(notification_item)
 
@@ -386,7 +386,9 @@ class NotificationView(CommAdminView):
             logger.info("Save notification message")
             # # store notification data in NotificationLog
             for group in groups:
-                group = UserGroup.objects.get(name=group)
+                group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
+                group.time_used = group.time_used + 1
+                group.save()
                 NotificationToGroup.objects.create(notification=notification, group=group)
                 group_users = UserToUserGroup.objects.filter(group=group)
                 for group_user in group_users:
@@ -553,7 +555,7 @@ class MessageUserGroupView(CommAdminView):
             #     user_list.push(item)
 
             # context['user_list'] = user_list
-            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP).order_by('-created_time')
             message_groups = []
             for group in groups:
                 group_item = {}
@@ -562,6 +564,18 @@ class MessageUserGroupView(CommAdminView):
                 group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
                 group_item['time_used'] = group.time_used
                 group_item['creator'] = group.creator
+                total_messages = 0
+                read_messages = 0
+                users = UserToUserGroup.objects.filter(group=group)
+                # notifications = NotificationToGroup.objects.filter(group=group)
+                # for notification in notifications:
+                #     for user in users:
+                #         total_messages += NotificationToUsers.objects.filter(Q(notification_id=notification)&Q(notifier_id=user)).count()
+                #         read_messages += NotificationToUsers.objects.filter(Q(notification_id=notification)&Q(notifier_id=user)&Q(is_read=True)).count()
+
+                # print(total_messages)
+                # print(read_messages)
+
                 message_groups.append(group_item)
 
             paginator = Paginator(message_groups, pageSize)
@@ -572,73 +586,80 @@ class MessageUserGroupView(CommAdminView):
             return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
-        group_name = request.POST.get('group_name')
-        pk_list = request.POST.getlist('pk[]')
-        product = request.POST.get("product")
-        is_range = request.POST.get("is_range")
-        active_from = request.POST.get("active_from")
-        active_to = request.POST.get('active_to')
-        register_from = request.POST.get('register_from')
-        register_to = request.POST.get('register_to')
-        is_deposit = request.POST.get('is_deposit')
+        postType = request.POST.get('type')
 
-        if is_range == "true":
-            is_range = True
-        else:
-            is_range = False
+        if postType == "create_new_usergroup":
+            group_name = request.POST.get('group_name')
+            pk_list = request.POST.getlist('pk[]')
+            product = request.POST.get("product")
+            is_range = request.POST.get("is_range")
+            active_from = request.POST.get("active_from")
+            active_to = request.POST.get('active_to')
+            register_from = request.POST.get('register_from')
+            register_to = request.POST.get('register_to')
+            is_deposit = request.POST.get('is_deposit')
 
-        if isDateFormat(active_from):
-            active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
-        else:
-            active_from = None
+            if is_range == "true":
+                is_range = True
+            else:
+                is_range = False
 
-        if isDateFormat(active_to):
-            active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
-        else:
-            active_to = None
+            if isDateFormat(active_from):
+                active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+            else:
+                active_from = None
 
-        if isDateFormat(register_from):
-            register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
-        else:
-            register_from = None
+            if isDateFormat(active_to):
+                active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+            else:
+                active_to = None
 
-        if isDateFormat(register_to):
-            register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
-        else:
-            register_to = None
+            if isDateFormat(register_from):
+                register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+            else:
+                register_from = None
 
-        if is_deposit == "true":
-            is_deposit = True
-        else:
-            is_deposit = False
+            if isDateFormat(register_to):
+                register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+            else:
+                register_to = None
 
+            if is_deposit == "true":
+                is_deposit = True
+            else:
+                is_deposit = False
 
-        data = {
-            "name": group_name,
-            "groupType": MESSAGE_GROUP,
-            "creator": self.user.pk,
-            "is_range": is_range,
-            "product": product,
-            "active_from": active_from,
-            "active_to": active_to,
-            "register_from": register_from,
-            "register_to": register_to,
-            "is_deposit": is_deposit
-        }
+            data = {
+                "name": group_name,
+                "groupType": MESSAGE_GROUP,
+                "creator": self.user.pk,
+                "is_range": is_range,
+                "product": product,
+                "active_from": active_from,
+                "active_to": active_to,
+                "register_from": register_from,
+                "register_to": register_to,
+                "is_deposit": is_deposit
+            }
 
-        serializer = MessageUserGroupSerializer(data=data)
-        if serializer.is_valid():
-            group = serializer.save()
-            logger.info("saved message user group")
-            for pk in pk_list:
-                user = CustomUser.objects.get(pk=int(pk))
-                log = UserToUserGroup.objects.create(group=group, user=user)
-                
-            logger.info("saved message user group log")
-            return HttpResponseRedirect(reverse('xadmin:messagegroups'))
-        else:
-            logger.error(serializer.errors['name'][0])
-            return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+            serializer = MessageUserGroupSerializer(data=data)
+            if serializer.is_valid():
+                group = serializer.save()
+                logger.info("saved message user group")
+                for pk in pk_list:
+                    user = CustomUser.objects.get(pk=int(pk))
+                    log = UserToUserGroup.objects.create(group=group, user=user)
+                    
+                logger.info("saved message user group log")
+                return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+            else:
+                logger.error(serializer.errors['name'][0])
+                return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+        
+        elif postType == "delete_group":
+            group_name = request.POST.get('group_name')
+            UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
+            return HttpResponse("success delete")
 
 
 class CampaignView(CommAdminView):
@@ -716,7 +737,6 @@ class CampaignView(CommAdminView):
 
 
         else:
-
             pageSize = request.GET.get('pageSize')
             offset = request.GET.get('offset')
 
@@ -1309,3 +1329,10 @@ class NotificationToUsersUnreadCountView(ListAPIView):
 class UserToAWSTopicView(ListAPIView):
     serializer_class = UserToAWSTopicSerializer
     queryset = UserToAWSTopic.objects.all()
+
+class UserIsValidAPI(View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get("username")
+        user = get_object_or_404(CustomUser, username=username)
+        return HttpResponse(status=200)
+        
