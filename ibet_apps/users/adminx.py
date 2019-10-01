@@ -71,8 +71,8 @@ class GlobalSettings(object):
                         'icon': 'fa fa-arrow-left'
                     },
                     {
-                        'title': 'Settings',
-                        'url': '/xadmin/channel_list',
+                        'title': 'Payment Configuration',
+                        'url': '/xadmin/payment_config',
                         'icon': 'fa fa-cog'
                     },
                 )

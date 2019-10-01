@@ -99,7 +99,10 @@ class DepositChannel(ThirdParty):
         verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
-        return self.get_thirdParty_name_display()
+        return "PSP Name: {0}, \n \
+            Transaction Method: {3}, \n \
+            ".format(self.get_thirdParty_name_display(), self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
+
 
 
 class WithdrawChannel(ThirdParty):
@@ -135,6 +138,10 @@ class Transaction(models.Model):
         default=0, verbose_name=_("Depositor Tier")
     )
     method = models.CharField(max_length=200, blank=True, verbose_name=_("Method"))
+    supplier = models.CharField(max_length=50, verbose_name=_("Supplier"), null=True)
+    channel = models.SmallIntegerField(
+        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
+    )
     last_updated = models.DateTimeField(
         default=timezone.now, verbose_name=_("Status Last Updated")
     )
@@ -147,14 +154,8 @@ class Transaction(models.Model):
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
-    channel = models.SmallIntegerField(
-        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
-    )
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")
-    )
-    review_status = models.SmallIntegerField(
-        choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
     )
     remark = models.CharField(max_length=200, blank=True, verbose_name=_("Details"))
     transfer_from = models.CharField(
@@ -165,6 +166,10 @@ class Transaction(models.Model):
     )
     product = models.SmallIntegerField(
         choices=GAME_TYPE_CHOICES, default=4, verbose_name=_("Product")
+    )
+
+    review_status = models.SmallIntegerField(
+        choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
     )
     # payer_id is Returned by Paypal
     # payer_id = models.CharField(max_length = 100, default=0)

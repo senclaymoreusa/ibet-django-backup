@@ -59,7 +59,7 @@ class DepositView(CommAdminView):
         pending_tran = []
         success_tran = []
         fail_tran = []
-        cancelled_tran = []
+        cancel_tran = []
 
         for trans in deposit_trans:
             transData = {}
@@ -86,7 +86,7 @@ class DepositView(CommAdminView):
         context["pending_tran"] = pending_tran
         context["success_tran"] = success_tran
         context["fail_tran"] = fail_tran
-        context["cancelled_tran"] = cancelled_tran
+        context["cancel_tran"] = cancel_tran
 
         return render(request, "deposits.html", context)
 

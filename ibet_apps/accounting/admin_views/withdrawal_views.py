@@ -90,11 +90,11 @@ class WithdrawalView(CommAdminView):
             # REJECTED
             rejected_trans = withdrawal_trans.filter(review_status=REVIEW_REJ) 
             # SUCCESSFUL
-            success_trans = withdrawal_trans.filter(status=TRAN_SUCCESS_TYPE) 
+            success_trans = withdrawal_trans.filter(status=TRAN_SUCCESS)
             # FAILED
-            failed_trans = withdrawal_trans.filter(status=TRAN_FAIL_TYPE)
+            failed_trans = withdrawal_trans.filter(status=TRAN_FAIL)
             # RESEND
-            resend_trans = withdrawal_trans.filter(status=TRAN_RESEND_TYPE) 
+            resend_trans = withdrawal_trans.filter(status=TRAN_RESEND)
 
             # pending transaction
             pending_tran = []

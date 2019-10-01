@@ -1,12 +1,10 @@
-{% extends "xadmin/base_site.html" %}
-{% load staticfiles%}
+{% extends "xadmin/base_site.html" %}  # navigation side bar
+{% load staticfiles%}  # import css / other static files
 
 {% block content-nav %}
 {% endblock %}
 
 {% block content %}
-
-
 <div class="panel panel-default">
     <div class="panel-heading">
         <h2 class="panel-title">
@@ -49,7 +47,7 @@
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item active">
                         <a class="nav-link" id="home-tab" data-toggle="tab" href="#pending" role="tab"
-                            aria-controls="pending" aria-selected="true">PENDING</a>
+                            aria-controls="pending" aria-selected="true">PENDING ({{ pending_tran|length }})</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="profile-tab" data-toggle="tab" href="#success" role="tab"
@@ -67,51 +65,40 @@
             </nav>
         </div>
 
-
         <div class="tab-content datatable" id="myTabContent">
             <!-- PENDING TABLE -->
             <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab"
                 style="margin-bottom: 50px;">
                 <table id="pending_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
+                    style="width:97%; margin-bottom: 50px">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">PLAYER ID</th>
                             <th scope="col">USERNAME</th>
                             <th scope="col">PAYMENT</th>
                             <th scope="col">TRANSACTION NO.</th>
                             <th scope="col">APPLICATION TIME</th>
                             <th scope="col">BANK</th>
-                            <th scope="col">BRANCH</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">TRANSACTION CODE</th>
-                            <th scope="col">APPLY AMOUNT</th>
+                            <th scope="col">AMOUNT</th>
                             <th scope="col" style="display: none">pk</th>
-                            <th scope="col">SLIP</th>
-                            <th scope="col"></th>
+                            <th scope="col">STATUS</th>
+                            <th scope="col">DETAILS</th>
                         </tr>
                     </thead>
                     <tbody id="pending_deposit_data">
                         {% for tran in pending_tran %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
+                            <td>{{ tran.user_id }}</td>
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td>{{ tran.branch }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
                             <td style="display: none">{{ tran.pk }}</td>
-                            <td></td>
+                            <td>{{ tran.status }}</td>
                             <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
                                     data-target="#audit_deposit">Audit</button></td>
                         </tr>
@@ -129,18 +116,18 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">PLAYER ID</th>
                             <th scope="col">USERNAME</th>
                             <th scope="col">PAYMENT</th>
                             <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">REF NO.</th>
                             <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">ACCOUNT TIME</th>
+                            <th scope="col">ARRIVE TIME</th>
                             <th scope="col">BANK</th>
-                            <th scope="col">BRANCH</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
+{#                            <th scope="col">BRANCH</th>#}
+{#                            <th scope="col">CITY</th>#}
+{#                            <th scope="col">NAME</th>#}
                             <th scope="col">ACCOUNT</th>
-                            <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
                             <th scope="col">NOTE</th>
                             <th scope="col"></th>
@@ -150,18 +137,18 @@
                         {% for tran in success_tran %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
+                            <td>{{ tran.user_id }}</td>
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
+                            <td>{{ tran.order_id }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.arr_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td>{{ tran.branch }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
+{#                            <td>{{ tran.branch }}</td>#}
+{#                            <td>{{ tran.city }}</td>#}
+{#                            <td>{{ tran.name }}</td>#}
                             <td>{{ tran.account }}</td>
-                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-note" data-toggle="tooltip"
@@ -187,17 +174,17 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">PLAYER ID</th>
                             <th scope="col">USERNAME</th>
                             <th scope="col">PAYMENT</th>
                             <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">REF NO.</th>
                             <th scope="col">APPLICATION TIME</th>
                             <th scope="col">BANK</th>
-                            <th scope="col">BRANCH</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
+{#                            <th scope="col">BRANCH</th>#}
+{#                            <th scope="col">CITY</th>#}
+{#                            <th scope="col">NAME</th>#}
                             <th scope="col">ACCOUNT</th>
-                            <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
                         </tr>
                     </thead>
@@ -205,17 +192,17 @@
                         {% for tran in fail_tran %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
+                            <td>{{ tran.user_id }}</td>
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
+                            <td>{{ tran.order_id }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td>{{ tran.branch }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
+{#                            <td>{{ tran.branch }}</td>#}
+{#                            <td>{{ tran.city }}</td>#}
+{#                            <td>{{ tran.name }}</td>#}
                             <td>{{ tran.account }}</td>
-                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
                         </tr>
                         {% endfor %}
@@ -232,35 +219,35 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">PLAYER ID</th>
                             <th scope="col">USERNAME</th>
                             <th scope="col">PAYMENT</th>
                             <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">REF NO.</th>
                             <th scope="col">APPLICATION TIME</th>
                             <th scope="col">BANK</th>
-                            <th scope="col">BRANCH</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
+{#                            <th scope="col">BRANCH</th>#}
+{#                            <th scope="col">CITY</th>#}
+{#                            <th scope="col">NAME</th>#}
                             <th scope="col">ACCOUNT</th>
-                            <th scope="col">TRANSACTION CODE</th>
                             <th scope="col">APPLY AMOUNT</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for tran in cancelled_tran %}
+                        {% for tran in cancel_tran %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
+                            <td>{{ tran.user_id }}</td>
                             <td>{{ tran.username }}</td>
                             <td>{{ tran.payment }}</td>
                             <td>{{ tran.tran_no }}</td>
+                            <td>{{ tran.order_id }}</td>
                             <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
                             <td>{{ tran.bank }}</td>
-                            <td>{{ tran.branch }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
+{#                            <td>{{ tran.branch }}</td>#}
+{#                            <td>{{ tran.city }}</td>#}
+{#                            <td>{{ tran.name }}</td>#}
                             <td>{{ tran.account }}</td>
-                            <td>{{ tran.trans_code }}</td>
                             <td>{{ tran.amount }}</td>
                         </tr>
                         {% endfor %}
@@ -268,6 +255,7 @@
                 </table>
                 <label class="show-rows">SHOW ROWS</label>
             </div>
+
         </div>
     </div>
 
@@ -410,9 +398,8 @@
 
 
 <script>
-
     $(document).ready(function () {
-        var csrftoken = $.cookie("csrftoken")
+        let csrftoken = $.cookie("csrftoken");
 
         function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
@@ -428,14 +415,14 @@
         });
 
         // draw DataTable
-        var table = $('#pending_table').DataTable({
+        let table = $('#pending_table').DataTable({
             responsive: true,
             dom: 'B<ftilp>',
             buttons: [
                 'csv'
             ],
             "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                "searchable": false, "targets": [0, 3, 5, 6, 7, 8, 9, 10],
             }],
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
@@ -449,14 +436,14 @@
             },
         });
 
-        var success_fail_cancel_table = $('#success_deposit_table, #fail_deposit_table, #cancelled_deposit_table').DataTable({
+        let success_table = $('#success_deposit_table').DataTable({
             responsive: true,
             dom: 'B<ftilp>',
             buttons: [
                 'csv'
             ],
             "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10, 11, 12],
+                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10],
             }],
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
@@ -470,47 +457,67 @@
             },
         });
 
-        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
+        let fail_cancel_table = $('#fail_deposit_table, #cancelled_deposit_table').DataTable({
+            responsive: true,
+            dom: 'B<ftilp>',
+            buttons: [
+                'csv'
+            ],
+            "columnDefs": [{
+                "searchable": false, "targets": [0, 3, 5, 6, 7, 8, 9],
+            }],
+            "language": {
+                "info": " _START_ - _END_ of _TOTAL_",
+                "infoEmpty": " 0 - 0 of 0",
+                "infoFiltered": "",
+                "paginate": {
+                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                },
+                "lengthMenu": "_MENU_",
+            },
+        });
+
+        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
 
 
         // user id, username, trans_no search
         $('#search-btn').on('keyup click', function () {
             table.search($('#search').val()).draw();
-            success_fail_cancel_table.search($('#search').val()).draw();
+            success_table.search($('#search').val()).draw();
         });
 
 
         // date range search
         $.fn.dataTable.ext.search.push(
             function (settings, data, dataIndex) {
-                var min = $('#min').datepicker("getDate");
-                var max = $('#max').datepicker("getDate");
+                let min = $('#min').datepicker("getDate");
+                let max = $('#max').datepicker("getDate");
 
-                var dateParts = data[5].split("/");
-                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
-                var startDate = new Date(newDate);
+                let dateParts = data[5].split("/");
+                let newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2];
+                let startDate = new Date(newDate);
                 if (min == null && max == null) { return true; }
                 if (min == null && startDate <= max) { return true; }
                 if (max == null && startDate >= min) { return true; }
-                if (startDate <= max && startDate >= min) { return true; }
-                return false;
+                else {return (startDate <= max && startDate >= min)}
             }
         );
 
-        $("#min").datepicker({ onSelect: function () { table.draw(); success_fail_cancel_table.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { table.draw(); success_fail_cancel_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#min").datepicker({ onSelect: function () { table.draw(); success_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#max").datepicker({ onSelect: function () { table.draw(); success_table.draw(); }, changeMonth: true, changeYear: true });
 
         // Event listener to the two range filtering inputs to redraw on input
         $('#min, #max').change(function () {
             table.draw();
-            success_fail_cancel_table.draw();
+            success_table.draw();
         });
 
         // send data to pop-up window
         $('#pending_table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
             // transaction pk: data[13]
-            showDepositeDetail(data);
+            showDepositDetail(data);
             showBankDetail(data);
             var user_id = data[1];
             $.when(
@@ -575,7 +582,8 @@
             $("#dep_trans_no").val(trans_pk)
         }
 
-        showDepositeDetail = function (data) {
+        function showDepositDetail (data) {
+            console.log("show deposit detail");
             $("#trans_deposit_detail").empty();
             var content = "";
             content += "<p>...</p>";
@@ -586,7 +594,7 @@
             $("#trans_deposit_detail").append(content);
         }
 
-        showBankDetail = function (data) {
+        function showBankDetail (data) {
             $("#bank_detail").empty();
             var content = "";
             content += "<p>" + data[6] + "</p>";

@@ -31,4 +31,4 @@ class PaymentConfig(CommAdminView):
 
         # print(deposit_trans)
 
-        return render(request, "deposits.html", context)
+        return render(request, "channels.html", context)
