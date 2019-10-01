@@ -22,3 +22,23 @@ from  games.models import *
 
 
 logger = logging.getLogger('django')
+
+
+class InplayLoginAPI(View):
+    return HttpResponse(status=200)
+
+
+class InplayGetBalanceAPI(View):
+    return HttpResponse(status=200)
+
+
+class InplayGetApprovalAPI(View):
+    return HttpResponse(status=200)
+
+
+class InplayDeductBalanceAPI(View):
+    return HttpResponse(status=200)
+
+
+class InplayUpdateBalanceAPI(View):
+    return HttpResponse(status=200)

@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 import games.views.eagameviews as eagameviews
+import games.views.inplaygameviews as inplayviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 
@@ -14,6 +15,9 @@ urlpatterns = [
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login")
 
     # Inplay Matrix
-    # path('api/inplay/login', csrf_exempt())
-
+    path('api/inplay/login', csrf_exempt(inplayviews.InplayLoginAPI.as_view(), name="inplay-login"),
+    path('api/inplay/get-balance', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay-get-balance"),
+    path('api/inplay/get-approval', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay-get-approval"),
+    path('api/inplay/deduct-balance', csrf_exempt(inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
+    # path('api')
 ]
