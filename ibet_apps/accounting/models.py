@@ -34,6 +34,7 @@ class ThirdParty(models.Model):
     )
     method = models.CharField(max_length=30, verbose_name=_("Method"))
     channel = models.CharField(max_length=30, verbose_name=_("Channel"))
+    supplier = models.CharField(max_length=50, verbose_name=_("Supplier"), null=True)
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
     )
@@ -100,8 +101,9 @@ class DepositChannel(ThirdParty):
 
     def __str__(self):
         return "PSP Name: {0}, \n \
-            Transaction Method: {3}, \n \
-            ".format(self.get_thirdParty_name_display(), self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
+            Min Amount: {1}, \n \
+            Max Amount: {2}, \n \
+            ".format(self.get_thirdParty_name_display(), self.min_amount, self.max_amount)
 
 
 
@@ -138,7 +140,6 @@ class Transaction(models.Model):
         default=0, verbose_name=_("Depositor Tier")
     )
     method = models.CharField(max_length=200, blank=True, verbose_name=_("Method"))
-    supplier = models.CharField(max_length=50, verbose_name=_("Supplier"), null=True)
     channel = models.SmallIntegerField(
         choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
     )
