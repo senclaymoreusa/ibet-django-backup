@@ -16,6 +16,10 @@ from utils.constants import *
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+import logging
+
+logger = logging.getLogger('django')
+
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
         if not email:
@@ -235,7 +239,7 @@ class Commission(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             # Get the maximum display_id value from the database
-            last_id = Commission.objects.all().aggregate(largest=models.Max('commission_level'))['largest']
+            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))['largest']
 
             # aggregate can return None! Check it first.
             # If it isn't none, just use the last ID specified (which should be the greatest) and add one to it
@@ -249,7 +253,7 @@ class ReferLink(models.Model):
     refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
-    refer_link_name = models.CharField(max_length=50, default="default", unique=True)
+    refer_link_name = models.CharField(max_length=50, default="default")
     ## time of this link was created
     genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
 
@@ -540,10 +544,11 @@ class GameRequestsModel(models.Model):
 def my_handler(sender, **kwargs):
     if kwargs['created']:
         user=kwargs['instance']
+        temp_refer_link_url = generate_unique_verification_code()
         refer_link = ReferLink.objects.create(
-            user_id = user
+            user_id = user,
         )
-        logger.info("Auto created a refer link " + str(temp_refer_link_url) +  " for new user" + str(user.username))
+        logger.info("Auto created a refer link for new user" + str(user.username))
     
 
 def generate_verification_code():

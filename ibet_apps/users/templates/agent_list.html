@@ -190,7 +190,7 @@
                     </tr>
                 </thead>
                 <tbody style="font-size: 13px">
-                    {% for affiliate in users_with_application_to_premium %}
+                    {% for affiliate in affiliate_application_list %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td><a id="userID" href="{% url 'xadmin:user_detail' affiliate.pk %}">{{ affiliate.pk }}</a>
@@ -287,7 +287,7 @@
         <div class='row' style="width:35%; margin-left: 5px">
             <div class="input-group">
                 <input type=" text" id="search" class="form-control"
-                    placeholder="Enter affiliate ID, username or Promotion code ">
+                    placeholder="Enter affiliate ID, username ">
                 <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                         class="glyphicon glyphicon-search"></span></span>
             </div>
@@ -417,7 +417,7 @@
                 content += '<td>' + data[i].id + '</td>';
                 content += '<td>' + data[i].active_players + '</td>';
                 content += '<td>' + data[i].downline_ftd + '</td>';
-                content += '<td>' + data[i].commission_rate + '</td>';
+                content += '<td>' + data[i].commission_rate + '%' + '</td>';
                 content += '<td>' + data[i].deposit + '</td>';
                 content += '<td>' + data[i].withdrawal + '</td>';
                 content += '<td>' + data[i].bonus + '</td>';
@@ -559,7 +559,9 @@
         });
         $('#affiliate-application-decline-btn').click(function () {
             var remark = $('textarea#affiliate_application_remark').val();
-            var userID = $(this).prev('input').val();
+            var userID = $(this).prev().prev('input').val();
+            console.log("remark " + remark)
+            console.log("userID " + userID)
             $.ajax({
                 type: 'POST',
                 url: "{% url 'xadmin:agentview' %}",

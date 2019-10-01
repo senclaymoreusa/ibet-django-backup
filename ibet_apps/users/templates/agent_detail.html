@@ -47,7 +47,7 @@
                                 <strong>Status</strong>
                             </div>
                             <div class="col-md-6">
-                                {{ status }}
+                                {{ affiliate_status }}
                             </div>
                         </div>
                         <div class="row">
@@ -55,7 +55,7 @@
                                 <strong>Level</strong>
                             </div>
                             <div class="col-md-6">
-                                {{ level }}
+                                {{ affiliate_level }}
                             </div>
                         </div>
                         <div class="row">
@@ -467,8 +467,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <input class="form-check-input" type="radio" name="commission-set"
-                                                id="commission-set-personal"
-                                                value="{{ affiliate.commission_setting }}"
+                                                id="commission-set-personal" value="{{ affiliate.commission_setting }}"
                                                 {% if affiliate.commission_setting == 'Personal' %}checked="checked"
                                                 {% endif %}>
                                             <label class="form-check-label" for="commission-set">Personal</label>
@@ -510,9 +509,10 @@
                                                     class="commission_level">{{ i.commission_level }}</label>
                                             </div>
                                             <div class="col-md-2">
-                                                <label><br>COMMISSION RATE</label>
-                                                <input type="number" class="form-control" id='commision_rate' name="commision_rate"
-                                                    value="{{ i.commision_percentage }}" required="required">
+                                                <label>COMMISSION RATE</label>
+                                                <input type="number" class="form-control" id='commision_rate'
+                                                    name="commision_rate" value="{{ i.commision_percentage }}"
+                                                    required="required">
                                             </div>
                                             <div class="col-md-2" style="width:20%">
                                                 <label>DOWNLINE COMMISSION RATE</label>
@@ -522,8 +522,9 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <label><br>ACTIVE DOWNLINE</label>
-                                                <input type="number" class="form-control" id='active_downline' name="active_downline"
-                                                    value="{{ i.active_downline_needed }}" required="required">
+                                                <input type="number" class="form-control" id='active_downline'
+                                                    name="active_downline" value="{{ i.active_downline_needed }}"
+                                                    required="required">
                                             </div>
                                             <div class="col-md-2">
                                                 <label>DOWNLINE MONTHLY FTD</label>
@@ -1070,27 +1071,27 @@
                     });
                     var affiliate_detail = [];
                     affiliate_detail.push($('#affiliate-manager').val());
-                    if($('#affiliate-level-normal').is(':checked')){
+                    if ($('#affiliate-level-normal').is(':checked')) {
                         affiliate_detail.push("Normal");
-                    }else{
+                    } else {
                         affiliate_detail.push("VIP");
                     }
-                    if($('#affiliate-status-normal').is(':checked')){
+                    if ($('#affiliate-status-normal').is(':checked')) {
                         affiliate_detail.push("Enable");
-                    }else{
+                    } else {
                         affiliate_detail.push("Disabled");
                     }
-                    if($('#commission-set-system').is(':checked')){
+                    if ($('#commission-set-system').is(':checked')) {
                         affiliate_detail.push("System");
-                    }else{
+                    } else {
                         affiliate_detail.push("Personal");
                     }
-                    if($('#commission-transfer-system').is(':checked')){
+                    if ($('#commission-transfer-system').is(':checked')) {
                         affiliate_detail.push("Yes");
-                    }else{
+                    } else {
                         affiliate_detail.push("No");
                     }
-                    console.log(level_details)
+                    var manager = $('#affiliate-manager').val()
                     $.ajax({
                         type: 'POST',
                         url: "{% url 'xadmin:agent_detail' %}",
@@ -1100,6 +1101,7 @@
                             'affiliate_detail[]': affiliate_detail,
                             'level_details': JSON.stringify(level_details),
                             'affiliate_id': affiliate_id,
+                            'manager':manager
                         },
                         success: function (data) {
                             location.reload();
@@ -1107,26 +1109,6 @@
                     });
                 }
             });
-
-            // function createAdjustment(adjustment_amount) {
-            //     var remark = $('#reason_for_adjustment_changes').html();
-            //     console.log(remark);
-            //     $.ajax({
-            //         type: 'POST',
-            //         url: "{% url 'xadmin:agent_detail' %}",
-            //         data: {
-            //             'type': 'make_adjustment',
-            //             'admin_user': admin_user,
-            //             'remark': remark,
-            //             'amount': adjustment_amount,
-            //             'affiliate_id': affiliate_id,
-            //         },
-            //         success: function (data) {
-            //             location.reload();
-            //         }
-            //     });
-            // }
-
 
             function updateNote(message) {
                 var affiliate_id = $('#affiliate-id').val();
@@ -1145,16 +1127,21 @@
                 });
             }
 
-            $('#search-text').keyup(function () {
-                var q = $('#search-text').val();
-                $("#search-text").autocomplete({
+            $('#affiliate-manager').keyup(function () {
+                var text = $('#affiliate-manager').val();
+                console.log(text)
+                $("#affiliate-manager").autocomplete({
                     source: function (request, response) {
                         $.ajax({
-                            url: "{% url 'fsearch' %}",
+                            url: "{% url 'xadmin:agent_detail' %}",
                             dataType: 'json',
                             type: 'GET',
-                            data: { 'q': q },
+                            data: { 
+                                'type': 'search_affiliate_manager',
+                                'text': text 
+                            },
                             success: function (data) {
+                                console.log(data)
                                 response(data);
                             }
                         });
@@ -1173,16 +1160,6 @@
                 });
             });
 
-        });
-
-
-        $(document).ready(function () {
-            $('#search-result').click(function () {
-                console.log('bianleeeeeee')
-                var selectedValue = $('#search-result').val();
-                var selectedManager = $(this).children("span:selected").val();
-                alert("You have selected the country - " + selectedValue);
-            })
         });
 
 
