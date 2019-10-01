@@ -6,6 +6,8 @@ import json
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError, NoCredentialsError
 import utils.aws_helper
+from django.utils.translation import ugettext_lazy as _
+
 
 
 AWS_S3_ADMIN_BUCKET = ""
@@ -63,22 +65,33 @@ CHANNEL_CHOICES = (
 )
 
 CURRENCY_CNY = 0
+CURRENCY_USD = 1
+CURRENCY_THB = 2
+CURRENCY_IDR = 3
+CURRENCY_HKD = 4
+CURRENCY_AUD = 5
+CURRENCY_MYR = 6
+CURRENCY_VND = 7
+CURRENCY_MMK = 8
+CURRENCY_XBT = 9
+CURRENCY_EUR = 10
+CURRENCY_NOK = 11
+CURRENCY_GBP = 12
 
 CURRENCY_CHOICES = (
-    (0, 'CNY'),
-    (1, 'USD'),
-    (2, 'THB'),
-    (3, 'IDR'),
-    (4, 'HKD'),
-    (5, 'AUD'),
-    (6, 'MYR'),
-    (7, 'VND'),
-    (8, 'MMK'),
-    (9, 'XBT'),
-    (10, 'NOK'),
-    (11, 'SEK'),
-    (12, 'GBP'),
-    (13, 'EUR')
+    (CURRENCY_CNY, 'CNY'),
+    (CURRENCY_USD, 'USD'),
+    (CURRENCY_THB, 'THB'),
+    (CURRENCY_IDR, 'IDR'),
+    (CURRENCY_HKD, 'HKD'),
+    (CURRENCY_AUD, 'AUD'),
+    (CURRENCY_MYR, 'MYR'),
+    (CURRENCY_VND, 'VND'),
+    (CURRENCY_MMK, 'MMK'),
+    (CURRENCY_XBT, 'XBT'),
+    (CURRENCY_EUR, 'EUR'),
+    (CURRENCY_NOK, 'NOK'),
+    (CURRENCY_GBP, 'GBP')
 )
 
 TRAN_SUCCESS_TYPE = 0
@@ -134,20 +147,30 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
+# transaction_deposit = 0
+# transaction_withdrawl = 1
 TRANSACTION_DEPOSIT = 0
-TRANSACTION_WITHDRAW = 1
+TRANSACTION_WITHDRAWAL = 1
+TRANSACTION_BET_PLACED = 2
+TRANSACTION_SETTLED = 3
+TRANSACTION_TRANSFER_IN = 4
+TRANSACTION_TRANSFER_OUT = 5
+TRANSACTION_BONOUS = 6
+TRANSACTION_ADJUSTMENT = 7
+TRANSACTION_COMMISSION = 8
 
 TRANSACTION_TYPE_CHOICES = (
-    (0, 'Deposit'),
-    (1, 'Withdrawal'),
-    (2, 'Bet Placed'),
-    (3, 'Bet Settled'),
-    (4, 'Transfer In'),
-    (5, 'Transfer Out'),
-    (6, 'Bonus'),
-    (7, 'Adjustment'),
-    (8, 'Commission')
+    (TRANSACTION_DEPOSIT, 'Deposit'),
+    (TRANSACTION_WITHDRAWAL, 'Withdrawal'),
+    (TRANSACTION_BET_PLACED, 'Bet Placed'),
+    (TRANSACTION_SETTLED, 'Bet Settled'),
+    (TRANSACTION_TRANSFER_IN, 'Transfer in'),
+    (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
+    (TRANSACTION_BONOUS, 'Bonus'),
+    (TRANSACTION_ADJUSTMENT, 'Adjustment'),
+    (TRANSACTION_COMMISSION, 'Commission')
 )
+
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
     ('zh-Hans', 'Chinese Simplified'),
@@ -444,6 +467,23 @@ ACTIVITY_CHECK = (
 )
 
 
+EVENT_CHOICES_LOGIN = 0
+EVENT_CHOICES_LOGOUT = 1
+EVENT_CHOICES_REGISTER = 2
+EVENT_CHOICES_PAGE_VISIT = 3
+
+EVENT_CHOICES = (
+    (EVENT_CHOICES_LOGIN, _('Login')),
+    (EVENT_CHOICES_LOGOUT, _('Logout')),
+    (EVENT_CHOICES_REGISTER, _('Register')),
+    # (3, _('Deposit')),
+    # (4, _('Withdraw')),
+    (EVENT_CHOICES_PAGE_VISIT, _('Page Visit')),
+    # (6, _('bet'))
+)
+
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -526,14 +566,23 @@ ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
 ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
-# TODO: update this with if/else block after h2pproduction credentials have been provided
 # help2pay sandbox credentials & callback
-HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+
 HELP2PAY_MERCHANT_THB = "M0513"
-HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
 HELP2PAY_MERCHANT_VND = "M0514"
-HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
 HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+
+if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+    API_DOMAIN = "https://payment-testing.claymoreeuro.com/"
+    HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
+    HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
+    HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+else:
+    API_DOMAIN = "https://03720ad2.ngrok.io/"
+    HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
+    HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
+    HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -605,6 +654,8 @@ COUNTRY_CODE_FINAND = 'FI'
 COUNTRY_CODE_NORWAY = 'NO'
 COUNTRY_CODE_THAILAND = 'THB'
 COUNTRY_CODE_VIETNAM = 'VN'
+COUNTRY_CODE_NETHERLANDS = 'NL'
+COUNTRY_CODE_UNITED_KINGDOM = 'UK'
 
 MARKET_OPTIONS = {
     'ibetMarket_options': [
@@ -613,7 +664,9 @@ MARKET_OPTIONS = {
         COUNTRY_CODE_FINAND,
         COUNTRY_CODE_NORWAY,
         COUNTRY_CODE_THAILAND,
-        COUNTRY_CODE_VIETNAM
+        COUNTRY_CODE_VIETNAM,
+        COUNTRY_CODE_NETHERLANDS,
+        COUNTRY_CODE_UNITED_KINGDOM
     ],
     'letouMarket_options': [
         COUNTRY_CODE_CHINA,
@@ -628,7 +681,10 @@ COUNTRY_CODE_TO_IMG_PREFIX = {
     COUNTRY_CODE_FINAND: 'finland',
     COUNTRY_CODE_NORWAY: 'norway',
     COUNTRY_CODE_THAILAND: 'thailand',
-    COUNTRY_CODE_VIETNAM: 'vietnam'
+    COUNTRY_CODE_VIETNAM: 'vietnam',
+    COUNTRY_CODE_NETHERLANDS: 'netherlands',
+    COUNTRY_CODE_UNITED_KINGDOM: 'united-kingdom'
+
 }
 
 DEPARTMENT_LIST = [
