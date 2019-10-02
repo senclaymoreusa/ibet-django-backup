@@ -86,7 +86,6 @@ class submitDeposit(generics.GenericAPIView):
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
         
-        
         userid = self.request.POST.get("userid")
         uID = "n" + userid
         user = CustomUser.objects.get(pk=userid)
@@ -102,6 +101,7 @@ class submitDeposit(generics.GenericAPIView):
         SignCode = str(uID)+ ASIAPAY_CID + UserIP + TraceID + "D" + trans_id + NoticeUrl + DesTime + ASIAPAY_DEPOSITKEY
         #user =  CustomUser.objects.get(pk=userid)
         currency = self.request.POST.get("currency")
+        RealName = self.request.POST.get("RealName")
         logger.info(SignCode)
         logger.info(MD5(SignCode))
         ParamList_Msg ={
@@ -120,10 +120,10 @@ class submitDeposit(generics.GenericAPIView):
             "PayCardPro": "",
             "PayCardCity": "",
             # "PayCardUserChName": user.last_name + user.first_name,
-            "PayCardUserChName": "测试",
+            "PayCardUserChName": RealName,
             "PayMoney": amount,
             "ResType": "xml",
-            "C_RealName": "测试",
+            "C_RealName": user.last_name + user.first_name,
             "UserRealID": "",
             "SafeLevel": "0",
             "ProcessLevel": "0",
@@ -157,11 +157,11 @@ class submitDeposit(generics.GenericAPIView):
             'PayType':0,
             'PayMoney':amount,
             'ResType':'xml',
-            'RealName':"测试",
+            'RealName':user.last_name + user.first_name,
             'SafeLevel':0,
             'ProcessLevel':0,
             'SignCode':MD5(SignCode),
-            'PayCardUserChName':"测试",
+            'PayCardUserChName':RealName,
         })
         rdata = r.text
         print(rdata)
@@ -170,11 +170,12 @@ class submitDeposit(generics.GenericAPIView):
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
             StatusMsg = tree.find('StatusMsg').text
-            paymentAPIURL = tree.find('RedirectUrl').text
-            paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-            print(paymentAPIURL)
-            logger.info(paymentAPIURL)
+            
             if StatusMsg == 'OK':
+                paymentAPIURL = tree.find('RedirectUrl').text
+                paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
+                print(paymentAPIURL)
+                logger.info(paymentAPIURL)
                 oID = tree.find('oID').text
                 create = Transaction.objects.create(
                     order_id=oID,
@@ -194,7 +195,7 @@ class submitDeposit(generics.GenericAPIView):
                             "cid":ASIAPAY_CID,
                             "oid":"D" + trans_id
                         })
-                    if BankID == '39':
+                    if BankID == '39' or PayWay == '30':
                         rrdata = rr.text
                         logger.info(rrdata)
                         print(rrdata)
@@ -202,12 +203,22 @@ class submitDeposit(generics.GenericAPIView):
                     else:
                         rrdata = rr.json()
                         return Response(rrdata)
-       
+                elif PayWay == '10':
+                    sPayMoney = tree.find('sPayMoney').text
+                    BankName = tree.find('BankName').text
+                    CardNumber = tree.find('CardNumber').text
+                    CardChName = tree.find('CardChName').text
+                    CardPro = tree.find('CardPro').text
+                    CardCity = tree.find('CardCity').text
+                    CardBankName = tree.find('CardBankName').text
+                    return Response({"order_id": "D"+trans_id, "StatusCode": StatusCode, "StatusMsg": StatusMsg,
+                    "sPayMoney": sPayMoney,"BankName": BankName, "CardNumber": CardNumber, "CardPro": CardPro, "CardCity":CardCity,
+                    "CardBankName":CardBankName })
                         
             else:
                 logger.info("There was something wrong with the result")
                 logger.info(StatusMsg)
-                return Response(StatusMsg)
+                return Response({"order_id": "D"+trans_id,"StatusMsg":StatusMsg })
                 
         else:
             # Handle error
@@ -522,6 +533,7 @@ def depositArrive(request):
         
 def payoutArrive(request):
     if request.method == "POST":
+        print(request.POST)
         Cmd = request.POST.get("Cmd")
         PayOutCardNumber = request.POST.get("PayOutCardNumber")
         PayOutBankName = request.POST.get("PayOutBankName")
@@ -531,7 +543,8 @@ def payoutArrive(request):
         PayOutFee = request.POST.get("PayOutFee")
         SignCode = request.POST.get("SignCode")
         CashType = request.POST.get("CashType")
-        OrderID = request.POST.get("OrderID")
+        order_id = request.POST.get("OrderID")
+        print(order_id)
         OrderID = order_id[1:]
         # print(OrderID)
         uID = request.POST.get("uID")
