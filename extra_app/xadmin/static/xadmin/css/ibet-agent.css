@@ -99,6 +99,24 @@ table.dataTable {
     margin-bottom: 50px;
 }
 
+.commission_detail {
+    padding-left: 15px;
+    padding-top: 20px;
+}
+.commission_status {
+    padding-left: 15px;
+    padding-top: 20px;
+}
+
+.panel-default > .panel-heading-custom {
+    background: #ffa313; color: #fff; 
+}
+.panel-default > .panel-heading-custom_perfomance {
+    background: #bc6ccc; color: #fff; 
+}
+.panel-default > .panel-heading-custom_activity {
+    background: #588ebd; color: #fff; 
+}
 
 /* Affiliate application pop up */
 

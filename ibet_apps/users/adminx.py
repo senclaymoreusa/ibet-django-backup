@@ -5,7 +5,6 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
-# from .views import AgentView, AgentDetailView, OneclickRegister 
 from users.views.adminview import *
 from users.views.views import *
 from users.views.agentview import *
@@ -52,7 +51,7 @@ class GlobalSettings(object):
                 )
             },
             {
-                'title': 'Affiliate',
+                'title': _('Affiliate'),
                 'icon': 'fa fa-smile-o',
                 'url': '/xadmin/agentview',
             },

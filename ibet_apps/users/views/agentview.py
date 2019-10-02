@@ -580,9 +580,12 @@ class AgentDetailView(CommAdminView):
                     logger.info("Update commission level " +
                                 i['level'] + " for affiliate " + affiliate.username)
                     commission_list.append(i['pk'])
-            Commission.objects.filter(user_id=affiliate).exclude(
-                pk__in=commission_list).delete()
-            logger.info("Delete Commission Level")
+            deleted_commission_levels =  Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
+            deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
+            if deleted_list.count() > 0:
+                logger.info("Admin user " + admin_user + " delete commission level " + str(deleted_list) + " for affiliate " + str(affiliate.username) )
+            deleted_commission_levels.delete()
+           
             # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
             # update affilite attributes
             manager = affiliate_detail[0]

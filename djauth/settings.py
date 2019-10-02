@@ -112,7 +112,6 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
-    'table',
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
     'django_user_agents',
