@@ -207,10 +207,10 @@
                         {{ c.commission_level }}
                     </div>
                     <div class="col-md-2">
-                        {{ c.commision_percentage }}
+                        {{ c.commission_percentage }}
                     </div>
                     <div class="col-md-2">
-                        {{ c.downline_commision_percentage }}
+                        {{ c.downline_commission_percentage }}
                     </div>
                     <div class="col-md-2">
                         {{ c.active_downline_needed }}
@@ -510,15 +510,15 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <label>COMMISSION RATE</label>
-                                                <input type="number" class="form-control" id='commision_rate'
-                                                    name="commision_rate" value="{{ i.commision_percentage }}"
+                                                <input type="number" class="form-control" id='commission_rate'
+                                                    name="commission_rate" value="{{ i.commission_percentage }}"
                                                     required="required">
                                             </div>
                                             <div class="col-md-2" style="width:20%">
                                                 <label>DOWNLINE COMMISSION RATE</label>
-                                                <input type="number" class="form-control" id='downline_commision_rate'
-                                                    name="downline_commision_rate"
-                                                    value="{{ i.downline_commision_percentage }}" required="required">
+                                                <input type="number" class="form-control" id='downline_commission_rate'
+                                                    name="downline_commission_rate"
+                                                    value="{{ i.downline_commission_percentage }}" required="required">
                                             </div>
                                             <div class="col-md-2">
                                                 <label><br>ACTIVE DOWNLINE</label>
@@ -822,7 +822,6 @@
     <script>
         $(document).ready(function () {
             var csrftoken = $.cookie("csrftoken");
-            // console.log(csrftoken);
 
             function csrfSafeMethod(method) {
                 // these HTTP methods do not require CSRF protection
@@ -918,7 +917,6 @@
 
             function getActivityfilter(activity) {
                 var affiliate_id = $('#affiliate-id').val();
-                console.log(affiliate_id)
                 $.ajax({
                     type: 'POST',
                     url: "{% url 'xadmin:agent_detail' %}",
@@ -928,7 +926,6 @@
                         'affiliate_id': affiliate_id,
                     },
                     success: function (data) {
-                        console.log("data  " + data)
                         displayActivity(data);
                     }
                 });
@@ -955,7 +952,7 @@
 
             $('#adjustment_submit').click(function () {
                 var adjustment_amount = $('#adjustment_amount_input').val()
-                if (adjustment_amount === '') {
+                if (!adjustment_amount) {
                     $('#errorMessage').text("Please fill the amount");
                     $('#errorMessage').css('color', 'red');
                 } else {
@@ -966,7 +963,6 @@
                     if ($('#adjustment_message_checkbox').prop("checked")) {
                         send = true;
                     }
-                    console.log(remark);
                     $.ajax({
                         type: 'POST',
                         url: "{% url 'xadmin:agent_detail' %}",
@@ -1050,7 +1046,6 @@
                     var commission_id = $(this).parent().parent().find('#commission_id').val();
                     var commission_row = $(this).prev().closest('.row');
                     var commission_row_prev = commission_row.prev('.row')
-                    console.log(current_level);
                     commission_row.remove();
                     commission_row_prev.append(delete_btn);
                 }
@@ -1063,8 +1058,8 @@
                         level_detail = {};
                         level_detail['pk'] = $(this).find('#commission_id').val();
                         level_detail['level'] = $(this).find('#commission_level_label').text();
-                        level_detail['rate'] = $(this).find('#commision_rate').val();
-                        level_detail['downline_rate'] = $(this).find('#downline_commision_rate').val();
+                        level_detail['rate'] = $(this).find('#commission_rate').val();
+                        level_detail['downline_rate'] = $(this).find('#downline_commission_rate').val();
                         level_detail['active_downline'] = $(this).find('#active_downline').val();
                         level_detail['downline_ftd'] = $(this).find('#downline_monthly_ftd').val();
                         level_details.push(level_detail);
@@ -1129,7 +1124,6 @@
 
             $('#affiliate-manager').keyup(function () {
                 var text = $('#affiliate-manager').val();
-                console.log(text)
                 $("#affiliate-manager").autocomplete({
                     source: function (request, response) {
                         $.ajax({
@@ -1141,7 +1135,6 @@
                                 'text': text 
                             },
                             success: function (data) {
-                                console.log(data)
                                 response(data);
                             }
                         });

@@ -159,7 +159,7 @@ class CustomUser(AbstractBaseUser):
     managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
 
     #commission
-    commision_status = models.BooleanField(default=False)               # for current month
+    commission_status = models.BooleanField(default=False)               # for current month
     commission_setting = models.CharField(max_length=50, choices=COMMISSION_SET, default='System')
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
@@ -230,8 +230,8 @@ class CustomUser(AbstractBaseUser):
 class Commission(models.Model):
     
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
-    downline_commision_percentage = models.DecimalField(_('Downline Commision Percentage'), max_digits=20, decimal_places=2, default=0)
+    commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
     commission_level = models.IntegerField(default=1)
     active_downline_needed = models.IntegerField(default=6)
     monthly_downline_ftd_needed = models.IntegerField(default=6)
