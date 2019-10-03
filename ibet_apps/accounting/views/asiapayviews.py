@@ -218,7 +218,7 @@ class submitDeposit(generics.GenericAPIView):
             else:
                 logger.info("There was something wrong with the result")
                 logger.info(StatusMsg)
-                return Response({"order_id": "D"+trans_id,"StatusMsg":StatusMsg })
+                return Response({"order_id": "D"+trans_id,"StatusCode": StatusCode,"StatusMsg":StatusMsg })
                 
         else:
             # Handle error

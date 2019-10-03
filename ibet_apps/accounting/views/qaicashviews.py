@@ -453,7 +453,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
+            'callbackUrl':'http://3fb2738f.ngrok.io/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -587,14 +587,19 @@ class approvePayout(generics.GenericAPIView):
         rdata = r.json()
         logger.info(rdata)
         user = CustomUser.objects.get(username=rdata['userId'])   
-        update_data = Transaction.objects.get(order_id=rdata['orderId']                                                                  
-        )
-        update_data.transaction_id=rdata['transactionId']
-        update_data.last_updated=rdata["dateUpdated"]
-        update_data.status=4
-        update_data.save()
-        
-        return Response(rdata)
+        try :
+            update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
+
+            update_data.order_id=rdata['transactionId']
+            update_data.last_updated=rdata["dateUpdated"]
+            update_data.status=4
+            update_data.save()
+            return Response(rdata)
+        except ObjectDoesNotExist as e:
+            logger.error(e)
+            logger.info("matching transaction not found / does not exist")
+            return Response({"message": "Could not find matching transaction"})
+
 class rejectPayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = approvePayoutSerialize
@@ -722,10 +727,11 @@ class getDepositTransaction(generics.GenericAPIView):
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
 def transactionConfirm(request):
     body = json.loads(request.body)
-    logger.info(body)
+    print(body)
     orderId = body.get('orderId')
     Status = body.get('status') 
     cur_status = statusConversion[Status]
+    notes = body.get('notes')
     try:
         order_id = Transaction.objects.filter(transaction_id=orderId)
     except Transaction.DoesNotExist:
@@ -745,7 +751,7 @@ def transactionConfirm(request):
             
         else :
             update = order_id.update(
-                remark = 'Transaction ' + Status)
+                remark = notes)
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
