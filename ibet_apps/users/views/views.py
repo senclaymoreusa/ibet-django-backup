@@ -1194,7 +1194,13 @@ class ChangePassword(APIView):
             password = request.data['password']
             user = get_user_model().objects.get(username=username)
             if checkUserBlock(user.pk):
-                return Response({'errorCode': '100', 'errorMsg': 'user is blocked'})
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
             user.set_password(password)
             user.save()
             return Response('Success')
@@ -1361,22 +1367,30 @@ class SetLimitation(View):
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
-        user_id = data['user_id']
+        userId = data['user_id']
         limit = data['limit']
         interval = data['interval']
         limit_type = data['type']
+
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
         # print(limit, interval, user_id, limit_type)
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
 
-        oldLimitMap = get_old_limitations(user_id)
+        oldLimitMap = get_old_limitations(userId)
         # print(oldLimitMap)
 
         if limit_type == 'loss':
             otherLimits = oldLimitMap[LIMIT_TYPE_LOSS]
-            set_loss_limitation(user_id, limit, interval, oldLimitMap, user)
+            set_loss_limitation(userId, limit, interval, oldLimitMap, user)
         elif limit_type == 'deposit':
-            set_deposit_limitation(user_id, limit, interval, oldLimitMap, user)
+            set_deposit_limitation(userId, limit, interval, oldLimitMap, user)
 
         return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
 
@@ -1385,14 +1399,14 @@ class DeleteLimitation(View):
     def post(self, request, *args, **kwargs):
         
         data = json.loads(request.body)
-        user_id = data['user_id']
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
+        userId = data['user_id']
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
         # limit = data['limit']
         interval = data['interval']
@@ -1404,7 +1418,7 @@ class DeleteLimitation(View):
         elif limit_type == 'loss':
             limit_type = LIMIT_TYPE_LOSS
 
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
 
         limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
         time = timezone.now() + datetime.timedelta(days=1)
@@ -1432,14 +1446,14 @@ class CancelDeleteLimitation(View):
     def post(self, request, *args, **kwargs):
         
         data = json.loads(request.body)
-        user_id = data['user_id']
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
+        userId = data['user_id']
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         # limit = data['limit']
         interval = data['interval']
@@ -1451,7 +1465,7 @@ class CancelDeleteLimitation(View):
         elif limit_type == 'loss':
             limit_type = LIMIT_TYPE_LOSS
 
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
 
         limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
         limit.expiration_time = None
@@ -1464,22 +1478,22 @@ class CancelDeleteLimitation(View):
 class GetLimitation(View):
 
     def get(self, request, *args, **kwargs):
-        user_id = request.GET.get('id')
+        userId = request.GET.get('id')
         # limit_type = request.GET.get('type')
         # limit_type = limit_type.capitalize()
         # limitDict = dict(LIMIT_TYPE)
         # for key, value in limitDict.items():
         #     if value == limit_type:
         #         limit_type = key
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "errorCode": True,
-                "blockMessage": blockMessage
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
         userJson = serializers.serialize('json', [user])
         userJson = json.loads(userJson)
         # print(userJson)
@@ -1562,42 +1576,42 @@ class SetBlockTime(View):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         lock_timespan = data['timespan']
-        user_id = data['userId']
+        userId = data['userId']
 
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         # lock_type = data['type']
         tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
-        # print(user_id, lock_type, lock_timespan)
+        # print(userId, lock_type, lock_timespan)
         if lock_timespan not in tempIntervals:
-            set_permanent_timeout(user_id, lock_timespan)
-            set_temporary_timeout(user_id, -1)
+            set_permanent_timeout(userId, lock_timespan)
+            set_temporary_timeout(userId, -1)
         else:
-            set_temporary_timeout(user_id, lock_timespan)
-            set_permanent_timeout(user_id, -1)
+            set_temporary_timeout(userId, lock_timespan)
+            set_permanent_timeout(userId, -1)
         
-        return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(user_id, lock_timespan)), status = 200)
+        return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(userId, lock_timespan)), status = 200)
  
 class MarketingSettings(View):
 
     def get(self, request, *args, **kwargs):
-        user_id = request.GET['userId']
+        userId = request.GET['userId']
 
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
         contact_methods = user.contact_methods
 
         response = {
@@ -1626,18 +1640,18 @@ class MarketingSettings(View):
         sms = data['sms']
         postal_mail = data['postalMail']
         social_media = data['socialMedia']
-        user_id = data['userId']
+        userId = data['userId']
 
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         contact_methods = []
-        # print(email, phone, sms, postal_mail, social_media, user_id)
+        # print(email, phone, sms, postal_mail, social_media, userId)
         if email is True:
             contact_methods.append("email")
         if phone is True:
@@ -1652,7 +1666,7 @@ class MarketingSettings(View):
 
         # print(contact_methods_str)
         # print(social_media)
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
         user.social_media = social_media
         user.contact_methods = contact_methods_str
         user.save()
@@ -1667,17 +1681,17 @@ class MarketingSettings(View):
 class PrivacySettings(View):
 
     def get(self, request, *args, **kwargs):
-        user_id = request.GET['userId']
+        userId = request.GET['userId']
 
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
-        user = CustomUser.objects.get(pk=user_id)
+        user = CustomUser.objects.get(pk=userId)
         response = {
             "bonus": user.bonusesProgram,
             "vip": user.vipProgram
@@ -1692,16 +1706,17 @@ class PrivacySettings(View):
 
         bonuses = data['bonuses']
         vip = data['vip']
-        user_id = data['userId']
-        if checkUserBlock(user_id):
-            blockMessage = _('Current user is blocked!')
-            data = {
-                "block": True,
-                "blockMessage": blockMessage
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
+        userId = data['userId']
 
-        user = CustomUser.objects.get(pk=user_id)
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+        user = CustomUser.objects.get(pk=userId)
         user.bonusesProgram = bonuses
         user.vipProgram = vip
         user.save()
@@ -1730,7 +1745,24 @@ class ActivityCheckSetting(View):
 
     def get(self, request, *args, **kwargs):
         userId= request.GET['userId']
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
         user = CustomUser.objects.get(pk=userId)
+
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
         response = {
             "activityOpt": user.activity_check
         }
@@ -1741,6 +1773,14 @@ class ActivityCheckSetting(View):
         data = json.loads(request.body)
         userId = data['userId']
         activityOpt = data['activityOpt']
+
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         user = CustomUser.objects.get(pk=userId)
         user.activity_check = activityOpt
