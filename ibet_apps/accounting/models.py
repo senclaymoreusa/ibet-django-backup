@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
 
+# from users.models import CustomUser
+
 import uuid
 
 
@@ -64,12 +66,13 @@ class ThirdParty(models.Model):
 
     # market
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
+    supplier = models.CharField(max_length=200, null=True, blank=True)
 
     # the maximum number of money to be routed to this channel (%)
     volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
     new_user_volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
 
-    # control new users volumn
+    # control new users volume
     limit_access = models.BooleanField(default=False)
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
     vip_level = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
@@ -109,13 +112,13 @@ class WithdrawChannel(ThirdParty):
 
 
 class Transaction(models.Model):
-    transaction_id = models.CharField(
+    transaction_id = models.CharField(     #request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         max_length=200, default=0, verbose_name=_("Transaction id")
     )
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("Member")
     )
-    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id"))
+    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id")) #third party refo
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name=_("Apply Amount")
     )
@@ -174,6 +177,8 @@ class Transaction(models.Model):
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
+
+
     class Meta:
         verbose_name = "Transaction"
         verbose_name_plural = verbose_name
@@ -186,8 +191,7 @@ class Transaction(models.Model):
             Internal ID: {4}, \n \
             External ID: {5}, \n \
             Status: {6} \
-            ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method,
-                     self.transaction_id, self.order_id, self.get_status_display())
+            ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
 
 
 class DepositAccessManagement(models.Model):

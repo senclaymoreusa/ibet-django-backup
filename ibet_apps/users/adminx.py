@@ -16,6 +16,7 @@ from django.conf import settings
 # from xadmin.layout import Main, Fieldset, Row
 from xadmin.layout import *
 from xadmin.plugins.inline import Inline
+from django.contrib.auth.models import Permission
 
 
 DOMAIN = settings.DOMAIN
@@ -34,43 +35,101 @@ class GlobalSettings(object):
     def get_site_menu(self): 
         return [
             {
-                'title': 'Members',
+                'title': _('Playres'),
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('Member List'),
+                        'title': _('Playre directory'),
                         'url': '/xadmin/users',
-                        'icon': 'fa fa-user'
+                        'icon': 'fas fa-book'
+                    },
+                    {
+                        'title':  _('Player groups'),
+                        'url': '/xadmin/operation/messagegroups/',
+                        'icon': 'fas fa-user-friends'
                     },
                 )
             },
             {
-                'title': 'Affiliate',
+                'title': _('Affiliate'),
                 'icon': 'fa fa-bar-chart-o',
                 'menus': (
                     {
-                        'title': 'Affiliate Overview',
+                        'title': _('Affiliate Overview'),
                         'url': '/xadmin/agent_view',
                         'icon': 'fa fa-cny'
                     },
                 )
             },
             {
-                'title': 'System admin',
+                'title': _('Finance'),
+                'icon': 'fa fa-credit-card',
+                'menus': (
+                    {
+                        'title': _('Deposits'),
+                        'url': '/xadmin/deposit',
+                        'icon': 'fa fa-arrow-right'
+                    },
+                    {
+                        'title': _('Withdrawals'),
+                        'url': '/xadmin/withdrawal',
+                        'icon': 'fa fa-arrow-left'
+                    },
+                    {
+                        'title': _('Settings'),
+                        'url': '/xadmin/channel_list',
+                        'icon': 'fa fa-cog'
+                    },
+                )
+            },
+            {
+                'title': _('System admin'),
                 'icon': 'fa-fw fa fa-cog',
                 'menus': (
                     {
-                        'title': 'Users',
+                        'title': _('Users'),
                         'url': '/xadmin/permission/',
                         'icon': 'fa fa-user-circle-o'
                     },
                     {
-                        'title': 'Roles',
+                        'title': _('Roles'),
                         'url': '/xadmin/roles/',
                         'icon': 'fa fa-id-badge'
                     },
                 )
-            }
+            },
+            {
+                'title': 'Reports',
+                'icon': 'fas fa-file-medical-alt',
+                'menus': (
+                    {
+                        'title': 'Performance reports',
+                        'url': '/xadmin/performance-report/',
+                        'icon': 'fas fa-file-alt'
+                    },
+                    {
+                        'title': 'Members reports',
+                        'url': '/xadmin/members-report/',
+                        'icon': 'fas fa-users'
+                    },
+                )
+            },
+            {
+                'title': 'Messaging',
+                'icon': 'far fa-envelope',
+                'menus': (
+                    {
+                        'title': _('Messages'),
+                        'url': '/xadmin/operation/notification/',
+                        'icon': 'far fa-envelope'
+                    },
+                    {
+                        'title': _('Campaign'),
+                        'url': '/xadmin/operation/campaign/',
+                        'icon': 'fas fa-bullhorn'
+                    }
+                )
+            },
         ]
                     
 from django.contrib import admin
@@ -256,10 +315,11 @@ xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(views.BaseAdminView, BaseSetting)
 xadmin.site.unregister(CustomUser)
 xadmin.site.unregister(Group)
-xadmin.site.register(CustomUser, MyUserAdmin)
-xadmin.site.register(UserTag,TagAdmin)
-xadmin.site.register(UserWithTag,UserWithTagAdmin)
-xadmin.site.register(UserAction, UserActionAdmin)
+xadmin.site.unregister(Permission)
+# xadmin.site.register(CustomUser, MyUserAdmin)
+# xadmin.site.register(UserTag,TagAdmin)
+# xadmin.site.register(UserWithTag,UserWithTagAdmin)
+# xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
 xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
 xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')

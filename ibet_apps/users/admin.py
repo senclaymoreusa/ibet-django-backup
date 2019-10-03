@@ -8,7 +8,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 from .models import CustomUser
-from .models import Language, Category, Status, Game, Config, NoticeMessage,  AGGamemodels, GBSportWallet
+
+from .models import Language, Category, Status, Game, Config, NoticeMessage, GameRequestsModel, Limitation, UserAction
 from .forms import UserCreationForm
 
 # Bonus, BonusRequirement, UserBonus,
@@ -20,7 +21,7 @@ class UserAdmin(BaseUserAdmin):
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'language', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code', 'contact_methods', 'social_media', 'permanent_block_time', 'permanent_block_interval', 'temporary_block_time', 'temporary_block_interval')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'language', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code', 'product_attribute','contact_methods', 'social_media', 'permanent_block_time', 'permanent_block_interval', 'temporary_block_time', 'temporary_block_interval')}),
 			('Permissions', {'fields': ('is_admin', 'is_staff')})
 		)
 	search_fields = ('username','email')
@@ -36,9 +37,10 @@ admin.site.register(Status)
 admin.site.register(Game)
 admin.site.register(Config)
 admin.site.register(NoticeMessage)
-admin.site.register(GBSportWallet)
-admin.site.register(AGGamemodels)
 
+admin.site.register(GameRequestsModel)
+admin.site.register(Limitation)
+admin.site.register(UserAction)
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm

@@ -6,6 +6,8 @@ import json
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError, NoCredentialsError
 import utils.aws_helper
+from django.utils.translation import ugettext_lazy as _
+
 
 
 AWS_S3_ADMIN_BUCKET = ""
@@ -58,23 +60,50 @@ CHANNEL_CHOICES = (
     (6, 'Payzod'),
     (7, 'CirclePay'),
     (8, 'Fgate'),
-    (9, 'ScratchCard')
+    (9, 'ScratchCard'),
+    (10, 'PaymentIQ')
 )
 
-currency_cny = 0
+CURRENCY_CNY = 0
+CURRENCY_USD = 1
+CURRENCY_THB = 2
+CURRENCY_IDR = 3
+CURRENCY_HKD = 4
+CURRENCY_AUD = 5
+CURRENCY_MYR = 6
+CURRENCY_VND = 7
+CURRENCY_MMK = 8
+CURRENCY_XBT = 9
+CURRENCY_EUR = 10
+CURRENCY_NOK = 11
+CURRENCY_GBP = 12
 
 CURRENCY_CHOICES = (
-    (0, 'CNY'),
-    (1, 'USD'),
-    (2, 'THB'),
-    (3, 'IDR'),
-    (4, 'HKD'),
-    (5, 'AUD'),
-    (6, 'MYR'),
-    (7, 'VND'),
-    (8, 'MMK'),
-    (9, 'XBT')
+    (CURRENCY_CNY, 'CNY'),
+    (CURRENCY_USD, 'USD'),
+    (CURRENCY_THB, 'THB'),
+    (CURRENCY_IDR, 'IDR'),
+    (CURRENCY_HKD, 'HKD'),
+    (CURRENCY_AUD, 'AUD'),
+    (CURRENCY_MYR, 'MYR'),
+    (CURRENCY_VND, 'VND'),
+    (CURRENCY_MMK, 'MMK'),
+    (CURRENCY_XBT, 'XBT'),
+    (CURRENCY_EUR, 'EUR'),
+    (CURRENCY_NOK, 'NOK'),
+    (CURRENCY_GBP, 'GBP')
 )
+
+TRAN_SUCCESS_TYPE = 0
+TRAN_FAIL_TYPE = 1
+TRAN_CREATE_TYPE = 2
+TRAN_PENDING_TYPE = 3
+TRAN_APPROVED_TYPE = 4
+TRAN_CANCEL_TYPE = 5
+TRAN_COMPLETED_TYPE = 6
+TRAN_RESEND_TYPE = 7
+TRAN_REJECTED_TYPE = 8
+
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
     (1, 'FAILED'),
@@ -87,10 +116,21 @@ STATE_CHOICES = (
     (8, 'REJECTED'),
     (9, 'HELD'),
 )
+
+REVIEW_APP = 0
+REVIEW_PEND = 1
+REVIEW_REJ = 2
+REVIEW_SUCCESS = 3
+REVIEW_FAIL = 4
+REVIEW_RESEND = 5
+
 REVIEW_STATE_CHOICES = (
-    (0, 'Approved'),
-    (1, 'Pending'),
-    (2, 'Rejected'),
+    (0, 'APPROVED'),
+    (1, 'PENDING'),
+    (2, 'REJECTED'),
+    (3, 'SUCCESSFUL'),
+    (4, 'FAILED'),
+    (5, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (
@@ -107,20 +147,30 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-transaction_deposit = 0
-transaction_withdrawl = 1
+# transaction_deposit = 0
+# transaction_withdrawl = 1
+TRANSACTION_DEPOSIT = 0
+TRANSACTION_WITHDRAWAL = 1
+TRANSACTION_BET_PLACED = 2
+TRANSACTION_SETTLED = 3
+TRANSACTION_TRANSFER_IN = 4
+TRANSACTION_TRANSFER_OUT = 5
+TRANSACTION_BONOUS = 6
+TRANSACTION_ADJUSTMENT = 7
+TRANSACTION_COMMISSION = 8
 
 TRANSACTION_TYPE_CHOICES = (
-    (0, 'Deposit'),
-    (1, 'Withdrawal'),
-    (2, 'Bet Placed'),
-    (3, 'Bet Settled'),
-    (4, 'Transfer In'),
-    (5, 'Transfer Out'),
-    (6, 'Bonus'),
-    (7, 'Adjustment'),
-    (8, 'Commission')
+    (TRANSACTION_DEPOSIT, 'Deposit'),
+    (TRANSACTION_WITHDRAWAL, 'Withdrawal'),
+    (TRANSACTION_BET_PLACED, 'Bet Placed'),
+    (TRANSACTION_SETTLED, 'Bet Settled'),
+    (TRANSACTION_TRANSFER_IN, 'Transfer in'),
+    (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
+    (TRANSACTION_BONOUS, 'Bonus'),
+    (TRANSACTION_ADJUSTMENT, 'Adjustment'),
+    (TRANSACTION_COMMISSION, 'Commission')
 )
+
 LANGUAGE_CHOICES = (
     ('en-Us', 'English – United States'),
     ('zh-Hans', 'Chinese Simplified'),
@@ -197,9 +247,11 @@ AGENT_STATUS = (
 
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
+MESSAGE_GROUP = 2
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
+    (MESSAGE_GROUP, 'message'),
     (OTHER_GROUP, 'other')
 )
 
@@ -346,8 +398,6 @@ GAME_PROVIDER_THUNDERKICK = 21
 GAME_PROVIDER_YGGDRASIL = 22
 
 
-
-
 GAME_PROVIDERS = (
     (GAME_PROVIDER_NETENT, 'Netent'),
     (GAME_PROVIDER_PLAY_GO, 'Play\'n Go'),
@@ -401,6 +451,35 @@ GAME_ATTRIBUTES = (
     (GAME_ATTRIBUTES_FEATURES, 'Features'),
     (GAME_ATTRIBUTES_THEME, 'Theme'),
 )
+
+ACTIVITY_CHECK_FIVE_MIN = 0
+ACTIVITY_CHECK_HALF_HOUR = 1
+ACTIVITY_CHECK_ONE_HOUR = 2
+ACTIVITY_CHECK_TWO_HOURS = 3
+
+ACTIVITY_CHECK = (
+    (ACTIVITY_CHECK_FIVE_MIN, '5 minutes'),
+    (ACTIVITY_CHECK_HALF_HOUR, '30 minutes'),
+    (ACTIVITY_CHECK_ONE_HOUR, '60 minutes'),
+    (ACTIVITY_CHECK_TWO_HOURS, '120 minutes'),
+)
+
+
+EVENT_CHOICES_LOGIN = 0
+EVENT_CHOICES_LOGOUT = 1
+EVENT_CHOICES_REGISTER = 2
+EVENT_CHOICES_PAGE_VISIT = 3
+
+EVENT_CHOICES = (
+    (EVENT_CHOICES_LOGIN, _('Login')),
+    (EVENT_CHOICES_LOGOUT, _('Logout')),
+    (EVENT_CHOICES_REGISTER, _('Register')),
+    # (3, _('Deposit')),
+    # (4, _('Withdraw')),
+    (EVENT_CHOICES_PAGE_VISIT, _('Page Visit')),
+    # (6, _('bet'))
+)
+
 
 
 ASIAPAY_CMDTYPE = (
@@ -459,8 +538,6 @@ FGATE_TYPE = keys["FGO"]["TYPE"]
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-# TODO: ADD CONDITIONAL TO CHECK FOR ENV BEFORE DECIDING WHAT SET OF API KEY TO USE
-# TODO: RETRIEVE API KEYS FROM AWS S3
 # circlepay
 CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
 CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
@@ -487,19 +564,29 @@ ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
 ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
-# TODO: update this with if/else block after h2pproduction credentials have been provided
 # help2pay sandbox credentials & callback
-HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+
 HELP2PAY_MERCHANT_THB = "M0513"
-HELP2PAY_SECURITY_THB = "BgPZvX7dfxTaQCfvoTon"
 HELP2PAY_MERCHANT_VND = "M0514"
-HELP2PAY_SECURITY_VND = "nufumANHyFCZzT4KRQvW"
 HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+
+if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+    API_DOMAIN = "https://payment-testing.claymoreeuro.com/"
+    HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
+    HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
+    HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+else:
+    API_DOMAIN = "https://03720ad2.ngrok.io/"
+    HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
+    HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
+    HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
 # payzod production
+# TODO: Will need to update Production credentials because these credentials are temporary
 if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
@@ -552,17 +639,12 @@ NOTIFICATION_STATUS = (
     (MESSAGE_APPROVED, 'APPROVED')
 )
 
-NOTIFICATION_DIRECT = 'D'
-NOTIFICATION_PUSH   = 'P'
-NOTIFICATION_SMS    = 'S'
-NOTIFICATION_EMAIL  = 'E' 
+SYSTEM_USER = 1
 
-NOTIFICATION_METHOD = (
-    (NOTIFICATION_DIRECT, 'direct'),
-    (NOTIFICATION_PUSH, 'push'),
-    (NOTIFICATION_SMS, 'sms'),
-    (NOTIFICATION_EMAIL, 'email')
-)
+NOTIFICATION_CONSTRAINTS_QUANTITY = 1000
+
+AWS_SMS_REGION = 'eu-west-1'
+AWS_SQS_REGION = 'eu-west-2'
 
 COUNTRY_CODE_CHINA = 'CNY'
 COUNTRY_CODE_GERMANY = 'DE'
@@ -570,6 +652,8 @@ COUNTRY_CODE_FINAND = 'FI'
 COUNTRY_CODE_NORWAY = 'NO'
 COUNTRY_CODE_THAILAND = 'THB'
 COUNTRY_CODE_VIETNAM = 'VN'
+COUNTRY_CODE_NETHERLANDS = 'NL'
+COUNTRY_CODE_UNITED_KINGDOM = 'UK'
 
 MARKET_OPTIONS = {
     'ibetMarket_options': [
@@ -578,7 +662,9 @@ MARKET_OPTIONS = {
         COUNTRY_CODE_FINAND,
         COUNTRY_CODE_NORWAY,
         COUNTRY_CODE_THAILAND,
-        COUNTRY_CODE_VIETNAM
+        COUNTRY_CODE_VIETNAM,
+        COUNTRY_CODE_NETHERLANDS,
+        COUNTRY_CODE_UNITED_KINGDOM
     ],
     'letouMarket_options': [
         COUNTRY_CODE_CHINA,
@@ -593,7 +679,10 @@ COUNTRY_CODE_TO_IMG_PREFIX = {
     COUNTRY_CODE_FINAND: 'finland',
     COUNTRY_CODE_NORWAY: 'norway',
     COUNTRY_CODE_THAILAND: 'thailand',
-    COUNTRY_CODE_VIETNAM: 'vietnam'
+    COUNTRY_CODE_VIETNAM: 'vietnam',
+    COUNTRY_CODE_NETHERLANDS: 'netherlands',
+    COUNTRY_CODE_UNITED_KINGDOM: 'united-kingdom'
+
 }
 
 DEPARTMENT_LIST = [
@@ -995,5 +1084,40 @@ PERMISSION_CODE = [
     }
 ]
 BONUS_QUEUE_NAME = "bonus_queue"
+BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
+
+
+BONUS_TYPE_VERIFICATION = 0
+BONUS_TYPE_DEPOSIT = 1
+BONUS_TYPE_TURNOVER = 2
+BONUS_TYPE_STANDARD = 3
+BONUS_TYPE_FREESPINS = 4
+
+BONUS_TYPE_CHOICES = (
+    (BONUS_TYPE_VERIFICATION, 'VERIFICATION'),
+    (BONUS_TYPE_DEPOSIT, 'DEPOSIT'),
+    (BONUS_TYPE_TURNOVER, 'TURNOVER'),
+    (BONUS_TYPE_STANDARD, 'STANDARD'),
+    (BONUS_TYPE_FREESPINS, 'FREE SPINS'),
+)
+
+BONUS_STATUS_CHOICES = (
+    (0, 'INACTIVE'),
+    (1, 'ACTIVE'),
+    (2, 'DISABLED'),
+)
+
+
+USER_BONUS_EVENT_TYPE_CHOICES = (
+    (0, 'STARTED'),
+    (1, 'ACTIVE'),
+    (2, 'COMPLETED'),
+    (3, 'EXPIRED'),
+)
+
+BONUS_RELEASE_TYPE_CHOICES = (
+    (0, 'Pre-wager'),
+    (1, 'Post-wager'),
+)
