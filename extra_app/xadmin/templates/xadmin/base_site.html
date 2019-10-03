@@ -15,7 +15,7 @@
         {% if user.is_active and user.is_staff %}
           <li class="dropdown">
             <a class="dropdown-toggle" role="button" data-toggle="dropdown" href="#">
-            <strong>{% trans 'Welcome,' %} {% firstof user.first_name user.username %}</strong> <span class="caret"></span></a>
+            <strong>{% trans 'Welcome,' %} {% firstof user.username user.first_name %}</strong> <span class="caret"></span></a>
             <ul id="g-account-menu" class="dropdown-menu" role="menu">
               {% view_block 'top_account_menu' %}
             </ul>
@@ -23,7 +23,7 @@
         {% endif %}
         <li><a href="{% url 'xadmin:logout' %}"><i class="show-sm fa fa-sign-out"></i><span class="hide-sm">{% trans 'Log out' %}</span></a></li>
       </ul>
-      {% view_block 'top_navbar' %}
+      <!-- {% view_block 'top_navbar' %} -->
     </div>
   </div>
   {% endblock %}
@@ -39,7 +39,7 @@
       {% view_block 'left_navbar' %}
     </div>
 
-    <div id="content-block" class="col-sm-11 col-md-10" style="margin-left: 12%; width: 88%;">
+    <div id="content-block" class="col-sm-11 col-md-10" style="overflow-x: hidden;">
       {% block breadcrumbs %}
       <ul class="breadcrumb">
       {% if breadcrumbs %}
@@ -53,6 +53,9 @@
       <li><a href="{% url 'xadmin:index' %}">{% trans 'Home' %}</a></li>
       {% if title %}{{ title }}{% endif %}
       {% endif %}
+      <div style="float: right; margin:-8px">
+        <span>{% trans 'Update' %} {{ time }}</span>
+        <button id="refresh-btn" onClick="window.location.reload();"><span style="font-size: 1.3em;" class="glyphicon glyphicon-refresh"></span></button>
       </ul>
       {% endblock %}
 

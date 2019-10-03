@@ -71,7 +71,7 @@ class WidgetTypeSelect(forms.Widget):
 
 class UserWidgetAdmin(object):
 
-    model_icon = 'fa fa-dashboard'
+    model_icon = 'fas fa-tachometer-alt'
     list_display = ('widget_type', 'page_id', 'user')
     list_filter = ['user', 'widget_type', 'page_id']
     list_display_links = ('widget_type',)

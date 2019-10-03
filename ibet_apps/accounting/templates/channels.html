@@ -1,0 +1,416 @@
+{% extends "xadmin/base_site.html" %}
+{% load staticfiles%}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+<div class="panel panel-default remove-border">
+    <div class="panel-heading" style="display: none">
+        <h2 class="panel-title">
+            Deposit Channels
+        </h2>
+    </div>
+    <div class="panel-body">
+        <!-- pending request -->
+        <!-- <form action="{% url 'xadmin:channel_list' %}" method="GET" id="channel_filter">
+            <div class="row">
+                <div class="form-group col-md-2">
+                    <label for="market-select">MARKET</label>
+                    <select class="form-control" id="market-select">
+                        <option value="all">All</option>
+                        {% for market_key, market_value in markets_choices %}
+                        <option value="{{ market_value }}">{{ market_value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="type-select">TYPE</label>
+                    <select class="form-control" id="type-select">
+                        <option value="all">All</option>
+                        {% for type in types_choices %}
+                        <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="status-select">STATUS</label>
+                    <select class="form-control" id="status-select">
+                        <option value="all">All</option>
+                        {% for status_key, status_value in status_choices %}
+                        <option value="{{ status_value }}">{{ status_value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form> -->
+
+        <div class="datatable">
+            <table class="table-striped table-bordered hover" id="deposit_channels" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>METHOD</th>
+                        <th>CHANNEL</th>
+                        <th>SUPPLIER</th>
+                        <th>TYPE</th>
+                        <th>MARKET</th>
+                        <th>MIN</th>
+                        <th>MAX</th>
+                        <th>FLAT FEE</th>
+                        <th>% FEE</th>
+                        <th>VOLUME</th>
+                        <th>REQUIRED VERIFICATIONS</th>
+                        <th>VIP LEVEL</th>
+                        <th>RISK LEVEL</th>
+                        <th>NEW USERS VOLUME</th>
+                        <th>STATUS</th>
+                        <th style="display: none">pk</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for channel in channel_data %}
+                    <input type="hidden" name="channel_id" value="{{ channel.id }}"></input>
+                    <tr style="height: 10px;">
+                        <td>{{ channel.method }}</td>
+                        <td>{{ channel.channel }}</td>
+                        <td>{{ channel.supplier }}</td>
+                        <td>{{ channel.type }}</td>
+                        <td>{{ channel.market }}</td>
+                        <td>{{ channel.min }}</td>
+                        <td>{{ channel.max }}</td>
+                        <td>{{ channel.flat_fee }}</td>
+                        <td>{{ channel.fee }}</td>
+                        <td>{{ channel.volume }}</td>
+                        <td>{{ channel.require }}</td>
+                        <td>{{ channel.vip_level }}</td>
+                        <td>{{ channel.risk_level }}</td>
+                        <td>{{ channel.new_users_volume }}</td>
+                        <td>{{ channel.status }}</td>
+                        <td style="display: none">{{ channel.id }}</td>
+                        <td><button id="edit_channel_btn" type="button" class="btn btn-sm edit-channel-btn"
+                                data-toggle="modal" data-target="#edit_details">Edit</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- audit popup window -->
+        <div class="modal fade" id="edit_details" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit payment method</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'xadmin:channel_list' %}" method="POST" id="editChannelForm">
+                            {% csrf_token %}
+                            <!-- <p id="channel_name"></p><br> -->
+                            <input type="hidden" name="type" value="edit_channel_detail"></input>
+                            <input type="hidden" id="channel_id_number" name="channel_id_number"></input>
+
+                            <div class="row channel-info-box">
+                                <div class="col-md-3 channel-info">
+                                    <p>Method</p>
+                                    <p>Channel</p>
+                                    <p>Supplier</p>
+                                </div>
+                                <div class="col-md-3 channel-data" id="payment_info_1">
+                                    <p id="method"></p>
+                                    <p id="channel"></p>
+                                    <p id="supplier"></p>
+                                </div>
+                                <div class="col-md-2 channel-info">
+                                    <p>Type</p>
+                                    <p>Market</p>
+                                </div>
+                                <div class="col-md-3 channel-data" id="payment_info_2">
+                                    <p id="type"></p>
+                                    <p id="market"></p>
+                                </div>
+                            </div>
+
+                            <div id="deposit-channel-detail">
+                                <div class="form-group" style="padding-bottom: 10px">
+                                    <label>Status</label>
+                                    <input type="radio" name="channel_status" id="status_yes" value="0" /> Active
+                                    <input type="radio" name="channel_status" id="status_no" value="1" /> Disabled
+                                </div>
+                                <br>
+
+                                <label class="bridge">PAYMENTS SETTINGS</label>
+
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-md-4 channel-data">MINIMUM DEPOSIT</div>
+                                        <div class="col-md-4 channel-data">MAXIMUM DEPOSIT</div>
+                                    </div>
+                                    <div class="row bridge">
+                                        <div class="col-md-4">
+                                            <input class="form-control" type=number min=0 step=0.01 id="min_deposit" name="min_deposit">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type=number min=0 step=0.01 id="max_deposit" name="max_deposit">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 channel-data">TRANSACTION FEE</div>
+                                        <div class="col-md-4 channel-data">TRANSACTION % FEE</div>
+                                    </div>
+                                    <div class="row bridge">
+                                        <div class="col-md-4">
+                                            <input class="form-control" type=number min=0 step=0.01 id="transaction_fee"
+                                                name="transaction_fee">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type=number min=0 step=0.01 id="transaction_fee_per"
+                                                name="transaction_fee_per">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 channel-data">VOLUME</div>
+                                    </div>
+                                    <div class="row bridge form-inline">
+                                        <div class="col-md-6">
+                                            &#8806;<input class="form-control" style="width: 130px;" type=number min=0 step=0.01 id="volume"
+                                                name="volume">&#37;
+                                        </div>
+                                    </div>
+                                    <br>
+                                </div>
+
+
+                                <div class="row">
+                                    <label class="limit-label">Limit access</label>
+                                    <input type="radio" name="limit_access_yes" id="limit_access_yes" /> Yes
+                                    <input type="radio" name="limit_access_no" id="limit_access_no" /> No
+                                </div>
+                            </div>
+
+                            <div class="form-check" id="limit_access_detail" style="margin-top: 4%">
+                                <input type="checkbox" class="form-check-input" id="newUserCheck" checked>
+                                <label class="form-check-label" for="newUserCheck">New users</label>
+
+                                <div id="new_user_volume_info" class="form-inline">
+                                    NEW USERS VOLUME(%)
+                                    <br>
+                                    &#8806;<input class="form-control" style="width: 130px;" type=number min=0 step=0.01 id="new_user_volume"
+                                        name="new_user_volume">&#37;
+                                </div><br>
+
+                                <input type="checkbox" class="form-check-input" id="riskLevelCheck" checked>
+                                <label class="form-check-label" for="riskLevelCheck">Risk levels</label>
+
+                                <div id="risk_level_info">
+                                    RISK LEVEL
+                                    <select class="form-control" style="width: 100px">
+                                        <option value="A">A</option>
+                                        <option value="E1">E1</option>
+                                        <option value="E2">E2</option>
+                                        <option value="F">F</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- <button id="delete_channel_btn" type="button" class="btn btn-danger"
+                                style="margin-top: 10px">
+                                <span class="glyphicon glyphicon-trash"
+                                    style="color:white; padding-right: 20%; margin-left: -5px;"></span>Delete method
+                            </button><br> -->
+
+                            <div class="modal-footer">
+                                <p id='errorMessage'>&nbsp;</p>
+                                <button id="submitButton" type="submit" class="btn btn-primary">Save</button>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="modal fade" id="confirm_delete" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                </div>
+                <div class="modal-content">
+                    <p>Are you sure you want to delete?</p>
+                    <input type="hidden" name="delete_channel_name" id="delete_channel_name" />
+                    <button type="button" class="btn btn-primary" id="delete_channel">Yes</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div> -->
+    </div>
+</div>
+
+</div>
+
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+<!-- datatables -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<!-- datepicker -->
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+    type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<script>
+    $(document).ready(function () {
+        var csrftoken = $.cookie("csrftoken")
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+        // deposit channel edit function
+        $('.edit-channel-btn').click(function () {
+            var channel = $(this).closest('td').prev('td').text();
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'xadmin:channel_list' %}",
+                data: {
+                    'type': 'getChannelInfo',
+                    'current_channel': channel,
+                },
+                success: function (data) {
+                    $('#method').html(data['method'])
+                    $('#channel').html(data['channel'])
+                    $('#supplier').html(data['supplier'])
+                    $('#type').html(data['type'])
+                    $('#market').html(data['market'])
+
+                    $('#channel_id_number').val(channel);
+                    $('#channel_name').html(data['name']);
+                    $('#delete_channel_name').val(data['name']);
+                    if (data['channel_status'] == 'ACTIVE') {
+                        $('#' + 'status_yes').prop('checked', true);
+                        $('#' + 'status_no').prop('checked', false);
+                    } else {
+                        $('#' + 'status_yes').prop('checked', false);
+                        $('#' + 'status_no').prop('checked', true);
+                    }
+                    $('#min_deposit').val(data['min_deposit']);
+                    $('#max_deposit').val(data['max_deposit']);
+                    $('#transaction_fee').val(data['transaction_fee']);
+                    $('#transaction_fee_per').val(data['transaction_fee_per']);
+                    $('#volume').val(data['volume']);
+                    $('#new_user_volume').val(data['new_user_volume']);
+                    if (data['limit_access'] == true) {
+                        $('#' + 'limit_access_yes').prop('checked', true);
+                        $('#' + 'limit_access_no').prop('checked', false);
+                        $("#limit_access_detail").show();
+                    } else {
+                        $('#' + 'limit_access_yes').prop('checked', false);
+                        $('#' + 'limit_access_no').prop('checked', true);
+                        $('#limit_access_detail').hide();
+                    };
+
+                    $('#limit_access_yes').click(function () {
+                        $("#limit_access_detail").show();
+                        $('#' + 'limit_access_no').prop('checked', false);
+                    });
+
+                    $('#limit_access_no').click(function () {
+                        $("#limit_access_detail").hide();
+                        $('#' + 'limit_access_yes').prop('checked', false);
+                    });
+
+                    $('#newUserCheck').click(function () {
+                        if (this.checked) {
+                            $('#new_user_volume_info').show();
+                        } else {
+                            $('#new_user_volume_info').hide();
+                        }
+                    });
+
+                    $('#riskLevelCheck').click(function () {
+                        if (this.checked) {
+                            $('#risk_level_info').show();
+                        } else {
+                            $('#risk_level_info').hide();
+                        }
+                    });
+                }
+            })
+        });
+
+        $("#editChannelForm").submit(function (e) {
+
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+            var form = $(this);
+            var data = form.serialize()
+            $.ajax({
+                type: "POST",
+                data: data,
+                success: function (data) {
+                    if (data.code === 1) {
+                        $('#errorMessage').text(data.message);
+                        $('#errorMessage').css('color', 'red');
+                    } else {
+                        window.location.reload();
+                    }
+                }
+            });
+
+        });
+
+        // channel filter
+        // $('#channel_filter').click(function (e) {
+        //     e.preventDefault();
+        //     $('#channel_filter').val(0);
+        //     getTransactions(0);
+        // });
+
+        // remove delete_channel_btn
+        // $('#delete_channel_btn').click(function () {
+        //     $('#delete_channel_btn').html('Click to delete');
+        //     $('#delete_channel_btn').attr('id', 'delete_channel')
+        //     $('#delete_channel').click(function () {
+        //         var channel_name = $(this).closest('form').find("h4").html();
+        //         console.log("channel_name" + channel_name)
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: "{% url 'xadmin:channel_list' %}",
+        //             data: {
+        //                 'type': 'deleteChannel',
+        //                 'deposit_channel': channel_name,
+        //             },
+        //             success: function (data) {
+        //                 location.reload();
+        //             }
+        //         })
+        //     });
+        // });
+    })
+
+
+</script>
+
+{% endblock %}
