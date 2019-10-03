@@ -387,12 +387,10 @@
                     'date': data[0],
                 },
                 success: function (data) {
-                    console.log(data)
                     addCommissionHistory(data);
                     releaseCommission();
                 },
             })
-            console.log("send")
         })
 
         showCommissionDetail = function (data) {
@@ -461,7 +459,6 @@
             var checkednumber = 0
             $('input[name="commission_checkbox"]').click(function () {
                 var tranPK = $(this).closest('tr').find('#tran_pk').html();
-                console.log(tranPK)
                 if ($(this).prop("checked") == true) {
                     checkednumber += 1;
                     checkedlist.push(tranPK);
@@ -479,7 +476,6 @@
                 } else {
                     $('#selected').text(checkednumber + ' selected');
                 }
-                console.log(checkedlist)
             });
 
             $('#commission-release-btn').click(function () {
@@ -491,7 +487,6 @@
                         'list[]': checkedlist,
                     },
                     success: function (data) {
-                        console.log(data)
                         window.location.reload();
                     },
                 })
@@ -501,7 +496,6 @@
 
         $('#affiliate_application tbody').on('click', 'button', function () {
             var data = $(this).closest('tr').find('#userID').html();
-            console.log(data)
             $.ajax({
                 type: 'GET',
                 url: "{% url 'xadmin:agentview' %}",
@@ -511,10 +505,8 @@
                 },
                 success: function (data) {
                     addUserInfo(data);
-                    console.log(data)
                 },
             })
-            console.log("send")
         })
         addUserInfo = function (data) {
             $("#user-info-first-col").empty();
@@ -540,8 +532,6 @@
             var remark = $('textarea#affiliate_application_remark').val();
             var userID = $(this).prev('input').val();
 
-            console.log(remark)
-            console.log(userID)
             $.ajax({
                 type: 'POST',
                 url: "{% url 'xadmin:agentview' %}",
@@ -560,8 +550,7 @@
         $('#affiliate-application-decline-btn').click(function () {
             var remark = $('textarea#affiliate_application_remark').val();
             var userID = $(this).prev().prev('input').val();
-            console.log("remark " + remark)
-            console.log("userID " + userID)
+            
             $.ajax({
                 type: 'POST',
                 url: "{% url 'xadmin:agentview' %}",
