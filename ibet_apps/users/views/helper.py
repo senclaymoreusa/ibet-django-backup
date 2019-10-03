@@ -1,11 +1,14 @@
-import logging
-import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.shortcuts import get_object_or_404
 from utils.constants import *
 from users.models import *
 from django.utils import timezone
+
+import logging
+import json
 import datetime
 import decimal
-from django.core.serializers.json import DjangoJSONEncoder
+
 
 
 logger = logging.getLogger('django')
@@ -122,7 +125,7 @@ def get_old_limitations(userId):
 
 def checkUserBlock(userId):
 
-    user = CustomUser.objects.get(pk=userId)
+    user = get_object_or_404(CustomUser, pk=userId)
     if user.block is True:
         return True
     elif user.temporary_block_time or user.permanent_block_time:

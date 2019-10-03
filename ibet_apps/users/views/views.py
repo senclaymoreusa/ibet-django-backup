@@ -242,10 +242,10 @@ class RegisterView(CreateAPIView):
         return user
 
 
-class BlockedUserException(APIException):
-    status_code = 403
-    default_detail = _('Current user is blocked!')
-    default_code = 'block'
+# class BlockedUserException(APIException):
+#     status_code = 404
+#     default_detail = _('Current user is blocked!')
+#     default_code = '100'
 
 class InactiveUserException(APIException):
     status_code = 403
@@ -280,19 +280,32 @@ class LoginView(GenericAPIView):
         return response_serializer
 
     def login(self):
-
+        
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
         # print('login language code: ' + languageCode)
-
+        
         self.user = self.serializer.validated_data['user']
         if checkUserBlock(self.user.pk):
-            # print("user block")
-            raise BlockedUserException
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         if self.user.active == False:
-            # print('User not active')
-            raise InactiveUserException
+            # raise InactiveUserException
+            errorMessage = _('Please activate your account!')
+            data = {
+                "errorCode": ERROR_CODE_INACTIVE,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         if getattr(settings, 'REST_USE_JWT', False):
             
@@ -335,11 +348,16 @@ class LoginView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):        
         self.request = request
-        self.serializer = self.get_serializer(data=self.request.data,
+        try:
+            self.serializer = self.get_serializer(data=self.request.data,
                                               context={'request': request})
-        self.serializer.is_valid(raise_exception=True)
 
-        return self.login()
+            if self.serializer.is_valid(raise_exception=True):
+                return self.login()
+        except Exception as e:
+            return Response({'errorCode': ERROR_CODE_INVAILD_INFO, 'errorMsg': e.detail })
+
+        
 
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -507,8 +525,6 @@ class LanguageView(APIView):
         translation.activate(languageCode)
 
         response = Response({'languageCode': languageCode}, status = status.HTTP_200_OK)
-
-        # print('post: ' + languageCode)
 
         session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
         if session_key is None:
@@ -816,10 +832,9 @@ class FacebookLoginView(GenericAPIView):
 
         self.user = self.serializer.validated_data['user']
         if self.user.block is True:
-            print("user block")
             raise BlockedUserException
         if self.user.active == False:
-            print('User not active')
+            # print('User not active')
             raise InactiveUserException
 
         if getattr(settings, 'REST_USE_JWT', False):
@@ -1178,6 +1193,8 @@ class ChangePassword(APIView):
             username = request.data['username']
             password = request.data['password']
             user = get_user_model().objects.get(username=username)
+            if checkUserBlock(user.pk):
+                return Response({'errorCode': '100', 'errorMsg': 'user is blocked'})
             user.set_password(password)
             user.save()
             return Response('Success')
@@ -1457,7 +1474,7 @@ class GetLimitation(View):
         if checkUserBlock(user_id):
             blockMessage = _('Current user is blocked!')
             data = {
-                "block": True,
+                "errorCode": True,
                 "blockMessage": blockMessage
             }
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json", status = 403)
@@ -1732,3 +1749,20 @@ class ActivityCheckSetting(View):
 
         return HttpResponse(('Successfully set the activity check setting'), status = 200)
 
+
+
+class CheckUserStatusAPI(View):
+
+    def get(self, request, *args, **kwargs):
+        userId = request.GET['userId']
+        data = {
+            "errorCode": ERROR_CODE_SUCCESS,
+            "errorMsg": _("Success")
+        }
+        if checkUserBlock(userId):
+            errorMessage = _('The current user is blocked!')
+            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorMsg"] = {
+                "detail": [errorMessage]
+            }
+        return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")

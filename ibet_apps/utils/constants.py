@@ -1089,3 +1089,12 @@ BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
+
+
+
+
+# Error code define
+ERROR_CODE_SUCCESS = 1
+ERROR_CODE_BLOCK = 100
+ERROR_CODE_INVAILD_INFO = 101
+ERROR_CODE_INACTIVE = 102
