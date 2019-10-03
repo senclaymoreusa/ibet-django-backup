@@ -1200,6 +1200,7 @@ class ChangePassword(APIView):
             password = request.data['password']
             user = get_user_model().objects.get(username=username)
             if checkUserBlock(user.pk):
+                data = {}
                 errorMessage = _('The current user is blocked!')
                 data["errorCode"] = ERROR_CODE_BLOCK
                 data["errorMsg"] = {
@@ -1379,6 +1380,7 @@ class SetLimitation(View):
         limit_type = data['type']
 
         if checkUserBlock(userId):
+            data = {}
             errorMessage = _('The current user is blocked!')
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
@@ -1407,6 +1409,7 @@ class DeleteLimitation(View):
         data = json.loads(request.body)
         userId = data['user_id']
         if checkUserBlock(userId):
+            data = {}
             errorMessage = _('The current user is blocked!')
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
@@ -1454,6 +1457,7 @@ class CancelDeleteLimitation(View):
         data = json.loads(request.body)
         userId = data['user_id']
         if checkUserBlock(userId):
+            data = {}
             errorMessage = _('The current user is blocked!')
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
@@ -1493,6 +1497,7 @@ class GetLimitation(View):
         #         limit_type = key
         if checkUserBlock(userId):
             errorMessage = _('The current user is blocked!')
+            data = {}
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
                 "detail": [errorMessage]
@@ -1585,6 +1590,7 @@ class SetBlockTime(View):
         userId = data['userId']
 
         if checkUserBlock(userId):
+            data = {}
             errorMessage = _('The current user is blocked!')
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
@@ -1610,6 +1616,7 @@ class MarketingSettings(View):
         userId = request.GET['userId']
 
         if checkUserBlock(userId):
+            data = {}
             errorMessage = _('The current user is blocked!')
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
@@ -1650,6 +1657,7 @@ class MarketingSettings(View):
 
         if checkUserBlock(userId):
             errorMessage = _('The current user is blocked!')
+            data = {}
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
                 "detail": [errorMessage]
@@ -1691,6 +1699,7 @@ class PrivacySettings(View):
 
         if checkUserBlock(userId):
             errorMessage = _('The current user is blocked!')
+            data = {}
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
                 "detail": [errorMessage]
@@ -1716,6 +1725,7 @@ class PrivacySettings(View):
 
         if checkUserBlock(userId):
             errorMessage = _('The current user is blocked!')
+            data = {}
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
                 "detail": [errorMessage]
@@ -1753,6 +1763,7 @@ class ActivityCheckSetting(View):
         userId= request.GET['userId']
         if checkUserBlock(userId):
             errorMessage = _('The current user is blocked!')
+            data = {}
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
                 "detail": [errorMessage]
@@ -1760,14 +1771,6 @@ class ActivityCheckSetting(View):
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         user = CustomUser.objects.get(pk=userId)
-
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
         response = {
             "activityOpt": user.activity_check
@@ -1781,6 +1784,7 @@ class ActivityCheckSetting(View):
         activityOpt = data['activityOpt']
 
         if checkUserBlock(userId):
+            data = {}
             errorMessage = _('The current user is blocked!')
             data["errorCode"] = ERROR_CODE_BLOCK
             data["errorMsg"] = {
