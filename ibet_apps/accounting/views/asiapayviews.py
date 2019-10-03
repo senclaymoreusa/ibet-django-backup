@@ -140,8 +140,8 @@ class submitDeposit(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        print(encryptDES(eString, sign_encryptKey, myIv))
-        print(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        logger.info(encryptDES(eString, sign_encryptKey, myIv))
+        logger.info(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
       
         r = requests.post(url + "/standard/getway/depositiface", data={
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
@@ -164,7 +164,7 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':RealName,
         })
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
         logger.info(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
@@ -174,7 +174,7 @@ class submitDeposit(generics.GenericAPIView):
             if StatusMsg == 'OK':
                 paymentAPIURL = tree.find('RedirectUrl').text
                 paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-                print(paymentAPIURL)
+                logger.info(paymentAPIURL)
                 logger.info(paymentAPIURL)
                 oID = tree.find('oID').text
                 create = Transaction.objects.create(
@@ -198,21 +198,27 @@ class submitDeposit(generics.GenericAPIView):
                     if BankID == '39' or PayWay == '30':
                         rrdata = rr.text
                         logger.info(rrdata)
-                        print(rrdata)
                         return HttpResponse(rrdata)
                     else:
                         rrdata = rr.json()
                         return Response(rrdata)
                 elif PayWay == '10':
                     sPayMoney = tree.find('sPayMoney').text
+                    sPayMoney = decryptDES(sPayMoney,msg_encryptKey, myIv)
                     BankName = tree.find('BankName').text
+                    BankName = decryptDES(BankName,msg_encryptKey, myIv)
                     CardNumber = tree.find('CardNumber').text
+                    CardNumber = decryptDES(CardNumber,msg_encryptKey, myIv)
                     CardChName = tree.find('CardChName').text
+                    CardChName = decryptDES(CardChName,msg_encryptKey, myIv)
                     CardPro = tree.find('CardPro').text
+                    CardPro = decryptDES(CardPro,msg_encryptKey, myIv)
                     CardCity = tree.find('CardCity').text
+                    CardCity = decryptDES(CardCity,msg_encryptKey, myIv)
                     CardBankName = tree.find('CardBankName').text
+                    CardBankName = decryptDES(CardBankName,msg_encryptKey, myIv)
                     return Response({"order_id": "D"+trans_id, "StatusCode": StatusCode, "StatusMsg": StatusMsg,
-                    "sPayMoney": sPayMoney,"BankName": BankName, "CardNumber": CardNumber, "CardPro": CardPro, "CardCity":CardCity,
+                    "sPayMoney": sPayMoney,"BankName": BankName,"CardChName":CardChName, "CardNumber": CardNumber, "CardPro": CardPro, "CardCity":CardCity,
                     "CardBankName":CardBankName })
                         
             else:
@@ -254,8 +260,8 @@ class submitCashout(generics.GenericAPIView):
         logger.info(SignCode)
         currency = self.request.POST.get("currency")
         cashoutMethod = self.request.POST.get("cashoutMethod")
-        print(SignCode)
-        print(MD5(SignCode))
+        
+        logger.info(MD5(SignCode))
         ParamList_Msg ={
             "rStr" : "",
             "cID": ASIAPAY_CID,
@@ -321,7 +327,7 @@ class submitCashout(generics.GenericAPIView):
             'tempparam':''
         })
         rdata = r.text
-        print(rdata)
+        logger.info(rdata)
     
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
@@ -533,7 +539,7 @@ def depositArrive(request):
         
 def payoutArrive(request):
     if request.method == "POST":
-        print(request.POST)
+        logger.info(request.POST)
         Cmd = request.POST.get("Cmd")
         PayOutCardNumber = request.POST.get("PayOutCardNumber")
         PayOutBankName = request.POST.get("PayOutBankName")
@@ -544,7 +550,7 @@ def payoutArrive(request):
         SignCode = request.POST.get("SignCode")
         CashType = request.POST.get("CashType")
         order_id = request.POST.get("OrderID")
-        print(order_id)
+        logger.info(order_id)
         OrderID = order_id[1:]
         # print(OrderID)
         uID = request.POST.get("uID")
