@@ -358,7 +358,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorBank':depositorBank,
             'depositorPhone':depositorPhone,
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
+            'callbackUrl': 'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         rdata = r.json()
@@ -453,7 +453,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
+            'callbackUrl':'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -685,7 +685,7 @@ class getDepositTransaction(generics.GenericAPIView):
         serializer = payoutTransactionSerialize(self.queryset, many=True)
         
         trans_id = self.request.POST.get('order_id')
-        print(trans_id)
+        # print(trans_id)
         message = bytes(merchantId + '|' + trans_id, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         
@@ -727,7 +727,7 @@ class getDepositTransaction(generics.GenericAPIView):
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
 def transactionConfirm(request):
     body = json.loads(request.body)
-    print(body)
+    #print(body)
     orderId = body.get('orderId')
     Status = body.get('status') 
     cur_status = statusConversion[Status]
