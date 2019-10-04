@@ -124,7 +124,7 @@ class submitDeposit(generics.GenericAPIView):
             "PayMoney": amount,
             "ResType": "xml",
             "C_RealName": user.last_name + user.first_name,
-            "UserRealID": "",
+            "UserRealID": '',
             "SafeLevel": "0",
             "ProcessLevel": "0",
             "tempparam" : "",
@@ -165,7 +165,6 @@ class submitDeposit(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
-        logger.info(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             StatusCode = tree.find('StatusCode').text
@@ -174,7 +173,6 @@ class submitDeposit(generics.GenericAPIView):
             if StatusMsg == 'OK':
                 paymentAPIURL = tree.find('RedirectUrl').text
                 paymentAPIURL = decryptDES(paymentAPIURL,msg_encryptKey, myIv)
-                logger.info(paymentAPIURL)
                 logger.info(paymentAPIURL)
                 oID = tree.find('oID').text
                 create = Transaction.objects.create(

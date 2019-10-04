@@ -453,7 +453,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'http://3fb2738f.ngrok.io/accounting/api/qaicash/confirm',
+            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         
