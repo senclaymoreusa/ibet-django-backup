@@ -1,21 +1,23 @@
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
+from django.db.models.query import QuerySet
+from django.db.models import Q
 from dateutil.relativedelta import relativedelta
+
 from users.models import *
 from accounting.models import Transaction
 from utils.constants import *
-from django.db.models.query import QuerySet
+
 
 
 import logging
 
 logger = logging.getLogger('django')
 
-
 users = CustomUser.objects.all()
 
 # date
-today = localtime(now()).date()
+today = timezone.now()
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
 last_month = this_month + relativedelta(months=-1)
@@ -48,7 +50,6 @@ def getDownline(affiliates):
     else:
         downline_list = users.filter(referred_by=affiliates)
     return downline_list
-
 
 def calculateActiveDownlineNumber(affiliate_id):
     # check affiliate_id first

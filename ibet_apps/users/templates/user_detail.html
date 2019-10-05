@@ -2062,8 +2062,9 @@ $(document).ready(function() {
         var message = $('#notes-input').val();
         if (!message) {
             alert("Input cannout be empty");
+        }else{
+            updateNote(message);
         }
-        updateNote(message);
     });
 
 

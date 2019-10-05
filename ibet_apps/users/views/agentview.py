@@ -180,17 +180,13 @@ class AgentView(CommAdminView):
                 affiliates_this_month = affiliates.filter(
                     user_to_affiliate_time__gte=current_month+relativedelta(months=1))
                 commission_dict['affiliate_number'] = affiliates_this_month.count()
-                print("test01")
                 downline_list_this_month = getDownline(affiliates_this_month)
-                print("test02")
-                print(type(downline_list_this_month))
-                print(downline_list_this_month)
                 commission_dict['active_downline'] = bet_tran.filter(
                     user_id__in=affiliates).values_list('user_id').distinct().count()
 
                 # commission status(tran_type=commission, user_id in affiliate, month=current month)
                 commission_status = commission_transaction.filter(Q(request_time__gte=current_month) & Q(
-                    request_time__lte=current_month+relativedelta(months=1))).count()
+                    request_time__lte=current_month+relativedelta(months=1)) & ~Q(status=TRAN_APPROVED_TYPE)).count()
                 if commission_status == 0:
                     commission_dict['commission_status'] = "All released"
                 else:
@@ -246,7 +242,6 @@ class AgentView(CommAdminView):
         if post_type == "releaseCommission":
             # transaction pk list need to be released
             commissionList = request.POST.getlist("list[]")
-            # print(commissionList)
             if commissionList is not []:
                 for trans_id in commissionList:
                     current_trans = Transaction.objects.get(pk=trans_id)
@@ -276,19 +271,17 @@ class AgentView(CommAdminView):
                 )
                 logger.info(
                     "Auto add commission level 1 for new affiliate " + user.username)
-                print("Auto add commission level 1 for new affiliate " + user.username)
 
             else:
                 user.user_application_time = None
             user.save()
-
-            activity = UserActivity.objects.create(
-                user=user,
-                admin=admin_user,
-                message=remark,
-                activity_type=ACTIVITY_REMARK,
-            )
-            # print(activity)
+            if remark:
+                activity = UserActivity.objects.create(
+                    user=user,
+                    admin=admin_user,
+                    message=remark,
+                    activity_type=ACTIVITY_REMARK,
+                )
             return HttpResponse(status=200)
 
 
@@ -390,14 +383,12 @@ class AgentDetailView(CommAdminView):
                 user_activities_list.append(value)
             context["user_activities"] = user_activities
             context["user_activities_list"] = user_activities_list
-            # print(user_activities_list)
 
             # DOWNLINE LIST TABLE
             downline_list_table = []
             for i in affiliate.referees.all():
                 downline_info = {}
                 affiliate_tran = Transaction.objects.filter(user_id=i)
-                # print(affiliate_tran)
                 downline_info['affiliate_id'] = i.pk
                 downline_info['username'] = i.username
                 downline_info['time_of_registration'] = i.time_of_registration
@@ -446,14 +437,12 @@ class AgentDetailView(CommAdminView):
             for key, value in ACTIVITY_TYPE:
                 if value == activity_type:
                     activity_type = key
-            print(str(activity_type))
             if activity_type == 'All':
                 activities = UserActivity.objects.filter(
                     user=affiliate_id).order_by('-created_time')
             else:
                 activities = UserActivity.objects.filter(Q(user=affiliate_id) & Q(
                     activity_type=activity_type)).order_by('-created_time')
-            print(activities)
             activities = serializers.serialize('json', activities)
             activities = json.loads(activities)
             response = []
@@ -532,8 +521,6 @@ class AgentDetailView(CommAdminView):
                 link_obj.delete()
             logger.info(str(admin_user) + " delete channel " +
                         str(link_obj.refer_link_name) + " for affiliate " + str(affiliate_id))
-            print(str(admin_user) + " delete channel " +
-                  str(link_obj.refer_link_name) + " for affiliate " + str(affiliate_id))
 
             return HttpResponse(status=200)
 
@@ -608,8 +595,6 @@ class AgentDetailView(CommAdminView):
             affiliate_id = CustomUser.objects.get(pk=affiliate_id)
             subject = request.POST.get('subject')
             text = request.POST.get('text')
-            print(subject)
-            print(text)
             return HttpResponse(status=200)
 
 

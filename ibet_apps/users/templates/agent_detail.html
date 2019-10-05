@@ -180,7 +180,7 @@
                     <p style="font-size: 13px; margin-top: 20px">COMMISSION LEVELS</p>
                 </strong>
 
-                <div class="row commission_col_style" style="margin-top: 20px">
+                <div class="row" style="margin-top: 20px">
                     <div class="col-md-1">
                         LEVEL
                     </div>
@@ -509,7 +509,7 @@
                                                     class="commission_level">{{ i.commission_level }}</label>
                                             </div>
                                             <div class="col-md-2">
-                                                <label>COMMISSION RATE</label>
+                                                <label><br>COMMISSION RATE</label>
                                                 <input type="number" class="form-control" id='commision_rate'
                                                     name="commision_rate" value="{{ i.commision_percentage }}"
                                                     required="required">
@@ -918,7 +918,6 @@
 
             function getActivityfilter(activity) {
                 var affiliate_id = $('#affiliate-id').val();
-                console.log(affiliate_id)
                 $.ajax({
                     type: 'POST',
                     url: "{% url 'xadmin:agent_detail' %}",
@@ -928,7 +927,6 @@
                         'affiliate_id': affiliate_id,
                     },
                     success: function (data) {
-                        console.log("data  " + data)
                         displayActivity(data);
                     }
                 });
@@ -949,8 +947,9 @@
                 var message = $('#notes-input').val();
                 if (!message) {
                     alert("Input cannout be empty");
+                }else{
+                    updateNote(message);
                 }
-                updateNote(message);
             });
 
             $('#adjustment_submit').click(function () {
@@ -966,7 +965,6 @@
                     if ($('#adjustment_message_checkbox').prop("checked")) {
                         send = true;
                     }
-                    console.log(remark);
                     $.ajax({
                         type: 'POST',
                         url: "{% url 'xadmin:agent_detail' %}",
