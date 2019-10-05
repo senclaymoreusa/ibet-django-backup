@@ -9,7 +9,6 @@ import base64
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from users.models import CustomUser
-from bonus.models import Bonus
 from system.models import UserGroup
 from utils.constants import *
 
@@ -23,7 +22,6 @@ class AWSTopic(models.Model):
 
     def __str__(self):
         return self.topic_name
-
 
 class UserToAWSTopic(models.Model):
     aws_topic = models.ForeignKey(AWSTopic, on_delete=models.CASCADE)
@@ -50,7 +48,7 @@ class Notification(models.Model):
     auditor = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE, related_name='auditor')
     audit_date = models.DateTimeField('Audit Date', null=True)
     campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.CASCADE)
-    bonus = models.ForeignKey(Bonus, blank=True, null=True, on_delete=models.CASCADE)
+    #bonus = models.ForeignKey(Bonus, blank=True, null=True, on_delete=models.CASCADE)
     is_direct_message = models.BooleanField(default=True)
     is_email_message = models.BooleanField(default=False)
     is_sms_message = models.BooleanField(default=False)
