@@ -65,7 +65,7 @@ class AgentView(CommAdminView):
                     tranDict['commission_rate'] = 0
                 else:
                     tranDict['commission_rate'] = str(
-                        affiliate_last_commission_level.commision_percentage)
+                        affiliate_last_commission_level.commission_percentage)
 
                 tranDict['deposit'] = deposit_tran.filter(user_id=user_id).aggregate(
                     total_deposit=Coalesce(Sum('amount'), 0))['total_deposit']
@@ -194,7 +194,7 @@ class AgentView(CommAdminView):
                         commission_status) + " Pending"
                 commission.append(commission_dict)
 
-            context["commision_transaction"] = commission
+            context["commission_transaction"] = commission
 
             # Affiliate Application Table
             # users have not become agent, but alreay applied
@@ -545,8 +545,8 @@ class AgentDetailView(CommAdminView):
                 if i['pk'] == '':
                     current_commission = Commission.objects.create(
                         user_id=affiliate,
-                        commision_percentage=i['rate'],
-                        downline_commision_percentage=i['downline_rate'],
+                        commission_percentage=i['rate'],
+                        downline_commission_percentage=i['downline_rate'],
                         commission_level=i['level'],
                         active_downline_needed=i['active_downline'],
                         monthly_downline_ftd_needed=i['downline_ftd']
@@ -558,8 +558,8 @@ class AgentDetailView(CommAdminView):
                 else:
                     current_commission = Commission.objects.filter(pk=i['pk'])
                     current_commission.update(
-                        commision_percentage=i['rate'],
-                        downline_commision_percentage=i['downline_rate'],
+                        commission_percentage=i['rate'],
+                        downline_commission_percentage=i['downline_rate'],
                         commission_level=i['level'],
                         active_downline_needed=i['active_downline'],
                         monthly_downline_ftd_needed=i['downline_ftd']
