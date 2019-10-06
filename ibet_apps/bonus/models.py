@@ -14,6 +14,8 @@ from games.models import Category
 from utils.constants import *
 from operation.models import Campaign
 
+from ibet_apps.utils.constants import TRANSACTION_TYPE_CHOICES
+
 
 class Bonus(models.Model):
 
@@ -35,6 +37,7 @@ class Bonus(models.Model):
     campaign = models.ForeignKey(Campaign, null=True, on_delete=models.CASCADE)
     affiliate_limit = models.FloatField(null=True)
     release_type = models.SmallIntegerField(choices=BONUS_RELEASE_TYPE_CHOICES, default=0, verbose_name=_('Bonus Release Type'))
+    image_s3 = models.CharField(max_length=500, null=True)
 
 
 # Mapping between Bonuses and Categories
@@ -43,6 +46,7 @@ class BonusCategory(models.Model):
 
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name=_('Category'))
+
 
 class Requirement(models.Model):
 
@@ -53,6 +57,7 @@ class Requirement(models.Model):
     aggregate_method = models.CharField(max_length=50)
     time_limit = models.IntegerField()
     turnover_multiplier = models.IntegerField(null=True)
+
 
 # Mapping between Requirements and Categories
 # This is a 1:n relationship, which indicates which categories the requirement must be satisfied in
