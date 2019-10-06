@@ -29,15 +29,15 @@ class Bonus(models.Model):
     ## A comma-separated list of country IDs where this bonus is applicable
     ## The reason that we don't have to normalize it is that we can just do substring matching
     countries = models.CharField(max_length=50)
-    amount = models.FloatField(null=True)
-    percentage = models.FloatField(null=True)
-    coupon_code = models.CharField(max_length=50)
+    amount = models.FloatField(null=True, blank=True)
+    percentage = models.FloatField(null=True, blank=True)
+    coupon_code = models.CharField(max_length=50, blank=True, null=True)
     is_free_bid = models.BooleanField(default=False)
     type = models.SmallIntegerField(choices=BONUS_TYPE_CHOICES, default=0, verbose_name=_('Bonus Type'))
     campaign = models.ForeignKey(Campaign, null=True, on_delete=models.CASCADE)
-    affiliate_limit = models.FloatField(null=True)
+    affiliate_limit = models.FloatField(null=True, blank=True)
     release_type = models.SmallIntegerField(choices=BONUS_RELEASE_TYPE_CHOICES, default=0, verbose_name=_('Bonus Release Type'))
-    image_s3 = models.CharField(max_length=500, null=True)
+    image_s3 = models.CharField(max_length=500, null=True, blank=True)
 
 
 # Mapping between Bonuses and Categories
@@ -53,10 +53,9 @@ class Requirement(models.Model):
     requirement_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ## Name of the field in the user_event table where this requirement is based on
     field_name = models.SmallIntegerField(choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_('Transaction Type'))
-    ## sum or count or single
-    aggregate_method = models.CharField(max_length=50)
-    time_limit = models.IntegerField()
-    turnover_multiplier = models.IntegerField(null=True)
+    aggregate_method = models.SmallIntegerField(choices=BONUS_AGGREGATE_METHOD_CHOICES,blank=True,null=True)
+    time_limit = models.IntegerField(null=True,blank=True)
+    turnover_multiplier = models.IntegerField(null=True,blank=True)
 
 
 # Mapping between Requirements and Categories
@@ -82,7 +81,7 @@ class UserBonusEvents(models.Model):
     timestamp = models.DateTimeField('Start Time', blank=False)
     delivered_by = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Operator'))
     status = models.SmallIntegerField(choices=USER_BONUS_EVENT_TYPE_CHOICES, default=0, verbose_name=_('User Bonus Event Type'))
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, blank=True)
 
 
 
