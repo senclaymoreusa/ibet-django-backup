@@ -24,7 +24,25 @@ class BonusSearchView(View):
 
     def get(self, request, *args, **kwargs):
 
+
+
+
+
+
+
+
         data = Bonus.objects.all()
         data = serializers.serialize('json', data)
         data = json.loads(data)
         return HttpRespnse(json.dumps(data), content_type='application/json')
+
+
+
+
+
+
+
+
+
+
+

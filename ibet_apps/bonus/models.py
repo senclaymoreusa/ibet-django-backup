@@ -47,7 +47,6 @@ class BonusCategory(models.Model):
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name=_('Category'))
 
-
 class Requirement(models.Model):
 
     requirement_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -56,6 +55,7 @@ class Requirement(models.Model):
     aggregate_method = models.SmallIntegerField(choices=BONUS_AGGREGATE_METHOD_CHOICES,blank=True,null=True)
     time_limit = models.IntegerField(null=True,blank=True)
     turnover_multiplier = models.IntegerField(null=True,blank=True)
+    bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'), null=True)
 
 
 # Mapping between Requirements and Categories
@@ -64,13 +64,6 @@ class RequirementCategory(models.Model):
 
     requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE, verbose_name=_('Requirement'))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name=_('Category'))
-
-# Mapping between Bonuses and Requirements
-# This is an m:n relationship
-class BonusRequirement(models.Model):
-
-    bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
-    requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE, verbose_name=_('Requirement'))
 
 
 # Events that happen on a user with a bonus
