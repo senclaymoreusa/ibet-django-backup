@@ -56,7 +56,7 @@ class Requirement(models.Model):
     time_limit = models.IntegerField(null=True,blank=True)
     turnover_multiplier = models.IntegerField(null=True,blank=True)
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'), null=True)
-
+    amount_threshold = models.FloatField(default=0)
 
 # Mapping between Requirements and Categories
 # This is a 1:n relationship, which indicates which categories the requirement must be satisfied in
