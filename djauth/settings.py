@@ -71,7 +71,6 @@ CORS_ALLOW_CREDENTIALS = True
 
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
-# CORS_ORIGIN_ALLOW_ALL=True     # Stephen
 CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
@@ -97,7 +96,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
     'bonus.apps.BonusConfig',
-    'games.apps.GamesConfig',
+    'games',
     'accounting.apps.AccountingConfig',
     'system.apps.SystemConfig',
     'rest_framework',              # Stephen
