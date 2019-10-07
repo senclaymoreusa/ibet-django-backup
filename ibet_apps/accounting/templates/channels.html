@@ -1,4 +1,5 @@
 {% extends "xadmin/base_site.html" %}
+{% load humanize %}
 {% load staticfiles%}
 
 {% block content-nav %}
@@ -6,19 +7,21 @@
 
 {% block content %}
 <div id="supplier-table">
-    <table>
+    <table id="suppliers" class="datatable table-striped table-bordered">
         <thead>
             <tr>
                 <th scope="col">METHOD</th>
                 <th scope="col">CHANNEL</th>
-                <th scope="col">SUPPLIERS</th>
+                <th scope="col">SUPPLIER</th>
                 <th scope="col">TYPE</th>
-                <th scope="col">MIN  NO.</th>
-                <th scope="col">REF NO.</th>
-                <th scope="col">APPLICATION TIME</th>
-                <th scope="col">BANK</th>
-                <th scope="col">ACCOUNT</th>
-                <th scope="col">APPLY AMOUNT</th>
+                <th scope="col">MARKET</th>
+                <th scope="col">MIN AMOUNT</th>
+                <th scope="col">MAX AMOUNT</th>
+                <th scope="col">FLAT FEE</th>
+                <th scope="col">% FEE</th>
+                <th scope="col">REQUIRED VERIFICATIONS</th>
+                <th scope="col">SCHEDULED DOWNTIME</th>
+                <th scope="col">STATUS</th>
             </tr>
         </thead>
         <tbody>
@@ -26,7 +29,14 @@
                 <tr>
                     <td>{{ psp.method }}</td>
                     <td>{{ psp.channel }}</td>
-                    <td>{{ psp.supplier }}</td>
+                    <td>{{ psp.supplier|default:'' }}</td>
+                    <!-- <td>Deposit</td> -->
+                    <td>{{ psp.min_amount|intcomma }}</td>
+                    <td>{{ psp.max_amount|intcomma }}</td>
+                    <td>{{ psp.get_market_display }}</td>
+                    <td>{{ psp.transaction_fee }}</td>
+                    <td>{{ psp.transaction_fee_per }}</td>
+                    <td>{{ psp.get_market_display }}</td>
                 </tr>
             {% endfor %}
         </tbody>

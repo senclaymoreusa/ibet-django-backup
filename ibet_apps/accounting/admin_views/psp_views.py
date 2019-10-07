@@ -30,6 +30,5 @@ class PaymentConfig(CommAdminView):
         # withdraw_psp = WithdrawChannel.objects.all()
         context["suppliers"] = deposit_psp
         print(context["suppliers"])
-        # print(deposit_psp)
 
         return render(request, "channels.html", context)
