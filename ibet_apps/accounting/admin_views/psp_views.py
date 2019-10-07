@@ -27,8 +27,9 @@ class PaymentConfig(CommAdminView):
         context["time"] = timezone.now()
 
         deposit_psp = DepositChannel.objects.all()
-        withdraw_psp = WithdrawChannel.objects.all()
-
-        # print(deposit_trans)
+        # withdraw_psp = WithdrawChannel.objects.all()
+        context["suppliers"] = deposit_psp
+        print(context["suppliers"])
+        # print(deposit_psp)
 
         return render(request, "channels.html", context)

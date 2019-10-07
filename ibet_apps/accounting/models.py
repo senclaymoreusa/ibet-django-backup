@@ -67,7 +67,6 @@ class ThirdParty(models.Model):
 
     # market
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
-    supplier = models.CharField(max_length=200, null=True, blank=True)
 
     # the maximum number of money to be routed to this channel (%)
     volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
@@ -103,7 +102,9 @@ class DepositChannel(ThirdParty):
         return "PSP Name: {0}, \n \
             Min Amount: {1}, \n \
             Max Amount: {2}, \n \
-            ".format(self.get_thirdParty_name_display(), self.min_amount, self.max_amount)
+            Channel: {3}, \n \
+            Market: {4} \n \
+            ".format(self.get_thirdParty_name_display(), self.min_amount, self.max_amount, self.channel, self.get_market_display())
 
 
 
