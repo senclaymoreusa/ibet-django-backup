@@ -155,7 +155,7 @@ TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
 TRANSACTION_TRANSFER_IN = 4
 TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONOUS = 6
+TRANSACTION_BONUS = 6
 TRANSACTION_ADJUSTMENT = 7
 TRANSACTION_COMMISSION = 8
 
@@ -166,7 +166,7 @@ TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_SETTLED, 'Bet Settled'),
     (TRANSACTION_TRANSFER_IN, 'Transfer in'),
     (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
-    (TRANSACTION_BONOUS, 'Bonus'),
+    (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
 )
@@ -226,18 +226,23 @@ COUNTRY_CHOICES = (
     ('JP', 'Japan'),
 )
 
+ACTIVITY_SYSTEM = 0     # System Change
+ACTIVITY_REMARK = 1     # Remark in form
+ACTIVITY_MESSAGE = 2    # Inbox message
+ACTIVITY_NOTE= 3        # Note in activity
+
 ACTIVITY_TYPE = (
-    (0, 'Operation'),
+    (0, 'System'),
     (1, 'Remark'),
-    (2, 'Chat'),
+    (2, 'Message'),
     (3, 'Note'),
 )
 
-AGENT_LEVEL = (
-    ('Premium', 'Premium'),
-    ('Invalid', 'Invalid'),
-    ('Normal', 'Normal'),
+AFFILIATE_STATUS = (
+    ('Active', 'Active'),
+    ('VIP', 'VIP'),
     ('Negative', 'Negative'),
+    ('Deactivated', 'Deactivated'),
 )
 
 AGENT_STATUS = (
@@ -368,7 +373,7 @@ ASIAPAY_PAYWAY_CHOICES = (
     ('44', '收银台'),
     ('30', '在线支付'),
     ('31','另开视窗'),
-    ('10', '工行网银转账'),
+    ('10', '网银转账'),
     ('11', '工行手机支付'),
 
 )
@@ -396,8 +401,6 @@ GAME_PROVIDER_RED_TIGET_GAMING= 19
 GAME_PROVIDER_SCIENTIFIC_GAMES= 20
 GAME_PROVIDER_THUNDERKICK = 21
 GAME_PROVIDER_YGGDRASIL = 22
-
-
 
 
 GAME_PROVIDERS = (
@@ -1085,7 +1088,67 @@ PERMISSION_CODE = [
         ]
     }
 ]
+
+# agent
+COMMISSION_SET = (
+    ('System', 'System'),
+    ('Personal', 'Personal'),
+)
+
+AFFILIATE_LEVEL = (
+    ('Normal', 'Normal'),
+    ('VIP', 'VIP'),
+)
+
+LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+
+MONTHLY_COMMISSION_SETTLE_DATE = "05"
+
+
 BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
+
+
+
+
+# Error code define
+ERROR_CODE_SUCCESS = 1
+ERROR_CODE_BLOCK = 100
+ERROR_CODE_INVAILD_INFO = 101
+ERROR_CODE_INACTIVE = 102
+
+
+BONUS_TYPE_VERIFICATION = 0
+BONUS_TYPE_DEPOSIT = 1
+BONUS_TYPE_TURNOVER = 2
+BONUS_TYPE_STANDARD = 3
+BONUS_TYPE_FREESPINS = 4
+
+BONUS_TYPE_CHOICES = (
+    (BONUS_TYPE_VERIFICATION, 'VERIFICATION'),
+    (BONUS_TYPE_DEPOSIT, 'DEPOSIT'),
+    (BONUS_TYPE_TURNOVER, 'TURNOVER'),
+    (BONUS_TYPE_STANDARD, 'STANDARD'),
+    (BONUS_TYPE_FREESPINS, 'FREE SPINS'),
+)
+
+BONUS_STATUS_CHOICES = (
+    (0, 'INACTIVE'),
+    (1, 'ACTIVE'),
+    (2, 'DISABLED'),
+)
+
+
+USER_BONUS_EVENT_TYPE_CHOICES = (
+    (0, 'STARTED'),
+    (1, 'ACTIVE'),
+    (2, 'COMPLETED'),
+    (3, 'EXPIRED'),
+)
+
+BONUS_RELEASE_TYPE_CHOICES = (
+    (0, 'Pre-wager'),
+    (1, 'Post-wager'),
+)
