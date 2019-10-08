@@ -95,46 +95,26 @@ class ClientConnection:
     def ServiceNetworkEvent(self, key, mask):
         sock = key.fileobj
         data = key.data
-        print(sock, data)
+        # print(sock, data)
         if mask & selectors.EVENT_READ:  # 1 --> client receiving msg from server
             encryptedString = self.GetNetworkData(self.sock)
             if encryptedString != None:
                 message = self.DecryptPacket(encryptedString)
                 if message != None:
-                    print('Message received:', message)
                     responseMessage = self.messageHandler.ProcessRequestMessage(
                         message)
-                    print("response message: " + str(responseMessage))
                     if responseMessage != None:
+                        print("response message: " + str(responseMessage))
                         self.ProcessResponseMessage(sock, responseMessage)
             else:
                 self.CleanUp()
-            recv_data = sock.recv(1024)  # Should be ready to read
-            if recv_data:
-                data.outb += recv_data
-                # print('Received', repr(recv_data))
-            else:
-                # print('closing connection to', data.addr)
-                self.selector.unregister(sock)
-                sock.close()
-                print('Disconnect to ' + self.serverIP + ' on port no ' +
-                      str(self.serverPort))
-        # if mask == selectors.EVENT_WRITE:  # 2
-        if data is not None and data.outb:
-            print('echoing', repr(data.outb), 'to', data.addr)
-            sent = sock.send(data.outb)  # Should be ready to write
-            data.outb = data.outb[sent:]
 
     def GetNetworkData(self, sock):
         try:
             while True:
                 networkByte = sock.recv(1)
-                # print("NETWORK BYTE")
-                # print(networkByte.decode("utf-8"))
-                # print(ord(networkByte))
                 if networkByte != None:
                     if ord(networkByte) == 1:  #SOH
-                        # print("START OF HEADER!!!")
                         break
                 else:
                     return None
@@ -154,22 +134,20 @@ class ClientConnection:
             # networkByte = ClientConnection.GetBytes(networkByte, 5)
             packetSize = int(
                 networkByte
-            ) - 6  # remaining data size after minus SOH and 5 bytes of package size
+            ) - 6  # remaining data size after minus SOH (1 byte) and length of packet (5 bytes)
             # print('packetSize=' + str(packetSize))
-            #get the rest of network packet inclusing the EOT
+            # get the rest of network packet (including the EOT)
             networkByte = b''
             pos = 0
             while (pos < packetSize):
-                # print('pos: ' + str(pos))
                 byteData = sock.recv(packetSize - pos)
-                # print("byteData: ")
-                # print(byteData)
                 if byteData != None:
                     networkByte += byteData
                     byteRead = len(byteData)
                     pos += byteRead
                 else:
                     return None
+
             if ord(networkByte[-1:]) == 4:  #EOT
                 print('EOT reached')
                 return networkByte[:-1]
@@ -216,8 +194,7 @@ class ClientConnection:
             networkBytes.append(checkSum)
             networkBytes.append(4)
 
-            print("\n\n\n\n\n")
-            print(repr(networkBytes))
+            # print(repr(networkBytes))
             #print(len(networkBytes))
             print("Sending Response")
             sock.sendall(networkBytes)

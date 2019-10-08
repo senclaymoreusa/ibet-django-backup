@@ -10,15 +10,16 @@ class MessageHandler:
     vendorId = 0
     passcode = ""
     executor = None
-    conenction = None
+    connection = None
 
     def __init__(self, ClientConnection, VendorId, Passcode):
         self.vendorId = VendorId
         self.passcode = Passcode
         self.executor = ThreadPoolExecutor(5)
-        self.conenction = ClientConnection
+        self.connection = ClientConnection
 
     def ProcessRequestMessage(self, swamMessage):
+        print('Message received:', swamMessage)
         future = self.executor.submit(self.MessageTask, (swamMessage))
         return future.result(5)
 
@@ -26,23 +27,25 @@ class MessageHandler:
         swamResponse = None
         try:
             xmlDoc = etree.fromstring(bytes(swamXml, 'utf-16'))
-            print(xmlDoc.getchildren())
+            # print(xmlDoc.getchildren())
             for elem in xmlDoc.getchildren():
                 messageAction = elem.attrib['action']
                 messageId = elem.attrib['id']
                 print(messageAction)
+                # print(messageId)
 
             if messageAction == 'spingalive':  #return nothing
                 if int(messageId) % 100 == 0:
                     print(messageId)
             elif messageAction == 'slogin':
-                print("need to login")
                 loginRequest = playerManagement.PlayerManagement(
                     self.vendorId, self.passcode)
-                retStatus = loginRequest.ProcessLoginRequest(xmlDoc)
+                (user, retStatus) = loginRequest.ProcessLoginRequest(xmlDoc)
                 swamResponse = loginRequest.GetLoginResponse(
-                    retStatus, messageAction, messageId)
+                    retStatus, messageAction, messageId, user)
                 #self.connection.AddResponseMessageQueue(swamResponse)
+            elif messageAction == 'swebsinglelogin':
+                print("hi")
             elif messageAction == 'sgetbalance':
                 #print(messageAction)
                 balanceRequest = playerManagement.PlayerManagement(
@@ -51,7 +54,7 @@ class MessageHandler:
                 swamResponse = balanceRequest.GetBalanceResponse(
                     retStatus, messageAction, messageId)
                 #print("received this: " + swamMessage)
-                #self.conenction.AddResponseMessageQueue(swamResponse)
+                #self.connection.AddResponseMessageQueue(swamResponse)
             return swamResponse
         except Exception as ex:
             print('MessageTask::Exception occurred', str(ex))
