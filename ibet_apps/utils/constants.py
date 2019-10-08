@@ -155,7 +155,7 @@ TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
 TRANSACTION_TRANSFER_IN = 4
 TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONOUS = 6
+TRANSACTION_BONUS = 6
 TRANSACTION_ADJUSTMENT = 7
 TRANSACTION_COMMISSION = 8
 
@@ -166,7 +166,7 @@ TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_SETTLED, 'Bet Settled'),
     (TRANSACTION_TRANSFER_IN, 'Transfer in'),
     (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
-    (TRANSACTION_BONOUS, 'Bonus'),
+    (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
 )
@@ -226,18 +226,23 @@ COUNTRY_CHOICES = (
     ('JP', 'Japan'),
 )
 
+ACTIVITY_SYSTEM = 0     # System Change
+ACTIVITY_REMARK = 1     # Remark in form
+ACTIVITY_MESSAGE = 2    # Inbox message
+ACTIVITY_NOTE= 3        # Note in activity
+
 ACTIVITY_TYPE = (
-    (0, 'Operation'),
+    (0, 'System'),
     (1, 'Remark'),
-    (2, 'Chat'),
+    (2, 'Message'),
     (3, 'Note'),
 )
 
-AGENT_LEVEL = (
-    ('Premium', 'Premium'),
-    ('Invalid', 'Invalid'),
-    ('Normal', 'Normal'),
+AFFILIATE_STATUS = (
+    ('Active', 'Active'),
+    ('VIP', 'VIP'),
     ('Negative', 'Negative'),
+    ('Deactivated', 'Deactivated'),
 )
 
 AGENT_STATUS = (
@@ -1083,6 +1088,23 @@ PERMISSION_CODE = [
         ]
     }
 ]
+
+# agent
+COMMISSION_SET = (
+    ('System', 'System'),
+    ('Personal', 'Personal'),
+)
+
+AFFILIATE_LEVEL = (
+    ('Normal', 'Normal'),
+    ('VIP', 'VIP'),
+)
+
+LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+
+MONTHLY_COMMISSION_SETTLE_DATE = "05"
+
+
 BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 

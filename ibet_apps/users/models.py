@@ -13,6 +13,13 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+import logging
+
+logger = logging.getLogger('django')
+
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, phone, password=None):
         if not email:
@@ -102,7 +109,7 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
-    referral_id = models.CharField(max_length=300, blank=True, null=True)
+    # referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
@@ -140,14 +147,20 @@ class CustomUser(AbstractBaseUser):
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     
     # agent
-    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
-    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
-    commision_status = models.BooleanField(default=False)
-    user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
+    # affiliate = models.BooleanField(default=False)              #if a user is agent or not
+    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
-    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AGENT_STATUS, default='Normal')
+    user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
+    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
+    affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
+    transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
+    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+
+    #commission
+    commission_status = models.BooleanField(default=False)               # for current month
+    commission_setting = models.CharField(max_length=50, choices=COMMISSION_SET, default='System')
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
     temporary_block_timespan = models.DurationField(null=True, blank=True)
@@ -191,18 +204,6 @@ class CustomUser(AbstractBaseUser):
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
 
-    def generate_verification_code(self):
-        return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            temp = str(self.generate_verification_code())[2:-1]
-            while get_user_model().objects.filter(referral_id=temp):   # make sure no duplicates
-                temp = str(self.generate_verification_code())[2:-1]
-            self.referral_id = temp
-
-        return super(CustomUser, self).save(*args, **kwargs)
-
     def __str__(self):
         return self.username
 
@@ -226,7 +227,42 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+class Commission(models.Model):
     
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    commission_level = models.IntegerField(default=1)
+    active_downline_needed = models.IntegerField(default=6)
+    monthly_downline_ftd_needed = models.IntegerField(default=6)
+    
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            # Get the maximum display_id value from the database
+            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))['largest']
+
+            # aggregate can return None! Check it first.
+            # If it isn't none, just use the last ID specified (which should be the greatest) and add one to it
+            if last_id is not None:
+                self.commission_level = last_id + 1
+
+        super(Commission, self).save(*args, **kwargs)
+
+class ReferLink(models.Model):
+    
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
+    refer_link_name = models.CharField(max_length=50, default="default")
+    ## time of this link was created
+    genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            code = generate_unique_verification_code()
+            self.refer_link_url = code
+        return super(ReferLink, self).save(*args, **kwargs)
+
 
 class UserWithTag(models.Model):
 
@@ -350,47 +386,6 @@ class UserAction(models.Model):
         verbose_name_plural = _('User action history')
 
 
-
-# class Bonus(models.Model):
-
-#     bonus_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     name = models.CharField(max_length=50)
-#     description = models.CharField(max_length=255)
-#     start_time = models.DateTimeField('Start Time', blank=False)
-#     end_time = models.DateTimeField('End Time', blank=False)
-#     expiration_days = models.IntegerField()
-#     is_valid = models.BooleanField(default=False)
-#     ## A comma-separated list of country IDs where this bonus is applicable (to be normalized)
-#     countries = models.CharField(max_length=255)
-#     ## A comma-separated list of category IDs where this bonus is applicable (to be normalized)
-#     categories = models.CharField(max_length=255)
-#     ## A comma-separated list of requirement IDs that we need to apply (to be normalized)
-#     requirement_ids = models.CharField(max_length=255)  
-#     amount = models.FloatField()
-#     percentage = models.FloatField()
-#     is_free_bid = models.BooleanField(default=False)
-
-
-# class BonusRequirement(models.Model):
-
-#     requirement_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     ## Name of the field in the user_event table where this requirement is based on
-#     field_name = models.CharField(max_length=50)
-#     ## sum or count or single
-#     aggregate_method = models.CharField(max_length=50)
-#     time_limit = models.IntegerField()
-#     turnover_multiplier = models.IntegerField()
-#     ## A comma-separated list of category IDs where this requirement is applicable (to be normalized)
-#     categories = models.CharField(max_length=255)
-
-# class UserBonus(models.Model):
-
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
-#     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
-#     start_time = models.DateTimeField('Start Time', blank=False)
-#     is_successful = models.BooleanField(default=False)
-
-
 class UserActivity(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
     admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="admin")
@@ -401,21 +396,7 @@ class UserActivity(models.Model):
         auto_now_add=True,
         editable=False,
     )
-class ReferLink(models.Model):
 
-    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    refer_link_url = models.URLField(max_length=200, unique=True)
-    refer_link_name = models.CharField(max_length=50, default="Default")
-    ## time of this link was created
-    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
-
-    
-# Mapping between User and ReferLinks
-# This is a 1:n relationship, a user can have at most 10 refer links
-class UserReferLink(models.Model):
-
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
-    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
 
 
 class LinkHistory(models.Model):
@@ -449,8 +430,6 @@ class Limitation(models.Model):
         auto_now_add=True,
         editable=False,
     )
-
-
 class GameRequestsModel(models.Model):
 
     Success_Status = [
@@ -559,3 +538,36 @@ class GameRequestsModel(models.Model):
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
 
+
+
+@receiver(post_save, sender=CustomUser)
+def my_handler(sender, **kwargs):
+    if kwargs['created']:
+        user=kwargs['instance']
+        temp_refer_link_url = generate_unique_verification_code()
+        refer_link = ReferLink.objects.create(
+            user_id = user,
+        )
+        logger.info("Auto created a refer link for new user" + str(user.username))
+    
+
+def generate_verification_code():
+    return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
+
+def generate_unique_verification_code():
+    temp_refer_link_url = str(generate_verification_code())[2:-1]
+    while ReferLink.objects.filter(refer_link_url=temp_refer_link_url):   # make sure no duplicates
+        temp_refer_link_url = str(generate_verification_code())[2:-1]
+    return temp_refer_link_url
+
+
+#  def save(self, *args, **kwargs):
+#         if self.pk:
+#             temp = str(self.generate_verification_code())[2:-1]
+#             while ReferLink.objects.filter(refer_link_url=temp):   # make sure no duplicates
+#                 temp = str(self.generate_verification_code())[2:-1]
+#             self.refer_link_url = temp
+
+#         return super(ReferLink, self).save(*args, **kwargs)
+
+    
