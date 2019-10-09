@@ -373,11 +373,11 @@
 
                             <div id="deposit-request-button">
                                 <button type="button" class="btn btn-success" id="deposit-review-a">Approve</button>
-                                <!-- <button type="submit" class="btn btn-success" name="deposit-review-appnext">Approve and
-                                    Next</button> -->
+                                <button type="button" class="btn btn-success" name="deposit-review-appnext">Approve and
+                                    Next</button>
                                 <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button>
-                                <!-- <button type="submit" class="btn btn-danger" name="deposit-review-rejnext">Reject and
-                                    Next</button> -->
+                                <button type="button" class="btn btn-danger" name="deposit-review-rejnext">Reject and
+                                    Next</button>
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
@@ -552,7 +552,7 @@
             content2 += "<p>" + data[0].balance + "</p>";
             $("#member_detail2").append(content2);
         }
-        
+
         function addDepositRecord(data, trans_pk) {
             $("#latest_deposits").empty();
             content = "";
@@ -616,6 +616,49 @@
                 $('#deposit-review-rej').attr('name', 'deposit-review-rej')
             });
         });
+
+        $('#deposit-review-cancel').click(function () {
+            location.reload();
+        });
+
+        $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (e) {
+            // Get data from the first row
+            var dep_trans_no = $("#dep_trans_no").val();
+            var deposit_row_index = $("#deposit_row_index").val();
+            var pagination_num = table.page.len();
+            var table_size = table.rows().count();
+
+            var audit_result = "Approve";
+            if (e.target.id == "deposit-review-rejnext") {
+                audit_result = "Reject";
+            }
+
+            if (deposit_row_index == table_size) {
+                $('#lastDeposit').text("This is the last one");
+                $('#lastDeposit').css('color', 'red');
+            }
+
+            if (deposit_row_index % pagination_num == 0) {
+                table.page('next').draw('page');
+                deposit_row_index = deposit_row_index % pagination_num;
+            } else if (deposit_row_index > pagination_num) {
+                deposit_row_index = deposit_row_index % pagination_num;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'xadmin:deposit_view' %}",
+                data: {
+                    'type': 'reviewTransaction',
+                    'dep_trans_no': dep_trans_no,
+                    'result': audit_result,
+                },
+                success: function (data) {
+                    // auto open next row audit btn
+                    $('#pending_table tbody tr').eq(deposit_row_index).find('#edit-pending-detail-btn').click()
+                }
+            })
+        })
 
     })
 </script>

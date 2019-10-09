@@ -458,14 +458,11 @@
                                 <div id="withdraw-request-button" style="margin-top:40px">
                                     <button type="button" class="btn btn-success"
                                         id="withdraw-review-a">Approve</button>
-                                    <!-- <button type="submit" class="btn btn-success" name="withdraw-review-appnext">Approve
+                                    <button type="button" class="btn btn-success" name="withdraw-review-appnext">Approve and Next</button>
+                                    <button type="button" class="btn btn-danger" id="withdraw-review-r">Reject</button>
+                                    <button type="button" class="btn btn-danger" name="withdraw-review-rejnext">Reject
                                         and
-                                        Next</button> -->
-                                    <button type="button" class="btn btn-danger"
-                                        id="withdraw-review-r">Reject</button>
-                                    <!-- <button type="submit" class="btn btn-danger" name="withdraw-review-rejnext">Reject
-                                        and
-                                        Next</button> -->
+                                        Next</button>
                                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                                 </div>
                             </div>
@@ -499,26 +496,6 @@
 
 
 <script>
-
-    // double click button
-    $('#withdraw-review-a').click(function () {
-        $('#withdraw-review-a').html('Click to Approve');
-        $('#withdraw-review-a').attr('id', 'withdraw-review-app');
-        $('#withdraw-review-app').click(function () {
-            $('#withdraw-review-app').attr('type', 'submit')
-            $('#withdraw-review-app').attr('name', 'withdraw-review-app')
-        });
-    });
-
-    $('#withdraw-review-r').click(function () {
-        $('#withdraw-review-r').html('Click to Reject');
-        $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
-        $('#withdraw-review-rej').click(function () {
-            $('#withdraw-review-rej').attr('type', 'submit')
-            $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
-        });
-    });
-
 
 
     $(document).ready(function () {
@@ -597,11 +574,11 @@
             function (settings, data, dataIndex) {
                 var min = $('#min').datepicker("getDate");
                 var max = $('#max').datepicker("getDate");
-    
+
                 var dateParts = data[9].split("/");
-                var newDate = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2]
+                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
                 var startDate = new Date(newDate);
-                
+
                 if (min == null && max == null) { return true; }
                 if (min == null && startDate <= max) { return true; }
                 if (max == null && startDate >= min) { return true; }
@@ -610,8 +587,8 @@
             }
         );
 
-        $("#min").datepicker({ onSelect: function () { table.draw();other_table.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { table.draw();other_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#min").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#max").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
 
         // Event listener to the two range filtering inputs to redraw on input
         $('#min, #max').change(function () {
@@ -723,6 +700,67 @@
             $("#trans_withdraw_detail").append(content);
         }
 
+            // double click button
+    $('#withdraw-review-a').click(function () {
+        $('#withdraw-review-a').html('Click to Approve');
+        $('#withdraw-review-a').attr('id', 'withdraw-review-app');
+        $('#withdraw-review-app').click(function () {
+            $('#withdraw-review-app').attr('type', 'submit')
+            $('#withdraw-review-app').attr('name', 'withdraw-review-app')
+        });
+    });
+
+    $('#withdraw-review-r').click(function () {
+        $('#withdraw-review-r').html('Click to Reject');
+        $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
+        $('#withdraw-review-rej').click(function () {
+            $('#withdraw-review-rej').attr('type', 'submit')
+            $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
+        });
+    });
+
+    $('#withdraw-review-cancel').click(function () {
+        location.reload();
+    });
+
+    $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
+        // Get data from the first row
+        var wtd_trans_no = $("#wtd_trans_no").val();
+        var withdraw_row_index = $("#withdraw_row_index").val();
+        var pagination_num = table.page.len();
+        var table_size = table.rows().count();
+
+        var audit_result = "Approve";
+        if (e.target.id == "withdraw-review-rejnext") {
+            audit_result = "Reject";
+        }
+
+        if (withdraw_row_index == table_size) {
+            $('#lastwithdraw').text("This is the last one");
+            $('#lastwithdraw').css('color', 'red');
+        }
+
+        if (withdraw_row_index % pagination_num == 0) {
+            table.page('next').draw('page');
+            withdraw_row_index = withdraw_row_index % pagination_num;
+        } else if (withdraw_row_index > pagination_num) {
+            withdraw_row_index = withdraw_row_index % pagination_num;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'xadmin:withdrawal_view' %}",
+            data: {
+                'type': 'reviewTransaction',
+                'withdrawal_trans_no': withdrawal_trans_no,
+                'result': audit_result,
+            },
+            success: function (data) {
+                // auto open next row audit btn
+                $('#pending_table tbody tr').eq(withdraw_row_index).find('#edit-pending-detail-btn').click()
+            }
+        })
+    });
 
 
 
