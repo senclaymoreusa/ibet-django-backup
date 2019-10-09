@@ -32,6 +32,12 @@ table.dataTable {
     background-color: #428bca;
     color: #ffffff;
 }
+#edit-withdrawal-pending-detail-btn {
+    height: 100%;
+    width: 100%;
+    background-color: #428bca;
+    color: #ffffff;
+}
 
 .btn-note {
     background-color: #72befb;

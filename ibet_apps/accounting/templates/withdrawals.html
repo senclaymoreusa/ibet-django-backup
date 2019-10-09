@@ -78,7 +78,7 @@
             <!-- PENDING TABLE -->
             <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab"
                 style="margin-bottom: 50px;">
-                <table id="pending_table" class="table-striped table-bordered hover compact"
+                <table id="withdrawal_pending_table" class="table-striped table-bordered hover compact"
                     style="width:100%; margin-bottom: 50px">
                     <thead>
                         <tr>
@@ -119,7 +119,7 @@
                             <td style="display: none">{{ tran.pk }}</td>
                             <td style="display: none">{{ tran.account }}</td>
                             <td>{{ tran.channel }}</td>
-                            <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                            <td><button id="edit-withdrawal-pending-detail-btn" type="button" data-toggle="modal"
                                     data-target="#audit_withdraw">Audit</button></td>
                         </tr>
                         {% endfor %}
@@ -518,7 +518,7 @@
         });
 
         // draw DataTable
-        var table = $('#pending_table').DataTable({
+        var table = $('#withdrawal_pending_table').DataTable({
             responsive: true,
             dom: 'B<ftilp>',
             buttons: [
@@ -570,7 +570,6 @@
         });
 
 
-
         // date range search
         $.fn.dataTable.ext.search.push(
             function (settings, data, dataIndex) {
@@ -599,7 +598,7 @@
         });
 
         // send data to pop-up window
-        $('#pending_table tbody').on('click', 'button', function () {
+        $('#withdrawal_pending_table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
             // transaction pk: data[12]
             // bank account: data[13]
@@ -760,7 +759,7 @@
                 },
                 success: function (data) {
                     // auto open next row audit btn
-                    $('#pending_table tbody tr').eq(wtd_row_index).find('#edit-pending-detail-btn').click()
+                    $('#withdrawal_pending_table tbody tr').eq(wtd_row_index).find('#edit-withdrawal-pending-detail-btn').click();
                 }
             })
         });
