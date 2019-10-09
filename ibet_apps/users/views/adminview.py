@@ -61,7 +61,7 @@ class UserDetailView(CommAdminView):
             context['block'] = True
 
         elif checkUserBlock(self.kwargs.get('pk')):
-            expried_time = ""
+            expired_time = ""
             blocked_time = ""
             temporaryStr = ""
             temporaryCode = ""
@@ -69,36 +69,36 @@ class UserDetailView(CommAdminView):
             permanentCode = ""
             blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
             if customUser.temporary_block_time:
-                expried_time = customUser.temporary_block_time
+                expired_time = customUser.temporary_block_time
                 if customUser.temporary_block_interval == INTERVAL_PER_DAY:
-                    expried_time = expried_time + datetime.timedelta(days=1)
+                    expired_time = expired_time + datetime.timedelta(days=1)
                     temporaryStr = "one day"
                     temporaryCode = customUser.temporary_block_interval
                 elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
-                    expried_time = expried_time + datetime.timedelta(days=7)
+                    expired_time = expired_time + datetime.timedelta(days=7)
                     temporaryStr = "one week"
                     temporaryCode = INTERVAL_PER_WEEK
                 elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
-                    expried_time = expried_time + datetime.timedelta(days=30)
+                    expired_time = expired_time + datetime.timedelta(days=30)
                     temporaryStr = "one month"
                     temporaryCode = INTERVAL_PER_MONTH
                 
             elif customUser.permanent_block_time:
-                expried_time = customUser.permanent_block_time
+                expired_time = customUser.permanent_block_time
                 if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
-                    expried_time = expried_time + datetime.timedelta(6*365/12)
+                    expired_time = expired_time + datetime.timedelta(6*365/12)
                     permanentStr = "six months"
                     permanentCode = INTERVAL_PER_SIX_MONTH
                 elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
-                    expried_time = expried_time + datetime.timedelta(365)
+                    expired_time = expired_time + datetime.timedelta(365)
                     permanentStr = "one year"
                     permanentCode = INTERVAL_PER_ONE_YEAR
                 elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
-                    expried_time = expried_time + datetime.timedelta(365*3)
+                    expired_time = expired_time + datetime.timedelta(365*3)
                     permanentStr = "three years"
                     permanentCode = INTERVAL_PER_THREE_YEAR
                 elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
-                    expried_time = expried_time + datetime.timedelta(365*5)
+                    expired_time = expired_time + datetime.timedelta(365*5)
                     permanentStr = "five years"
                     permanentCode = INTERVAL_PER_FIVE_YEAR
                 
@@ -113,7 +113,7 @@ class UserDetailView(CommAdminView):
             }
 
             data = {
-                "expried_time": expried_time,
+                "expired_time": expired_time,
                 "date": blocked_time,
                 "admin": "User themselve"
             }
