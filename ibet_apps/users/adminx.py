@@ -5,9 +5,9 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
-# from .views import AgentView, AgentDetailView, OneclickRegister 
 from users.views.adminview import *
 from users.views.views import *
+from users.views.agentview import *
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -52,14 +52,8 @@ class GlobalSettings(object):
             },
             {
                 'title': _('Affiliate'),
-                'icon': 'fa fa-bar-chart-o',
-                'menus': (
-                    {
-                        'title': _('Affiliate Overview'),
-                        'url': '/xadmin/agent_view',
-                        'icon': 'fa fa-cny'
-                    },
-                )
+                'icon': 'fa fa-smile-o',
+                'url': '/xadmin/agentview',
             },
             {
                 'title': _('Finance'),
@@ -321,6 +315,6 @@ xadmin.site.unregister(Permission)
 # xadmin.site.register(UserWithTag,UserWithTagAdmin)
 # xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
-xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
-xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentview/$', AgentView, name='agentview')
 xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')

@@ -1,11 +1,14 @@
-import logging
-import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.shortcuts import get_object_or_404
 from utils.constants import *
 from users.models import *
 from django.utils import timezone
+
+import logging
+import json
 import datetime
 import decimal
-from django.core.serializers.json import DjangoJSONEncoder
+
 
 
 logger = logging.getLogger('django')
@@ -122,39 +125,39 @@ def get_old_limitations(userId):
 
 def checkUserBlock(userId):
 
-    user = CustomUser.objects.get(pk=userId)
+    user = get_object_or_404(CustomUser, pk=userId)
     if user.block is True:
         return True
     elif user.temporary_block_time or user.permanent_block_time:
-        expried_time = ''
+        expired_time = ''
         blocked_time = ''
         if user.temporary_block_time is not None:
             blocked_time =  user.temporary_block_time
-            expried_time = user.temporary_block_time
+            expired_time = user.temporary_block_time
             if user.temporary_block_interval == INTERVAL_PER_DAY:
-                expried_time = expried_time + datetime.timedelta(days=1)
+                expired_time = expired_time + datetime.timedelta(days=1)
             elif user.temporary_block_interval == INTERVAL_PER_WEEK:
-                expried_time = expried_time + datetime.timedelta(days=7)
+                expired_time = expired_time + datetime.timedelta(days=7)
             elif user.temporary_block_interval == INTERVAL_PER_MONTH:
-                expried_time = expried_time + datetime.timedelta(days=30)
+                expired_time = expired_time + datetime.timedelta(days=30)
             
         elif user.permanent_block_time is not None:
             blocked_time =  user.permanent_block_time
-            expried_time = user.permanent_block_time
+            expired_time = user.permanent_block_time
             if user.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
-                expried_time = expried_time + datetime.timedelta(6*365/12)
+                expired_time = expired_time + datetime.timedelta(6*365/12)
             elif user.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
-                expried_time = expried_time + datetime.timedelta(365)
+                expired_time = expired_time + datetime.timedelta(365)
             elif user.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
-                expried_time = expried_time + datetime.timedelta(365*3)
+                expired_time = expired_time + datetime.timedelta(365*3)
             elif user.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
-                expried_time = expried_time + datetime.timedelta(365*5)
+                expired_time = expired_time + datetime.timedelta(365*5)
 
         logger.info("Blocked time: " + str(blocked_time))   
-        logger.info("Expried time: " + str(expried_time))
+        logger.info("Expried time: " + str(expired_time))
 
         # print(str(timezone.now()))
-        if expried_time > timezone.now():
+        if expired_time > timezone.now():
             logger.info("The account is blocked")
             return True
         else:
