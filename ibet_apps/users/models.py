@@ -109,7 +109,7 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
-    referral_id = models.CharField(max_length=300, blank=True, null=True)
+    # referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
