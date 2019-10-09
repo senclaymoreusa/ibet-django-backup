@@ -124,6 +124,17 @@ class GlobalSettings(object):
                     }
                 )
             },
+            {
+                'title': 'Finance',
+                'icon': 'fas fa-chart-line',
+                'menus': (
+                    {
+                        'title': _('Finance report'),
+                        'url': '/xadmin/finance-report/',
+                        'icon': 'fas fa-receipt'
+                    },
+                )
+            },
         ]
                     
 from django.contrib import admin
