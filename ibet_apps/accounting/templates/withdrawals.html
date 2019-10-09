@@ -342,6 +342,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="type" value="audit_withdraw"></input>
                             <input type="hidden" id="wtd_trans_no" name="wtd_trans_no"></input>
+                            <input type="hidden" id="wtd_row_no" name="wtd_row_no"></input>
 
                             <div class="row withdraw-request-word">
                                 <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
@@ -458,9 +459,10 @@
                                 <div id="withdraw-request-button" style="margin-top:40px">
                                     <button type="button" class="btn btn-success"
                                         id="withdraw-review-a">Approve</button>
-                                    <button type="button" class="btn btn-success" name="withdraw-review-appnext">Approve and Next</button>
+                                    <button type="button" class="btn btn-success" id="withdraw-review-appnext">Approve
+                                        and Next</button>
                                     <button type="button" class="btn btn-danger" id="withdraw-review-r">Reject</button>
-                                    <button type="button" class="btn btn-danger" name="withdraw-review-rejnext">Reject
+                                    <button type="button" class="btn btn-danger" id="withdraw-review-rejnext">Reject
                                         and
                                         Next</button>
                                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
@@ -624,7 +626,7 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addWithdrawRecord(data2, data[12]);
+                addWithdrawRecord(data2, data[12], data[0]);
             });
         });
 
@@ -646,7 +648,7 @@
             $("#member_detail2").append(content2);
         }
 
-        function addWithdrawRecord(data, trans_pk) {
+        function addWithdrawRecord(data, trans_pk, index_tt) {
             $("#latest_withdraws").empty();
             content = "";
             for (var i = 0; i < data[0].length; i++) {
@@ -663,7 +665,8 @@
                 content += '</tr>'
             }
             $("#latest_withdraws").append(content);
-            $("#wtd_trans_no").val(trans_pk)
+            $("#wtd_trans_no").val(trans_pk);
+            $("#wtd_row_no").val(index_tt);
         }
 
         showBankDetail = function (data) {
@@ -700,67 +703,67 @@
             $("#trans_withdraw_detail").append(content);
         }
 
-            // double click button
-    $('#withdraw-review-a').click(function () {
-        $('#withdraw-review-a').html('Click to Approve');
-        $('#withdraw-review-a').attr('id', 'withdraw-review-app');
-        $('#withdraw-review-app').click(function () {
-            $('#withdraw-review-app').attr('type', 'submit')
-            $('#withdraw-review-app').attr('name', 'withdraw-review-app')
+        // double click button
+        $('#withdraw-review-a').click(function () {
+            $('#withdraw-review-a').html('Click to Approve');
+            $('#withdraw-review-a').attr('id', 'withdraw-review-app');
+            $('#withdraw-review-app').click(function () {
+                $('#withdraw-review-app').attr('type', 'submit')
+                $('#withdraw-review-app').attr('name', 'withdraw-review-app')
+            });
         });
-    });
 
-    $('#withdraw-review-r').click(function () {
-        $('#withdraw-review-r').html('Click to Reject');
-        $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
-        $('#withdraw-review-rej').click(function () {
-            $('#withdraw-review-rej').attr('type', 'submit')
-            $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
+        $('#withdraw-review-r').click(function () {
+            $('#withdraw-review-r').html('Click to Reject');
+            $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
+            $('#withdraw-review-rej').click(function () {
+                $('#withdraw-review-rej').attr('type', 'submit')
+                $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
+            });
         });
-    });
 
-    $('#withdraw-review-cancel').click(function () {
-        location.reload();
-    });
+        $('#withdraw-review-cancel').click(function () {
+            location.reload();
+        });
 
-    $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
-        // Get data from the first row
-        var wtd_trans_no = $("#wtd_trans_no").val();
-        var withdraw_row_index = $("#withdraw_row_index").val();
-        var pagination_num = table.page.len();
-        var table_size = table.rows().count();
+        $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
+            // Get data from the first row
+            var wtd_trans_no = $("#wtd_trans_no").val();
+            var wtd_row_index = $("#wtd_row_no").val();
+            var pagination_num = table.page.len();
+            var table_size = table.rows().count();
 
-        var audit_result = "Approve";
-        if (e.target.id == "withdraw-review-rejnext") {
-            audit_result = "Reject";
-        }
-
-        if (withdraw_row_index == table_size) {
-            $('#lastwithdraw').text("This is the last one");
-            $('#lastwithdraw').css('color', 'red');
-        }
-
-        if (withdraw_row_index % pagination_num == 0) {
-            table.page('next').draw('page');
-            withdraw_row_index = withdraw_row_index % pagination_num;
-        } else if (withdraw_row_index > pagination_num) {
-            withdraw_row_index = withdraw_row_index % pagination_num;
-        }
-
-        $.ajax({
-            type: 'POST',
-            url: "{% url 'xadmin:withdrawal_view' %}",
-            data: {
-                'type': 'reviewTransaction',
-                'withdrawal_trans_no': withdrawal_trans_no,
-                'result': audit_result,
-            },
-            success: function (data) {
-                // auto open next row audit btn
-                $('#pending_table tbody tr').eq(withdraw_row_index).find('#edit-pending-detail-btn').click()
+            var audit_result = "Approve";
+            if (e.target.id == "withdraw-review-rejnext") {
+                audit_result = "Reject";
             }
-        })
-    });
+
+            if (wtd_row_index == table_size) {
+                $('#lastwithdraw').text("This is the last one");
+                $('#lastwithdraw').css('color', 'red');
+            }
+
+            if (wtd_row_index % pagination_num == 0) {
+                table.page('next').draw('page');
+                wtd_row_index = wtd_row_index % pagination_num;
+            } else if (wtd_row_index > pagination_num) {
+                wtd_row_index = wtd_row_index % pagination_num;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'xadmin:withdrawal_view' %}",
+                data: {
+                    'type': 'reviewTransaction',
+                    'wtd_trans_no': wtd_trans_no,
+                    'result': audit_result,
+                },
+                success: function (data) {
+                    // auto open next row audit btn
+                    $('#pending_table tbody tr').eq(wtd_row_index).find('#edit-pending-detail-btn').click()
+                }
+            })
+        });
 
 
 

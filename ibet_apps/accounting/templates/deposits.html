@@ -284,6 +284,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="type" value="audit_deposit"></input>
                         <input type="hidden" id="dep_trans_no" name="dep_trans_no"></input>
+                        <input type="hidden" id="deposit_row_index" name="deposit_row_index"></input>
 
                         <div class="row deposit-request-word">
                             <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
@@ -509,6 +510,7 @@
         // send data to pop-up window
         $('#pending_table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
+            // transaction index: data[0]
             // transaction pk: data[13]
             showDepositeDetail(data);
             showBankDetail(data);
@@ -532,7 +534,7 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addDepositRecord(data2, data[13]);
+                addDepositRecord(data2, data[13], data[0]);
             });
         });
 
@@ -553,7 +555,7 @@
             $("#member_detail2").append(content2);
         }
 
-        function addDepositRecord(data, trans_pk) {
+        function addDepositRecord(data, trans_pk, deposit_row_index) {
             $("#latest_deposits").empty();
             content = "";
             for (var i = 0; i < data[0].length; i++) {
@@ -574,6 +576,7 @@
             }
             $("#latest_deposits").append(content);
             $("#dep_trans_no").val(trans_pk)
+            $("#deposit_row_index").val(deposit_row_index);
         }
 
         showDepositeDetail = function (data) {

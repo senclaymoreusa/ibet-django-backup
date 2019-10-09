@@ -79,7 +79,6 @@ class WithdrawalView(CommAdminView):
             title = "Finance / Withdrawals"
             context["breadcrumbs"].append({"url": "/withdrawal/", "title": title})
             context['time'] = timezone.now()
-
             # WITHDRAWAL TRANSACTIONS
             withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL)
 
@@ -289,18 +288,20 @@ class WithdrawalView(CommAdminView):
             return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))
         
         elif post_type == "reviewTransaction":
-            print("in")
-            withdraw_trans_no = request.POST.get("withdraw_trans_no")
+            wtd_row_index = request.POST.get("wtd_row_index")
+            wtd_trans_no = request.POST.get("wtd_trans_no")
             result = request.POST.get("result")
-            current_withdrawosit = Transaction.objects.get(pk=withdraw_trans_no)
+            current_withdraw = Transaction.objects.get(pk=wtd_trans_no)
+            print(result)
             if result == "Approve":
-                current_withdrawosit.review_status = REVIEW_APP
-                logger.info('Finish update the status of withdrawosit' + str(withdraw_trans_no) + ' to Approve')
+                current_withdraw.review_status = REVIEW_APP
+                logger.info('Finish update the status of withdrawosit' + str(wtd_trans_no) + ' to Approve')
             else:
-                current_withdrawosit.review_status = REVIEW_REJ
-                logger.info('Finish update the status of withdrawosit' + str(withdraw_trans_no) + ' to Reject')
-                current_withdrawosit.save()
+                current_withdraw.review_status = REVIEW_REJ
+                logger.info('Finish update the status of withdrawosit' + str(wtd_trans_no) + ' to Reject')
+            current_withdraw.save()
             return HttpResponse(status=200)
+
 def myconverter(o):
     if isinstance(o, timezone.date):
         return o.__str__()
