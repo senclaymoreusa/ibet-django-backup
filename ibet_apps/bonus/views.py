@@ -1,11 +1,8 @@
 from django.shortcuts import render
-from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
 from bonus.models import *
 
-#from users.models import Game as oldGame
-#from users.serializers import GameSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
 import logging
@@ -31,7 +28,7 @@ class BonusSearchView(View):
         bonuses = {}
 
         # We iterate through all requirements and find all bonuses that they are attached to
-        reqs = Requirement.objects.filter()
+        reqs = Requirement.objects.all()
         for req in reqs:
 
             bonus_data = serializers.serialize('json', [req.bonus])

@@ -14,8 +14,6 @@ from games.models import Category
 from utils.constants import *
 from operation.models import Campaign
 
-from ibet_apps.utils.constants import TRANSACTION_TYPE_CHOICES
-
 
 class Bonus(models.Model):
 
