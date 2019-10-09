@@ -1152,3 +1152,11 @@ BONUS_RELEASE_TYPE_CHOICES = (
     (0, 'Pre-wager'),
     (1, 'Post-wager'),
 )
+
+BONUS_AGGREGATE_METHOD_CHOICES = (
+    (0, 'SUM'),
+    (1, 'COUNT'),
+    (2, 'AVERAGE'),
+    (3, 'MAX'),
+    (4, 'LATEST'),
+)
