@@ -53,7 +53,8 @@ class MessageHandler:
                     
                     swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, user)
                     
-                if messageAction == ''
+                if messageAction == '':
+                    print("hi")
                 return swamResponse
 
         except Exception as ex:

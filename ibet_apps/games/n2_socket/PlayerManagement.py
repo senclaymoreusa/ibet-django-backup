@@ -3,7 +3,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate
 from users.models import CustomUser
 
-import n2_constants
+import games.n2_socket.n2_constants
 
 
 class PlayerManagement:
@@ -66,11 +66,15 @@ class PlayerManagement:
                     self.vendorId = text
                 if elem.tag == "password":
                     playerPassword = text
-                if elem.tag == 
+                if elem.tag == "gameid":
+                    gameid = text
+                if elem.tag == "tradeid":
+                    tradeid = text
 
                 print(elem.tag + " => " + text)
         
         return 0
+
     def GetLoginResponse(self, status, requestAction, requestMessageId, user):
         currencyId = CURRENCY_MAP[user.currency]
         if status == 0:
@@ -124,7 +128,7 @@ def ValidatePlayer(login, pw):
 def PackExceptionMessage(source, status, action, messageId):
     desc = DESC_MAP[status]
     exceptionMsg = '<?xml version="1.0" encoding="utf-16"?>'
-    exceptionMsg += '<n2xsd:n2root xmlns:n2xsd="urn:n2ns" source="' + source + ">'
+    exceptionMsg += '<n2xsd:n2root xmlns:n2xsd="urn:n2ns" source="' + source + '">'
     exceptionMsg += '<status>' + str(status) + '</status>'
     exceptionMsg += '<exception action="' + action + '" id="' + messageId + '">'
     exceptionMsg += '<desc>' + desc + '</desc>'
