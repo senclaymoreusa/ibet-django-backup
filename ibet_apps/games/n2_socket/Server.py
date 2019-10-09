@@ -9,6 +9,14 @@ s.bind(("127.0.0.1", 1234))
 s.listen(5)
 
 ex = '<?xml version="1.0" encoding="utf-16"?><n2xsd:n2root xmlns:n2xsd="urn:n2ns"><request action="slogin" id="00291023033745682821"><userid>29</userid><password>29</password><vendorid>3</vendorid></request></n2xsd:n2root>'
+getbalancereq = '<?xml version="1.0" encoding="utf-16"?>'
+getbalancereq = '<n2xsd:n2root xmlns:n2xsd="urn:n2ns">'
+getbalancereq = '<request action="sgetbalance" id="19100822100093204504">'
+getbalancereq = '<userid>ibttest01</userid>'
+getbalancereq = '<vendorid>390</vendorid>'
+getbalancereq = '<currencyid>1111</currencyid>'
+getbalancereq = '<sessiontoken>dasdasdasdasdadasd</sessiontoken>'
+getbalancereq = '<timestamp>2019-10-08T22:10:00.955</timestamp></request></n2xsd:n2root>'
 
 exampleMsg = '<?xml version="1.0" encoding="utf-16"?>'
 exampleMsg += '<n2xsd:n2root xmlns:n2xsd="urn:n2ns">'
@@ -61,8 +69,7 @@ while True:
         print("[" + str(datetime.datetime.now()) + "] sending SOH Byte...")
         client.send(bytes([0x01]))  # SOH
 
-        print("[" + str(datetime.datetime.now()) +
-              "] sending MsgSize Bytes...")
+        print("[" + str(datetime.datetime.now()) + "] sending MsgSize Bytes...")
         encryptedMsg = sxor(exampleMsg, KEY)
 
         msgSize = len(encryptedMsg) + 8

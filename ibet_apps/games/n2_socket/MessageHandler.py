@@ -7,6 +7,9 @@ import games.n2_socket.PlayerManagement as playerManagement
 
 
 class MessageHandler:
+    '''
+    This class handles the delegation of the XML message action to its respective API call
+    '''
     vendorId = 0
     passcode = ""
     executor = None
@@ -27,38 +30,38 @@ class MessageHandler:
         swamResponse = None
         try:
             xmlDoc = etree.fromstring(bytes(swamXml, 'utf-16'))
-            # print(xmlDoc.getchildren())
+            
             for elem in xmlDoc.getchildren():
                 messageAction = elem.attrib['action']
                 messageId = elem.attrib['id']
                 print(messageAction)
-                # print(messageId)
-
             if messageAction == 'spingalive':  #return nothing
                 if int(messageId) % 100 == 0:
                     print(messageId)
-            elif messageAction == 'slogin':
-                loginRequest = playerManagement.PlayerManagement(
-                    self.vendorId, self.passcode)
-                (user, retStatus) = loginRequest.ProcessLoginRequest(xmlDoc)
-                swamResponse = loginRequest.GetLoginResponse(
-                    retStatus, messageAction, messageId, user)
-                #self.connection.AddResponseMessageQueue(swamResponse)
-            elif messageAction == 'swebsinglelogin':
-                print("hi")
-                loginRequest = playerManagement.PlayerManagement(
-                    self.vendorId, self.passcode)
-                (user, retStatus) = loginRequest.ProcessLoginRequest(xmlDoc)
-                
-            elif messageAction == 'sgetbalance':
-                #print(messageAction)
-                balanceRequest = playerManagement.PlayerManagement(
-                    self.vendorId, self.passcode)
-                retStatus = balanceRequest.ProcessBalanceRequest(xmlDoc)
-                swamResponse = balanceRequest.GetBalanceResponse(
-                    retStatus, messageAction, messageId)
-                #print("received this: " + swamMessage)
-                #self.connection.AddResponseMessageQueue(swamResponse)
-            return swamResponse
+            else:
+                request = playerManagement.PlayerManagement(self.vendorId, self.passcode)
+                if  messageAction == 'slogin':        
+                    (retStatus, user) = request.ProcessLoginRequest(xmlDoc)
+                    swamResponse = request.GetLoginResponse(retStatus, messageAction, messageId, user)
+                    #self.connection.AddResponseMessageQueue(swamResponse)
+                if messageAction == 'sgetbalance':
+                    (retStatus, user) = request.ProcessGetBalance(xmlDoc)
+                    swamResponse = request.GetBalanceResponse(retStatus, messageAction, messageId, user)
+                    #self.connection.AddResponseMessageQueue(swamResponse)
+                if messageAction == 'splacetrade':
+                    print("place trade")
+                    
+                    swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, user)
+                    
+                if messageAction == ''
+                return swamResponse
+
         except Exception as ex:
             print('MessageTask::Exception occurred', str(ex))
+    
+
+# if messageAction == 'swebsinglelogin':
+#     print("hi")
+#     loginRequest = playerManagement.PlayerManagement(
+#         self.vendorId, self.passcode)
+#     (retStatus, user) = loginRequest.ProcessLoginRequest(xmlDoc)
