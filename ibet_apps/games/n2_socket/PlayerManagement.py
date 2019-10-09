@@ -17,9 +17,6 @@ class PlayerManagement:
         self.passcode = Passcode
 
     def ProcessLoginRequest(self, xmlDoc):
-        """
-        
-        """
         for root in xmlDoc.getchildren():
             for elem in root.getchildren():
                 if not elem.text:
@@ -70,7 +67,7 @@ class PlayerManagement:
                     self.loginId = text
                 elif elem.tag == "vendorid":
                     self.vendorId = text
-                #print(elem.tag + " => " + text)
+                print(elem.tag + " => " + text)
 
         #validate the user Id here
         #ValidatePlayer()  # not implemented yet

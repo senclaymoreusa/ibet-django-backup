@@ -119,7 +119,7 @@ class ClientConnection:
                 else:
                     return None
 
-            print('SOH:', ord(networkByte))
+            print('SOH received, message incoming...')
 
             # get the data packet size
             networkByte = b''

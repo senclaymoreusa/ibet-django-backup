@@ -19,7 +19,7 @@ class MessageHandler:
         self.connection = ClientConnection
 
     def ProcessRequestMessage(self, swamMessage):
-        print('Message received:', swamMessage)
+        print('Full message:', swamMessage)
         future = self.executor.submit(self.MessageTask, (swamMessage))
         return future.result(5)
 
@@ -46,6 +46,10 @@ class MessageHandler:
                 #self.connection.AddResponseMessageQueue(swamResponse)
             elif messageAction == 'swebsinglelogin':
                 print("hi")
+                loginRequest = playerManagement.PlayerManagement(
+                    self.vendorId, self.passcode)
+                (user, retStatus) = loginRequest.ProcessLoginRequest(xmlDoc)
+                
             elif messageAction == 'sgetbalance':
                 #print(messageAction)
                 balanceRequest = playerManagement.PlayerManagement(
