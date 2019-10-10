@@ -1,55 +1,177 @@
 {% extends "xadmin/base_site.html" %}
-{% load staticfiles%}
 
 {% block content-nav %}
 {% endblock %}
 
 {% block content %}
-<div class="panel panel-default remove-border">
-    <div class="panel-body">
-        <div class="datatable">
-            <table class="table-striped table-bordered hover" id="" style="width:100%;">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-vip.css" %}" />
+</head>
+
+<body>
+    <div id="vip_management">
+        <div class="date_range" style="margin-left: 70%">
+            <label>AVTIVE DATE RANGE</label>
+            <br>
+            <input name="min_date" id="min_date" type="text" placeholder="From">
+            <input name="max_date" id="max_date" type="text" placeholder="To">
+        </div>
+
+        <div id="vip_table_container" style="overflow-x: scroll;">
+            <table id="vip_table" class="table-striped table-bordered hover compact">
                 <thead>
                     <tr>
-                        <th>PLAYER ID</th>
-                        <th>USERNAME</th>
-                        <th>STATUS</th>
-                        <th>PLAYER SEGMENT</th>
-                        <th>DEFINED BY</th>
-                        <th>MANAGER</th>
-                        <th>PREFERRED CHANNEL</th>
-                        <th>PREFERRED CONTACT CHANNEL</th>
-                        <th>PREFERRED PRODUCT</th>
-                        <th>LAST CONTACTED</th>
-                        <th>LAST CONTACT CHANNEL</th>
-                        <th>CONTACT REASON</th>
-                        <th>COUNTRY</th>
-                        <th>ADDRESS</th>
-                        <th>PHONE NUMBER</th>
-                        <th>EMAILED VERIFIED</th>
-                        <th>PHONE VERIFIED</th>
-                        <th>ID VERIFIED</th>
-                        <th>FTD DATE</th>
-                        <th>AFFILIATE ID</th>
-                        <th>LAST ACTIVE DATE</th>
-                        <th>LAST DEPOSIT DATE</th>
-                        <th>FTD DATE</th>
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">USERNAME</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">DEFINED BY</th>
+                        <th scope="col">MANAGER</th>
+                        <th scope="col">PREFERRED CHANNEL</th>
+                        <th scope="col">PREFERRED CONTACT CHANNEL</th>
+                        <th scope="col">PREFERRED PRODUCT</th>
+                        <th scope="col">LAST CONTACTED</th>
+                        <th scope="col">LAST CONTACT CHANNEL</th>
+                        <th scope="col">CONTACT REASON</th>
+                        <th scope="col">COUNTRY</th>
+                        <th scope="col">ADDRESS</th>
+                        <th scope="col">PHONE NUMBER</th>
+                        <th scope="col">EMAILED VERIFIED</th>
+                        <th scope="col">PHONE VERIFIED</th>
+                        <th scope="col">ID VERIFIED</th>
+                        <th scope="col">FTD DATE</th>
+                        <th scope="col">AFFILIATE ID</th>
+                        <th scope="col">LAST ACTIVE DATE</th>
+                        <th scope="col">LAST DEPOSIT DATE</th>
+                        <th scope="col">ACTIVE DAYS</th>
+                        <th scope="col">GGR</th>
+                        <th scope="col">TURNOVER</th>
+                        <th scope="col">DEPOSIT</th>
+                        <th scope="col">DEPOSIT COUNT</th>
+                        <th scope="col">AVERAGE DEPOSIT</th>
+                        <th scope="col">WITHDRAWAL</th>
+                        <th scope="col">WITHDRAWAL COUNT</th>
+                        <th scope="col">BONUS COST</th>
+                        <th scope="col">NGR</th>
+                        <th scope="col">FTD CONVERSION %</th>
+                        <th scope="col">BONUS % GGR</th>
+                        <th scope="col">GGR HOLD %</th>
+                        <th scope="col">SPORTS TURNOVER</th>
+                        <th scope="col">SPORTS GGR %</th>
+                        <th scope="col">SPORTS BONUS</th>
+                        <th scope="col">SPORTS BONUS/TURNOVER</th>
+                        <th scope="col">SPORTS NGR</th>
+                        <th scope="col">SPORTS GGR HOLD%</th>
+                        <th scope="col">CASINO TURNOVER</th>
+                        <th scope="col">CASINO GGR</th>
+                        <th scope="col">CASINO BONUS</th>
+                        <th scope="col">CASINO BONUS/GGR</th>
+                        <th scope="col">CASINO NGR</th>
+                        <th scope="col">CASINO GGR HOLD %</th>
+                        <th scope="col">LIVE CASINO TURNOVER</th>
+                        <th scope="col">LIVE CASINO GGR</th>
+                        <th scope="col">LIVE CASINO BONUS</th>
+                        <th scope="col">LIVE CASINO BONUS/GGR</th>
+                        <th scope="col">LIVE CASINO NGR</th>
+                        <th scope="col">LIVE CASINO NGR HOLD %</th>
+                        <th scope="col">LOTTERY GGR</th>
+                        <th scope="col">LOTTERY BONUS</th>
+                        <th scope="col">LOTTERY BONUS/GGR</th>
+                        <th scope="col">LOTTERY NGR</th>
+                        <th scope="col">LOTTERY GGR HOLD %</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="height: 10px;">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                    <tr>
                     </tr>
                 </tbody>
             </table>
+            <!-- <label class="show-rows">SHOW ROWS</label> -->
         </div>
     </div>
-</div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" language="javascript"
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+
+    <!-- <script>
+        $(document).ready(function () {
+            var csrftoken = $.cookie("csrftoken")
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $("#min_date").datepicker();
+            $("#max_date").datepicker();
+            var minDate = $('#min_date').val();
+            var maxDate = $('#max_date').val();
+
+            var vip_table = $('#vip_table').DataTable({
+                "serverSide": true,
+                "searching": true,
+                "ajax": {
+                    type: 'GET',
+                    url: "{% url 'xadmin:vipview' %}",
+                    data: {
+                        'type': 'getVIPInfo',
+                        'minDate': function () { return minDate; },
+                        'maxDate': function () { return maxDate; },
+                    },
+                },
+                // for export fuction
+                dom: 'B<ftilp>',
+                buttons: [
+                    'csv',
+                ],
+                "language": {
+                    "info": " _START_ - _END_ of _TOTAL_",
+                    "infoEmpty": " 0 - 0 of 0",
+                    "infoFiltered": "",
+                    // "search": "<span class='input-group-addon' style='background-color: #428bca; color:white; width:10px'><span class='glyphicon glyphicon-search'></span></span>",
+                    "paginate": {
+                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    },
+                    "lengthMenu": "_MENU_",
+                },
+            });
+            
+            $(".dt-buttons .buttons-csv").text("Export");
+
+            $('#min_date, #max_date').change(function () {
+                minDate = $('#min_date').val();
+                maxDate = $('#max_date').val();
+                minDate = formatStringToDate(minDate);
+                maxDate = formatStringToDate(maxDate);
+                vip_table.draw();
+            });
+            function formatStringToDate(date) {
+                if (date.length === 0) {
+                    return date;
+                }
+                var parts = date.split('/');
+                date = parts[2] + '-' + parts[0] + '-' + parts[1];
+                return date;
+            }
+        });
+    </script> -->
+</body>
+
+</html>
+
 {% endblock %}
