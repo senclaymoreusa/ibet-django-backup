@@ -450,6 +450,7 @@
                             <!-- notes -->
 
                             <div class="form-group">
+                                <p id='lastwithdraw'>&nbsp;</p>
                                 <label for="withdraw_notes" class="withdraw-request-word"
                                     style="margin-left: 10px">NOTES</label>
                                 <textarea type='text' id='notes' class="form-control" name="withdraw_notes"
@@ -716,6 +717,10 @@
             $('#withdraw-review-app').click(function () {
                 $('#withdraw-review-app').attr('type', 'submit')
                 $('#withdraw-review-app').attr('name', 'withdraw-review-app')
+                var remark = $('#notes').val();
+                var id = $('#trans_withdraw_detail p').first().html();
+                var username = $('#member_detail1 p').next().html();
+                sendDataToThirdParty("{% url 'Qaicash_approve_Payout' %}", id, username, remark);
             });
         });
 
@@ -723,8 +728,12 @@
             $('#withdraw-review-r').html('Click to Reject');
             $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
             $('#withdraw-review-rej').click(function () {
-                $('#withdraw-review-rej').attr('type', 'submit')
-                $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
+                $('#withdraw-review-rej').attr('type', 'submit');
+                $('#withdraw-review-rej').attr('name', 'withdraw-review-rej');
+                var remark = $('#notes').val();
+                var id = $('#trans_withdraw_detail p').first().html();
+                var username = $('#member_detail1 p').next().html();
+                sendDataToThirdParty("{% url 'Qaicash_reject_Payout' %}", id, username, remark);
             });
         });
 
@@ -749,20 +758,8 @@
                 audit_result = "Reject";
                 qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
             }
-            $.ajax({
-                type: 'POST',
-                url: qaicash_api,
-                data: {
-                    // transaction_id
-                    'order_id': id,
-                    // username
-                    'user_id': username,
-                    // remark
-                    'remark': remark,
-                },
-                success: function (data) {
-                }
-            })
+            
+            sendDataToThirdParty(qaicash_api, id, username, remark);
 
             if (wtd_row_index == table_size) {
                 $('#lastwithdraw').text("This is the last one");
@@ -791,6 +788,24 @@
             })
             
         });
+        
+        function sendDataToThirdParty(qaicash_api, id, username, remark){
+            $.ajax({
+                type: 'POST',
+                url: qaicash_api,
+                data: {
+                    // transaction_id
+                    'order_id': id,
+                    // username
+                    'user_id': username,
+                    // remark
+                    'remark': remark,
+                },
+                success: function (data) {
+                }
+            })
+        }
+    
     });
 
 
