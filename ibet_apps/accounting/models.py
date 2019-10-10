@@ -178,6 +178,9 @@ class Transaction(models.Model):
 
     # commission tracsaction
     month = models.DateField(null=True, blank=True)
+    #Asiapay qrcode
+    qrcode = models.CharField(max_length=500, null=True, blank= True, verbose_name=_("QRCode"))
+
     commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
 
     # release bonus, adjustment to affiliate...

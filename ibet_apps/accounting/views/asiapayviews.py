@@ -197,8 +197,14 @@ class submitDeposit(generics.GenericAPIView):
                         rrdata = rr.text
                         logger.info(rrdata)
                         return HttpResponse(rrdata)
+                     
                     else:
                         rrdata = rr.json()
+                        qr_url = rrdata["qr"]
+                        if qr_url != 'null':
+                            updateData = Transaction.objects.get(order_id=oID)
+                            updateData.qrcode = qr_url
+                            updateData.save()
                         return Response(rrdata)
                 elif PayWay == '10':
                     sPayMoney = tree.find('sPayMoney').text
@@ -464,11 +470,13 @@ def depositArrive(request):
                 trans.status = 0
                 trans.arrive_time = timezone.now()
                 trans.remark = 'Transaction success'
+                trans.qrcode = ''
                 trans.save()
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
                 trans.status = 1
                 trans.remark = 'Transaction failed'
+                trans.qrcode = ''
                 trans.save()
                 return HttpResponse(ET.tostring(root1),content_type="text/xml")
 
