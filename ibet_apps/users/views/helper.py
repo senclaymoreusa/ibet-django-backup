@@ -124,7 +124,7 @@ def get_old_limitations(userId):
 
 
 def checkUserBlock(userId):
-
+    
     user = get_object_or_404(CustomUser, pk=userId)
     if user.block is True:
         return True
