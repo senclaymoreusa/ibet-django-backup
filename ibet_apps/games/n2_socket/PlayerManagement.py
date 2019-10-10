@@ -50,10 +50,11 @@ class PlayerManagement:
                 
                 print(elem.tag + " => " + text)
         
-        #validate the user Id here
+        # retrieve user balance
         return GetPlayerBalance(self.loginId, currencyId) # returns tuple (user, status)
 
     def ProcessTradeRequest(self, xmlDoc):
+        trades = []
         for root in xmlDoc.getchildren():
             for elem in root.getchildren():
                 if not elem.text:
@@ -70,9 +71,12 @@ class PlayerManagement:
                     gameid = text
                 if elem.tag == "tradeid":
                     tradeid = text
-
+                if elem.tag == "tradeid":
+                    amount = text
+                
                 print(elem.tag + " => " + text)
         
+        # MakeTrade() to implement
         return 0
 
     def GetLoginResponse(self, status, requestAction, requestMessageId, user):
@@ -91,7 +95,7 @@ class PlayerManagement:
             responseXml += "</result>"
             responseXml += "</n2xsd:n2root>"
         else:
-           PackExceptionMessage("slogin", status, requestAction, requestMessageId) # not implemented yet
+            return PackExceptionMessage("slogin", status, requestAction, requestMessageId) # not implemented yet
         return responseXml
 
     def GetBalanceResponse(self, status, requestAction, requestMessageId, user):
@@ -109,17 +113,26 @@ class PlayerManagement:
             responseXml += "</result>"
             responseXml += "</n2xsd:n2root>"
         else:
-           PackExceptionMessage("slogin", status, requestAction, requestMessageId)
+            return PackExceptionMessage("slogin", status, requestAction, requestMessageId)
         return responseXml
 
-def GetPlayerBalance(username, currencyId):
+
+def MakeTrade():
     pass
 
+def GetPlayerBalance(username, currencyId):
+    user = CustomUser.objects.get(username=username)
+    if user:
+        print("user " + login + " exists")
+        return (0, user)
+    else:
+        print("user not found!")
+        return (105, None)
 
 def ValidatePlayer(login, pw):
     user = authenticate(username=login, password=pw)
     if user:
-        print("user " + login + "exists")
+        print("user " + login + " exists")
         return (0, user)
     else:
         print("user not found!")

@@ -48,13 +48,14 @@ class MessageHandler:
                     (retStatus, user) = request.ProcessGetBalance(xmlDoc)
                     swamResponse = request.GetBalanceResponse(retStatus, messageAction, messageId, user)
                     #self.connection.AddResponseMessageQueue(swamResponse)
+                    
                 if messageAction == 'splacetrade':
                     print("place trade")
-                    
                     swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, user)
-                    
+
                 if messageAction == '':
-                    print("hi")
+                    # print("hi")
+                    # swamResponse = request.
                 return swamResponse
 
         except Exception as ex:
