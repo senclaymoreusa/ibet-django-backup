@@ -527,7 +527,7 @@ class getPayoutTransaction(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
-        print(rdata)
+        #print(rdata)
         logger.info(rdata)
         if r.status_code == 200:  
                
@@ -658,7 +658,7 @@ class rejectPayout(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
-        print(rdata)
+        #print(rdata)
         logger.info(rdata)
         if r.status_code == 200:  
             
