@@ -473,3 +473,14 @@ class WalletSettleAPIURL(APIView):
             }
         })
 
+
+class GenerateGameURL(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+
+        print(self.request.user.username)
+
+        return Response({'game_url': '1234'})
+
