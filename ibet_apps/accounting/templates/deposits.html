@@ -284,7 +284,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="type" value="audit_deposit"></input>
                         <input type="hidden" id="dep_trans_no" name="dep_trans_no"></input>
-                        <input type="hidden" id="deposit_row_index" name="deposit_row_index"></input>
+                        <input type="hidden" id="dep_row_index" name="dep_row_index"></input>
 
                         <div class="row deposit-request-word">
                             <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
@@ -374,10 +374,10 @@
 
                             <div id="deposit-request-button">
                                 <button type="button" class="btn btn-success" id="deposit-review-a">Approve</button>
-                                <button type="button" class="btn btn-success" name="deposit-review-appnext">Approve and
+                                <button type="button" class="btn btn-success" id="deposit-review-appnext">Approve and
                                     Next</button>
                                 <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button>
-                                <button type="button" class="btn btn-danger" name="deposit-review-rejnext">Reject and
+                                <button type="button" class="btn btn-danger" id="deposit-review-rejnext">Reject and
                                     Next</button>
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                             </div>
@@ -510,8 +510,6 @@
         // send data to pop-up window
         $('#pending_table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
-            // transaction index: data[0]
-            // transaction pk: data[13]
             showDepositeDetail(data);
             showBankDetail(data);
             var user_id = data[1];
@@ -555,7 +553,7 @@
             $("#member_detail2").append(content2);
         }
 
-        function addDepositRecord(data, trans_pk, deposit_row_index) {
+        function addDepositRecord(data, trans_pk, dep_row_index) {
             $("#latest_deposits").empty();
             content = "";
             for (var i = 0; i < data[0].length; i++) {
@@ -576,7 +574,7 @@
             }
             $("#latest_deposits").append(content);
             $("#dep_trans_no").val(trans_pk)
-            $("#deposit_row_index").val(deposit_row_index);
+            $("#dep_row_index").val(dep_row_index);
         }
 
         showDepositeDetail = function (data) {
@@ -624,10 +622,10 @@
             location.reload();
         });
 
-        $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (e) {
+        $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (e) {
             // Get data from the first row
             var dep_trans_no = $("#dep_trans_no").val();
-            var deposit_row_index = $("#deposit_row_index").val();
+            var dep_row_index = $("#dep_row_index").val();
             var pagination_num = table.page.len();
             var table_size = table.rows().count();
 
@@ -636,16 +634,16 @@
                 audit_result = "Reject";
             }
 
-            if (deposit_row_index == table_size) {
+            if (dep_row_index == table_size) {
                 $('#lastDeposit').text("This is the last one");
                 $('#lastDeposit').css('color', 'red');
             }
 
-            if (deposit_row_index % pagination_num == 0) {
+            if (dep_row_index % pagination_num == 0) {
                 table.page('next').draw('page');
-                deposit_row_index = deposit_row_index % pagination_num;
-            } else if (deposit_row_index > pagination_num) {
-                deposit_row_index = deposit_row_index % pagination_num;
+                dep_row_index = dep_row_index % pagination_num;
+            } else if (dep_row_index > pagination_num) {
+                dep_row_index = dep_row_index % pagination_num;
             }
 
             $.ajax({
@@ -658,7 +656,7 @@
                 },
                 success: function (data) {
                     // auto open next row audit btn
-                    $('#pending_table tbody tr').eq(deposit_row_index).find('#edit-pending-detail-btn').click()
+                    $('#pending_table tbody tr').eq(dep_row_index).find('#edit-pending-detail-btn').click();
                 }
             })
         })

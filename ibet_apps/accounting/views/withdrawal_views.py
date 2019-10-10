@@ -7,6 +7,7 @@ from django.db.models.functions import Coalesce
 from accounting.models import *
 from users.models import CustomUser
 from django.utils import timezone
+from django.urls import reverse
 
 import simplejson as json
 import logging
@@ -278,13 +279,6 @@ class WithdrawalView(CommAdminView):
             elif 'withdraw-review-rej' in request.POST:
                 current_tran.update(review_status=REVIEW_REJ)
                 logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
-            elif 'withdraw-review-appnext' in request.POST:
-                current_tran.update(review_status=REVIEW_APP)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Approve')
-            elif 'withdraw-review-rejnext' in request.POST:
-                current_tran.update(review_status=REVIEW_REJ)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
-
             return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))
         
         elif post_type == "reviewTransaction":
@@ -292,7 +286,6 @@ class WithdrawalView(CommAdminView):
             wtd_trans_no = request.POST.get("wtd_trans_no")
             result = request.POST.get("result")
             current_withdraw = Transaction.objects.get(pk=wtd_trans_no)
-            print(result)
             if result == "Approve":
                 current_withdraw.review_status = REVIEW_APP
                 logger.info('Finish update the status of withdrawosit' + str(wtd_trans_no) + ' to Approve')

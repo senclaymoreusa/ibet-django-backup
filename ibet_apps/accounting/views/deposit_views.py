@@ -258,13 +258,14 @@ class DepositView(CommAdminView):
             dep_trans_no = request.POST.get("dep_trans_no")
             result = request.POST.get("result")
             current_deposit = Transaction.objects.get(pk=dep_trans_no)
+            
             if result == "Approve":
                 current_deposit.review_status = REVIEW_APP
                 logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Approve')
             else:
                 current_deposit.review_status = REVIEW_REJ
                 logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Reject')
-                current_deposit.save()
+            current_deposit.save()
             return HttpResponse(status=200)
 
 

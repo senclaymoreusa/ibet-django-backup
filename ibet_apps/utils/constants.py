@@ -50,6 +50,18 @@ CURRENCY_TYPES = (
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
+HELP2PAY    =   0
+LINEPAY     =   1
+ASTROPAY    =   2
+QAICASH     =   3
+ASIAPAY     =   4
+PAYPAL      =   5
+PAYZOD      =   6
+CIRCLEPAY   =   7
+FGATE       =   8
+SCRATCHCARD =   9
+PAYMENTIQ   =   10
+
 CHANNEL_CHOICES = (
     (0, 'Help2Pay'),
     (1, 'LINEpay'),
@@ -103,6 +115,7 @@ TRAN_CANCEL_TYPE = 5
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
 TRAN_REJECTED_TYPE = 8
+TRAN_HELD_TYPE = 9
 
 STATE_CHOICES = (
     (0, 'SUCCESS'), 
