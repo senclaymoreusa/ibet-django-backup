@@ -12,4 +12,4 @@ from zeep import Client
 logger = logging.getLogger('django')
 
 client = Client(wsdl='https://ibet-web-dev.claymoreeuro.com/production.svc?wsdl')
-print(client.service.Add(12,13))
+#print(client.service.Add(12,13))
