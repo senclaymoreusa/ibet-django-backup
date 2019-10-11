@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate
 from users.models import CustomUser
 
+import decimal
 import games.n2_socket.n2_constants as const
 
 
@@ -26,6 +27,16 @@ class PlayerManagement:
         else:
             print("user not found!")
             return (105, None)    
+
+    def GetPlayerBalance(self, username, currencyId):
+        user = CustomUser.objects.get(username=username)
+        self.currencyId = currencyId
+        if user:
+            print("user " + username + " exists")
+            return (0, user)
+        else:
+            print("user not found!")
+            return (105, None)
 
     def ProcessLoginRequest(self, xmlDoc):
         for root in xmlDoc.getchildren():
@@ -62,9 +73,9 @@ class PlayerManagement:
                 print(elem.tag + " => " + text)
         
         # retrieve user balance
-        return GetPlayerBalance(self.loginId, currencyId) # returns tuple (status, user)
+        return self.GetPlayerBalance(self.loginId, currencyId) # returns tuple (status, user)
 
-    def ProcessTradeRequest(self, xmlDoc):
+    def ProcessTradeRequest(self, xmlDoc, action):
         trades = [] # array of trade objects
         for root in xmlDoc.getchildren():
             for elem in root.getchildren():
@@ -72,15 +83,14 @@ class PlayerManagement:
                     text = "None"
                 else:
                     text = elem.text
-                
                 if elem.tag == "userid":
                     self.loginId = text
                 if elem.tag == "vendorid":
                     self.vendorId = text
-                if elem.tag == "password":
-                    playerPassword = text
-                if elem.tag == "gameid":
-                    gameid = text
+                if elem.tag == "totalamount":
+                    totalamount = text
+                # if elem.tag == "gameid": record this data 
+                #     gameid = text
                 if elem.tag == "tradeid":
                     tradeid = text
                 if elem.tag == 'trades':
@@ -92,31 +102,25 @@ class PlayerManagement:
                             tradeData[details.tag] = details.text
                         trades.append(tradeData)
                         # print(tradeData.tag + "=" + tradeData.text)
-
-
-                # if elem.tag == "trade":
-                #     tradeid = elem.attrib['id']
-                # if elem.tag == "amount":
-                #     print("bet this amount")
-                #     amount = text
                 
                 print(elem.tag + " => " + text)
         print(trades)
-        # MakeTrade(gameid, tradeid, amount) # to implement
-        return [0, tradeid]
+        if action == "place":
+            print(PlaceBet(self.loginId, tradeid, totalamount))
+        if action == "process":
+            print(CreditUser(self.loginId, tradeid, totalamount))
+            
+        return (0, tradeid)
 
     def GetLoginResponse(self, status, requestAction, requestMessageId, user):
-        print("Currency ID: " + self.currencyId)
-        currencyId = self.currencyId
-        print("Currency ID: " + currencyId) 
         if status == 0:
             responseXml = "<?xml version=\"1.0\" encoding=\"utf-16\"?><n2xsd:n2root xmlns:n2xsd=\"urn:n2ns\">"
             responseXml += "<status>0</status>"
             responseXml += "<result action=\"" + requestAction + "\" id=\"" + requestMessageId + "\">"
             responseXml += "<userid>" + self.loginId + "</userid>"
             responseXml += "<username>" + str(user.first_name) + "</username>"
-            responseXml += "<acode></acode>"
-            responseXml += "<currencyid>" + currencyId + "</currencyid>"
+            responseXml += "<acode></acode>"  # affiliate code (not used?)
+            responseXml += "<currencyid>" + self.currencyId + "</currencyid>"
             responseXml += "<vendorid>" + self.vendorId + "</vendorid>"
             responseXml += "<merchantpasscode>" + self.passcode + "</merchantpasscode>"
             responseXml += "<sessiontoken>dasdasdasdasdadasd</sessiontoken>"
@@ -147,13 +151,14 @@ class PlayerManagement:
     
     def GetTradeResponse(self, status, requestAction, requestMessageId, tradeId):
         user = CustomUser.objects.get(username=self.loginId)
+        currencyId = const.CURRENCY_MAP[user.currency]
         print("User placing trade: " + str(user))
         if status == 0:
             responseXml = "<?xml version=\"1.0\" encoding=\"utf-16\"?><n2xsd:n2root xmlns:n2xsd=\"urn:n2ns\">"
             responseXml += "<status>0</status>"
             responseXml += "<result action=\"" + requestAction + "\" id=\"" + requestMessageId + "\">"
             responseXml += "<userid>" + self.loginId + "</userid>"
-            responseXml += "<currencyid>" + self.currencyId + "</currencyid>"
+            responseXml += "<currencyid>" + currencyId + "</currencyid>"
             responseXml += "<balance>" + str(user.main_wallet) + "</balance>"
             responseXml += "<tradeid>" + str(tradeId) + "</tradeid>"
             responseXml += "<vendorid>" + self.vendorId + "</vendorid>"
@@ -163,23 +168,23 @@ class PlayerManagement:
             responseXml += "</n2xsd:n2root>"
         else:
             return PackExceptionMessage(status, requestAction, requestMessageId)
+        return responseXml
+    
 
-    def PushTradeResponse(self):
-        pass
+def CreditUser(userid, tradeid, totalamount):
+    user = CustomUser.objects.get(username=userid)
+    print("crediting user " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
+    new_balance = user.main_wallet + decimal.Decimal(totalamount)
+    print("user's balance is now: " + str(new_balance))
+    user.main_wallet = new_balance
+    return user.save()
 
-def MakeTrade():
-    pass
-
-def GetPlayerBalance(username, currencyId):
-    user = CustomUser.objects.get(username=username)
-    if user:
-        print("user " + username + " exists")
-        return (0, user)
-    else:
-        print("user not found!")
-        return (105, None)
-
-
+def PlaceBet(userid, tradeid, totalamount):
+    user = CustomUser.objects.get(username=userid)
+    print("processing " + tradeid + " for user: " + str(user))
+    new_balance = user.main_wallet - decimal.Decimal(totalamount)
+    user.main_wallet = new_balance
+    return user.save()
 
 def PackExceptionMessage(status, action, messageId):
     desc = DESC_MAP[status]
@@ -192,3 +197,33 @@ def PackExceptionMessage(status, action, messageId):
     exceptionMsg += '</n2xsd:n2root>'
     return exceptionMsg
 
+def ProcessTradeResult(self, xmlDoc):
+    trades = [] # array of trade objects
+    for root in xmlDoc.getchildren():
+        for elem in root.getchildren():
+            if not elem.text:
+                text = "None"
+            else:
+                text = elem.text
+            if elem.tag == "userid":
+                self.loginId = text
+            if elem.tag == "vendorid":
+                self.vendorId = text
+            if elem.tag == "totalamount":
+                totalamount = text
+            # if elem.tag == "gameid": record this data in bet history
+            #     gameid = text
+            if elem.tag == "tradeid":
+                tradeid = text
+            if elem.tag == 'trades':
+                for trade in elem.getchildren():
+                    tradeData = {
+                        'id': trade.attrib['id']
+                    }
+                    for details in trade.getchildren():
+                        tradeData[details.tag] = details.text
+                    trades.append(tradeData)
+    print(trades)
+    CreditUser(loginId, totalamount)
+    # RecordBetOutcomes(trades) # TODO: function that records all the bets to user's bet history
+    return (0, tradeId)

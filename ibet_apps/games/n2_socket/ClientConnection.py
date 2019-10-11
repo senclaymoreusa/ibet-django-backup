@@ -103,8 +103,8 @@ class ClientConnection:
                 if message != None:
                     responseMessage = self.messageHandler.ProcessRequestMessage(
                         message)
+                    print("response message: " + str(responseMessage))
                     if responseMessage != None:
-                        print("response message: " + str(responseMessage))
                         self.ProcessResponseMessage(sock, responseMessage)
             else:
                 self.CleanUp()

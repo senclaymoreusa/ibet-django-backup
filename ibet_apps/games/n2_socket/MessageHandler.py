@@ -50,12 +50,15 @@ class MessageHandler:
                     (retStatus, user) = request.ProcessGetBalance(xmlDoc)
                     swamResponse = request.GetBalanceResponse(retStatus, messageAction, messageId, user)
                 if messageAction == 'splacetrade':
-                    [retStatus, tradeId] = request.ProcessTradeRequest(xmlDoc)
+                    (retStatus, tradeId) = request.ProcessTradeRequest(xmlDoc, "place")
                     swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, tradeId)
                 if messageAction == 'spushtrade':
-                    print("hi")
-                    # swamResponse = request.
-                
+                    (retStatus, tradeId) = request.ProcessTradeRequest(xmlDoc, "push")
+                    swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, tradeId)
+                if messageAction == 'straderesult':
+                    (retStatus, tradeId) = request.ProcessTradeRequest(xmlDoc, "process")
+                    swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, tradeId)
+
                 #self.connection.AddResponseMessageQueue(swamResponse)
                 return swamResponse
 
