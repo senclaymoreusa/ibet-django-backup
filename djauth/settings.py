@@ -306,7 +306,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 log_filename = "logs/debug.log"
 os.makedirs(os.path.dirname(log_filename), exist_ok=True)  
 
-'''
+
 # Logging setup added by Stephen
 if os.getenv("ENV") == "local":
     LOGGING = {
@@ -385,7 +385,6 @@ else:
         }
     }
 
-'''
 
 TIME_ZONE = 'America/Los_Angeles'
 
