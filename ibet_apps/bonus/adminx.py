@@ -7,7 +7,7 @@ class BonusAdmin(object):
                     'is_free_bid','status','type','campaign','affiliate_limit','release_type','image_s3')
 
 class RequirementAdmin(object):
-    list_display = ('requirement_id','field_name', 'aggregate_method', 'time_limit', 'turnover_multiplier', 'amount_threshold')
+    list_display = ('field_name', 'aggregate_method', 'time_limit', 'turnover_multiplier', 'amount_threshold')
 
 xadmin.site.register(Bonus,BonusAdmin)
 xadmin.site.register(Requirement,RequirementAdmin)

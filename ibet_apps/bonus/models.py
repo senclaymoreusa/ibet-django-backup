@@ -39,7 +39,7 @@ class Bonus(models.Model):
 
 
 # Mapping between Bonuses and Categories
-# This is a 1:n relationship, which indicates which cate`````````````````````````````````````````````````````````````gories a user can use a bonus in
+# This is a 1:n relationship, which indicates which categories a user can use a bonus in
 class BonusCategory(models.Model):
 
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
