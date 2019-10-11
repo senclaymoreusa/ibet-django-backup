@@ -61,6 +61,7 @@ class RegisterSerializer(serializers.Serializer):
     zipcode          = serializers.CharField(required=False)
     over_eighteen    = serializers.BooleanField(required=False)
     language         = serializers.CharField(required=False)
+    referral_code    = serializers.CharField(required=False)
 
 
 
@@ -130,6 +131,7 @@ class RegisterSerializer(serializers.Serializer):
             'zipcode':          self.validated_data.get('zipcode', ''),
             'over_eighteen':    self.validated_data.get('over_eighteen', ''),
             'language':         self.validated_data.get('language', ''),
+            'referral_code':    self.validated_data.get('referral_code', ''),
         }
 
     def save(self, request):
@@ -139,7 +141,7 @@ class RegisterSerializer(serializers.Serializer):
         adapter.save_user(request, user, self)
         self.custom_signup(request, user)
         setup_user_email(request, user, [])
-
+        
         user.phone            = self.cleaned_data.get('phone')
         user.date_of_birth    = self.cleaned_data.get('date_of_birth')
         user.street_address_1 = self.cleaned_data.get('street_address_1')

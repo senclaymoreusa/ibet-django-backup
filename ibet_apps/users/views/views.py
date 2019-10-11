@@ -365,6 +365,7 @@ class LoginView(GenericAPIView):
             data["errorMsg"] = {
                 "detail": [errorMessage]
             }
+            # TODO: ADD LOG
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
 
