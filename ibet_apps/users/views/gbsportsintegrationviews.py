@@ -6,6 +6,9 @@ from ..models import CustomUser, GameRequestsModel
 import simplejson as json
 import xmltodict
 import decimal
+import requests
+import json
+import uuid
 
 class WalletGeneralAPI(APIView):
 
@@ -481,6 +484,61 @@ class GenerateGameURL(APIView):
     def get(self, request, *args, **kwargs):
 
         print(self.request.user.username)
+
+        TPUniqueID = uuid.uuid4()
+
+        data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+            
+        "GB": {
+            "Method": "UpdateTPUniqueID",
+            "TPCode": "011",
+            "AuthKey": "kvZES8",
+            "Params": {
+                "MemberID": self.request.user.username,
+                "TPUniqueID": str(TPUniqueID) 
+                }
+            }
+        })
+
+        dic = data.json()
+
+        print(dic)
+
+        if 'Error' in dic['GB']['Result']['ReturnSet']:
+            print('456')
+            create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+            
+            "GB": {
+                "Method": "CreateMember",
+                "TPCode": "011",
+                "AuthKey": "kvZES8",
+                "Params": {
+                    "MemberID": self.request.user.username,
+                    "FirstName": self.request.user.first_name,
+                    "LastName": self.request.user.last_name,
+                    "Nickname": self.request.user.username,
+                    "Gender": "2",
+                    "Birthdate": self.request.user.date_of_birth,
+                    "CyCode": "CN",
+                    "CurCode": "CNY",
+                    "LangCode": "zh-cn",
+                    "TPUniqueID": "new"
+                    }
+                }
+            })
+
+            print('456789')
+
+            create_user_data = create_user_data.json()
+
+            print(create_user_data)
+            GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
+
+        else:
+            GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
+
+        print(GBSN)
+
 
         return Response({'game_url': '1234'})
 
