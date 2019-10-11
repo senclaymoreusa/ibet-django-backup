@@ -24,8 +24,7 @@ class VIPView(CommAdminView):
             context = super().get_context()
             context['time'] = timezone.now()
             title = "VIP overview"
-            context["breadcrumbs"].append(
-                {'url': '/vip_overview/', 'title': title})
+            context["breadcrumbs"].append({'title': title})
             context["title"] = title
             return render(request, 'vip/vip_management.html', context)
 
