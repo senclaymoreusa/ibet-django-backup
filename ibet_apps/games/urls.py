@@ -12,12 +12,12 @@ urlpatterns = [
     path('api/login-ea/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
     path('api/single-login-ea/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
     path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
-    path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login")
+    path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
 
     # Inplay Matrix
-    path('api/inplay/login', csrf_exempt(inplayviews.InplayLoginAPI.as_view(), name="inplay-login"),
-    path('api/inplay/get-balance', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay-get-balance"),
-    path('api/inplay/get-approval', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay-get-approval"),
-    path('api/inplay/deduct-balance', csrf_exempt(inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
+    path('api/inplay/login', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay-login"),
+    # path('api/inplay/get-balance', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay-get-balance"),
+    # path('api/inplay/get-approval', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay-get-approval"),
+    # path('api/inplay/deduct-balance', csrf_exempt(inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
     # path('api')
 ]
