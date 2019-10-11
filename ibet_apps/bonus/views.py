@@ -162,6 +162,8 @@ class BonusView(View):
                 bonus.affiliate_limit = req_data['affiliate_limit']
                 bonus.release_type = req_data['release_type']
                 bonus.image_s3 = req_data['image_s3']
+                bonus.status = req_data['status'],
+
                 bonus.save()
             except Exception as e:
                 logger.error("Error updating Bonus object: ", e)
