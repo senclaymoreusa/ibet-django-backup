@@ -31,31 +31,32 @@ class MessageHandler:
         try:
             xmlDoc = etree.fromstring(bytes(swamXml, 'utf-16'))
             
-            for elem in xmlDoc.getchildren():
-                messageAction = elem.attrib['action']
-                messageId = elem.attrib['id']
-                print(messageAction)
+            elem = xmlDoc.getchildren()[0]
+            messageAction = elem.attrib['action']
+            messageId = elem.attrib['id']
+
+            print("Action: " + messageAction + ", id: " + messageId)
+
             if messageAction == 'spingalive':  #return nothing
                 if int(messageId) % 100 == 0:
                     print(messageId)
             else:
+                swamResponse = ''
                 request = playerManagement.PlayerManagement(self.vendorId, self.passcode)
                 if  messageAction == 'slogin':        
                     (retStatus, user) = request.ProcessLoginRequest(xmlDoc)
                     swamResponse = request.GetLoginResponse(retStatus, messageAction, messageId, user)
-                    #self.connection.AddResponseMessageQueue(swamResponse)
                 if messageAction == 'sgetbalance':
                     (retStatus, user) = request.ProcessGetBalance(xmlDoc)
                     swamResponse = request.GetBalanceResponse(retStatus, messageAction, messageId, user)
-                    #self.connection.AddResponseMessageQueue(swamResponse)
-                    
                 if messageAction == 'splacetrade':
-                    print("place trade")
-                    swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, user)
-
-                if messageAction == '':
-                    # print("hi")
+                    [retStatus, tradeId] = request.ProcessTradeRequest(xmlDoc)
+                    swamResponse = request.GetTradeResponse(retStatus, messageAction, messageId, tradeId)
+                if messageAction == 'spushtrade':
+                    print("hi")
                     # swamResponse = request.
+                
+                #self.connection.AddResponseMessageQueue(swamResponse)
                 return swamResponse
 
         except Exception as ex:

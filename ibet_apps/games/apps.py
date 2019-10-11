@@ -9,4 +9,6 @@ class GamesConfig(AppConfig):
     def ready(self):
         print("Games Config Ready")
         import games.n2_socket.Main as mainSocket
+        print("Running Main()")
         mainSocket.main()
+        print("Ready")

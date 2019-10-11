@@ -119,7 +119,7 @@ class ClientConnection:
                 else:
                     return None
 
-            print('SOH received, message incoming...')
+            # print('SOH received, message incoming...')
 
             # get the data packet size
             networkByte = b''
@@ -149,23 +149,26 @@ class ClientConnection:
                     return None
 
             if ord(networkByte[-1:]) == 4:  #EOT
-                print('EOT reached')
+                # print('EOT reached')
                 return networkByte[:-1]
             else:
-                print('None')
+                print('No EOT')
                 return None
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
             return None
+    def sumOfAscii(self, msg):
+        return sum([ord(i) for i in msg])
 
     def ProcessResponseMessage(self, sock, responseMessage):
         try:
             print("Thread " + str(self.threadId) + " received this: " +
                   responseMessage)
             responseLen = len(responseMessage)
-            totalAscii = self.calculateTotalAsciiValue(responseMessage,
-                                                       responseLen)
+            totalAscii = self.sumOfAscii(responseMessage)
+
             checkSum = 256 - (totalAscii % 256)
+            print("checksum: " + str(checkSum))
             responseMessage = self.GetBytes(bytes(responseMessage, 'utf-8'),
                                             responseLen)
             encryptedPacket = self.Endecrypt(self.passcode, len(self.passcode),
