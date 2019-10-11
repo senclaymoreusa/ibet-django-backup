@@ -61,26 +61,30 @@ class BonusView(View):
     # Returns a Bonus object in JSON (containing all the requirements as a list)
     def get(self, request, *arg, **kwargs):
 
-        bonus_pk = self.kwargs.get('pk')
-        bonus = Bonus.objects.get(pk=bonus_pk)
+        try:
+            bonus_pk = self.kwargs.get('pk')
+            bonus = Bonus.objects.get(pk=bonus_pk)
+            bonus_data = serializers.serialize('json', {bonus})
+            bonus_data = json.loads(bonus_data)[0]['fields']
 
-        bonus_data = serializers.serialize('json', {bonus})
-        bonus_data = json.loads(bonus_data)[0]['fields']
+            # We need to iterate through all the requirements as we do not have the mapping,
+            # but that should be fine performance-wise, as we don't have too many bonuses or requirements anyway.
+            reqs = Requirement.objects.all()
+            for req in reqs:
 
-        # We need to iterate through all the requirements as we do not have the mapping,
-        # but that should be fine performance-wise, as we don't have too many bonuses or requirements anyway.
-        reqs = Requirement.objects.all()
-        for req in reqs:
+                if bonus_pk != str(req.bonus.pk):
+                    continue
 
-            if bonus_pk != str(req.bonus.pk):
-                continue
+                req_data = serializers.serialize('json', [req])
+                req_data = json.loads(req_data)[0]
+                if 'requirements' in bonus_data.keys():
+                    bonus_data['requirements'].append(req_data)
+                else:
+                    bonus_data['requirements'] = [req_data]
 
-            req_data = serializers.serialize('json', [req])
-            req_data = json.loads(req_data)[0]
-            if 'requirements' in bonus_data.keys():
-                bonus_data['requirements'].append(req_data)
-            else:
-                bonus_data['requirements'] = [req_data]
+        except Exception as e:
+            logger.error("Error getting Bonus object: ", e)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(json.dumps(bonus_data), content_type='application/json', status=200)
 
@@ -96,7 +100,7 @@ class BonusView(View):
 
         req_data = json.loads(request.body)
 
-        if bonus == None:
+        if bonus is None:
 
             try:
                 bonus_obj = Bonus (
@@ -122,6 +126,7 @@ class BonusView(View):
                 bonus_obj.save()
             except Exception as e:
                 logger.error("Error saving new Bonus object: ", e)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 requirements = req_data['requirements']
