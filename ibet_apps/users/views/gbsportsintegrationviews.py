@@ -502,10 +502,11 @@ class GenerateGameURL(APIView):
 
         dic = data.json()
 
-        print(dic)
 
         if 'Error' in dic['GB']['Result']['ReturnSet']:
-            print('456')
+
+            temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
+            print(temp)
             create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
             
             "GB": {
@@ -518,7 +519,7 @@ class GenerateGameURL(APIView):
                     "LastName": self.request.user.last_name,
                     "Nickname": self.request.user.username,
                     "Gender": "2",
-                    "Birthdate": self.request.user.date_of_birth,
+                    "Birthdate": '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]]),
                     "CyCode": "CN",
                     "CurCode": "CNY",
                     "LangCode": "zh-cn",
@@ -537,8 +538,15 @@ class GenerateGameURL(APIView):
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
 
-        print(GBSN)
+        res = requests.get('http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
+        res = res.content.decode('utf-8')
+        res = res[2:-2]
+
+        url = 'http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+
+        print(url)
+
+        return Response({'game_url': url})
 
 
-        return Response({'game_url': '1234'})
 
