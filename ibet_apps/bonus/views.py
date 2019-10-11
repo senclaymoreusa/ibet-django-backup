@@ -84,9 +84,9 @@ class BonusView(View):
 
         except Exception as e:
             logger.error("Error getting Bonus object: ", e)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        return HttpResponse(json.dumps(bonus_data), content_type='application/json', status=200)
+        return HttpResponse(json.dumps(bonus_data), content_type='application/json', status=status.HTTP_200_OK)
 
     # Updates the Bonus object if the pk is given, and creates a new Bonus object otherwise.
     @transaction.atomic
@@ -126,7 +126,7 @@ class BonusView(View):
                 bonus_obj.save()
             except Exception as e:
                 logger.error("Error saving new Bonus object: ", e)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 requirements = req_data['requirements']
@@ -143,7 +143,7 @@ class BonusView(View):
                     req_new.save()
             except Exception as e:
                 logger.error("Error saving new Requirement object: ", e)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         ## I don't think we should allow all the fields of a bonus to be updated
         ## We also assume we cannot update requirements
@@ -165,7 +165,7 @@ class BonusView(View):
                 bonus.save()
             except Exception as e:
                 logger.error("Error updating Bonus object: ", e)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        return HttpResponse(status=200)
+        return HttpResponse(status=status.HTTP_200_OK)
 
