@@ -485,6 +485,8 @@ class GenerateGameURL(APIView):
 
         print(self.request.user.username)
 
+        game = self.request.GET['game']
+
         TPUniqueID = uuid.uuid4()
 
         data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
@@ -542,11 +544,20 @@ class GenerateGameURL(APIView):
         res = res.content.decode('utf-8')
         res = res[2:-2]
 
-        url = 'http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+        print(game)
 
+        dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
+
+        if game == 'GB Sports':
+            url = 'http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+        else:
+            url = 'http://163.claymoreusa.net/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
         print(url)
 
         return Response({'game_url': url})
+
+#http://163.claymoreusa.net/lotto/default.aspx?tpid=011&token=9471d1946d67599492345de66b007336248092d12675fde07cbaeeb7ba0462fedac0b70d91b126daa34357a184fea530bb45f000531d615203b738e05c382acdcbed5eea270a51b737b886095906bc8f3868888dcdfd7d3db31d0f4f0444943e1c9714606c4e0dc43b60b0deb4e4344e&languagecode=en-us
+#http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token=267e6b55e4e17809a0a557456f4b5d32d8f4907dbc57013a59034de7f2722ebec0161a38a6c95d3d076d48b122981946bacfe214763bec3f02637b2c70777ffc04009b53ebba6f773b8eac623734c5c9b783466709c0b9e0820051c031df5f6f83ebb7971633ac32fd91e29b1ab85323&languagecode=en-us&oddstype=00001
 
 
 
