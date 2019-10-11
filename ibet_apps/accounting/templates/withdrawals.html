@@ -451,6 +451,7 @@
 
                             <div class="form-group">
                                 <p id='lastwithdraw'>&nbsp;</p>
+                                <p id='reviewError'>&nbsp;</p>
                                 <label for="withdraw_notes" class="withdraw-request-word"
                                     style="margin-left: 10px">NOTES</label>
                                 <textarea type='text' id='notes' class="form-control" name="withdraw_notes"
@@ -540,7 +541,6 @@
             },
         });
 
-
         var other_table = $('#approved_table, #rejected_table, #success_table, #rejected_table, #failed_table').DataTable({
             responsive: true,
             dom: 'B<ftilp>',
@@ -569,7 +569,6 @@
             table.search($('#search').val()).draw();
             other_table.search($('#search').val()).draw();
         });
-
 
         // date range search
         $.fn.dataTable.ext.search.push(
@@ -715,12 +714,12 @@
             $('#withdraw-review-a').html('Click to Approve');
             $('#withdraw-review-a').attr('id', 'withdraw-review-app');
             $('#withdraw-review-app').click(function () {
-                $('#withdraw-review-app').attr('type', 'submit')
+                // $('#withdraw-review-app').attr('type', 'submit')
                 $('#withdraw-review-app').attr('name', 'withdraw-review-app')
                 var remark = $('#notes').val();
                 var id = $('#trans_withdraw_detail p').first().html();
-                var username = $('#member_detail1 p').next().html();
-                sendDataToThirdParty("{% url 'Qaicash_approve_Payout' %}", id, username, remark);
+                var userID = $('#member_detail1 p').first().html();
+                sendDataToThirdParty("{% url 'Qaicash_approve_Payout' %}", id, userID, remark, -1);
             });
         });
 
@@ -728,12 +727,12 @@
             $('#withdraw-review-r').html('Click to Reject');
             $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
             $('#withdraw-review-rej').click(function () {
-                $('#withdraw-review-rej').attr('type', 'submit');
+                // $('#withdraw-review-rej').attr('type', 'submit');
                 $('#withdraw-review-rej').attr('name', 'withdraw-review-rej');
                 var remark = $('#notes').val();
                 var id = $('#trans_withdraw_detail p').first().html();
-                var username = $('#member_detail1 p').next().html();
-                sendDataToThirdParty("{% url 'Qaicash_reject_Payout' %}", id, username, remark);
+                var userID = $('#member_detail1 p').first().html();
+                sendDataToThirdParty("{% url 'Qaicash_reject_Payout' %}", id, userID, remark, -1);
             });
         });
 
@@ -749,7 +748,7 @@
             var table_size = table.rows().count();
             var remark = $('#notes').val();
             var id = $('#trans_withdraw_detail p').first().html();
-            var username = $('#member_detail1 p').next().html();
+            var userID = $('#member_detail1 p').first().html();
 
             var audit_result = "Approve";
             var qaicash_api = "{% url 'Qaicash_approve_Payout' %}";
@@ -759,8 +758,6 @@
                 qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
             }
             
-            sendDataToThirdParty(qaicash_api, id, username, remark);
-
             if (wtd_row_index == table_size) {
                 $('#lastwithdraw').text("This is the last one");
                 $('#lastwithdraw').css('color', 'red');
@@ -772,40 +769,38 @@
             } else if (wtd_row_index > pagination_num) {
                 wtd_row_index = wtd_row_index % pagination_num;
             }
-
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'xadmin:withdrawal_view' %}",
-                data: {
-                    'type': 'reviewTransaction',
-                    'wtd_trans_no': wtd_trans_no,
-                    'result': audit_result,
-                },
-                success: function (data) {
-                    // auto open next row audit btn
-                    $('#withdrawal_pending_table tbody tr').eq(wtd_row_index).find('#edit-pending-detail-btn').click();
-                }
-            })
-            
+            sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index);            
         });
         
-        function sendDataToThirdParty(qaicash_api, id, username, remark){
-            $.ajax({
+        function sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index){
+            var response = $.ajax({
                 type: 'POST',
                 url: qaicash_api,
                 data: {
                     // transaction_id
                     'order_id': id,
                     // username
-                    'user_id': username,
+                    'user_id': userID,
                     // remark
                     'remark': remark,
                 },
                 success: function (data) {
+                    if (data['code']!== undefined){
+                        // has error
+                        var errorMsg = data['error'];
+                        $('#reviewError').text(errorMsg);
+                        $('#reviewError').css('color', 'red');
+                    }else{
+                        // transaction success
+                        if (wtd_row_index >= 0){
+                            $('#withdrawal_pending_table tbody tr').eq(wtd_row_index).find('#edit-pending-detail-btn').click();
+                        }else{
+                            location.reload();
+                        }
+                    }
                 }
-            })
+            });
         }
-    
     });
 
 

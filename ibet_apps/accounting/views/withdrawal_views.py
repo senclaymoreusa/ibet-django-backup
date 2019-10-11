@@ -265,35 +265,6 @@ class WithdrawalView(CommAdminView):
 
             return render(request, "withdrawals.html", context)
 
-    def post(self, request):
-        post_type = request.POST.get("type")
-
-        if post_type == "audit_withdraw":
-            withdraw_notes = request.POST.get("withdraw_notes")
-            wtd_trans_no = request.POST.get("wtd_trans_no")
-            current_tran = Transaction.objects.filter(pk=wtd_trans_no)
-            current_tran.update(remark=withdraw_notes)
-            if 'withdraw-review-app' in request.POST:
-                current_tran.update(review_status=REVIEW_APP)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Approve')
-            elif 'withdraw-review-rej' in request.POST:
-                current_tran.update(review_status=REVIEW_REJ)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
-            return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))
-        
-        elif post_type == "reviewTransaction":
-            wtd_row_index = request.POST.get("wtd_row_index")
-            wtd_trans_no = request.POST.get("wtd_trans_no")
-            result = request.POST.get("result")
-            current_withdraw = Transaction.objects.get(pk=wtd_trans_no)
-            if result == "Approve":
-                current_withdraw.review_status = REVIEW_APP
-                logger.info('Finish update the status of withdrawosit' + str(wtd_trans_no) + ' to Approve')
-            else:
-                current_withdraw.review_status = REVIEW_REJ
-                logger.info('Finish update the status of withdrawosit' + str(wtd_trans_no) + ' to Reject')
-            current_withdraw.save()
-            return HttpResponse(status=200)
 
 def myconverter(o):
     if isinstance(o, timezone.date):

@@ -593,7 +593,7 @@ class approvePayout(generics.GenericAPIView):
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
-
+        
         rdata = r.json()
         logger.info(rdata)
         user = CustomUser.objects.get(username=rdata['userId'])   
@@ -603,7 +603,11 @@ class approvePayout(generics.GenericAPIView):
             update_data.order_id=rdata['transactionId']
             update_data.last_updated=rdata["dateUpdated"]
             update_data.status=4
+            update_data.review_status = REVIEW_APP
+            update_data.remark = notes
+            update_data.release_by = user
             update_data.save()
+            logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
             return Response(rdata)
         except ObjectDoesNotExist as e:
             logger.error(e)
@@ -680,9 +684,12 @@ class rejectPayout(generics.GenericAPIView):
                     method= rdata["payoutMethod"],
                     currency= cur_val,
                     transaction_type=1,
-                    review_status=2,
                     channel=3,
+                    review_status = REVIEW_REJ,
+                    remark = notes,
+                    release_by = user,
                 )
+                logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Reject')
                 return Response(rdata)
             except ObjectDoesNotExist as e:
                 logger.error(e)
