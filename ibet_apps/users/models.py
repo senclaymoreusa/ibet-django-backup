@@ -12,7 +12,6 @@ from accounting.models import DepositChannel, DepositAccessManagement, WithdrawC
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
-from utils.admin_helper import generate_unique_refer_code
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -260,7 +259,7 @@ class ReferLink(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            code = str(generate_unique_refer_code())
+            code = str(utils.admin_helper.generate_unique_refer_code())
             self.refer_link_code = code
         return super(ReferLink, self).save(*args, **kwargs)
 
@@ -537,11 +536,8 @@ class GameRequestsModel(models.Model):
     hostid          = models.CharField(max_length=100, blank=True)
     txn_reverse_id  = models.CharField(max_length=100, blank=True)
 
-
-
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
-
 
 
 @receiver(post_save, sender=CustomUser)
