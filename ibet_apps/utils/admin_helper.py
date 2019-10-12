@@ -4,13 +4,14 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
 
-from users.models import *
+from users.models import CustomUser, ReferLink
 from accounting.models import Transaction
 from utils.constants import *
 
 
 
 import logging
+import uuid
 
 logger = logging.getLogger('django')
 
@@ -72,3 +73,14 @@ def calculateFTD(user_group, start_date, end_date):
 
 def calculateTurnover(user):
     return 0
+
+# USER SYSTEM
+# create unique refer code for both user and affiliate
+def generate_unique_refer_code():
+    code = uuid.uuid4().hex[:6].upper()
+    while True:
+        if not ReferLink.objects.filter(refer_link_code=code).exists():
+            break
+        else:
+            code = uuid.uuid4().hex[:6].upper()
+    return code

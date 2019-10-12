@@ -12,6 +12,7 @@ from accounting.models import DepositChannel, DepositAccessManagement, WithdrawC
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
+from utils.admin_helper import generate_unique_refer_code
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -252,16 +253,19 @@ class ReferLink(models.Model):
     
     refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
+    refer_link_code = models.URLField(max_length=200, unique=True, null=True, blank=True)
     refer_link_name = models.CharField(max_length=50, default="default")
     ## time of this link was created
     genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if self.pk:
-            code = generate_unique_verification_code()
-            self.refer_link_url = code
+            code = str(generate_unique_refer_code())
+            self.refer_link_code = code
         return super(ReferLink, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return  self.refer_link_name
 
 
 class UserWithTag(models.Model):
@@ -544,30 +548,8 @@ class GameRequestsModel(models.Model):
 def my_handler(sender, **kwargs):
     if kwargs['created']:
         user=kwargs['instance']
-        temp_refer_link_url = generate_unique_verification_code()
-        refer_link = ReferLink.objects.create(
-            user_id = user,
+        link = ReferLink(
+            user_id=user,
         )
-        logger.info("Auto created a refer link for new user" + str(user.username))
-    
-
-def generate_verification_code():
-    return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
-
-def generate_unique_verification_code():
-    temp_refer_link_url = str(generate_verification_code())[2:-1]
-    while ReferLink.objects.filter(refer_link_url=temp_refer_link_url):   # make sure no duplicates
-        temp_refer_link_url = str(generate_verification_code())[2:-1]
-    return temp_refer_link_url
-
-
-#  def save(self, *args, **kwargs):
-#         if self.pk:
-#             temp = str(self.generate_verification_code())[2:-1]
-#             while ReferLink.objects.filter(refer_link_url=temp):   # make sure no duplicates
-#                 temp = str(self.generate_verification_code())[2:-1]
-#             self.refer_link_url = temp
-
-#         return super(ReferLink, self).save(*args, **kwargs)
-
-    
+        link.save()
+        logger.info("Auto created a refer code " + str(link.refer_link_code) + " for new user " + str(user.username))
