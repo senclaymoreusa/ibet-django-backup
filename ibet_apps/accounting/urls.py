@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/asiapay/orderStatus', asiapay.orderStatus.as_view(), name='AsiaPay_Order_Status'),
     path('api/asiapay/exchangeRate', asiapay.exchangeRate.as_view(), name='AsiaPay_Exchange_Rate'),
     path('api/asiapay/depositArrive', csrf_exempt(asiapay.depositArrive), name='AsiaPay_deposit_Arrive'),
+    path('api/asiapay/cashoutArrive', csrf_exempt(asiapay.payoutArrive), name='AsiaPay_cashout_Arrive'),
     path('api/help2pay/deposit', help2pay.SubmitDeposit.as_view(), name='Help2pay_Deposit'),
     path('api/help2pay/deposit_result', help2pay.DepositResult.as_view(), name='Help2pay_deposit_result'),
     path('api/help2pay/deposit_success', help2pay.depositFrontResult, name = 'Help2pay_deposit_sucess'),

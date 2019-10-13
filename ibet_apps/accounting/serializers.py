@@ -174,6 +174,7 @@ class asiapayDepositSerialize(serializers.Serializer):
     method          = serializers.ChoiceField(choices=ASIAPAY_BANK_CHOICES)
     PayWay          = serializers.ChoiceField(choices=ASIAPAY_PAYWAY_CHOICES)
     amount          = serializers.CharField(required=True)
+    RealName          = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 class asiapayCashoutSerialize(serializers.Serializer):

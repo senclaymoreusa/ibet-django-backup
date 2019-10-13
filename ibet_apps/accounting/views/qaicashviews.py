@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes,renderer_classes
 from django.core.exceptions import ObjectDoesNotExist
 from utils.constants import *
-
+from users.serializers import LazyEncoder
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
@@ -64,7 +64,16 @@ statusConversion = {
     "REJECTED": 8,
     "HELD": 9,
 }
-REDIRECTURL = "http://localhost:3000/withdraw/success/"
+reviewStatusConversion = {
+    'APPROVED': 0,
+    'PENDING': 1,
+    'REJECTED': 2,
+    'SUCCESSFUL': 3,
+    'FAILED': 4,
+    'RESEND': 5,
+    'HELD': 6,
+}
+REDIRECTURL = "https://ibet-web-dev.claymoreeuro.com/p/banking/withdraw"
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
@@ -358,7 +367,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorBank':depositorBank,
             'depositorPhone':depositorPhone,
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
+            'callbackUrl': 'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         rdata = r.json()
@@ -453,7 +462,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'https://payment-testing.claymoreeuro.com/accounting/api/qaicash/confirm',
+            'callbackUrl':'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -518,15 +527,16 @@ class getPayoutTransaction(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
+        #print(rdata)
         logger.info(rdata)
         if r.status_code == 200:  
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            update_data = Transaction.objects.get(order_id=rdata['orderId'],
+               
+            update_data = Transaction.objects.get(transaction_id=rdata['orderId'],
                                                 method=rdata["payoutMethod"],                                                                      
             )
-            update_data.transaction_id=rdata['transactionId']
+            update_data.order_id=rdata['transactionId']
             update_data.last_updated=rdata["dateUpdated"]
-            update_data.status=statusConversion[rdata["status"]]
+            update_data.status=reviewStatusConversion[rdata["status"]]
             update_data.save()
             # create = Transaction.objects.get_or_create(
             #     order_id= rdata['orderId'],
@@ -587,14 +597,21 @@ class approvePayout(generics.GenericAPIView):
         rdata = r.json()
         logger.info(rdata)
         user = CustomUser.objects.get(username=rdata['userId'])   
-        update_data = Transaction.objects.get(order_id=rdata['orderId']                                                                  
-        )
-        update_data.transaction_id=rdata['transactionId']
-        update_data.last_updated=rdata["dateUpdated"]
-        update_data.status=4
-        update_data.save()
-        
-        return Response(rdata)
+        try :
+            update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
+
+            update_data.order_id=rdata['transactionId']
+            update_data.last_updated=rdata["dateUpdated"]
+            update_data.status=4
+            update_data.save()
+            return Response(rdata)
+        except ObjectDoesNotExist as e:
+            logger.error(e)
+            logger.info("matching transaction not found / does not exist")
+            
+            return Response({"error": "Could not find matching transaction", "code": ERRPR_CODE_NOT_FOUND})
+            # return Response({"error": "Could not find matching transaction"}, status=ERRPR_CODE_NOT_FOUND)
+
 class rejectPayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = approvePayoutSerialize
@@ -641,35 +658,40 @@ class rejectPayout(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
+        #print(rdata)
         logger.info(rdata)
-        if r.status_code == 201:  
+        if r.status_code == 200:  
             
             for x in Transaction._meta.get_field('currency').choices:
 
                 if rdata['currency'] == x[1]:
                     cur_val = x[0]
             for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
+                if rdata["status"] ==y[1]:
                     cur_status = y[0] 
-
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                last_updated=rdata["dateUpdated"],
-                amount=rdata["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["payoutMethod"],
-                currency= cur_val,
-                transaction_type=1,
-                review_status=2,
-                channel=3,
-            )
+            try:
+                user = CustomUser.objects.get(username=rdata['userId'])   
+                create = Transaction.objects.get_or_create(
+                    order_id= rdata['orderId'],
+                    last_updated=rdata["dateUpdated"],
+                    amount=rdata["amount"],
+                    status=cur_status,
+                    user_id=user,
+                    method= rdata["payoutMethod"],
+                    currency= cur_val,
+                    transaction_type=1,
+                    review_status=2,
+                    channel=3,
+                )
+                return Response(rdata)
+            except ObjectDoesNotExist as e:
+                logger.error(e)
+                logger.info("matching transaction not found / does not exist")
+                return Response({"error": "Could not find matching transaction","code": ERRPR_CODE_NOT_FOUND})
+            
         else:
-            logger.error('The request information is nor correct, please try again')
-        
-        
-        return Response(rdata)
+            logger.error('The request information is not correct, please try again.')
+            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVAILD_INFO})
 class getDepositTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize
@@ -680,7 +702,7 @@ class getDepositTransaction(generics.GenericAPIView):
         serializer = payoutTransactionSerialize(self.queryset, many=True)
         
         trans_id = self.request.POST.get('order_id')
-        print(trans_id)
+        # print(trans_id)
         message = bytes(merchantId + '|' + trans_id, 'utf-8')
         secret = bytes(merchantApiKey, 'utf-8')
         
@@ -722,10 +744,11 @@ class getDepositTransaction(generics.GenericAPIView):
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
 def transactionConfirm(request):
     body = json.loads(request.body)
-    logger.info(body)
+    #print(body)
     orderId = body.get('orderId')
     Status = body.get('status') 
     cur_status = statusConversion[Status]
+    notes = body.get('notes')
     try:
         order_id = Transaction.objects.filter(transaction_id=orderId)
     except Transaction.DoesNotExist:
@@ -745,7 +768,7 @@ def transactionConfirm(request):
             
         else :
             update = order_id.update(
-                remark = 'Transaction ' + Status)
+                remark = notes)
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
