@@ -65,7 +65,7 @@ class RequirementCategory(models.Model):
 
 
 # Events that happen on a user with a bonus
-class UserBonusEvents(models.Model):
+class UserBonusEvent(models.Model):
 
     owner = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Owner'))
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
