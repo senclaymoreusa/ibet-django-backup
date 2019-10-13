@@ -359,13 +359,13 @@ class LoginView(GenericAPIView):
             if self.serializer.is_valid(raise_exception=True):
                 return self.login()
         except Exception as e:
-            errorMessage = _('The current user is blocked!')
+            errorMessage = _('Invalid username/ passowrd')
             data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorCode"] = ERROR_CODE_INVAILD_INFO
             data["errorMsg"] = {
                 "detail": [errorMessage]
             }
-                
+            # TODO: ADD LOG
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
 

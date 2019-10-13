@@ -8,6 +8,7 @@ from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationFo
 from users.views.adminview import *
 from users.views.views import *
 from users.views.agentview import *
+from users.views.vipview import *
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -54,6 +55,29 @@ class GlobalSettings(object):
                 'title': _('Affiliate'),
                 'icon': 'fa fa-smile-o',
                 'url': '/xadmin/agentview',
+            },
+            {
+                'title': _('Marketing'),
+                'icon': 'fa fa-bullhorn',
+                'menus': (
+                    {
+                        'title': _('VIP Management'),
+                        'url': '/xadmin/vip',
+                        'icon': 'fa fa-diamond'
+                    },
+                    # {
+                    #     'title': _('Referral Program'),
+                    #     'icon': 'fa fa-thumbs-o-up'
+                    # },
+                    # {
+                    #     'title': _('Media Channels'),
+                    #     'icon': 'fa fa-share-square-o'
+                    # },
+                    # {
+                    #     'title': _('Segmentation Settings'),
+                    #     'icon': 'fa fa-cogs'
+                    # },
+                )
             },
             {
                 'title': _('Finance'),
@@ -315,6 +339,11 @@ xadmin.site.unregister(Permission)
 # xadmin.site.register(UserWithTag,UserWithTagAdmin)
 # xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
+
+# AGENT
 xadmin.site.register_view(r'agentview/$', AgentView, name='agentview')
 xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')
 xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+
+# VIP
+xadmin.site.register_view(r'vip/$', VIPView, name='vipview')
