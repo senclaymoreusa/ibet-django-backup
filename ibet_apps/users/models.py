@@ -252,11 +252,14 @@ class Commission(models.Model):
 
 # one user can have up to 10 referral links
 class ReferLink(models.Model):
+    # refer_link_code is ReferLink.pk
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    refer_link_code = models.CharField(max_length=100)
     refer_link_name = models.CharField(max_length=100)
     # time of this link was created
     generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user_id', 'refer_link_name',)
 
     def __str__(self):
         return self.refer_link_name
@@ -532,7 +535,7 @@ def new_user_handler(sender, **kwargs):
     if kwargs['created']:
         user = kwargs['instance']
         # generate a referral code for new user
-        referral_code = str(utils.admin_helper.generate_unique_refer_code())
+        referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
         user.referral_code = referral_code
         user.save()
         # generate a default referral link for new user
@@ -548,7 +551,6 @@ def new_refer_link_handler(sender, **kwargs):
     if kwargs['created']:
         link = kwargs['instance']
         # generate a referral code for new user
-        channel_referral_code = str(utils.admin_helper.generate_unique_refer_code())
-        link.refer_link_code = channel_referral_code
+        link.refer_link_code = str(link.pk)
         link.save()
         logger.info("Auto created refer channel code " + str(link.refer_link_code) + " for new channel " + str(link.refer_link_name))

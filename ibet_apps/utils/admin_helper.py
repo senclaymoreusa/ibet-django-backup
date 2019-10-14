@@ -4,11 +4,9 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
 
-from users.models import CustomUser, ReferLink
+from users.models import CustomUser
 from accounting.models import Transaction
 from utils.constants import *
-
-
 
 import logging
 import uuid
@@ -34,7 +32,8 @@ bonus_tran = Transaction.objects.filter(
 commission_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_COMMISSION)
 bet_tran = Transaction.objects.filter(
-            transaction_type=TRANSACTION_BET_PLACED)
+    transaction_type=TRANSACTION_BET_PLACED)
+
 
 # get downline list for affiliate or affiliates
 def getDownline(affiliates):
@@ -52,6 +51,7 @@ def getDownline(affiliates):
         downline_list = users.filter(referred_by=affiliates)
     return downline_list
 
+
 def calculateActiveDownlineNumber(affiliate_id):
     # check affiliate_id first
     downlines = affiliate_id.referees.all()
@@ -61,6 +61,7 @@ def calculateActiveDownlineNumber(affiliate_id):
             if tran.user_id in downlines:
                 affiliate_active_users += 1
     return affiliate_active_users
+
 
 # calculate ftd user number in certain user_group within certain time range
 def calculateFTD(user_group, start_date, end_date):
@@ -74,13 +75,41 @@ def calculateFTD(user_group, start_date, end_date):
 def calculateTurnover(user):
     return 0
 
+
 # USER SYSTEM
 # create unique refer code for both user and affiliate
-def generate_unique_refer_code():
-    code = uuid.uuid4().hex[:6].upper()
-    while True:
-        if not ReferLink.objects.filter(refer_link_code=code).exists():
-            break
-        else:
-            code = uuid.uuid4().hex[:6].upper()
-    return code
+limit_digit = 6
+source_string = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
+
+# encode
+def generate_unique_referral_code(user_id):
+    # remove 0,O,1,I
+    code = ''
+    if user_id in range(0, 1073741824):
+        i = 0
+        while i in range(0, limit_digit):
+            i += 1
+            mod = int(user_id % 32)
+            code += str(source_string[mod])
+            user_id /= 32
+        return code
+
+    else:
+        logger.error("Error create referral code for user")
+        raise ValueError("Please enter an integer bigger than 0 and smaller than 32^%s" % limit_digit)
+
+
+# decode
+def decode_user_id_from_referral_code(code):
+    user_id = 0
+    code = code.upper()
+    if len(code) != limit_digit or any(c in code for c in ['1', 'I', '0', 'O']):
+        logger.error("Error referral code format")
+        raise ValueError("Please enter a valid referral code")
+    else:
+        i = 0
+        while i in range(0, limit_digit):
+            index = source_string.find(code[i])
+            user_id += (32 ** i * index)
+            i += 1
+        return user_id
