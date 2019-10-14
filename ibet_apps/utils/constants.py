@@ -50,18 +50,30 @@ CURRENCY_TYPES = (
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
+HELP2PAY    =   0
+LINEPAY     =   1
+ASTROPAY    =   2
+QAICASH     =   3
+ASIAPAY     =   4
+PAYPAL      =   5
+PAYZOD      =   6
+CIRCLEPAY   =   7
+FGATE       =   8
+SCRATCHCARD =   9
+PAYMENTIQ   =   10
+
 CHANNEL_CHOICES = (
-    (0, 'Help2Pay'),
-    (1, 'LINEpay'),
-    (2, 'AstroPay'),
-    (3, 'Qaicash'),
-    (4, 'AsiaPay'),
-    (5, 'Paypal'),
-    (6, 'Payzod'),
-    (7, 'CirclePay'),
-    (8, 'Fgate'),
-    (9, 'ScratchCard'),
-    (10, 'PaymentIQ')
+    (HELP2PAY, 'Help2Pay'),
+    (LINEPAY, 'LINEpay'),
+    (ASTROPAY, 'AstroPay'),
+    (QAICASH, 'Qaicash'),
+    (ASIAPAY, 'AsiaPay'),
+    (PAYPAL, 'Paypal'),
+    (PAYZOD, 'Payzod'),
+    (CIRCLEPAY, 'CirclePay'),
+    (FGATE, 'Fgate'),
+    (SCRATCHCARD, 'ScratchCard'),
+    (PAYMENTIQ, 'PaymentIQ')
 )
 
 CURRENCY_CNY = 0
@@ -103,18 +115,19 @@ TRAN_CANCEL_TYPE = 5
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
 TRAN_REJECTED_TYPE = 8
+TRAN_HELD_TYPE = 9
 
 STATE_CHOICES = (
-    (0, 'SUCCESS'), 
-    (1, 'FAILED'),
-    (2, 'CREATED'),
-    (3, 'PENDING'),
-    (4, 'APPROVED'),
-    (5, 'CANCELED'),
-    (6, 'COMPLETED'),
-    (7, 'RESEND'),
-    (8, 'REJECTED'),
-    (9, 'HELD'),
+    (TRAN_SUCCESS_TYPE, 'SUCCESS'), 
+    (TRAN_FAIL_TYPE, 'FAILED'),
+    (TRAN_CREATE_TYPE, 'CREATED'),
+    (TRAN_PENDING_TYPE, 'PENDING'),
+    (TRAN_APPROVED_TYPE, 'APPROVED'),
+    (TRAN_CANCEL_TYPE, 'CANCELED'),
+    (TRAN_COMPLETED_TYPE, 'COMPLETED'),
+    (TRAN_RESEND_TYPE, 'RESEND'),
+    (TRAN_REJECTED_TYPE, 'REJECTED'),
+    (TRAN_HELD_TYPE, 'HELD'),
 )
 
 REVIEW_APP = 0
@@ -125,12 +138,12 @@ REVIEW_FAIL = 4
 REVIEW_RESEND = 5
 
 REVIEW_STATE_CHOICES = (
-    (0, 'APPROVED'),
-    (1, 'PENDING'),
-    (2, 'REJECTED'),
-    (3, 'SUCCESSFUL'),
-    (4, 'FAILED'),
-    (5, 'RESEND'),
+    (REVIEW_APP, 'APPROVED'),
+    (REVIEW_PEND, 'PENDING'),
+    (REVIEW_REJ, 'REJECTED'),
+    (REVIEW_SUCCESS, 'SUCCESSFUL'),
+    (REVIEW_FAIL, 'FAILED'),
+    (REVIEW_RESEND, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (
