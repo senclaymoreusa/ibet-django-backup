@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth import authenticate
 from users.models import CustomUser
+from rest_framework.authtoken.models import Token
 
 import decimal
 import games.n2_socket.n2_constants as const
@@ -18,15 +19,29 @@ class PlayerManagement:
         self.passcode = Passcode
         self.currencyId = ""
 
-    def ValidatePlayer(self, login, pw):
-        user = authenticate(username=login, password=pw)
-        if user:
-            print("user " + login + " exists")
-            self.currencyId = const.CURRENCY_MAP[user.currency]
-            return (0, user)
+    def ValidatePlayer(self, login, pw, method):
+        if method == "login":
+            user = authenticate(username=login, password=pw)
+            
+            if user:
+                print("user " + login + " exists")
+                self.currencyId = const.CURRENCY_MAP[user.currency]
+                return (0, user)
+            else:
+                print("user not found!")
+                return (105, None)    
         else:
-            print("user not found!")
-            return (105, None)    
+            user = CustomUser.objects.get(username=login)
+            if user:
+                try:
+                    sessionToken = Token.objects.get(user_id=user)
+                    return (0, user)
+                except Exception as ex:
+                    print("No session token for this user")
+                    return (105, user)
+            else:
+                print("user not found!")
+                return (105, None)
 
     def GetPlayerBalance(self, username, currencyId):
         user = CustomUser.objects.get(username=username)
@@ -55,7 +70,27 @@ class PlayerManagement:
                 print(elem.tag + " => " + text)
         
         #validate the user Id here
-        return self.ValidatePlayer(self.loginId, playerPassword) # returns tuple (status, user)
+        return self.ValidatePlayer(self.loginId, playerPassword, "login") # returns tuple (status, user)
+
+    def ProcessWebLoginRequest(self, xmlDoc):
+            for root in xmlDoc.getchildren():
+                for elem in root.getchildren():
+                    if not elem.text:
+                        text = "None"
+                    else:
+                        text = elem.text
+                    if elem.tag == "userid":
+                        self.loginId = text
+                    elif elem.tag == "vendorid":
+                        self.vendorId = text
+                    elif elem.tag == "sessiontoken":
+                        session = text
+
+                    print(elem.tag + " => " + text)
+            
+            #validate the user Id here
+            return self.ValidatePlayer(self.loginId, sessionToken, "session") # returns tuple (status, user)
+
     def ProcessGetBalance(self, xmlDoc):
         for root in xmlDoc.getchildren():
             for elem in root.getchildren():

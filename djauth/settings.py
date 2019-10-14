@@ -99,15 +99,15 @@ INSTALLED_APPS = [
     'games',
     'accounting.apps.AccountingConfig',
     'system.apps.SystemConfig',
-    'rest_framework',              # Stephen
-    'corsheaders',                 # Stephen
-    'rest_auth',                   # Stephen
-    'rest_framework.authtoken',    # Stephen
-    'django.contrib.sites',        # Stephen
-    'allauth',                     # Stephen
-    'allauth.account',             # Stephen
-    'rest_auth.registration',      # Stephen
-    'allauth.socialaccount',       # Stephen
+    'rest_framework',              
+    'corsheaders',                 
+    'rest_auth',                   
+    'rest_framework.authtoken',    
+    'django.contrib.sites',        
+    'allauth',                     
+    'allauth.account',             
+    'rest_auth.registration',      
+    'allauth.socialaccount',       
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
@@ -126,11 +126,11 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-SITE_ID = 1                        # Stephen
+SITE_ID = 1                        
 
-ACCOUNT_EMAIL_REQUIRED = False                # Stephen
-ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
-ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
+ACCOUNT_EMAIL_REQUIRED = False                
+ACCOUNT_AUTHENTICATION_METHOD = 'username'    
+ACCOUNT_EMAIL_VERIFICATION = 'none'           
 
 AUTH_USER_MODEL = 'users.CustomUser' # new???
 
@@ -139,11 +139,11 @@ HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',      # Stephen
+    'corsheaders.middleware.CorsMiddleware',      
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',  # Stephen
+    'django.middleware.common.CommonMiddleware',  
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
