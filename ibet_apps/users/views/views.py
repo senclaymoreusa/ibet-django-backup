@@ -1115,7 +1115,7 @@ class GenerateActivationCode(APIView):
         if postType == "change_member_phone_num":
             time = timezone.now() - datetime.timedelta(days=1)
             count = UserAction.objects.filter(Q(user=user)&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gte=time)).count()
-            if count < 3:
+            if count <= 3:
                 random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
                 user.update(activation_code=random_num)
 
