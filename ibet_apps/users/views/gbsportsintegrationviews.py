@@ -505,7 +505,16 @@ class GenerateGameURL(APIView):
 
         if 'Error' in dic['GB']['Result']['ReturnSet']:
 
-            temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
+            #temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
+            
+            dob_fields = self.request.user.date_of_birth.split('/') 
+
+            temp = '-'.join([
+                dob_fields[2],
+                dob_fields[0],
+                dob_fields[1]
+            ])
+            
             create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
             
             "GB": {
