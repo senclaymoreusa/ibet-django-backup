@@ -36,11 +36,11 @@ class GlobalSettings(object):
     def get_site_menu(self): 
         return [
             {
-                'title': _('Playres'),
+                'title': _('Players'),
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('Playre directory'),
+                        'title': _('Player directory'),
                         'url': '/xadmin/users',
                         'icon': 'fas fa-book'
                     },
