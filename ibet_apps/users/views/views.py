@@ -1109,19 +1109,35 @@ class GenerateActivationCode(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
+        postType = request.POST.get('type')
         username = request.data['username']
         user = get_user_model().objects.filter(username=username)
-        time = timezone.now() - datetime.timedelta(days=1)
-        count = UserAction.objects.filter(Q(user=user)&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gte=time)).count()
-        if count < 3:
+        if postType == "change_member_phone_num":
+            time = timezone.now() - datetime.timedelta(days=1)
+            count = UserAction.objects.filter(Q(user=user)&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gte=time)).count()
+            if count < 3:
+                random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+                user.update(activation_code=random_num)
+
+                send_sms(str(random_num), user[0].pk)
+
+                action = UserAction(
+                    user=user,
+                    event_type=EVENT_CHOICES_SMS_CODE,
+                    created_time=timezone.now()
+                )
+                action.save()
+
+                return Response(status=status.HTTP_201_CREATED)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
             random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
             user.update(activation_code=random_num)
 
             send_sms(str(random_num), user[0].pk)
     
-            return Response(status=status.HTTP_200_OK)
-        
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_200_OK)
 
 
 class VerifyActivationCode(APIView):
