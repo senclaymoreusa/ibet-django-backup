@@ -1087,7 +1087,7 @@ class CheckUsernameExist(View):
             return HttpResponse(status=400)
         return HttpResponse(status=200)
 
-
+'''
 class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
@@ -1101,6 +1101,28 @@ class GenerateActivationCode(APIView):
         send_sms(str(random_num), user[0].pk)
     
         return Response(status=status.HTTP_200_OK)
+'''
+
+
+class GenerateActivationCode(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        username = request.data['username']
+        user = get_user_model().objects.filter(username=username)
+        time = timezone.now() - datetime.timedelta(days=1)
+        count = UserAction.objects.filter(Q(user=user)&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gte=time)).count()
+        if count < 3:
+            random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+            user.update(activation_code=random_num)
+
+            send_sms(str(random_num), user[0].pk)
+    
+            return Response(status=status.HTTP_200_OK)
+        
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
 
 class VerifyActivationCode(APIView):
 
