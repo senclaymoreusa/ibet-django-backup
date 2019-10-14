@@ -446,89 +446,18 @@ def getMarketOpt():
 class FinanceReportView(CommAdminView): 
 
     def get(self, request):
-        # getType = request.GET.get('type')
-        # # print(getType) 
-        # if getType == "generate_report":
-        #     interval = request.GET.get('interval')
-        #     currency = request.GET.get('currency')
-        #     dateRangeFrom = request.GET.get('dateRangeFrom')
-        #     dateRangeTo = request.GET.get('dateRangeTo')
-        #     timePeriod = request.GET.get('timePeriod')
-        #     market = request.GET.get('marketArray')
-        #     device = request.GET.get('deviceArray')
-        #     channel = request.GET.get('channelArray')
-
-        #     market = json.loads(market)
-        #     device = json.loads(device)
-        #     channel = json.loads(channel)
-                
-        #     # print(market, device, channel)
-
-        #     if interval == "Day":
-        #         interval = relativedelta(days=1)
-        #     elif interval == "Week":
-        #         interval = relativedelta(weeks=1)
-        #     elif interval == "Month":
-        #         interval = relativedelta(months=1)
-
-        #     # print(dateRangeFrom, dateRangeTo)
-        #     now = timezone.now()
-        #     current_tz = timezone.get_current_timezone()
-        #     now = now.astimezone(current_tz)
-        #     # print(now)
-
-        #     if dateRangeFrom and dateRangeTo:
-        #         dateRangeFrom = datetime.strptime(dateRangeFrom, '%m/%d/%Y')
-        #         dateRangeTo= datetime.strptime(dateRangeTo, '%m/%d/%Y')
-        #         data = getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market)
-
-        #         return HttpResponse(json.dumps(data), content_type='application/json', status=200)
-
-        #     elif timePeriod:
-        #         dateRangeTo = now
-        #         if timePeriod == "0":
-        #             dateRangeFrom = now - relativedelta(weeks=1)
-        #         elif timePeriod == "1":
-        #             dateRangeFrom = now - relativedelta(weeks=2)
-        #         elif timePeriod == "2":
-        #             dateRangeFrom = now - relativedelta(days=30)
-        #         elif timePeriod == "3":
-        #             dateRangeFrom = now - relativedelta(days=90)
-
-        #         data = getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market)
-        #         return HttpResponse(json.dumps(data), content_type='application/json', status=200)
-
-        #     else:
-        #         return HttpResponse("Must be set a time range", content_type='application/json', status=400)
-
-        #     # UserAction.object.filter(,event_type=EVENT_CHOICES_REGISTER).count()
-        
-        # else:
 
         context = super().get_context()
-        title = _('Performance reports')
+        title = _('Finance reports')
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
         context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
 
         markets = getMarketOpt()
-        # markets = {
-            #     'ibetMarket_options': [],
-            #     'letouMarket_options': []
-            # }
-
-            # for countryCode in MARKET_OPTIONS['ibetMarket_options']:
-            #     markets['ibetMarket_options'].append({
-            #         'code': countryCode,
-            #         'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
-            #     })
-            # for countryCode in MARKET_OPTIONS['letouMarket_options']:
-            #     markets['letouMarket_options'].append({
-            #         'code': countryCode,
-            #         'name': COUNTRY_CODE_TO_IMG_PREFIX[countryCode]
-            #     })
-
         context['markets'] = markets
+
+        
+        
 
         return render(request, 'finance_report.html', context)
