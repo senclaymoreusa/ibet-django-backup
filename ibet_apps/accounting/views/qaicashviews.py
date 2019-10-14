@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes,renderer_classes
 from django.core.exceptions import ObjectDoesNotExist
 from utils.constants import *
-
+from users.serializers import LazyEncoder
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
@@ -64,7 +64,16 @@ statusConversion = {
     "REJECTED": 8,
     "HELD": 9,
 }
-REDIRECTURL = "http://localhost:3000/withdraw/success/"
+reviewStatusConversion = {
+    'APPROVED': 0,
+    'PENDING': 1,
+    'REJECTED': 2,
+    'SUCCESSFUL': 3,
+    'FAILED': 4,
+    'RESEND': 5,
+    'HELD': 6,
+}
+REDIRECTURL = "https://ibet-web-dev.claymoreeuro.com/p/banking/withdraw"
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
     #hash.hexdigest()
@@ -518,15 +527,16 @@ class getPayoutTransaction(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
+        #print(rdata)
         logger.info(rdata)
         if r.status_code == 200:  
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            update_data = Transaction.objects.get(order_id=rdata['orderId'],
+               
+            update_data = Transaction.objects.get(transaction_id=rdata['orderId'],
                                                 method=rdata["payoutMethod"],                                                                      
             )
-            update_data.transaction_id=rdata['transactionId']
+            update_data.order_id=rdata['transactionId']
             update_data.last_updated=rdata["dateUpdated"]
-            update_data.status=statusConversion[rdata["status"]]
+            update_data.status=reviewStatusConversion[rdata["status"]]
             update_data.save()
             # create = Transaction.objects.get_or_create(
             #     order_id= rdata['orderId'],
@@ -583,7 +593,7 @@ class approvePayout(generics.GenericAPIView):
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
-
+        
         rdata = r.json()
         logger.info(rdata)
         user = CustomUser.objects.get(username=rdata['userId'])   
@@ -593,12 +603,18 @@ class approvePayout(generics.GenericAPIView):
             update_data.order_id=rdata['transactionId']
             update_data.last_updated=rdata["dateUpdated"]
             update_data.status=4
+            update_data.review_status = REVIEW_APP
+            update_data.remark = notes
+            update_data.release_by = user
             update_data.save()
+            logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
             return Response(rdata)
         except ObjectDoesNotExist as e:
             logger.error(e)
             logger.info("matching transaction not found / does not exist")
-            return Response({"message": "Could not find matching transaction"})
+            
+            return Response({"error": "Could not find matching transaction", "code": ERRPR_CODE_NOT_FOUND})
+            # return Response({"error": "Could not find matching transaction"}, status=ERRPR_CODE_NOT_FOUND)
 
 class rejectPayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -646,35 +662,38 @@ class rejectPayout(generics.GenericAPIView):
         # Handle error
 
         rdata = r.json()
+        #print(rdata)
         logger.info(rdata)
-        if r.status_code == 201:  
+        user = CustomUser.objects.get(username=rdata['userId'])
+        if r.status_code == 200:  
             
             for x in Transaction._meta.get_field('currency').choices:
 
                 if rdata['currency'] == x[1]:
                     cur_val = x[0]
             for y in Transaction._meta.get_field('status').choices:
-                if rdata["depositTransaction"]["status"] ==y[1]:
+                if rdata["status"] ==y[1]:
                     cur_status = y[0] 
+            try:
+                update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
 
-            user = CustomUser.objects.get(username=rdata['userId'])   
-            create = Transaction.objects.get_or_create(
-                order_id= rdata['orderId'],
-                last_updated=rdata["dateUpdated"],
-                amount=rdata["amount"],
-                status=cur_status,
-                user_id=user,
-                method= rdata["payoutMethod"],
-                currency= cur_val,
-                transaction_type=1,
-                review_status=2,
-                channel=3,
-            )
+                update_data.order_id = rdata['transactionId']
+                update_data.last_updated = rdata["dateUpdated"]
+                update_data.status = 8
+                update_data.review_status = 2
+                update_data.remark = notes
+                update_data.release_by = user
+                update_data.save()
+                logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
+                return Response(rdata)
+            except ObjectDoesNotExist as e:
+                logger.error(e)
+                logger.info("matching transaction not found / does not exist")
+                return Response({"error": "Could not find matching transaction","code": ERRPR_CODE_NOT_FOUND})
+            
         else:
-            logger.error('The request information is nor correct, please try again')
-        
-        
-        return Response(rdata)
+            logger.error('The request information is not correct, please try again.')
+            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVAILD_INFO})
 class getDepositTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize
