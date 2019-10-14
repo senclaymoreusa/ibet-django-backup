@@ -527,7 +527,7 @@ class GenerateGameURL(APIView):
                     "LastName": self.request.user.last_name,
                     "Nickname": self.request.user.username,
                     "Gender": "2",
-                    "Birthdate": '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]]),
+                    "Birthdate": temp,
                     "CyCode": "CN",
                     "CurCode": "CNY",
                     "LangCode": "zh-cn",
