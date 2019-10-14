@@ -1130,7 +1130,7 @@ class GenerateActivationCode(APIView):
 
                 return Response(status=status.HTTP_201_CREATED)
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(ERROR_CODE_MAX_EXCEED)
         else:
             random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
             user.update(activation_code=random_num)
