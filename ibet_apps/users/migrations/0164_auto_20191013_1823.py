@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='referlink',
             name='refer_link_code',
-            field=models.CharField(max_length=100, unique=True),
+            field=models.CharField(max_length=100),
         ),
     ]
