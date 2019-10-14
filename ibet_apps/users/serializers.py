@@ -98,6 +98,7 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(_("Date of birth not valid"))
         date = data['date_of_birth']
         date = date.split('/')
+        print(date)
         if len(date) != 3:
             raise serializers.ValidationError(_("Date of birth not valid"))
         if not (1 <= int(date[0]) <= 12) or not ( 1 <= int(date[1]) <= 31) or not (1900 <= int(date[2]) <= int(str(datetime.datetime.now())[0:4])):

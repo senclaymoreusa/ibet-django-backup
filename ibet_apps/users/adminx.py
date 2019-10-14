@@ -35,7 +35,7 @@ class GlobalSettings(object):
     def get_site_menu(self): 
         return [
             {
-                'title': _('Playres'),
+                'title': _('Players'),
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
@@ -56,7 +56,7 @@ class GlobalSettings(object):
                 'url': '/xadmin/agentview',
             },
             {
-                'title': _('Finance'),
+                'title': _('Payments'),
                 'icon': 'fa fa-credit-card',
                 'menus': (
                     {
