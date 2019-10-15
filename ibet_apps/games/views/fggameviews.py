@@ -8,6 +8,33 @@ import simplejson as json
 import xmltodict
 import decimal
 
+class FGLogin(APIView):
+    def get(self, request, *args, **kwargs):
+        username = request.GET('username')
+        user = CustomUser.objects.get(username=username)
+        print(user)
+        print("hhhh")
+        brandId = '524',
+        brandPassword = 'Flow6refg',
+        currency = 'CNY',
+        fgurl = 'https://lsl.omegasys.eu/ps/ssw/login'
+        #print(url)
+
+        rr = requests.get(fg, params={
+            "brandId": brandId,
+            "brandPassword": brandPassword, 
+            "currency": currency,
+            "uuid": user.pk,
+            "loginName": username
+            })
+                  
+        rrdata = rr.text
+        # logger.info(rrdata)
+        return HttpResponse(rrdata)
+
+
+
+
 class GetAccountDetail(APIView):
 
     permission_classes = (AllowAny, )

@@ -116,3 +116,9 @@ class EATicket(models.Model):
     
     ticket = models.UUIDField()
     created_time = models.DateTimeField(default=timezone.now)
+
+#FG model
+class FGGame(models.Model):
+    session_key = models.CharField(max_length=50, null=True)
+    party_id = models.IntegerField(default=0, null=True)
+    

@@ -14,7 +14,8 @@ urlpatterns = [
     path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
 
-    path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name = 'account_detail'),
+    path('api/fglogin', fggameviews.FGLogin.as_view(), name = 'fg_login'),
+    path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
     path('omegassw/processTransaction', fggameviews.GetBalance.as_view(), name = 'process_transaction')
 
