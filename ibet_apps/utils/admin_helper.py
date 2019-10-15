@@ -79,37 +79,38 @@ def calculateTurnover(user):
 # USER SYSTEM
 # create unique refer code for both user and affiliate
 limit_digit = 6
-source_string = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
+source_string = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+limit_user = 36 ** limit_digit
+
 
 # encode
 def generate_unique_referral_code(user_id):
-    # remove 0,O,1,I
     code = ''
-    if user_id in range(0, 1073741824):
+    if user_id in range(0, limit_user):
         i = 0
         while i in range(0, limit_digit):
-            i += 1
-            mod = int(user_id % 32)
+            mod = int(user_id % 36)
             code += str(source_string[mod])
-            user_id /= 32
+            user_id /= 36
+            i += 1
         return code
 
     else:
         logger.error("Error create referral code for user")
-        raise ValueError("Please enter an integer bigger than 0 and smaller than 32^%s" % limit_digit)
+        raise ValueError("Please enter an integer bigger than 0 and smaller than 36^%s" % limit_digit)
 
 
 # decode
 def decode_user_id_from_referral_code(code):
     user_id = 0
     code = code.upper()
-    if len(code) != limit_digit or any(c in code for c in ['1', 'I', '0', 'O']):
+    if len(code) != limit_digit:
         logger.error("Error referral code format")
         raise ValueError("Please enter a valid referral code")
     else:
         i = 0
         while i in range(0, limit_digit):
             index = source_string.find(code[i])
-            user_id += (32 ** i * index)
+            user_id += (36 ** i * index)
             i += 1
         return user_id
