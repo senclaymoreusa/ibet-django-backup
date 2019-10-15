@@ -36,22 +36,25 @@ def get_client_ip(request):
 class KaiyuanLogin(View):
     def get(self, request, *args, **kwargs):
         data = request.body
-        print(data)
         api = "https://kyapi.ky206.com:189/channelHandle"
         agent = "71452"
         timestamp = lambda: int(round(time.time() * 1000))
         print(timestamp())
 
         param = ''
-        s = 0
+        s = '0'
         account = 'Bobby'
-        money = 0
-        orderid = str(agent + timezone.now() + account)
+        money = '0'
+        now = timezone.now()
+        order_time = now.strftime("%Y%m%d%H%M%S")
+        orderid = str(agent + order_time + account)
         print(orderid)
-        key = 0
+        key = '0'
         ip = get_client_ip(request)
         print(ip)
         linecode = "00001"
-        kind_id = 0 # game lobby
-        ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp="
+        kind_id = '0' # game lobby
+        param = "(s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + ")"
+        print(param)
+        # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)
