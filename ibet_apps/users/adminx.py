@@ -40,7 +40,7 @@ class GlobalSettings(object):
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('Playre directory'),
+                        'title': _('Player directory'),
                         'url': '/xadmin/users',
                         'icon': 'fas fa-book'
                     },
