@@ -633,6 +633,7 @@ GAME_FILTER_OPTION = [
         'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
     },
 ]
+
 # Notification
 MESSAGE_REJECTED = 0
 MESSAGE_PENDING  = 1
@@ -1109,9 +1110,6 @@ BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
-
-
-
 
 # Error code define
 ERROR_CODE_SUCCESS = 1
