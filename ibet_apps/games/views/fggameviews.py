@@ -4,11 +4,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
+from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
 from games.models import FGGame
 import xmltodict
 import decimal
 import requests,json
+import logging
+
+logger = logging.getLogger("django")
+
 
 class FGLogin(APIView):
 
@@ -28,17 +33,35 @@ class FGLogin(APIView):
             "brandId": brandId,
             "brandPassword": brandPassword, 
             "currency": currency,
-            "uuid": 'fg'+ username,
+            "uuid": 'fg' + username,
             "loginName": username
             })
                   
         rrdata = rr.json()
-        sessionKey = rrdata["sessionKey"]
-        partyId = rrdata["partyId"]
-        FGGame.objects.create(user_name=username,session_key=sessionKey,party_id=partyId)                   
-
         # logger.info(rrdata)
-        return HttpResponse(rr)
+        try:
+            sessionKey = rrdata["sessionKey"]
+            partyId = rrdata["partyId"]
+    
+            data = rrdata
+            try:
+                user = FGGame.objects.get(user_name =username)
+                user.session_key=sessionKey
+                user.save()
+            except:
+                
+                FGGame.objects.create(user_name=username,session_key=sessionKey,party_id=partyId)   
+            
+
+        except:
+
+            data = {
+                    "status": rrdata["status"],
+                    "message": rrdata["message"]
+                    }
+
+       
+        return HttpResponse(json.dumps(data),content_type='application/json',status=200)
 
 
 
@@ -54,17 +77,19 @@ class GetAccountDetail(APIView):
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
         user = CustomUser.objects.get(username=callerId)
+        fguser = FGGame.objects.get(user_name=callerId)
 
 
+        #print(decimal.Decimal(user.main_wallet))
         response = {
             "seq" : seq,
-            "partyId" : 1,
+            "partyId" : fguser.party_id ,
             "omegaSessionKey" : omegaSessionKey,
             "message" : "null",
             "errorCode" : "null",
             "uuid" : uuid,
-            "realBalance" : user.main_wallet ,
-            "bonusBalance" : user. bonus_wallet,
+            "realBalance" : decimal.Decimal(user.main_wallet) ,
+            "bonusBalance" : decimal.Decimal(user.bonus_wallet),
             "loginName" : user.username,
             "firstName" :  user.first_name ,
             "lastName" : user.last_name,
@@ -72,10 +97,10 @@ class GetAccountDetail(APIView):
             "email" : user.email,
             "country" : user.country,
             "language" : "ZH",
-            "birthDate" : user.date_of_birth,
+            "birthDate" : user.date_of_birth
     
         }
-        return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
 class GetBalance(APIView):
     permission_classes = (AllowAny, )
@@ -87,21 +112,21 @@ class GetBalance(APIView):
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
-        gameInfoId = request.GET["gameInfoId"]
+        #gameInfoId = request.GET["gameInfoId"]
         user = CustomUser.objects.get(username=callerId)
-
+        fguser = FGGame.objects.get(user_name=callerId)
 
         response = {
             "seq" : seq,
-            "partyId" : 1,
+            "partyId" : fguser.party_id ,
             "omegaSessionKey" : omegaSessionKey,
             "message" : "null",
             "errorCode" : "null",
-            "realBalance" : user.main_wallet ,
-            "bonusBalance" : user. bonus_wallet
+            "realBalance" : decimal.Decimal(user.main_wallet),
+            "bonusBalance" : decimal.Decimal(user.bonus_wallet)
         
         }
-        return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
 class ProcessTransaction(APIView):
     permission_classes = (AllowAny, )
