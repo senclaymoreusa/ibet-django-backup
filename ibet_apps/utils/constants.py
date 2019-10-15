@@ -1175,3 +1175,8 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (3, 'MAX'),
     (4, 'LATEST'),
 )
+
+BRAND_OPTIONS = (
+    ('letou', 'Letou'),
+    ('ibet', 'iBet')
+)

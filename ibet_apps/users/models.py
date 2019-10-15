@@ -172,8 +172,8 @@ class CustomUser(AbstractBaseUser):
 
     activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
 
-    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
-    letouMarkets = models.CharField(max_length=100, null=True, blank=True)
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)   # only for admin user market
+    letouMarkets = models.CharField(max_length=100, null=True, blank=True)  # only for admin user market
     department = models.SmallIntegerField(null=True, blank=True)
 
     contact_methods = models.CharField(max_length=100, null=True, blank=True)
@@ -181,6 +181,8 @@ class CustomUser(AbstractBaseUser):
 
     bonusesProgram = models.BooleanField(default=False)
     vipProgram = models.BooleanField(default=False)
+
+    brand = models.CharField(choices=BRAND_OPTIONS, null=True, blank=True, max_length=50)
     
     created_time = models.DateTimeField(
         _('Created Time'),

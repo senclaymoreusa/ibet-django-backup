@@ -57,6 +57,7 @@ class GlobalSettings(object):
                 'url': '/xadmin/agentview',
             },
             {
+
                 'title': _('Marketing'),
                 'icon': 'fa fa-bullhorn',
                 'menus': (
@@ -80,7 +81,7 @@ class GlobalSettings(object):
                 )
             },
             {
-                'title': _('Finance'),
+                'title': _('Payments'),
                 'icon': 'fa fa-credit-card',
                 'menus': (
                     {
@@ -146,6 +147,17 @@ class GlobalSettings(object):
                         'url': '/xadmin/operation/campaign/',
                         'icon': 'fas fa-bullhorn'
                     }
+                )
+            },
+            {
+                'title': 'Finance',
+                'icon': 'fas fa-chart-line',
+                'menus': (
+                    {
+                        'title': _('Finance report'),
+                        'url': '/xadmin/finance-report/',
+                        'icon': 'fas fa-receipt'
+                    },
                 )
             },
         ]
