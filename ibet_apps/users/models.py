@@ -21,21 +21,31 @@ import logging
 logger = logging.getLogger('django')
 
 class MyUserManager(BaseUserManager):
+    """
+    This class handles the creation of our users. We need to create this class and extend BaseUserManager
+    because our model (CustomUser) has additional fields to Django's default User class.
+    """
     def create_user(self, username, email, phone, password=None):
+        """
+        Create a CustomUser, which are the users on our site.
+        """
         if not email:
             raise ValueError('Users must have an email address')
 
+        # Create and save a CustomUser into the database.
         user = self.model(
 					username = username,
 					email = self.normalize_email(email),
                     phone = phone
 				)
-        user.set_password(password)
+        user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
         user.save(using=self._db)
         return user
-		# user.password = password # bad - do not do this
 
     def create_superuser(self, username, email, phone, password=None):
+        """
+        Create a superuser, which is just a user object with special attributes.
+        """
         user = self.create_user(
             username = username, email = email, phone = phone, password = password
 		)
@@ -59,7 +69,12 @@ class UserTag(models.Model):
         return self.name
 
 class CustomUser(AbstractBaseUser):
-
+    """
+    This class represents the users on our site. A custom user is needed because of 
+    our additional custom fields not in Django's default User. AbstractBaseUser provides a
+    core implementation of the User model and features such as hashed passwords.
+    The primary attributes of a user are username, password, email, and first & last name.
+    """
     USER_ATTRIBUTE = (
         (0, _('Direct User')),
         (1, _('User from Promo')),
@@ -141,6 +156,7 @@ class CustomUser(AbstractBaseUser):
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
     risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
+    # The following 3 fields store the user's money for playing games. main_wallet is the primary wallet used.
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
@@ -195,10 +211,10 @@ class CustomUser(AbstractBaseUser):
         editable=False,
     )
 
-    objects = MyUserManager()
+    objects = MyUserManager() # Links our custom UserManager to our CustomUser model.
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'phone']
+    USERNAME_FIELD = 'username' # field to be used as unique identifier for CustomUser
+    REQUIRED_FIELDS = ['email', 'phone'] # fields prompted for when creating superuser
 
     class Meta:
         verbose_name_plural = _('Customer User')
@@ -304,6 +320,9 @@ class Category(models.Model):
 
 
 class Game(models.Model):
+    """
+    Note: there is another Game model under ibet_apps/games/models.py.
+    """
     name = models.CharField(max_length=50)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
