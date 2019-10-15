@@ -107,8 +107,8 @@ class CustomUser(AbstractBaseUser):
     )
     email = models.EmailField(
         max_length=255,
-        unique=True,
-        verbose_name='email address'
+        verbose_name='email address',
+        blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
     user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
