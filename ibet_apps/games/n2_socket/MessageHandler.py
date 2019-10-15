@@ -47,8 +47,8 @@ class MessageHandler:
                     (retStatus, user) = request.ProcessLoginRequest(xmlDoc)
                     swamResponse = request.GetLoginResponse(retStatus, messageAction, messageId, user)
                 if messageAction == 'swebsinglelogin':
-                    (retStatus, user) = request.ProcessWebLoginRequest(xmlDoc)
-                    swamResponse = request.GetWebLoginResponse(retStatus, messageAction, messageId, user)
+                    (retStatus, user, token) = request.ProcessWebLoginRequest(xmlDoc)
+                    swamResponse = request.GetLoginResponse(retStatus, messageAction, messageId, user, token, True)
                 if messageAction == 'sgetbalance':
                     (retStatus, user) = request.ProcessGetBalance(xmlDoc)
                     swamResponse = request.GetBalanceResponse(retStatus, messageAction, messageId, user)
