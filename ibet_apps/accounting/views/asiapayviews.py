@@ -364,26 +364,33 @@ class depositfinish(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         userid = self.request.POST.get("userid")
         OrderID = self.request.POST.get("order_id")
+        order_id = OrderID.split("D")[1]
         uID = "n" + userid
-        r = requests.post(url + '/standard/getway/depositfinish', data={
-            "cID":ASIAPAY_CID,
-            "uID":uID,
-            "CmdType":"02",
-            "OrderID":OrderID,
-        })
-        rdata = r.text
-        tree = ET.fromstring(rdata)
-        StatusCode = tree.find('StatusCode').text
-        if StatusCode == "00001":
-            orderData = Transaction.objects.get(user_id=CustomUser.objects.get(pk=userid),
-            transaction_id=OrderID)
-            orderData.status = 3
-            orderData.last_updated = timezone.now(),
-            orderData.save()
-        else:
-            logger.info('The request information is nor correct, please try again')
-        logger.info(rdata)
-        return Response(rdata)
+        delay = kwargs.get("delay", 5)
+        success = False
+        for x in range(3):
+            r = requests.post(url + '/standard/getway/depositfinish', data={
+                "cID":ASIAPAY_CID,
+                "uID":uID,
+                "CmdType":"02",
+                "OrderID":OrderID,
+            })
+            rdata = r.text
+            tree = ET.fromstring(rdata)
+            StatusCode = tree.find('StatusCode').text
+            StatusMsg = tree.find('StatusMsg').text
+            if StatusCode == "00001":
+                orderData = Transaction.objects.get(transaction_id=order_id)
+                orderData.status = TRAN_CANCEL_TYPE
+                orderData.last_updated = timezone.now()
+                orderData.save()
+                success = True
+                break
+            else:
+                logger.info('The request information is nor correct, please try again')
+                sleep(delay)
+                logger.info(rdata)
+        return Response({"StatusCode": StatusCode, "StatusMsg": StatusMsg})
 
 class orderStatus(generics.GenericAPIView):
     queryset = Transaction.objects.all()

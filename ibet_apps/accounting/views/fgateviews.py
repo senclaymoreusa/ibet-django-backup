@@ -75,7 +75,7 @@ class chargeCard(generics.GenericAPIView):
                 user_id=CustomUser.objects.get(username=user),
                 method='Fgo',
                 transaction_type=0,
-                channel=0,
+                channel=8,
                 request_time=timezone.now(),
                 arrive_time=timezone.now(),
             )
