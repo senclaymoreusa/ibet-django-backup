@@ -21,7 +21,7 @@ try:
     cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
     cursor = cnxn.cursor()
 except Exception as e:
-    print ("Error getting Bonus or User object, Exiting...", e)
+    print ("Error connecting to SQL Server DB, Exiting...", e)
     exit(-1)
 
 print ('Successfully connected to the DB:', server, database)
