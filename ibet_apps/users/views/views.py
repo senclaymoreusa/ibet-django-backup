@@ -1110,8 +1110,10 @@ class GenerateActivationCode(APIView):
 
     def post(self, request, *args, **kwargs):
         postType = request.POST.get('type')
-        username = request.data['username']
+        username = request.POST.get('username')
         try:
+            print("type", postType)
+            print("username", username)
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
                 time = timezone.now() - datetime.timedelta(days=1)
