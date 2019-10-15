@@ -5,9 +5,10 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
-# from .views import AgentView, AgentDetailView, OneclickRegister 
 from users.views.adminview import *
 from users.views.views import *
+from users.views.agentview import *
+from users.views.vipview import *
 from django.utils.translation import ugettext_lazy as _
 from extra_app.xadmin.forms import AdminAuthenticationForm
 import datetime
@@ -35,59 +36,82 @@ class GlobalSettings(object):
     def get_site_menu(self): 
         return [
             {
-                'title': 'Members',
+                'title': _('Players'),
                 'icon': 'fa fa-user fa-fw',
                 'menus': (
                     {
-                        'title': _('Member List'),
+                        'title': _('Player directory'),
                         'url': '/xadmin/users',
-                        'icon': 'fa fa-user'
+                        'icon': 'fas fa-book'
+                    },
+                    {
+                        'title':  _('Player groups'),
+                        'url': '/xadmin/operation/messagegroups/',
+                        'icon': 'fas fa-user-friends'
                     },
                 )
             },
             {
-                'title': 'Affiliate',
-                'icon': 'fa fa-bar-chart-o',
+                'title': _('Affiliate'),
+                'icon': 'fa fa-smile-o',
+                'url': '/xadmin/agentview',
+            },
+            {
+
+                'title': _('Marketing'),
+                'icon': 'fa fa-bullhorn',
                 'menus': (
                     {
-                        'title': 'Affiliate Overview',
-                        'url': '/xadmin/agent_view',
-                        'icon': 'fa fa-cny'
+                        'title': _('VIP Management'),
+                        'url': '/xadmin/vip',
+                        'icon': 'fa fa-diamond'
                     },
+                    # {
+                    #     'title': _('Referral Program'),
+                    #     'icon': 'fa fa-thumbs-o-up'
+                    # },
+                    # {
+                    #     'title': _('Media Channels'),
+                    #     'icon': 'fa fa-share-square-o'
+                    # },
+                    # {
+                    #     'title': _('Segmentation Settings'),
+                    #     'icon': 'fa fa-cogs'
+                    # },
                 )
             },
             {
-                'title': 'Finance',
+                'title': _('Payments'),
                 'icon': 'fa fa-credit-card',
                 'menus': (
                     {
-                        'title': 'Deposits',
+                        'title': _('Deposits'),
                         'url': '/xadmin/deposit',
                         'icon': 'fa fa-arrow-right'
                     },
                     {
-                        'title': 'Withdrawals',
+                        'title': _('Withdrawals'),
                         'url': '/xadmin/withdrawal',
                         'icon': 'fa fa-arrow-left'
                     },
                     {
-                        'title': 'Settings',
+                        'title': _('Settings'),
                         'url': '/xadmin/channel_list',
                         'icon': 'fa fa-cog'
                     },
                 )
             },
             {
-                'title': 'System admin',
+                'title': _('System admin'),
                 'icon': 'fa-fw fa fa-cog',
                 'menus': (
                     {
-                        'title': 'Users',
+                        'title': _('Users'),
                         'url': '/xadmin/permission/',
                         'icon': 'fa fa-user-circle-o'
                     },
                     {
-                        'title': 'Roles',
+                        'title': _('Roles'),
                         'url': '/xadmin/roles/',
                         'icon': 'fa fa-id-badge'
                     },
@@ -114,20 +138,26 @@ class GlobalSettings(object):
                 'icon': 'far fa-envelope',
                 'menus': (
                     {
-                        'title': 'Messages',
+                        'title': _('Messages'),
                         'url': '/xadmin/operation/notification/',
                         'icon': 'far fa-envelope'
                     },
                     {
-                        'title': 'Groups',
-                        'url': '/xadmin/operation/messagegroups/',
-                        'icon': 'fas fa-user-friends'
-                    },
-                    {
-                        'title': 'Campaign',
+                        'title': _('Campaign'),
                         'url': '/xadmin/operation/campaign/',
                         'icon': 'fas fa-bullhorn'
                     }
+                )
+            },
+            {
+                'title': 'Finance',
+                'icon': 'fas fa-chart-line',
+                'menus': (
+                    {
+                        'title': _('Finance report'),
+                        'url': '/xadmin/finance-report/',
+                        'icon': 'fas fa-receipt'
+                    },
                 )
             },
         ]
@@ -321,6 +351,11 @@ xadmin.site.unregister(Permission)
 # xadmin.site.register(UserWithTag,UserWithTagAdmin)
 # xadmin.site.register(UserAction, UserActionAdmin)
 xadmin.site.login_form = AdminAuthenticationForm
-xadmin.site.register_view(r'agent_view/$', AgentView, name='agent_view')
-xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+
+# AGENT
+xadmin.site.register_view(r'agentview/$', AgentView, name='agentview')
 xadmin.site.register_view(r'agentdetail/$', AgentDetailView, name='agent_detail')
+xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='agent_detail')
+
+# VIP
+xadmin.site.register_view(r'vip/$', VIPView, name='vipview')

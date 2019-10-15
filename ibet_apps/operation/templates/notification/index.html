@@ -249,12 +249,12 @@ tbody>tr:nth-child(odd)>th {
               <td>{{ forloop.counter }}</td>
               <td>{{ notification.subject }}</td>
               <td>{{ notification.campaign.name }}</td>
-              {% if notification.notifiers %}
-              {% comment %} <td><a href="{% url 'xadmin:user_detail' notification.notifiers.id %}">{{ notification.notifiers }}</a></td> {% endcomment %}
+              {% comment %} {% if notification.notifiers %}
               <td>{{ notification.sent_count }}</td>
               {% else %}
               <td>{{ notification.topic }}</td>
-              {% endif %}
+              {% endif %} {% endcomment %}
+              <td>{{ notification.notifiers }}</td>
               <td></td>
               <td>{{ notification.publish_on }}</td>
               <td><a onclick="return getCreator('{{ notification.creator }}')">{{ notification.creator }}</a></td>

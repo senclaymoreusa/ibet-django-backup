@@ -437,3 +437,27 @@ def getMarketOpt():
         })
 
     return markets
+
+
+
+
+
+
+class FinanceReportView(CommAdminView): 
+
+    def get(self, request):
+
+        context = super().get_context()
+        title = _('Finance reports')
+        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
+        context['title'] = title
+        context['time'] = timezone.now()
+        context['imagePath'] = PUBLIC_S3_BUCKET + 'admin_images/'
+
+        markets = getMarketOpt()
+        context['markets'] = markets
+
+        
+        
+
+        return render(request, 'finance_report.html', context)

@@ -13,22 +13,39 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+import logging
+
+logger = logging.getLogger('django')
+
 class MyUserManager(BaseUserManager):
+    """
+    This class handles the creation of our users. We need to create this class and extend BaseUserManager
+    because our model (CustomUser) has additional fields to Django's default User class.
+    """
     def create_user(self, username, email, phone, password=None):
+        """
+        Create a CustomUser, which are the users on our site.
+        """
         if not email:
             raise ValueError('Users must have an email address')
 
+        # Create and save a CustomUser into the database.
         user = self.model(
 					username = username,
 					email = self.normalize_email(email),
                     phone = phone
 				)
-        user.set_password(password)
+        user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
         user.save(using=self._db)
         return user
-		# user.password = password # bad - do not do this
 
     def create_superuser(self, username, email, phone, password=None):
+        """
+        Create a superuser, which is just a user object with special attributes.
+        """
         user = self.create_user(
             username = username, email = email, phone = phone, password = password
 		)
@@ -52,7 +69,12 @@ class UserTag(models.Model):
         return self.name
 
 class CustomUser(AbstractBaseUser):
-
+    """
+    This class represents the users on our site. A custom user is needed because of 
+    our additional custom fields not in Django's default User. AbstractBaseUser provides a
+    core implementation of the User model and features such as hashed passwords.
+    The primary attributes of a user are username, password, email, and first & last name.
+    """
     USER_ATTRIBUTE = (
         (0, _('Direct User')),
         (1, _('User from Promo')),
@@ -85,8 +107,8 @@ class CustomUser(AbstractBaseUser):
     )
     email = models.EmailField(
         max_length=255,
-        unique=True,
-        verbose_name='email address'
+        verbose_name='email address',
+        blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
     user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
@@ -102,7 +124,7 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
-    referral_id = models.CharField(max_length=300, blank=True, null=True)
+    # referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
@@ -134,20 +156,27 @@ class CustomUser(AbstractBaseUser):
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
     risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
+    # The following 3 fields store the user's money for playing games. main_wallet is the primary wallet used.
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     
     # agent
-    agent_level = models.CharField(_('Agent Level'), max_length=50, choices=AGENT_LEVEL, default='Normal')
-    commision_percentage = models.DecimalField(_('Commision Percentage'), max_digits=20, decimal_places=2, default=0)
-    commision_status = models.BooleanField(default=False)
-    user_to_agent = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
+    # affiliate = models.BooleanField(default=False)              #if a user is agent or not
+    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
-    agent_status = models.CharField(_('Agent Status'), max_length=50, choices=AGENT_STATUS, default='Normal')
+    user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
+    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
+    affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
+    transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
+    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+
+    #commission
+    commission_status = models.BooleanField(default=False)               # for current month
+    commission_setting = models.CharField(max_length=50, choices=COMMISSION_SET, default='System')
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
     temporary_block_timespan = models.DurationField(null=True, blank=True)
@@ -159,8 +188,8 @@ class CustomUser(AbstractBaseUser):
 
     activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
 
-    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)
-    letouMarkets = models.CharField(max_length=100, null=True, blank=True)
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)   # only for admin user market
+    letouMarkets = models.CharField(max_length=100, null=True, blank=True)  # only for admin user market
     department = models.SmallIntegerField(null=True, blank=True)
 
     contact_methods = models.CharField(max_length=100, null=True, blank=True)
@@ -168,6 +197,8 @@ class CustomUser(AbstractBaseUser):
 
     bonusesProgram = models.BooleanField(default=False)
     vipProgram = models.BooleanField(default=False)
+
+    brand = models.CharField(choices=BRAND_OPTIONS, null=True, blank=True, max_length=50)
     
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -180,28 +211,16 @@ class CustomUser(AbstractBaseUser):
         editable=False,
     )
 
-    objects = MyUserManager()
+    objects = MyUserManager() # Links our custom UserManager to our CustomUser model.
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'phone']
+    USERNAME_FIELD = 'username' # field to be used as unique identifier for CustomUser
+    REQUIRED_FIELDS = ['email', 'phone'] # fields prompted for when creating superuser
 
     class Meta:
         verbose_name_plural = _('Customer User')
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
-
-    def generate_verification_code(self):
-        return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            temp = str(self.generate_verification_code())[2:-1]
-            while get_user_model().objects.filter(referral_id=temp):   # make sure no duplicates
-                temp = str(self.generate_verification_code())[2:-1]
-            self.referral_id = temp
-
-        return super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.username
@@ -226,7 +245,42 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+class Commission(models.Model):
     
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    commission_level = models.IntegerField(default=1)
+    active_downline_needed = models.IntegerField(default=6)
+    monthly_downline_ftd_needed = models.IntegerField(default=6)
+    
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            # Get the maximum display_id value from the database
+            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))['largest']
+
+            # aggregate can return None! Check it first.
+            # If it isn't none, just use the last ID specified (which should be the greatest) and add one to it
+            if last_id is not None:
+                self.commission_level = last_id + 1
+
+        super(Commission, self).save(*args, **kwargs)
+
+class ReferLink(models.Model):
+    
+    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
+    refer_link_name = models.CharField(max_length=50, default="default")
+    ## time of this link was created
+    genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            code = generate_unique_verification_code()
+            self.refer_link_url = code
+        return super(ReferLink, self).save(*args, **kwargs)
+
 
 class UserWithTag(models.Model):
 
@@ -266,6 +320,9 @@ class Category(models.Model):
 
 
 class Game(models.Model):
+    """
+    Note: there is another Game model under ibet_apps/games/models.py.
+    """
     name = models.CharField(max_length=50)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
@@ -350,47 +407,6 @@ class UserAction(models.Model):
         verbose_name_plural = _('User action history')
 
 
-
-# class Bonus(models.Model):
-
-#     bonus_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     name = models.CharField(max_length=50)
-#     description = models.CharField(max_length=255)
-#     start_time = models.DateTimeField('Start Time', blank=False)
-#     end_time = models.DateTimeField('End Time', blank=False)
-#     expiration_days = models.IntegerField()
-#     is_valid = models.BooleanField(default=False)
-#     ## A comma-separated list of country IDs where this bonus is applicable (to be normalized)
-#     countries = models.CharField(max_length=255)
-#     ## A comma-separated list of category IDs where this bonus is applicable (to be normalized)
-#     categories = models.CharField(max_length=255)
-#     ## A comma-separated list of requirement IDs that we need to apply (to be normalized)
-#     requirement_ids = models.CharField(max_length=255)  
-#     amount = models.FloatField()
-#     percentage = models.FloatField()
-#     is_free_bid = models.BooleanField(default=False)
-
-
-# class BonusRequirement(models.Model):
-
-#     requirement_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     ## Name of the field in the user_event table where this requirement is based on
-#     field_name = models.CharField(max_length=50)
-#     ## sum or count or single
-#     aggregate_method = models.CharField(max_length=50)
-#     time_limit = models.IntegerField()
-#     turnover_multiplier = models.IntegerField()
-#     ## A comma-separated list of category IDs where this requirement is applicable (to be normalized)
-#     categories = models.CharField(max_length=255)
-
-# class UserBonus(models.Model):
-
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
-#     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
-#     start_time = models.DateTimeField('Start Time', blank=False)
-#     is_successful = models.BooleanField(default=False)
-
-
 class UserActivity(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
     admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="admin")
@@ -401,21 +417,7 @@ class UserActivity(models.Model):
         auto_now_add=True,
         editable=False,
     )
-class ReferLink(models.Model):
 
-    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    refer_link_url = models.URLField(max_length=200, unique=True)
-    refer_link_name = models.CharField(max_length=50, default="Default")
-    ## time of this link was created
-    genarate_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
-
-    
-# Mapping between User and ReferLinks
-# This is a 1:n relationship, a user can have at most 10 refer links
-class UserReferLink(models.Model):
-
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
-    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
 
 
 class LinkHistory(models.Model):
@@ -449,8 +451,6 @@ class Limitation(models.Model):
         auto_now_add=True,
         editable=False,
     )
-
-
 class GameRequestsModel(models.Model):
 
     Success_Status = [
@@ -548,7 +548,47 @@ class GameRequestsModel(models.Model):
     lang            = models.CharField(max_length=100, blank=True)
     last            = models.CharField(max_length=100, blank=True)
 
+    # SA
+
+    txnid           = models.CharField(max_length=100, blank=True)
+    hostid          = models.CharField(max_length=100, blank=True)
+    txn_reverse_id  = models.CharField(max_length=100, blank=True)
+
+
 
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
 
+
+
+@receiver(post_save, sender=CustomUser)
+def my_handler(sender, **kwargs):
+    if kwargs['created']:
+        user=kwargs['instance']
+        temp_refer_link_url = generate_unique_verification_code()
+        refer_link = ReferLink.objects.create(
+            user_id = user,
+        )
+        logger.info("Auto created a refer link for new user" + str(user.username))
+    
+
+def generate_verification_code():
+    return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
+
+def generate_unique_verification_code():
+    temp_refer_link_url = str(generate_verification_code())[2:-1]
+    while ReferLink.objects.filter(refer_link_url=temp_refer_link_url):   # make sure no duplicates
+        temp_refer_link_url = str(generate_verification_code())[2:-1]
+    return temp_refer_link_url
+
+
+#  def save(self, *args, **kwargs):
+#         if self.pk:
+#             temp = str(self.generate_verification_code())[2:-1]
+#             while ReferLink.objects.filter(refer_link_url=temp):   # make sure no duplicates
+#                 temp = str(self.generate_verification_code())[2:-1]
+#             self.refer_link_url = temp
+
+#         return super(ReferLink, self).save(*args, **kwargs)
+
+    
