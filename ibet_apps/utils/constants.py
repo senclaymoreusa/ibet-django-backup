@@ -50,18 +50,30 @@ CURRENCY_TYPES = (
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
+HELP2PAY    =   0
+LINEPAY     =   1
+ASTROPAY    =   2
+QAICASH     =   3
+ASIAPAY     =   4
+PAYPAL      =   5
+PAYZOD      =   6
+CIRCLEPAY   =   7
+FGATE       =   8
+SCRATCHCARD =   9
+PAYMENTIQ   =   10
+
 CHANNEL_CHOICES = (
-    (0, 'Help2Pay'),
-    (1, 'LINEpay'),
-    (2, 'AstroPay'),
-    (3, 'Qaicash'),
-    (4, 'AsiaPay'),
-    (5, 'Paypal'),
-    (6, 'Payzod'),
-    (7, 'CirclePay'),
-    (8, 'Fgate'),
-    (9, 'ScratchCard'),
-    (10, 'PaymentIQ')
+    (HELP2PAY, 'Help2Pay'),
+    (LINEPAY, 'LINEpay'),
+    (ASTROPAY, 'AstroPay'),
+    (QAICASH, 'Qaicash'),
+    (ASIAPAY, 'AsiaPay'),
+    (PAYPAL, 'Paypal'),
+    (PAYZOD, 'Payzod'),
+    (CIRCLEPAY, 'CirclePay'),
+    (FGATE, 'Fgate'),
+    (SCRATCHCARD, 'ScratchCard'),
+    (PAYMENTIQ, 'PaymentIQ')
 )
 
 CURRENCY_CNY = 0
@@ -103,18 +115,19 @@ TRAN_CANCEL_TYPE = 5
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
 TRAN_REJECTED_TYPE = 8
+TRAN_HELD_TYPE = 9
 
 STATE_CHOICES = (
-    (0, 'SUCCESS'), 
-    (1, 'FAILED'),
-    (2, 'CREATED'),
-    (3, 'PENDING'),
-    (4, 'APPROVED'),
-    (5, 'CANCELED'),
-    (6, 'COMPLETED'),
-    (7, 'RESEND'),
-    (8, 'REJECTED'),
-    (9, 'HELD'),
+    (TRAN_SUCCESS_TYPE, 'SUCCESS'), 
+    (TRAN_FAIL_TYPE, 'FAILED'),
+    (TRAN_CREATE_TYPE, 'CREATED'),
+    (TRAN_PENDING_TYPE, 'PENDING'),
+    (TRAN_APPROVED_TYPE, 'APPROVED'),
+    (TRAN_CANCEL_TYPE, 'CANCELED'),
+    (TRAN_COMPLETED_TYPE, 'COMPLETED'),
+    (TRAN_RESEND_TYPE, 'RESEND'),
+    (TRAN_REJECTED_TYPE, 'REJECTED'),
+    (TRAN_HELD_TYPE, 'HELD'),
 )
 
 REVIEW_APP = 0
@@ -125,12 +138,12 @@ REVIEW_FAIL = 4
 REVIEW_RESEND = 5
 
 REVIEW_STATE_CHOICES = (
-    (0, 'APPROVED'),
-    (1, 'PENDING'),
-    (2, 'REJECTED'),
-    (3, 'SUCCESSFUL'),
-    (4, 'FAILED'),
-    (5, 'RESEND'),
+    (REVIEW_APP, 'APPROVED'),
+    (REVIEW_PEND, 'PENDING'),
+    (REVIEW_REJ, 'REJECTED'),
+    (REVIEW_SUCCESS, 'SUCCESSFUL'),
+    (REVIEW_FAIL, 'FAILED'),
+    (REVIEW_RESEND, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (
@@ -155,7 +168,7 @@ TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
 TRANSACTION_TRANSFER_IN = 4
 TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONOUS = 6
+TRANSACTION_BONUS = 6
 TRANSACTION_ADJUSTMENT = 7
 TRANSACTION_COMMISSION = 8
 
@@ -166,7 +179,7 @@ TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_SETTLED, 'Bet Settled'),
     (TRANSACTION_TRANSFER_IN, 'Transfer in'),
     (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
-    (TRANSACTION_BONOUS, 'Bonus'),
+    (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
 )
@@ -226,18 +239,23 @@ COUNTRY_CHOICES = (
     ('JP', 'Japan'),
 )
 
+ACTIVITY_SYSTEM = 0     # System Change
+ACTIVITY_REMARK = 1     # Remark in form
+ACTIVITY_MESSAGE = 2    # Inbox message
+ACTIVITY_NOTE= 3        # Note in activity
+
 ACTIVITY_TYPE = (
-    (0, 'Operation'),
+    (0, 'System'),
     (1, 'Remark'),
-    (2, 'Chat'),
+    (2, 'Message'),
     (3, 'Note'),
 )
 
-AGENT_LEVEL = (
-    ('Premium', 'Premium'),
-    ('Invalid', 'Invalid'),
-    ('Normal', 'Normal'),
+AFFILIATE_STATUS = (
+    ('Active', 'Active'),
+    ('VIP', 'VIP'),
     ('Negative', 'Negative'),
+    ('Deactivated', 'Deactivated'),
 )
 
 AGENT_STATUS = (
@@ -1083,6 +1101,23 @@ PERMISSION_CODE = [
         ]
     }
 ]
+
+# agent
+COMMISSION_SET = (
+    ('System', 'System'),
+    ('Personal', 'Personal'),
+)
+
+AFFILIATE_LEVEL = (
+    ('Normal', 'Normal'),
+    ('VIP', 'VIP'),
+)
+
+LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+
+MONTHLY_COMMISSION_SETTLE_DATE = "05"
+
+
 BONUS_QUEUE_NAME = "bonus_queue"
 BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
@@ -1096,6 +1131,8 @@ ERROR_CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
+ERRPR_CODE_NOT_FOUND = 103
+
 
 
 BONUS_TYPE_VERIFICATION = 0
@@ -1129,4 +1166,12 @@ USER_BONUS_EVENT_TYPE_CHOICES = (
 BONUS_RELEASE_TYPE_CHOICES = (
     (0, 'Pre-wager'),
     (1, 'Post-wager'),
+)
+
+BONUS_AGGREGATE_METHOD_CHOICES = (
+    (0, 'SUM'),
+    (1, 'COUNT'),
+    (2, 'AVERAGE'),
+    (3, 'MAX'),
+    (4, 'LATEST'),
 )
