@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
 from bonus.models import *
+from users.models import *
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -14,6 +15,8 @@ import simplejson as json
 from utils.constants import *
 from django.db import transaction
 from rest_framework import status
+import datetime
+from django.utils import timezone
 
 
 logger = logging.getLogger('django')
@@ -168,6 +171,62 @@ class BonusView(View):
             except Exception as e:
                 logger.error("Error updating Bonus object: ", e)
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        return HttpResponse(status=status.HTTP_200_OK)
+
+
+
+class UserBonusEventView(View):
+
+    # Given a user and a bonus, returns all the events, sorted by timestamp
+    def get(self, request, *arg, **kwargs):
+
+        try:
+            bonus_pk = request.GET.get('bonus')
+            user_pk = request.GET.get('user')
+
+            events = UserBonusEvent.objects.filter(bonus=bonus_pk,owner=user_pk).order_by('-timestamp')
+            response = serializers.serialize('json', events)
+            response = json.loads(response)
+
+        except Exception as e:
+            logger.error("Error getting UserBonusEvent objects: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=status.HTTP_200_OK)
+
+    # Creates a NEW event between a User and Bonus.
+    # You can never "update" an event that already happened between a User and Bonus.
+    # ... and let's make this simple: the frontend can just pass the fields in the QueryDict instead of constructiing
+    # the real objects
+    @transaction.atomic
+    def post(self, request, *arg, **kwargs):
+
+        try:
+            bonus_pk = request.GET.get('bonus')
+            user_pk = request.GET.get('user')
+            delivered_by = request.GET.get('delivered_by')
+            bonus_obj = Bonus.objects.get(pk=bonus_pk)
+            cuser_obj = CustomUser.objects.get(pk=user_pk)
+            delivered_by_obj = CustomUser.objects.get(pk=delivered_by)
+
+        except Exception as e:
+            logger.error("Error getting Bonus or User object: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            event_obj = UserBonusEvent (
+                owner = cuser_obj,
+                bonus = bonus_obj,
+                timestamp = timezone.now(),
+                delivered_by = delivered_by_obj,
+                status = request.GET.get('status'),
+                notes = request.GET.get('notes'),
+            )
+            event_obj.save()
+        except Exception as e:
+            logger.error("Error saving new UserBonusEvent object: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(status=status.HTTP_200_OK)
 
