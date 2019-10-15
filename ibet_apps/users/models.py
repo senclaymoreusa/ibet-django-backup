@@ -543,14 +543,4 @@ def new_user_handler(sender, **kwargs):
             user_id=user,
             refer_link_name='default'
         )
-        logger.info("Auto created refer link code " + str(link.refer_link_code) + " for new user " + str(user.username))
-
-
-@receiver(post_save, sender=ReferLink)
-def new_refer_link_handler(sender, **kwargs):
-    if kwargs['created']:
-        link = kwargs['instance']
-        # generate a referral code for new user
-        link.refer_link_code = str(link.pk)
-        link.save()
-        logger.info("Auto created refer channel code " + str(link.refer_link_code) + " for new channel " + str(link.refer_link_name))
+        logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
