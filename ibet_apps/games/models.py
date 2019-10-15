@@ -119,6 +119,10 @@ class EATicket(models.Model):
 
 #FG model
 class FGGame(models.Model):
+    
+    user_name = models.CharField(max_length=50, null=True)
     session_key = models.CharField(max_length=50, null=True)
     party_id = models.IntegerField(default=0, null=True)
     
+    def __str__(self):
+        return '{0}'.format(self.user_name)

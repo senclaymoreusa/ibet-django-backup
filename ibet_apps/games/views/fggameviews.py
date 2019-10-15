@@ -5,32 +5,40 @@ from rest_framework.views import APIView
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
 import simplejson as json
+from games.models import FGGame
 import xmltodict
 import decimal
+import requests,json
 
 class FGLogin(APIView):
+
+    permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        username = request.GET('username')
-        user = CustomUser.objects.get(username=username)
-        print(user)
-        print("hhhh")
-        brandId = '524',
-        brandPassword = 'Flow6refg',
-        currency = 'CNY',
+        username = request.GET['username']
+       # user = CustomUser.objects.get(username=username)
+        
+       
+        brandId = '524'
+        brandPassword = 'Flow6refg'
+        currency = 'CNY'
         fgurl = 'https://lsl.omegasys.eu/ps/ssw/login'
         #print(url)
 
-        rr = requests.get(fg, params={
+        rr = requests.get(fgurl, params={
             "brandId": brandId,
             "brandPassword": brandPassword, 
             "currency": currency,
-            "uuid": user.pk,
+            "uuid": 'fg'+ username,
             "loginName": username
             })
                   
-        rrdata = rr.text
+        rrdata = rr.json()
+        sessionKey = rrdata["sessionKey"]
+        partyId = rrdata["partyId"]
+        FGGame.objects.create(user_name=username,session_key=sessionKey,party_id=partyId)                   
+
         # logger.info(rrdata)
-        return HttpResponse(rrdata)
+        return HttpResponse(rr)
 
 
 
