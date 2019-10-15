@@ -1140,7 +1140,7 @@ class GenerateActivationCode(APIView):
     
         except Exception as e:
             logger.error("Error Generating Activation Code: ", e)
-            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
 
