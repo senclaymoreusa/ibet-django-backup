@@ -17,7 +17,7 @@ urlpatterns = [
     path('api/fglogin', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
-    path('omegassw/processTransaction', fggameviews.GetBalance.as_view(), name = 'process_transaction')
+    path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction')
 
 
 ]

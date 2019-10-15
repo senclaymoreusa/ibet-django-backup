@@ -136,7 +136,7 @@ class ProcessTransaction(APIView):
         callerId = request.GET['callerId']
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
-        omegaSessionKey = request.GET['omegaSessionKey']
+        
         currency = request.GET["currency"]
         amount = request.GET["amount"]
         tranType = request.GET["tranType"]
@@ -144,91 +144,101 @@ class ProcessTransaction(APIView):
         providerTranId = request.GET["providerTranId"]
         platformCode = request.GET["platformCode"]
         gameTranId = request.GET["gameTranId"]
-        gameInfoId = request.GET["gameInfoId"]
-        gameId = request.GET["gameId"]
-        isFinal = request.GET["isFinal"]
+        #
+        #
         user = CustomUser.objects.get(username=callerId)
+        fguser = FGGame.objects.get(user_name=callerId)
 
         if tranType == "GAME_BET" :
+            omegaSessionKey = request.GET['omegaSessionKey']
+            gameId = request.GET["gameId"]
             response = {
                 "seq" : seq,
                 "omegaSessionKey" : omegaSessionKey,
-                "partyId" : 1,
+                "partyId" : fguser.party_id ,
                 "currency" : currency,
                 "transactionId" : 1,
                 "tranType" : tranType,
-                "alreaduProcessed" : false,
-                "realBalance" : user.main_wallet ,
-                "bonusBalance" : user.bonus_wallet,
+                "alreaduProcessed" : "false",
+                "realBalance" : decimal.Decimal(user.main_wallet) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
             }
 
         if tranType == "GAME_WIN" :
+            
             response = {
                 "seq" : seq,
-                "partyId" : 1,
+                "partyId" : fguser.party_id ,
                 "currency" : currency,
                 "transactionId" : 1,
                 "tranType" : tranType,
-                "alreaduProcessed" : false,
-                "realBalance" : user.main_wallet ,
-                "bonusBalance" : user.bonus_wallet,
+                "alreaduProcessed" : "false",
+                "realBalance" :  decimal.Decimal(user.main_wallet) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
             }
 
         if tranType == "PLTFRM_BON" :
+            omegaSessionKey = request.GET['omegaSessionKey']
+            gameInfoId = request.GET["gameInfoId"]
+            isFinal = request.GET["isFinal"]
             response = {
                 "seq" : seq,
                 "omegaSessionKey" : omegaSessionKey,
                 "tranType" : tranType,
                 "gameInfoId" : gameInfoId,
-                "partyId" : 1,
+                "partyId" : fguser.party_id ,
                 "currency" : currency,
                 "transactionId" : 1,
                 "errorCode" : "null",
                 "message" : "null",
-                "alreaduProcessed" : false,
-                "realBalance" : user.main_wallet ,
-                "bonusBalance" : user.bonus_wallet,
+                "alreaduProcessed" : "false",
+                "realBalance" : decimal.Decimal(user.main_wallet) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
             }    
 
         if tranType == "ROLLBACK" :
+            gameId = request.GET["gameId"]
             response = {
                 "seq" : seq,
                 "tranType" : tranType,
-                "partyId" : 1,
+                "partyId" : fguser.party_id ,
                 "currency" : currency,
                 "transactionId" : 1,
-                "alreaduProcessed" : false,
-                "realBalance" : user.main_wallet ,
-                "bonusBalance" : user.bonus_wallet,
+                "alreaduProcessed" : "false",
+                "realBalance" : decimal.Decimal(user.main_wallet) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
             }  
 
         if tranType == "END_GAME" :
+            omegaSessionKey = request.GET['omegaSessionKey']
+            gameInfoId = request.GET["gameInfoId"]
+            isFinal = request.GET["isFinal"]
             response = {
                 "seq" : seq,
                 "omegaSessionKey" : omegaSessionKey,
                 "tranType" : tranType,
-                "partyId" : 1,
+                "partyId" : fguser.party_id ,
                 "currency" : currency,
-                "alreaduProcessed" : false,
-                "realBalance" : user.main_wallet ,
-                "bonusBalance" : user.bonus_wallet,
+                "alreaduProcessed" : "false",
+                "realBalance" : decimal.Decimal(user.main_wallet) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
             }      
-        return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+        return HttpResponse(json.dumps(response,cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
 
 
