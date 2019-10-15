@@ -21,7 +21,7 @@ import uuid
 from  games.models import *
 import json
 import time
-
+from Crypto.Cipher import AES
 
 logger = logging.getLogger('django')
 
@@ -32,6 +32,13 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def des_encode(key, data):
+    cipher = AES.new(key, AES.MODE_ECB)
+    cipher_text = cipher.encrypt(data)
+    return cipher_text
+
 
 class KaiyuanLogin(View):
     def get(self, request, *args, **kwargs):
@@ -56,5 +63,7 @@ class KaiyuanLogin(View):
         kind_id = '0' # game lobby
         param = "(s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + ")"
         print(param)
+        # param = des_encode('DE675375C948CF2B', param)
+        # print(param)
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)
