@@ -1162,3 +1162,8 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (3, 'MAX'),
     (4, 'LATEST'),
 )
+
+# Games
+
+# Kaiyuan Gaming
+KY_ACCOUNT = 71452
