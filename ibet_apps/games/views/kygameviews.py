@@ -53,7 +53,7 @@ class KaiyuanLogin(View):
         timestamp = lambda: int(round(time.time() * 1000))
 
 
-        agent = "71452"
+        agent = KY_AGENT
         timestamp = lambda: int(round(time.time() * 1000))
         print(timestamp())
 
@@ -66,13 +66,16 @@ class KaiyuanLogin(View):
             account = data["account"]
             money = data["money"]
             orderid = agent + order_time + account
+            linecode = "00001"
 
+            param = "s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id
+        
         key = '0'
         
 
         linecode = "00001"
         kind_id = '0' # game lobby
-        param = "s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id
+       
         print(param)
         print(sys.getsizeof('1234'))
         param = des_encode('DE675375C948CF2B', param)
