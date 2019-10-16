@@ -80,6 +80,8 @@ import requests
 
 import xmltodict
 
+from django.db import transaction
+
 logger = logging.getLogger('django')
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters('password1', 'password2'))
@@ -1087,7 +1089,7 @@ class CheckUsernameExist(View):
             return HttpResponse(status=400)
         return HttpResponse(status=200)
 
-
+'''
 class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
@@ -1100,6 +1102,52 @@ class GenerateActivationCode(APIView):
 
         send_sms(str(random_num), user[0].pk)
     
+        return Response(status=status.HTTP_200_OK)
+'''
+
+
+class GenerateActivationCode(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        username = data['username']
+        postType = data['type']
+        try:
+            user = get_user_model().objects.filter(username=username)
+            if postType == "change_member_phone_num":
+                time = timezone.now() - datetime.timedelta(days=1)
+                event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
+                count = UserAction.objects.filter(event_filter).count()
+                if count <= 3:
+                    random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+
+                    # DB transaction atomic as a context manager:
+                    with transaction.atomic():
+                        user.update(activation_code=random_num)
+
+                        send_sms(str(random_num), user[0].pk)
+
+                        action = UserAction(
+                            user=user[0],
+                            event_type=EVENT_CHOICES_SMS_CODE,
+                            created_time=timezone.now()
+                        )
+                        action.save()
+
+                        return Response(status=status.HTTP_201_CREATED)
+
+                return Response(ERROR_CODE_MAX_EXCEED)
+            else:
+                # leave this for active code, currently no SMS system available
+                random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+                user.update(activation_code=random_num)
+                send_sms(str(random_num), user[0].pk) 
+        except Exception as e:
+            logger.error("Error Generating Activation Code: ", e)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):
