@@ -48,16 +48,15 @@ class KaiyuanLogin(View):
         data = request.body
         api = "https://kyapi.ky206.com:189/channelHandle"
 
+        s = data["s"]
         ip = get_client_ip(request)
         timestamp = lambda: int(round(time.time() * 1000))
 
-
         agent = KY_AGENT
-        timestamp = lambda: int(round(time.time() * 1000))
+        # timestamp = lambda: int(round(time.time() * 1000))
         print(timestamp())
 
         param = ''
-        s = '0'
         s = int(s)
 
         # Login
@@ -65,7 +64,7 @@ class KaiyuanLogin(View):
             account = data["account"]
             money = data["money"]
             orderid = agent + order_time + account
-            linecode = "00001"
+            linecode = "iBet1"
 
             param = "s=" + s + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
         # Get Balance
@@ -100,7 +99,7 @@ class KaiyuanLogin(View):
         linecode = "00001"
         # kind_id = '0' # game lobby
         # "&KindID=" + kind_id
-       
+        
         param = des_encode('DE675375C948CF2B', param)
         param = base64.b64encode(param)
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
