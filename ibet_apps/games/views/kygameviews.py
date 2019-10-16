@@ -7,7 +7,6 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from users.models import CustomUser
 import simplejson as json
-import sys
 import decimal
 import requests
 from utils.constants import *
@@ -68,18 +67,41 @@ class KaiyuanLogin(View):
             orderid = agent + order_time + account
             linecode = "00001"
 
-            param = "s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id
+            param = "s=" + s + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
+        # Get Balance
+        elif s == 1:
+            param = "s=" + s + "&account=" + account
+        # Change Balance
+        elif s == 2:
+            param = "s=" + s + "&account=" + account + "&orderid=" + orderId + "&money=" + money + "&ip=" + ip
+        # Refund
+        elif s == 3:
+            param = "s=" + s + "&account=" + account + "&orderid=" + orderId + "&money=" + money + "&ip=" + ip
+        # Order Query
+        elif s == 4:
+            param = "s=" + s + "&orderid=" + orderId
+        # Query The Player's Online Status
+        elif s == 5:
+            param = "s=" + s + "&account=" + account
+        # Query Bet Order
+        elif s == 6:
+            startTime = data["startTime"]
+            endTime = data["endTime"]
+            param = "s=" + s + "&startTime=" + startTime + "&endTime=" + endTime
+        # Query The Player's Total Points
+        elif s == 7:
+            param = "s=" + s + "&account=" + account
+        # Kick Player off
+        elif s == 8:
+            param = "s=" + s + "&account=" + account
+        
         
         key = '0'
-        
-
         linecode = "00001"
-        kind_id = '0' # game lobby
+        # kind_id = '0' # game lobby
+        # "&KindID=" + kind_id
        
-        print(param)
-        print(sys.getsizeof('1234'))
         param = des_encode('DE675375C948CF2B', param)
         param = base64.b64encode(param)
-        print(param)
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)
