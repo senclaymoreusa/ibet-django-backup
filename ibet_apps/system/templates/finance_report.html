@@ -8,7 +8,7 @@
 {% block content %} 
 <div>
     <ul class="nav nav-tabs">
-        <li><a data-toggle="tab" class="tab-label active" href="#activity">ACTVITY</a></li>
+        <li class="active"><a data-toggle="tab" class="tab-label" href="#activity">ACTVITY</a></li>
         <li><a data-toggle="tab"  class="tab-label" href="#psp">PSP</a></li>
         <li><a data-toggle="tab" class="tab-label" href="#transactions">TRANSACTIONS</a></li>
         <li><a data-toggle="tab"  class="tab-label" href="#regulatory">REGULATORY</a></li>
@@ -16,6 +16,14 @@
 
     <div class="tab-content">
         <div id="activity" class="tab-pane active">
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input type="text" id="search" class="form-control" placeholder="Enter member ID, name, phone or email" >
+                        <span id="activity-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+                    </div>
+                </div>
+            </div>
             <div class="row" style="margin-top:20px;">
                 <div class="col-md-2">
                     <div style="width: 100%; height: 670px; background-color: #f3f3f3;">
@@ -96,7 +104,7 @@
                                 </select><br />
                             </div>
 
-                            <div>
+                            <div style="padding-top:20px">
                                 <label class="role-title" style="margin-right:40px;">PRODUCT</label>
                                 <select id="product-select" class="form-control">
                                     <option value="all">ALL products</option>
@@ -120,7 +128,7 @@
                                 </select><br />
                             </div>
 
-                            <div>
+                            <div style="padding-top:20px">
                                 <label class="role-title" style="margin-right:40px;">PROVIDER</label>
                                 <select id="provider-select" multiple="multiple" class="form-control">
                                     <optgroup label="Sports" class="sports">   
@@ -160,58 +168,317 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-10 hide" style="padding-left:5px" id="data-block">
+                <div class="" id="activity-data-block" >
+                    <div id="report-info-block" class="testimonial-group">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Period</div>
+                                    <div class="col-md-8" id="period">June 24 - July 24</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Market</div>
+                                    <div class="col-md-8" id="market">ibet - TH</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Products</div>
+                                    <div class="col-md-8" id="device">Mobile iOS, Mobile Android</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Wallets</div>
+                                    <div class="col-md-8" id="channel">App</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Currency</div>
+                                    <div class="col-md-8" id="currency">THB</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Sportsbook providers</div>
+                                    <div class="col-md-6" id="sports-provider-text" >June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Live Casino providers</div>
+                                    <div class="col-md-6" id="live-casino-provider-text">June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Games providers</div>
+                                    <div class="col-md-6" id="games-provider-text">June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Lotto providers</div>
+                                    <div class="col-md-6" id="lotto-provider-text">June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <table class="custom-user" id="report-table" style="margin-left:15px;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>PEROID</th>
+                                        <th>MARKET</th>
+                                        <th>CURRENCY</th>
+                                        <th>REGISTRATIONS</th>
+                                        <th>FTD</th>
+                                        <th>ACTIVIE PALYERS</th>
+                                        <th>GGR</th>
+                                        <th>TURNOBER</th>
+                                        <th>DEPOSIT</th>
+                                        <th>WITHDRAWAL</th>
+                                        <th>BONUS COST</th>
+                                        <th>NGR</th>
+                                        <th>FTD CONVERSION</th>
+                                        <th>BONUS/ GGR</th>
+                                        <th>GGR HOLD</th>
+                                        <th>NGR HOLD</th>
+                                        <th>GENERAL BONUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id='user_list_tbody'>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="psp" class="tab-pane">
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-2">
+                    <div style="width: 100%; height: 670px; background-color: #f3f3f3;">
+                    
+                        <div class="btn-group currency-select" role="group" aria-label="Basic example" style="margin:10px;">
+                            <button type="button" class="btn btn-secondary">GBP</button>
+                            <button type="button" class="btn btn-secondary">USD</button>
+                            <button type="button" class="btn btn-secondary">EUR</button>
+                        </div>
+
+                        <div style="margin:10px">
+                            <div style="margin-top:10px;">
+                                <label class="role-title">TIME PERIOD</label>
+                                <select class="form-control" id="psp-time-period-options">
+                                    <option value="-1" selected>Please select time</option>
+                                    <option value="0">Last 7 days</option>
+                                    <option value="1">Last 14 days</option>
+                                    <option value="2">Last 30 days</option>
+                                    <option value="3">Last 90 days</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-top:20px;">
+                                <label class="role-title">DATE RANGE</label>
+                                <div class="row" id="psp-date-range">
+                                    <div class='col-md-6' style="padding-right:0px;">
+                                        <div class='input-group date' data-provide="datepicker">
+                                            <input type='text' class="form-control" placeholder="From" id="from"/>
+                                            <span class="input-group-addon" style="display: none;">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class='col-md-6' style="padding-left:0px;">
+                                        <div class='input-group date' data-provide="datepicker">
+                                            <input type='text' class="form-control" placeholder="To" id="to"/>
+                                            <span class="input-group-addon" style="display: none;">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="padding-top:20px">
+                                <label class="role-title" style="margin-right:40px;">MARKET</label>
+                                <select id="psp-market-select" multiple="multiple" class="form-control">
+                                    <optgroup label="ibet" class="ibetMarkets">   
+                                        <option value="ALL" id="ibetALL">ALL</option>
+                                        {% for market in markets.ibetMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                        <!-- <option value="CNY">CNY</option>
+                                        <option value="THB">THB</option>
+                                        <option value="VN">VN</option>
+                                        <option value="DE">DE</option>
+                                        <option value="FI">FI</option>
+                                        <option value="NL">NL</option>
+                                        <option value="NO">NO</option>
+                                        <option value="UK">UK</option> -->
+                                    </optgroup>
+                                    <optgroup label="Letou" class="letouMarkets">   
+                                        <!-- <option value="all">ALL</option>
+                                        <option value="CNY">CNY</option>
+                                        <option value="THB">THB</option>
+                                        <option value="VN">VN</option> -->
+                                        <option value="ALL" id="letouALL">ALL</option>
+                                        {% for market in markets.letouMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select><br />
+                            </div>
+
+                            <div style="padding-top:20px">
+                                <label class="role-title" style="margin-right:40px;">PSP</label>
+                                <select id="psp-select" multiple="multiple" class="form-control">
+                                    <optgroup label="Letou - CNY" class="letouChina">   
+                                        <option value="ALL" id="letouChinaAll">ALL</option>
+                                        <option value="qaicash" id="qaicash">Qaicash</option>
+                                        <option value="asiapay" id="asiapay">Asiapay</option>
+                                    </optgroup>
+                                    <optgroup label="Letou - VN" class="letouVN">   
+                                        <option value="ALL" id="letouVNAll">ALL</option>
+                                        <option value="help2pay" id="help2pay">Help2pay</option>
+                                        <option value="fgate" id="fgate">Fgate</option>
+                                        <option value="scratch-card" id="scratchCard">Scratch Card</option>
+                                        <option value="circle-pay" id="circlePay">Circle Pay</option>
+                                    </optgroup>
+                                    <optgroup label="Letou - TH" class="letouTH">   
+                                        <option value="ALL" id="letouTHAll">ALL</option>
+                                        <option value="astropay" id="astropay">Astro Pay</option>
+                                        <option value="payzod" id="payzod">Payzod</option>
+                                    </optgroup>
+                                </select><br />
+                            </div>
+
+                            <div style="padding-top:20px">
+                                <label class="role-title" style="margin-right:40px;">TRANSACTINS STATUS</label>
+                                <select id="status-select" class="form-control">
+                                    <option value="all">All status</option>
+                                    <option value="main">Main</option>
+                                    <option value="sport">Sport</option>
+                                    <option value="live-casino">Live Casnio</option>
+                                    <option value="games">Games</option>
+                                    <option value="lotto">Lotto</option>
+                                </select><br />
+                            </div>
+
+                            <div style="margin-left:25px; margin-top:20px;">
+                                <button type="button" class="btn btn-success" id="submit_btn">Generate report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10" style="padding-left:5px" id="psp-data-block">
                     <div>   
                         <div id="report-info-block">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
+                                    <div style="font-weight: 800;">TOTAL AMOUNT PER PSP ACTIVITY</div>
                                     <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Period</div>
-                                        <div class="col-md-11" id="period">June 24 - July 24</div>
+                                        <div class="col-md-2" style="font-weight: 800;">Period</div>
+                                        <div class="col-md-10" id="psp-period">June 24 - July 24</div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Market</div>
-                                        <div class="col-md-11" id="market">ibet - TH</div>
+                                        <div class="col-md-2" style="font-weight: 800;">Market</div>
+                                        <div class="col-md-10" id="psp-market">ibet - TH</div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Products</div>
-                                        <div class="col-md-11" id="device">Mobile iOS, Mobile Android</div>
+                                        <div class="col-md-2" style="font-weight: 800;">PSP</div>
+                                        <div class="col-md-10" id="psp">Mobile iOS, Mobile Android</div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Wallets</div>
-                                        <div class="col-md-11" id="channel">App</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Currency</div>
-                                        <div class="col-md-11" id="currency">THB</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Sportsbook providers</div>
-                                        <div class="col-md-11" id="sports-provider-text">June 24 - July 24</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Live Casino providers</div>
-                                        <div class="col-md-11" id="live-casino-provider-text">June 24 - July 24</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Games providers</div>
-                                        <div class="col-md-11" id="games-provider-text">June 24 - July 24</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <div class="row">
-                                        <div class="col-md-1" style="font-weight: 800;">Lotto providers</div>
-                                        <div class="col-md-11" id="lotto-provider-text">June 24 - July 24</div>
+                                        <div class="col-md-2" style="font-weight: 800;">Status</div>
+                                        <div class="col-md-10" id="psp-status">App</div>
                                     </div>
                                 </div>
 
@@ -305,8 +572,540 @@
                 </div>
             </div>
         </div>
-        <div id="psp" class="tab-pane">
-            jgiejgiegj
+        <div id="transactions" class="tab-pane">
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input type="text" id="search" class="form-control" placeholder="Enter member ID, name, phone or email" >
+                        <span id="trans-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-2">
+                    <div style="width: 100%; height: 670px; background-color: #f3f3f3;">
+                    
+                        <div class="btn-group currency-select" role="group" aria-label="Basic example" style="margin:10px;">
+                            <button type="button" class="btn btn-secondary">GBP</button>
+                            <button type="button" class="btn btn-secondary">USD</button>
+                            <button type="button" class="btn btn-secondary">EUR</button>
+                        </div>
+
+                        <div style="margin:10px">
+                            <div style="margin-top:10px;">
+                                <label class="role-title">TIME PERIOD</label>
+                                <select class="form-control" id="psp-time-period-options">
+                                    <option value="-1" selected>Please select time</option>
+                                    <option value="0">Last 7 days</option>
+                                    <option value="1">Last 14 days</option>
+                                    <option value="2">Last 30 days</option>
+                                    <option value="3">Last 90 days</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-top:20px;">
+                                <label class="role-title">DATE RANGE</label>
+                                <div class="row" id="psp-date-range">
+                                    <div class='col-md-6' style="padding-right:0px;">
+                                        <div class='input-group date' data-provide="datepicker">
+                                            <input type='text' class="form-control" placeholder="From" id="from"/>
+                                            <span class="input-group-addon" style="display: none;">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class='col-md-6' style="padding-left:0px;">
+                                        <div class='input-group date' data-provide="datepicker">
+                                            <input type='text' class="form-control" placeholder="To" id="to"/>
+                                            <span class="input-group-addon" style="display: none;">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:10px">
+                                <label class="role-title" style="margin-right:40px;">MARKET</label>
+                                <select id="trans-market-select" multiple="multiple" class="form-control">
+                                    <optgroup label="ibet" class="ibetMarkets">   
+                                        <option value="ALL" id="ibetALL">ALL</option>
+                                        {% for market in markets.ibetMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                        <!-- <option value="CNY">CNY</option>
+                                        <option value="THB">THB</option>
+                                        <option value="VN">VN</option>
+                                        <option value="DE">DE</option>
+                                        <option value="FI">FI</option>
+                                        <option value="NL">NL</option>
+                                        <option value="NO">NO</option>
+                                        <option value="UK">UK</option> -->
+                                    </optgroup>
+                                    <optgroup label="Letou" class="letouMarkets">   
+                                        <!-- <option value="all">ALL</option>
+                                        <option value="CNY">CNY</option>
+                                        <option value="THB">THB</option>
+                                        <option value="VN">VN</option> -->
+                                        <option value="ALL" id="letouALL">ALL</option>
+                                        {% for market in markets.letouMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select><br />
+                            </div>
+
+
+                            <div style="margin-top:10px;">
+                                <label class="role-title">CATEOGORY</label>
+                                <select class="form-control" id="trans-category-options">
+                                    <option value="-1" selected>Select one...</option>
+                                    <option value="0">Deposit</option>
+                                    <option value="1">Withdraw</option>
+                                    <option value="2">Bonus</option>
+                                    <option value="3">Bet</option>
+                                    <option value="4">Settlement</option>
+                                    <option value="5">Adjustment</option>
+                                    <option value="6">Transfer</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-top:10px">
+                                <label class="role-title" style="margin-right:40px;">PRODUCT</label>
+                                <select id="trans-product-select" class="form-control">
+                                    <option value="all">ALL products</option>
+                                    <option value="sport">Sport</option>
+                                    <option value="live-casino">Live Casnio</option>
+                                    <option value="games">Games</option>
+                                    <option value="lotto">Lotto</option>
+                                </select><br />
+                            </div>
+
+
+                            <div>
+                                <label class="role-title" style="margin-right:40px;">WALLET</label>
+                                <select id="trans-wallet-select" multiple="multiple" class="form-control">
+                                    <option value="all">All wallets</option>
+                                    <option value="main">Main</option>
+                                    <option value="sport">Sport</option>
+                                    <option value="live-casino">Live Casnio</option>
+                                    <option value="games">Games</option>
+                                    <option value="lotto">Lotto</option>
+                                </select><br />
+                            </div>
+
+                            <div style="margin-top:10px">
+                                <label class="role-title" style="margin-right:40px;">PSP</label>
+                                <select id="trans-psp-select" multiple="multiple" class="form-control">
+                                    <optgroup label="Letou - CNY" class="letouChina">   
+                                        <option value="ALL" id="letouChinaAll">ALL</option>
+                                        <option value="qaicash" id="qaicash">Qaicash</option>
+                                        <option value="asiapay" id="asiapay">Asiapay</option>
+                                    </optgroup>
+                                    <optgroup label="Letou - VN" class="letouVN">   
+                                        <option value="ALL" id="letouVNAll">ALL</option>
+                                        <option value="help2pay" id="help2pay">Help2pay</option>
+                                        <option value="fgate" id="fgate">Fgate</option>
+                                        <option value="scratch-card" id="scratchCard">Scratch Card</option>
+                                        <option value="circle-pay" id="circlePay">Circle Pay</option>
+                                    </optgroup>
+                                    <optgroup label="Letou - TH" class="letouTH">   
+                                        <option value="ALL" id="letouTHAll">ALL</option>
+                                        <option value="astropay" id="astropay">Astro Pay</option>
+                                        <option value="payzod" id="payzod">Payzod</option>
+                                    </optgroup>
+                                </select><br />
+                            </div>
+
+                            <div style="margin-left:25px; margin-top:20px;">
+                                <button type="button" class="btn btn-success" id="submit_btn">Generate report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10" style="padding-left:5px" id="trans-data-block">
+                    <div>   
+                        <div id="report-info-block">
+                            <div class="row">
+                                <div class="col-md-2" style="font-weight: 800;">Period</div>
+                                <div class="col-md-10" id="period-text">ibet - TH</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2" style="font-weight: 800;">Market</div>
+                                <div class="col-md-10" id="market-text">Active, Temp excluded, Perm excluded</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2" style="font-weight: 800;">Categories</div>
+                                <div class="col-md-10" id="categories-text">June 24 2019 - July 24 2019</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2" style="font-weight: 800;">Products</div>
+                                <div class="col-md-10" id="products-text">June 24 2019 - July 24 2019</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2" style="font-weight: 800;">Wallets</div>
+                                <div class="col-md-10" id="wallets-text">No</div>
+                            </div>
+                        </div>
+                        <div class="wrapper">
+                            <table class="custom-user" id="report-table">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>PEROID</th>
+                                        <th>TRANSACTION NUMBER</th>
+                                        <th>PROVIDER TRANSACTION NUMBER</th>
+                                        <th>TIME DATE INITIATED</th>
+                                        <th>TIME DATE COMPLETED</th>
+                                        <th>STATUS</th>
+                                        <th>PERIOD</th>
+                                        <th>MARKET</th>
+                                        <th>WALLET</th>
+                                        <th>PROVIDER</th>
+                                        <th>PRODUCT</th>
+                                        <th>CATEGORY</th>
+                                        <th>FTD CONVERSION</th>
+                                        <th>BONUS/ GGR</th>
+                                        <th>GGR HOLD</th>
+                                        <th>NGR HOLD</th>
+                                        <th>GENERAL BONUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id='user_list_tbody'>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="regulatory" class="tab-pane">
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-1">
+                    <p style="margin:0px;">REGULATOR</p>
+                    <select class="form-control" id="regulator-select">
+                        <option value="-1" selected>Malta</option>
+                        <option value="0" selected>Malta</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-2">
+                    <div style="width: 100%; height: 470px; background-color: #f3f3f3;">
+                    
+                        <div class="btn-group currency-select" role="group" aria-label="Basic example" style="margin:10px;">
+                            <button type="button" class="btn btn-secondary">GBP</button>
+                            <button type="button" class="btn btn-secondary">USD</button>
+                            <button type="button" class="btn btn-secondary">EUR</button>
+                        </div>
+
+                        <div style="margin:10px">
+                            <div style="margin-top:10px;">
+                                <label class="role-title">TIME PERIOD</label>
+                                <select class="form-control" id="psp-time-period-options">
+                                    <option value="-1" selected>Please select time</option>
+                                    <option value="0">Last 7 days</option>
+                                    <option value="1">Last 14 days</option>
+                                    <option value="2">Last 30 days</option>
+                                    <option value="3">Last 90 days</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-top:20px;">
+                                <label class="role-title">DATE RANGE</label>
+                                <div class="row" id="psp-date-range">
+                                    <div class='col-md-6' style="padding-right:0px;">
+                                        <div class='input-group date' data-provide="datepicker">
+                                            <input type='text' class="form-control" placeholder="From" id="from"/>
+                                            <span class="input-group-addon" style="display: none;">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class='col-md-6' style="padding-left:0px;">
+                                        <div class='input-group date' data-provide="datepicker">
+                                            <input type='text' class="form-control" placeholder="To" id="to"/>
+                                            <span class="input-group-addon" style="display: none;">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:10px">
+                                <label class="role-title" style="margin-right:40px;">MARKET</label>
+                                <select id="regulator-market-select" multiple="multiple" class="form-control">
+                                    <optgroup label="ibet" class="ibetMarkets">   
+                                        <option value="ALL" id="ibetALL">ALL</option>
+                                        {% for market in markets.ibetMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                        <!-- <option value="CNY">CNY</option>
+                                        <option value="THB">THB</option>
+                                        <option value="VN">VN</option>
+                                        <option value="DE">DE</option>
+                                        <option value="FI">FI</option>
+                                        <option value="NL">NL</option>
+                                        <option value="NO">NO</option>
+                                        <option value="UK">UK</option> -->
+                                    </optgroup>
+                                    <optgroup label="Letou" class="letouMarkets">   
+                                        <!-- <option value="all">ALL</option>
+                                        <option value="CNY">CNY</option>
+                                        <option value="THB">THB</option>
+                                        <option value="VN">VN</option> -->
+                                        <option value="ALL" id="letouALL">ALL</option>
+                                        {% for market in markets.letouMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select><br />
+                            </div>
+
+                            <div style="padding-top:20px">
+                                <label class="role-title" style="margin-right:40px;">PROVIDER</label>
+                                <select id="regulator-provider-select" multiple="multiple" class="form-control">
+                                    <optgroup label="Sports" class="sports">   
+                                        <option value="ALL" id="sports-all">ALL</option>
+                                        {% for market in markets.ibetMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    <optgroup label="Live Casino" class="live-casino">   
+                                        <option value="ALL" id="live-casino-all">ALL</option>
+                                        {% for market in markets.letouMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    <optgroup label="Games" class="games">   
+                                        <option value="ALL" id="games-all">ALL</option>
+                                        {% for market in markets.letouMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    <optgroup label="Lotto" class="lotto">   
+                                        <option value="ALL" id="lotto-all">ALL</option>
+                                        {% for market in markets.letouMarket_options %}
+                                            <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select><br />
+                            </div>
+
+                            <div style="margin-left:25px; margin-top:20px;">
+                                <button type="button" class="btn btn-success" id="submit_btn">Generate report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10" style="padding-left:5px" id="trans-data-block">
+                    <div id="report-info-block" class="testimonial-group">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Period</div>
+                                    <div class="col-md-8" id="period">June 24 - July 24</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Market</div>
+                                    <div class="col-md-8" id="market">ibet - TH</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Products</div>
+                                    <div class="col-md-8" id="device">Mobile iOS, Mobile Android</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Wallets</div>
+                                    <div class="col-md-8" id="channel">App</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" style="font-weight: 800;">Currency</div>
+                                    <div class="col-md-8" id="currency">THB</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Sportsbook providers</div>
+                                    <div class="col-md-6" id="sports-provider-text" >June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Live Casino providers</div>
+                                    <div class="col-md-6" id="live-casino-provider-text">June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Games providers</div>
+                                    <div class="col-md-6" id="games-provider-text">June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-6" style="font-weight: 800;">Lotto providers</div>
+                                    <div class="col-md-6" id="lotto-provider-text">June 24 - July 24</div>
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                                <div class="row">&nbsp;
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <table class="custom-user" id="report-table" style="margin-left:15px;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>USERNAME</th>
+                                        <th>PLAYER BALANCE</th>
+                                        <th>TOTAL TURNOVER</th>
+                                        <th>TURNVER- SPROTS BETTING</th>
+                                        <th>GGR - SPROTS BETTING</th>
+                                        <th>TURNVER- CASINO</th>
+                                        <th>GGR - CASINO</th>
+                                        <th>TURNVER- LIVE CASINO</th>
+                                        <th>GGR - LIVE CASINO</th>
+                                        <th>TURNVER- LOTTERIES</th>
+                                        <th>GGR - LOTTERIES</th>
+                                    </tr>
+                                </thead>
+                                <tbody id='user_list_tbody'>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                    <tr>    
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                        <td>Read + Write</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -323,8 +1122,23 @@
 <script>
 
 $(document).ready(function() {
+
     $(function() {
         $('#market-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+
+    $(function() {
+        $('#psp-market-select').multiselect({
             includeSelectAllOption: true,
             buttonWidth:function(){             
             if($(window).width() <= 1550) 
@@ -379,6 +1193,91 @@ $(document).ready(function() {
             },
         });
     })
+
+    $(function() {
+        $('#psp-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+
+    $(function() {
+        $('#trans-market-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+
+    $(function() {
+        $('#trans-psp-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+
+    $(function() {
+        $('#trans-wallet-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+
+    $(function() {
+        $('#regulator-provider-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+
+    $(function() {
+        $('#regulator-market-select').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth:function(){             
+            if($(window).width() <= 1550) 
+                return "150px"; 
+            else if ($(window).width() >= 1800) 
+                return "210px";
+            else 
+                return "180px";
+            },
+        });
+    })
+    
 })
 </script>
 
