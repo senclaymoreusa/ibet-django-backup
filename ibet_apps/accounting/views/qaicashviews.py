@@ -593,7 +593,7 @@ class approvePayout(generics.GenericAPIView):
         if not success:
             logger.info('Failed to complete a request for payout transaction')
         # Handle error
-
+        
         rdata = r.json()
         logger.info(rdata)
         user = CustomUser.objects.get(username=rdata['userId'])   
@@ -603,14 +603,18 @@ class approvePayout(generics.GenericAPIView):
             update_data.order_id=rdata['transactionId']
             update_data.last_updated=rdata["dateUpdated"]
             update_data.status=4
+            update_data.review_status = REVIEW_APP
+            update_data.remark = notes
+            update_data.release_by = user
             update_data.save()
+            logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
             return Response(rdata)
         except ObjectDoesNotExist as e:
             logger.error(e)
             logger.info("matching transaction not found / does not exist")
             
-            return Response({"error": "Could not find matching transaction", "code": ERRPR_CODE_NOT_FOUND})
-            # return Response({"error": "Could not find matching transaction"}, status=ERRPR_CODE_NOT_FOUND)
+            return Response({"error": "Could not find matching transaction", "code": ERROR_CODE_NOT_FOUND})
+
 
 class rejectPayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -660,6 +664,7 @@ class rejectPayout(generics.GenericAPIView):
         rdata = r.json()
         #print(rdata)
         logger.info(rdata)
+        user = CustomUser.objects.get(username=rdata['userId'])
         if r.status_code == 200:  
             
             for x in Transaction._meta.get_field('currency').choices:
@@ -670,24 +675,21 @@ class rejectPayout(generics.GenericAPIView):
                 if rdata["status"] ==y[1]:
                     cur_status = y[0] 
             try:
-                user = CustomUser.objects.get(username=rdata['userId'])   
-                create = Transaction.objects.get_or_create(
-                    order_id= rdata['orderId'],
-                    last_updated=rdata["dateUpdated"],
-                    amount=rdata["amount"],
-                    status=cur_status,
-                    user_id=user,
-                    method= rdata["payoutMethod"],
-                    currency= cur_val,
-                    transaction_type=1,
-                    review_status=2,
-                    channel=3,
-                )
+                update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
+
+                update_data.order_id = rdata['transactionId']
+                update_data.last_updated = rdata["dateUpdated"]
+                update_data.status = 8
+                update_data.review_status = 2
+                update_data.remark = notes
+                update_data.release_by = user
+                update_data.save()
+                logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
                 return Response(rdata)
             except ObjectDoesNotExist as e:
                 logger.error(e)
                 logger.info("matching transaction not found / does not exist")
-                return Response({"error": "Could not find matching transaction","code": ERRPR_CODE_NOT_FOUND})
+                return Response({"error": "Could not find matching transaction","code": ERROR_CODE_NOT_FOUND})
             
         else:
             logger.error('The request information is not correct, please try again.')

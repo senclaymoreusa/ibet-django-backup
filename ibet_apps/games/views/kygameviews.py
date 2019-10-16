@@ -45,11 +45,14 @@ def des_encode(key, data):
 
 class KaiyuanLogin(View):
     def post(self, request, *args, **kwargs):
-        data = request.body
-        api = "https://kyapi.ky206.com:189/channelHandle"
+        print(1)
+        data = request.data
+        print(data)
 
         s = data["s"]
+        print(s)
         ip = get_client_ip(request)
+        print(ip)
         timestamp = lambda: int(round(time.time() * 1000))
 
         agent = KY_AGENT
@@ -67,6 +70,7 @@ class KaiyuanLogin(View):
             linecode = "iBet1"
 
             param = "s=" + s + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
+            print(param)
         # Get Balance
         elif s == 1:
             param = "s=" + s + "&account=" + account
@@ -102,5 +106,12 @@ class KaiyuanLogin(View):
         
         param = des_encode('DE675375C948CF2B', param)
         param = base64.b64encode(param)
+
+        url = KY_API_URL
+        url += "?agent" + agent
+        url += "&timestamp=" + timestamp
+        url += "&param=" + param
+        url += "&key=" + key
+
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)
