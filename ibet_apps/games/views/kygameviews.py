@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from users.models import CustomUser
 import simplejson as json
-import xmltodict
+import sys
 import decimal
 import requests
 from utils.constants import *
@@ -21,17 +21,12 @@ import uuid
 from  games.models import *
 import json
 import time
+
 from Crypto.Cipher import AES
+# from Crypto.Util.Padding import pad
+from games.helper import *
 
 logger = logging.getLogger('django')
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 def des_encode(key, data):
@@ -61,9 +56,10 @@ class KaiyuanLogin(View):
         print(ip)
         linecode = "00001"
         kind_id = '0' # game lobby
-        param = "(s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + ")"
+        param = "s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id
         print(param)
-        # param = des_encode('DE675375C948CF2B', param)
-        # print(param)
+        print(sys.getsizeof('DE675375C948CF2B'))
+        param = des_encode(b'DE675375C948CF2B', param)
+        print(param)
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)
