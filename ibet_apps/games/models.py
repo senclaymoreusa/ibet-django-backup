@@ -7,11 +7,11 @@ import uuid
 
 # Create your models here.
 class GameProvider(models.Model):
-    
     provider_name = models.CharField(max_length=100)
     type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
     market = models.CharField(max_length=50)
-
+    def __str__(self):
+        return self.provider_name
 
 class Category(models.Model):
     category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -35,8 +35,6 @@ class GameProviderWithCategory(models.Model):
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
-
-
 class GameAttribute(models.Model):
 
     name = models.CharField(max_length=50)
@@ -45,7 +43,6 @@ class GameAttribute(models.Model):
         auto_now_add=True,
         editable=False,
     )
-
 
 class Game(models.Model):
     name = models.CharField(max_length=50)
@@ -78,19 +75,17 @@ class Game(models.Model):
     )
 
     modifited_time = models.DateTimeField(
-        _('Modifited Time'),
+        _('Modified Time'),
         auto_now_add=True,
         editable=False,
         null=True
     )
 
-    
     class Meta:
         verbose_name_plural = _('Game')
 
-
     def __str__(self):
-        return '{0}: {1}'.format(self.name, self.category_id)
+        return 'Game: {0},\nCategory: {1}\nProvider: {2}'.format(self.name, self.category_id, self.provider)
 
 
 # class GameWithAttribute(models.Model):
