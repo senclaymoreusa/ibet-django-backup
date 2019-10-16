@@ -39,7 +39,7 @@ admin.site.register(NoticeMessage)
 admin.site.register(GameRequestsModel)
 admin.site.register(Limitation)
 admin.site.register(Commission)
-admin.site.register(ReferLink)
+admin.site.register(ReferChannel)
 admin.site.register(UserAction)
 
 class CustomUserAdmin(UserAdmin):

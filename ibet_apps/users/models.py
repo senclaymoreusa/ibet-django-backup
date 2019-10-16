@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse #Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
+from django.db import transaction, IntegrityError
 import uuid
 from datetime import date
 from django.contrib.auth.models import User
@@ -125,7 +126,7 @@ class CustomUser(AbstractBaseUser):
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     # referral program
-    referral_code = models.CharField(max_length=100, blank=True, null=True)
+    referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     reward_points = models.IntegerField(default=0)
     # balance = models.FloatField(default=0)
@@ -268,19 +269,19 @@ class Commission(models.Model):
         super(Commission, self).save(*args, **kwargs)
 
 
-# one user can have up to 10 referral links
-class ReferLink(models.Model):
-    # refer_link_code is ReferLink.pk
+# one user can have up to 10 referral channels
+class ReferChannel(models.Model):
+    # refer_channel_code is ReferChannel.pk
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    refer_link_name = models.CharField(max_length=100)
-    # time of this link was created
+    refer_channel_name = models.CharField(max_length=100)
+    # time of this channel was created
     generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
 
     class Meta:
-        unique_together = ('user_id', 'refer_link_name',)
+        unique_together = ('user_id', 'refer_channel_name',)
 
     def __str__(self):
-        return self.refer_link_name
+        return self.refer_channel_name
 
 
 class UserWithTag(models.Model):
@@ -555,13 +556,17 @@ class GameRequestsModel(models.Model):
 def new_user_handler(sender, **kwargs):
     if kwargs['created']:
         user = kwargs['instance']
-        # generate a referral code for new user
-        referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
-        user.referral_code = referral_code
-        user.save()
-        # generate a default referral link for new user
-        link = ReferLink.objects.create(
-            user_id=user,
-            refer_link_name='default'
-        )
-        logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
+        try:
+            with transaction.atomic():
+                # generate a referral code for new user
+                referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
+                user.referral_code = referral_code
+                user.save()
+                # generate a default referral link for new user
+                link = ReferChannel.objects.create(
+                    user_id=user,
+                    refer_channel_name='default'
+                )
+                logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
+        except IntegrityError as e:
+            logger.error("Error creating referral code and default referral channel for new user: ", e)
