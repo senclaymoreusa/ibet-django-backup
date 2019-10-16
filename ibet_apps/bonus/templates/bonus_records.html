@@ -1,0 +1,40 @@
+{% extends "xadmin/base_site.html" %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-bonus.css" %}" />
+</head>
+
+<body>
+<div id="btn-group">
+    <button id="new_bonus" type="button" class="btn btn-primary">New bonus</button>
+    <button id="view_templates" type="button" class="btn btn-light">View your templates</button>
+</div>
+
+<div id="search_row" class="row">
+    <div class="col-md-2">
+        <label for="bonus_type_filter">BONUS TYPE</label><br>
+        <select id="bonus_type_filter"><option></option></select>
+    </div>
+    <div class="col-md-2">
+        <label for="bonus_status_filter">STATUS</label><br>
+        <select id="bonus_status_filter"><option></option></select>
+    </div>
+    <div id="bonus_search">
+        <br>
+        <input>
+    </div>
+</div>
+
+</body>
+
+</html>
+
+{% endblock %}

@@ -126,6 +126,7 @@ class CustomUser(AbstractBaseUser):
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
     # referral_id = models.CharField(max_length=300, blank=True, null=True)
     reward_points = models.IntegerField(default=0)
+    referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
@@ -418,16 +419,6 @@ class UserActivity(models.Model):
         editable=False,
     )
 
-
-
-class LinkHistory(models.Model):
-
-    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
-    ## time of this link was clicked
-    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
-    ## click by ip
-    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
 
 class Limitation(models.Model):
 

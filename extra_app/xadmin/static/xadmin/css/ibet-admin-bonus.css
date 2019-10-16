@@ -1,0 +1,23 @@
+body {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#search_row {
+    margin-top: 30px;
+}
+
+#search_row div label{
+    font-weight: normal;
+}
+
+#bonus_search {
+    float: right;
+    margin-right:100px;
+}
