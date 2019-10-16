@@ -28,38 +28,55 @@ from games.helper import *
 
 logger = logging.getLogger('django')
 
+import base64
+BS = 16
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 
+"""
+:param key: Http request in API views
+:param data: data needs to be encrypt
+:returns: IPv4 address
+"""
 def des_encode(key, data):
+    cipher_chunks = []
     cipher = AES.new(key, AES.MODE_ECB)
-    cipher_text = cipher.encrypt(data)
+    cipher_text = cipher.encrypt(pad(data))
     return cipher_text
 
 
 class KaiyuanLogin(View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         data = request.body
         api = "https://kyapi.ky206.com:189/channelHandle"
+
+        ip = get_client_ip(request)
+        timestamp = lambda: int(round(time.time() * 1000))
+
+
         agent = "71452"
         timestamp = lambda: int(round(time.time() * 1000))
         print(timestamp())
 
         param = ''
         s = '0'
-        account = 'Bobby'
-        money = '0'
-        now = timezone.now()
-        order_time = now.strftime("%Y%m%d%H%M%S")
-        orderid = str(agent + order_time + account)
-        print(orderid)
+        s = int(s)
+
+        # Login
+        if s == 0:
+            account = data["account"]
+            money = data["money"]
+            orderid = agent + order_time + account
+
         key = '0'
-        ip = get_client_ip(request)
-        print(ip)
+        
+
         linecode = "00001"
         kind_id = '0' # game lobby
         param = "s=" + s + "&account=" + account +"&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id
         print(param)
-        print(sys.getsizeof('DE675375C948CF2B'))
-        param = des_encode(b'DE675375C948CF2B', param)
+        print(sys.getsizeof('1234'))
+        param = des_encode('DE675375C948CF2B', param)
+        param = base64.b64encode(param)
         print(param)
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)
