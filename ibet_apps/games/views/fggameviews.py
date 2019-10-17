@@ -6,11 +6,12 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
-from games.models import FGGame
+from games.models import FGSession
 import xmltodict
 import decimal
 import requests,json
 import logging
+from utils.constants import *
 
 logger = logging.getLogger("django")
 
@@ -19,49 +20,50 @@ class FGLogin(APIView):
 
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        username = request.GET['username']
-       # user = CustomUser.objects.get(username=username)
-        
-       
-        brandId = '524'
-        brandPassword = 'Flow6refg'
-        currency = 'CNY'
-        fgurl = 'https://lsl.omegasys.eu/ps/ssw/login'
-        #print(url)
+        pk = request.GET['pk']
+        user = CustomUser.objects.get(pk=pk)
+        currency = user.currency
 
-        rr = requests.get(fgurl, params={
-            "brandId": brandId,
-            "brandPassword": brandPassword, 
+        rr = requests.get(FG_URL, params={
+            "brandId": BRANDID,
+            "brandPassword": BRAND_PASSWORD, 
             "currency": currency,
-            "uuid": 'fg' + username,
-            "loginName": username
+            "uuid": 'fg'+ user.username,
+            "loginName": user.username
             })
-                  
-        rrdata = rr.json()
-        # logger.info(rrdata)
-        try:
-            sessionKey = rrdata["sessionKey"]
-            partyId = rrdata["partyId"]
-    
-            data = rrdata
+        
+        if rr.status_code == 200 :    
+               
+            rrdata = rr.json()
+            # logger.info(rrdata)
             try:
-                user = FGGame.objects.get(user_name =username)
-                user.session_key=sessionKey
-                user.save()
-            except:
+                sessionKey = rrdata["sessionKey"]
+                partyId = rrdata["partyId"]
+                data = rrdata
                 
-                FGGame.objects.create(user_name=username,session_key=sessionKey,party_id=partyId)   
-            
+                try:
+                    user = FGSession.objects.get(user=pk)
+                    user.session_key=sessionKey
+                    user.save()
+                except:
+                    
+                    pk = CustomUser.objects.get(pk=pk)        
+                    FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId)   
+                
 
-        except:
+            except:
 
-            data = {
-                    "status": rrdata["status"],
-                    "message": rrdata["message"]
-                    }
+                data = {
+                        "status": rrdata["status"],
+                        "message": rrdata["message"]
+                        }
 
-       
-        return HttpResponse(json.dumps(data),content_type='application/json',status=200)
+        
+            return HttpResponse(json.dumps(data),content_type='application/json',status=200)
+        else:
+            # Handle error
+            logger.info(rr)
+            return Response(rr)
 
 
 
@@ -76,11 +78,9 @@ class GetAccountDetail(APIView):
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
-        user = CustomUser.objects.get(username=callerId)
-        fguser = FGGame.objects.get(user_name=callerId)
+        fguser = FGSession.objects.get(session_key=omegaSessionKey)
+        user = CustomUser.objects.get(username=fguser.user)
 
-
-        #print(decimal.Decimal(user.main_wallet))
         response = {
             "seq" : seq,
             "partyId" : fguser.party_id ,
@@ -112,9 +112,8 @@ class GetBalance(APIView):
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
-        #gameInfoId = request.GET["gameInfoId"]
-        user = CustomUser.objects.get(username=callerId)
-        fguser = FGGame.objects.get(user_name=callerId)
+        fguser = FGSession.objects.get(session_key=omegaSessionKey)
+        user = CustomUser.objects.get(username=fguser.user)
 
         response = {
             "seq" : seq,
@@ -122,8 +121,8 @@ class GetBalance(APIView):
             "omegaSessionKey" : omegaSessionKey,
             "message" : "null",
             "errorCode" : "null",
-            "realBalance" : decimal.Decimal(user.main_wallet),
-            "bonusBalance" : decimal.Decimal(user.bonus_wallet)
+            "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')),
+            "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
         
         }
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
@@ -136,7 +135,7 @@ class ProcessTransaction(APIView):
         callerId = request.GET['callerId']
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
-        
+        omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
         amount = request.GET["amount"]
         tranType = request.GET["tranType"]
@@ -146,8 +145,8 @@ class ProcessTransaction(APIView):
         gameTranId = request.GET["gameTranId"]
         #
         #
-        user = CustomUser.objects.get(username=callerId)
-        fguser = FGGame.objects.get(user_name=callerId)
+        fguser = FGSession.objects.get(session_key=omegaSessionKey)
+        user = CustomUser.objects.get(username=fguser)
 
         if tranType == "GAME_BET" :
             omegaSessionKey = request.GET['omegaSessionKey']
@@ -160,28 +159,28 @@ class ProcessTransaction(APIView):
                 "transactionId" : 1,
                 "tranType" : tranType,
                 "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
             }
 
-        if tranType == "GAME_WIN" :
+        # if tranType == "GAME_WIN" :
             
-            response = {
-                "seq" : seq,
-                "partyId" : fguser.party_id ,
-                "currency" : currency,
-                "transactionId" : 1,
-                "tranType" : tranType,
-                "alreaduProcessed" : "false",
-                "realBalance" :  decimal.Decimal(user.main_wallet) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
-                "realAmount" : amount,
-                "bonusAmount" : 0,
+        #     response = {
+        #         "seq" : seq,
+        #         "partyId" : fguser.party_id ,
+        #         "currency" : currency,
+        #         "transactionId" : 1,
+        #         "tranType" : tranType,
+        #         "alreaduProcessed" : "false",
+        #         "realBalance" :  decimal.Decimal(user.main_wallet) ,
+        #         "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+        #         "realAmount" : amount,
+        #         "bonusAmount" : 0,
 
-            }
+        #     }
 
         if tranType == "PLTFRM_BON" :
             omegaSessionKey = request.GET['omegaSessionKey']
@@ -198,8 +197,8 @@ class ProcessTransaction(APIView):
                 "errorCode" : "null",
                 "message" : "null",
                 "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
@@ -214,8 +213,8 @@ class ProcessTransaction(APIView):
                 "currency" : currency,
                 "transactionId" : 1,
                 "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 
@@ -232,8 +231,8 @@ class ProcessTransaction(APIView):
                 "partyId" : fguser.party_id ,
                 "currency" : currency,
                 "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
                 "realAmount" : amount,
                 "bonusAmount" : 0,
 

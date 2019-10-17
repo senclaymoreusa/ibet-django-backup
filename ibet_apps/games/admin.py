@@ -5,4 +5,4 @@ from .models import *
 admin.site.register(Category)
 admin.site.register(Game)
 admin.site.register(GameAttribute)
-admin.site.register(FGGame)
+admin.site.register(FGSession)

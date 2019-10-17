@@ -498,6 +498,11 @@ EVENT_CHOICES = (
     # (6, _('bet'))
 )
 
+#FGgame
+BRANDID = '524'
+BRAND_PASSWORD = 'Flow6refg'
+FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
+
 
 
 ASIAPAY_CMDTYPE = (
@@ -1175,3 +1180,5 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (3, 'MAX'),
     (4, 'LATEST'),
 )
+
+

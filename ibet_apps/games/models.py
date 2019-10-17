@@ -3,6 +3,7 @@ from users import models as usersModel
 from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
 from django.utils import timezone
+from users.models import  CustomUser
 import uuid
 
 
@@ -118,11 +119,12 @@ class EATicket(models.Model):
     created_time = models.DateTimeField(default=timezone.now)
 
 #FG model
-class FGGame(models.Model):
+class FGSession(models.Model):
     
-    user_name = models.CharField(max_length=50, null=True)
+    #user_name = models.CharField(max_length=50, null=True)
+    user= models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     session_key = models.CharField(max_length=50, null=True)
     party_id = models.IntegerField(default=0, null=True)
     
     def __str__(self):
-        return '{0}'.format(self.user_name)
+        return '{0}'.format(self.user)
