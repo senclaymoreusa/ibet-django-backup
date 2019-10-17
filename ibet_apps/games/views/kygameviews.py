@@ -36,11 +36,16 @@ pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 :param data: data needs to be encrypt
 :returns: IPv4 address
 """
-def des_encode(key, data):
+def aes_encode(key, data):
     cipher_chunks = []
     cipher = AES.new(key, AES.MODE_ECB)
+    cipher_chunks.append()
     cipher_text = cipher.encrypt(pad(data))
     return cipher_text
+
+
+def get_timestamp():
+    return int(round(time.time() * 1000))
 
 
 class KaiyuanLogin(View):
@@ -51,15 +56,16 @@ class KaiyuanLogin(View):
         s = data["s"]
         ip = get_client_ip(request)
 
-        timestamp = lambda: int(round(time.time() * 1000))
+        # timestamp = lambda: int(round(time.time() * 1000))
+        timestamp = get_timestamp()
 
         agent = KY_AGENT
-        # timestamp = lambda: int(round(time.time() * 1000))
 
         s = int(s)
 
         # Login
         if s == 0:
+            print(0)
             account = data["account"]
             money = data["money"]
             order_time = time.strftime("%Y%m%d%H%M%S")
@@ -67,7 +73,6 @@ class KaiyuanLogin(View):
             linecode = KY_LINE_CODE_1
 
             param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
-            print(param)
         # Get Balance
         elif s == 1:
             param = "s=" + s + "&account=" + account
@@ -96,19 +101,24 @@ class KaiyuanLogin(View):
             param = "s=" + s + "&account=" + account
         
         
-        key = '0'
-        linecode = "00001"
         # kind_id = '0' # game lobby
         # "&KindID=" + kind_id
-        
-        param = des_encode('DE675375C948CF2B', param)
+        param = aes_encode(KY_AES_KEY, param)
         param = base64.b64encode(param)
+        param = str(param, "utf-8")
+        
+        key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+        print(key)
+        key = hashlib.md5(key.encode())
+        key = key.hexdigest()
+        print(key)
 
         url = KY_API_URL
-        url += "?agent" + agent
-        url += "&timestamp=" + timestamp
+        url += "?agent=" + agent
+        url += "&timestamp=" + str(timestamp)
         url += "&param=" + param
-        url += "&key=" + key
+        url += "&key=" + str(key)
+        print(url)
 
         # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
         return HttpResponse(status=200)

@@ -1188,5 +1188,7 @@ BRAND_OPTIONS = (
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
+KY_AES_KEY = "DE675375C948CF2B"
+KY_MD5_KEY = "130395C66F2389B4"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = ""
