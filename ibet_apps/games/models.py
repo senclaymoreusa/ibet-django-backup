@@ -6,8 +6,14 @@ from django.utils import timezone
 from users.models import  CustomUser
 import uuid
 
-
 # Create your models here.
+class GameProvider(models.Model):
+    
+    provider_name = models.CharField(max_length=100)
+    type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
+    market = models.CharField(max_length=50)
+
+
 class Category(models.Model):
     category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
@@ -23,6 +29,13 @@ class Category(models.Model):
 
     def __str__(self):
         return '{0}'.format(self.name)
+
+
+class GameProviderWithCategory(models.Model):
+
+    provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
 
 
 class GameAttribute(models.Model):
@@ -54,7 +67,7 @@ class Game(models.Model):
 
     imageURL = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
-    provider = models.SmallIntegerField(choices=GAME_PROVIDERS, default=0)
+    provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
 
@@ -80,11 +93,6 @@ class Game(models.Model):
     def __str__(self):
         return '{0}: {1}'.format(self.name, self.category_id)
 
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular game instance.
-        """
-        return reverse('game-detail', args=[str(self.id)])
 
 # class GameWithAttribute(models.Model):
 
