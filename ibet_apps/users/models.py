@@ -1,9 +1,9 @@
-from django.db import models
+from django.db import models, DatabaseError
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse #Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
-from django.db import transaction, IntegrityError
+from django.db import transaction
 import uuid
 from datetime import date
 from django.contrib.auth.models import User
@@ -568,5 +568,5 @@ def new_user_handler(sender, **kwargs):
                     refer_channel_name='default'
                 )
                 logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
-        except IntegrityError as e:
+        except DatabaseError as e:
             logger.error("Error creating referral code and default referral channel for new user: ", e)
