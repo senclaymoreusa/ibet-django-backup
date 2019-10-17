@@ -45,31 +45,28 @@ def des_encode(key, data):
 
 class KaiyuanLogin(View):
     def post(self, request, *args, **kwargs):
-        print(1)
-        data = request.data
+        data = json.loads(request.body)
         print(data)
 
         s = data["s"]
-        print(s)
         ip = get_client_ip(request)
-        print(ip)
+
         timestamp = lambda: int(round(time.time() * 1000))
 
         agent = KY_AGENT
         # timestamp = lambda: int(round(time.time() * 1000))
-        print(timestamp())
 
-        param = ''
         s = int(s)
 
         # Login
         if s == 0:
             account = data["account"]
             money = data["money"]
-            orderid = agent + order_time + account
-            linecode = "iBet1"
+            order_time = time.strftime("%Y%m%d%H%M%S")
+            orderid = agent + str(order_time) + account
+            linecode = KY_LINE_CODE_1
 
-            param = "s=" + s + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
+            param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
             print(param)
         # Get Balance
         elif s == 1:
