@@ -80,6 +80,7 @@ urlpatterns += [
     path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check"),
     path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check-user-status"),
     path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security-question"),
+    path('api/user-security-question/', csrf_exempt(views.UserSecurityQuestion.as_view()), name="user-security-question"),
     path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw-password")
     
 ]

@@ -1748,31 +1748,47 @@ class AllSecurityQuestion(View):
 
     
 
-# class UserSecurityQuestion(View):
+class UserSecurityQuestion(View):
 
-#     def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         
-#         try:
+        try:
+            userId = request.GET.get('userId')
             
-#             userId = request.GET.get('userId')
-#             data = {}
-#             user = CustomUser.objects.get(pk=userId)
-#             data['question'] = dict(SECUIRTY_QUESTION).get(user.security_question)
+            user = CustomUser.objects.get(pk=userId)
+            data = {
+                "question": str(dict(SECUIRTY_QUESTION).get(user.security_question))
+            }
 
-#         except Exception as e:
-#             logger.error("Error getting UserBonusEvent objects: ", e)
-#             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error("Error getting UserBonusEvent objects: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-#         return HttpResponse(json.dumps(data), content_type='application/json')
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             data = json.loads(request.body)
-#             userId = data['userId']
-#             CustomUser.objects.get(pk=userId)
+    def post(self, request, *args, **kwargs):
 
-    
-#         return HttpResponse(json.dumps(data), content_type='application/json')
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            question = data['question']
+            answer = data['answer']
+            user = CustomUser.objects.get(pk=userId)
+
+            user.security_question = question
+            user.security_answer = answer
+            user.save()
+
+            response = {
+                "code": CODE_SUCCESS,
+                "message": "Successfully set the security Question"
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+        except Exception as e:
+            # logger.error("Error setting security questions: ", e)
+            # return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            pass
 
 class SetWithdrawPassword(View):
 
@@ -1785,13 +1801,15 @@ class SetWithdrawPassword(View):
             customUser = CustomUser.objects.get(pk=userId)
             customUser.withdraw_password = make_password(withdrawPassword)
             customUser.save()
-            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
+
             response = {
                 "code": CODE_SUCCESS,
                 "message": "Successfully set the withdraw password"
             }
+
+            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
             return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
 
-        except:
+        except Exception as e:
             logger.error("Error setting withdraw password: ", e)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
