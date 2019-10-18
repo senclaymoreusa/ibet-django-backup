@@ -3,6 +3,7 @@ from rest_framework import routers
 import games.views.eagameviews as eagameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
+from games.live_casino import *
 
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
