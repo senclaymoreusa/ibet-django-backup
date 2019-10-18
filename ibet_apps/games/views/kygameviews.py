@@ -29,6 +29,7 @@ from games.helper import *
 logger = logging.getLogger('django')
 
 import base64
+
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 
@@ -38,7 +39,6 @@ pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 :returns: IPv4 address
 """
 def aes_encode(key, data):
-    cipher_chunks = []
     cipher = AES.new(key, AES.MODE_ECB)
     # cipher_chunks.append()
     cipher_text = cipher.encrypt(pad(data))
@@ -72,8 +72,10 @@ class KaiyuanLogin(View):
             order_time = time.strftime("%Y%m%d%H%M%S")
             orderid = agent + str(order_time) + account
             linecode = KY_LINE_CODE_1
+            kind_id = data["KindID"]
+            print(kind_id)
 
-            param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
+            param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
         # Get Balance
         elif s == 1:
             param = "s=" + str(s) + "&account=" + account
@@ -138,10 +140,11 @@ class KaiyuanLogin(View):
             # url += "&key=" + str(key)
             req = urllib.parse.urlencode(req_param)
             url = url + '?' + req
-            print(url)
             res = requests.get(url)
-            print(res.json())
-            return HttpResponse(status=200)
+            if res.status_code == 200:
+                return HttpResponse(json.dumps(res.json()), content_type='application/json')
+            else:
+                return HttpResponse("404 Not Found")
         except Exception as e:
-            print(e)
+            logger.error("Bad Request for Kaiyuan Gaming: ", e)
             return HttpResponse(status=400)
