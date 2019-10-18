@@ -61,12 +61,12 @@ class KaiyuanLogin(View):
         timestamp = get_timestamp()
 
         agent = KY_AGENT
+        account = data["account"]
 
         s = int(s)
 
         # Login
         if s == 0:
-            account = data["account"]
             money = data["money"]
             order_time = time.strftime("%Y%m%d%H%M%S")
             orderid = agent + str(order_time) + account
@@ -75,10 +75,14 @@ class KaiyuanLogin(View):
             param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&lang=zh-CN"
         # Get Balance
         elif s == 1:
-            param = "s=" + s + "&account=" + account
+            param = "s=" + str(s) + "&account=" + account
         # Change Balance
         elif s == 2:
-            param = "s=" + s + "&account=" + account + "&orderid=" + orderId + "&money=" + money + "&ip=" + ip
+            print(2)
+            money = data["money"]
+            orderid = agent + str(order_time) + account
+
+            param = "s=" + s + "&account=" + account + "&orderid=" + orderid + "&money=" + money + "&ip=" + ip
         # Refund
         elif s == 3:
             param = "s=" + s + "&account=" + account + "&orderid=" + orderId + "&money=" + money + "&ip=" + ip
@@ -105,11 +109,8 @@ class KaiyuanLogin(View):
         # "&KindID=" + kind_id
         try:
             param = aes_encode(KY_AES_KEY, param)
-            # print(param)
-            # param = param.decode('utf-8')
             param = base64.b64encode(param)
             param = str(param, "utf-8")
-            # print(param)
             
             key = KY_AGENT + str(timestamp) + KY_MD5_KEY
             key = hashlib.md5(key.encode())
@@ -129,7 +130,8 @@ class KaiyuanLogin(View):
             req = urllib.parse.urlencode(req_param)
             url = url + '?' + req
             print(url)
-            # ky_login_api = "https://kyapi.ky206.com:189/channelHandle" + "?agent=" + agent + "&timestamp=" + timestamp + "&"
+            res = requests.get(url)
+            print(res)
             return HttpResponse(status=200)
         except Exception as e:
             print(e)
