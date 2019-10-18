@@ -22,7 +22,7 @@ class MessageHandler:
         self.connection = ClientConnection
 
     def ProcessRequestMessage(self, swamMessage):
-        print('Full message:', swamMessage)
+        print('Full message:\n', swamMessage)
         future = self.executor.submit(self.MessageTask, (swamMessage))
         return future.result(5)
 

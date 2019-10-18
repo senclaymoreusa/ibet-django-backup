@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from django.contrib.auth import authenticate
+from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
+from games.models import GameBet, GameProvider, Category
 from rest_framework.authtoken.models import Token
 
 import decimal
@@ -9,6 +11,11 @@ import logging
 import games.n2_socket.n2_constants as const
 
 logger = logging.getLogger("django")
+try:
+    PROVIDER = GameProvider.objects.get(provider_name="N2 Games")
+except ObjectDoesNotExist:
+    print("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+
 
 class PlayerManagement:
     loginId = None
@@ -129,8 +136,8 @@ class PlayerManagement:
                     self.vendorId = text
                 if elem.tag == "totalamount":
                     totalamount = text
-                # if elem.tag == "gameid":    bacarrat/roulette/blackjack
-                #     gameid = text
+                if elem.tag == "gamecode":   # bacarrat/roulette/blackjack
+                    gamecode = text
                 if elem.tag == "tradeid":
                     tradeid = text
                 if elem.tag == 'trades':
@@ -141,19 +148,18 @@ class PlayerManagement:
                         for details in trade.getchildren():
                             tradeData[details.tag] = details.text
                         trades.append(tradeData)
-                # print(elem.tag + " => " + text)
+
                 
-        # print(trades) all trades made in bet
+        print(trades) # all trades made in bet
         if action == "place":
-            PlaceBet(self.loginId, tradeid, totalamount)
+            PlaceBet(self.loginId, tradeid, totalamount, trades, gamecode) # Place Bet & Record Bet
         if action == "process":
-            CreditUser(self.loginId, tradeid, totalamount)
-            
+            CreditUser(self.loginId, tradeid, totalamount, trades, gamecode) # Credit User & UpdateBetResults
         return (0, tradeid)
 
     def GetLoginResponse(self, status, requestAction, requestMessageId, user, token=None, client_ip=False):
         if token is None:
-            token = getToken(user)
+            token = GetToken(user)
         if status == 0:
             responseXml = "<?xml version=\"1.0\" encoding=\"utf-16\"?><n2xsd:n2root xmlns:n2xsd=\"urn:n2ns\">"
             responseXml += "<status>0</status>"
@@ -214,20 +220,52 @@ class PlayerManagement:
         return responseXml
     
 
-def CreditUser(userid, tradeid, totalamount):
+def CreditUser(userid, tradeid, totalamount, trades):
     user = CustomUser.objects.get(username=userid)
     logger.info("crediting amount: " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
     new_balance = user.main_wallet + decimal.Decimal(totalamount)
     logger.info("user's balance is now: " + str(new_balance))
     user.main_wallet = new_balance
-    return user.save()
+    user.save()
 
-def PlaceBet(userid, tradeid, totalamount):
+    for trade in trades:
+        result = trade['resultstatus']
+        outcome = OUTCOME_MAP[result]
+        bet = GameBet.objects.get(ref_no=trade['id'])
+        bet.amount_won = decimal.Decimal(trade['amount'])
+        bet.outcome = outcome
+        bet.resolved_time = datetime.now()
+        bet.save()
+    return
+
+def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
+    category = GAMECODE_MAP[gamecode]
     user = CustomUser.objects.get(username=userid)
+    CATEGORY = Category.objects.get(name=category)
+
     logger.info("processing " + tradeid + " for user: " + str(user))
     new_balance = user.main_wallet - decimal.Decimal(totalamount)
     user.main_wallet = new_balance
-    return user.save()
+    user.save()
+
+    for trade in trades:
+        bet = GameBet(
+                provider=PROVIDER, 
+                category=category, 
+                username=user, 
+                currency=user.currency, 
+                market=0,
+                ref_no=trade['id'],
+                amount_wagered=decimal.Decimal(trade['amount']),
+            )
+        bet.save()
+    return
+
+
+def GetToken(user):
+    sessionToken = Token.objects.get(user_id=user)
+    return sessionToken
+
 
 def PackExceptionMessage(status, action, messageId):
     desc = DESC_MAP[status]
@@ -239,38 +277,3 @@ def PackExceptionMessage(status, action, messageId):
     exceptionMsg += '</exception>'
     exceptionMsg += '</n2xsd:n2root>'
     return exceptionMsg
-
-def ProcessTradeResult(self, xmlDoc):
-    trades = [] # array of trade objects
-    for root in xmlDoc.getchildren():
-        for elem in root.getchildren():
-            if not elem.text:
-                text = "None"
-            else:
-                text = elem.text
-            if elem.tag == "userid":
-                self.loginId = text
-            if elem.tag == "vendorid":
-                self.vendorId = text
-            if elem.tag == "totalamount":
-                totalamount = text
-            # if elem.tag == "gameid": record this data in bet history
-            #     gameid = text
-            if elem.tag == "tradeid":
-                tradeid = text
-            if elem.tag == 'trades':
-                for trade in elem.getchildren():
-                    tradeData = {
-                        'id': trade.attrib['id']
-                    }
-                    for details in trade.getchildren():
-                        tradeData[details.tag] = details.text
-                    trades.append(tradeData)
-    # print(trades)
-    CreditUser(loginId, totalamount)
-    # RecordBetOutcomes(trades) # function that records all the bets to user's bet history
-    return (0, tradeId)
-
-def getToken(user):
-    sessionToken = Token.objects.get(user_id=user)
-    return sessionToken

@@ -13,9 +13,15 @@ CURRENCY_MAP = defaultdict(lambda: '1111', {
     'TTC': '1111'
 })
 
-GAME_CODE_MAP = defaultdict(lambda: 'Roulette', {
-    '90092': 'Baccarat',
-    'THB': '764',
-    'VND': '7041',
-    'TTC': '1111'
+OUTCOME_MAP = defaultdict(lambda: '1111', {
+    'win': 0,
+    'lose': 1,
+    'tie': 2,
+    'void': 3
+})
+
+GAMECODE_MAP = defaultdict(lambda: 'Roulette', {
+    '90091': 'Baccarat - Live Casino',
+    '90092': 'Baccarat - Live Casino',
+    '110001': 'Blackjack - Virtual Casino'
 })

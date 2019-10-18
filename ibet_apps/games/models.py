@@ -103,6 +103,12 @@ class GameBet(models.Model):
         (MONEYLINE, 'Moneyline'),
         (TOTAL, 'Total O/U'),
     ]
+    OUTCOME_CHOICES = [
+        (0, 'Win'),
+        (1, 'Lose'),
+        (2, 'Tie/Push'),
+        (3, 'Void'),
+    ]
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE) # sportsbook/game provider
     category = models.ForeignKey('Category', on_delete=models.CASCADE) # category within sportsbook/game provider (e.g basketball, soccer, blackjack)
 
@@ -115,7 +121,8 @@ class GameBet(models.Model):
     username = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     amount_wagered = models.DecimalField(max_digits=12, decimal_places=2) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
     amount_won = models.DecimalField(max_digits=12, decimal_places=2) # if amount_won = 0, outcome is also 0 (false)
-    outcome = models.BooleanField() # true = win, false = lost
+    # outcome = models.BooleanField() # true = win, false = lost
+    outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
     odds = models.IntegerField() # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200

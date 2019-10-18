@@ -14,6 +14,8 @@ import games.n2_socket.ClientConnection as ClientConnection
 import threading
 from time import sleep
 
+logger = logging.getLogger("django")
+
 
 class MainService:
     swamServer = ""
@@ -30,11 +32,12 @@ class MainService:
 
     def Start(self, event):
         try:
-            for index in range(2):
+            for index in range(1):
                 thread = threading.Thread(target=self.MakeConnectionThread,
                                           args=(index + 1, event), daemon=True)
                 thread.start()
         except Exception as ex:
+
             print('Start::Exception occurred', str(ex))
 
     def MakeConnectionThread(self, threadId, event):
