@@ -15,7 +15,7 @@ urlpatterns = [
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
 
     # Play n Go
-    path('api/playngoauth/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
+    path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
 
 
 ]

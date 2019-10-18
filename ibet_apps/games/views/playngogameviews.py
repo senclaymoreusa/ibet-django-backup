@@ -29,7 +29,7 @@ class AuthenticateView(View):
 
             # print(username, product_id, client_ip, context_id, access_token, language, game_id, channel)
 
-            # TODO: authentication logic. We'll use dummy data for now.
+            # TODO: authentication logic. Using dummy data for now.
 
             external_id = 554433 # Placeholder
             status_code = 0 # Placeholder
