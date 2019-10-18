@@ -81,16 +81,21 @@ class KaiyuanLogin(View):
             money = data["money"]
             order_time = time.strftime("%Y%m%d%H%M%S")
             orderid = agent + str(order_time) + account
-            print(orderid)
 
-            param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money + "&ip=" + ip
-            print(param)
+            param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
         # Refund
         elif s == 3:
-            param = "s=" + s + "&account=" + account + "&orderid=" + orderId + "&money=" + money + "&ip=" + ip
+            money = data["money"]
+            order_time = time.strftime("%Y%m%d%H%M%S")
+            orderid = agent + str(order_time) + account
+
+            param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
         # Order Query
         elif s == 4:
-            param = "s=" + s + "&orderid=" + orderId
+            order_time = time.strftime("%Y%m%d%H%M%S")
+            orderid = agent + str(order_time) + account
+
+            param = "s=" + str(s) + "&orderid=" + orderid
         # Query The Player's Online Status
         elif s == 5:
             param = "s=" + s + "&account=" + account
