@@ -88,16 +88,18 @@ hr {
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" onclick="newGroup()">Upload player CSV</button>
+
 
 <div style="margin-top:30px">
     <table>
         <thead class="thead-dark">
             <tr>
-            <th style="width: 40%;">NAME</th>
-            <th style="width: 15%;">MEMBERS</th>
-            <th style="width: 15%;">TIMES USED</th>
-            <th style="width: 15%;">CREATOR</th>
-            <th style="width: 15%;">OPEN RATE</th>
+              <th style="width: 40%;">NAME</th>
+              <th style="width: 15%;">MEMBERS</th>
+              <th style="width: 15%;">TIMES USED</th>
+              <th style="width: 15%;">CREATOR</th>
+              <th style="width: 15%;">OPEN RATE</th>
             </tr>
         </thead>
         <tbody>
@@ -330,6 +332,140 @@ hr {
     </div>
   </div>
 </div>
+
+
+<div class="modal fade bd-example-modal-lg" id="player_group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" style="width:48%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">New player group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div style="padding:5px; margin-top:10px;">
+        <ul class="nav nav-tabs">
+            <li id="member-group"><a data-toggle="tab" class="tab-label active" href="#membergroup">MEMBER GROUP</a></li>
+            <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AFFILATE GROUP</a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="membergroup" class="tab-pane active">
+                <form id="newgroup" action="{% url 'xadmin:messagegroups' %}">
+                {% csrf_token %}
+                    <div class="form-group">
+                    <label for="group_name">NAME</label>
+                    <input type="text" class="form-control" name="group_name" placeholder="Give your group a descriptive name" required>
+                    </div>
+                    <div class="row" style="margin-top: 30px">
+                    <strong>FILTER TO DEFINE YOUR GROUP (LEAVE BLANK TO IGNORE FILTER)</strong>
+                    </div>
+                    <!-- <div class="form-group">
+                    <label for="product">PRODUCT</label>
+                    <br/> -->
+                    <!-- <div class="btn-group">
+                        <button type="button" id="product" name="product" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        Select...
+                        <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li class="product-item"><a href="#">Sports</a></li>
+                            <li class="product-item"><a href="#">Live Casino</a></li>
+                            <li class="product-item"><a href="#">Games</a></li>
+                            <li class="product-item"><a href="#">Lotto</a></li>
+                        </ul>
+                    </div> -->
+                    <!-- </div> -->
+                    <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-8" style="padding-left: 0">
+                        <label>REGISTRATION DATE</label>
+                        <div class="input-group">
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">From</span>
+                            <input type="text" id="reg-from" class="form-control" placeholder="Pick a date...">
+                            <span class="input-group-addon" style="background-color:#f3f3f3; color:black">To</span>
+                            <input type="text" id="reg-to" class="form-control" placeholder="Pick a date...">
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="form-group">
+                    <input class="form-check-input" type="checkbox" id="onlyactive" checked disabled>
+                    <label class="form-check-label" for="gridCheck">
+                        Only active members (you can override this filter by adding members manually)
+                    </label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="onlydeposited">
+                    <label class="form-check-label" for="gridCheck">
+                        Only members who has deposited
+                    </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="vip">VIP LEVEL</label>
+                        <div class="dropdown" >
+                            <button id="vipbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" style="width:30%; text-align: left;">
+                            <span>Select...</span>
+                            <span class="caret" style="float: right; margin-top:8px;"></span>
+                            </button>
+                            <ul id="vip" class="dropdown-menu" style="width:30%;">
+                            <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
+                            <li><a href="#" class="small" data-value="Normal" tabIndex="-1"><input type="checkbox"/>&nbsp;Normal</a></li>
+                            <li><a href="#" class="small" data-value="VIP1" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP1</a></li>
+                            <li><a href="#" class="small" data-value="VIP2" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP2</a></li>
+                            <li><a href="#" class="small" data-value="VIP3" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP3</a></li>
+                            <li><a href="#" class="small" data-value="VIP4" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP4</a></li>
+                            <li><a href="#" class="small" data-value="VIP5" tabIndex="-1"><input type="checkbox"/>&nbsp;VIP5</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    <label for="risk">RISK LEVEL</label>
+                    <div class="dropdown">
+                        <button id="riskbtn" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"  style="width:30%; text-align: left;">
+                        Select...
+                        <span class="caret" style="float: right; margin-top:8px;"></span>
+                        </button>
+                        <ul id="risk" class="dropdown-menu">
+                        <li><a href="#" class="small" data-value="ALL" tabIndex="-1"><input type="checkbox"/>&nbsp;ALL</a></li>
+                        <li><a href="#" class="small" data-value="E1" tabIndex="-1"><input type="checkbox"/>&nbsp;E1</a></li>
+                        <li><a href="#" class="small" data-value="E2" tabIndex="-1"><input type="checkbox"/>&nbsp;E2</a></li>
+                        <li><a href="#" class="small" data-value="W" tabIndex="-1"><input type="checkbox"/>&nbsp;W</a></li>
+                        <li><a href="#" class="small" data-value="F" tabIndex="-1"><input type="checkbox"/>&nbsp;F</a></li>
+                        </ul>
+                    </div>
+                    </div>
+                    <hr/>
+                    <div class="form-group" style="padding-top: 0">
+                    <p style="font-size: 14px"><strong>ADD MEMBERS MANUALLY</strong></p>
+                    <p>Manually added members will stay in the groups regardless of filter settings.</p>
+                    <p>You have added 0 members manually.</p>
+                    <button type="button" class="btn btn-primary" onclick="manuallyUpload()">Add members</button>
+                    </div>
+                    <hr/>
+                    <div class="form-group" style="padding-top: 0">
+                    <label>Members in group</label>
+                    <div class="row" style="background-color:#f3f3f3; height:30px;">
+                        <span><a href="#" id="member_count" data-toggle="modal" data-target="#member-list">&nbsp;{{ users_count }}</a></span>
+                    </div>
+                    </div>
+                    <div id="errorMessage"></div>
+                    <div style="margin-top:30px;">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+                        <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        <div id="automated-message" class="tab-pane fade">
+        </div>
+        </div>
+
+      </div>
+      
+    </div>
+  </div>
+</div>
+
 
 <div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">

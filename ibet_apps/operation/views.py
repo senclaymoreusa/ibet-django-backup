@@ -302,6 +302,7 @@ class NotificationView(CommAdminView):
         queryset = Notification.objects.filter(msg_filter)
 
         notification_list = []
+
         for msg in queryset:
             notification_item = {}
             notification_item['pk'] = msg.pk
@@ -313,6 +314,8 @@ class NotificationView(CommAdminView):
             notifiers = NotificationToUsers.objects.filter(notification_id=msg)
             if len(notifiers) > 1:
                 notification_item["notifiers"] = str(len(notifiers)) + " users"
+            elif len(notifiers) == 0:
+                notification_item["notifiers"] = "None"
             else:
                 notification_item["notifiers"] = notifiers[0].notifier_id
 
@@ -327,6 +330,7 @@ class NotificationView(CommAdminView):
 
         paginator = Paginator(notification_list, pageSize)
         context["notifications"] = paginator.get_page(offset)
+
         campArr = []
         appCamp = Campaign.objects.all().distinct('name')
         for i in appCamp:
