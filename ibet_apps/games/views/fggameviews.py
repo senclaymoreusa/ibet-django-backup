@@ -36,6 +36,8 @@ class FGLogin(APIView):
                
             rrdata = rr.json()
             # logger.info(rrdata)
+           
+            
             try:
                 sessionKey = rrdata["sessionKey"]
                 partyId = rrdata["partyId"]
@@ -78,10 +80,12 @@ class GetAccountDetail(APIView):
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
-        fguser = FGSession.objects.get(session_key=omegaSessionKey)
-        user = CustomUser.objects.get(username=fguser.user)
 
-        response = {
+        try:
+            fguser = FGSession.objects.get(session_key=omegaSessionKey)
+            user = CustomUser.objects.get(username=fguser.user)
+
+            response = {
             "seq" : seq,
             "partyId" : fguser.party_id ,
             "omegaSessionKey" : omegaSessionKey,
@@ -100,6 +104,13 @@ class GetAccountDetail(APIView):
             "birthDate" : user.date_of_birth
     
         }
+        except:
+            response = {
+                "errorcode" : "PLAYER_NOT_FOUND",
+                "message" : "no user found"
+            }
+
+        
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
 class GetBalance(APIView):
@@ -112,19 +123,26 @@ class GetBalance(APIView):
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
-        fguser = FGSession.objects.get(session_key=omegaSessionKey)
-        user = CustomUser.objects.get(username=fguser.user)
+        try:
+            fguser = FGSession.objects.get(session_key=omegaSessionKey)
+            user = CustomUser.objects.get(username=fguser.user)
 
-        response = {
-            "seq" : seq,
-            "partyId" : fguser.party_id ,
-            "omegaSessionKey" : omegaSessionKey,
-            "message" : "null",
-            "errorCode" : "null",
-            "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')),
-            "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
-        
-        }
+            response = {
+                "seq" : seq,
+                "partyId" : fguser.party_id ,
+                "omegaSessionKey" : omegaSessionKey,
+                "message" : "null",
+                "errorCode" : "null",
+                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')),
+                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+            
+            }
+        except:
+            response = {
+                "errorcode" : "PLAYER_NOT_FOUND",
+                "message" : "no user found"
+            }
+
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
 class ProcessTransaction(APIView):
@@ -145,26 +163,27 @@ class ProcessTransaction(APIView):
         gameTranId = request.GET["gameTranId"]
         #
         #
-        fguser = FGSession.objects.get(session_key=omegaSessionKey)
-        user = CustomUser.objects.get(username=fguser)
+        try:
+            fguser = FGSession.objects.get(session_key=omegaSessionKey)
+            user = CustomUser.objects.get(username=fguser)
 
-        if tranType == "GAME_BET" :
-            omegaSessionKey = request.GET['omegaSessionKey']
-            gameId = request.GET["gameId"]
-            response = {
-                "seq" : seq,
-                "omegaSessionKey" : omegaSessionKey,
-                "partyId" : fguser.party_id ,
-                "currency" : currency,
-                "transactionId" : 1,
-                "tranType" : tranType,
-                "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
-                "realAmount" : amount,
-                "bonusAmount" : 0,
+            if tranType == "GAME_BET" :
+                omegaSessionKey = request.GET['omegaSessionKey']
+                gameId = request.GET["gameId"]
+                response = {
+                    "seq" : seq,
+                    "omegaSessionKey" : omegaSessionKey,
+                    "partyId" : fguser.party_id ,
+                    "currency" : currency,
+                    "transactionId" : 1,
+                    "tranType" : tranType,
+                    "alreaduProcessed" : "false",
+                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realAmount" : amount,
+                    "bonusAmount" : 0,
 
-            }
+                }
 
         # if tranType == "GAME_WIN" :
             
@@ -182,61 +201,67 @@ class ProcessTransaction(APIView):
 
         #     }
 
-        if tranType == "PLTFRM_BON" :
-            omegaSessionKey = request.GET['omegaSessionKey']
-            gameInfoId = request.GET["gameInfoId"]
-            isFinal = request.GET["isFinal"]
+            if tranType == "PLTFRM_BON" :
+                omegaSessionKey = request.GET['omegaSessionKey']
+                gameInfoId = request.GET["gameInfoId"]
+                isFinal = request.GET["isFinal"]
+                response = {
+                    "seq" : seq,
+                    "omegaSessionKey" : omegaSessionKey,
+                    "tranType" : tranType,
+                    "gameInfoId" : gameInfoId,
+                    "partyId" : fguser.party_id ,
+                    "currency" : currency,
+                    "transactionId" : 1,
+                    "errorCode" : "null",
+                    "message" : "null",
+                    "alreaduProcessed" : "false",
+                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realAmount" : amount,
+                    "bonusAmount" : 0,
+
+                }    
+
+            if tranType == "ROLLBACK" :
+                gameId = request.GET["gameId"]
+                response = {
+                    "seq" : seq,
+                    "tranType" : tranType,
+                    "partyId" : fguser.party_id ,
+                    "currency" : currency,
+                    "transactionId" : 1,
+                    "alreaduProcessed" : "false",
+                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realAmount" : amount,
+                    "bonusAmount" : 0,
+
+                }  
+
+            if tranType == "END_GAME" :
+                omegaSessionKey = request.GET['omegaSessionKey']
+                gameInfoId = request.GET["gameInfoId"]
+                isFinal = request.GET["isFinal"]
+                response = {
+                    "seq" : seq,
+                    "omegaSessionKey" : omegaSessionKey,
+                    "tranType" : tranType,
+                    "partyId" : fguser.party_id ,
+                    "currency" : currency,
+                    "alreaduProcessed" : "false",
+                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
+                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realAmount" : amount,
+                    "bonusAmount" : 0,
+
+                }  
+        except:
             response = {
-                "seq" : seq,
-                "omegaSessionKey" : omegaSessionKey,
-                "tranType" : tranType,
-                "gameInfoId" : gameInfoId,
-                "partyId" : fguser.party_id ,
-                "currency" : currency,
-                "transactionId" : 1,
-                "errorCode" : "null",
-                "message" : "null",
-                "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
-                "realAmount" : amount,
-                "bonusAmount" : 0,
+                "errorcode" : "PLAYER_NOT_FOUND",
+                "message" : "no user found"
+            }
 
-            }    
-
-        if tranType == "ROLLBACK" :
-            gameId = request.GET["gameId"]
-            response = {
-                "seq" : seq,
-                "tranType" : tranType,
-                "partyId" : fguser.party_id ,
-                "currency" : currency,
-                "transactionId" : 1,
-                "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
-                "realAmount" : amount,
-                "bonusAmount" : 0,
-
-            }  
-
-        if tranType == "END_GAME" :
-            omegaSessionKey = request.GET['omegaSessionKey']
-            gameInfoId = request.GET["gameInfoId"]
-            isFinal = request.GET["isFinal"]
-            response = {
-                "seq" : seq,
-                "omegaSessionKey" : omegaSessionKey,
-                "tranType" : tranType,
-                "partyId" : fguser.party_id ,
-                "currency" : currency,
-                "alreaduProcessed" : "false",
-                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
-                "realAmount" : amount,
-                "bonusAmount" : 0,
-
-            }      
         return HttpResponse(json.dumps(response,cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
 
