@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# Author: Jonathan Chong
+# Author: Jonathan Chong & Orion Ou
 # This sample uses python 3.7.4 socket programming to connect to Swam Tcp Server
 # What are in this sample:
 #       1) Able to connect, receive (and decode data) and send (and encode) data from/to Swam Tcp Server
 #       2) Able to reconnect to Swam Tcp Server in the event of disconnection
 #       3) 2 client sockets were established to Swam Tcp Server
-# Pending tasks:
-#       1) to make this sample to be able to detect CTRL-C for terminating the program
+#       4) Able to detect CTRL-C for terminating the program
 #
 
 import logging
@@ -31,9 +30,9 @@ class MainService:
 
     def Start(self, event):
         try:
-            for index in range(1):
+            for index in range(2):
                 thread = threading.Thread(target=self.MakeConnectionThread,
-                                          args=(index + 1, event))
+                                          args=(index + 1, event), daemon=True)
                 thread.start()
         except Exception as ex:
             print('Start::Exception occurred', str(ex))
