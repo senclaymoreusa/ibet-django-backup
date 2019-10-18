@@ -1786,9 +1786,8 @@ class UserSecurityQuestion(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            # logger.error("Error setting security questions: ", e)
-            # return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
-            pass
+            logger.error("Error setting security questions: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class SetWithdrawPassword(View):
 
