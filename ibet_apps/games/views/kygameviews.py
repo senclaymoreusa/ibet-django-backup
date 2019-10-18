@@ -61,7 +61,7 @@ class KaiyuanLogin(View):
         timestamp = get_timestamp()
 
         agent = KY_AGENT
-        account = data["account"]
+        # account = data["account"]
 
         s = int(s)
 
@@ -101,9 +101,11 @@ class KaiyuanLogin(View):
             param = "s=" + str(s) + "&account=" + account
         # Query Bet Order
         elif s == 6:
+            print(6)
             startTime = data["startTime"]
             endTime = data["endTime"]
-            param = "s=" + s + "&startTime=" + startTime + "&endTime=" + endTime
+
+            param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
         # Query The Player's Total Points
         elif s == 7:
             param = "s=" + s + "&account=" + account
@@ -125,7 +127,8 @@ class KaiyuanLogin(View):
             key = key.hexdigest()
             print(key)
 
-            url = KY_API_URL
+            url = KY_API_URL if s != 6 else KY_RECORD_URL
+            print(url)
 
             req_param = {}
             req_param["agent"] = agent
