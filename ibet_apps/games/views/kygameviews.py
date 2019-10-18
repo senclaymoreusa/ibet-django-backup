@@ -73,7 +73,6 @@ class KaiyuanLogin(View):
             orderid = agent + str(order_time) + account
             linecode = KY_LINE_CODE_1
             kind_id = data["KindID"]
-            print(kind_id)
 
             param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
         # Get Balance
