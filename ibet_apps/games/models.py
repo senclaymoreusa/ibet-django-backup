@@ -133,6 +133,7 @@ class FGSession(models.Model):
     user= models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     session_key = models.CharField(max_length=50, null=True)
     party_id = models.IntegerField(default=0, null=True)
+    uuid = models.CharField(max_length=50, null=True)
     
     def __str__(self):
         return '{0}'.format(self.user)

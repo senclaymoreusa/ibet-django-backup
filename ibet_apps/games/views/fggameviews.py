@@ -23,12 +23,12 @@ class FGLogin(APIView):
         pk = request.GET['pk']
         user = CustomUser.objects.get(pk=pk)
         currency = user.currency
-
+        uuid = 'fg'+ user.username
         rr = requests.get(FG_URL, params={
             "brandId": BRANDID,
             "brandPassword": BRAND_PASSWORD, 
             "currency": currency,
-            "uuid": 'fg'+ user.username,
+            "uuid": uuid,
             "loginName": user.username
             })
         
@@ -50,7 +50,7 @@ class FGLogin(APIView):
                 except:
                     
                     pk = CustomUser.objects.get(pk=pk)        
-                    FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId)   
+                    FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId, uuid=uuid)   
                 
 
             except:
@@ -68,7 +68,36 @@ class FGLogin(APIView):
             return Response(rr)
 
 
+class GameLaunch(APIView):
 
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        gameId = request.GET['gameId']
+        try:
+            sessionKey = request.GET['sessionKey']
+            rr = requests.get(LAUNCH_URL, params={
+                "platform": PLATFORM,
+                "brandId": BRANDID,
+                "gameId" : gameId,
+                "playForReal": "true",
+                "lang" : "en",
+                "sessionKey" : sessionKey
+            })
+            
+
+        except:
+
+            rr = requests.get(LAUNCH_URL, params={
+                "platform": PLATFORM,
+                "brandId": BRANDID,
+                "gameId" : gameId,
+                "playForReal": "false",
+                "lang" : "en"
+            })
+        
+        rr = rr.text    
+        return HttpResponse(rr)
 
 class GetAccountDetail(APIView):
 
@@ -153,7 +182,7 @@ class ProcessTransaction(APIView):
         callerId = request.GET['callerId']
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
-        omegaSessionKey = request.GET['omegaSessionKey']
+        #omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
         amount = request.GET["amount"]
         tranType = request.GET["tranType"]
@@ -164,7 +193,7 @@ class ProcessTransaction(APIView):
         #
         #
         try:
-            fguser = FGSession.objects.get(session_key=omegaSessionKey)
+            fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser)
 
             if tranType == "GAME_BET" :
@@ -177,7 +206,7 @@ class ProcessTransaction(APIView):
                     "currency" : currency,
                     "transactionId" : 1,
                     "tranType" : tranType,
-                    "alreaduProcessed" : "false",
+                    "alreadyProcessed" : "false",
                     "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
                     "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
                     "realAmount" : amount,
@@ -185,21 +214,21 @@ class ProcessTransaction(APIView):
 
                 }
 
-        # if tranType == "GAME_WIN" :
-            
-        #     response = {
-        #         "seq" : seq,
-        #         "partyId" : fguser.party_id ,
-        #         "currency" : currency,
-        #         "transactionId" : 1,
-        #         "tranType" : tranType,
-        #         "alreaduProcessed" : "false",
-        #         "realBalance" :  decimal.Decimal(user.main_wallet) ,
-        #         "bonusBalance" : decimal.Decimal(user.bonus_wallet),
-        #         "realAmount" : amount,
-        #         "bonusAmount" : 0,
+            if tranType == "GAME_WIN" :
+                
+                response = {
+                    "seq" : seq,
+                    "partyId" : fguser.party_id ,
+                    "currency" : currency,
+                    "transactionId" : 1,
+                    "tranType" : tranType,
+                    "alreaduProcessed" : "false",
+                    "realBalance" :  decimal.Decimal(user.main_wallet) ,
+                    "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+                    "realAmount" : amount,
+                    "bonusAmount" : 0,
 
-        #     }
+                }
 
             if tranType == "PLTFRM_BON" :
                 omegaSessionKey = request.GET['omegaSessionKey']
