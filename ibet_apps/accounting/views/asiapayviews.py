@@ -165,9 +165,12 @@ class submitDeposit(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
+        print(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
+            print(tree)
             StatusCode = tree.find('StatusCode').text
+            print(StatusCode)
             StatusMsg = tree.find('StatusMsg').text
             
             if StatusMsg == 'OK':

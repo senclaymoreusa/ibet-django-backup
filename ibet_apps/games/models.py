@@ -4,7 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 from utils.constants import *
 from django.utils import timezone
 import uuid
-
+from django.conf import settings
+from users.models import  CustomUser
 
 # Create your models here.
 class Category(models.Model):
@@ -116,3 +117,12 @@ class EATicket(models.Model):
     
     ticket = models.UUIDField()
     created_time = models.DateTimeField(default=timezone.now)
+
+class GDGetUserBalance(models.Model):
+    username = models.ForeignKey(CustomUser, on_delete=models.CASCADE) #same as user model's username
+    StatusCode = models.SmallIntegerField(choices=STATE_CHOICES, default=3)
+    UserBalance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return '{0}:{1}'.format(self.username, self.UserBalance)
+    

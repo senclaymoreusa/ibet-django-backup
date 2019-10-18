@@ -1162,3 +1162,8 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (3, 'MAX'),
     (4, 'LATEST'),
 )
+
+GDCASINO_URL = 'http://gdcasino.claymoreasia.com/main.php'
+GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
+GDCASINO_MERCHANT_CODE = 'IBPHtest'
+GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
