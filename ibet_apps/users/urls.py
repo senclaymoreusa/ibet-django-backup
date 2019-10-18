@@ -79,7 +79,7 @@ urlpatterns += [
     path('api/bet-history/',views.GetBetHistory.as_view(), name="get_bet_history"),
     path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check"),
     path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check-user-status"),
-    # path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security-question")
+    path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security-question"),
     path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw-password")
     
 ]

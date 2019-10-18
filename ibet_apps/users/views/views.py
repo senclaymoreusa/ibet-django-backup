@@ -1733,17 +1733,16 @@ class CheckUserStatusAPI(View):
 class AllSecurityQuestion(View):
 
     def get(self, request, *args, **kwargs):
-        
+
         try:
             data = []
             for question in SECUIRTY_QUESTION:
                 data.append({"value": question[0], "question": question[1]})
 
             logger.info("Sending all security question options response......... ")
-            return HttpResponse(json.dumps(data), content_type='application/json')
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
 
         except:
-
             logger.error("Error getting all security question options: ", e)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 

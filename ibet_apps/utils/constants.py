@@ -1186,7 +1186,12 @@ BRAND_OPTIONS = (
 
 
 SECUIRTY_QUESTION = (
-    (0, 'How old are you?'),
-    (1, 'How tall are you?'),
-    (2, 'How fat are you?')
+    (0, _('What is your’s father birthday?')),
+    (1, _('What is your’s mother birthday?')),
+    (2, _('What is your’s spouse birthday?')),
+    (3, _('What is your first company’s employee ID?')),
+    (4, _('What is your primary school class teacher’s name?')),
+    (5, _('What is your best childhood friend’s name?')),
+    (6, _('What is the name of the person that influenced you the most?'))
+    
 )
