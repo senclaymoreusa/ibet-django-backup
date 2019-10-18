@@ -52,7 +52,6 @@ def get_timestamp():
 class KaiyuanLogin(View):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
-        print(data)
 
         s = data["s"]
         ip = get_client_ip(request)
@@ -61,9 +60,11 @@ class KaiyuanLogin(View):
         timestamp = get_timestamp()
 
         agent = KY_AGENT
-        # account = data["account"]
 
         s = int(s)
+
+        if s != 6:
+            account = data["account"]
 
         # Login
         if s == 0:
@@ -101,17 +102,16 @@ class KaiyuanLogin(View):
             param = "s=" + str(s) + "&account=" + account
         # Query Bet Order
         elif s == 6:
-            print(6)
             startTime = data["startTime"]
             endTime = data["endTime"]
 
             param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
         # Query The Player's Total Points
         elif s == 7:
-            param = "s=" + s + "&account=" + account
+            param = "s=" + str(s) + "&account=" + account
         # Kick Player off
         elif s == 8:
-            param = "s=" + s + "&account=" + account
+            param = "s=" + str(s) + "&account=" + account
         
         
         # kind_id = '0' # game lobby
@@ -120,15 +120,12 @@ class KaiyuanLogin(View):
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
             param = str(param, "utf-8")
-            print(param)
 
             key = KY_AGENT + str(timestamp) + KY_MD5_KEY
             key = hashlib.md5(key.encode())
             key = key.hexdigest()
-            print(key)
 
             url = KY_API_URL if s != 6 else KY_RECORD_URL
-            print(url)
 
             req_param = {}
             req_param["agent"] = agent
