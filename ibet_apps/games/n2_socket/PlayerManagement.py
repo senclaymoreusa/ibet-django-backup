@@ -221,45 +221,51 @@ class PlayerManagement:
     
 
 def CreditUser(userid, tradeid, totalamount, trades):
-    user = CustomUser.objects.get(username=userid)
-    logger.info("crediting amount: " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
-    new_balance = user.main_wallet + decimal.Decimal(totalamount)
-    logger.info("user's balance is now: " + str(new_balance))
-    user.main_wallet = new_balance
-    user.save()
+    try:
+        user = CustomUser.objects.get(username=userid)
+        logger.info("crediting amount: " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
+        new_balance = user.main_wallet + decimal.Decimal(totalamount)
+        logger.info("user's balance is now: " + str(new_balance))
+        user.main_wallet = new_balance
+        user.save()
 
-    for trade in trades:
-        result = trade['resultstatus']
-        outcome = OUTCOME_MAP[result]
-        bet = GameBet.objects.get(ref_no=trade['id'])
-        bet.amount_won = decimal.Decimal(trade['amount'])
-        bet.outcome = outcome
-        bet.resolved_time = datetime.now()
-        bet.save()
-    return
+        for trade in trades:
+            result = trade['resultstatus']
+            outcome = OUTCOME_MAP[result]
+            bet = GameBet.objects.get(ref_no=trade['id'])
+            bet.amount_won = decimal.Decimal(trade['amount'])
+            bet.outcome = outcome
+            bet.resolved_time = datetime.now()
+            bet.save()
+        return
+    except Exception as ex:
+        print("CreditUser::Exception Occured", str(ex))
 
 def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
-    category = GAMECODE_MAP[gamecode]
-    user = CustomUser.objects.get(username=userid)
-    CATEGORY = Category.objects.get(name=category)
+    try:
+        category = GAMECODE_MAP[gamecode]
+        user = CustomUser.objects.get(username=userid)
+        CATEGORY = Category.objects.get(name=category)
 
-    logger.info("processing " + tradeid + " for user: " + str(user))
-    new_balance = user.main_wallet - decimal.Decimal(totalamount)
-    user.main_wallet = new_balance
-    user.save()
+        logger.info("processing " + tradeid + " for user: " + str(user))
+        new_balance = user.main_wallet - decimal.Decimal(totalamount)
+        user.main_wallet = new_balance
+        user.save()
 
-    for trade in trades:
-        bet = GameBet(
-                provider=PROVIDER, 
-                category=category, 
-                username=user, 
-                currency=user.currency, 
-                market=0,
-                ref_no=trade['id'],
-                amount_wagered=decimal.Decimal(trade['amount']),
-            )
-        bet.save()
-    return
+        for trade in trades:
+            bet = GameBet(
+                    provider=PROVIDER, 
+                    category=category, 
+                    username=user, 
+                    currency=user.currency, 
+                    market=0,
+                    ref_no=trade['id'],
+                    amount_wagered=decimal.Decimal(trade['amount']),
+                )
+            bet.save()
+        return
+    except Exception as ex:
+        print("PlaceBet::Exception Occured", str(ex))
 
 
 def GetToken(user):
