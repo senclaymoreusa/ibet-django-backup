@@ -1,9 +1,14 @@
-from django.db import models
-from users import models as usersModel
-from django.utils.translation import ugettext_lazy as _
-from utils.constants import *
-from django.utils import timezone
 import uuid
+
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
+
+from users.models import CustomUser
+
+from utils.constants import *
+
+
 
 # Create your models here.
 class GameProvider(models.Model):
@@ -59,7 +64,7 @@ class Game(models.Model):
     status_id = models.ForeignKey('users.Status', related_name="game_status", on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
+    # category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
     gameURL = models.CharField(max_length=200, null=True, blank=True)
     imageURL = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
@@ -99,6 +104,10 @@ class GameBet(models.Model):
     ]
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE) # sportsbook/game provider
     category = models.ForeignKey('Category', on_delete=models.CASCADE) # category within sportsbook/game provider (e.g basketball, soccer, blackjack)
+
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
+    # expect game to be mostly used for small flash games that providers give
+
     game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
