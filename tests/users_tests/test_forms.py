@@ -14,7 +14,7 @@ from users.forms import (
 class UserCreationFormTest(TestCase):
 
     def setUp(self):
-        self.user_creation = CustomUser.objects.create(username = 'wluuuutest', email = 'wluuuu@test.com')
+        self.user_creation = CustomUser.objects.create(username='test_account', email='test_account@test.com')
 
     def test_userCreationForm_valid(self):
         form = UserCreationForm(data={
