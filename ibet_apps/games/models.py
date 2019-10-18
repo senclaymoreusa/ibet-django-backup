@@ -14,6 +14,7 @@ class GameProvider(models.Model):
         return self.provider_name
 
 class Category(models.Model):
+    category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
@@ -57,10 +58,8 @@ class Game(models.Model):
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     status_id = models.ForeignKey('users.Status', related_name="game_status", on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
-
-    # game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
-
+    #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
     gameURL = models.CharField(max_length=200, null=True, blank=True)
     imageURL = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
