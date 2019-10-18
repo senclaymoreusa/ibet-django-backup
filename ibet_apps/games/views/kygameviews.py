@@ -78,11 +78,13 @@ class KaiyuanLogin(View):
             param = "s=" + str(s) + "&account=" + account
         # Change Balance
         elif s == 2:
-            print(2)
             money = data["money"]
+            order_time = time.strftime("%Y%m%d%H%M%S")
             orderid = agent + str(order_time) + account
+            print(orderid)
 
-            param = "s=" + s + "&account=" + account + "&orderid=" + orderid + "&money=" + money + "&ip=" + ip
+            param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money + "&ip=" + ip
+            print(param)
         # Refund
         elif s == 3:
             param = "s=" + s + "&account=" + account + "&orderid=" + orderId + "&money=" + money + "&ip=" + ip
@@ -111,10 +113,12 @@ class KaiyuanLogin(View):
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
             param = str(param, "utf-8")
-            
+            print(param)
+
             key = KY_AGENT + str(timestamp) + KY_MD5_KEY
             key = hashlib.md5(key.encode())
             key = key.hexdigest()
+            print(key)
 
             url = KY_API_URL
 
@@ -131,7 +135,7 @@ class KaiyuanLogin(View):
             url = url + '?' + req
             print(url)
             res = requests.get(url)
-            print(res)
+            print(res.json())
             return HttpResponse(status=200)
         except Exception as e:
             print(e)
