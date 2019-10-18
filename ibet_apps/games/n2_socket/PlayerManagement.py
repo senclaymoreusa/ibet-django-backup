@@ -152,12 +152,14 @@ class PlayerManagement:
         return (0, tradeid)
 
     def GetLoginResponse(self, status, requestAction, requestMessageId, user, token=None, client_ip=False):
+        if token is None:
+            token = getToken(user)
         if status == 0:
             responseXml = "<?xml version=\"1.0\" encoding=\"utf-16\"?><n2xsd:n2root xmlns:n2xsd=\"urn:n2ns\">"
             responseXml += "<status>0</status>"
             responseXml += "<result action=\"" + requestAction + "\" id=\"" + requestMessageId + "\">"
-            responseXml += "<userid>" + user.pk + "</userid>"
-            responseXml += "<username>" + self.loginId + "</username>"
+            responseXml += "<userid>" +  self.loginId + "</userid>"
+            responseXml += "<username>" + str(user.first_name) + "</username>"
             responseXml += "<acode></acode>"  # affiliate code (?)
             responseXml += "<currencyid>" + self.currencyId + "</currencyid>"
             responseXml += "<vendorid>" + self.vendorId + "</vendorid>"
@@ -268,3 +270,7 @@ def ProcessTradeResult(self, xmlDoc):
     CreditUser(loginId, totalamount)
     # RecordBetOutcomes(trades) # function that records all the bets to user's bet history
     return (0, tradeId)
+
+def getToken(user):
+    sessionToken = Token.objects.get(user_id=user)
+    return sessionToken
