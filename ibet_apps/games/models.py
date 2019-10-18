@@ -1,8 +1,9 @@
 import uuid
 
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.postgres.fields import JSONField
 
 from users.models import CustomUser
 
@@ -79,9 +80,9 @@ class Game(models.Model):
         null=True
     )
 
-    modifited_time = models.DateTimeField(
+    modified_time = models.DateTimeField(
         _('Modified Time'),
-        auto_now_add=True,
+        auto_now=True,
         editable=False,
         null=True
     )
@@ -129,7 +130,10 @@ class GameBet(models.Model):
     )
 
     resolved_time = models.DateTimeField(null=True, blank=True)
+    other_data = JSONField(null=True, default=dict)
 
+    # def __str__(self):
+    #     return self.game_name + ' bet placed on ' + str(bet_time)
 
 
 # class GameWithAttribute(models.Model):
