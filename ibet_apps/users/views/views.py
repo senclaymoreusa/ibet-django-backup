@@ -63,7 +63,7 @@ from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
 from users.views.helper import *
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
 
@@ -1756,9 +1756,15 @@ class UserSecurityQuestion(View):
             userId = request.GET.get('userId')
             
             user = CustomUser.objects.get(pk=userId)
-            data = {
-                "question": str(dict(SECUIRTY_QUESTION).get(user.security_question))
-            }
+            if user.security_question:
+                data = {
+                    "question": str(dict(SECUIRTY_QUESTION).get(user.security_question))
+                }
+            else: 
+                data = {
+                    "errorCode": ERROR_CODE_EMPTY_RESULT,
+                    "errorMessage": "You should set the security question"
+                }
 
         except Exception as e:
             logger.error("Error getting UserBonusEvent objects: ", e)
@@ -1811,4 +1817,46 @@ class SetWithdrawPassword(View):
 
         except Exception as e:
             logger.error("Error setting withdraw password: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResetWithdrawPassword(View):
+
+    def post(self, request, *args, **kwargs):
+
+        response = {
+            "code": 0,
+            "message": ""
+        }
+        
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            oldWithdrawPassword = data['oldWithdrawPassword']
+            newWithdrawPassword = data['newWithdrawPassword']
+            customUser = CustomUser.objects.get(pk=userId)
+            if customUser.withdraw_password and check_password(oldWithdrawPassword, customUser.withdraw_password):
+                hashPassword = make_password(newWithdrawPassword)
+                customUser.withdraw_password = hashPassword
+                customUser.save()
+            elif not check_password(oldWithdrawPassword, customUser.withdraw_password):
+                response['code'] = ERROR_CODE_INVAILD_INFO
+                response['message'] = "The password you have entered does not match your current one."
+                logger.info("The password you have entered does not match your current one: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+            else:
+                response['code'] = ERROR_CODE_EMPTY_RESULT
+                response['message'] = "You should set the password first"
+                logger.info("You should set the withdraw password first: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+            
+            response['code'] = CODE_SUCCESS
+            response['message'] = "Successfully set the withdraw password"
+
+            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
+            return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
+        except Exception as e:
+            logger.error("Error resetting withdraw password: ", e)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
