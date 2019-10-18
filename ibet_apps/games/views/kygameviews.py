@@ -49,7 +49,7 @@ def get_timestamp():
     return int(round(time.time() * 1000))
 
 
-class KaiyuanLogin(View):
+class KaiyuanAPI(View):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
 

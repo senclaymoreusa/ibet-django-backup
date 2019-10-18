@@ -15,5 +15,5 @@ urlpatterns = [
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
 
     # kaiyuan gaming
-    path('api/ky/login/', csrf_exempt(kygameviews.KaiyuanLogin.as_view()), name="ky_login")
+    path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
 ]
