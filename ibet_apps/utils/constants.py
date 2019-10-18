@@ -1129,7 +1129,7 @@ PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 
 
 # Error code define
-ERROR_CODE_SUCCESS = 1
+CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
@@ -1181,4 +1181,12 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
 BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
+)
+
+
+
+SECUIRTY_QUESTION = (
+    (0, 'How old are you?'),
+    (1, 'How tall are you?'),
+    (2, 'How fat are you?')
 )

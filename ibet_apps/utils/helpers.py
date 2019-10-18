@@ -76,3 +76,13 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+
+def checkWithdrawPassword(userId, password):
+    
+    user = CustomUser.objects.filter(pk=userId)
+    hashPassword = make_password(password)
+    if hashPassword is not user.withdraw_password:
+        return False
+    return True
