@@ -98,7 +98,7 @@ class KaiyuanLogin(View):
             param = "s=" + str(s) + "&orderid=" + orderid
         # Query The Player's Online Status
         elif s == 5:
-            param = "s=" + s + "&account=" + account
+            param = "s=" + str(s) + "&account=" + account
         # Query Bet Order
         elif s == 6:
             startTime = data["startTime"]
