@@ -8,8 +8,6 @@ from users.models import *
 from accounting.models import Transaction
 from utils.constants import *
 
-
-
 import logging
 
 logger = logging.getLogger('django')
@@ -33,7 +31,8 @@ bonus_tran = Transaction.objects.filter(
 commission_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_COMMISSION)
 bet_tran = Transaction.objects.filter(
-            transaction_type=TRANSACTION_BET_PLACED)
+    transaction_type=TRANSACTION_BET_PLACED)
+
 
 # get downline list for affiliate or affiliates
 def getDownline(affiliates):
@@ -51,6 +50,7 @@ def getDownline(affiliates):
         downline_list = users.filter(referred_by=affiliates)
     return downline_list
 
+
 def calculateActiveDownlineNumber(affiliate_id):
     # check affiliate_id first
     downlines = affiliate_id.referees.all()
@@ -60,6 +60,7 @@ def calculateActiveDownlineNumber(affiliate_id):
             if tran.user_id in downlines:
                 affiliate_active_users += 1
     return affiliate_active_users
+
 
 # calculate ftd user number in certain user_group within certain time range
 def calculateFTD(user_group, start_date, end_date):
@@ -72,3 +73,11 @@ def calculateFTD(user_group, start_date, end_date):
 
 def calculateTurnover(user):
     return 0
+
+
+current_tz = timezone.get_current_timezone()
+
+
+def convertToTimezone(input_time):
+    input_time = input_time.astimezone(current_tz)
+    return input_time

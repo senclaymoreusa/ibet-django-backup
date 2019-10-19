@@ -9,7 +9,8 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-bonus.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-bonus.css' %}" />
+    <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"/>
 </head>
 
 <body>
@@ -21,20 +22,55 @@
 <div id="search_row" class="row">
     <div class="col-md-2">
         <label for="bonus_type_filter">BONUS TYPE</label><br>
-        <select id="bonus_type_filter"><option></option></select>
+        <select id="bonus_type_filter" class="form-control">
+            <option value="-1">ALL</option>
+            {% for type in bonuses_types %}
+                <option value="{{ type.0 }}">{{ type.1 }}</option>
+            {% endfor %}
+        </select>
     </div>
     <div class="col-md-2">
         <label for="bonus_status_filter">STATUS</label><br>
-        <select id="bonus_status_filter"><option></option></select>
-    </div>
-    <div id="bonus_search">
-        <br>
-        <input>
+        <select id="bonus_status_filter" class="form-control">
+            <option value="-1">ALL</option>
+            {% for status in bonuses_status %}
+                <option value="{{ status.0 }}">{{ status.1 }}</option>
+            {% endfor %}
+        </select>
     </div>
 </div>
 
-</body>
+<div>
+    <table id="bonus_table" class="table-striped table-bordered hover">
+        <thead>
+            <tr>
+                <td>BONUS NAME</td>
+                <td>CAMPAIGN</td>
+                <td>BONUS TYPE</td>
+                <td>AMOUNT ISSUED</td>
+                <td>QUANTITY ISSUED</td>
+                <td>AMOUNT REDEEMED</td>
+                <td>QUANTITY REDEEMED</td>
+                <td>START DATE</td>
+                <td>END DATE</td>
+                <td>STATUS</td>
+            </tr>
+        </thead>
+        <tbody id="bonus_table_body">
+        </tbody>
+    </table>
+    <label class="show-rows">SHOW ROWS</label>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+
+<script src="{% static 'xadmin/js/ibet-admin-bonus.js' %}"></script>
+
+</body>
 </html>
 
 {% endblock %}

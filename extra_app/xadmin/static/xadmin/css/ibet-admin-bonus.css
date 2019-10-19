@@ -1,4 +1,4 @@
-body {
+body, label{
     font-family: Helvetica;
     font-size: 13px;
     font-weight: normal;
@@ -9,15 +9,44 @@ body {
     color: #4a4a4a;
 }
 
-#search_row {
-    margin-top: 30px;
+table {
+    width: 100%;
 }
 
-#search_row div label{
-    font-weight: normal;
+#search_row {
+    margin-top: 30px;
 }
 
 #bonus_search {
     float: right;
     margin-right:100px;
 }
+
+#bonus_table {
+    margin-top: 30px;
+    margin-bottom: 90px;
+}
+
+.dataTables_filter {
+    display: inline;
+}
+
+#bonus_table_filter {
+    float: right;
+    margin-bottom: 20px;
+    margin-top: -50px;
+}
+
+#bonus_table_paginate a button{
+    padding-left: 15px;
+}
+
+#bonus_type_filter, #bonus_status_filter {
+    width: 140px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+
