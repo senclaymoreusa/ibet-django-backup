@@ -15,6 +15,12 @@ $(document).ready(function() {
             searchPlaceholder: "  Enter bonus or campaign name",
             search: "",
         },
+        "columnDefs": [
+            {
+                orderable: true,
+                targets: "sort"
+            }
+        ],
         "ajax": {
             type: 'GET',
             data: {
