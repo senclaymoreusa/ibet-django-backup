@@ -1758,6 +1758,7 @@ class UserSecurityQuestion(View):
             user = CustomUser.objects.get(pk=userId)
             if user.security_question:
                 data = {
+                    "value": user.security_question,
                     "question": str(dict(SECUIRTY_QUESTION).get(user.security_question))
                 }
             else: 
