@@ -500,6 +500,13 @@ EVENT_CHOICES = (
     (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
 
+#FGgame
+BRANDID = '524'
+BRAND_PASSWORD = 'Flow6refg'
+PLATFORM = 'NETENT_CAS',
+FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
+LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
+
 
 
 ASIAPAY_CMDTYPE = (
@@ -1179,11 +1186,11 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
+
 BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
 )
-
 
 
 SECUIRTY_QUESTION = (
