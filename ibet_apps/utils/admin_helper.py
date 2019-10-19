@@ -4,11 +4,12 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
 
-from users.models import *
+from users.models import CustomUser
 from accounting.models import Transaction
 from utils.constants import *
 
 import logging
+import uuid
 
 logger = logging.getLogger('django')
 
@@ -77,7 +78,46 @@ def calculateTurnover(user):
 
 current_tz = timezone.get_current_timezone()
 
-
 def convertToTimezone(input_time):
     input_time = input_time.astimezone(current_tz)
     return input_time
+
+
+# USER SYSTEM
+# create unique refer code for both user and affiliate
+limit_digit = 6
+source_string = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+limit_user = 36 ** limit_digit
+
+
+# encode
+def generate_unique_referral_code(user_id):
+    code = ''
+    if user_id in range(0, limit_user):
+        i = 0
+        while i in range(0, limit_digit):
+            mod = int(user_id % 36)
+            code += str(source_string[mod])
+            user_id /= 36
+            i += 1
+        return code
+
+    else:
+        logger.error("Error create referral code for user")
+        raise ValueError("Please enter an integer bigger than 0 and smaller than 36^%s" % limit_digit)
+
+
+# decode
+def decode_user_id_from_referral_code(code):
+    user_id = 0
+    code = code.upper()
+    if len(code) != limit_digit:
+        logger.error("Error referral code format")
+        raise ValueError("Please enter a valid referral code")
+    else:
+        i = 0
+        while i in range(0, limit_digit):
+            index = source_string.find(code[i])
+            user_id += (36 ** i * index)
+            i += 1
+        return user_id

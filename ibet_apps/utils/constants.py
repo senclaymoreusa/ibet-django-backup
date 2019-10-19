@@ -487,6 +487,7 @@ EVENT_CHOICES_LOGIN = 0
 EVENT_CHOICES_LOGOUT = 1
 EVENT_CHOICES_REGISTER = 2
 EVENT_CHOICES_PAGE_VISIT = 3
+EVENT_CHOICES_SMS_CODE = 7
 
 EVENT_CHOICES = (
     (EVENT_CHOICES_LOGIN, _('Login')),
@@ -496,7 +497,15 @@ EVENT_CHOICES = (
     # (4, _('Withdraw')),
     (EVENT_CHOICES_PAGE_VISIT, _('Page Visit')),
     # (6, _('bet'))
+    (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
+
+#FGgame
+BRANDID = '524'
+BRAND_PASSWORD = 'Flow6refg'
+PLATFORM = 'NETENT_CAS',
+FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
+LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
 
 
 
@@ -1131,8 +1140,8 @@ ERROR_CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
-ERRPR_CODE_NOT_FOUND = 103
-
+ERROR_CODE_NOT_FOUND = 103
+ERROR_CODE_MAX_EXCEED = 104
 
 
 BONUS_TYPE_VERIFICATION = 0
@@ -1184,7 +1193,9 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
+
 BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
 )
+
