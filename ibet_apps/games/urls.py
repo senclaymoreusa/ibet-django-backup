@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 import games.views.eagameviews as eagameviews
 import games.views.playngogameviews as playngogameviews
+import games.views.fggameviews as fggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 
@@ -17,5 +18,10 @@ urlpatterns = [
     # Play n Go
     path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
 
+    path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
+    path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
+    path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
+    path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
+    path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction')
 
 ]
