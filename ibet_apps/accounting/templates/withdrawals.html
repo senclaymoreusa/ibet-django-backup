@@ -78,7 +78,7 @@
             <!-- PENDING TABLE -->
             <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab"
                 style="margin-bottom: 50px;">
-                <table id="pending_table" class="table-striped table-bordered hover compact"
+                <table id="withdrawal_pending_table" class="table-striped table-bordered hover compact"
                     style="width:100%; margin-bottom: 50px">
                     <thead>
                         <tr>
@@ -342,6 +342,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="type" value="audit_withdraw"></input>
                             <input type="hidden" id="wtd_trans_no" name="wtd_trans_no"></input>
+                            <input type="hidden" id="wtd_row_no" name="wtd_row_no"></input>
 
                             <div class="row withdraw-request-word">
                                 <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
@@ -449,6 +450,8 @@
                             <!-- notes -->
 
                             <div class="form-group">
+                                <p id='lastwithdraw'>&nbsp;</p>
+                                <p id='reviewError'>&nbsp;</p>
                                 <label for="withdraw_notes" class="withdraw-request-word"
                                     style="margin-left: 10px">NOTES</label>
                                 <textarea type='text' id='notes' class="form-control" name="withdraw_notes"
@@ -458,15 +461,13 @@
                                 <div id="withdraw-request-button" style="margin-top:40px">
                                     <button type="button" class="btn btn-success"
                                         id="withdraw-review-a">Approve</button>
-                                    <!-- <button type="submit" class="btn btn-success" name="withdraw-review-appnext">Approve
-                                        and
-                                        Next</button> -->
-                                    <button type="button" class="btn btn-danger"
-                                        id="withdraw-review-r">Reject</button>
-                                    <!-- <button type="submit" class="btn btn-danger" name="withdraw-review-rejnext">Reject
-                                        and
-                                        Next</button> -->
-                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" id="withdraw-review-appnext">Approve
+                                        and Next</button>
+                                    <button type="button" class="btn btn-danger" id="withdraw-review-r">Reject</button>
+                                    <button type="button" class="btn btn-danger" id="withdraw-review-rejnext">Reject and
+                                        Next</button>
+                                    <button type="button" class="btn btn-primary" id="withdraw-review-cancel"
+                                        data-dismiss="modal">Cancel</button>
                                 </div>
                             </div>
                         </form>
@@ -500,26 +501,6 @@
 
 <script>
 
-    // double click button
-    $('#withdraw-review-a').click(function () {
-        $('#withdraw-review-a').html('Click to Approve');
-        $('#withdraw-review-a').attr('id', 'withdraw-review-app');
-        $('#withdraw-review-app').click(function () {
-            $('#withdraw-review-app').attr('type', 'submit')
-            $('#withdraw-review-app').attr('name', 'withdraw-review-app')
-        });
-    });
-
-    $('#withdraw-review-r').click(function () {
-        $('#withdraw-review-r').html('Click to Reject');
-        $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
-        $('#withdraw-review-rej').click(function () {
-            $('#withdraw-review-rej').attr('type', 'submit')
-            $('#withdraw-review-rej').attr('name', 'withdraw-review-rej')
-        });
-    });
-
-
 
     $(document).ready(function () {
 
@@ -539,7 +520,7 @@
         });
 
         // draw DataTable
-        var table = $('#pending_table').DataTable({
+        var table = $('#withdrawal_pending_table').DataTable({
             responsive: true,
             dom: 'B<ftilp>',
             buttons: [
@@ -559,7 +540,6 @@
                 "lengthMenu": "_MENU_",
             },
         });
-
 
         var other_table = $('#approved_table, #rejected_table, #success_table, #rejected_table, #failed_table').DataTable({
             responsive: true,
@@ -590,18 +570,16 @@
             other_table.search($('#search').val()).draw();
         });
 
-
-
         // date range search
         $.fn.dataTable.ext.search.push(
             function (settings, data, dataIndex) {
                 var min = $('#min').datepicker("getDate");
                 var max = $('#max').datepicker("getDate");
-    
+
                 var dateParts = data[9].split("/");
-                var newDate = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2]
+                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
                 var startDate = new Date(newDate);
-                
+
                 if (min == null && max == null) { return true; }
                 if (min == null && startDate <= max) { return true; }
                 if (max == null && startDate >= min) { return true; }
@@ -610,8 +588,8 @@
             }
         );
 
-        $("#min").datepicker({ onSelect: function () { table.draw();other_table.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { table.draw();other_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#min").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
+        $("#max").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
 
         // Event listener to the two range filtering inputs to redraw on input
         $('#min, #max').change(function () {
@@ -620,7 +598,7 @@
         });
 
         // send data to pop-up window
-        $('#pending_table tbody').on('click', 'button', function () {
+        $('#withdrawal_pending_table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
             // transaction pk: data[12]
             // bank account: data[13]
@@ -647,13 +625,19 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addWithdrawRecord(data2, data[12]);
+                addWithdrawRecord(data2, data[12], data[0]);
+            });
+            var container = $('#withdraw_request_pop');
+            $(document).mouseup(function (e) {
+                // if the target of the click isn't the container nor a descendant of the container
+                if (!container.is(e.target) && container.has(e.target).length === 0) {
+                    location.reload();
+                }
             });
         });
 
         function addMemberDetails(data) {
             $("#member_detail1").empty();
-            console.log(data[0]);
             var content = "";
             content += "<p>" + data[0].id + "</p>";
             content += "<p>" + data[0].username + "</p>";
@@ -669,7 +653,7 @@
             $("#member_detail2").append(content2);
         }
 
-        function addWithdrawRecord(data, trans_pk) {
+        function addWithdrawRecord(data, trans_pk, index) {
             $("#latest_withdraws").empty();
             content = "";
             for (var i = 0; i < data[0].length; i++) {
@@ -686,7 +670,8 @@
                 content += '</tr>'
             }
             $("#latest_withdraws").append(content);
-            $("#wtd_trans_no").val(trans_pk)
+            $("#wtd_trans_no").val(trans_pk);
+            $("#wtd_row_no").val(index);
         }
 
         showBankDetail = function (data) {
@@ -715,7 +700,7 @@
             $("#trans_withdraw_detail").empty();
             var content = "";
             // tran no.
-            content += "<p>" + data[3] + "</p>";
+            content += "<p id='transaction_id'>" + data[3] + "</p>";
             // application time
             content += "<p>" + data[9] + "</p>";
             // amount
@@ -723,10 +708,99 @@
             $("#trans_withdraw_detail").append(content);
         }
 
+        // only Qaicash need to be reviewed
+        // double click button
+        $('#withdraw-review-a').click(function () {
+            $('#withdraw-review-a').html('Click to Approve');
+            $('#withdraw-review-a').attr('id', 'withdraw-review-app');
+            $('#withdraw-review-app').click(function () {
+                // $('#withdraw-review-app').attr('type', 'submit')
+                $('#withdraw-review-app').attr('name', 'withdraw-review-app')
+                var remark = $('#notes').val();
+                var id = $('#trans_withdraw_detail p').first().html();
+                var userID = $('#member_detail1 p').first().html();
+                sendDataToThirdParty("{% url 'Qaicash_approve_Payout' %}", id, userID, remark, -1);
+            });
+        });
 
+        $('#withdraw-review-r').click(function () {
+            $('#withdraw-review-r').html('Click to Reject');
+            $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
+            $('#withdraw-review-rej').click(function () {
+                // $('#withdraw-review-rej').attr('type', 'submit');
+                $('#withdraw-review-rej').attr('name', 'withdraw-review-rej');
+                var remark = $('#notes').val();
+                var id = $('#trans_withdraw_detail p').first().html();
+                var userID = $('#member_detail1 p').first().html();
+                sendDataToThirdParty("{% url 'Qaicash_reject_Payout' %}", id, userID, remark, -1);
+            });
+        });
 
+        $('#withdraw-review-cancel').click(function () {
+            location.reload();
+        });
 
+        $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
+            // Get data from the first row
+            var wtd_trans_no = $("#wtd_trans_no").val();
+            var wtd_row_index = $("#wtd_row_no").val();
+            var pagination_num = table.page.len();
+            var table_size = table.rows().count();
+            var remark = $('#notes').val();
+            var id = $('#trans_withdraw_detail p').first().html();
+            var userID = $('#member_detail1 p').first().html();
 
+            var audit_result = "Approve";
+            var qaicash_api = "{% url 'Qaicash_approve_Payout' %}";
+            if (e.target.id == "withdraw-review-rejnext") {
+                // reject
+                audit_result = "Reject";
+                qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
+            }
+            
+            if (wtd_row_index == table_size) {
+                $('#lastwithdraw').text("This is the last one");
+                $('#lastwithdraw').css('color', 'red');
+            }
+
+            if (wtd_row_index % pagination_num == 0) {
+                table.page('next').draw('page');
+                wtd_row_index = wtd_row_index % pagination_num;
+            } else if (wtd_row_index > pagination_num) {
+                wtd_row_index = wtd_row_index % pagination_num;
+            }
+            sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index);            
+        });
+        
+        function sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index){
+            var response = $.ajax({
+                type: 'POST',
+                url: qaicash_api,
+                data: {
+                    // transaction_id
+                    'order_id': id,
+                    // username
+                    'user_id': userID,
+                    // remark
+                    'remark': remark,
+                },
+                success: function (data) {
+                    if (data['code']!== undefined){
+                        // has error
+                        var errorMsg = data['error'];
+                        $('#reviewError').text(errorMsg);
+                        $('#reviewError').css('color', 'red');
+                    }else{
+                        // transaction success
+                        if (wtd_row_index >= 0){
+                            $('#withdrawal_pending_table tbody tr').eq(wtd_row_index).find('#edit-pending-detail-btn').click();
+                        }else{
+                            location.reload();
+                        }
+                    }
+                }
+            });
+        }
     });
 
 
