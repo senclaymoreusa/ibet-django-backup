@@ -613,8 +613,8 @@ class approvePayout(generics.GenericAPIView):
             logger.error(e)
             logger.info("matching transaction not found / does not exist")
             
-            return Response({"error": "Could not find matching transaction", "code": ERRPR_CODE_NOT_FOUND})
-            # return Response({"error": "Could not find matching transaction"}, status=ERRPR_CODE_NOT_FOUND)
+            return Response({"error": "Could not find matching transaction", "code": ERROR_CODE_NOT_FOUND})
+
 
 class rejectPayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -689,7 +689,7 @@ class rejectPayout(generics.GenericAPIView):
             except ObjectDoesNotExist as e:
                 logger.error(e)
                 logger.info("matching transaction not found / does not exist")
-                return Response({"error": "Could not find matching transaction","code": ERRPR_CODE_NOT_FOUND})
+                return Response({"error": "Could not find matching transaction","code": ERROR_CODE_NOT_FOUND})
             
         else:
             logger.error('The request information is not correct, please try again.')

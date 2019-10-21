@@ -1,8 +1,9 @@
-from django.db import models
+from django.db import models, DatabaseError
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse #Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
+from django.db import transaction
 import uuid
 from datetime import date
 from django.contrib.auth.models import User
@@ -124,9 +125,10 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
-    # referral_id = models.CharField(max_length=300, blank=True, null=True)
-    reward_points = models.IntegerField(default=0)
+    # referral program
+    referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
+    reward_points = models.IntegerField(default=0)
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
     active = models.BooleanField(default=False)
@@ -266,20 +268,20 @@ class Commission(models.Model):
 
         super(Commission, self).save(*args, **kwargs)
 
-class ReferLink(models.Model):
-    
-    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
-    refer_link_name = models.CharField(max_length=50, default="default")
-    ## time of this link was created
-    genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            code = generate_unique_verification_code()
-            self.refer_link_url = code
-        return super(ReferLink, self).save(*args, **kwargs)
+# one user can have up to 10 referral channels
+class ReferChannel(models.Model):
+    # refer_channel_code is ReferChannel.pk
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    refer_channel_name = models.CharField(max_length=100)
+    # time of this channel was created
+    generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user_id', 'refer_channel_name',)
+
+    def __str__(self):
+        return self.refer_channel_name
 
 
 class UserWithTag(models.Model):
@@ -419,16 +421,6 @@ class UserActivity(models.Model):
     )
 
 
-
-class LinkHistory(models.Model):
-
-    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
-    ## time of this link was clicked
-    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
-    ## click by ip
-    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
-
 class Limitation(models.Model):
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
@@ -560,35 +552,21 @@ class GameRequestsModel(models.Model):
         return  self.MemberID + ' ' + self.TransType
 
 
-
 @receiver(post_save, sender=CustomUser)
-def my_handler(sender, **kwargs):
+def new_user_handler(sender, **kwargs):
     if kwargs['created']:
-        user=kwargs['instance']
-        temp_refer_link_url = generate_unique_verification_code()
-        refer_link = ReferLink.objects.create(
-            user_id = user,
-        )
-        logger.info("Auto created a refer link for new user" + str(user.username))
-    
-
-def generate_verification_code():
-    return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
-
-def generate_unique_verification_code():
-    temp_refer_link_url = str(generate_verification_code())[2:-1]
-    while ReferLink.objects.filter(refer_link_url=temp_refer_link_url):   # make sure no duplicates
-        temp_refer_link_url = str(generate_verification_code())[2:-1]
-    return temp_refer_link_url
-
-
-#  def save(self, *args, **kwargs):
-#         if self.pk:
-#             temp = str(self.generate_verification_code())[2:-1]
-#             while ReferLink.objects.filter(refer_link_url=temp):   # make sure no duplicates
-#                 temp = str(self.generate_verification_code())[2:-1]
-#             self.refer_link_url = temp
-
-#         return super(ReferLink, self).save(*args, **kwargs)
-
-    
+        user = kwargs['instance']
+        try:
+            with transaction.atomic():
+                # generate a referral code for new user
+                referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
+                user.referral_code = referral_code
+                user.save()
+                # generate a default referral link for new user
+                link = ReferChannel.objects.create(
+                    user_id=user,
+                    refer_channel_name='default'
+                )
+                logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
+        except DatabaseError as e:
+            logger.error("Error creating referral code and default referral channel for new user: ", e)
