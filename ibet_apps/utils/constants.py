@@ -45,7 +45,8 @@ CURRENCY_TYPES = (
     ('MYR', 'MYR'),
     ('VND', 'VND'),
     ('MMK', 'MMK'),
-    ('XBT', 'XBT')
+    ('XBT', 'XBT'),
+    ('TTC', 'TTC'),
 )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -160,8 +161,6 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-# transaction_deposit = 0
-# transaction_withdrawl = 1
 TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2

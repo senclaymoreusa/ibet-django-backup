@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 DESC_MAP = defaultdict(lambda: 'None', {
+    103: "ERROR_SQL_OPERATION_EXCEPTION",
     105: "ERROR_INVALID_AUTHENTICATION",
     106: "ERROR_INVALID_MESSAGE",
     119: "ERROR_INSUFFICIENT_FUND"

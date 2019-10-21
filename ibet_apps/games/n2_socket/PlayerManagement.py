@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, DatabaseError, transaction
+from django.utils import timezone
 from users.models import CustomUser
 from games.models import GameBet, GameProvider, Category
 from rest_framework.authtoken.models import Token
@@ -79,7 +80,6 @@ class PlayerManagement:
                 elif elem.tag == "password":
                     playerPassword = text
 
-                # print(elem.tag + " => " + text)
         
         #validate the user Id here
         return self.ValidatePlayer(self.loginId, playerPassword, "login") # returns tuple (status, user)
@@ -117,8 +117,6 @@ class PlayerManagement:
                     self.vendorId = text
                 if elem.tag == "currencyid":
                     currencyId = text
-                
-                # print(elem.tag + " => " + text)
         
         # retrieve user balance
         return self.GetPlayerBalance(self.loginId, currencyId) # returns tuple (status, user)
@@ -153,10 +151,10 @@ class PlayerManagement:
                 
         print(trades) # all trades made in bet
         if action == "place":
-            PlaceBet(self.loginId, tradeid, totalamount, trades, gamecode) # Place Bet & Record Bet
+            status = PlaceBet(self.loginId, tradeid, totalamount, trades, gamecode) # Place Bet & Record Bet
         if action == "process":
-            CreditUser(self.loginId, tradeid, totalamount, trades, gamecode) # Credit User & UpdateBetResults
-        return (0, tradeid)
+            status = CreditUser(self.loginId, tradeid, totalamount, trades) # Credit User & UpdateBetResults
+        return (status, tradeid)
 
     def GetLoginResponse(self, status, requestAction, requestMessageId, user, token=None, client_ip=False):
         if token is None:
@@ -202,7 +200,6 @@ class PlayerManagement:
     def GetTradeResponse(self, status, requestAction, requestMessageId, tradeId):
         user = CustomUser.objects.get(username=self.loginId)
         currencyId = const.CURRENCY_MAP[user.currency]
-        print("User placing trade: " + str(user))
         if status == 0:
             responseXml = "<?xml version=\"1.0\" encoding=\"utf-16\"?><n2xsd:n2root xmlns:n2xsd=\"urn:n2ns\">"
             responseXml += "<status>0</status>"
@@ -225,27 +222,31 @@ def CreditUser(userid, tradeid, totalamount, trades):
     try:
         with transaction.atomic():
             user = CustomUser.objects.get(username=userid)
+            
             for trade in trades:
                 result = trade['resultstatus']
-                outcome = OUTCOME_MAP[result]
+                outcome = const.OUTCOME_MAP[result]
                 bet = GameBet.objects.get(ref_no=trade['id'])
                 bet.amount_won = decimal.Decimal(trade['amount'])
                 bet.outcome = outcome
-                bet.resolved_time = datetime.now()
+                bet.resolved_time = timezone.now()
                 bet.save()
             logger.info("crediting amount: " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
             new_balance = user.main_wallet + decimal.Decimal(totalamount)
             logger.info("user's balance is now: " + str(new_balance))
             user.main_wallet = new_balance
             user.save()
-        return
+        return 0
     except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
         print("CreditUser::Exception occured:", repr(ex))
+        return 103
     except Exception as ex:
         print("CreditUser::Exception Occured", repr(ex))
+        return 105
 
 def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
-    category = GAMECODE_MAP[gamecode]
+    category = const.GAMECODE_MAP[gamecode]
+
     try:
         with transaction.atomic():
             user = CustomUser.objects.get(username=userid)
@@ -254,7 +255,7 @@ def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
             for trade in trades:
                 bet = GameBet(
                         provider=PROVIDER, 
-                        category=category, 
+                        category=CATEGORY, 
                         username=user, 
                         currency=user.currency, 
                         market=0,
@@ -263,14 +264,18 @@ def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
                     )
                 bet.save()
             logger.info("processing " + tradeid + " for user: " + str(user))
+            print("processing " + tradeid + " for user: " + str(user))
             new_balance = user.main_wallet - decimal.Decimal(totalamount)
             user.main_wallet = new_balance
+            print("user balance is now: " + str(user.main_wallet))
             user.save()
-        return
+        return 0
     except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
         print("PlaceBet::Exception Occured", repr(ex))
+        return 103
     except Exception as ex:
         print("PlaceBet::Exception Occured", repr(ex))
+        return 105
 
 
 def GetToken(user):
@@ -279,7 +284,7 @@ def GetToken(user):
 
 
 def PackExceptionMessage(status, action, messageId):
-    desc = DESC_MAP[status]
+    desc = const.DESC_MAP[status]
     exceptionMsg = '<?xml version="1.0" encoding="utf-16"?>'
     exceptionMsg += '<n2xsd:n2root xmlns:n2xsd="urn:n2ns" source="' + action + '">'
     exceptionMsg += '<status>' + str(status) + '</status>'

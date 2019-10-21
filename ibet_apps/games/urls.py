@@ -7,7 +7,7 @@ from games.live_casino import *
 
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
-    path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
+    # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
     path('api/login-ea/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
