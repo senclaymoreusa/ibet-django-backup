@@ -1,5 +1,4 @@
 import requests,json, os, datetime, time, hmac, hashlib, base64, logging, uuid, random
-import copy
 
 from django.shortcuts import render
 from django.http import HttpResponse
