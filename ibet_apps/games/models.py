@@ -120,9 +120,13 @@ class EATicket(models.Model):
 
 class GDGetUserBalance(models.Model):
     username = models.ForeignKey(CustomUser, on_delete=models.CASCADE) #same as user model's username
-    StatusCode = models.SmallIntegerField(choices=STATE_CHOICES, default=3)
+    StatusCode = models.SmallIntegerField(choices=GDCASINO_STATUS_CODE)
     UserBalance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gameId = models.CharField(max_length = 200, null= True, blank=True)
+    gameType =  models.SmallIntegerField(choices=GDCASINO_GAME_TYPE,default=6)
+    transactionId = models.CharField(max_length = 200, null= True, blank=True)
+    currency =  models.CharField(max_length=10,null= True, blank=True)
 
     def __str__(self):
-        return '{0}:{1}'.format(self.username, self.UserBalance)
+        return '{0}:{1}:{2}'.format(self.username, self.UserBalance, self.StatusCode)
     

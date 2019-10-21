@@ -31,7 +31,7 @@ from spyne.error import ResourceNotFoundError,Fault
 class Container(DjangoComplexModel):
     class Attributes(DjangoComplexModel.Attributes):
         django_model = GDGetUserBalance
-        django_exclude = ['username','id']
+        django_exclude = ['username','id','gameId','gameType','transactionId','currency']
 
 class ObjectNotFoundError(ResourceNotFoundError):
 
@@ -52,81 +52,167 @@ class SoapService(ServiceBase):
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet
+            token = Token.objects.get(user=user)
             try:
                 record = GDGetUserBalance.objects.get(username=user)
                 record.UserBalance = userBalance
-                record.StatusCode = 0
+                if str(token) == loginToken:
+                    record.StatusCode = 0
+                else:
+                    record.StatusCode = 2
                 record.save()
                 
             except:
-                GDGetUserBalance.objects.create(username=user,
-                                            StatusCode=0,
-                                            UserBalance=userBalance)
+                if str(token) == loginToken:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=0,
+                                                UserBalance=userBalance)
+                else:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=2,
+                                                UserBalance=userBalance)
             return GDGetUserBalance.objects.get(username=user)
+            
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),
+    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
     Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def Debit(crx, userId, gameId, gameType, transactionId, amount, currency, ipAddress, gameView, clientType, loginToken):
         try:
             user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet
+            userBalance = user.main_wallet - amount
+            token = Token.objects.get(user=user)
             try:
                 record = GDGetUserBalance.objects.get(username=user)
                 record.UserBalance = userBalance
-                record.StatusCode = 0
-                record.save()
+                if str(token) == loginToken:
+                    record.StatusCode = 0
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    record.StatusCode = 2
+                record.save()    
                 
             except:
-                GDGetUserBalance.objects.create(username=user,
-                                            StatusCode=0,
-                                            UserBalance=userBalance)
+                if str(token) == loginToken:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=0,
+                                                UserBalance=userBalance)
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=2,
+                                                UserBalance=userBalance)
             return GDGetUserBalance.objects.get(username=user)
+            
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),
-    Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
+
+    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
+    Unicode(nillable=True),Decimal(nillable=True),Unicode(nillable=True), _returns=Container)
     def Credit(crx, userId, gameId, gameType, transactionId, amount, currency, validBetAmount, loginToken):  
         try:
             user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet
+            userBalance = user.main_wallet - amount
+            token = Token.objects.get(user=user)
             try:
                 record = GDGetUserBalance.objects.get(username=user)
                 record.UserBalance = userBalance
-                record.StatusCode = 0
+                if str(token) == loginToken:
+                    record.StatusCode = 0
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    record.StatusCode = 2
                 record.save()
                 
             except:
-                GDGetUserBalance.objects.create(username=user,
-                                            StatusCode=0,
-                                            UserBalance=userBalance)
+                if str(token) == loginToken:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=0,
+                                                UserBalance=userBalance)
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=2,
+                                                UserBalance=userBalance)
             return GDGetUserBalance.objects.get(username=user)
+            
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
-            
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),
+    
+    @rpc(Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),Unicode(nillable=True),Unicode(nillable=True),
     Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def Cancel(crx, userId, gameId, gameType, transactionId, amount, currency, cancelReason):  
+    def Tip(crx, userId, transactionId, amount, currency, ipAddress, loginToken,tipId,):  
         try:
             user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet
+            userBalance = user.main_wallet - amount
+            token = Token.objects.get(user=user)
             try:
                 record = GDGetUserBalance.objects.get(username=user)
                 record.UserBalance = userBalance
-                record.StatusCode = 0
+                if str(token) == loginToken:
+                    record.StatusCode = 0
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    record.StatusCode = 2
                 record.save()
                 
             except:
-                GDGetUserBalance.objects.create(username=user,
-                                            StatusCode=0,
-                                            UserBalance=userBalance)
+                if str(token) == loginToken:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=0,
+                                                UserBalance=userBalance)
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=2,
+                                                UserBalance=userBalance)
             return GDGetUserBalance.objects.get(username=user)
+            
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
-
     
+    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
+    Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
+    def Cancel(crx, userId, gameId, gameType, transactionId, amount, currency, cancelReason):  
+        #GDGetUserBalance.objects.all().delete()
+        try:
+            user = CustomUser.objects.get(username=userId)
+            userBalance = user.main_wallet + amount
+            token = Token.objects.get(user=user)
+            try:
+                record = GDGetUserBalance.objects.get(username=user)
+                record.UserBalance = userBalance
+                if str(token) == loginToken:
+                    record.StatusCode = 0
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    record.StatusCode = 2
+                record.save()
+                
+            except:
+                if str(token) == loginToken:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=0,
+                                                UserBalance=userBalance)
+                    user.main_wallet = userBalance
+                    user.save()
+                else:
+                    GDGetUserBalance.objects.create(username=user,
+                                                StatusCode=2,
+                                                UserBalance=userBalance)
+            return GDGetUserBalance.objects.get(username=user)
+            
+        except ObjectDoesNotExist as e:
+            raise ObjectNotFoundError(e)
 
 
 soap_app = Application(

@@ -1167,3 +1167,26 @@ GDCASINO_URL = 'http://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
 GDCASINO_MERCHANT_CODE = 'IBPHtest'
 GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
+
+GDCASINO_STATUS_CODE =(
+    (-1, 'UNKNOWN_ERROR'),
+    (0, 'OK'),
+    (1,'INVAILD_PARAMETER'),
+    (2, 'INVAILD_TOKEN_ID'),
+    (3, 'BET_ALREDY_SETTLED'),
+    (4, 'BET_DOES_NOT_EXIST'),
+    (5, 'BET_ALREADY_EXIST'),
+    (6, 'ACCOUNT_LOCKED'),
+    (7, 'INSUFFUCIENT_FUNDS'),
+    (8, 'RETRY_TRANSACTION'),
+    (201, 'INSUFFUCIENT_FUNDS_1(for maxbet)'),
+    (202, 'ACCOUNT_LOCKED_1(for maxbet)'),
+    (206, 'ABOVE_PLAYER_LIMIT_1(for maxbet)')
+)
+GDCASINO_GAME_TYPE = (
+    (0, 'None'),
+    (6, 'Baccarat'),
+    (28, 'Roulette'),
+    (29, 'Sic bo'),
+    (100, 'Slot game'),
+)
