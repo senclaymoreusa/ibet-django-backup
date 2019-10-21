@@ -1,10 +1,11 @@
 import requests,json, os, datetime, time, hmac, hashlib, base64, logging, uuid, random
+import copy
 
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from django.utils import timezone
-from django.db import IntegrityError
+from django.db import DatabaseError, transaction
 from django.conf import settings
 
 from rest_framework import status, generics, parsers, renderers
@@ -558,7 +559,6 @@ class approvePayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = approvePayoutSerialize
     permission_classes = [AllowAny,]
-    
 
     def post(self, request, *args, **kwargs):
         serializer = approvePayoutSerialize(self.queryset, many=True)
@@ -596,24 +596,55 @@ class approvePayout(generics.GenericAPIView):
         
         rdata = r.json()
         logger.info(rdata)
-        user = CustomUser.objects.get(username=rdata['userId'])   
-        try :
-            update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
 
-            update_data.order_id=rdata['transactionId']
-            update_data.last_updated=rdata["dateUpdated"]
-            update_data.status=4
-            update_data.review_status = REVIEW_APP
-            update_data.remark = notes
-            update_data.release_by = user
-            update_data.save()
-            logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
-            return Response(rdata)
+        try:
+            user = CustomUser.objects.get(username=rdata['userId'])
+            user_pre_main_wallet = user.main_wallet
+            previous_data = Transaction.objects.get(transaction_id=rdata['orderId'])
+            update_data = copy.deepcopy(previous_data)
+
         except ObjectDoesNotExist as e:
             logger.error(e)
-            logger.info("matching transaction not found / does not exist")
-            
-            return Response({"error": "Could not find matching transaction", "code": ERROR_CODE_NOT_FOUND})
+            logger.info("matching user or transaction not found / does not exist" + str(e))
+            return Response({"error": "Could not find matching user or transaction", "code": ERROR_CODE_NOT_FOUND})
+
+        # this withdrawal transaction may not in held status
+        except Exception as e:
+            logger.error("Error processing this transaction " + str(e))
+            return Response({"error": "Error processing this transaction ", "code": ERROR_CODE_INVAILD_INFO})
+
+        try:
+            with transaction.atomic():
+
+                update_data.order_id = rdata['transactionId']
+                update_data.last_updated = rdata["dateUpdated"]
+                update_data.status = 4
+                update_data.review_status = REVIEW_APP
+                update_data.remark = notes
+                update_data.release_by = user
+                update_data.save()
+
+                user.main_wallet += update_data.amount
+                user.save()
+
+                logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
+                return Response(rdata)
+
+        except DatabaseError as e:
+
+            update_data.order_id = previous_data.order_id
+            update_data.last_updated = previous_data.last_updated
+            update_data.status = previous_data.status
+            update_data.review_status = previous_data.review_status
+            update_data.remark = previous_data.remark
+            update_data.release_by = previous_data.release_by
+            update_data.save()
+
+            user.main_wallet = user_pre_main_wallet
+            user.save()
+
+            logger.error('Could not process this transaction because of DatabaseError ' + str(e))
+            return Response({"error": "Error processing this transaction", "code": ERROR_CODE_DATABASE})
 
 
 class rejectPayout(generics.GenericAPIView):
