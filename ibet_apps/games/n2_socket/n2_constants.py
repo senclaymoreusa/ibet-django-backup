@@ -11,7 +11,9 @@ CURRENCY_MAP = defaultdict(lambda: '1111', {
     'CNY': '156',
     'THB': '764',
     'VND': '7041',
-    'TTC': '1111'
+    'TTC': '1111',
+    'MYR': '458',
+    'HKD': '344'
 })
 
 OUTCOME_MAP = defaultdict(lambda: '1111', {
