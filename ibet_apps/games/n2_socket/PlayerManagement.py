@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError, DatabaseError, transaction
 from users.models import CustomUser
 from games.models import GameBet, GameProvider, Category
 from rest_framework.authtoken.models import Token
@@ -14,7 +15,7 @@ logger = logging.getLogger("django")
 try:
     PROVIDER = GameProvider.objects.get(provider_name="N2 Games")
 except ObjectDoesNotExist:
-    print("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+    logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
 
 class PlayerManagement:
@@ -222,50 +223,54 @@ class PlayerManagement:
 
 def CreditUser(userid, tradeid, totalamount, trades):
     try:
-        user = CustomUser.objects.get(username=userid)
-        logger.info("crediting amount: " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
-        new_balance = user.main_wallet + decimal.Decimal(totalamount)
-        logger.info("user's balance is now: " + str(new_balance))
-        user.main_wallet = new_balance
-        user.save()
-
-        for trade in trades:
-            result = trade['resultstatus']
-            outcome = OUTCOME_MAP[result]
-            bet = GameBet.objects.get(ref_no=trade['id'])
-            bet.amount_won = decimal.Decimal(trade['amount'])
-            bet.outcome = outcome
-            bet.resolved_time = datetime.now()
-            bet.save()
+        with transaction.atomic():
+            user = CustomUser.objects.get(username=userid)
+            for trade in trades:
+                result = trade['resultstatus']
+                outcome = OUTCOME_MAP[result]
+                bet = GameBet.objects.get(ref_no=trade['id'])
+                bet.amount_won = decimal.Decimal(trade['amount'])
+                bet.outcome = outcome
+                bet.resolved_time = datetime.now()
+                bet.save()
+            logger.info("crediting amount: " + totalamount + " for winnings trade in trade: " + tradeid + " for user: " + str(user))
+            new_balance = user.main_wallet + decimal.Decimal(totalamount)
+            logger.info("user's balance is now: " + str(new_balance))
+            user.main_wallet = new_balance
+            user.save()
         return
+    except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
+        print("CreditUser::Exception occured:", repr(ex))
     except Exception as ex:
-        print("CreditUser::Exception Occured", str(ex))
+        print("CreditUser::Exception Occured", repr(ex))
 
 def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
+    category = GAMECODE_MAP[gamecode]
     try:
-        category = GAMECODE_MAP[gamecode]
-        user = CustomUser.objects.get(username=userid)
-        CATEGORY = Category.objects.get(name=category)
+        with transaction.atomic():
+            user = CustomUser.objects.get(username=userid)
+            CATEGORY = Category.objects.get(name=category)
 
-        logger.info("processing " + tradeid + " for user: " + str(user))
-        new_balance = user.main_wallet - decimal.Decimal(totalamount)
-        user.main_wallet = new_balance
-        user.save()
-
-        for trade in trades:
-            bet = GameBet(
-                    provider=PROVIDER, 
-                    category=category, 
-                    username=user, 
-                    currency=user.currency, 
-                    market=0,
-                    ref_no=trade['id'],
-                    amount_wagered=decimal.Decimal(trade['amount']),
-                )
-            bet.save()
+            for trade in trades:
+                bet = GameBet(
+                        provider=PROVIDER, 
+                        category=category, 
+                        username=user, 
+                        currency=user.currency, 
+                        market=0,
+                        ref_no=trade['id'],
+                        amount_wagered=decimal.Decimal(trade['amount']),
+                    )
+                bet.save()
+            logger.info("processing " + tradeid + " for user: " + str(user))
+            new_balance = user.main_wallet - decimal.Decimal(totalamount)
+            user.main_wallet = new_balance
+            user.save()
         return
+    except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
+        print("PlaceBet::Exception Occured", repr(ex))
     except Exception as ex:
-        print("PlaceBet::Exception Occured", str(ex))
+        print("PlaceBet::Exception Occured", repr(ex))
 
 
 def GetToken(user):

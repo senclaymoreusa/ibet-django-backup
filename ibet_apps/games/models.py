@@ -41,14 +41,6 @@ class GameProviderWithCategory(models.Model):
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
-class GameAttribute(models.Model):
-
-    name = models.CharField(max_length=50)
-    created_time = models.DateTimeField(
-        _('Created Time'),
-        auto_now_add=True,
-        editable=False,
-    )
 
 class Game(models.Model):
     name = models.CharField(max_length=50)
@@ -62,9 +54,9 @@ class Game(models.Model):
     description = models.CharField(max_length=200)
     description_zh = models.CharField(max_length=200, null=True, blank=True)
     description_fr = models.CharField(max_length=200, null=True, blank=True)
-    status_id = models.ForeignKey('users.Status', related_name="game_status", on_delete=models.CASCADE)
+    # status_id = models.ForeignKey('users.Status', related_name="game_status", on_delete=models.CASCADE)
     image = models.ImageField(upload_to='game_image', blank=True)
-    #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
     gameURL = models.CharField(max_length=200, null=True, blank=True)
     imageURL = models.CharField(max_length=200, null=True, blank=True)
@@ -95,20 +87,6 @@ class Game(models.Model):
 
 # game bet history model
 class GameBet(models.Model):
-    SPREAD = 'SPREAD'
-    MONEYLINE = 'LINE'
-    TOTAL = 'OU'
-    BET_TYPES_CHOICES = [
-        (SPREAD, 'Spread'),
-        (MONEYLINE, 'Moneyline'),
-        (TOTAL, 'Total O/U'),
-    ]
-    OUTCOME_CHOICES = [
-        (0, 'Win'),
-        (1, 'Lose'),
-        (2, 'Tie/Push'),
-        (3, 'Void'),
-    ]
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE) # sportsbook/game provider
     category = models.ForeignKey('Category', on_delete=models.CASCADE) # category within sportsbook/game provider (e.g basketball, soccer, blackjack)
 
@@ -123,7 +101,7 @@ class GameBet(models.Model):
     amount_won = models.DecimalField(max_digits=12, decimal_places=2) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-    odds = models.IntegerField() # payout odds (in american odds), e.g. +500, -110, etc.
+    odds = models.IntegerField(null=True, blank=True) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
 

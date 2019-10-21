@@ -4,7 +4,9 @@
 from concurrent.futures import ThreadPoolExecutor
 from lxml import etree
 import games.n2_socket.PlayerManagement as playerManagement
+import logging
 
+logger = logging.getLogger("django")
 
 class MessageHandler:
     '''
@@ -66,11 +68,6 @@ class MessageHandler:
                 return swamResponse
 
         except Exception as ex:
-            print('MessageTask::Exception occurred', str(ex))
+            logger.error('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
+            print('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
     
-
-# if messageAction == 'swebsinglelogin':
-#     print("hi")
-#     loginRequest = playerManagement.PlayerManagement(
-#         self.vendorId, self.passcode)
-#     (retStatus, user) = loginRequest.ProcessLoginRequest(xmlDoc)
