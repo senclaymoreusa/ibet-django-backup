@@ -22,7 +22,17 @@ OUTCOME_MAP = defaultdict(lambda: '1111', {
 })
 
 GAMECODE_MAP = defaultdict(lambda: 'Roulette', {
-    '90091': 'Baccarat - Live Casino',
-    '90092': 'Baccarat - Live Casino',
-    '110001': 'Blackjack - Virtual Casino'
+    '50002': 'Roulette - Live Casino',
+    '51002': 'Roulette - Virtual Casino',
+    '52002': 'Roulette - Virtual Casino',
+    '60001': 'Sicbo',
+    '61001': 'Sicbo - Virtual Casino',
+    '62001': 'Sicbo - Virtual Casino',
+    '90091': 'Baccarat - Live Casino', # commission
+    '90092': 'Baccarat - Live Casino', # non-comm
+    '91091': 'Baccarat - Virtual Casino',
+    '91092': 'Baccarat - Virtual Casino',
+    '110001': 'Blackjack - Virtual Casino',
+    '110002': 'Free Bet Blackjack - Virtual Casino',
+    '110003': 'Blackjack Switch - Virtual Casino', 
 })

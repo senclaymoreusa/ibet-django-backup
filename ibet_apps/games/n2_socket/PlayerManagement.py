@@ -238,10 +238,10 @@ def CreditUser(userid, tradeid, totalamount, trades):
             user.save()
         return 0
     except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
-        logger.error("CreditUser::Exception occured:", repr(ex))
+        logger.error("CreditUser::Exception Occured:" + repr(ex))
         return 103
     except Exception as ex:
-        logger.error("CreditUser::Exception Occured", repr(ex))
+        logger.error("CreditUser::Exception Occured:" + repr(ex))
         return 105
 
 def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
@@ -271,10 +271,10 @@ def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
             user.save()
         return 0
     except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
-        logger.error("PlaceBet::Exception Occured", repr(ex))
+        logger.error("PlaceBet::Exception Occured:" + repr(ex))
         return 103
     except Exception as ex:
-        logger.error("PlaceBet::Exception Occured", repr(ex))
+        logger.error("PlaceBet::Exception Occured:" + repr(ex))
         return 105
 
 

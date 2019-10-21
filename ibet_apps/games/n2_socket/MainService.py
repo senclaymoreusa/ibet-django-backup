@@ -37,10 +37,10 @@ class MainService:
                 thread.start()
         except Exception as ex:
 
-            logger.info('Start::Exception occurred', str(ex))
+            logger.info('Start::Exception occurred' + str(ex))
 
     def MakeConnectionThread(self, threadId, event):
-        logger.info("Thread Id: ", threadId)
+        logger.info("Thread Id: " +  str(threadId))
         swamClient = ClientConnection.ClientConnection(self.swamServer,
                                                        self.swamPort,
                                                        self.vendorId,

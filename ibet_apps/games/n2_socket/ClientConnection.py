@@ -18,7 +18,9 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 import queue
 import datetime
+import logging
 
+logger = logging.getLogger("django")
 
 class ClientConnection:
     connected = False
@@ -85,11 +87,11 @@ class ClientConnection:
                 self.CleanUp()
                 logger.info('Disconnect to ' + self.serverIP + ' on port no ' +
                       str(self.serverPort))
-                logger.info('Connect::Exception occurred', str(ex))
+                logger.info('Connect::Exception occurred' + repr(ex))
         except Exception as ex:
             logger.info('Unable to connect to ' + self.serverIP + ' on port no ' +
                   str(self.serverPort))
-            logger.info('Connect::Exception occurred', str(ex))
+            logger.info('Connect::Exception occurred' + repr(ex))
             traceback.print_exc(file=sys.stdout)
 
     def ServiceNetworkEvent(self, key, mask):
@@ -232,7 +234,7 @@ class ClientConnection:
             #print('Original:', decryptedPacket)
             #return decryptedPacket
         except Exception as ex:
-            #print('DecryptPacket::Exception occurred', str(ex))
+            logger.error('DecryptPacket::Exception occurred' + repr(ex))
             traceback.print_exc(file=sys.stdout)
             return None
 

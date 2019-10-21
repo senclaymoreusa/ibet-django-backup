@@ -67,6 +67,6 @@ class MessageHandler:
                 return swamResponse
 
         except Exception as ex:
-            logger.error('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
+            logger.error('MessageTask::Action was "' + messageAction + '"\nException occurred' + repr(ex))
             # print('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
     
