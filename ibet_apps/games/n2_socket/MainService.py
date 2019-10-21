@@ -10,7 +10,6 @@
 
 import logging
 import games.n2_socket.ClientConnection as ClientConnection
-#import ClientConnection2
 import threading
 from time import sleep
 
@@ -38,10 +37,10 @@ class MainService:
                 thread.start()
         except Exception as ex:
 
-            print('Start::Exception occurred', str(ex))
+            logger.info('Start::Exception occurred', str(ex))
 
     def MakeConnectionThread(self, threadId, event):
-        print("Thread Id: ", threadId)
+        logger.info("Thread Id: ", threadId)
         swamClient = ClientConnection.ClientConnection(self.swamServer,
                                                        self.swamPort,
                                                        self.vendorId,

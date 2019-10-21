@@ -56,7 +56,7 @@ class ClientConnection:
         '''
     def Connect(self):
         try:
-            print('Connecting to ' + self.serverIP + ' on port no ' +
+            logger.info('Connecting to ' + self.serverIP + ' on port no ' +
                   str(self.serverPort) + '.....')
             #with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             self.connected = False
@@ -64,10 +64,10 @@ class ClientConnection:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.serverIP, self.serverPort))
             try:
-                print('Connected to ' + self.serverIP + ' on port no ' +
+                logger.info('Connected to ' + self.serverIP + ' on port no ' +
                       str(self.serverPort))
                 loginStr = 'login: ' + str(self.vendorId)
-                print(loginStr)
+                # print(loginStr)
                 self.sock.sendall(bytes(loginStr, 'utf-8'))
                 self.sock.setblocking(1)
                 #ClientConnection.sock.settimeout(10)
@@ -83,13 +83,13 @@ class ClientConnection:
                 #except socket.error:
             except Exception as ex:
                 self.CleanUp()
-                print('Disconnect to ' + self.serverIP + ' on port no ' +
+                logger.info('Disconnect to ' + self.serverIP + ' on port no ' +
                       str(self.serverPort))
-                print('Connect::Exception occurred', str(ex))
+                logger.info('Connect::Exception occurred', str(ex))
         except Exception as ex:
-            print('Unable to connect to ' + self.serverIP + ' on port no ' +
+            logger.info('Unable to connect to ' + self.serverIP + ' on port no ' +
                   str(self.serverPort))
-            print('Connect::Exception occurred', str(ex))
+            logger.info('Connect::Exception occurred', str(ex))
             traceback.print_exc(file=sys.stdout)
 
     def ServiceNetworkEvent(self, key, mask):
@@ -103,7 +103,7 @@ class ClientConnection:
                 if message != None:
                     responseMessage = self.messageHandler.ProcessRequestMessage(
                         message)
-                    print("response message:\n" + str(responseMessage))
+                    # logger.info("response message:\n" + str(responseMessage))
                     if responseMessage != None:
                         self.ProcessResponseMessage(sock, responseMessage)
             else:
@@ -152,7 +152,7 @@ class ClientConnection:
                 # print('EOT reached')
                 return networkByte[:-1]
             else:
-                print('No EOT')
+                # print('No EOT')
                 return None
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
@@ -162,13 +162,13 @@ class ClientConnection:
 
     def ProcessResponseMessage(self, sock, responseMessage):
         try:
-            print("Thread " + str(self.threadId) + " received this: " +
+            logger.info("Thread " + str(self.threadId) + " received this: " +
                   responseMessage)
             responseLen = len(responseMessage)
             totalAscii = self.sumOfAscii(responseMessage)
 
             checkSum = 256 - (totalAscii % 256)
-            print("checksum: " + str(checkSum))
+            # print("checksum: " + str(checkSum))
             responseMessage = self.GetBytes(bytes(responseMessage, 'utf-8'),
                                             responseLen)
             encryptedPacket = self.Endecrypt(self.passcode, len(self.passcode),
@@ -199,7 +199,7 @@ class ClientConnection:
 
             # print(repr(networkBytes))
             #print(len(networkBytes))
-            print("Sending Response")
+            # print("Sending Response")
             sock.sendall(networkBytes)
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
@@ -255,11 +255,11 @@ class ClientConnection:
         return totalAsciiValue
 
     def SendResponse(self, sock, responseMessage):
-        print("server will receive this: " + responseMessage)
+        logger.info("server will receive this: " + responseMessage)
         #sock.sendall(bytes(responseMessage, 'utf-8'))
 
     def CleanUp(self):
-        print("Cleaning up")
+        logger.info("Cleaning up")
         if self.sock != None:
             if self.connected:
                 self.selector.unregister(self.sock)

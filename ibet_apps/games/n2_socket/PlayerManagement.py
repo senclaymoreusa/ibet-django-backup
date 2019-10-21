@@ -149,7 +149,7 @@ class PlayerManagement:
                         trades.append(tradeData)
 
                 
-        print(trades) # all trades made in bet
+        logger.info(trades) # all trades made in bet
         if action == "place":
             status = PlaceBet(self.loginId, tradeid, totalamount, trades, gamecode) # Place Bet & Record Bet
         if action == "process":
@@ -238,10 +238,10 @@ def CreditUser(userid, tradeid, totalamount, trades):
             user.save()
         return 0
     except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
-        print("CreditUser::Exception occured:", repr(ex))
+        logger.error("CreditUser::Exception occured:", repr(ex))
         return 103
     except Exception as ex:
-        print("CreditUser::Exception Occured", repr(ex))
+        logger.error("CreditUser::Exception Occured", repr(ex))
         return 105
 
 def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
@@ -264,17 +264,17 @@ def PlaceBet(userid, tradeid, totalamount, trades, gamecode):
                     )
                 bet.save()
             logger.info("processing " + tradeid + " for user: " + str(user))
-            print("processing " + tradeid + " for user: " + str(user))
+            logger.info("processing " + tradeid + " for user: " + str(user))
             new_balance = user.main_wallet - decimal.Decimal(totalamount)
             user.main_wallet = new_balance
-            print("user balance is now: " + str(user.main_wallet))
+            logger.info("user balance is now: " + str(user.main_wallet))
             user.save()
         return 0
     except (ObjectDoesNotExist, IntegrityError, DatabaseError) as ex:
-        print("PlaceBet::Exception Occured", repr(ex))
+        logger.error("PlaceBet::Exception Occured", repr(ex))
         return 103
     except Exception as ex:
-        print("PlaceBet::Exception Occured", repr(ex))
+        logger.error("PlaceBet::Exception Occured", repr(ex))
         return 105
 
 

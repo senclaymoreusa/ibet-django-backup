@@ -24,7 +24,7 @@ class MessageHandler:
         self.connection = ClientConnection
 
     def ProcessRequestMessage(self, swamMessage):
-        print('Full message:\n', swamMessage)
+        # print('Full message:\n', swamMessage)
         future = self.executor.submit(self.MessageTask, (swamMessage))
         return future.result(5)
 
@@ -37,11 +37,10 @@ class MessageHandler:
             messageAction = elem.attrib['action']
             messageId = elem.attrib['id']
 
-            print("Action: " + messageAction + ", id: " + messageId)
+            logger.info("Action: " + messageAction + ", id: " + messageId)
 
             if messageAction == 'spingalive':  #return nothing
-                if int(messageId) % 100 == 0:
-                    print(messageId)
+                return None
             else:
                 swamResponse = ''
                 request = playerManagement.PlayerManagement(self.vendorId, self.passcode)
@@ -69,5 +68,5 @@ class MessageHandler:
 
         except Exception as ex:
             logger.error('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
-            print('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
+            # print('MessageTask::Action was "',messageAction,'"\nException occurred', repr(ex))
     
