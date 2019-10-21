@@ -15,16 +15,13 @@ table.dataTable {
     border-spacing: 0;
 }
 
-
 #deposit-request-button {
     margin-top: 25px;
 }
 
-
 .dataTables_filter {
     display: none;
 }
-
 
 #edit-pending-detail-btn {
     height: 100%;

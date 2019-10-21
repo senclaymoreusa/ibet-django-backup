@@ -72,4 +72,5 @@ xmltodict==0.12.0
 ua-parser==0.8.0
 user-agents==2.0
 django-user-agents==0.4.0
-django-ckeditor==5.7.1
+django-ckeditor==5.7.1 
+pyDes==2.0.1

@@ -7,6 +7,7 @@ from django.db.models.functions import Coalesce
 from accounting.models import *
 from users.models import CustomUser
 from django.utils import timezone
+from django.urls import reverse
 
 import simplejson as json
 import logging
@@ -40,7 +41,7 @@ class WithdrawalView(CommAdminView):
             within_this_month = timezone.now() - timezone.timedelta(days=30)
             latest_withdraw = Transaction.objects.filter(
                 Q(user_id_id=user)
-                & Q(transaction_type=TRANSACTION_WITHDRAW)
+                & Q(transaction_type=TRANSACTION_WITHDRAWAL)
                 & Q(request_time__gte=within_this_month)
             )
             logger.info('Find ' + str(latest_withdraw.count()) + ' latest withdrawals')
@@ -79,9 +80,8 @@ class WithdrawalView(CommAdminView):
             title = "Finance / Withdrawals"
             context["breadcrumbs"].append({"url": "/withdrawal/", "title": title})
             context['time'] = timezone.now()
-
             # WITHDRAWAL TRANSACTIONS
-            withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAW)
+            withdrawal_trans = Transaction.objects.filter(transaction_type=TRANSACTION_WITHDRAWAL)
 
             # PENDING
             pending_trans = withdrawal_trans.filter(review_status=REVIEW_PEND) 
@@ -265,28 +265,6 @@ class WithdrawalView(CommAdminView):
 
             return render(request, "withdrawals.html", context)
 
-    def post(self, request):
-        post_type = request.POST.get("type")
-
-        if post_type == "audit_withdraw":
-            withdraw_notes = request.POST.get("withdraw_notes")
-            wtd_trans_no = request.POST.get("wtd_trans_no")
-            current_tran = Transaction.objects.filter(pk=wtd_trans_no)
-            current_tran.update(remark=withdraw_notes)
-            if 'withdraw-review-app' in request.POST:
-                current_tran.update(review_status=REVIEW_APP)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Approve')
-            elif 'withdraw-review-rej' in request.POST:
-                current_tran.update(review_status=REVIEW_REJ)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
-            elif 'withdraw-review-appnext' in request.POST:
-                current_tran.update(review_status=REVIEW_APP)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Approve')
-            elif 'withdraw-review-rejnext' in request.POST:
-                current_tran.update(review_status=REVIEW_REJ)
-                logger.info('Finish update the status of withdrawal' + str(wtd_trans_no) + ' to Reject')
-
-            return HttpResponseRedirect(reverse('xadmin:withdrawal_view'))
 
 def myconverter(o):
     if isinstance(o, timezone.date):

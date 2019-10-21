@@ -134,7 +134,7 @@ ACCOUNT_EMAIL_REQUIRED = False                # Stephen
 ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
 ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
 
-AUTH_USER_MODEL = 'users.CustomUser' # new???
+AUTH_USER_MODEL = 'users.CustomUser' # Override the default user model and reference custom user model instead.
 
 DOMAIN = 'http://localhost:8000/'
 HOST_URL = 'http://localhost:3000/'

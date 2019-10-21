@@ -1,0 +1,146 @@
+{% extends "xadmin/base_site.html" %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-vip.css" %}" />
+</head>
+
+<body>
+    <div id="vip_management">
+        <div class="row">
+            <div class="col-md-4 input-group" style="float: left; margin-top: 20px;">
+                <input type="text" id="search" class="form-control" placeholder="Enter user ID, username or manager">
+                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white;"><span
+                        class="glyphicon glyphicon-search"></span></span>
+            </div>
+            <div class="col-md-4 date_range" style="float: right">
+                <label>ACTIVE DATE RANGE</label>
+                <br>
+                <input name="min_date" id="min_date" type="text" placeholder="From">
+                <input name="max_date" id="max_date" type="text" placeholder="To">
+            </div>
+        </div>
+
+        <div id="vip_table_container" style="overflow-x: scroll;">
+            <table id="vip_table" class="table-striped table-bordered hover compact">
+                <thead>
+                    <tr>
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">USERNAME</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">COUNTRY</th>
+                        <th scope="col">ADDRESS</th>
+                        <th scope="col">PHONE NUMBER</th>
+                        <th scope="col">EMAILED VERIFIED</th>
+                        <th scope="col">PHONE VERIFIED</th>
+                        <th scope="col">ID VERIFIED</th>
+                        <th scope="col">AFFILIATE ID</th>
+                        <th scope="col">GGR</th>
+                        <th scope="col">TURNOVER</th>
+                        <th scope="col">DEPOSIT</th>
+                        <th scope="col">DEPOSIT COUNT</th>
+                        <th scope="col">AVERAGE DEPOSIT</th>
+                        <th scope="col">WITHDRAWAL</th>
+                        <th scope="col">WITHDRAWAL COUNT</th>
+                        <th scope="col">BONUS COST</th>
+                        <th scope="col">NGR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- <label class="show-rows">SHOW ROWS</label> -->
+        </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" language="javascript"
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+
+    <!-- <script>
+        $(document).ready(function () {
+            var csrftoken = $.cookie("csrftoken")
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $("#min_date").datepicker();
+            $("#max_date").datepicker();
+            var minDate = $('#min_date').val();
+            var maxDate = $('#max_date').val();
+
+            var vip_table = $('#vip_table').DataTable({
+                "serverSide": true,
+                "searching": true,
+                "ajax": {
+                    type: 'GET',
+                    url: "{% url 'xadmin:vipview' %}",
+                    data: {
+                        'type': 'getVIPInfo',
+                        'minDate': function () { return minDate; },
+                        'maxDate': function () { return maxDate; },
+                    },
+                },
+                // for export fuction
+                dom: 'B<ftilp>',
+                buttons: [
+                    'csv',
+                ],
+                "language": {
+                    "info": " _START_ - _END_ of _TOTAL_",
+                    "infoEmpty": " 0 - 0 of 0",
+                    "infoFiltered": "",
+                    // "search": "<span class='input-group-addon' style='background-color: #428bca; color:white; width:10px'><span class='glyphicon glyphicon-search'></span></span>",
+                    "paginate": {
+                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    },
+                    "lengthMenu": "_MENU_",
+                },
+            });
+            
+            $(".dt-buttons .buttons-csv").text("Export");
+
+            $('#min_date, #max_date').change(function () {
+                minDate = $('#min_date').val();
+                maxDate = $('#max_date').val();
+                minDate = formatStringToDate(minDate);
+                maxDate = formatStringToDate(maxDate);
+                vip_table.draw();
+            });
+            function formatStringToDate(date) {
+                if (date.length === 0) {
+                    return date;
+                }
+                var parts = date.split('/');
+                date = parts[2] + '-' + parts[0] + '-' + parts[1];
+                return date;
+            }
+        });
+    </script> -->
+</body>
+
+</html>
+
+{% endblock %}

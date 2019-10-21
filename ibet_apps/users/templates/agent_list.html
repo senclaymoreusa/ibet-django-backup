@@ -1,0 +1,641 @@
+{% extends "xadmin/base_site.html" %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Overview -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Overview
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div class="row overview-subtitle">
+            <div class="col-md-3 affliates-count-ftd-title ">AFFILIATES COUNT</div>
+            <div class="col-md-2 affliates-count-ftd-title ">FTD THIS MONTH</div>
+            <div class="col-md-2 active-ggr-title">ACTIVE THIS MONTH</div>
+            <div class="col-md-2 active-ggr-title">GGR THIS MONTH</div>
+            <div class="col-md-2 affliates-acquired-title">AFFILIATES ACQUIRED THIS MONTH</div>
+        </div>
+        <div class="row affliates-count-font">
+            <div class="col-md-3 table-block affliates-count-block">
+                <div class="first-row">
+                    <div class="col-sm-4 ">
+                        <strong>Active</strong>
+                    </div>
+                    <div class="col-sm-2 ">
+                        {{ active_number }}
+                    </div>
+                    <div class="col-sm-4 ">
+                        <strong>VIP</strong>
+                    </div>
+                    <div class="col-sm-2 ">
+                        {{ vip_number }}
+                    </div>
+                </div>
+
+                <div class="second-row">
+                    <div class="col-sm-4 ">
+                        <strong>Negative</strong>
+                    </div>
+                    <div class="col-sm-2 ">
+                        {{ negative_number }}
+                    </div>
+                    <div class="col-sm-4 ">
+                        <strong>Deactivated</strong>
+                    </div>
+                    <div class="col-sm-2 ">
+                        {{ deactivated_number }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 table-block ftd-active-block"><strong>{{ ftd_this_month }}</strong></div>
+            <!-- need to know the definition of active affiliates -->
+            <div class="col-md-2 table-block ftd-active-block"><strong>{{ actives_this_month }}</strong></div>
+            <div class="col-md-2 table-block ggr-acquired-block"><strong>${{ ggr_this_month }}</strong></div>
+            <div class="col-md-3 table-block ggr-acquired-block"><strong>{{ affiliates_acquired_this_month }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Commission Table -->
+<div class="panel panel-default" style="width: 50%; display:inline-block; vertical-align: top;">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Commission
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div>
+            <table id="commission" class="table-striped table-title" style="margin-bottom: 100px">
+                <thead>
+                    <tr>
+                        <th scope="col">MONTH</th>
+                        <th scope="col">AFFILIATE COUNT</th>
+                        <th scope="col">ACTIVE DOWNLINE</th>
+                        <th scope="col">COMMISSION</th>
+                        <th scope="col">STATUS</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 13px">
+                    {% for tran in commission_transaction %}
+                    <tr>
+                        <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}
+                        </td>
+                        <td>{{ tran.affiliate_number }}</td>
+                        <td>{{ tran.active_downline }}</td>
+                        <td>{{ tran.total_commission }}</td>
+                        <td>{{ tran.commission_status }}</td>
+                        <td><button id="audit-commission-btn" type="button" data-toggle="modal"
+                                data-target="#audit_commission"><i class="fa fa-search"></i></button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <label class="show-rows">SHOW ROWS</label>
+        </div>
+    </div>
+</div>
+
+<!-- Commission Pop Up -->
+<div class="modal fade" id="audit_commission" role="dialog">
+    <div id="audit_commission_pop" class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                Commission statement
+            </div>
+            <div class="commission-info">
+                <div class="row">
+                    <div class="col-md-2"><strong>Period</strong></div>
+                    <div class="col-md-3" id="period"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2"><strong>Valid affiliate count</strong></div>
+                    <div class="col-md-3" id="valid-affiliate-count"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2"><strong>Total commission</strong></div>
+                    <div class="col-md-3" id="total-commission"></div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <form action="{% url 'xadmin:agent_detail' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="audit_commission_release"></input>
+                    <input type="hidden" id="commission_month" name="commission_month"></input>
+
+                    <div id="commission_monthly_history">
+                        <table id="commission_detail" class="table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ALL</th>
+                                    <th scope="col">AFFILIATE ID</th>
+                                    <th scope="col">ACTIVE PLAYERS</th>
+                                    <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
+                                    <th scope="col">COMMISSION RATE</th>
+                                    <th scope="col">DEPOSIT</th>
+                                    <th scope="col">WITHDRAWAL</th>
+                                    <th scope="col">SYSTEM BONUS</th>
+                                    <th scope="col">TOTAL WINLOSS</th>
+                                    <th scope="col">COMMISSION</th>
+                                    <th scope="col">STATUS</th>
+                                    <th scope="col">TIME OF RELEASE</th>
+                                    <th scope="col">OPEARTOR</th>
+                                    <th scope="col" style="display: none"></th>
+                                </tr>
+                            </thead>
+                            <tbody id=commission_statement>
+                            </tbody>
+                        </table>
+                        <label class="show-rows">SHOW ROWS</label>
+                    </div>
+
+                    <div class="form-group">
+                        <div id="commission-audit-button">
+                            <button type="button" class="btn btn-success" id="commission-release-btn">Release <span
+                                    id="selected"></span></button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Affiliate Application Table -->
+<div class="panel panel-default" style="width: 47%; display:inline-block; vertical-align: top; margin-left: 2%;">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Affiliate Application
+        </h2>
+    </div>
+
+    <div class="panel-body">
+        <div style="overflow-x: scroll;">
+            <table id="affiliate_application" class="table-striped table-title" style="margin-bottom: 100px">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">USER ID</th>
+                        <th scope="col">APPLICATION DATE</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 13px">
+                    {% for affiliate in affiliate_application_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a id="userID" href="{% url 'xadmin:user_detail' affiliate.pk %}">{{ affiliate.pk }}</a>
+                        </td>
+                        <td>{{ affiliate.user_application_time|date:'d/m/y H:i:s' }}</td>
+                        <td><button id="audit-affiliate-application-btn" type="button" data-toggle="modal"
+                                data-target="#audit-affiliate-application">Review</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <label class="show-rows">SHOW ROWS</label>
+        </div>
+    </div>
+</div>
+
+
+<!-- Affiliate Application Pop up -->
+<div class="modal fade" id="audit-affiliate-application" role="dialog">
+    <div id="audit_affiliate_app_pop" class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <strong>Affiliate application</strong>
+            </div>
+            <div class="user-application-info">
+                <div class="row">
+                    <div class="col-md-3"><strong>
+                            <ul style="list-style: none;">
+                                <li>Player ID</li>
+                                <li>Username</li>
+                                <li>First name</li>
+                                <li>Last name</li>
+                                <li>Birthday</li>
+                            </ul>
+                        </strong></div>
+                    <div class="col-md-3">
+                        <ul id="user-info-first-col" style="list-style: none;">
+                        </ul>
+                    </div>
+                    <div class="col-md-2"><strong>
+                            <ul style="list-style: none;">
+                                <li>Email</li>
+                                <li>Phone</li>
+                                <li>Address</li>
+                            </ul>
+                        </strong></div>
+                    <div class="col-md-3">
+                        <ul id="user-info-second-col" style="list-style: none;">
+                        </ul>
+                    </div>
+                </div>
+                <br>
+                <div id="user_introduction">
+                    <p><strong>INTRUDUCTION</strong></p>
+                    <p id="user_intro"></p>
+                </div>
+                <br>
+                <div id="recent_communication">
+                    <p><strong>RECENT COMMUNICATION</strong></p>
+                    <p id="communication_info"></p>
+                </div>
+                <br>
+                <p>REASON</p>
+                <textarea type='text' id="affiliate_application_remark" class="form-control"
+                    placeholder="Add reason for approving or rejecting application"></textarea>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <div id="affiliate-application-button">
+                        <input type="hidden" id="affiliate_id">
+                        <button type="button" class="btn btn-success"
+                            id="affiliate-application-approve-btn">Approve</button>
+                        <button type="button" class="btn btn-danger"
+                            id="affiliate-application-decline-btn">Decline</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Affiliate Table -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Affiliates
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div class='row' style="width:35%; margin-left: 5px">
+            <div class="input-group">
+                <input type=" text" id="search" class="form-control"
+                    placeholder="Enter affiliate ID, username ">
+                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
+                        class="glyphicon glyphicon-search"></span></span>
+            </div>
+        </div>
+        <div style="overflow-x: scroll;">
+            <table id="affiliates" class="table-striped table-bordered table-title hover compact"
+                style="margin-bottom: 100px">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">AFFILIATE ID</th>
+                        <th scope="col">MANAGER</th>
+                        <th scope="col">ACTIVE USERS</th>
+                        <th scope="col">DOWNLINE DEPOSIT</th>
+                        <th scope="col">TURNOVER</th>
+                        <th scope="col">DOWNLINE GGR</th>
+                        <th scope="col">COMMISSION LAST MONTH</th>
+                        <th scope="col">COMMISSION MONTH BEFORE</th>
+                        <th scope="col">BALANCE</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">LEVEL</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 13px">
+                    {% for i in affiliates_table %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url 'xadmin:agent_detail' i.id %}"> {{ i.id }}</a></td>
+                        <td>{{ i.manager }}</td>
+                        <td>{{ i.active_users }}</td>
+                        <td>{{ i.downlines_deposit }}</td>
+                        <td>{{ i.turnover }}</td>
+                        <td>{{ i.downlines_ggr }}</td>
+                        <td>{{ i.commission_last_month }}</td>
+                        <td>{{ i.commission_month_before }}</td>
+                        <td>{{ i.balance }}</td>
+                        <td>{{ i.status }}</td>
+                        <td>{{ i.level }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <label class="show-rows">SHOW ROWS</label>
+        </div>
+
+    </div>
+</div>
+
+<!-- datatables -->
+<!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
+
+<!-- datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+    type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+
+
+<script>
+    $(document).ready(function () {
+        var csrftoken = $.cookie("csrftoken")
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+        var admin_user = "{{ user.username }}";
+        // send data to commission pop-up window
+        $('#commission tbody').on('click', 'button', function () {
+            var data = commissionTable.row($(this).parents('tr')).data();
+            showCommissionDetail(data);
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'xadmin:agentview' %}",
+                data: {
+                    'type': 'getCommissionHistory',
+                    'date': data[0],
+                },
+                success: function (data) {
+                    addCommissionHistory(data);
+                    releaseCommission();
+                },
+            })
+        })
+
+        showCommissionDetail = function (data) {
+            $("#period").empty();
+            $("#period").append(data[0]);
+            $("#valid-affiliate-count").empty();
+            $("#valid-affiliate-count").append(data[1]);
+            $("#total-commission").empty();
+            $("#total-commission").append(data[3]);
+        }
+
+        addCommissionHistory = function (data) {
+            $("#commission_statement").empty();
+            content = "";
+            for (var i = 0; i < data.length; i++) {
+                content += '<tr id="commission_statement">';
+                if (data[i].release_time.length === 0) {
+                    content += '<td id="commissionCheckbox"><input type="checkbox" name="commission_checkbox" /></td>';
+                } else {
+                    content += '<td></td>'
+                }
+                content += '<td>' + data[i].id + '</td>';
+                content += '<td>' + data[i].active_players + '</td>';
+                content += '<td>' + data[i].downline_ftd + '</td>';
+                content += '<td>' + data[i].commission_rate + '%' + '</td>';
+                content += '<td>' + data[i].deposit + '</td>';
+                content += '<td>' + data[i].withdrawal + '</td>';
+                content += '<td>' + data[i].bonus + '</td>';
+                content += '<td>' + data[i].winorloss + '</td>';
+                content += '<td>' + data[i].commission + '</td>';
+                content += '<td>' + data[i].status + '</td>';
+                content += '<td>' + data[i].release_time + '</td>';
+                content += '<td>' + data[i].operator + '</td>';
+                content += '<td style="display: none" id="tran_pk">' + data[i].trans_pk + '</td>';
+                content += '</tr>';
+            }
+            $("#commission_statement").append(content);
+
+            var commission_detail_table = $('#commission_detail').DataTable({
+                retrieve: true,
+                responsive: true,
+                dom: 'B<ftilp>',
+                buttons: [
+                    'csv'
+                ],
+                "columnDefs": [{
+                    "searchable": false, "targets": [1],
+                }],
+                "language": {
+                    "info": " _START_ - _END_ of _TOTAL_",
+                    "infoEmpty": " 0 - 0 of 0",
+                    "infoFiltered": "",
+                    "paginate": {
+                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    },
+                    "lengthMenu": "_MENU_",
+                },
+            });
+            $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
+
+        }
+
+        releaseCommission = function () {
+            var checkedlist = []
+            var checkednumber = 0
+            $('input[name="commission_checkbox"]').click(function () {
+                var tranPK = $(this).closest('tr').find('#tran_pk').html();
+                if ($(this).prop("checked") == true) {
+                    checkednumber += 1;
+                    checkedlist.push(tranPK);
+                } else if ($(this).prop("checked") == false) {
+                    checkednumber -= 1;
+                    for (i = 0; i < checkedlist.length; i++) {
+                        if (checkedlist[i] === tranPK) {
+                            checkedlist.pop(checkedlist[i]);
+                            break;
+                        }
+                    }
+                }
+                if (checkednumber == 0) {
+                    $('#selected').empty();
+                } else {
+                    $('#selected').text(checkednumber + ' selected');
+                }
+            });
+
+            $('#commission-release-btn').click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'xadmin:agentview' %}",
+                    data: {
+                        'type': 'releaseCommission',
+                        'list[]': checkedlist,
+                    },
+                    success: function (data) {
+                        window.location.reload();
+                    },
+                })
+            });
+        }
+
+
+        $('#affiliate_application tbody').on('click', 'button', function () {
+            var data = $(this).closest('tr').find('#userID').html();
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'xadmin:agentview' %}",
+                data: {
+                    'type': 'getAffiliateApplicationDetail',
+                    'user_id': data,
+                },
+                success: function (data) {
+                    addUserInfo(data);
+                },
+            })
+        })
+        addUserInfo = function (data) {
+            $("#user-info-first-col").empty();
+            content_col1 = "";
+            content_col1 += '<li>' + data.id + '</li>';
+            content_col1 += '<li>' + data.username + '</li>';
+            content_col1 += '<li>' + data.first_name + '</li>';
+            content_col1 += '<li>' + data.last_name + '</li>';
+            content_col1 += '<li>' + data.birthday + '</li>';
+            $("#user-info-first-col").append(content_col1);
+            $("#user-info-second-col").empty();
+            content_col2 = "";
+            content_col2 += '<li>' + data.email + '</li>';
+            content_col2 += '<li>' + data.phone + '</li>';
+            content_col2 += '<li>' + data.address + '</li>';
+            $("#user-info-second-col").append(content_col2);
+            $("#user_intro").empty();
+            $("#user_intro").append(data.intro);
+            $("#affiliate_id").val(data.id);
+        };
+
+        $('#affiliate-application-approve-btn').click(function () {
+            var remark = $('textarea#affiliate_application_remark').val();
+            var userID = $(this).prev('input').val();
+
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'xadmin:agentview' %}",
+                data: {
+                    'type': 'affiliateApplication',
+                    'result': "Yes",
+                    'remark': remark,
+                    'user_id': userID,
+                    'admin_user': admin_user,
+                },
+                success: function (data) {
+                    window.location.reload();
+                },
+            })
+        });
+        $('#affiliate-application-decline-btn').click(function () {
+            var remark = $('textarea#affiliate_application_remark').val();
+            var userID = $(this).prev().prev('input').val();
+            
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'xadmin:agentview' %}",
+                data: {
+                    'type': 'affiliateApplication',
+                    'result': "No",
+                    'remark': remark,
+                    'user_id': userID,
+                    'admin_user': admin_user,
+                },
+                success: function (data) {
+                    window.location.reload();
+                },
+            })
+        });
+
+        // datatable
+
+        var affiliateTable = $('#affiliates').DataTable({
+            responsive: true,
+            dom: 'B<ftilp>',
+            buttons: [
+                'csv'
+            ],
+            "columnDefs": [{
+                "searchable": false, "targets": [1],
+            }],
+            "language": {
+                "info": " _START_ - _END_ of _TOTAL_",
+                "infoEmpty": " 0 - 0 of 0",
+                "infoFiltered": "",
+                "paginate": {
+                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                },
+                "lengthMenu": "_MENU_",
+            },
+        });
+        var commissionTable = $('#commission').DataTable({
+            responsive: true,
+            dom: 'B<ftilp>',
+            buttons: [
+                'csv'
+            ],
+            "columnDefs": [{
+                "searchable": false,
+            }],
+            "language": {
+                "info": " _START_ - _END_ of _TOTAL_",
+                "infoEmpty": " 0 - 0 of 0",
+                "infoFiltered": "",
+                "paginate": {
+                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                },
+                "lengthMenu": "_MENU_",
+            },
+        });
+        var premiumApplicationTable = $('#affiliate_application').DataTable({
+            responsive: true,
+            dom: 'B<ftilp>',
+            buttons: [
+                'csv'
+            ],
+            "columnDefs": [{
+                "searchable": false,
+            }],
+            "language": {
+                "info": " _START_ - _END_ of _TOTAL_",
+                "infoEmpty": " 0 - 0 of 0",
+                "infoFiltered": "",
+                "paginate": {
+                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                },
+                "lengthMenu": "_MENU_",
+            },
+        });
+
+        $('#search-btn').on('keyup click', function () {
+            affiliateTable.search($('#search').val()).draw();
+        });
+
+        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
+
+    })
+</script>
+{% endblock %}

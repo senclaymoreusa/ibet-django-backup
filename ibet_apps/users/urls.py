@@ -4,6 +4,7 @@ from . import views
 import users.views.gbsportsintegrationviews as gbsportsintegrationviews
 import users.views.agintegrationviews as agintegrationviews
 import users.views.yggdrasilintegrationviews as yggdrasilintegrationviews
+import users.views.saintegrationviews as saintegrationviews
 
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
@@ -60,8 +61,14 @@ urlpatterns += [
     path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
     path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
+    path('api/generategameurl/', gbsportsintegrationviews.GenerateGameURL.as_view(), name='generate_game_url'),
     path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
     path('api/Yggdrasil/',yggdrasilintegrationviews.YggdrasilAPI.as_view(), name='Yggdrasil_api'),
+    path('api/sagetbalance/', saintegrationviews.SAGetUserBalance.as_view(), name='sa_get_balance'),
+    path('api/saplacebet/', saintegrationviews.SAPlaceBet.as_view(), name='sa_place_bet'),
+    path('api/saplayerwin/', saintegrationviews.SAPlayerWin.as_view(), name='sa_player_win'),
+    path('api/saplayerlost/', saintegrationviews.SAPlayerLost.as_view(), name='sa_player_lost'),
+    path('api/saplayerbetcancel/', saintegrationviews.SAPlaceBetCancel.as_view(), name='sa_player_bet_cancel'),
     path('api/set-limitations/',csrf_exempt(views.SetLimitation.as_view()), name='set_limitation'),
     path('api/delete-limitation/', csrf_exempt(views.DeleteLimitation.as_view()), name='delete_limitation'),
     path('api/get-limitations/', csrf_exempt(views.GetLimitation.as_view()), name='get_limitation'),
@@ -70,6 +77,7 @@ urlpatterns += [
     path('api/marketing-settings/', csrf_exempt(views.MarketingSettings.as_view()), name="market_settings"),
     path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings"),
     path('api/bet-history/',views.GetBetHistory.as_view(), name="get_bet_history"),
-    path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check")
+    path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check"),
+    path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check-user-status")
 
 ]

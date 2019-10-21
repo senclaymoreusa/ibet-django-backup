@@ -60,10 +60,6 @@ tbody>tr:nth-child(odd)>th {
   border-bottom: 0;
 }
 
-.btn-danger {
-  display: none;
-}
-
 #details {
   width: 95%;
   background-color: #f3f3f3;
@@ -91,7 +87,7 @@ hr {
 
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;">New group</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
 
 <div style="margin-top:30px">
     <table>
@@ -308,7 +304,7 @@ hr {
                     <p style="font-size: 14px"><strong>ADD MEMBERS MANUALLY</strong></p>
                     <p>Manually added members will stay in the groups regardless of filter settings.</p>
                     <p>You have added 0 members manually.</p>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manually">Add members</button>
+                    <button type="button" class="btn btn-primary" onclick="manuallyUpload()">Add members</button>
                     </div>
                     <hr/>
                     <div class="form-group" style="padding-top: 0">
@@ -320,13 +316,12 @@ hr {
                     <div id="errorMessage"></div>
                     <div style="margin-top:30px;">
                         <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+                        <button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
                         <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                     </div>
                 </form>
             </div>
         <div id="automated-message" class="tab-pane fade">
-            abc
         </div>
         </div>
 
@@ -540,7 +535,7 @@ hr {
       <div class="row" style="margin-top: 31px; margin-left: 16px">
         <div class='col-md-9' style="padding-left: 0">
           <div class="input-group">
-            <input type="text" id="search" class="form-control" placeholder="Enter member, campaign, bouns, keyword...">
+            <input type="text" id="sendto" class="form-control" >
             <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
           </div>
         </div>
@@ -568,7 +563,7 @@ hr {
       </div>
       <div class="row" style="margin: 31px 0 16px 16px">
           <button id="save-btn" type="button" class="btn btn-primary">Save</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+          <button id="cancel-btn" type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
@@ -576,7 +571,40 @@ hr {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
 <script>
+
+$.ajax({
+    type:'GET',
+    url:"{% url 'notifier-tags' %}",
+    success:function(data) {
+      var member = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["member"]
+      });
+
+      member.initialize();
+
+      $('#sendto').tagsinput({
+          typeaheadjs: {
+              name: 'member',
+              displayKey: 'name',
+              valueKey: 'name',
+              source: member,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">MEMBER RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          }
+      });
+    }
+});
+
 var pk_list;
 var user_list;
 
@@ -789,7 +817,6 @@ $(document).ready(function() {
   });
 
   $('#csv_file').change(function(e) {
-    $("#manually-table tbody").empty();
     var data = null;
     var file = e.target.files[0];
 
@@ -800,30 +827,114 @@ $(document).ready(function() {
 
         var parsedCSV = d3.csv.parseRows(csvData);
 
+        // console.log(parsedCSV);
+
         if(parsedCSV.length > 0) {
-          $("#manually-table thead").prop("hidden", false);
-          $("#add-btn").prop("disabled", false);
-          $("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
-          $("#remove-btn").css("display", "block");
+          //$("#manually-table thead").prop("hidden", false);
+          //$("#add-btn").prop("disabled", false);
+          $("#sendto").tagsinput("removeAll");
+          //$("#remove-btn").css("display", "block");
         }
 
         parsedCSV.forEach(function (d, i) {
             if (i == 0) return true; // skip the header
+            $("#sendto").tagsinput('add', d[1]);
+            /*
             $("#manually-table").find('tbody')
               .append($('<tr>')
-                .append($('<td><input class="member-checkbox" type="checkbox"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
+                .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + d[0] +'</td><td>' + d[1] + '</td>'))
               )
+            */
         });
     }
-  });
-
-  $('td input[type=checkbox]').click(function() {
-    alert(1);
   });
 
   $('#csv_btn').click(function() {
     $('#csv_file').click();
   });
+
+/*
+  $("#sendto").on('beforeItemAdd', function(event) {
+    var data = event.item;
+    $.ajax({
+      type: "GET",
+      url: "{% url 'user-valid' %}",
+      data: {
+        'username': data
+      },
+      success: function() {
+        event.cancel = false;
+        $("#manually-table").find('tbody')
+          .append($('<tr>')
+            .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + '********' +'</td><td>' + data + '</td>'))
+          )
+      },
+      error: function() {
+        event.cancel = true;
+        // alert("Status: " + textStatus); alert("Error: " + errorThrown);
+      }
+    });
+    
+
+    // console.log(member_list);
+    //$("#add-btn").text("Add " + (parsedCSV.length - 1) + " members to group");
+  });
+*/
+
+  var member_list = [];
+
+  $("#sendto").on('itemAdded', function(event) {
+    var data = event.item;
+    $.ajax({
+      type: "GET",
+      url: "{% url 'user-valid' %}",
+      data: {
+        'username': data
+      },
+      success: function() {
+        member_list.push(data);
+        $("#manually-table thead").prop("hidden", false);
+        $("#manually-table tbody").empty();
+        $('#save-btn').css("display", "");
+        $('#cancel-btn').css("display", "");
+        
+        for (var i = 0; i < member_list.length; i++) {
+            $("#manually-table").find('tbody')
+              .append($('<tr>')
+                .append($('<td><input class="member-checkbox" type="checkbox" onclick="manuallySelect(this)"></td><td>' + i +'</td><td>' + member_list[i] + '</td>'))
+              )
+        }
+
+        $("#add-btn").text("Add " + member_list.length + " members to group");
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        $("#sendto").tagsinput('remove', data);
+        // alert("Status: " + textStatus); alert("Error: " + errorThrown);
+      }
+    });
+  });
+
+  $("#sendto").on('itemRemoved', function(event) {
+    var data = event.item;
+    var index = member_list.indexOf(data);
+    if (index > -1) {
+      member_list.splice(index, 1);
+      $("#manually-table tbody").empty();
+      if(member_list.length > 0) {
+        for (var i = 0; i < member_list.length; i++) {
+          $("#manually-table").find('tbody')
+            .append($('<tr>')
+              .append($('<td>' + i +'</td><td>' + member_list[i] + '</td>'))
+            )
+        }
+        $("#add-btn").text("Add " + member_list.length + " members to group");
+      }
+      else {
+        $("#manually-table thead").prop("hidden", true);
+      }
+    }
+  });
+
 
   $('#newgroup').submit(function(e) {
     e.preventDefault();
@@ -855,6 +966,7 @@ $(document).ready(function() {
       url: url,
       data: {
         'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'type': 'create_new_usergroup',
         'group_id': groupId,
         'group_name': group_name,
         'pk': pk_list,
@@ -938,7 +1050,6 @@ function getUserListRedirectUrl(pageSize, offset) {
 
   return redirectUrl;
 }
-
 
 function createTable(data) {
   $('#member-table tbody').empty();
@@ -1032,6 +1143,13 @@ function getCreator(username) {
     });
 }
 
+function newGroup() {
+  $("#delete").css("display", "none");
+  $('#create_group .modal-title').text("New Group");
+  $("#newgroup").trigger("reset");
+  $('#newgroup').attr('action', "{% url 'xadmin:messagegroups' %}");
+}
+
 function getGroup(groupId) {
   $('#create_group .modal-title').text("Edit Group");
   $.ajax({
@@ -1060,10 +1178,40 @@ function getGroup(groupId) {
           
           createTable(user_list);
           $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
-          // $('.btn-danger').css("display", "inline: block");
+          $("#delete").css("display", "");
+          $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")')
       }
   });
 }
 
+function deleteGroup(groupName) {
+  $.ajax({
+    type: "POST",
+    url: "{% url 'xadmin:messagegroups' %}",
+    data:{ 
+        'type': 'delete_group',
+        'group_name': groupName,
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+    },
+    success: function(response)
+    {
+        window.location.reload();
+    }
+  });
+}
+
+function manuallyUpload() {
+  $('#manually').modal({'show' : true});
+  $('#save-btn').css("display", "none");
+  $('#cancel-btn').css("display", "none");
+}
+
+function manuallySelect(box) {
+  if(box.checked) {
+    alert(1);
+  } else {
+    alert(0);
+  }
+}
 </script>
 {% endblock %}

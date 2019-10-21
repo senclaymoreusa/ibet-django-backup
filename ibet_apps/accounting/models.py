@@ -3,9 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from utils.constants import *
 
-# from users.models import CustomUser
+from utils.constants import *
 
 import uuid
 
@@ -26,6 +25,9 @@ class BankAccount(models.Model):
 
 
 class ThirdParty(models.Model):
+    """
+    Abstract class for third-party payment channels, such as astropay, circlepay, etc.
+    """
     thirdParty_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
@@ -118,13 +120,17 @@ class WithdrawChannel(ThirdParty):
 
 
 class Transaction(models.Model):
-    transaction_id = models.CharField(
+    """
+    Class used to represent a money transfer for a specific user. This is a generic class that 
+    is used for multiple transaction types (deposit, withdrawal, etc.)    
+    """
+    transaction_id = models.CharField(     #request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         max_length=200, default=0, verbose_name=_("Transaction id")
     )
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("Member")
     )
-    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id"))
+    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id")) #third party refo
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name=_("Apply Amount")
     )
@@ -156,10 +162,19 @@ class Transaction(models.Model):
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
+    channel = models.SmallIntegerField(
+        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
+    )
+    
+    # Transaction types: Deposit, Withdrawal, Bet Placed, Bet Settled, etc.
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")
     )
-    remark = models.CharField(max_length=200, blank=True, verbose_name=_("Details"))
+    review_status = models.SmallIntegerField(
+        choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
+    )
+    # reviewer for withdraw transations
+    remark = models.CharField(max_length=200, blank=True, verbose_name=_("Memo"))
     transfer_from = models.CharField(
         max_length=200, null=True, blank=True, verbose_name=_("From")
     )
@@ -184,6 +199,16 @@ class Transaction(models.Model):
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
+    # commission tracsaction
+    month = models.DateField(null=True, blank=True)
+    #Asiapay qrcode
+    qrcode = models.CharField(max_length=500, null=True, blank= True, verbose_name=_("QRCode"))
+
+    commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
+
+    # release bonus, adjustment to affiliate...
+    # withdraw transaction reviewer
+    release_by = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, verbose_name=_('released_by'), related_name="manager", null=True, blank=True)
     class Meta:
         verbose_name = "Transaction"
         verbose_name_plural = verbose_name
@@ -198,8 +223,16 @@ class Transaction(models.Model):
             Status: {6} \
             ".format(self.user_id, self.get_transaction_type_display(), self.get_channel_display(), self.method, self.transaction_id, self.order_id, self.get_status_display())
 
+    @property
+    def Month(self):
+        if self.Date:
+            return self.Date.strftime("%B")
+        return "No date entry"
 
 class DepositAccessManagement(models.Model):
+    """
+    Deprecated, 10/14/2019
+    """
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=False,
@@ -220,6 +253,9 @@ class DepositAccessManagement(models.Model):
 
 
 class WithdrawAccessManagement(models.Model):
+    """
+    Deprecated, 10/14/2019
+    """
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=False,

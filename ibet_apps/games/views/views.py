@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
-from .models import *
+from games.models import *
 from users.models import Game as oldGame
 from users.serializers import GameSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
