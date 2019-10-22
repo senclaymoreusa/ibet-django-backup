@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/single-login-ea/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
     path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
+    
+    #gd casino
     path('api/gd/', gdcasino.my_soap_application, name = 'my_soap_application'),
     path('api/gd/login', gdcasino.LoginView.as_view(), name = 'GDCasino_Login'),
     path('api/gd/create_member', gdcasino.CreateMember.as_view(), name = 'GDCasino_Create_Member'),

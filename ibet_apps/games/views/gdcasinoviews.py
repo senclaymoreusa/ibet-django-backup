@@ -22,12 +22,13 @@ from spyne.decorator import rpc
 from spyne.model.primitive import Unicode, Integer, Decimal
 from spyne.protocol.soap import Soap11
 from spyne.server.django import DjangoApplication
-from spyne.service import ServiceBase
+from spyne.service import ServiceBase,Service
 from spyne.protocol.xml import XmlDocument
 from spyne.util.django import DjangoComplexModel, DjangoService
 from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
 from spyne.model.complex import ComplexModel
+
 
 class Container(ComplexModel):
     __namespace__ = "Container1"
@@ -53,7 +54,7 @@ class ObjectNotFoundError(ResourceNotFoundError):
             self, faultcode='Client.{0}NotFound'.format(object_name),
             faultstring=message)
 
-class SoapService(ServiceBase):
+class LiveDealerSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def GetUserBalance(ctx, userId, currency,loginToken):
         try:
@@ -187,15 +188,33 @@ class SoapService(ServiceBase):
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
+class SlotRNGSoapService(ServiceBase):
+    @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
+    def GetUserBalance(ctx, userId, currency):
+        try:
+            user = CustomUser.objects.get(username=userId)
+            userBalance = user.main_wallet
+            token = Token.objects.get(user=user)
+            res = Container()
+            if str(token) == loginToken:
+                res.StatusCode = 0
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
+            
+        except ObjectDoesNotExist as e:
+            raise ObjectNotFoundError(e)
 soap_app = Application(
-    [SoapService],
-    tns='https://gdgame-namespace.org',
+    [LiveDealerSoapService, SlotRNGSoapService],
+    tns='https://testgdgame-namespace.org',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11(),
 )
 
 django_soap_application = DjangoApplication(soap_app)
 my_soap_application = csrf_exempt(django_soap_application)
+
 
 
 def generateHash(message):
