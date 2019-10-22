@@ -31,7 +31,6 @@ from spyne.model.complex import ComplexModel
 
 
 class Container(ComplexModel):
-    __namespace__ = "Container1"
     StatusCode = Integer
     UserBalance = Decimal
     
@@ -54,7 +53,7 @@ class ObjectNotFoundError(ResourceNotFoundError):
             self, faultcode='Client.{0}NotFound'.format(object_name),
             faultstring=message)
 
-class LiveDealerSoapService(ServiceBase):
+class LiveDealerSoapService(Service):
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def GetUserBalance(ctx, userId, currency,loginToken):
         try:
@@ -75,33 +74,33 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
     Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def Debit(crx, userId, gameId, gameType, transactionId, amount, currency, ipAddress, gameView, clientType, loginToken):
-        GDCasino.objects.all().delete()
-        # try:
-        #     user = CustomUser.objects.get(username=userId)
-        #     userBalance = user.main_wallet - amount
-        #     token = Token.objects.get(user=user)
-        #     user.main_wallet = userBalance
-        #     user.save()
-        #     res = Container()
-        #     if str(token) == loginToken:
-        #         res.StatusCode = 0
-        #         GDCasino.objects.create(username=user,   
-        #                                 gameId=gameId,
-        #                                 gameType=gameType,
-        #                                 transactionId=transactionId,
-        #                                 currency=currency,
-        #                                 amount=amount,
-        #                                 ipAddress=ipAddress,
-        #                                 gameView=gameView,
-        #                                 status=1,
-        #                                 clientType=clientType)
-        #     else:
-        #         res.StatusCode = 2
-        #     res.UserBalance = userBalance
-        #     return res
+        
+        try:
+            user = CustomUser.objects.get(username=userId)
+            userBalance = user.main_wallet - amount
+            token = Token.objects.get(user=user)
+            user.main_wallet = userBalance
+            user.save()
+            res = Container()
+            if str(token) == loginToken:
+                res.StatusCode = 0
+                GDCasino.objects.create(username=user,   
+                                        gameId=gameId,
+                                        gameType=gameType,
+                                        transactionId=transactionId,
+                                        currency=currency,
+                                        amount=amount,
+                                        ipAddress=ipAddress,
+                                        gameView=gameView,
+                                        status=1,
+                                        clientType=clientType)
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
             
-        # except ObjectDoesNotExist as e:
-        #     raise ObjectNotFoundError(e)
+        except ObjectDoesNotExist as e:
+            raise ObjectNotFoundError(e)
 
 
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
@@ -188,7 +187,6 @@ class LiveDealerSoapService(ServiceBase):
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
-class SlotRNGSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def GetUserBalance(ctx, userId, currency):
         try:
@@ -205,8 +203,11 @@ class SlotRNGSoapService(ServiceBase):
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
+
+
+
 soap_app = Application(
-    [LiveDealerSoapService, SlotRNGSoapService],
+    [LiveDealerSoapService],
     tns='https://testgdgame-namespace.org',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11(),

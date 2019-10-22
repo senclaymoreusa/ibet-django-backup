@@ -412,7 +412,7 @@ def capture_transaction(request):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)            
             loop.run_until_complete(createDeposit(**tranDict))
-                  
+        
         return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
 
 
