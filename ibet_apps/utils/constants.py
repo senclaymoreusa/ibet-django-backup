@@ -1163,7 +1163,7 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
-GDCASINO_URL = 'http://gdcasino.claymoreasia.com/main.php'
+GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
 GDCASINO_MERCHANT_CODE = 'IBPHtest'
 GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
@@ -1183,10 +1183,28 @@ GDCASINO_STATUS_CODE =(
     (202, 'ACCOUNT_LOCKED_1(for maxbet)'),
     (206, 'ABOVE_PLAYER_LIMIT_1(for maxbet)')
 )
+
+GDCASINO_STATUS = (
+    (0, 'PENDING'),
+    (1, 'DEBIT'),
+    (2, 'CREDIT'), 
+    (3, 'TIP'),
+    (4, 'CANCEL'),
+)
 GDCASINO_GAME_TYPE = (
     (0, 'None'),
     (6, 'Baccarat'),
     (28, 'Roulette'),
     (29, 'Sic bo'),
     (100, 'Slot game'),
+)
+
+
+GDCASINO_CANCEL_REASON = (
+    ('NONE', 'None'),
+    ('CANCELLED_ROUND', 'Game round is cancelled.'),
+    ('DEBIT_TIME_OUT', 'Debit response timeout.'),
+    ('VOIDED_BET', 'Abnormal bet is voided.'),
+    ('BETTING_TIME_FINISHED', 'Betting time is ended'),
+    ('INVALID_DEBIT_REPLY', 'Debit reply is in wrong format.'),
 )

@@ -27,11 +27,18 @@ from spyne.protocol.xml import XmlDocument
 from spyne.util.django import DjangoComplexModel, DjangoService
 from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
+from spyne.model.complex import ComplexModel
 
-class Container(DjangoComplexModel):
-    class Attributes(DjangoComplexModel.Attributes):
-        django_model = GDGetUserBalance
-        django_exclude = ['username','id','gameId','gameType','transactionId','currency']
+class Container(ComplexModel):
+    __namespace__ = "Container1"
+    StatusCode = Integer
+    UserBalance = Decimal
+    
+
+# class GD(DjangoComplexModel):
+#     class Attributes(DjangoComplexModel.Attributes):
+#         django_model = GDCasino
+#         django_exclude = ['username','id','gameId','gameType','transactionId','currency']
 
 class ObjectNotFoundError(ResourceNotFoundError):
 
@@ -53,25 +60,13 @@ class SoapService(ServiceBase):
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet
             token = Token.objects.get(user=user)
-            try:
-                record = GDGetUserBalance.objects.get(username=user)
-                record.UserBalance = userBalance
-                if str(token) == loginToken:
-                    record.StatusCode = 0
-                else:
-                    record.StatusCode = 2
-                record.save()
-                
-            except:
-                if str(token) == loginToken:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=0,
-                                                UserBalance=userBalance)
-                else:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=2,
-                                                UserBalance=userBalance)
-            return GDGetUserBalance.objects.get(username=user)
+            res = Container()
+            if str(token) == loginToken:
+                res.StatusCode = 0
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
@@ -83,29 +78,25 @@ class SoapService(ServiceBase):
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet - amount
             token = Token.objects.get(user=user)
-            try:
-                record = GDGetUserBalance.objects.get(username=user)
-                record.UserBalance = userBalance
-                if str(token) == loginToken:
-                    record.StatusCode = 0
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    record.StatusCode = 2
-                record.save()    
-                
-            except:
-                if str(token) == loginToken:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=0,
-                                                UserBalance=userBalance)
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=2,
-                                                UserBalance=userBalance)
-            return GDGetUserBalance.objects.get(username=user)
+            user.main_wallet = userBalance
+            user.save()
+            res = Container()
+            if str(token) == loginToken:
+                res.StatusCode = 0
+                GDCasino.objects.create(username=user,   
+                                        gameId=gameId,
+                                        gameType=gameType,
+                                        transactionId=transactionId,
+                                        currency=currency,
+                                        amount=amount,
+                                        ipAddress=ipAddress,
+                                        gameView=gameView,
+                                        status=1,
+                                        clientType=clientType)
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
@@ -118,63 +109,52 @@ class SoapService(ServiceBase):
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet - amount
             token = Token.objects.get(user=user)
-            try:
-                record = GDGetUserBalance.objects.get(username=user)
-                record.UserBalance = userBalance
-                if str(token) == loginToken:
-                    record.StatusCode = 0
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    record.StatusCode = 2
-                record.save()
-                
-            except:
-                if str(token) == loginToken:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=0,
-                                                UserBalance=userBalance)
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=2,
-                                                UserBalance=userBalance)
-            return GDGetUserBalance.objects.get(username=user)
+            user.main_wallet = userBalance
+            user.save()
+            res = Container()
+            if str(token) == loginToken:
+                res.StatusCode = 0
+                GDCasino.objects.create(username=user,   
+                                        gameId=gameId,
+                                        gameType=gameType,
+                                        transactionId=transactionId,
+                                        currency=currency,
+                                        status=2,
+                                        amount=amount,
+                                        )
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
     
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),Unicode(nillable=True),Unicode(nillable=True),
     Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def Tip(crx, userId, transactionId, amount, currency, ipAddress, loginToken,tipId,):  
+    def Tip(crx, userId, transactionId, amount, currency, ipAddress, loginToken,tipId):  
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet - amount
             token = Token.objects.get(user=user)
-            try:
-                record = GDGetUserBalance.objects.get(username=user)
-                record.UserBalance = userBalance
-                if str(token) == loginToken:
-                    record.StatusCode = 0
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    record.StatusCode = 2
-                record.save()
-                
-            except:
-                if str(token) == loginToken:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=0,
-                                                UserBalance=userBalance)
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=2,
-                                                UserBalance=userBalance)
-            return GDGetUserBalance.objects.get(username=user)
+            user.main_wallet = userBalance
+            user.save()
+            res = Container()
+            if str(token) == loginToken:
+                res.StatusCode = 0
+                GDCasino.objects.create(username=user,   
+                                        gameId=gameId,
+                                        gameType=gameType,
+                                        transactionId=transactionId,
+                                        currency=currency,
+                                        amount=amount,
+                                        ipAddress=ipAddress,
+                                        status=3,
+                                        tipId=tipId)
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
@@ -182,38 +162,29 @@ class SoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
     Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def Cancel(crx, userId, gameId, gameType, transactionId, amount, currency, cancelReason):  
-        #GDGetUserBalance.objects.all().delete()
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet + amount
             token = Token.objects.get(user=user)
-            try:
-                record = GDGetUserBalance.objects.get(username=user)
-                record.UserBalance = userBalance
-                if str(token) == loginToken:
-                    record.StatusCode = 0
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    record.StatusCode = 2
+            user.main_wallet = userBalance
+            user.save()
+            res = Container()
+            res.StatusCode = 0
+            try: 
+                record = GDCasino.objects.get(transactionId=transactionId,
+                                              amount=amount,
+                                              currency=currency,
+                                              username=user)
+                record.status=4
+                record.cancelReason=cancelReason
                 record.save()
-                
-            except:
-                if str(token) == loginToken:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=0,
-                                                UserBalance=userBalance)
-                    user.main_wallet = userBalance
-                    user.save()
-                else:
-                    GDGetUserBalance.objects.create(username=user,
-                                                StatusCode=2,
-                                                UserBalance=userBalance)
-            return GDGetUserBalance.objects.get(username=user)
+                res.UserBalance = userBalance
+                return res
+            except ObjectDoesNotExist as e:
+                raise ObjectNotFoundError(e)                             
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
-
 
 soap_app = Application(
     [SoapService],
@@ -225,8 +196,6 @@ soap_app = Application(
 django_soap_application = DjangoApplication(soap_app)
 my_soap_application = csrf_exempt(django_soap_application)
 
-# client = Client(wsdl='https://ibet-web-dev.claymoreeuro.com/production.svc?wsdl')
-#print(client.service.Add(12,13))
 
 def generateHash(message):
     hash = hashlib.sha256(message.encode('utf-8')).hexdigest()
@@ -245,16 +214,15 @@ class LoginView(APIView):
         username = request.GET['username']
         user = CustomUser.objects.get(username=username)
         token = Token.objects.get(user=user)
-        print(token)
-        print(get_client_ip(request))
+        
         lang = request.GET['lang']
         theme = request.GET['theme']
         list = [GDCASINO_MERCHANT_CODE, token, GDCASINO_MERCHANT_ACCESS_KEY, username, currency]
         message = ''.join(str(x) for x in list)
-        print(message)
+        
         #mymessage = bytes(message, 'utf-8') 
         key = generateHash(message)
-        print(key)
+        
         url = GDCASINO_URL
         user = CustomUser.objects.get(username=username)
         r = requests.get(url,  params = {
@@ -295,7 +263,7 @@ class CreateMember(APIView):
         headers = {'Content-Type': 'application/xml'}
         r = requests.post(GDCASINO_API_URL, headers=headers, data=data)
         rdata = r.text
-        print(rdata)
+        
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             code = tree.find('Header').find('ErrorCode').text
@@ -557,7 +525,7 @@ class GetMemberBalance(APIView):
         headers = {'Content-Type': 'application/xml'}
         r = requests.post(GDCASINO_API_URL, headers=headers, data=data)
         rdata = r.text
-        print(rdata)
+        
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             code = tree.find('Header').find('ErrorCode').text
@@ -593,11 +561,11 @@ class checkTransactionStatus(APIView):
         c1.text = request.POST['currency']    
         
         data = ET.tostring(root)
-        print(data)
+        
         headers = {'Content-Type': 'application/xml'}
         r = requests.post(GDCASINO_API_URL, headers=headers, data=data)
         rdata = r.text
-        print(rdata)
+        
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
             code = tree.find('Header').find('ErrorCode').text
