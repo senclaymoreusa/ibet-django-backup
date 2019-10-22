@@ -1193,7 +1193,7 @@ BRAND_OPTIONS = (
 )
 
 
-SECUIRTY_QUESTION = (
+SECURITY_QUESTION = (
     (0, _('What is your’s father birthday?')),
     (1, _('What is your’s mother birthday?')),
     (2, _('What is your’s spouse birthday?')),

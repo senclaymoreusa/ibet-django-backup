@@ -204,7 +204,7 @@ class CustomUser(AbstractBaseUser):
 
     # security question and answer and withdraw password
     withdraw_password = models.CharField(_('withdraw password'), max_length=128, blank=True, null=True)
-    security_question = models.SmallIntegerField(choices=SECUIRTY_QUESTION, blank=True, null=True)
+    security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
     security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
     
     created_time = models.DateTimeField(

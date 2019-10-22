@@ -124,7 +124,7 @@ class ProvidersSearchView(View):
 
         try:
             q = request.GET.get('q').lower()
-            logger.info("Search providers by key word: " + str(q))
+            logger.info("Search providers by keyword: " + str(q))
             res = []
             # print(str(q))
             providers = GameProvider.objects.all()

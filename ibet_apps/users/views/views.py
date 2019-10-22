@@ -1736,7 +1736,7 @@ class AllSecurityQuestion(View):
 
         try:
             data = []
-            for question in SECUIRTY_QUESTION:
+            for question in SECURITY_QUESTION:
                 data.append({"value": question[0], "question": question[1]})
 
             logger.info("Sending all security question options response......... ")
@@ -1759,7 +1759,7 @@ class UserSecurityQuestion(View):
             if user.security_question:
                 data = {
                     "value": user.security_question,
-                    "question": str(dict(SECUIRTY_QUESTION).get(user.security_question))
+                    "question": str(dict(SECURITY_QUESTION).get(user.security_question))
                 }
             else: 
                 data = {
