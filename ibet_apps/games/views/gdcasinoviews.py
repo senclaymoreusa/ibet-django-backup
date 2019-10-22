@@ -74,32 +74,33 @@ class SoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
     Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def Debit(crx, userId, gameId, gameType, transactionId, amount, currency, ipAddress, gameView, clientType, loginToken):
-        try:
-            user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet - amount
-            token = Token.objects.get(user=user)
-            user.main_wallet = userBalance
-            user.save()
-            res = Container()
-            if str(token) == loginToken:
-                res.StatusCode = 0
-                GDCasino.objects.create(username=user,   
-                                        gameId=gameId,
-                                        gameType=gameType,
-                                        transactionId=transactionId,
-                                        currency=currency,
-                                        amount=amount,
-                                        ipAddress=ipAddress,
-                                        gameView=gameView,
-                                        status=1,
-                                        clientType=clientType)
-            else:
-                res.StatusCode = 2
-            res.UserBalance = userBalance
-            return res
+        GDCasino.objects.all().delete()
+        # try:
+        #     user = CustomUser.objects.get(username=userId)
+        #     userBalance = user.main_wallet - amount
+        #     token = Token.objects.get(user=user)
+        #     user.main_wallet = userBalance
+        #     user.save()
+        #     res = Container()
+        #     if str(token) == loginToken:
+        #         res.StatusCode = 0
+        #         GDCasino.objects.create(username=user,   
+        #                                 gameId=gameId,
+        #                                 gameType=gameType,
+        #                                 transactionId=transactionId,
+        #                                 currency=currency,
+        #                                 amount=amount,
+        #                                 ipAddress=ipAddress,
+        #                                 gameView=gameView,
+        #                                 status=1,
+        #                                 clientType=clientType)
+        #     else:
+        #         res.StatusCode = 2
+        #     res.UserBalance = userBalance
+        #     return res
             
-        except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
+        # except ObjectDoesNotExist as e:
+        #     raise ObjectNotFoundError(e)
 
 
     @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),

@@ -1185,7 +1185,7 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
-<<<<<<< HEAD
+
 GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
 GDCASINO_MERCHANT_CODE = 'IBPHtest'
@@ -1231,11 +1231,11 @@ GDCASINO_CANCEL_REASON = (
     ('BETTING_TIME_FINISHED', 'Betting time is ended'),
     ('INVALID_DEBIT_REPLY', 'Debit reply is in wrong format.'),
 )
-=======
+
 
 BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
 )
 
->>>>>>> de657fe2f8e993925df51eb10407f9338d478261
+

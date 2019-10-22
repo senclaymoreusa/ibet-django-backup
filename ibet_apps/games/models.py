@@ -5,11 +5,9 @@ from utils.constants import *
 from django.utils import timezone
 from users.models import  CustomUser
 import uuid
-<<<<<<< HEAD
 from django.conf import settings
 from users.models import  CustomUser
-=======
->>>>>>> de657fe2f8e993925df51eb10407f9338d478261
+
 
 # Create your models here.
 class GameProvider(models.Model):
