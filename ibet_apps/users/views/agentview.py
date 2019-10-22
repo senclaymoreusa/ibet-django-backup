@@ -340,7 +340,7 @@ class AgentDetailView(CommAdminView):
             context["downline_deposit"] = downline_deposit
             try:
                 context["promotion_link"] = ReferChannel.objects.get(
-                    user_id=affiliate, refer_channel_name="default").refer_link_url
+                    user_id=affiliate, refer_channel_name="default").pk
             except ObjectDoesNotExist:
                 context["promotion_link"] = ""
             context["promotion_link_list"] = ReferChannel.objects.filter(
@@ -419,7 +419,7 @@ class AgentDetailView(CommAdminView):
             # CHANNEL REPORT TABLE
             channel_repost = []
             user_channel = ReferChannel.objects.filter(
-                user_id=affiliate).values_list('refer_link_url').distinct()
+                user_id=affiliate).values_list('pk').distinct()
             user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
 
             # Total commission
