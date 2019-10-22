@@ -180,7 +180,6 @@ class BonusView(View):
                     categories = req_data['categories']
                     for cat in categories:
                         cat_pk = cat[0]['pk']
-                        print (cat_pk)
                         bc_obj = BonusCategory (
                             bonus = bonus_obj,
                             category = Category.objects.get(pk=cat_pk),
