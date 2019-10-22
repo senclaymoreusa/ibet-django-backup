@@ -367,7 +367,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
 
 <script src="{% static 'xadmin/js/ibet-admin-agent-list.js' %}"></script>
-</body>
 
+<script>
+var agent_list_url = "{% url 'xadmin:agent_detail' %}";
+</script>
+</body>
 </html>
 {% endblock %}
