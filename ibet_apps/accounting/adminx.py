@@ -9,9 +9,9 @@ from .admin_views.withdrawal_views import *
 from .admin_views.channel_list import *
 from .models import Transaction, DepositAccessManagement, DepositChannel, WithdrawAccessManagement, WithdrawChannel
 from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
-from .views.deposit_views import *
-from .views.withdrawal_views import *
-from .views.channel_list import *
+from accounting.admin_views.deposit_views import *
+from accounting.admin_views.withdrawal_views import *
+from accounting.admin_views.channel_list import *
 
 
 class TransactionAdmin(object):
