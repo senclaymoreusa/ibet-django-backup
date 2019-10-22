@@ -50,18 +50,30 @@ CURRENCY_TYPES = (
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
+HELP2PAY    =   0
+LINEPAY     =   1
+ASTROPAY    =   2
+QAICASH     =   3
+ASIAPAY     =   4
+PAYPAL      =   5
+PAYZOD      =   6
+CIRCLEPAY   =   7
+FGATE       =   8
+SCRATCHCARD =   9
+PAYMENTIQ   =   10
+
 CHANNEL_CHOICES = (
-    (0, 'Help2Pay'),
-    (1, 'LINEpay'),
-    (2, 'AstroPay'),
-    (3, 'Qaicash'),
-    (4, 'AsiaPay'),
-    (5, 'Paypal'),
-    (6, 'Payzod'),
-    (7, 'CirclePay'),
-    (8, 'Fgate'),
-    (9, 'ScratchCard'),
-    (10, 'PaymentIQ')
+    (HELP2PAY, 'Help2Pay'),
+    (LINEPAY, 'LINEpay'),
+    (ASTROPAY, 'AstroPay'),
+    (QAICASH, 'Qaicash'),
+    (ASIAPAY, 'AsiaPay'),
+    (PAYPAL, 'Paypal'),
+    (PAYZOD, 'Payzod'),
+    (CIRCLEPAY, 'CirclePay'),
+    (FGATE, 'Fgate'),
+    (SCRATCHCARD, 'ScratchCard'),
+    (PAYMENTIQ, 'PaymentIQ')
 )
 
 CURRENCY_CNY = 0
@@ -103,18 +115,19 @@ TRAN_CANCEL_TYPE = 5
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
 TRAN_REJECTED_TYPE = 8
+TRAN_HELD_TYPE = 9
 
 STATE_CHOICES = (
-    (0, 'SUCCESS'), 
-    (1, 'FAILED'),
-    (2, 'CREATED'),
-    (3, 'PENDING'),
-    (4, 'APPROVED'),
-    (5, 'CANCELED'),
-    (6, 'COMPLETED'),
-    (7, 'RESEND'),
-    (8, 'REJECTED'),
-    (9, 'HELD'),
+    (TRAN_SUCCESS_TYPE, 'SUCCESS'), 
+    (TRAN_FAIL_TYPE, 'FAILED'),
+    (TRAN_CREATE_TYPE, 'CREATED'),
+    (TRAN_PENDING_TYPE, 'PENDING'),
+    (TRAN_APPROVED_TYPE, 'APPROVED'),
+    (TRAN_CANCEL_TYPE, 'CANCELED'),
+    (TRAN_COMPLETED_TYPE, 'COMPLETED'),
+    (TRAN_RESEND_TYPE, 'RESEND'),
+    (TRAN_REJECTED_TYPE, 'REJECTED'),
+    (TRAN_HELD_TYPE, 'HELD'),
 )
 
 REVIEW_APP = 0
@@ -125,12 +138,12 @@ REVIEW_FAIL = 4
 REVIEW_RESEND = 5
 
 REVIEW_STATE_CHOICES = (
-    (0, 'APPROVED'),
-    (1, 'PENDING'),
-    (2, 'REJECTED'),
-    (3, 'SUCCESSFUL'),
-    (4, 'FAILED'),
-    (5, 'RESEND'),
+    (REVIEW_APP, 'APPROVED'),
+    (REVIEW_PEND, 'PENDING'),
+    (REVIEW_REJ, 'REJECTED'),
+    (REVIEW_SUCCESS, 'SUCCESSFUL'),
+    (REVIEW_FAIL, 'FAILED'),
+    (REVIEW_RESEND, 'RESEND'),
 )
 
 DEPOSIT_METHOD_CHOICES = (
@@ -474,6 +487,7 @@ EVENT_CHOICES_LOGIN = 0
 EVENT_CHOICES_LOGOUT = 1
 EVENT_CHOICES_REGISTER = 2
 EVENT_CHOICES_PAGE_VISIT = 3
+EVENT_CHOICES_SMS_CODE = 7
 
 EVENT_CHOICES = (
     (EVENT_CHOICES_LOGIN, _('Login')),
@@ -483,7 +497,15 @@ EVENT_CHOICES = (
     # (4, _('Withdraw')),
     (EVENT_CHOICES_PAGE_VISIT, _('Page Visit')),
     # (6, _('bet'))
+    (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
+
+#FGgame
+BRANDID = '524'
+BRAND_PASSWORD = 'Flow6refg'
+PLATFORM = 'NETENT_CAS',
+FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
+LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
 
 
 
@@ -1118,8 +1140,8 @@ ERROR_CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
-ERRPR_CODE_NOT_FOUND = 103
-
+ERROR_CODE_NOT_FOUND = 103
+ERROR_CODE_MAX_EXCEED = 104
 
 
 BONUS_TYPE_VERIFICATION = 0
@@ -1163,6 +1185,7 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
+<<<<<<< HEAD
 GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
 GDCASINO_MERCHANT_CODE = 'IBPHtest'
@@ -1208,3 +1231,11 @@ GDCASINO_CANCEL_REASON = (
     ('BETTING_TIME_FINISHED', 'Betting time is ended'),
     ('INVALID_DEBIT_REPLY', 'Debit reply is in wrong format.'),
 )
+=======
+
+BRAND_OPTIONS = (
+    ('letou', 'Letou'),
+    ('ibet', 'iBet')
+)
+
+>>>>>>> de657fe2f8e993925df51eb10407f9338d478261
