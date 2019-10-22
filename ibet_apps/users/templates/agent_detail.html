@@ -119,13 +119,14 @@
                             <div class="col-md-6">
                                 <strong>Transfer between levels</strong>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 {{ balance }}
                             </div>
                             <div style="float: right;">
+                                <br>
                                 <button id="commission-detail-btn" type="button" data-toggle="modal"
                                     data-target="#affiliate_commission_detail"
-                                    style="background-color: #428bca; color:white;margin-right: 3px;"><i
+                                    style="background-color: #428bca; color:white; float:right; margin-right: 3px;"><i
                                         class="fa fa-search"></i></button>
                             </div>
                         </div>
@@ -695,8 +696,6 @@
         <div style="margin-top: 10px">
             <ul class="nav nav-tabs" style="padding-left: 10px">
                 <li class="active"><a data-toggle="tab" href="#home">DOWNLINE LIST</a></li>
-                <li><a data-toggle="tab" href="#menu1">CHANNEL REPORT</a></li>
-                <li><a data-toggle="tab" href="#menu2">PLATFORM WINLOSS ANALYSIS</a></li>
             </ul>
 
             <div class="tab-content">
@@ -766,44 +765,6 @@
                     </div>
                 </div>
 
-                <!-- CHANNEL REPORT -->
-                <div id="menu1" class="tab-pane fade">
-                    <div class="tab-content" style="margin-bottom: 50px">
-                        <table id="channel_report_table" class="table-striped table-bordered hover compact">
-                            <thead>
-                                <tr>
-                                    <th scope="col">CHANNEL NAME</th>
-                                    <th scope="col">DEPOSIT AMOUNT</th>
-                                    <th scope="col">WITHDRAWAL AMOUNT</th>
-                                    <th scope="col">SYSTEM BONUS</th>
-                                    <th scope="col">DOWNLINE TRANSFER</th>
-                                    <th scope="col">TURNOVER</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                        <label class="show-rows">SHOW ROWS</label>
-                    </div>
-                </div>
-
-                <!-- PLATFORM WINLOSS ANALYSIS -->
-                <div id="menu2" class="tab-pane fade">
-                    <div class="tab-content" style="margin-bottom: 50px">
-                        <table id="platform_winloss_table" class="table-striped table-bordered hover compact">
-                            <thead>
-                                <tr>
-                                    <th scope="col">PLATFORM TYPE</th>
-                                    <th scope="col">WINLOSS AMOUNT</th>
-                                    <th scope="col">TURNOVER AMOUNT</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                        <label class="show-rows">SHOW ROWS</label>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

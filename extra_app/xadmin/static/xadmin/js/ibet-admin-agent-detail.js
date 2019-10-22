@@ -97,7 +97,6 @@ $(document).ready(function () {
         var affiliate_id = $('#affiliate-id').val();
         $.ajax({
             type: 'POST',
-            url: "{% url 'xadmin:agent_detail' %}",
             data: {
                 'type': 'activity_filter',
                 'activity_type': activity,
@@ -168,7 +167,6 @@ $(document).ready(function () {
         var refer_row = $(this).closest('.row')
         $.ajax({
             type: 'POST',
-            url: "{% url 'xadmin:agent_detail' %}",
             data: {
                 'type': 'remove_refer_link',
                 'refer_link': refer_link_id,
@@ -268,7 +266,6 @@ $(document).ready(function () {
             var manager = $('#affiliate-manager').val()
             $.ajax({
                 type: 'POST',
-                url: "{% url 'xadmin:agent_detail' %}",
                 data: {
                     'type': 'affiliate_audit',
                     'admin_user': admin_user,
@@ -288,7 +285,6 @@ $(document).ready(function () {
         var affiliate_id = $('#affiliate-id').val();
         $.ajax({
             type: 'POST',
-            url: "{% url 'xadmin:agent_detail' %}",
             data: {
                 'type': 'update_message',
                 'affiliate_id': affiliate_id,
@@ -306,7 +302,6 @@ $(document).ready(function () {
         $("#affiliate-manager").autocomplete({
             source: function (request, response) {
                 $.ajax({
-                    url: "{% url 'xadmin:agent_detail' %}",
                     dataType: 'json',
                     type: 'GET',
                     data: {
@@ -331,17 +326,16 @@ $(document).ready(function () {
             }
         });
     });
-
-    function copyToClipboard(value) {
-        var aux = document.createElement("input");
-        aux.setAttribute("value", value);
-        document.body.appendChild(aux);
-        aux.select();
-        document.execCommand("copy");
-        document.body.removeChild(aux);
-    }
-
 });
+
+function copyToClipboard(value) {
+    var aux = document.createElement("input");
+    aux.setAttribute("value", value);
+    document.body.appendChild(aux);
+    aux.select();
+    document.execCommand("copy");
+    document.body.removeChild(aux);
+}
 
 
 

@@ -423,7 +423,7 @@ class AgentDetailView(CommAdminView):
             user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
 
             # Total commission
-            total_commission = commission_tran.aggregate(
+            context["total_commission"] = commission_tran.aggregate(
                 total_commission=Coalesce(Sum('amount'), 0))['total_commission']
 
             return render(request, "agent_detail.html", context)
