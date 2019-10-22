@@ -125,6 +125,13 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
+
+    # verification
+    email_verified = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
+    id_verified = models.BooleanField(default=False)
+    address_verified = models.BooleanField(default=False)
+
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
@@ -223,6 +230,20 @@ class CustomUser(AbstractBaseUser):
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
+
+    def get_user_address(self):
+        address = ''
+        if self.street_address_1:
+            address += str(self.street_address_1) + ', '
+        if self.street_address_2:
+            address += str(self.street_address_2) + ' '
+        if self.city:
+            address += str(self.city) + ' '
+        if self.state:
+            address += str(self.state) + ' '
+        if self.zipcode:
+            address += str(self.zipcode)
+        return address
 
     def __str__(self):
         return self.username

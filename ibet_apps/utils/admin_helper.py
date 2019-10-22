@@ -62,19 +62,52 @@ def calculateActiveDownlineNumber(affiliate_id):
                 affiliate_active_users += 1
     return affiliate_active_users
 
+# input: queryset of users, filter date range
+# output: queryset of active users between start_time and end_time
+def filterAvtiveUser(queryset, start_time, end_time):
+    # get bet transaction in this period
+
+    # if queryset:
+    #     for user in queryset:
+
+
+
 
 # calculate ftd user number in certain user_group within certain time range
-def calculateFTD(user_group, start_date, end_date):
+def calculateFTD(user_group, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
-    ftd = user_group.filter(Q(ftd_time__gte=start_date)
-                            & Q(ftd_time__lte=end_date)).count()
+    ftd = user_group.filter(Q(ftd_time__gte=start_time)
+                            & Q(ftd_time__lte=end_time)).count()
     return ftd
 
 
-def calculateTurnover(user):
+def calculateTurnover(user, start_time, end_time):
     return 0
 
+
+def calculateGGR(user, start_time, end_time):
+    return 0
+
+
+def calculateDeposit(user, start_time, end_time):
+    count = 0
+    amount = 0
+    return count, amount
+
+
+def calculateWithdrawal(user, start_time, end_time):
+    count = 0
+    amount = 0
+    return count, amount
+
+
+def calculateBonus(user, start_time, end_time):
+    return 0
+
+
+def calculateNGR(user, start_time, end_time):
+    return 0
 
 # USER SYSTEM
 # create unique refer code for both user and affiliate

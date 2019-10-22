@@ -21,3 +21,18 @@
     background-color: #ffffff;
 }
 
+table {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+table thead th {
+    font-weight: normal;
+}
+
