@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from users.views.helper import checkUserBlock
 from users.models import CustomUser
 import simplejson as json
 import xmltodict
@@ -697,15 +698,15 @@ class AutoCashierLoginEA(View):
         today = datetime.date.today()
         today = today.strftime("%Y/%m/%d")
         # print(today)
-        signStr = username + today + KEY
-        result = hashlib.md5(signStr.encode()) 
+        signStr = username + today + EA_KEY
+        key_hash_result = hashlib.md5(signStr.encode()) 
         # print(result.hexdigest())
-        if sign != result.hexdigest():
+        if sign != key_hash_result.hexdigest():
             statusCode = "614"
         else:
             try:
                 user = CustomUser.objects.get(username__iexact=username)
-                if user.block is True:
+                if checkUserBlock(user.pk):
                     statusCode = "612"
             except:
                 statusCode = "611"

@@ -618,11 +618,13 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
 else:
     API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -1203,4 +1205,3 @@ BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
 )
-
