@@ -1198,6 +1198,7 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
+#GD CASINO
 
 GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'

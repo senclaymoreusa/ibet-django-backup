@@ -26,7 +26,7 @@ from spyne.protocol.xml import XmlDocument
 from spyne.util.django import DjangoComplexModel, DjangoService
 from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
-from spyne.model.complex import ComplexModel, XmlAttribute
+from spyne.model.complex import ComplexModel, XmlAttribute, Array
 
 
 class Container(ComplexModel):
@@ -61,7 +61,24 @@ class GetUserBalanceRequest(ComplexModel):
         ('currency', Unicode),
         ('loginToken', Unicode),
     ]
-    
+# class betDebit(ComplexModel):
+#     __type_name__ = 'bet'
+#     __namespace__ = 'https://testgdgame-namespace.org'
+#     # _type_info = [
+#     #     ('betType', Unicode),
+#     #     ('amount', Decimal),
+#     # ]
+#     betType = Unicode
+#     amount = Decimal
+class Bet(ComplexModel):
+    __type_name__ = 'bet'
+    __namespace__ = 'https://testgdgame-namespace.org'
+    betType = Unicode
+    amount = Decimal
+    result = Unicode
+    betId = Unicode
+    betTime = Unicode
+
 class DebitRequest(ComplexModel):
     __type_name__ = 'Debit'
     __namespace__ = 'https://testgdgame-namespace.org'
@@ -75,8 +92,11 @@ class DebitRequest(ComplexModel):
         ('ipAddress', Unicode),
         ('gameView', Unicode),
         ('clientType', Unicode),
+        ('betInfo', Array(Bet)),
         ('loginToken', Unicode),
+        
     ]
+
 class CreditRequest(ComplexModel):
     __type_name__ = 'Credit'
     __namespace__ = 'https://testgdgame-namespace.org'
@@ -88,6 +108,7 @@ class CreditRequest(ComplexModel):
         ('amount', Decimal),
         ('currency', Unicode),
         ('validBetAmount', Unicode),
+        ('betInfo', Array(Bet)),
         ('loginToken', Unicode),
     ]
 class TipRequest(ComplexModel):
@@ -113,6 +134,7 @@ class CancelRequest(ComplexModel):
         ('amount', Decimal),
         ('currency', Unicode),
         ('cancelReason', Unicode),
+        ('loginToken', Unicode),
     ]
  
 class LiveDealerSoapService(ServiceBase):
@@ -278,7 +300,7 @@ soap_app = Application(
     out_protocol=Soap11(),
     
 )
-soap_app.interface.nsmap['soap'] = soap_app.interface.nsmap['soap11env']
+#soap_app.interface.nsmap['soap'] = soap_app.interface.nsmap['soap11env']
 django_soap_application = DjangoApplication(soap_app)
 
 my_soap_application = csrf_exempt(django_soap_application)
