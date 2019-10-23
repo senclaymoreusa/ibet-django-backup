@@ -6,6 +6,7 @@ $(document).ready(function () {
     var vip_table = $('#vip_table').DataTable({
         "serverSide": true,
         "searching": true,
+        "ordering": false,
         "ajax": {
             type: 'GET',
             url: vip_url,
@@ -17,8 +18,22 @@ $(document).ready(function () {
             },
         },
         columns: [
-            { data: 'player_id' },
-            { data: 'username' },
+            { data: 'player_id',
+              "render": function(data, type, row, meta){
+                if(type === 'display'){
+                    data = '<a href=' + user_link + data + '>' + data+ '</a>';
+                    console.log(data)
+                }
+                return data;
+             }},
+            { data: 'username',
+              "render": function(data, type, row, meta){
+                if(type === 'display'){
+                    data = '<a href=' + user_link + row['player_id'] + '>' + data + '</a>';
+                    console.log(data)
+                }
+                return data;
+             }},
             { data: 'status' },
             { data: 'player_segment' },
             { data: 'country' },
@@ -38,6 +53,7 @@ $(document).ready(function () {
             { data: 'bonus_cost' },
             { data: 'ngr' },
         ],
+
         "language": {
             "info": " _START_ - _END_ of _TOTAL_",
             "infoEmpty": " 0 - 0 of 0",
@@ -52,11 +68,10 @@ $(document).ready(function () {
         },
     });
 
-//    $(".dt-buttons .buttons-csv").text("Export");
-//
     $('#min_date, #max_date').change(function () {
         vip_table.draw();
     });
+
     function formatStringToDate(date) {
         if (date.length === 0) {
             return date;

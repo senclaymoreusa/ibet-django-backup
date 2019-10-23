@@ -16,18 +16,24 @@ logger = logging.getLogger('django')
 class VIPView(CommAdminView):
     def get(self, request):
         get_type = request.GET.get("type")
-        if get_type == "getVIPInfo":
+
+        if get_type is None:
+            context = super().get_context()
+            context['time'] = timezone.now()
+            title = "VIP overview"
+            context["breadcrumbs"].append({'title': title})
+            context["title"] = title
+            return render(request, 'vip/vip_management.html', context)
+
+        elif get_type == "getVIPInfo":
             result = {}
             queryset = CustomUser.objects.all()
-
             if request.GET.get("system") == 'vip_admin':
                 try:
                     draw = int(request.GET.get('draw', 1))
                     length = int(request.GET.get('length', 20))
                     start = int(request.GET.get('start', 0))
                     search_value = request.GET.get('search[value]', None)
-                    order_column = int(request.GET.get('order[0][column]', 0))
-                    order = request.GET.get('order[0][dir]', None)
                     minDate = request.GET.get('minDate', None)
                     maxDate = request.GET.get('maxDate', None)
 
@@ -45,14 +51,7 @@ class VIPView(CommAdminView):
                     #  TOTAL ENTRIES AFTER FILTERED
                     count = queryset.count()
 
-                    # START TIME SORTING
-                    if order_column == 7:
-                        if order == 'desc':
-                            queryset = queryset.order_by('-start_time')[start:start + length]
-                        else:
-                            queryset = queryset.order_by('start_time')[start:start + length]
-                    else:
-                        queryset = queryset[start:start + length]
+                    queryset = queryset[start:start + length]
 
                     result = {
                         'draw': draw,
@@ -105,10 +104,4 @@ class VIPView(CommAdminView):
             return HttpResponse(
                 json.dumps(result), content_type="application/json"
             )
-        else:
-            context = super().get_context()
-            context['time'] = timezone.now()
-            title = "VIP overview"
-            context["breadcrumbs"].append({'title': title})
-            context["title"] = title
-            return render(request, 'vip/vip_management.html', context)
+
