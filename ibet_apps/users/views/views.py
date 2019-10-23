@@ -968,7 +968,7 @@ class GetUsernameByReferid(APIView):
 
     def get(self, request, *args, **kwargs):
         refer_id = request.GET.get('referid')
-        user = get_user_model().objects.filter(referral_id=refer_id)
+        user = get_user_model().objects.filter(referral_code=refer_id)
         if user:
             return Response(user[0].username)
         return Response('Failed')

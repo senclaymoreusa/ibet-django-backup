@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
-#print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
+print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
@@ -45,7 +45,8 @@ CURRENCY_TYPES = (
     ('MYR', 'MYR'),
     ('VND', 'VND'),
     ('MMK', 'MMK'),
-    ('XBT', 'XBT')
+    ('XBT', 'XBT'),
+    ('TTC', 'TTC'),
 )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -160,8 +161,6 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-# transaction_deposit = 0
-# transaction_withdrawl = 1
 TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
@@ -192,6 +191,7 @@ LANGUAGE_CHOICES = (
     ('ko', 'Korean'),
     ('ja', 'Japanese'),
 )
+
 GAME_TYPE_CHOICES = (
     (0, 'Sports'),
     (1, 'Games'),
@@ -199,6 +199,21 @@ GAME_TYPE_CHOICES = (
     (3, 'Financial'),
     (4, 'General'),
 )
+
+SPREAD = 'SPREAD'
+MONEYLINE = 'LINE'
+TOTAL = 'OU'
+BET_TYPES_CHOICES = [
+    (SPREAD, 'Spread'),
+    (MONEYLINE, 'Moneyline'),
+    (TOTAL, 'Total O/U'),
+]
+OUTCOME_CHOICES = [
+    (0, 'Win'),
+    (1, 'Lose'),
+    (2, 'Tie/Push'),
+    (3, 'Void'),
+]
 
 ACTIVE_STATE = 0
 DISABLED_STATE = 1
@@ -604,7 +619,7 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
 else:
-    API_DOMAIN = "https://03720ad2.ngrok.io/"
+    API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -655,6 +670,7 @@ GAME_FILTER_OPTION = [
         'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
     },
 ]
+
 # Notification
 MESSAGE_REJECTED = 0
 MESSAGE_PENDING  = 1
@@ -1132,9 +1148,6 @@ BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 
-
-
-
 # Error code define
 CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
@@ -1203,3 +1216,10 @@ SECURITY_QUESTION = (
     (6, _('What is the name of the person that influenced you the most?'))
     
 )
+# Games
+
+# Kaiyuan Gaming
+KY_AGENT = "71452"
+KY_LINE_CODE_1 = "iBet01"
+KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
+KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
