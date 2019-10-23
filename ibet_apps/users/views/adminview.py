@@ -24,6 +24,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
+from users.views.helper import *
 
 import requests
 import logging
@@ -45,13 +46,136 @@ class UserDetailView(CommAdminView):
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
         transaction = Transaction.objects.filter(user_id=customUser)
-        if customUser.block == True:
+        context['block'] = False
+        temporaryBlockRes = {}
+        permanentBlockRes = {}
+        context['temperaryBlock'] = temporaryBlockRes
+        context['permanentBlock'] = permanentBlockRes
+        if customUser.block is True:
             blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
             data = {
                 'date': blockLimitationDeatil.created_time,
                 'admin': blockLimitationDeatil.admin,
             }
             context['blockDetail'] = data
+            context['block'] = True
+
+        elif checkUserBlock(self.kwargs.get('pk')):
+            expired_time = ""
+            blocked_time = ""
+            temporaryStr = ""
+            temporaryCode = ""
+            permanentStr = ""
+            permanentCode = ""
+            blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
+            if customUser.temporary_block_time:
+                expired_time = customUser.temporary_block_time
+                if customUser.temporary_block_interval == INTERVAL_PER_DAY:
+                    expired_time = expired_time + datetime.timedelta(days=1)
+                    temporaryStr = "one day"
+                    temporaryCode = customUser.temporary_block_interval
+                elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
+                    expired_time = expired_time + datetime.timedelta(days=7)
+                    temporaryStr = "one week"
+                    temporaryCode = INTERVAL_PER_WEEK
+                elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
+                    expired_time = expired_time + datetime.timedelta(days=30)
+                    temporaryStr = "one month"
+                    temporaryCode = INTERVAL_PER_MONTH
+                
+            elif customUser.permanent_block_time:
+                expired_time = customUser.permanent_block_time
+                if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
+                    expired_time = expired_time + datetime.timedelta(6*365/12)
+                    permanentStr = "six months"
+                    permanentCode = INTERVAL_PER_SIX_MONTH
+                elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
+                    expired_time = expired_time + datetime.timedelta(365)
+                    permanentStr = "one year"
+                    permanentCode = INTERVAL_PER_ONE_YEAR
+                elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
+                    expired_time = expired_time + datetime.timedelta(365*3)
+                    permanentStr = "three years"
+                    permanentCode = INTERVAL_PER_THREE_YEAR
+                elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
+                    expired_time = expired_time + datetime.timedelta(365*5)
+                    permanentStr = "five years"
+                    permanentCode = INTERVAL_PER_FIVE_YEAR
+                
+            temporaryBlockRes = {
+                'temporaryStr': temporaryStr,
+                'temporaryCode': temporaryCode
+            }
+
+            permanentBlockRes = {
+                'permanentStr': permanentStr,
+                'permanentCode': permanentCode
+            }
+
+            data = {
+                "expired_time": expired_time,
+                "date": blocked_time,
+                "admin": "User themselve"
+            }
+            context['blockDetail'] = data
+            context['block'] = True
+            context['temperaryBlock'] = temporaryBlockRes
+            context['permanentBlock'] = permanentBlockRes
+
+        #     temporaryBlockRes = {}
+        # if customUser.temporary_block_interval is not None:
+        #     temporaryBlock = customUser.temporary_block_interval
+        #     # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
+        #     # time = timeList[0]
+        #     # temporaryBlock = int(time)
+        #     if temporaryBlock == INTERVAL_PER_DAY:
+        #         temporaryStr = "one day"
+        #         temporaryCode = customUser.temporary_block_interval
+        #     elif temporaryBlock == INTERVAL_PER_WEEK:
+        #         temporaryStr = "one week"
+        #         temporaryCode = INTERVAL_PER_WEEK
+        #     elif temporaryBlock == INTERVAL_PER_MONTH:
+        #         temporaryStr = "one month"
+        #         temporaryCode = INTERVAL_PER_MONTH
+        #     else:
+        #         temporaryCode = ""
+        #         temporaryStr = ""
+            
+        #     temporaryBlockRes = {
+        #         'temporaryStr': temporaryStr,
+        #         'temporaryCode': temporaryCode
+        #     }
+            
+        
+        #     permanentBlockRes = {}
+        #     if customUser.permanent_block_interval is not None:
+        #         permanentBlock = customUser.permanent_block_interval
+        #         # timeList = userJson[0]['fields']['permanent_block_timespan'].split(' ')
+        #         # time = timeList[0]
+        #         # permanentBlock = int(time)
+        #         if permanentBlock == INTERVAL_PER_SIX_MONTH:
+        #             permanentStr = "six months"
+        #             permanentCode = INTERVAL_PER_SIX_MONTH
+        #         elif permanentBlock == INTERVAL_PER_ONE_YEAR:
+        #             permanentStr = "one year"
+        #             permanentCode = INTERVAL_PER_ONE_YEAR
+        #         elif permanentBlock == INTERVAL_PER_THREE_YEAR:
+        #             permanentStr = "three years"
+        #             permanentCode = INTERVAL_PER_THREE_YEAR
+        #         elif permanentBlock == INTERVAL_PER_FIVE_YEAR:
+        #             permanentStr = "five years"
+        #             permanentCode = INTERVAL_PER_FIVE_YEAR
+        #         else:
+        #             permanentStr = ""
+        #             permanentCode = ""
+                
+                
+            
+
+        #     context['temperaryBlock'] = temporaryBlockRes
+        #     # print("!!!! temperaryBlock: " + str(temporaryBlockRes))
+        #     context['permanentBlock'] = permanentBlockRes
+        #     # print(temporaryBlock, permanentBlock)
 
         riskLevelMap = {}
         for t in CustomUser._meta.get_field('risk_level').choices:
@@ -292,66 +416,8 @@ class UserDetailView(CommAdminView):
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
 
-        userJson = serializers.serialize('json', [customUser])
-        userJson = json.loads(userJson)
-
-        
-        temporaryBlockRes = {}
-        if customUser.temporary_block_interval:
-            temporaryBlock = customUser.temporary_block_interval
-            # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
-            # time = timeList[0]
-            # temporaryBlock = int(time)
-            if temporaryBlock == INTERVAL_PER_DAY:
-                temporaryStr = "one day"
-                temporaryCode = customUser.temporary_block_interval
-            elif temporaryBlock == INTERVAL_PER_WEEK:
-                temporaryStr = "one week"
-                temporaryCode = INTERVAL_PER_WEEK
-            elif temporaryBlock == INTERVAL_PER_MONTH:
-                temporaryStr = "one month"
-                temporaryCode = INTERVAL_PER_MONTH
-            else:
-                temporaryCode = ""
-                temporaryStr = ""
-            
-            temporaryBlockRes = {
-                'temporaryStr': temporaryStr,
-                'temporaryCode': temporaryCode
-            }
-        
-        
-        permanentBlockRes = {}
-        if customUser.permanent_block_interval:
-            permanentBlock = customUser.permanent_block_interval
-            # timeList = userJson[0]['fields']['permanent_block_timespan'].split(' ')
-            # time = timeList[0]
-            # permanentBlock = int(time)
-            if permanentBlock == INTERVAL_PER_SIX_MONTH:
-                permanentStr = "six months"
-                permanentCode = INTERVAL_PER_SIX_MONTH
-            elif permanentBlock == INTERVAL_PER_ONE_YEAR:
-                permanentStr = "one year"
-                permanentCode = INTERVAL_PER_ONE_YEAR
-            elif permanentBlock == INTERVAL_PER_THREE_YEAR:
-                permanentStr = "three years"
-                permanentCode = INTERVAL_PER_THREE_YEAR
-            elif permanentBlock == INTERVAL_PER_FIVE_YEAR:
-                permanentStr = "five years"
-                permanentCode = INTERVAL_PER_FIVE_YEAR
-            else:
-                permanentStr = ""
-                permanentCode = ""
-            
-            permanentBlockRes = {
-                'permanentStr': permanentStr,
-                'permanentCode': permanentCode
-            }
-        
-
-        context['temperaryBlock'] = temporaryBlockRes
-        context['permanentBlock'] = permanentBlockRes
-        # print(temporaryBlock, permanentBlock)
+        # userJson = serializers.serialize('json', [customUser])
+        # userJson = json.loads(userJson)
         
         return render(request, 'user_detail.html', context)
 

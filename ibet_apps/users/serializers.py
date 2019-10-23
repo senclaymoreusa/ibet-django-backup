@@ -15,8 +15,10 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers, exceptions
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils.functional import Promise
+from django.utils.encoding import force_text
+from django.core.serializers.json import DjangoJSONEncoder
 import datetime
-
 
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,30 +37,31 @@ class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
     class Meta:
         model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url')
+        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url', 'image_url')
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referral_id', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time')
         read_only_fields = ('pk', )
 
 
 class RegisterSerializer(serializers.Serializer):
     username         = serializers.CharField(required=True)
-    email            = serializers.EmailField(required=True)
+    email            = serializers.EmailField(required=False)
     password         = serializers.CharField(write_only=True)
-    first_name       = serializers.CharField(required=True)
-    last_name        = serializers.CharField(required=True)
-    date_of_birth    = serializers.CharField(required=True)
+    first_name       = serializers.CharField(required=False)
+    last_name        = serializers.CharField(required=False)
+    date_of_birth    = serializers.CharField(required=False)
     phone            = serializers.CharField(required=True)
-    street_address_1 = serializers.CharField(required=True)
-    city             = serializers.CharField(required=True)
+    street_address_1 = serializers.CharField(required=False)
+    city             = serializers.CharField(required=False)
     country          = serializers.CharField(required=True)
-    zipcode          = serializers.CharField(required=True)
+    zipcode          = serializers.CharField(required=False)
     over_eighteen    = serializers.BooleanField(required=False)
     language         = serializers.CharField(required=False)
+    referral_code    = serializers.CharField(required=False)
 
 
 
@@ -87,24 +90,26 @@ class RegisterSerializer(serializers.Serializer):
         return get_adapter().clean_password(password)
 
     def validate(self, data):
-
-        if not data['first_name'] or len(data['first_name']) > 20 or not data['first_name'].isalpha():
+        
+        # print(data['first_name'])
+        if 'first_name' in data and (len(data['first_name']) > 20 or not data['first_name'].isalpha()):
             raise serializers.ValidationError(_("First name not valid"))
-        if not data['last_name'] or len(data['last_name']) > 20 or not data['last_name'].isalpha():
+        if 'last_name' in data and (len(data['last_name']) > 20 or not data['last_name'].isalpha()):
             raise serializers.ValidationError(_("Last name not valid"))
-        if not data['date_of_birth'] or len(data['date_of_birth']) != 10 or any(char.isalpha() for char in data['date_of_birth']) :
+        if 'date_of_birth' in data and (len(data['date_of_birth']) != 10 or any(char.isalpha() for char in data['date_of_birth'])) :
             raise serializers.ValidationError(_("Date of birth not valid"))
-        date = data['date_of_birth']
-        date = date.split('/')
-        if len(date) != 3:
-            raise serializers.ValidationError(_("Date of birth not valid"))
-        if not (1 <= int(date[0]) <= 12) or not ( 1 <= int(date[1]) <= 31) or not (1900 <= int(date[2]) <= int(str(datetime.datetime.now())[0:4])):
-            raise serializers.ValidationError(_("Date of birth not valid"))
-        if not data['city'] or any(char.isdigit() for char in data['city']) or len(data['city']) > 25:
+        elif 'date_of_birth' in data:
+            date = data['date_of_birth']
+            date = date.split('/')
+            if len(date) != 3:
+                raise serializers.ValidationError(_("Date of birth not valid"))
+            if not (1 <= int(date[0]) <= 12) or not ( 1 <= int(date[1]) <= 31) or not (1900 <= int(date[2]) <= int(str(datetime.datetime.now())[0:4])):
+                raise serializers.ValidationError(_("Date of birth not valid"))
+        if 'city' in data and (any(char.isdigit() for char in data['city']) or len(data['city'])) > 25:
             raise serializers.ValidationError(_("City not valid"))
-        if not data['country'] or any(char.isdigit() for char in data['country']) or len(data['country']) > 25:
+        if 'country' in data and (any(char.isdigit() for char in data['country']) or len(data['country']) > 25):
             raise serializers.ValidationError(_("Country not valid"))
-        if not data['zipcode'] or not len(data['zipcode']) < 20 or not data['zipcode'].isdigit() :
+        if 'zipcode' in data and (not len(data['zipcode']) < 20 or not data['zipcode'].isdigit()) :
             raise serializers.ValidationError(_("Zipcode not valid"))
         return data
 
@@ -126,6 +131,7 @@ class RegisterSerializer(serializers.Serializer):
             'zipcode':          self.validated_data.get('zipcode', ''),
             'over_eighteen':    self.validated_data.get('over_eighteen', ''),
             'language':         self.validated_data.get('language', ''),
+            'referral_code':    self.validated_data.get('referral_code', ''),
         }
 
     def save(self, request):
@@ -135,7 +141,7 @@ class RegisterSerializer(serializers.Serializer):
         adapter.save_user(request, user, self)
         self.custom_signup(request, user)
         setup_user_email(request, user, [])
-
+        
         user.phone            = self.cleaned_data.get('phone')
         user.date_of_birth    = self.cleaned_data.get('date_of_birth')
         user.street_address_1 = self.cleaned_data.get('street_address_1')
@@ -423,3 +429,9 @@ class BalanceSerializer(serializers.Serializer):
     type = serializers.CharField()
     balance = serializers.FloatField()
     username = serializers.CharField()
+
+class LazyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            return force_text(obj)
+        return super(LazyEncoder, self).default(obj)
