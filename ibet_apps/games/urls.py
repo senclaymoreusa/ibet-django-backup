@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 import games.views.eagameviews as eagameviews
+import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.fggameviews as fggameviews
 from django.views.decorators.csrf import csrf_exempt
@@ -37,7 +38,8 @@ urlpatterns = [
     path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
-    path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction')
+    path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
 
-
+    # kaiyuan gaming
+    path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
 ]
