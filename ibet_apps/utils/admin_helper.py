@@ -63,9 +63,22 @@ def calculateActiveDownlineNumber(affiliate_id):
                 affiliate_active_users += 1
     return affiliate_active_users
 
+'''
+@param date: mm/dd/yyyy
+@return: timezone datetime
+'''
+def dateToDatetime(date):
+    if date:
+        date = date.split('/')
+        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
 
-# input: queryset of users, filter date range
-# output: queryset of active users between start_time and end_time
+'''
+@param queryset: users
+@return: queryset of active users between start_time and end_time
+'''
 def filterActiveUser(queryset, start_time, end_time):
     # get bet transaction in this period
     if start_time and end_time:
@@ -158,3 +171,4 @@ def decode_user_id_from_referral_code(code):
             user_id += (36 ** i * index)
             i += 1
         return user_id
+

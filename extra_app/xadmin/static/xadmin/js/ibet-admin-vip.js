@@ -1,8 +1,5 @@
 $(document).ready(function () {
 
-    $("#min_date").datepicker();
-    $("#max_date").datepicker();
-
     var vip_table = $('#vip_table').DataTable({
         "serverSide": true,
         "searching": true,
@@ -13,16 +10,16 @@ $(document).ready(function () {
             data: {
                 'type': 'getVIPInfo',
                 'system': 'vip_admin',
-                'minDate': function () { return formatStringToDate($('#min_date').val()); },
-                'maxDate': function () { return formatStringToDate($('#max_date').val()); },
+                'minDate': function () { return $('#min_date').val(); },
+                'maxDate': function () { return $('#max_date').val(); },
             },
         },
+
         columns: [
             { data: 'player_id',
               "render": function(data, type, row, meta){
                 if(type === 'display'){
                     data = '<a href=' + user_link + data + '>' + data+ '</a>';
-                    console.log(data)
                 }
                 return data;
              }},
@@ -30,7 +27,6 @@ $(document).ready(function () {
               "render": function(data, type, row, meta){
                 if(type === 'display'){
                     data = '<a href=' + user_link + row['player_id'] + '>' + data + '</a>';
-                    console.log(data)
                 }
                 return data;
              }},
@@ -63,21 +59,18 @@ $(document).ready(function () {
                 "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></button>",
             },
             "lengthMenu": "_MENU_",
-            searchPlaceholder: "  Enter user ID, username or manager",
+            searchPlaceholder: "  Enter user ID or username",
             search: "",
         },
+    });
+
+    $(function(){
+        $("#min_date").datepicker();
+        $("#max_date").datepicker();
     });
 
     $('#min_date, #max_date').change(function () {
         vip_table.draw();
     });
 
-    function formatStringToDate(date) {
-        if (date.length === 0) {
-            return date;
-        }
-        var parts = date.split('/');
-        date = parts[2] + '-' + parts[0] + '-' + parts[1];
-        return date;
-    }
 });

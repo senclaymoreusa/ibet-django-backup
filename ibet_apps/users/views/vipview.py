@@ -1,13 +1,10 @@
 from django.http import HttpResponse
-from django.utils import timezone
 from django.shortcuts import render
 from xadmin.views import CommAdminView
 
 import logging
 import simplejson as json
 
-from bonus.models import *
-from utils.constants import *
 from utils.admin_helper import *
 
 logger = logging.getLogger('django')
@@ -27,7 +24,8 @@ class VIPView(CommAdminView):
 
         elif get_type == "getVIPInfo":
             result = {}
-            queryset = CustomUser.objects.all()
+            # needs to filter out vip user later
+            queryset = CustomUser.objects.all().order_by('-created_time')
             if request.GET.get("system") == 'vip_admin':
                 try:
                     draw = int(request.GET.get('draw', 1))
@@ -37,7 +35,8 @@ class VIPView(CommAdminView):
                     minDate = request.GET.get('minDate', None)
                     maxDate = request.GET.get('maxDate', None)
 
-                    queryset = filterActiveUser(queryset, minDate, maxDate).order_by('-created_time')
+                    queryset = filterActiveUser(queryset, dateToDatetime(minDate),
+                                                dateToDatetime(maxDate)).order_by('-created_time')
 
                     #  TOTAL ENTRIES
                     total = queryset.count()

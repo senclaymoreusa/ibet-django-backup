@@ -4,7 +4,6 @@
 {% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -15,14 +14,13 @@
 
 <body>
     <div id="vip_management">
-        <div id="date_range">
-            <label>ACTIVE DATE RANGE</label>
-            <br>
-            <input name="min_date" id="min_date" type="text" placeholder="From">
-            <input name="max_date" id="max_date" type="text" placeholder="To">
-        </div>
-
         <div id="vip_table_container">
+            <div id="date_range">
+                <label>ACTIVE DATE RANGE</label>
+                <br>
+                <input name="min_date" id="min_date" type="text" placeholder="From">
+                <input name="max_date" id="max_date" type="text" placeholder="To">
+            </div>
             <table id="vip_table" class="table-striped table-bordered hover compact">
                 <thead>
                     <tr>
@@ -57,20 +55,19 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" language="javascript"
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+    <script src="{% static 'xadmin/js/ibet-admin-vip.js' %}"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
-<script src="{% static 'xadmin/js/ibet-admin-vip.js' %}"></script>
-<script>
-    var vip_url = "{% url 'xadmin:vipview' %}"
-    var user_link = "{% url 'xadmin:user_detail' %}"
-</script>
+    <script>
+        var vip_url = "{% url 'xadmin:vipview' %}"
+        var user_link = "{% url 'xadmin:user_detail' %}"
+    </script>
 
 </body>
-
 </html>
 
 {% endblock %}
