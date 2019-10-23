@@ -1149,12 +1149,13 @@ BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 
 # Error code define
-ERROR_CODE_SUCCESS = 1
+CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
+ERROR_CODE_EMPTY_RESULT = 105
 
 
 BONUS_TYPE_VERIFICATION = 0
@@ -1204,6 +1205,17 @@ BRAND_OPTIONS = (
     ('ibet', 'iBet')
 )
 
+
+SECURITY_QUESTION = (
+    (0, _('What is your’s father birthday?')),
+    (1, _('What is your’s mother birthday?')),
+    (2, _('What is your’s spouse birthday?')),
+    (3, _('What is your first company’s employee ID?')),
+    (4, _('What is your primary school class teacher’s name?')),
+    (5, _('What is your best childhood friend’s name?')),
+    (6, _('What is the name of the person that influenced you the most?'))
+    
+)
 # Games
 
 # Kaiyuan Gaming

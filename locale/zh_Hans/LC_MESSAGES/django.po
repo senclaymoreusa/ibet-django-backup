@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-15 23:33-0700\n"
+"POT-Creation-Date: 2019-10-18 13:31-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,426 +18,766 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: apps/accounting/apps.py:7
+#: djauth/settings.py:263 templates/admin/base.html:34
+msgid "English"
+msgstr ""
+
+#: djauth/settings.py:264 templates/admin/base.html:35
+msgid "Chinese"
+msgstr "中文"
+
+#: djauth/settings.py:265
+msgid "Franch"
+msgstr ""
+
+#: ibet_apps/accounting/apps.py:7
 #, fuzzy
 #| msgid "Operation System"
 msgid "Accounting System"
 msgstr "營運系統"
 
-#: apps/accounting/models.py:21 apps/users/models.py:213
-#: apps/users/models.py:322 apps/users/models.py:372
-#, fuzzy
-#| msgid "User Tag"
-msgid "User"
-msgstr "用戶標籤"
-
-#: apps/accounting/models.py:22 apps/users/models.py:326
-msgid "Amount"
-msgstr "金額"
-
-#: apps/accounting/models.py:23
-msgid "Request Time"
-msgstr ""
-
-#: apps/accounting/models.py:24
-msgid "Arrive Time"
-msgstr ""
-
-#: apps/accounting/models.py:33
-msgid "Channel"
-msgstr ""
-
-#: apps/accounting/models.py:39
-msgid "Transaction Type"
-msgstr ""
-
-#: apps/accounting/models.py:51
+#: ibet_apps/accounting/models.py:35
 msgid "Name"
 msgstr ""
 
-#: apps/accounting/models.py:52
+#: ibet_apps/accounting/models.py:37 ibet_apps/accounting/models.py:143
+msgid "Method"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:38 ibet_apps/accounting/models.py:232
+#: ibet_apps/accounting/models.py:255
+msgid "Channel"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:40 ibet_apps/accounting/models.py:132
 msgid "Currency"
 msgstr ""
 
-#: apps/accounting/models.py:53
+#: ibet_apps/accounting/models.py:43
 msgid "Min Amount"
 msgstr ""
 
-#: apps/accounting/models.py:54
+#: ibet_apps/accounting/models.py:46
 msgid "Max Amount"
 msgstr ""
 
-#: apps/accounting/models.py:55
+#: ibet_apps/accounting/models.py:55
 msgid "Transaction Fee"
 msgstr ""
 
-#: apps/accounting/models.py:56 apps/users/models.py:86
-msgid "Active"
+#: ibet_apps/accounting/models.py:63
+msgid "Transaction Fee Percentage"
 msgstr ""
 
-#: apps/games/apps.py:7
+#: ibet_apps/accounting/models.py:90
+msgid "Priority"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:122
+#, fuzzy
+#| msgid "User action link"
+msgid "Transaction id"
+msgstr "用戶動作詳情"
+
+#: ibet_apps/accounting/models.py:125
+msgid "Member"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:127
+msgid "Order id"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:129
+#, fuzzy
+#| msgid "Amount"
+msgid "Apply Amount"
+msgstr "金額"
+
+#: ibet_apps/accounting/models.py:138
+msgid "Language"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:141
+#, fuzzy
+#| msgid "Deposit"
+msgid "Depositor Tier"
+msgstr "存款次數"
+
+#: ibet_apps/accounting/models.py:145
+msgid "Status Last Updated"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:148
+msgid "Time of Application"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:151
+msgid "Arrive Time"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:154 ibet_apps/users/adminx.py:302
+#: ibet_apps/users/models.py:300
+msgid "Status"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:157
+msgid "Payment"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:161 ibet_apps/bonus/models.py:52
+msgid "Transaction Type"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:164
+msgid "Review status"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:167
+msgid "Memo"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:169
+msgid "From"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:172
+msgid "To"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:175
+msgid "Product"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:191
+msgid "QRCode"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:193
+msgid "Commission"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:197
+msgid "released_by"
+msgstr ""
+
+#: ibet_apps/bonus/apps.py:8
+#, fuzzy
+#| msgid "User System"
+msgid "Bonus System"
+msgstr "用戶系統"
+
+#: ibet_apps/bonus/models.py:26 ibet_apps/bonus/models.py:34
+#, fuzzy
+#| msgid "Event Type"
+msgid "Bonus Type"
+msgstr "事件類別"
+
+#: ibet_apps/bonus/models.py:37
+msgid "Bonus Release Type"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:45 ibet_apps/bonus/models.py:56
+#: ibet_apps/bonus/models.py:71
+msgid "Bonus"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:46 ibet_apps/bonus/models.py:64
+#, fuzzy
+#| msgid "Game Category"
+msgid "Category"
+msgstr "遊戲種類"
+
+#: ibet_apps/bonus/models.py:63
+msgid "Requirement"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:70
+msgid "Owner"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:73
+msgid "Operator"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:74
+#, fuzzy
+#| msgid "Event Type"
+msgid "User Bonus Event Type"
+msgstr "事件類別"
+
+#: ibet_apps/games/apps.py:7
 msgid "3RD Part Game System"
 msgstr "第三方遊戲系統"
 
-#: apps/games/models.py:17
+#: ibet_apps/games/models.py:26
 msgid "Game Category"
 msgstr "遊戲種類"
 
-#: apps/games/models.py:42
+#: ibet_apps/games/models.py:44 ibet_apps/games/models.py:74
+#: ibet_apps/system/models.py:17 ibet_apps/users/models.py:211
+#: ibet_apps/users/models.py:283 ibet_apps/users/models.py:409
+#: ibet_apps/users/models.py:423 ibet_apps/users/models.py:442
+msgid "Created Time"
+msgstr "時間"
+
+#: ibet_apps/games/models.py:81
+#, fuzzy
+#| msgid "Created Time"
+msgid "Modifited Time"
+msgstr "時間"
+
+#: ibet_apps/games/models.py:89
 msgid "Game"
 msgstr "遊戲"
 
-#: apps/operation/apps.py:8
+#: ibet_apps/operation/apps.py:8
 msgid "Operation System"
 msgstr "營運系統"
 
-#: apps/operation/models.py:23
-msgid "Notice Message"
-msgstr "通知消息"
+#: ibet_apps/operation/models.py:62
+msgid "Notification"
+msgstr ""
 
-#: apps/users/admin.py:57
+#: ibet_apps/system/models.py:12
+#, fuzzy
+#| msgid "username"
+msgid "name"
+msgstr "用户名"
+
+#: ibet_apps/system/models.py:13
+msgid "Description"
+msgstr ""
+
+#: ibet_apps/system/models.py:14
+msgid "Group Type"
+msgstr ""
+
+#: ibet_apps/system/models.py:36 ibet_apps/system/models.py:43
+msgid "User Group"
+msgstr ""
+
+#: ibet_apps/system/models.py:37 ibet_apps/system/models.py:51
+msgid "Permission Code"
+msgstr ""
+
+#: ibet_apps/system/models.py:44 ibet_apps/system/models.py:50
+#, fuzzy
+#| msgid "Customer User"
+msgid "Custom User"
+msgstr "用戶列表"
+
+#: ibet_apps/system/views/permissionviews.py:102
+msgid "Group Permission"
+msgstr ""
+
+#: ibet_apps/system/views/permissionviews.py:396 ibet_apps/users/adminx.py:114
+msgid "Roles"
+msgstr ""
+
+#: ibet_apps/system/views/reportviews.py:94
+msgid "Performance reports"
+msgstr ""
+
+#: ibet_apps/system/views/reportviews.py:409
+msgid "Members reports"
+msgstr ""
+
+#: ibet_apps/system/views/reportviews.py:451
+msgid "Finance reports"
+msgstr ""
+
+#: ibet_apps/users/admin.py:60
 msgid "username"
 msgstr "用户名"
 
-#: apps/users/admin.py:58
+#: ibet_apps/users/admin.py:61
 msgid "password"
 msgstr "密碼"
 
-#: apps/users/adminx.py:23
-msgid "IBET Administration"
+#: ibet_apps/users/adminx.py:32
+#, fuzzy
+#| msgid "IBET Administration"
+msgid "iBet Administration"
 msgstr "IBET管理"
 
-#: apps/users/adminx.py:72 apps/users/models.py:72
+#: ibet_apps/users/adminx.py:39
+msgid "Players"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:43
+msgid "Player directory"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:48
+msgid "Player groups"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:55
+msgid "Affiliate"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:61
+msgid "Marketing"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:65
+msgid "VIP Management"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:84
+msgid "Payments"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:88
+#, fuzzy
+#| msgid "Deposit"
+msgid "Deposits"
+msgstr "存款次數"
+
+#: ibet_apps/users/adminx.py:93
+#, fuzzy
+#| msgid "Withdraw"
+msgid "Withdrawals"
+msgstr "提款次數"
+
+#: ibet_apps/users/adminx.py:98
+msgid "Settings"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:105
+msgid "System admin"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:109
+#, fuzzy
+#| msgid "User Tag"
+msgid "Users"
+msgstr "用戶標籤"
+
+#: ibet_apps/users/adminx.py:141
+#, fuzzy
+#| msgid "Notice Message"
+msgid "Messages"
+msgstr "通知消息"
+
+#: ibet_apps/users/adminx.py:146
+msgid "Campaign"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:157
+msgid "Finance report"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:237 ibet_apps/users/models.py:67
 msgid "User Tag"
 msgstr "用戶標籤"
 
-#: apps/users/adminx.py:79 apps/users/models.py:311
+#: ibet_apps/users/adminx.py:244 ibet_apps/utils/constants.py:493
 msgid "Login"
 msgstr "登入次數"
 
-#: apps/users/adminx.py:85 apps/users/models.py:314
+#: ibet_apps/users/adminx.py:250
 msgid "Deposit"
 msgstr "存款次數"
 
-#: apps/users/adminx.py:91 apps/users/models.py:315
+#: ibet_apps/users/adminx.py:256
 msgid "Withdraw"
 msgstr "提款次數"
 
-#: apps/users/adminx.py:98
+#: ibet_apps/users/adminx.py:263
 msgid "Bet"
 msgstr "投注次數"
 
-#: apps/users/adminx.py:101 apps/users/adminx.py:154
+#: ibet_apps/users/adminx.py:266 ibet_apps/users/adminx.py:327
 msgid "More actions for this user"
 msgstr "更多用戶動作詳情"
 
-#: apps/users/adminx.py:104 apps/users/adminx.py:157
+#: ibet_apps/users/adminx.py:269 ibet_apps/users/adminx.py:330
 msgid "User action link"
 msgstr "用戶動作詳情"
 
-#: apps/users/adminx.py:119
+#: ibet_apps/users/adminx.py:292
 #, fuzzy
 #| msgid "Assign tag to user"
 msgid "Approved tag assign to user"
 msgstr "標記用戶標籤"
 
-#: apps/users/adminx.py:129 apps/users/models.py:215
-msgid "Status"
-msgstr ""
-
-#: apps/users/apps.py:6
+#: ibet_apps/users/apps.py:6
 msgid "User System"
 msgstr "用戶系統"
 
-#: apps/users/forms.py:82
+#: ibet_apps/users/forms.py:88
 msgid "Invalid date - renewal in past"
 msgstr "日期错误"
 
-#: apps/users/forms.py:85
+#: ibet_apps/users/forms.py:91
 msgid "Invalid date - renewal more than 4 weeks ahead"
 msgstr "日期错误，至少提前4周"
 
-#: apps/users/models.py:66
+#: ibet_apps/users/models.py:61
 msgid "Tag name"
 msgstr "標籤"
 
-#: apps/users/models.py:69
+#: ibet_apps/users/models.py:64
 msgid "Notes"
 msgstr "標註"
 
-#: apps/users/models.py:80
+#: ibet_apps/users/models.py:80
 msgid "Direct User"
 msgstr ""
 
-#: apps/users/models.py:81
+#: ibet_apps/users/models.py:81
 msgid "User from Promo"
 msgstr ""
 
-#: apps/users/models.py:82
+#: ibet_apps/users/models.py:82
 msgid "Advertisements"
 msgstr ""
 
-#: apps/users/models.py:87
+#: ibet_apps/users/models.py:86
+msgid "Active"
+msgstr ""
+
+#: ibet_apps/users/models.py:87
 msgid "Inactive"
 msgstr ""
 
-#: apps/users/models.py:88
+#: ibet_apps/users/models.py:88
 msgid "Blocked"
 msgstr ""
 
-#: apps/users/models.py:137
+#: ibet_apps/users/models.py:150
 msgid "User Attribute"
 msgstr ""
 
-#: apps/users/models.py:138
+#: ibet_apps/users/models.py:151
 msgid "Product Attribute"
 msgstr ""
 
-#: apps/users/models.py:139
+#: ibet_apps/users/models.py:152
 msgid "Time of Registration"
 msgstr ""
 
-#: apps/users/models.py:140
+#: ibet_apps/users/models.py:153
 msgid "Time of FTD"
 msgstr ""
 
-#: apps/users/models.py:141
+#: ibet_apps/users/models.py:154
 msgid "Time of Verification"
 msgstr ""
 
-#: apps/users/models.py:142
+#: ibet_apps/users/models.py:155
 msgid "Location shown on the ID"
 msgstr ""
 
-#: apps/users/models.py:143
+#: ibet_apps/users/models.py:156
 msgid "Last Login Time"
 msgstr ""
 
-#: apps/users/models.py:144
+#: ibet_apps/users/models.py:157
 msgid "Last Betting Time"
 msgstr ""
 
-#: apps/users/models.py:146
+#: ibet_apps/users/models.py:163
 msgid "Main Wallet"
 msgstr ""
 
-#: apps/users/models.py:147
+#: ibet_apps/users/models.py:164
 msgid "Other Game Wallet"
 msgstr ""
 
-#: apps/users/models.py:150 apps/users/models.py:155 apps/users/models.py:329
-msgid "Created Time"
-msgstr "時間"
+#: ibet_apps/users/models.py:165
+msgid "Bonus Wallet"
+msgstr ""
 
-#: apps/users/models.py:166
+#: ibet_apps/users/models.py:169
+msgid "Time of Becoming Agent"
+msgstr ""
+
+#: ibet_apps/users/models.py:170
+msgid "Application Time"
+msgstr ""
+
+#: ibet_apps/users/models.py:171
+msgid "Application Introduction"
+msgstr ""
+
+#: ibet_apps/users/models.py:173
+msgid "Affiliate_status"
+msgstr ""
+
+#: ibet_apps/users/models.py:174
+msgid "Affiliate_level"
+msgstr ""
+
+#: ibet_apps/users/models.py:206
+#, fuzzy
+#| msgid "password"
+msgid "withdraw password"
+msgstr "密碼"
+
+#: ibet_apps/users/models.py:208
+msgid "Security answer"
+msgstr ""
+
+#: ibet_apps/users/models.py:216 ibet_apps/users/models.py:447
+msgid "Modified Time"
+msgstr ""
+
+#: ibet_apps/users/models.py:227
 msgid "Customer User"
 msgstr "用戶列表"
 
-#: apps/users/models.py:210
+#: ibet_apps/users/models.py:258
+msgid "commission Percentage"
+msgstr ""
+
+#: ibet_apps/users/models.py:259
+msgid "Downline commission Percentage"
+msgstr ""
+
+#: ibet_apps/users/models.py:295
 msgid "pending"
 msgstr "待決"
 
-#: apps/users/models.py:211
+#: ibet_apps/users/models.py:296
 msgid "approved"
 msgstr "批准"
 
-#: apps/users/models.py:214
+#: ibet_apps/users/models.py:298 ibet_apps/users/models.py:402
+#: ibet_apps/users/models.py:431
+#, fuzzy
+#| msgid "User Tag"
+msgid "User"
+msgstr "用戶標籤"
+
+#: ibet_apps/users/models.py:299
 msgid "Tag"
 msgstr "標籤"
 
-#: apps/users/models.py:222
+#: ibet_apps/users/models.py:307
 msgid "Assign tag to user"
 msgstr "標記用戶標籤"
 
-#: apps/users/models.py:312
-msgid "Logout"
-msgstr "登出"
-
-#: apps/users/models.py:313
-msgid "Register"
-msgstr "註冊"
-
-#: apps/users/models.py:316
-msgid "Page Visit"
-msgstr "瀏覽頁面"
-
-#: apps/users/models.py:317
-msgid "bet"
-msgstr "投注"
-
-#: apps/users/models.py:320
+#: ibet_apps/users/models.py:400
 msgid "Action Ip"
 msgstr "位址"
 
-#: apps/users/models.py:321
+#: ibet_apps/users/models.py:401
 msgid "Event Type"
 msgstr "事件類別"
 
-#: apps/users/models.py:323
+#: ibet_apps/users/models.py:403
 msgid "Device"
 msgstr "裝置"
 
-#: apps/users/models.py:324
+#: ibet_apps/users/models.py:404
 msgid "Browser"
 msgstr "瀏覽器"
 
-#: apps/users/models.py:325
+#: ibet_apps/users/models.py:405
 msgid "Refer URL"
 msgstr "推薦連結"
 
-#: apps/users/models.py:327
+#: ibet_apps/users/models.py:407
 msgid "Page"
 msgstr "頁面"
 
-#: apps/users/models.py:334
+#: ibet_apps/users/models.py:414
 msgid "User action history"
 msgstr "用戶行為紀錄"
 
-#: apps/users/models.py:373
-msgid "Bonus"
-msgstr ""
-
-#: apps/users/serializers.py:81 apps/users/serializers.py:190
-#: apps/users/serializers.py:350
+#: ibet_apps/users/serializers.py:93 ibet_apps/users/serializers.py:298
 msgid "A user is already registered with this username."
 msgstr "该用户名已被占用"
 
-#: apps/users/serializers.py:88 apps/users/serializers.py:197
-#: apps/users/serializers.py:357
+#: ibet_apps/users/serializers.py:100 ibet_apps/users/serializers.py:305
 msgid "A user is already registered with this e-mail address."
 msgstr "该邮箱已被注册"
 
-#: apps/users/serializers.py:98
-#, fuzzy
-#| msgid "A user is already registered with this username."
-msgid "A user is already registered with this phone number."
-msgstr "该用户名已被占用"
-
-#: apps/users/serializers.py:101
-msgid "The two password fields didn't match"
-msgstr "密碼不相符"
-
-#: apps/users/serializers.py:103
+#: ibet_apps/users/serializers.py:110
 msgid "First name not valid"
 msgstr "名字不正確"
 
-#: apps/users/serializers.py:105
+#: ibet_apps/users/serializers.py:112
 msgid "Last name not valid"
 msgstr "姓名不正確"
 
-#: apps/users/serializers.py:107 apps/users/serializers.py:111
-#: apps/users/serializers.py:113
+#: ibet_apps/users/serializers.py:114 ibet_apps/users/serializers.py:119
+#: ibet_apps/users/serializers.py:121
 msgid "Date of birth not valid"
 msgstr "出生日不正確"
 
-#: apps/users/serializers.py:115
-msgid "Phone not valid"
-msgstr "手機號不正確"
-
-#: apps/users/serializers.py:117
+#: ibet_apps/users/serializers.py:123
 msgid "City not valid"
 msgstr "城市名不正確"
 
-#: apps/users/serializers.py:119
+#: ibet_apps/users/serializers.py:125
 msgid "Country not valid"
 msgstr "國家不正確"
 
-#: apps/users/serializers.py:121
-msgid "State not valid"
-msgstr "州不正確"
-
-#: apps/users/serializers.py:123
+#: ibet_apps/users/serializers.py:127
 msgid "Zipcode not valid"
 msgstr "郵遞區號不正確"
 
-#: apps/users/serializers.py:239 apps/users/serializers.py:398
+#: ibet_apps/users/serializers.py:187 ibet_apps/users/serializers.py:346
 msgid "Must include \"email\" and \"password\"."
 msgstr "必须包括 \"email\" and \"password\""
 
-#: apps/users/serializers.py:250 apps/users/serializers.py:409
+#: ibet_apps/users/serializers.py:198 ibet_apps/users/serializers.py:357
 msgid "Must include \"username\" and \"password\"."
 msgstr "必须包括 \"username\" and \"password\""
 
-#: apps/users/serializers.py:263 apps/users/serializers.py:422
+#: ibet_apps/users/serializers.py:211 ibet_apps/users/serializers.py:370
 msgid "Must include either \"username\" or \"email\" and \"password\"."
 msgstr "必须包括 \"username\" or \"email\" and \"password\""
 
-#: apps/users/serializers.py:319 apps/users/serializers.py:464
+#: ibet_apps/users/serializers.py:267 ibet_apps/users/serializers.py:412
 msgid "User account is disabled."
 msgstr "用户账号不可用"
 
-#: apps/users/serializers.py:322 apps/users/serializers.py:467
+#: ibet_apps/users/serializers.py:270 ibet_apps/users/serializers.py:415
 msgid "Unable to log in with provided credentials."
 msgstr "用户名或密码错误"
 
-#: apps/users/serializers.py:331 apps/users/serializers.py:476
+#: ibet_apps/users/serializers.py:279 ibet_apps/users/serializers.py:424
 msgid "E-mail is not verified."
 msgstr "邮件没有被核实"
 
-#: apps/users/views.py:222
-msgid "Current user is blocked!"
-msgstr "用户被禁用"
+#: ibet_apps/users/views/adminview.py:715
+msgid "Cannot block the admin user"
+msgstr ""
 
-#: apps/users/views.py:227
+#: ibet_apps/users/views/adminview.py:854
+msgid "No search data"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:259 ibet_apps/users/views/views.py:308
 msgid "Please activate your account!"
 msgstr "请激活您的账户!"
 
-#: apps/users/views.py:355
+#: ibet_apps/users/views/views.py:298 ibet_apps/users/views/views.py:1070
+#: ibet_apps/users/views/views.py:1296 ibet_apps/users/views/views.py:1325
+#: ibet_apps/users/views/views.py:1373 ibet_apps/users/views/views.py:1411
+#: ibet_apps/users/views/views.py:1506 ibet_apps/users/views/views.py:1532
+#: ibet_apps/users/views/views.py:1571 ibet_apps/users/views/views.py:1613
+#: ibet_apps/users/views/views.py:1639 ibet_apps/users/views/views.py:1677
+#: ibet_apps/users/views/views.py:1700 ibet_apps/users/views/views.py:1725
+#, fuzzy
+#| msgid "Current user is blocked!"
+msgid "The current user is blocked!"
+msgstr "用户被禁用"
+
+#: ibet_apps/users/views/views.py:365
+#, fuzzy
+#| msgid "Must include \"username\" and \"password\"."
+msgid "Invalid username/ passowrd"
+msgstr "必须包括 \"username\" and \"password\""
+
+#: ibet_apps/users/views/views.py:415
 msgid "Successfully logged out."
 msgstr ""
 
-#: apps/users/views.py:375
+#: ibet_apps/users/views/views.py:438
 msgid "You have registered an account at ibet.com, "
 msgstr "您已经再ibet.com 注册了邮箱"
 
-#: apps/users/views.py:376
+#: ibet_apps/users/views/views.py:439
 msgid "You username is "
 msgstr "您的用户名是"
 
-#: apps/users/views.py:376
+#: ibet_apps/users/views/views.py:439
 msgid ", and your email address is "
 msgstr ",您新郵箱地址: "
 
-#: apps/users/views.py:379
+#: ibet_apps/users/views/views.py:442
 msgid "Request of changing email address"
 msgstr "要求更改郵箱地址"
 
-#: apps/users/views.py:380
+#: ibet_apps/users/views/views.py:443
 msgid "Your new Email Address is: "
 msgstr "您新郵箱地址: "
 
-#: apps/users/views.py:383
+#: ibet_apps/users/views/views.py:446
 msgid " referred you to sign up an account with Claymore"
 msgstr "推荐你注册一个claymore的账号"
 
-#: apps/users/views.py:384
+#: ibet_apps/users/views/views.py:447
 msgid "Please use the referral link to register your new account: "
 msgstr "请用推荐链接注册您的新账户"
 
-#: apps/users/views.py:404
+#: ibet_apps/users/views/views.py:466
 #, python-format
 msgid "Hi %(username)s, You have requested to reset your password"
 msgstr "嗨 %(username)s, 您要求重置密碼"
 
-#: apps/users/views.py:406
+#: ibet_apps/users/views/views.py:468
 msgid "Click the link to reset your email password: "
 msgstr "點擊連結重置密碼: "
 
-#: apps/users/views.py:656
+#: ibet_apps/users/views/views.py:737
 msgid "Please activate you ibet account "
 msgstr "请激活您的ibet账户"
 
-#: djauth/settings.py:180 templates/admin/base.html:34
-msgid "English"
+#: ibet_apps/users/views/views.py:1003
+#, fuzzy
+#| msgid "password"
+msgid "Reset Password"
+msgstr "密碼"
+
+#: ibet_apps/users/views/views.py:1004
+#, fuzzy
+#| msgid "Click the link to reset your email password: "
+msgid "Use this code to reset your password "
+msgstr "點擊連結重置密碼: "
+
+#: ibet_apps/users/views/views.py:1722
+msgid "Success"
 msgstr ""
 
-#: djauth/settings.py:181 templates/admin/base.html:35
-msgid "Chinese"
-msgstr "中文"
+#: ibet_apps/utils/constants.py:494
+msgid "Logout"
+msgstr "登出"
 
-#: djauth/settings.py:182
-msgid "Franch"
+#: ibet_apps/utils/constants.py:495
+msgid "Register"
+msgstr "註冊"
+
+#: ibet_apps/utils/constants.py:498
+msgid "Page Visit"
+msgstr "瀏覽頁面"
+
+#: ibet_apps/utils/constants.py:500
+msgid "SMS CODE"
 msgstr ""
+
+#: ibet_apps/utils/constants.py:1189
+msgid "What is your’s father birthday?"
+msgstr "您父亲的生日是？"
+
+#: ibet_apps/utils/constants.py:1190
+msgid "What is your’s mother birthday?"
+msgstr "您母亲的生日是？"
+
+#: ibet_apps/utils/constants.py:1191
+msgid "What is your’s spouse birthday?"
+msgstr "您配偶的生日是?"
+
+#: ibet_apps/utils/constants.py:1192
+msgid "What is your first company’s employee ID?"
+msgstr "您的第一家公司工号是？"
+
+#: ibet_apps/utils/constants.py:1193
+msgid "What is your primary school class teacher’s name?"
+msgstr "您小学班主任的名字是？"
+
+#: ibet_apps/utils/constants.py:1194
+msgid "What is your best childhood friend’s name?"
+msgstr "您最熟悉的童年好友是？"
+
+#: ibet_apps/utils/constants.py:1195
+msgid "What is the name of the person that influenced you the most?"
+msgstr "对您影响最大的人名字是？"
 
 #: templates/admin/base.html:36
 msgid "French"
@@ -509,3 +849,20 @@ msgstr ""
 #: templates/registration/logged_out.html:10
 msgid "Log in again"
 msgstr ""
+
+#~ msgid "bet"
+#~ msgstr "投注"
+
+#, fuzzy
+#~| msgid "A user is already registered with this username."
+#~ msgid "A user is already registered with this phone number."
+#~ msgstr "该用户名已被占用"
+
+#~ msgid "The two password fields didn't match"
+#~ msgstr "密碼不相符"
+
+#~ msgid "Phone not valid"
+#~ msgstr "手機號不正確"
+
+#~ msgid "State not valid"
+#~ msgstr "州不正確"
