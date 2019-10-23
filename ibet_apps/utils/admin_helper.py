@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 from users.models import CustomUser
 from accounting.models import Transaction
+from games.models import GameBet
 from utils.constants import *
 
 import logging
@@ -62,15 +63,24 @@ def calculateActiveDownlineNumber(affiliate_id):
                 affiliate_active_users += 1
     return affiliate_active_users
 
+
 # input: queryset of users, filter date range
 # output: queryset of active users between start_time and end_time
-def filterAvtiveUser(queryset, start_time, end_time):
+def filterActiveUser(queryset, start_time, end_time):
     # get bet transaction in this period
+    if start_time and end_time:
+        game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
+    elif start_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__gte=start_time)
+    elif end_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
+    else:
+        return queryset
 
-    # if queryset:
-    #     for user in queryset:
-
-
+    active_user_list = game_bet_tran.values_list('username', flat=True)
+    if queryset:
+        queryset = queryset.filter(pk__in=active_user_list)
+    return queryset
 
 
 # calculate ftd user number in certain user_group within certain time range
@@ -108,6 +118,7 @@ def calculateBonus(user, start_time, end_time):
 
 def calculateNGR(user, start_time, end_time):
     return 0
+
 
 # USER SYSTEM
 # create unique refer code for both user and affiliate

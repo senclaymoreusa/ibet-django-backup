@@ -1,20 +1,7 @@
 $(document).ready(function () {
-    var csrftoken = $.cookie("csrftoken")
-    function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-    $.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
-    });
+
     $("#min_date").datepicker();
     $("#max_date").datepicker();
-    var minDate = $('#min_date').val();
-    var maxDate = $('#max_date').val();
 
     var vip_table = $('#vip_table').DataTable({
         "serverSide": true,
@@ -25,8 +12,8 @@ $(document).ready(function () {
             data: {
                 'type': 'getVIPInfo',
                 'system': 'vip_admin',
-                'minDate': function () { return minDate; },
-                'maxDate': function () { return maxDate; },
+                'minDate': function () { return formatStringToDate($('#min_date').val()); },
+                'maxDate': function () { return formatStringToDate($('#max_date').val()); },
             },
         },
         columns: [
@@ -51,38 +38,31 @@ $(document).ready(function () {
             { data: 'bonus_cost' },
             { data: 'ngr' },
         ],
-
-        dom: 'B<ftilp>',
-        buttons: [
-            'csv',
-        ],
         "language": {
             "info": " _START_ - _END_ of _TOTAL_",
             "infoEmpty": " 0 - 0 of 0",
             "infoFiltered": "",
             "paginate": {
-                "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></button>",
+                "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></button>",
             },
             "lengthMenu": "_MENU_",
+            searchPlaceholder: "  Enter user ID, username or manager",
+            search: "",
         },
     });
 
 //    $(".dt-buttons .buttons-csv").text("Export");
 //
-//    $('#min_date, #max_date').change(function () {
-//        minDate = $('#min_date').val();
-//        maxDate = $('#max_date').val();
-//        minDate = formatStringToDate(minDate);
-//        maxDate = formatStringToDate(maxDate);
-//        vip_table.draw();
-//    });
-//    function formatStringToDate(date) {
-//        if (date.length === 0) {
-//            return date;
-//        }
-//        var parts = date.split('/');
-//        date = parts[2] + '-' + parts[0] + '-' + parts[1];
-//        return date;
-//    }
+    $('#min_date, #max_date').change(function () {
+        vip_table.draw();
+    });
+    function formatStringToDate(date) {
+        if (date.length === 0) {
+            return date;
+        }
+        var parts = date.split('/');
+        date = parts[2] + '-' + parts[0] + '-' + parts[1];
+        return date;
+    }
 });

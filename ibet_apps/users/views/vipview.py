@@ -18,6 +18,8 @@ class VIPView(CommAdminView):
         get_type = request.GET.get("type")
         if get_type == "getVIPInfo":
             result = {}
+            queryset = CustomUser.objects.all()
+
             if request.GET.get("system") == 'vip_admin':
                 try:
                     draw = int(request.GET.get('draw', 1))
@@ -29,7 +31,7 @@ class VIPView(CommAdminView):
                     minDate = request.GET.get('minDate', None)
                     maxDate = request.GET.get('maxDate', None)
 
-                    queryset = CustomUser.objects.all().order_by('-created_time')
+                    queryset = filterActiveUser(queryset, minDate, maxDate).order_by('-created_time')
 
                     #  TOTAL ENTRIES
                     total = queryset.count()
@@ -69,7 +71,7 @@ class VIPView(CommAdminView):
                 if deposit_count == 0:
                     ave_deposit = 0
                 else:
-                    ave_deposit = ("%.2f" % (deposit_amount/deposit_count))
+                    ave_deposit = ("%.2f" % (deposit_amount / deposit_count))
 
                 if referee:
                     referee = referee.pk

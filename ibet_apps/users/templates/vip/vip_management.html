@@ -15,21 +15,14 @@
 
 <body>
     <div id="vip_management">
-        <div class="row">
-            <div class="col-md-4 input-group" style="float: left; margin-top: 20px;">
-                <input type="text" id="search" class="form-control" placeholder="Enter user ID, username or manager">
-                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white;"><span
-                        class="glyphicon glyphicon-search"></span></span>
-            </div>
-            <div class="col-md-4 date_range" style="float: right">
-                <label>ACTIVE DATE RANGE</label>
-                <br>
-                <input name="min_date" id="min_date" type="text" placeholder="From">
-                <input name="max_date" id="max_date" type="text" placeholder="To">
-            </div>
+        <div id="date_range">
+            <label>ACTIVE DATE RANGE</label>
+            <br>
+            <input name="min_date" id="min_date" type="text" placeholder="From">
+            <input name="max_date" id="max_date" type="text" placeholder="To">
         </div>
 
-        <div id="vip_table_container" style="overflow-x: scroll;">
+        <div id="vip_table_container">
             <table id="vip_table" class="table-striped table-bordered hover compact">
                 <thead>
                     <tr>
@@ -60,7 +53,7 @@
                     </tr>
                 </tbody>
             </table>
-            <!-- <label class="show-rows">SHOW ROWS</label> -->
+             <label class="show-rows">SHOW ROWS</label>
         </div>
     </div>
 
