@@ -585,14 +585,7 @@ class GenerateFakeUserGameURL(APIView):
         if 'Error' in dic['GB']['Result']['ReturnSet']:
 
             #temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
-            
-            dob_fields = self.request.user.date_of_birth.split('/') 
-
-            temp = '-'.join([
-                dob_fields[2],
-                dob_fields[0],
-                dob_fields[1]
-            ])
+             
             
             create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
             
@@ -601,12 +594,12 @@ class GenerateFakeUserGameURL(APIView):
                 "TPCode": "011",
                 "AuthKey": "kvZES8",
                 "Params": {
-                    "MemberID": self.request.user.username,
-                    "FirstName": self.request.user.first_name,
-                    "LastName": self.request.user.last_name,
-                    "Nickname": self.request.user.username,
+                    "MemberID": 'Fakeuser',
+                    "FirstName": 'Fake',
+                    "LastName": 'User',
+                    "Nickname": 'Fake User',
                     "Gender": "2",
-                    "Birthdate": temp,
+                    "Birthdate": '10-10-1996',
                     "CyCode": "CN",
                     "CurCode": "CNY",
                     "LangCode": "zh-cn",
