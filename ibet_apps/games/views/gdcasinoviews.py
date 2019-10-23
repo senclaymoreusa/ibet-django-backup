@@ -18,8 +18,8 @@ logger = logging.getLogger('django')
 #soap
 from django.views.decorators.csrf import csrf_exempt
 from spyne.application import Application
-from spyne.decorator import rpc
-from spyne.model.primitive import Unicode, Integer, Decimal
+from spyne.decorator import rpc,srpc
+from spyne.model.primitive import Unicode, Integer, Decimal, Double
 from spyne.protocol.soap import Soap11
 from spyne.server.django import DjangoApplication
 from spyne.service import ServiceBase,Service
@@ -27,10 +27,11 @@ from spyne.protocol.xml import XmlDocument
 from spyne.util.django import DjangoComplexModel, DjangoService
 from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
-from spyne.model.complex import ComplexModel
+from spyne.model.complex import ComplexModel, XmlAttribute
 
 
 class Container(ComplexModel):
+    # __namespace__ = 'https://testgdgame-namespace.org'
     StatusCode = Integer
     UserBalance = Decimal
     
@@ -53,14 +54,84 @@ class ObjectNotFoundError(ResourceNotFoundError):
             self, faultcode='Client.{0}NotFound'.format(object_name),
             faultstring=message)
 
-class LiveDealerSoapService(Service):
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def GetUserBalance(ctx, userId, currency,loginToken):
+class GetUserBalanceRequest(ComplexModel):
+    __type_name__ = 'GetUserBalance'
+    __namespace__ = 'https://testgdgame-namespace.org'
+    # userId = XmlAttribute(Unicode)
+    # currency = XmlAttribute(Unicode)
+    # loginToken = XmlAttribute(Unicode)
+    _type_info = [
+        ('userId', Unicode),
+        ('currency', Unicode),
+        ('loginToken', Unicode),
+    ]
+    
+class DebitRequest(ComplexModel):
+    __type_name__ = 'Debit'
+    # __namespace__ = 'https://testgdgame-namespace.org'
+    _type_info = [
+        ('userId', Unicode),
+        ('gameId', Unicode),
+        ('gameType', Unicode),
+        ('transactionId', Unicode),
+        ('amount', Decimal),
+        ('currency', Unicode),
+        ('ipAddress', Unicode),
+        ('gameView', Unicode),
+        ('clientType', Unicode),
+        ('loginToken', Unicode),
+    ]
+class CreditRequest(ComplexModel):
+    __type_name__ = 'Credit'
+    # __namespace__ = 'https://testgdgame-namespace.org'
+    _type_info = [
+        ('userId', Unicode),
+        ('gameId', Unicode),
+        ('gameType', Unicode),
+        ('transactionId', Unicode),
+        ('amount', Decimal),
+        ('currency', Unicode),
+        ('validBetAmount', Unicode),
+        ('loginToken', Unicode),
+    ]
+class TipRequest(ComplexModel):
+    __type_name__ = 'Tip'
+    # __namespace__ = 'https://testgdgame-namespace.org'
+    _type_info = [
+        ('userId', Unicode),
+        ('transactionId', Unicode),
+        ('amount', Decimal),
+        ('currency', Unicode),
+        ('ipAddress', Unicode),
+        ('loginToken', Unicode),
+        ('tipId', Integer)
+    ]
+class CancelRequest(ComplexModel):
+    __type_name__ = 'Cancel'
+    # __namespace__ = 'https://testgdgame-namespace.org'
+    _type_info = [
+        ('userId', Unicode),
+        ('gameId', Unicode),
+        ('gameType', Unicode),
+        ('transactionId', Unicode),
+        ('amount', Decimal),
+        ('currency', Unicode),
+        ('cancelReason', Unicode),
+    ]
+ 
+class LiveDealerSoapService(ServiceBase):
+    @rpc(GetUserBalanceRequest,  _body_style='bare', _returns=Container)
+    def GetUserBalance(ctx,request):
+        userId = request.userId
+        print(userId)
+        loginToken = request.loginToken
+        currency = request.currency
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet
             token = Token.objects.get(user=user)
             res = Container()
+
             if str(token) == loginToken:
                 res.StatusCode = 0
             else:
@@ -71,29 +142,27 @@ class LiveDealerSoapService(Service):
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
-    Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def Debit(crx, userId, gameId, gameType, transactionId, amount, currency, ipAddress, gameView, clientType, loginToken):
-        
+    @rpc(DebitRequest, _body_style='bare', _returns=Container)
+    def Debit(crx, request):
         try:
-            user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet - amount
+            user = CustomUser.objects.get(username=request.userId)
+            userBalance = user.main_wallet - request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
             res = Container()
-            if str(token) == loginToken:
+            if str(token) == request.loginToken:
                 res.StatusCode = 0
-                GDCasino.objects.create(username=user,   
-                                        gameId=gameId,
-                                        gameType=gameType,
-                                        transactionId=transactionId,
-                                        currency=currency,
-                                        amount=amount,
-                                        ipAddress=ipAddress,
-                                        gameView=gameView,
-                                        status=1,
-                                        clientType=clientType)
+                # GDCasino.objects.create(username=user,   
+                #                         gameId=request.gameId,
+                #                         gameType=request.gameType,
+                #                         transactionId=request.transactionId,
+                #                         currency=request.currency,
+                #                         amount=request.amount,
+                #                         ipAddress=request.ipAddress,
+                #                         gameView=request.gameView,
+                #                         status=1,
+                #                         clientType=request.clientType)
             else:
                 res.StatusCode = 2
             res.UserBalance = userBalance
@@ -103,26 +172,25 @@ class LiveDealerSoapService(Service):
             raise ObjectNotFoundError(e)
 
 
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
-    Unicode(nillable=True),Decimal(nillable=True),Unicode(nillable=True), _returns=Container)
-    def Credit(crx, userId, gameId, gameType, transactionId, amount, currency, validBetAmount, loginToken):  
+    @rpc(CreditRequest,_body_style='bare', _returns=Container)
+    def Credit(crx,request):  
         try:
-            user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet - amount
+            user = CustomUser.objects.get(username=request.userId)
+            userBalance = user.main_wallet - request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
             res = Container()
-            if str(token) == loginToken:
+            if str(token) == request.loginToken:
                 res.StatusCode = 0
-                GDCasino.objects.create(username=user,   
-                                        gameId=gameId,
-                                        gameType=gameType,
-                                        transactionId=transactionId,
-                                        currency=currency,
-                                        status=2,
-                                        amount=amount,
-                                        )
+                # GDCasino.objects.create(username=user,   
+                #                         gameId=gameId,
+                #                         gameType=gameType,
+                #                         transactionId=transactionId,
+                #                         currency=currency,
+                #                         status=2,
+                #                         amount=amount,
+                #                         )
             else:
                 res.StatusCode = 2
             res.UserBalance = userBalance
@@ -131,27 +199,26 @@ class LiveDealerSoapService(Service):
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
     
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),Unicode(nillable=True),Unicode(nillable=True),
-    Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def Tip(crx, userId, transactionId, amount, currency, ipAddress, loginToken,tipId):  
+    @rpc(TipRequest,_body_style='bare', _returns=Container)
+    def Tip(crx, request):  
         try:
-            user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet - amount
+            user = CustomUser.objects.get(username=request.userId)
+            userBalance = user.main_wallet - request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
             res = Container()
-            if str(token) == loginToken:
+            if str(token) == request.loginToken:
                 res.StatusCode = 0
-                GDCasino.objects.create(username=user,   
-                                        gameId=gameId,
-                                        gameType=gameType,
-                                        transactionId=transactionId,
-                                        currency=currency,
-                                        amount=amount,
-                                        ipAddress=ipAddress,
-                                        status=3,
-                                        tipId=tipId)
+                # GDCasino.objects.create(username=user,   
+                #                         gameId=gameId,
+                #                         gameType=gameType,
+                #                         transactionId=transactionId,
+                #                         currency=currency,
+                #                         amount=amount,
+                #                         ipAddress=ipAddress,
+                #                         status=3,
+                #                         tipId=tipId)
             else:
                 res.StatusCode = 2
             res.UserBalance = userBalance
@@ -160,33 +227,35 @@ class LiveDealerSoapService(Service):
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
     
-    @rpc(Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Unicode(nillable=True),Decimal(nillable=True),
-    Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def Cancel(crx, userId, gameId, gameType, transactionId, amount, currency, cancelReason):  
+    @rpc(CancelRequest,_body_style='bare', _returns=Container)
+    def Cancel(crx, request):  
         try:
-            user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet + amount
+            user = CustomUser.objects.get(username=request.userId)
+            userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
             res = Container()
             res.StatusCode = 0
-            try: 
-                record = GDCasino.objects.get(transactionId=transactionId,
-                                              amount=amount,
-                                              currency=currency,
-                                              username=user)
-                record.status=4
-                record.cancelReason=cancelReason
-                record.save()
-                res.UserBalance = userBalance
-                return res
-            except ObjectDoesNotExist as e:
-                raise ObjectNotFoundError(e)                             
+            res.UserBalance = userBalance
+            return res
+            # try: 
+            #     record = GDCasino.objects.get(transactionId=transactionId,
+            #                                   amount=amount,
+            #                                   currency=currency,
+            #                                   username=user)
+            #     record.status=4
+            #     record.cancelReason=cancelReason
+            #     record.save()
+            #     res.UserBalance = userBalance
+            #     return res
+            # except ObjectDoesNotExist as e:
+            #     raise ObjectNotFoundError(e)                             
             
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
+class SlotSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def GetUserBalance(ctx, userId, currency):
         try:
@@ -194,10 +263,7 @@ class LiveDealerSoapService(Service):
             userBalance = user.main_wallet
             token = Token.objects.get(user=user)
             res = Container()
-            if str(token) == loginToken:
-                res.StatusCode = 0
-            else:
-                res.StatusCode = 2
+            res.StatusCode = 0
             res.UserBalance = userBalance
             return res
             
@@ -211,6 +277,7 @@ soap_app = Application(
     tns='https://testgdgame-namespace.org',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11(),
+    
 )
 
 django_soap_application = DjangoApplication(soap_app)
