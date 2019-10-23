@@ -173,8 +173,8 @@ class CustomUser(AbstractBaseUser):
     
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
-    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
-    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
+    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
+    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True, blank=True)
     user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
     affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
@@ -208,6 +208,11 @@ class CustomUser(AbstractBaseUser):
     vipProgram = models.BooleanField(default=False)
 
     brand = models.CharField(choices=BRAND_OPTIONS, null=True, blank=True, max_length=50)
+
+    # security question and answer and withdraw password
+    withdraw_password = models.CharField(_('withdraw password'), max_length=128, blank=True, null=True)
+    security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
+    security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
     
     created_time = models.DateTimeField(
         _('Created Time'),

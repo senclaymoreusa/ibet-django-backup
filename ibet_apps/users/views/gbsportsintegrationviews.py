@@ -556,6 +556,72 @@ class GenerateGameURL(APIView):
 
         return Response({'game_url': url})
 
+class GenerateFakeUserGameURL(APIView):
 
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+
+        game = self.request.GET['game']
+
+        TPUniqueID = uuid.uuid4()
+
+        data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+            
+        "GB": {
+            "Method": "UpdateTPUniqueID",
+            "TPCode": "011",
+            "AuthKey": "kvZES8",
+            "Params": {
+                "MemberID": 'Fakeuser',
+                "TPUniqueID": str(TPUniqueID) 
+                }
+            }
+        })
+
+        dic = data.json()
+
+        if 'Error' in dic['GB']['Result']['ReturnSet']:
+             
+            create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+            
+            "GB": {
+                "Method": "CreateMember",
+                "TPCode": "011",
+                "AuthKey": "kvZES8",
+                "Params": {
+                    "MemberID": 'Fakeuser',
+                    "FirstName": 'Fake',
+                    "LastName": 'User',
+                    "Nickname": 'Fake User',
+                    "Gender": "2",
+                    "Birthdate": '10-10-1996',
+                    "CyCode": "CN",
+                    "CurCode": "CNY",
+                    "LangCode": "zh-cn",
+                    "TPUniqueID": "new"
+                    }
+                }
+            })
+
+            create_user_data = create_user_data.json()
+
+            GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
+
+        else:
+            GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
+
+        res = requests.get('http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
+        res = res.content.decode('utf-8')
+        res = res[2:-2]
+
+        dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
+
+        if game == 'GB Sports':
+            url = 'http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+        else:
+            url = 'http://163.claymoreusa.net/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
+
+        return Response({'game_url': url})
 
 
