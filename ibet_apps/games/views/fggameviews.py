@@ -15,6 +15,20 @@ from utils.constants import *
 
 logger = logging.getLogger("django")
 
+class SessionCheck(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        sessionKey = request.GET['sessionKey']
+        rr = requests.get(FG_SESSION_CHECK ,params={
+            "sessionKey": sessionKey
+        })
+        if rr.status_code == 200:
+            rr = rr.text    
+           
+        else:
+            # Handle error
+            logger.info(rr)
+        return HttpResponse(rr) 
 
 class FGLogin(APIView):
 

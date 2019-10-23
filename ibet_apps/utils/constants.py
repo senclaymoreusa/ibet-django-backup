@@ -505,8 +505,9 @@ BRANDID = '524'
 BRAND_PASSWORD = 'Flow6refg'
 PLATFORM = 'NETENT_CAS',
 FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-
+FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
+#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
+LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
 ASIAPAY_CMDTYPE = (

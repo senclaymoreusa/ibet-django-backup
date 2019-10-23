@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
 
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
+    path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),
     path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
