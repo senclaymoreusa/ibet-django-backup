@@ -56,9 +56,6 @@ class ObjectNotFoundError(ResourceNotFoundError):
 class GetUserBalanceRequest(ComplexModel):
     __type_name__ = 'GetUserBalance'
     __namespace__ = 'https://testgdgame-namespace.org'
-    # userId = XmlAttribute(Unicode)
-    # currency = XmlAttribute(Unicode)
-    # loginToken = XmlAttribute(Unicode)
     _type_info = [
         ('userId', Unicode),
         ('currency', Unicode),
@@ -67,7 +64,7 @@ class GetUserBalanceRequest(ComplexModel):
     
 class DebitRequest(ComplexModel):
     __type_name__ = 'Debit'
-    # __namespace__ = 'https://testgdgame-namespace.org'
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('gameId', Unicode),
@@ -82,7 +79,7 @@ class DebitRequest(ComplexModel):
     ]
 class CreditRequest(ComplexModel):
     __type_name__ = 'Credit'
-    # __namespace__ = 'https://testgdgame-namespace.org'
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('gameId', Unicode),
@@ -95,7 +92,7 @@ class CreditRequest(ComplexModel):
     ]
 class TipRequest(ComplexModel):
     __type_name__ = 'Tip'
-    # __namespace__ = 'https://testgdgame-namespace.org'
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('transactionId', Unicode),
@@ -107,7 +104,7 @@ class TipRequest(ComplexModel):
     ]
 class CancelRequest(ComplexModel):
     __type_name__ = 'Cancel'
-    # __namespace__ = 'https://testgdgame-namespace.org'
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('gameId', Unicode),
