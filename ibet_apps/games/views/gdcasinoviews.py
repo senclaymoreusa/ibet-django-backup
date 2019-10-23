@@ -7,7 +7,6 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from users.models import CustomUser
 from  games.models import *
-from zeep import Client
 import hashlib,logging,hmac,requests,xmltodict,random,string
 import xml.etree.ElementTree as ET
 from time import gmtime, strftime, strptime
