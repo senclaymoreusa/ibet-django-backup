@@ -121,6 +121,8 @@ class KaiyuanAPI(View):
         # Kick Player off
         elif s == 8:
             param = "s=" + str(s) + "&account=" + account
+        else:
+            return HttpResponse("Undefined request type")
         
         
         # kind_id = '0' # game lobby
