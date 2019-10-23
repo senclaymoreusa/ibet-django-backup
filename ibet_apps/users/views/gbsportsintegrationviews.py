@@ -581,12 +581,8 @@ class GenerateFakeUserGameURL(APIView):
 
         dic = data.json()
 
-
         if 'Error' in dic['GB']['Result']['ReturnSet']:
-
-            #temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
              
-            
             create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
             
             "GB": {
