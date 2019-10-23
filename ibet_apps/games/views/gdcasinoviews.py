@@ -122,7 +122,6 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(GetUserBalanceRequest,  _body_style='bare', _returns=Container)
     def GetUserBalance(ctx,request):
         userId = request.userId
-        print(userId)
         loginToken = request.loginToken
         currency = request.currency
         try:
@@ -269,7 +268,11 @@ class SlotSoapService(ServiceBase):
         except ObjectDoesNotExist as e:
             raise ObjectNotFoundError(e)
 
+def on_method_return_string(ctx):
+    ctx.out_string[0] = ctx.out_string[0].replace(b'tns:', b'')
+    ctx.out_string[0] = ctx.out_string[0].replace(b's0:', b'')
 
+LiveDealerSoapService.event_manager.add_listener('method_return_string', on_method_return_string)
 
 soap_app = Application(
     [LiveDealerSoapService],
@@ -278,8 +281,9 @@ soap_app = Application(
     out_protocol=Soap11(),
     
 )
-
+soap_app.interface.nsmap['soap'] = soap_app.interface.nsmap['soap11env']
 django_soap_application = DjangoApplication(soap_app)
+
 my_soap_application = csrf_exempt(django_soap_application)
 
 
