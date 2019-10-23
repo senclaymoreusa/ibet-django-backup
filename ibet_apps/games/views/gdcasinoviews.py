@@ -94,6 +94,7 @@ class DebitRequest(ComplexModel):
         ('clientType', Unicode),
         ('betInfo', Array(Bet)),
         ('loginToken', Unicode),
+        ('linkId', Unicode),
         
     ]
 
@@ -109,7 +110,12 @@ class CreditRequest(ComplexModel):
         ('currency', Unicode),
         ('validBetAmount', Unicode),
         ('betInfo', Array(Bet)),
+        ('closeFlag', Unicode),
+        ('ipAddress', Unicode),
         ('loginToken', Unicode),
+        ('linkId', Unicode),
+        ('turnOver', Unicode),
+        ('winLoss', Unicode),
     ]
 class TipRequest(ComplexModel):
     __type_name__ = 'Tip'
@@ -149,15 +155,15 @@ class LiveDealerSoapService(ServiceBase):
             token = Token.objects.get(user=user)
             res = Container()
 
-            if str(token) == loginToken:
-                res.StatusCode = 0
-            else:
-                res.StatusCode = 2
+            res.StatusCode = 0
             res.UserBalance = userBalance
             return res
             
         except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
+            # raise ObjectNotFoundError(e)
+            res.StatusCode = -1
+            res.UserBalance = userBalance
+            return res
 
     @rpc(DebitRequest, _body_style='bare', _returns=Container)
     def Debit(crx, request):
