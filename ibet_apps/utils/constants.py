@@ -1204,3 +1204,10 @@ BRAND_OPTIONS = (
     ('ibet', 'iBet')
 )
 
+# Games
+
+# Kaiyuan Gaming
+KY_AGENT = "71452"
+KY_LINE_CODE_1 = "iBet01"
+KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
+KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
