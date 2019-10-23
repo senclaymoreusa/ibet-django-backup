@@ -1802,9 +1802,17 @@ class SetWithdrawPassword(View):
         
         try:
             data = json.loads(request.body)
-            userId = data['userId']
+            userId = data['userId'] 
             withdrawPassword = data['withdrawPassword']
             customUser = CustomUser.objects.get(pk=userId)
+            if customUser.withdraw_password:
+                response = {
+                    "code": ERROR_CODE_INVAILD_INFO,
+                    "message": "You already setting the withdraw password"
+                }
+                logger.info("Already setting the withdraw password: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
             customUser.withdraw_password = make_password(withdrawPassword)
             customUser.save()
 
