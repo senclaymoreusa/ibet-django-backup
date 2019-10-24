@@ -361,25 +361,16 @@ hr {
       <form id="playergroup" action="{% url 'xadmin:messagegroups' %}">
         {% csrf_token %}
           <div class="form-group">
-            <label for="group_name">NAME</label>
+            <label for="group_name">NAME *</label>
             <input type="text" class="form-control" name="group_name" placeholder="Give your group a descriptive name" required>
           </div>
           <p class="manually-text">PLAYERS IN GROUP</p>
-          <table id="tdt"></table>
-          <table id="player_table">
-            <thead class="thead-dark" hidden>
-              <tr>
-                <th style="width: 25%;">PLAYER ID</th>
-                <th style="width: 75%;">USERNAME</th>
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
+          <table id="player_table" class="display" width="100%">
           </table>
           <div id="errorMessage"></div>
           <div style="margin-top:30px;">
               <button type="submit" class="btn btn-primary">Save</button>
-              <button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+              {% comment %} <button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button> {% endcomment %}
               <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
           </div>
       </form>
@@ -631,8 +622,8 @@ hr {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
 
 <script>
 
@@ -918,28 +909,54 @@ $(document).ready(function() {
   });
 
   $('#player_file').change(function(e) {
-    var data = null;
     var file = e.target.files[0];
 
-    var reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = function (event) {
+    if(file) {
+      var reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = function (event) {
         var csvData = event.target.result;
+        console.log(csvData);
 
         var parsedCSV = d3.csv.parseRows(csvData);
 
         console.log(parsedCSV);
 
+        /*
         if(parsedCSV.length > 0) {
           $("#player_modal").modal({'show' : true});
           $("#player_table thead").prop("hidden", false);
           //$("#add-btn").prop("disabled", false);
+            $("#player_table").DataTable({
+              data: parsedCSV,
+              columns: [
+                  { title: "PLAYER ID" },
+                  { title: "USERNAME" }
+              ]
+            });
         }
+        */
 
-        $("#tdt").DataTable({
-          data: parsedCSV
+        var players = JSON.stringify(parsedCSV);
+        console.log(players)
+
+        $.ajax({
+          type: "GET",
+          url: "{% url 'static-players-validation' %}",
+          data: {
+            "players": players
+          },
+          success: function(data) {
+            /*
+            if (data.errorCode === 1) {
+              $('#errorMessage').text(data.error);
+              $('#errorMessage').css('color', 'red');
+            } else {
+              window.location.reload();
+            }
+            */  
+          }
         });
-
         /*
         parsedCSV.forEach(function (d, i) {
             if (i == 0) return true; // skip the header
@@ -949,6 +966,7 @@ $(document).ready(function() {
               )
         });
         */
+      }
     }
   });
 

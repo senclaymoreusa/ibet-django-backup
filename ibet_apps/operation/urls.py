@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/group-detail', views.MessageGroupDetailAPI.as_view(), name='group-detail'),
     path('api/group-update/', views.MessageGroupUpdateAPI.as_view(), name='group-update'),
     path('api/user-valid/', views.UserIsValidAPI.as_view(), name='user-valid'),
+    path('api/static-players-validation/', views.StaticPlayerGroupValidationAPI.as_view(), name='static-players-validation'),
     # path('api/referral/', views.ReferralAward.as_view(), name='referral'),
     # path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
     # path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),

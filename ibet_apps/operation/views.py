@@ -508,6 +508,7 @@ class AuditNotificationView(CommAdminView):
             return HttpResponse(e)
 
 
+# User Group related views
 class MessageUserGroupView(CommAdminView):
     def get(self, request, *arg, **kwargs):
         getType = request.GET.get('type')
@@ -666,6 +667,31 @@ class MessageUserGroupView(CommAdminView):
             return HttpResponse("success delete")
 
 
+class StaticPlayerGroupValidationAPI(View):
+    def get(self, request, *args, **kwargs):
+        # username = request.GET.get("username")
+        # user = get_object_or_404(CustomUser, username=username)
+        print(2)
+        # players = json.loads(request.raw_post_data)
+        valid_players = []
+        players = request.GET.get("players")
+        players = json.loads(players)
+        for player in players:
+            player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
+            if len(player) > 0:
+                valid_players.append(player[0])
+
+        return HttpResponse(status=200)
+
+
+class UserIsValidAPI(View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get("username")
+        user = get_object_or_404(CustomUser, username=username)
+        return HttpResponse(status=200)
+
+
+# Campaign 
 class CampaignView(CommAdminView):
     def get(self, request, *arg, **kwargs):
         getType = request.GET.get('type')
@@ -1334,9 +1360,5 @@ class UserToAWSTopicView(ListAPIView):
     serializer_class = UserToAWSTopicSerializer
     queryset = UserToAWSTopic.objects.all()
 
-class UserIsValidAPI(View):
-    def get(self, request, *args, **kwargs):
-        username = request.GET.get("username")
-        user = get_object_or_404(CustomUser, username=username)
-        return HttpResponse(status=200)
+
         
