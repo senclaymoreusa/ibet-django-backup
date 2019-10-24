@@ -609,7 +609,7 @@ class approvePayout(generics.GenericAPIView):
             update_data.release_by = user
             update_data.save()
 
-            logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
+            logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
             return Response(rdata)
 
         except ObjectDoesNotExist as e:
@@ -696,7 +696,7 @@ class rejectPayout(generics.GenericAPIView):
 
                     addOrWithdrawBalance(user.username, update_data.amount, 'add')
 
-                    logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
+                    logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
                     return Response(rdata)
             except ObjectDoesNotExist as e:
                 logger.error(e)
@@ -705,7 +705,7 @@ class rejectPayout(generics.GenericAPIView):
 
             except DatabaseError as e:
                 logger.info("Error update transaction " + str(e))
-                return Response({"error": "Error update transaction ", "code": ERROR_CODE_DATABASE})
+                return Response({"error": "Error updating transaction ", "code": ERROR_CODE_DATABASE})
 
         else:
             logger.error('The request information is not correct, please try again.')
