@@ -260,20 +260,23 @@ class LiveDealerSoapService(ServiceBase):
             user.save()
             res = Container()
             cate = Category.objects.get(name='LIVE-CASINO')
-            try:
-                betTrans = GameBet.objects.get(provider=PROVIDER, category=cate,ref_no=request.transactionId,username=user)
-                if str(token) == request.loginToken:
-                    res.StatusCode = 0
-                    betTrans.amount_wagered = request.amount + betTrans.amount_wagered
-                    betTrans.save()
-                else:
-                    res.StatusCode = 2
-                res.UserBalance = userBalance
-                return res
-            except ObjectDoesNotExist as e:
-                res.StatusCode = -1
-                res.UserBalance = userBalance
-                return res
+            
+            if str(token) == request.loginToken:
+                GameBet.objects.create(provider=PROVIDER,   
+                                    category=cate,
+                                    username=user, 
+                                    currency=request.currency, 
+                                    market=2,
+                                    ref_no=request.transactionId,
+                                    amount_wagered=request.amount,
+                                    bet_type=TIP,
+                                    )
+                res.StatusCode = 0
+            else:
+                res.StatusCode = 2
+            res.UserBalance = userBalance
+            return res
+            
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
             res.UserBalance = userBalance

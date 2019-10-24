@@ -203,11 +203,18 @@ GAME_TYPE_CHOICES = (
 SPREAD = 'SPREAD'
 MONEYLINE = 'LINE'
 TOTAL = 'OU'
+TIP = 'TIP'
+SINGLE = 'Single'
+PARLAY = 'Parlay'
+
 BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
     (MONEYLINE, 'Moneyline'),
     (TOTAL, 'Total O/U'),
-    
+    (TIP, 'Tip'),
+    (SINGLE, 'Single'),
+    (PARLAY,'Parlay'),
+
 ]
 OUTCOME_CHOICES = [
     (0, 'Win'),
