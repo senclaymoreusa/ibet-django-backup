@@ -22,7 +22,7 @@ from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawC
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 
 from time import sleep, gmtime, strftime
-
+from users.views.helper import *
 
 
 QAICASH_NAME = 3
@@ -351,7 +351,15 @@ class submitDeposit(generics.GenericAPIView):
 
         #retry
         success = False
-        
+        if checkUserBlock(user.pk):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
 
         r = requests.post(url, headers=headers, data = {
             'orderId' : trans_id,
@@ -449,6 +457,15 @@ class submitPayout(generics.GenericAPIView):
         email = self.request.GET.get('email')
          #retry
         success = False
+        if checkUserBlock(user.pk):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
         r = requests.post(url, headers=headers, data = {
             'orderId' : trans_id,
             'amount' : amount,
