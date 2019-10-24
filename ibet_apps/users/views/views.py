@@ -1151,6 +1151,7 @@ class GenerateActivationCode(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
+
 class VerifyActivationCode(APIView):
 
     permission_classes = (AllowAny,)
@@ -1159,11 +1160,18 @@ class VerifyActivationCode(APIView):
         username = request.data['username']
         code = request.data['code']
         user = get_user_model().objects.filter(username=username)
-        if user[0].activation_code == code:
-            user.update(active=True)
-            user.update(activation_code='')
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        last_verify_action = UserAction.objects.filter(Q(user=user)&Q(event_type=EVENT_CHOICES_SMS_CODE)).order_by('-created_time')[0]
+
+        delta = timezone.now() - timedelta(seconds=180)
+        if verification_time < last_verify_action.created_time:
+            if user[0].activation_code == code:
+                user.update(active=True)
+                user.update(activation_code='')
+                return Response(status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(ERROR_CODE_TIME_EXCEED)
 
 
 class UserSearchAutocomplete(View):
