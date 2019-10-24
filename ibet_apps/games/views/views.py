@@ -1,12 +1,13 @@
+import logging
+
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
-from games.models import *
-from users.models import Game as oldGame
+from games.models import Game
 from users.serializers import GameSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
-import logging
+
 from django.core import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -60,9 +61,9 @@ class GamesSearchView(View):
         # print("theme: " + str(theme))
         # print("sort: " + str(sort))
 
-        filter = Q()
+        gameFilter = Q()
         if q:
-            filter |= (
+            gameFilter |= (
                 # Q(name__icontains=q)|Q(name_zh__icontains=q)|
                 # Q(name_fr__icontains=q)|Q(description__icontains=q)|
                 # Q(description_zh__icontains=q)|Q(description_fr__icontains=q)| 
@@ -74,9 +75,9 @@ class GamesSearchView(View):
 
         if gameType:
             # print(str(gameType))
-            filter = filter & Q(category_id__parent_id__name__iexact=gameType)
+            gameFilter = gameFilter & Q(category_id__parent_id__name__iexact=gameType)
             if category != 'all' and category:
-                filter = filter & Q(category_id__name__iexact=category)
+                gameFilter = gameFilter & Q(category_id__name__iexact=category)
             logger.info("Filter by game category: " + str(gameType))
 
         providerFilter = Q()
@@ -90,10 +91,10 @@ class GamesSearchView(View):
                     else:
                         providerFilter = providerFilter | Q(provider=-1)
 
-        filter = filter & providerFilter
+        gameFilter = gameFilter & providerFilter
 
         for attr in attributeList:
-            filter = filter & Q(attribute__icontains=attr)
+            gameFilter = gameFilter & Q(attribute__icontains=attr)
             logger.info("Filter by attributes: " + str(attr)) 
 
         if sort == 'popularity':
@@ -108,7 +109,9 @@ class GamesSearchView(View):
         else:
             data = Game.objects.filter(filter).order_by('name')
             logger.info("Re-order list of games alphabetically by name") 
-
+        
+        print("games found")
+        print(data)
         if not data:
             logger.info('Search q did not match any categories or token')
         
@@ -121,17 +124,24 @@ class GamesSearchView(View):
 class ProvidersSearchView(View):
 
     def get(self, request,  *args, **kwargs):
-        q = request.GET.get('q').lower()
-        logger.info("Search providers by key word: " + str(q))
-        res = []
-        # print(str(q))
-        for provider in GAME_PROVIDERS:
-            name = provider[1]
-            if q in name.lower():
-                res.append(name)
 
-        logger.info("Sending game providers response......... ")
-        return HttpResponse(json.dumps(res), content_type='application/json')
+        try:
+            q = request.GET.get('q').lower()
+            logger.info("Search providers by keyword: " + str(q))
+            res = []
+            # print(str(q))
+            providers = GameProvider.objects.all()
+            for provider in providers:
+                name = provider.name
+                if q in name.lower():
+                    res.append(name)
+
+            logger.info("Sending game providers response......... ")
+            return HttpResponse(json.dumps(res), content_type='application/json')
+
+        except:
+            logger.error("Error getting GameProvider objects: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 class FilterAPI(View):
