@@ -693,7 +693,7 @@ class rejectPayout(generics.GenericAPIView):
             
         else:
             logger.error('The request information is not correct, please try again.')
-            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVAILD_INFO})
+            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVALID_INFO})
 class getDepositTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize

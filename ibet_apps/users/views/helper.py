@@ -69,8 +69,7 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
 
 
 
-def set_temporary_timeout(userId, intervalOption):
-    user = CustomUser.objects.get(pk=userId)
+def set_temporary_timeout(user, intervalOption):
     user.temporary_block_time = timezone.now()
     intervalOption = int(intervalOption)
     if intervalOption >= 0:
@@ -84,8 +83,7 @@ def set_temporary_timeout(userId, intervalOption):
     user.save()
     logger.info("Setting temporary timeout of user: {}, and temporary interval options is {} from ".format(str(user.username), str(intervalOption)))
 
-def set_permanent_timeout(userId, intervalOption):
-    user = CustomUser.objects.get(pk=userId)
+def set_permanent_timeout(user, intervalOption):
     user.permanent_block_time = timezone.now()
     intervalOption = int(intervalOption)
     if intervalOption >= 0:
@@ -123,9 +121,9 @@ def get_old_limitations(userId):
     return oldLimitMap
 
 
-def checkUserBlock(userId):
+def checkUserBlock(user):
     
-    user = get_object_or_404(CustomUser, pk=userId)
+    # user = get_object_or_404(CustomUser, pk=userId)
     if user.block is True:
         return True
     elif user.temporary_block_time or user.permanent_block_time:
