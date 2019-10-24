@@ -207,6 +207,7 @@ BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
     (MONEYLINE, 'Moneyline'),
     (TOTAL, 'Total O/U'),
+    
 ]
 OUTCOME_CHOICES = [
     (0, 'Win'),
@@ -241,10 +242,11 @@ VIP_CHOICES = (
 
 ibetVN = 0
 ibetTH = 1
-
+ibetCN = 2
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
+    (ibetCN, "ibet-CN"),
 )
 
 COUNTRY_CHOICES = (

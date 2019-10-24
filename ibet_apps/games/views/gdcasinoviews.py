@@ -28,6 +28,10 @@ from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
 from spyne.model.complex import ComplexModel, XmlAttribute, Array
 
+try:
+    PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+except ObjectDoesNotExist:
+    logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
 class Container(ComplexModel):
     # __namespace__ = 'https://testgdgame-namespace.org'
@@ -127,7 +131,8 @@ class TipRequest(ComplexModel):
         ('currency', Unicode),
         ('ipAddress', Unicode),
         ('loginToken', Unicode),
-        ('tipId', Integer)
+        ('tipId', Integer),
+        ('anchorId', Integer)
     ]
 class CancelRequest(ComplexModel):
     __type_name__ = 'Cancel'
@@ -174,53 +179,76 @@ class LiveDealerSoapService(ServiceBase):
             user.main_wallet = userBalance
             user.save()
             res = Container()
+            CATEGORY = request.gameType
+            if CATEGORY == '6':
+                category = 'Baccarat'
+            elif CATEGORY == '28':
+                category = 'Roulette'
+            elif CATEGORY == '29':
+                category = 'Sicbo'
+            elif CATEGORY == '100':
+                category = 'Slots'
+            cate = Category.objects.get(name=category)
+            
             if str(token) == request.loginToken:
                 res.StatusCode = 0
-                # GDCasino.objects.create(username=user,   
-                #                         gameId=request.gameId,
-                #                         gameType=request.gameType,
-                #                         transactionId=request.transactionId,
-                #                         currency=request.currency,
-                #                         amount=request.amount,
-                #                         ipAddress=request.ipAddress,
-                #                         gameView=request.gameView,
-                #                         status=1,
-                #                         clientType=request.clientType)
+                GameBet.objects.create(provider=PROVIDER,   
+                                       category=cate,
+                                       username=user, 
+                                       currency=request.currency, 
+                                       market=2,
+                                       ref_no=request.transactionId,
+                                       amount_wagered=request.amount,
+                                       )
             else:
                 res.StatusCode = 2
             res.UserBalance = userBalance
             return res
             
         except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
+            res.StatusCode = -1
+            res.UserBalance = userBalance
+            return res
 
 
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
         try:
             user = CustomUser.objects.get(username=request.userId)
-            userBalance = user.main_wallet - request.amount
+            userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
             res = Container()
-            if str(token) == request.loginToken:
-                res.StatusCode = 0
-                # GDCasino.objects.create(username=user,   
-                #                         gameId=gameId,
-                #                         gameType=gameType,
-                #                         transactionId=transactionId,
-                #                         currency=currency,
-                #                         status=2,
-                #                         amount=amount,
-                #                         )
-            else:
-                res.StatusCode = 2
+            CATEGORY = request.gameType
+            if CATEGORY == '6':
+                category = 'Baccarat'
+            elif CATEGORY == '28':
+                category = 'Roulette'
+            elif CATEGORY == '29':
+                category = 'Sicbo'
+            elif CATEGORY == '100':
+                category = 'Slots'
+            cate = Category.objects.get(name=category)
+            try:
+                betTrans = GameBet.objects.get(provider=PROVIDER, category=cate,ref_no=request.transactionId,username=user)
+                if str(token) == request.loginToken:
+                    res.StatusCode = 0
+                    betTrans.amount_won = request.amount
+                    betTrans.outcome = 0
+                    betTrans.save()
+                else:
+                    res.StatusCode = 2
+                res.UserBalance = userBalance
+                return res
+            except ObjectDoesNotExist as e:
+                res.StatusCode = -1
+                res.UserBalance = userBalance
+                return res
+        except ObjectDoesNotExist as e:
+            res.StatusCode = -1
             res.UserBalance = userBalance
             return res
-            
-        except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
     
     @rpc(TipRequest,_body_style='bare', _returns=Container)
     def Tip(crx, request):  
@@ -231,24 +259,25 @@ class LiveDealerSoapService(ServiceBase):
             user.main_wallet = userBalance
             user.save()
             res = Container()
-            if str(token) == request.loginToken:
-                res.StatusCode = 0
-                # GDCasino.objects.create(username=user,   
-                #                         gameId=gameId,
-                #                         gameType=gameType,
-                #                         transactionId=transactionId,
-                #                         currency=currency,
-                #                         amount=amount,
-                #                         ipAddress=ipAddress,
-                #                         status=3,
-                #                         tipId=tipId)
-            else:
-                res.StatusCode = 2
+            cate = Category.objects.get(name='LIVE-CASINO')
+            try:
+                betTrans = GameBet.objects.get(provider=PROVIDER, category=cate,ref_no=request.transactionId,username=user)
+                if str(token) == request.loginToken:
+                    res.StatusCode = 0
+                    betTrans.amount_wagered = request.amount + betTrans.amount_wagered
+                    betTrans.save()
+                else:
+                    res.StatusCode = 2
+                res.UserBalance = userBalance
+                return res
+            except ObjectDoesNotExist as e:
+                res.StatusCode = -1
+                res.UserBalance = userBalance
+                return res
+        except ObjectDoesNotExist as e:
+            res.StatusCode = -1
             res.UserBalance = userBalance
             return res
-            
-        except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
     
     @rpc(CancelRequest,_body_style='bare', _returns=Container)
     def Cancel(crx, request):  
@@ -259,24 +288,25 @@ class LiveDealerSoapService(ServiceBase):
             user.main_wallet = userBalance
             user.save()
             res = Container()
-            res.StatusCode = 0
-            res.UserBalance = userBalance
-            return res
-            # try: 
-            #     record = GDCasino.objects.get(transactionId=transactionId,
-            #                                   amount=amount,
-            #                                   currency=currency,
-            #                                   username=user)
-            #     record.status=4
-            #     record.cancelReason=cancelReason
-            #     record.save()
-            #     res.UserBalance = userBalance
-            #     return res
-            # except ObjectDoesNotExist as e:
-            #     raise ObjectNotFoundError(e)                             
+            
+            try: 
+                record = GameBet.objects.get(ref_no=request.transactionId,
+                                              amount_wagered=request.amount,
+                                              currency=request.currency,
+                                              username=user)
+                record.delete()
+                res.StatusCode = 0
+                res.UserBalance = userBalance
+                return res
+            except ObjectDoesNotExist as e:
+                res.StatusCode = -1
+                res.UserBalance = userBalance
+                return res                    
             
         except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
+            res.StatusCode = -1
+            res.UserBalance = userBalance
+            return res
 
 class SlotSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
