@@ -123,8 +123,7 @@ def get_old_limitations(userId):
 
 def checkUserBlock(user):
     
-    # user = get_object_or_404(CustomUser, pk=userId)
-    if user.block is True:
+    if user.block:
         return True
     elif user.temporary_block_time or user.permanent_block_time:
         expired_time = ''

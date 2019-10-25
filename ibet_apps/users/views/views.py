@@ -182,6 +182,48 @@ class UserDetailsView(RetrieveUpdateAPIView):
     serializer_class = UserDetailsSerializer
     permission_classes = (IsAuthenticated,)
 
+    def get(self, request):
+        try:
+            user = self.get_object()
+            serializer = UserDetailsSerializer(user)
+            if checkUserBlock(self.request.user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return Response(data)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error("Error getting user details", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        try:
+            user = self.get_object()
+            if checkUserBlock(self.request.user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return Response(data)
+
+            serializer = UserDetailsSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            
+            logger.info("User details format is not correct", e)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error("Error updating user details", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
     def get_object(self):
         return self.request.user
 
