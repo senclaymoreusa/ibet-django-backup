@@ -27,6 +27,9 @@ from xadmin.views import CommAdminView
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys, getAWSClient
 from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
+from users.serializers import LazyEncoder
+
 
 logger = logging.getLogger('django')
 
@@ -1245,7 +1248,7 @@ class NotificationUserIsReadAPI(View):
                         "detail": [errorMessage]
                     }
                 }
-                return HttpResponse(json.dumps(data), content_type='application/json', status=200)
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json', status=200)
 
             message = NotificationToUsers.objects.get(pk=notification_to_user_id)
             if message.is_read:
@@ -1272,7 +1275,7 @@ class NotificationUserIsDeleteAPI(View):
                         "detail": [errorMessage]
                     }
                 }
-                return HttpResponse(json.dumps(data), content_type='application/json', status=200)
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json', status=200)
             
             message.is_deleted = True
             message.save()
@@ -1324,6 +1327,16 @@ class NotificationToUsersDetailView(View):
             response = []
             # response['unread_list'] = []
             # response['read_list'] = []
+            user = CustomUser.objects.get(pk=notifier_id)
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json', status=200)
             
             message_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_deleted=False)).order_by('-pk')
 
