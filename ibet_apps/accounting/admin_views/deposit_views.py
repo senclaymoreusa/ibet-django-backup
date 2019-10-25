@@ -43,9 +43,11 @@ class GetDeposits(CommAdminView):
         else:
             curr_page = deposits[page*20:(page+1)*20]
             deposit_count = deposits.count()
+        print("deposit count: (to count total pages")
         print(deposit_count)
+        total_pages = (deposit_count - 1) // 20 if (deposit_count - 1) // 20 > 0 else 0
         context['page_no'] = page
-        context['total_pages'] = (deposit_count - 1) // 20
+        context['total_pages'] = total_pages
 
         if page > deposit_count // 20:
             raise Http404("This page does not exist")

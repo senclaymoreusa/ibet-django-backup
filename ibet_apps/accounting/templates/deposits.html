@@ -283,8 +283,10 @@
 
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
         if (window.location.search) {
-            console.log(window.location.search)
-            document.getElementById('search').value = window.location.search;
+            console.log(window.location.search);
+            let params = new URLSearchParams(window.location.search);
+
+            document.getElementById('search').value = params.get('search_params');
         }
 
         // user id, username, trans_no search
