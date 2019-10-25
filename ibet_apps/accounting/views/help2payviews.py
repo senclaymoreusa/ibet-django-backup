@@ -22,7 +22,7 @@ from django.conf import settings
 from des import DesKey
 from decimal import *
 from time import gmtime, strftime, strptime, sleep
-
+from users.views.helper import *
 
 
 logger = logging.getLogger("django")
@@ -65,7 +65,15 @@ class SubmitDeposit(generics.GenericAPIView):
 
         merchant_code = '123'
         secret_key = '123'
-
+        if checkUserBlock(CustomUser.objects.get(pk=user_id)):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
         if currency == '2':
             merchant_code = HELP2PAY_MERCHANT_THB
             secret_key = HELP2PAY_SECURITY_THB

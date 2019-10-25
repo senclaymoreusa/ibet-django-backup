@@ -20,6 +20,7 @@ from des import DesKey
 from time import gmtime, strftime, strptime, sleep
 from decimal import *
 from django.utils import timezone
+from users.views.helper import *
 
 logger = logging.getLogger("django")
 def generateHash(key, message):
@@ -39,6 +40,15 @@ class chargeCard(generics.GenericAPIView):
         message = bytes(transaction_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
+        if checkUserBlock(CustomUser.objects.get(username=user)):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
         data = {
             "pin": pin,
             "serial": serial,

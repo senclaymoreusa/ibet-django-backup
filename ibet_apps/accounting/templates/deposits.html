@@ -1,12 +1,19 @@
 {% extends "xadmin/base_site.html" %}
-{% load staticfiles%}
+{% load staticfiles %}
 
 {% block content-nav %}
 {% endblock %}
 
 {% block content %}
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-accounting.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-datatable.css" %}" />
+</head>
 
+<body>
 <div class="panel panel-default">
     <div class="panel-heading">
         <h2 class="panel-title">
@@ -411,7 +418,6 @@
 
 
 <script>
-
     $(document).ready(function () {
         var csrftoken = $.cookie("csrftoken")
 
@@ -660,8 +666,9 @@
                 }
             })
         })
-
     })
 </script>
 
+</body>
+</html>
 {% endblock %}

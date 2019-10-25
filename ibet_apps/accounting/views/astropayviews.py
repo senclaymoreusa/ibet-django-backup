@@ -8,7 +8,7 @@ from rest_framework import parsers, renderers, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-
+from users.views.helper import *
 from users.models import CustomUser
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import astroPaymentStatusSerialize
@@ -48,6 +48,7 @@ def astroNewInvoice(request):
     invoice = request.data.get('transaction_id')
     amount = request.data.get('amount')
     iduser = request.data.get('user_id')
+    user = CustomUser.objects.get(pk=iduser)
     bank = request.data.get('bank')
     cpf = request.data.get('cpf')
     email = request.data.get('email')
@@ -74,6 +75,15 @@ def astroNewInvoice(request):
         "x_email":email,
         "control":my_hmac,
     }
+    if checkUserBlock(user):
+        errorMessage = _('The current user is blocked!')
+        data = {
+            "errorCode": ERROR_CODE_BLOCK,
+            "errorMsg": {
+                "detail": [errorMessage]
+            }
+        }
+        return Response(data)
     for x in range(3):   
         r = requests.post(url, data=params)
         rdata = r.text
