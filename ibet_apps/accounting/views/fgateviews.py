@@ -21,7 +21,7 @@ from time import gmtime, strftime, strptime, sleep
 from decimal import *
 from django.utils import timezone
 from users.views.helper import *
-
+from django.utils.translation import ugettext_lazy as _
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)

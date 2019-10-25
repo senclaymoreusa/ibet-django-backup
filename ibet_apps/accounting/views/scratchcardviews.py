@@ -22,6 +22,7 @@ from utils.constants import *
 import utils.helpers as helpers
 from accounting.models import Transaction
 from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
 logger = logging.getLogger('django')
 
 

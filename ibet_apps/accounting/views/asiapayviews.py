@@ -25,6 +25,7 @@ import base64, socket
 from time import gmtime, strftime, strptime
 from django.utils import timezone
 from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger("django")
 

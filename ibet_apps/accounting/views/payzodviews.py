@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from users.views.helper import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-
+from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone

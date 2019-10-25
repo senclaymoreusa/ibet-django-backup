@@ -15,7 +15,7 @@ from accounting.serializers import astroPaymentStatusSerialize
 from utils.constants import *
 from time import sleep, gmtime, strftime
 from django.utils import timezone
-
+from django.utils.translation import ugettext_lazy as _
 import asyncio
 from accounting.views.sqs_message import send_message_sqs 
 
