@@ -34,20 +34,20 @@ CONTACT_OPTIONS = (
     ('Push_Notification', 'Push Notification')
 )
 
-CURRENCY_TYPES = (
-    ('USD', 'USD'),
-    ('EUR', 'EUR'),
-    ('JPY', 'JPY'),
-    ('CNY', 'CNY'),
-    ('HKD', 'HKD'),
-    ('AUD', 'AUD'),
-    ('THB', 'THB'),
-    ('MYR', 'MYR'),
-    ('VND', 'VND'),
-    ('MMK', 'MMK'),
-    ('XBT', 'XBT'),
-    ('TTC', 'TTC'),
-)
+# CURRENCY_TYPES = (
+#     ('USD', 'USD'),
+#     ('EUR', 'EUR'),
+#     ('JPY', 'JPY'),
+#     ('CNY', 'CNY'),
+#     ('HKD', 'HKD'),
+#     ('AUD', 'AUD'),
+#     ('THB', 'THB'),
+#     ('MYR', 'MYR'),
+#     ('VND', 'VND'),
+#     ('MMK', 'MMK'),
+#     ('XBT', 'XBT'),
+#     ('TTC', 'TTC'),
+# )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
