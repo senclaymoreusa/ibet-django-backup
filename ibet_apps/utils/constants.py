@@ -1224,3 +1224,14 @@ KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+
+#onebook
+ONEBOOK_VENDORID = "xmV64h8RULU"
+ONEBOOK_OPERATORID = "ibetclaymore"
+ONEBOOK_MAXTRANSFER = "50000"
+ONEBOOK_MINTRANSFER = "10"
+ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
+ONEBOOK_DIRECTION = (
+    (0, 'withdraw'),
+    (1, 'deposit'),
+)

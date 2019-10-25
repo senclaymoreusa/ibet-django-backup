@@ -7,7 +7,7 @@ import games.views.fggameviews as fggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 from games.live_casino import *
-
+import games.views.onebookviews as onebookviews
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -30,4 +30,7 @@ urlpatterns = [
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
+
+    #onebook
+    path('api/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
 ]
