@@ -11,7 +11,7 @@ import hashlib,logging,hmac,requests,xmltodict,random,string
 import xml.etree.ElementTree as ET
 from time import gmtime, strftime, strptime
 from rest_framework.authtoken.models import Token
-
+from games.helper import *
 logger = logging.getLogger('django')
 
 #soap
@@ -346,16 +346,16 @@ my_soap_application = csrf_exempt(django_soap_application)
 
 
 
-def generateHash(message):
-    hash = hashlib.sha256(message.encode('utf-8')).hexdigest()
-    return hash
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+# def generateHash(message):
+#     hash = hashlib.sha256(message.encode('utf-8')).hexdigest()
+#     return hash
+# def get_client_ip(request):
+#     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+#     if x_forwarded_for:
+#         ip = x_forwarded_for.split(',')[0]
+#     else:
+#         ip = request.META.get('REMOTE_ADDR')
+#     return ip
 class LoginView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
