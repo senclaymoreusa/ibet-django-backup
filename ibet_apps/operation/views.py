@@ -661,6 +661,22 @@ class MessageUserGroupView(CommAdminView):
                 logger.error(serializer.errors['name'][0])
                 return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
         
+        elif postType == "create_playergroup":
+            group_name = request.POST.get('group_name')
+            user_list = request.POST.get('user_list')
+            user_list = json.loads(user_list)
+
+            data = {
+                "name": group_name,
+                "groupType": MESSAGE_GROUP,
+                "creator": self.user.pk,
+            }
+
+            serializer = MessageUserGroupSerializer(data=data)
+
+            if serializer.is_valid():
+                print("Msg")
+            
         elif postType == "delete_group":
             group_name = request.POST.get('group_name')
             UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
@@ -671,7 +687,6 @@ class StaticPlayerGroupValidationAPI(View):
     def get(self, request, *args, **kwargs):
         # username = request.GET.get("username")
         # user = get_object_or_404(CustomUser, username=username)
-        print(2)
         # players = json.loads(request.raw_post_data)
         valid_players = []
         players = request.GET.get("players")
@@ -679,9 +694,12 @@ class StaticPlayerGroupValidationAPI(View):
         for player in players:
             player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
             if len(player) > 0:
-                valid_players.append(player[0])
+                valid_player = {}
+                valid_player["id"] = player[0].pk
+                valid_player["username"] = player[0].username
+                valid_players.append(valid_player)
 
-        return HttpResponse(status=200)
+        return HttpResponse(json.dumps(valid_players), content_type='application/json')
 
 
 class UserIsValidAPI(View):

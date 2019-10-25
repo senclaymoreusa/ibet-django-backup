@@ -658,6 +658,7 @@ $.ajax({
 
 var pk_list;
 var user_list;
+var userList;
 
 $(document).ready(function() {
   var previousURL = document.referrer;
@@ -916,29 +917,10 @@ $(document).ready(function() {
       reader.readAsText(file);
       reader.onload = function (event) {
         var csvData = event.target.result;
-        console.log(csvData);
 
         var parsedCSV = d3.csv.parseRows(csvData);
 
-        console.log(parsedCSV);
-
-        /*
-        if(parsedCSV.length > 0) {
-          $("#player_modal").modal({'show' : true});
-          $("#player_table thead").prop("hidden", false);
-          //$("#add-btn").prop("disabled", false);
-            $("#player_table").DataTable({
-              data: parsedCSV,
-              columns: [
-                  { title: "PLAYER ID" },
-                  { title: "USERNAME" }
-              ]
-            });
-        }
-        */
-
         var players = JSON.stringify(parsedCSV);
-        console.log(players)
 
         $.ajax({
           type: "GET",
@@ -947,6 +929,15 @@ $(document).ready(function() {
             "players": players
           },
           success: function(data) {
+            userList = data;
+            $("#player_modal").modal({'show' : true});
+            $("#player_table").DataTable({
+              data: data,
+              columns: [
+                  { data: "id" },
+                  { data: "username" }
+              ]
+            });
             /*
             if (data.errorCode === 1) {
               $('#errorMessage').text(data.error);
@@ -954,7 +945,7 @@ $(document).ready(function() {
             } else {
               window.location.reload();
             }
-            */  
+            */
           }
         });
         /*
@@ -1052,6 +1043,52 @@ $(document).ready(function() {
     }
   });
 
+  $('form').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    formId = form.attr("id");
+
+    var group_name = form.find('input[name="group_name"]').val();
+    var is_range = $('#range').prop("checked");
+    var is_deposit = $('#onlydeposited').prop("checked");
+    var groupId = null;
+
+    if(formId == "playergroup") {
+      var action = form.attr('action');
+      console.log(action);
+      var url = action.split('?')[0];
+      console.log(url);
+    }
+
+    userList = JSON.stringify(userList);
+
+    $.ajax({
+      type: "POST",
+      url: url,
+      data: {
+        'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'type': 'create_playergroup',
+        'group_id': groupId,
+        'group_name': group_name,
+        'user_list': userList,
+        'product': userFilter['product'],
+        'is_range': is_range,
+        'active_from': userFilter['active_from'],
+        'active_to': userFilter['active_to'],
+        'register_from': userFilter['register_from'],
+        'register_to': userFilter['register_to'],
+        'is_deposit': is_deposit,
+      },
+      success: function(data) {
+        if (data.errorCode === 1) {
+            $('#errorMessage').text(data.error);
+            $('#errorMessage').css('color', 'red');
+        } else {
+            window.location.reload();
+        }  
+      }
+    });
+  });
 
   $('#newgroup').submit(function(e) {
     e.preventDefault();
