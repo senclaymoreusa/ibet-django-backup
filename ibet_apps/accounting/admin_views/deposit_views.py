@@ -1,15 +1,14 @@
 from django.shortcuts import render, get_object_or_404
-from xadmin.views import CommAdminView
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, Http404
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
 from django.template.loader import render_to_string
-
-from accounting.models import *
-from users.models import CustomUser
 from django.core import serializers
 from django.utils import timezone
-from django.utils.timezone import timedelta
+
+from accounting.models import Transaction
+from users.models import CustomUser
+from xadmin.views import CommAdminView
 from utils.constants import *
 
 import simplejson as json
@@ -18,29 +17,64 @@ import logging
 logger = logging.getLogger("django")
 
 class GetDeposits(CommAdminView):
-    def get(self, request):
+    def get(self, request, page):
         context = super().get_context()
-        all_deposits = Transaction.objects.filter(transaction_type=TRANSACTION_DEPOSIT)
+        search_params = request.GET.get('search_params')
+        print("search params:")
+        print(search_params)
+        page = int(page)
+        type_deposit = Q(transaction_type=TRANSACTION_DEPOSIT)
+        deposits = Transaction.objects.filter(type_deposit).order_by('-request_time')
+
+        if search_params:
+            name = Q(username__icontains=search_params)
+            ids = Q(pk__icontains=search_params)
+            ref_nos = Q(transaction_id__icontains=search_params)
+
+            # get username & user id matches
+            usernames = CustomUser.objects.filter(name)  # get QuerySet of users that match param
+            user_ids = CustomUser.objects.filter(ids)  # get QuerySet of user_ids that match param
+            all_user_matches = Q(user_id__in=(usernames | user_ids))
+
+            all_transactions = deposits.filter(ref_nos | all_user_matches).order_by('-request_time')
+
+            curr_page = all_transactions[page*20:(page+1)*20]
+            deposit_count = all_transactions.count()
+        else:
+            curr_page = deposits[page*20:(page+1)*20]
+            deposit_count = deposits.count()
+        print(deposit_count)
+        context['page_no'] = page
+        context['total_pages'] = (deposit_count - 1) // 20
+
+        if page > deposit_count // 20:
+            raise Http404("This page does not exist")
+
         context['title'] = "Deposits"
         context['time'] = timezone.now()
-        context['results'] = list(all_deposits.values())
+
         txn_data = []
-        for trans in all_deposits:
-            transData = {}
-            transData["id"] = trans.user_id_id
-            transData["username"] = trans.user_id.username
-            transData["payment"] = trans.get_channel_display()
-            transData["tran_no"] = trans.transaction_id
-            transData["app_time"] = trans.request_time
-            transData["arr_time"] = trans.arrive_time
-            transData["order_id"] = trans.order_id
-            transData["amount"] = trans.amount
-            transData["note"] = trans.remark
-            txn_data.append(transData)
+        for trans in curr_page:
+            trans_data = dict()
+            trans_data["id"] = trans.user_id_id
+            trans_data["username"] = trans.user_id.username
+            trans_data["payment"] = trans.get_channel_display()
+            trans_data["method"] = trans.method
+            trans_data["tran_no"] = trans.transaction_id
+            trans_data["app_time"] = trans.request_time
+            trans_data["arr_time"] = trans.arrive_time
+            trans_data["order_id"] = trans.order_id
+            trans_data["amount"] = trans.amount
+            trans_data["note"] = trans.remark
+            trans_data["pk"] = trans.pk
+            trans_data["status"] = trans.get_status_display()
+            txn_data.append(trans_data)
 
-        context['transactions'] = txn_data
-        return render(request, 'deposits.html', context=context, content_type=json)
+        context['transactions'] = txn_data  # array of txn objects
+        return render(request, 'deposits.html', context=context, content_type="text/html; charset=utf-8")
 
+    def post(self):
+        return render()
 
 class DepositView(CommAdminView):
     def get(self, request):
@@ -60,29 +94,30 @@ class DepositView(CommAdminView):
         success_tran = []
         fail_tran = []
         cancel_tran = []
-
+        all_trans = []
         for trans in deposit_trans:
-            transData = {}
-            transData["user_id"] = trans.user_id_id
-            transData["username"] = trans.user_id.username
-            transData["payment"] = trans.get_channel_display()
-            transData["tran_no"] = trans.transaction_id
-            transData["app_time"] = trans.request_time
-            transData["arr_time"] = trans.arrive_time
-            transData["order_id"] = trans.order_id
-            transData["amount"] = trans.amount
-            transData["note"] = trans.remark
-            transData["status"] = trans.get_status_display()
+            trans_data = {}
+            trans_data["id"] = trans.user_id_id
+            trans_data["username"] = trans.user_id.username
+            trans_data["payment"] = trans.get_channel_display()
+            trans_data["tran_no"] = trans.transaction_id
+            trans_data["app_time"] = trans.request_time
+            trans_data["arr_time"] = trans.arrive_time
+            trans_data["order_id"] = trans.order_id
+            trans_data["amount"] = trans.amount
+            trans_data["note"] = trans.remark
+            trans_data["status"] = trans.get_status_display()
+            all_trans.append(trans_data)
+            if trans.status == TRAN_SUCCESS_TYPE:
+                success_tran.append(trans_data)
+            if trans.status == TRAN_CREATE_TYPE:
+                pending_tran.append(trans_data)
+            if trans.status == TRAN_FAIL_TYPE:
+                fail_tran.append(trans_data)
+            if trans.status == TRAN_CANCEL_TYPE:
+                cancel_tran.append(trans_data)
 
-            if trans.status == TRAN_SUCCESS:
-                success_tran.append(transData)
-            if trans.status == TRAN_CREATED:
-                pending_tran.append(transData)
-            if trans.status == TRAN_FAIL:
-                fail_tran.append(transData)
-            if trans.status == TRAN_CANCEL:
-                cancel_tran.append(transData)
-
+        context["all_trans"] = all_trans
         context["pending_tran"] = pending_tran
         context["success_tran"] = success_tran
         context["fail_tran"] = fail_tran

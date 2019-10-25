@@ -1,6 +1,5 @@
 {% extends "xadmin/base_site.html" %}  # navigation side bar
 {% load staticfiles%}  # import css / other static files
-
 {% block content-nav %}
 {% endblock %}
 
@@ -12,253 +11,116 @@
         </h2>
     </div>
     <div class="panel-body">
-        <!-- search bar and time filter -->
+        <!-- search bar  -->
         <div class="row">
             <div class='col-md-4'>
                 <div class="input-group">
-                    <input type=" text" id="search" class="form-control"
+                    <label for="search"></label>
+                    <input type="text" id="search" class="form-control"
                         placeholder="Enter user ID, username or transaction number">
                     <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                             class="glyphicon glyphicon-search"></span></span>
                 </div>
             </div>
-            <div class='col-md-2' style="float: right">
-                <div class='input-group date' id='deposit_time_to'>
-                    <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
-                    <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
+        </div>
+        <!-- status filter & date range -->
+        <div class="row">
+            <div class="col-md-4" style="padding: 10px 0 0 30px">
+                <div class="input-group">
+                    <label for="status-filter">STATUS</label>
+                    <div class="row">
+                        <select id="status-filter">
+                            <option value="created">ALL</option>
+                            <option value="created">CREATED</option>
+                            <option value="pending">PENDING</option>
+                            <option value="approved">APPROVED</option>
+                            <option value="failed">FAILED</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div class='col-md-2' style="float: right">
+            <div class='col-md-2' style="padding: 10px 0 0 30px">
                 <div class='input-group date' id='deposit_time_from'>
+{#                    <label for="min">DATE RANGE</label>#}
                     <input type='text' class="form-control" placeholder="From" id='min' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
             </div>
-
+            <div class='col-md-2' style="padding: 10px 0 0 30px">
+                <div class='input-group date' id='deposit_time_to'>
+{#                    <label for="max">TO</label>#}
+                    <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
         </div>
-
-        <!-- four nav tab: PENDING, SUCCESS, FAILED, CANCELLED -->
-        <div class="nav-bar" style="width:99%">
-            <nav>
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item active">
-                        <a class="nav-link" id="home-tab" data-toggle="tab" href="#pending" role="tab"
-                            aria-controls="pending" aria-selected="true">PENDING ({{ pending_tran|length }})</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="profile-tab" data-toggle="tab" href="#success" role="tab"
-                            aria-controls="success" aria-selected="false">SUCCESS</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#failed" role="tab"
-                            aria-controls="failed" aria-selected="false">FAILED</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#cancelled" role="tab"
-                            aria-controls="cancelled" aria-selected="false">CANCELLED</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-
-        <div class="tab-content datatable" id="myTabContent">
-            <!-- PENDING TABLE -->
-            <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab"
-                style="margin-bottom: 50px;">
-                <table id="pending_table" class="table-striped table-bordered hover compact"
-                    style="width:97%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">PLAYER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">PAYMENT</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">BANK</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col" style="display: none">pk</th>
-                            <th scope="col">STATUS</th>
-                            <th scope="col">DETAILS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pending_deposit_data">
-                        {% for tran in pending_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.user_id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.payment }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.bank }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td style="display: none">{{ tran.pk }}</td>
-                            <td>{{ tran.status }}</td>
-                            <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                                    data-target="#audit_deposit">Audit</button></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <!-- SUCCESS TABLE -->
-            <div class="tab-pane fade" id="success" role="tabpanel" aria-labelledby="profile-tab"
-                style="margin-bottom: 50px;">
-                <table id="success_deposit_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">PLAYER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">PAYMENT</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">REF NO.</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">ARRIVE TIME</th>
-                            <th scope="col">BANK</th>
-{#                            <th scope="col">BRANCH</th>#}
-{#                            <th scope="col">CITY</th>#}
-{#                            <th scope="col">NAME</th>#}
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">APPLY AMOUNT</th>
-                            <th scope="col">NOTE</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in success_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.user_id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.payment }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.order_id }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.arr_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.bank }}</td>
-{#                            <td>{{ tran.branch }}</td>#}
-{#                            <td>{{ tran.city }}</td>#}
-{#                            <td>{{ tran.name }}</td>#}
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-note" data-toggle="tooltip"
-                                    title="{{ tran.note }}" data-placement="top" data-html="true">
-                                    <i class="fa fa-comment-o"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <button type='button' class='btn btn-sm btn-look'><i class='fa fa-search'></i></button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <!-- FAILED TABLE -->
-            <div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="profile-tab"
-                style="margin-bottom: 50px;">
-                <table id="fail_deposit_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px;">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">PLAYER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">PAYMENT</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">REF NO.</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">BANK</th>
-{#                            <th scope="col">BRANCH</th>#}
-{#                            <th scope="col">CITY</th>#}
-{#                            <th scope="col">NAME</th>#}
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">APPLY AMOUNT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in fail_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.user_id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.payment }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.order_id }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.bank }}</td>
-{#                            <td>{{ tran.branch }}</td>#}
-{#                            <td>{{ tran.city }}</td>#}
-{#                            <td>{{ tran.name }}</td>#}
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <!-- CANCELLED TABLE -->
-            <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="contact-tab"
-                style="margin-bottom: 50px;">
-                <table id="cancelled_deposit_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px;">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">PLAYER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">PAYMENT</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">REF NO.</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">BANK</th>
-{#                            <th scope="col">BRANCH</th>#}
-{#                            <th scope="col">CITY</th>#}
-{#                            <th scope="col">NAME</th>#}
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">APPLY AMOUNT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in cancel_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.user_id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.payment }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.order_id }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.bank }}</td>
-{#                            <td>{{ tran.branch }}</td>#}
-{#                            <td>{{ tran.city }}</td>#}
-{#                            <td>{{ tran.name }}</td>#}
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
+        <!-- actual deposit table & data -->
+        <div id="deposits-section" aria-labelledby="home-tab"
+            style="margin-bottom: 50px;">
+            <table id="deposits-table" class="table-striped table-bordered hover compact"
+                style="table-layout: auto; width: 98.5%; margin-bottom: 20px">
+                <thead>
+                    <tr>
+{#                            <th scope="col">#</th>#}
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">USERNAME</th>
+                        <th scope="col">CHANNEL</th>
+                        <th scope="col">METHOD</th>
+                        <th scope="col">TRANSACTION NO.</th>
+                        <th scope="col">PROVIDER REF NO.</th>
+                        <th scope="col">CREATED TIME</th>
+                        <th scope="col">RESOLVE TIME</th>
+                        <th scope="col">BANK</th>
+                        <th scope="col">AMOUNT</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col"></th>
+{#                        <th scope="col">pk</th>#}
+                    </tr>
+                </thead>
+                <tbody id="pending_deposit_data">
+                    {% for tran in transactions %}
+                    <tr>
+{#                            <td>{{ forloop.counter }}</td>#}
+                        <td>{{ tran.id }}</td>
+                        <td>{{ tran.username }}</td>
+                        <td>{{ tran.payment }}</td>
+                        <td>{{ tran.method }}</td>
+                        <td>{{ tran.tran_no }}</td>
+                        <td>{{ tran.order_id }}</td>
+                        <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
+                        <td>{{ tran.arr_time|date:'d/m/y H:i:s' }}</td>
+                        <td>{{ tran.bank }}</td>
+                        <td>{{ tran.amount }}</td>
+                        <td>{{ tran.status }}</td>
+                        <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                                data-target="#audit_deposit">Audit</button></td>
+{#                        <td>{{ tran.pk }}</td>#}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
+    <!-- pagination -->
+    <div class="container" style="padding-bottom: 50px">
+        <div class="row">
+            <div class="col-md-offset-11">
+                 <p>Page {{ page_no|add:'1' }} of {{ total_pages|add:'1' }}</p>
+            </div>
+            <div class="col-md-offset-11">
+                {% if page_no != 0 %}
+                    <button id="prev-page">Prev</button>
+                {% endif %}
+                {% if page_no != total_pages %}
+                    <button id="next-page">Next</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     <!-- audit popup window -->
     <div class="modal fade" id="audit_deposit" role="dialog">
         <div id="deposit_request_pop" class="modal-dialog">
@@ -379,19 +241,23 @@
 
 <!-- datatables -->
 <!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
-<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
-<script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
+{#<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>#}
+{#<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>#}
+{#<script type="text/javascript" language="javascript"#}
+{#    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>#}
+{#<script type="text/javascript" language="javascript"#}
+{#    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>#}
+{#<script type="text/javascript" language="javascript"#}
+{#    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>#}
 
 <!-- datepicker -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
     type="text/css" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+{#<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">#}
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>#}
+{#<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>#}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
@@ -415,107 +281,38 @@
             }
         });
 
-        // draw DataTable
-        let table = $('#pending_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 5, 6, 7, 8, 9, 10],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
-        });
-
-        let success_table = $('#success_deposit_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 6, 7, 8, 9, 10],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
-        });
-
-        let fail_cancel_table = $('#fail_deposit_table, #cancelled_deposit_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 3, 5, 6, 7, 8, 9],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
-        });
-
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
-
+        if (window.location.search) {
+            console.log(window.location.search)
+            document.getElementById('search').value = window.location.search;
+        }
 
         // user id, username, trans_no search
-        $('#search-btn').on('keyup click', function () {
-            table.search($('#search').val()).draw();
-            success_table.search($('#search').val()).draw();
+        $('#search-btn').on('click', function () {
+            let searchTerm = document.getElementById('search').value;
+            console.log("searching for: " + searchTerm);
+            // fetch data and redraw rows
+            window.location = "{% url 'xadmin:get_deposits' page=0 %}?search_params="+searchTerm;
+        });
+        $('#prev-page').click(() => {
+            window.location = "{% url 'xadmin:get_deposits' page=page_no|add:'-1' %}" + window.location.search;
+        });
+        $('#next-page').click(() => {
+            window.location= "{% url 'xadmin:get_deposits' page=page_no|add:'1' %}" + window.location.search;
         });
 
-
-        // date range search
-        $.fn.dataTable.ext.search.push(
-            function (settings, data, dataIndex) {
-                let min = $('#min').datepicker("getDate");
-                let max = $('#max').datepicker("getDate");
-
-                let dateParts = data[5].split("/");
-                let newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2];
-                let startDate = new Date(newDate);
-                if (min == null && max == null) { return true; }
-                if (min == null && startDate <= max) { return true; }
-                if (max == null && startDate >= min) { return true; }
-                else {return (startDate <= max && startDate >= min)}
-            }
-        );
 
         $("#min").datepicker({ onSelect: function () { table.draw(); success_table.draw(); }, changeMonth: true, changeYear: true });
         $("#max").datepicker({ onSelect: function () { table.draw(); success_table.draw(); }, changeMonth: true, changeYear: true });
 
         // Event listener to the two range filtering inputs to redraw on input
         $('#min, #max').change(function () {
-            table.draw();
-            success_table.draw();
+            // table.draw();
+            // success_table.draw();
         });
 
         // send data to pop-up window
-        $('#pending_table tbody').on('click', 'button', function () {
+        $('#deposits-table tbody').on('click', 'button', function () {
             var data = table.row($(this).parents('tr')).data();
             // transaction pk: data[13]
             showDepositDetail(data);
@@ -665,7 +462,7 @@
                 },
                 success: function (data) {
                     // auto open next row audit btn
-                    $('#pending_table tbody tr').eq(dep_row_index).find('#edit-pending-detail-btn').click();
+                    $('#deposits-table tbody tr').eq(dep_row_index).find('#edit-pending-detail-btn').click();
                 }
             })
         })
