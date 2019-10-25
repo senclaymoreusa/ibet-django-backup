@@ -305,11 +305,6 @@
         $("#min").datepicker({ onSelect: function () { table.draw(); success_table.draw(); }, changeMonth: true, changeYear: true });
         $("#max").datepicker({ onSelect: function () { table.draw(); success_table.draw(); }, changeMonth: true, changeYear: true });
 
-        // Event listener to the two range filtering inputs to redraw on input
-        $('#min, #max').change(function () {
-            // table.draw();
-            // success_table.draw();
-        });
 
         // send data to pop-up window
         $('#deposits-table tbody').on('click', 'button', function () {
