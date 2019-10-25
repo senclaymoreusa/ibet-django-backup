@@ -1346,8 +1346,8 @@ class NotificationToUsersDetailView(View):
             # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
         except Exception as e:
-            logger.error("delete message error:", e)
-            return HttpResponse(status=201)
+            logger.error("delete message error:", repr(e))
+            return HttpResponse(status=400)
 
 
 class NotificationToUsersUnreadCountView(ListAPIView):
