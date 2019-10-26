@@ -13,8 +13,6 @@ import datetime
 import psycopg2
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
-from django.utils.translation import ugettext_lazy as _
-
 
 # There's really no point for logging, so I will use print everywhere.
 print ('Starting the Migration...')
