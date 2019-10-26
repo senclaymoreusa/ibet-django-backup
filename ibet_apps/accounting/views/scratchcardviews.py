@@ -11,7 +11,7 @@ from time import sleep
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-
+from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone
@@ -53,7 +53,7 @@ def create_deposit(request):
                     "detail": [errorMessage]
                 }
             }
-            return Response(data)
+            return JsonResponse(data)
         r = requests.get(SCRATCHCARD_URL, params={
             'partner': SCRATCHCARD_PARTNER_ID,
             'pin': pin,
