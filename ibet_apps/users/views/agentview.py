@@ -1,24 +1,10 @@
-from django.contrib.auth import get_user_model
 from django.core import serializers
 from django.http import HttpResponseRedirect, HttpResponse
-from django.urls import reverse, reverse_lazy
-from django.views import generic
-from django.views import View
-from django.utils.translation import ugettext_lazy as _
-from django.utils.timezone import timedelta, localtime, now
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth, TruncYear, TruncDate, Coalesce
-from django.contrib import messages
 from django.shortcuts import render
-from django.template.defaulttags import register
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.mail import EmailMultiAlternatives
-from django.dispatch import receiver
-from django.template.loader import render_to_string
-from django.conf import settings
-from dateutil.relativedelta import relativedelta
-from django.shortcuts import render_to_response
 from decimal import Decimal
 
 from xadmin.views import CommAdminView
@@ -28,11 +14,9 @@ from users.models import CustomUser, UserAction, Commission, UserActivity, Refer
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
 
-
 import logging
 import simplejson as json
 import datetime
-
 
 logger = logging.getLogger('django')
 
@@ -46,7 +30,8 @@ class AgentView(CommAdminView):
             date = datetime.datetime.strptime(date, '%b %Y')
             # year =
             commission_transaction_this_month = Transaction.objects.filter(
-                Q(transaction_type=TRANSACTION_COMMISSION) & Q(request_time__gte=date) & Q(request_time__lte=date+relativedelta(months=1)))
+                Q(transaction_type=TRANSACTION_COMMISSION) & Q(request_time__gte=date) & Q(
+                    request_time__lte=date + relativedelta(months=1)))
 
             response = {}
             commission_this_month_record = []
@@ -58,7 +43,7 @@ class AgentView(CommAdminView):
                 tranDict['trans_pk'] = commission_transaction.pk
                 tranDict['active_players'] = calculateActiveDownlineNumber(user_id)
                 tranDict['downline_ftd'] = calculateFTD(
-                    commission_transaction.user_id.referees.all(), date-relativedelta(months=1), date)
+                    commission_transaction.user_id.referees.all(), date - relativedelta(months=1), date)
                 affiliate_last_commission_level = Commission.objects.filter(
                     user_id=commission_transaction.user_id).last()
                 if affiliate_last_commission_level in [None, '']:
@@ -75,7 +60,8 @@ class AgentView(CommAdminView):
                     total_bonus=Coalesce(Sum('amount'), 0))['total_bonus']
                 # query from bet history
                 tranDict['winorloss'] = 0
-                tranDict['commission'] = commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
+                tranDict['commission'] = \
+                commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
                     total_commission=Coalesce(Sum('amount'), 0))['total_commission']
                 if commission_transaction.status == TRAN_APPROVED_TYPE:
                     tranDict['status'] = "Released"
@@ -101,8 +87,10 @@ class AgentView(CommAdminView):
             user_detail['last_name'] = user_obj.last_name
             user_detail['email'] = user_obj.email
             user_detail['phone'] = user_obj.phone
-            user_detail['address'] = str(user_obj.street_address_1) + ', ' + str(user_obj.street_address_2) + ', ' + str(
-                user_obj.city) + ', ' + str(user_obj.state) + ', ' + str(user_obj.zipcode) + ', ' + str(user_obj.country)
+            user_detail['address'] = str(user_obj.street_address_1) + ', ' + str(
+                user_obj.street_address_2) + ', ' + str(
+                user_obj.city) + ', ' + str(user_obj.state) + ', ' + str(user_obj.zipcode) + ', ' + str(
+                user_obj.country)
             intro = user_obj.user_application_info
             if intro is None:
                 user_detail["intro"] = ""
@@ -168,8 +156,10 @@ class AgentView(CommAdminView):
                 user_to_affiliate_time__gte=last_month).count()
 
             # Commission Table
-            commission_transactions = commission_transaction.annotate(commission_release_month=TruncMonth('request_time')).values(
-                'commission_release_month').annotate(total_commission=Sum('amount')).order_by('-commission_release_month')
+            commission_transactions = commission_transaction.annotate(
+                commission_release_month=TruncMonth('request_time')).values(
+                'commission_release_month').annotate(total_commission=Sum('amount')).order_by(
+                '-commission_release_month')
 
             commission = []
             for trans in commission_transactions:
@@ -178,7 +168,7 @@ class AgentView(CommAdminView):
                 commission_dict['commission_release_month'] = current_month
                 commission_dict['total_commission'] = trans['total_commission']
                 affiliates_this_month = affiliates.filter(
-                    user_to_affiliate_time__gte=current_month+relativedelta(months=1))
+                    user_to_affiliate_time__gte=current_month + relativedelta(months=1))
                 commission_dict['affiliate_number'] = affiliates_this_month.count()
                 downline_list_this_month = getDownline(affiliates_this_month)
                 commission_dict['active_downline'] = bet_tran.filter(
@@ -186,7 +176,7 @@ class AgentView(CommAdminView):
 
                 # commission status(tran_type=commission, user_id in affiliate, month=current month)
                 commission_status = commission_transaction.filter(Q(request_time__gte=current_month) & Q(
-                    request_time__lte=current_month+relativedelta(months=1)) & ~Q(status=TRAN_APPROVED_TYPE)).count()
+                    request_time__lte=current_month + relativedelta(months=1)) & ~Q(status=TRAN_APPROVED_TYPE)).count()
                 if commission_status == 0:
                     commission_dict['commission_status'] = "All released"
                 else:
@@ -229,7 +219,7 @@ class AgentView(CommAdminView):
                     affiliates_dict['commission_month_before'] = commission_transaction_month_before.filter(
                         user_id=affiliate).aggregate(total_commission=Coalesce(Sum('amount'), 0))['total_commission']
                     affiliates_dict['balance'] = affiliate.main_wallet + \
-                        affiliate.other_game_wallet
+                                                 affiliate.other_game_wallet
                     affiliates_dict['status'] = affiliate.affiliate_status
                     affiliates_dict['level'] = affiliate.affiliate_level
                     affiliates_table.append(affiliates_dict)
@@ -285,12 +275,44 @@ class AgentView(CommAdminView):
             return HttpResponse(status=200)
 
 
+def get_downline_list(queryset, start_time, end_time):
+    downline_list = []
+
+    for downline in queryset:
+        downline_info = serializers.serialize("json", {downline}, fields=("pk", "time_of_registration",
+                                                                          "referred_by_channel", "ftd_time"))
+        print(downline_info)
+        downline_info = json.loads(downline_info)
+        print(downline_info)
+        downline_dict = {
+            # 'player_id': downline.pk,
+            # 'channel': downline.referred_by_channel,
+            # 'ftd': downline.ftd_time,
+            # 'registration_date': downline.time_of_registration,
+            # 'last_login': last_login(downline),
+            'total_deposit': calculateDeposit(downline, start_time, end_time)[0],
+            'total_withdrawal': calculateWithdrawal(downline, start_time, end_time)[0],
+            'total_bonus': calculateBonus(downline, start_time, end_time),
+            'total_adjustment': calculateAdjustment(downline, start_time, end_time),
+            'balance': getUserBalance(downline),
+            'turnover': calculateTurnover(downline, start_time, end_time),
+        }
+        print(downline_dict)
+        downline_dict.update(downline_info)
+        print(downline_dict)
+
+        downline_list.append(downline_dict)
+
+    return downline_list
+
+
 class AgentDetailView(CommAdminView):
 
     def get(self, request, *args, **kwargs):
         get_type = request.GET.get("type")
+
         if get_type == 'search_affiliate_manager':
-            text = request.GET['text']
+            text = request.GET.get('text')
             manager_id_list = CustomUser.objects.values('managed_by').distinct()
             manager_name_list = CustomUser.objects.filter(
                 pk__in=manager_id_list).values('username')
@@ -301,14 +323,54 @@ class AgentDetailView(CommAdminView):
                 rejson.append(recontent.username)
             return HttpResponse(json.dumps(rejson), content_type='application/json')
 
+        elif get_type == 'downlinePerformance':
+
+            draw = int(request.GET.get('draw', 1))
+            length = int(request.GET.get('length', 20))
+            start = int(request.GET.get('start', 0))
+            account_type = request.GET.get('accountType', -1)
+            status = request.GET.get('status', -1)
+            channel = request.GET.get('channel', -1)
+            min_date = request.GET.get('minDate', None)
+            max_date = request.GET.get('maxDate', None)
+            affiliate_id = request.GET.get('affiliateId')
+
+            # queryset = getDownline(affiliate_id).order_by('-time_of_registration')
+            min_date = dateToDatetime(min_date)
+            max_date = dateToDatetime(max_date)
+            queryset = CustomUser.objects.all()
+
+            #  TOTAL ENTRIES
+            total = queryset.count()
+
+            # # -1 is All Type for filter
+            # if account_type != -1:
+            #     queryset = queryset.filter(affiliate_status=account_type)
+            # if status != -1:
+            #     queryset = queryset.filter(member_status=status)
+
+            #  TOTAL ENTRIES AFTER FILTERED
+            count = queryset.count()
+
+            queryset = queryset[start:start + length]
+
+            queryset = get_downline_list(queryset, min_date, max_date)
+
+            result = {
+                'data': queryset,
+                'draw': draw,
+                'recordsTotal': total,
+                'recordsFiltered': count,
+            }
+
+            return HttpResponse(json.dumps(result), content_type='application/json')
         else:
-            context = super().get_context()         
+            context = super().get_context()
             affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
             title = "Affiliate " + affiliate.username
-
             downline = affiliate.referees.all()
-           
-            downline_deposit = deposit_tran.filter(user_id__in=downline).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+            downline_deposit = deposit_tran.filter(user_id__in=downline).aggregate(
+                total_deposit=Coalesce(Sum('amount'), 0))
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
                 transaction_type=TRANSACTION_COMMISSION)
@@ -330,10 +392,14 @@ class AgentDetailView(CommAdminView):
             # commission
             context["commission_this_month"] = affiliate_commission_tran.filter(request_time__gte=(
                 today.replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-            context["commission_last_month"] = affiliate_commission_tran.filter(Q(request_time__lte=(today.replace(day=1))) & Q(
-                request_time__gte=today.replace(day=1)+relativedelta(months=-1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-            context["commission_before_last"] = affiliate_commission_tran.filter(Q(request_time__lte=(today.replace(day=1)+relativedelta(months=-1))) & Q(
-                request_time__gte=today.replace(day=1)+relativedelta(months=-2))).aggregate(comm=Coalesce(Sum('amount'), 0))
+            context["commission_last_month"] = affiliate_commission_tran.filter(
+                Q(request_time__lte=(today.replace(day=1))) & Q(
+                    request_time__gte=today.replace(day=1) + relativedelta(months=-1))).aggregate(
+                comm=Coalesce(Sum('amount'), 0))
+            context["commission_before_last"] = affiliate_commission_tran.filter(
+                Q(request_time__lte=(today.replace(day=1) + relativedelta(months=-1))) & Q(
+                    request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
+                comm=Coalesce(Sum('amount'), 0))
             # downline status
             context["downline_number"] = getDownline(affiliate).count()
             context["active_users"] = calculateActiveDownlineNumber(affiliate)
@@ -345,7 +411,7 @@ class AgentDetailView(CommAdminView):
                 context["promotion_link"] = ""
             context["promotion_link_list"] = ReferChannel.objects.filter(
                 user_id=affiliate)
-            
+
             # related affiliates
             # get this affiliate's all ip addresses
             # filer other affiliate who have use these addresses before
@@ -353,7 +419,7 @@ class AgentDetailView(CommAdminView):
                 user=affiliate.pk).values_list('ip_addr').distinct()
             related_affiliate_list = UserAction.objects.filter(
                 ip_addr__in=affiliate_ip_list).values('user').exclude(user=affiliate.pk).distinct()
-            
+
             related_affiliates_data = []
             for related_affiliate in related_affiliate_list:
                 related_affiliates_info = {}
@@ -362,7 +428,6 @@ class AgentDetailView(CommAdminView):
                 related_affiliates_data.append(related_affiliates_info)
             context["related_affiliates"] = related_affiliates_data
 
-            
             # edit detail bottom
             try:
                 context["commission_type"] = Commission.objects.filter(
@@ -384,43 +449,9 @@ class AgentDetailView(CommAdminView):
             context["user_activities"] = user_activities
             context["user_activities_list"] = user_activities_list
 
-            # DOWNLINE LIST TABLE
-            downline_list_table = []
-            for i in affiliate.referees.all():
-                downline_info = {}
-                affiliate_tran = Transaction.objects.filter(user_id=i)
-                downline_info['affiliate_id'] = i.pk
-                downline_info['username'] = i.username
-                downline_info['time_of_registration'] = i.time_of_registration
-                if i.last_login_time is None:
-                    downline_info['last_login_time'] = ""
-                else:
-                    downline_info['last_login_time'] = i.last_login_time
-
-                if i.ftd_time is None:
-                    downline_info['ftd_time'] = ""
-                else:
-                    downline_info['ftd_time'] = i.ftd_time
-
-                downline_info['channel'] = ""
-                downline_info['deposit'] = affiliate_tran.filter(
-                    transaction_type=TRANSACTION_DEPOSIT).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
-                downline_info['withdraw'] = affiliate_tran.filter(
-                    transaction_type=TRANSACTION_WITHDRAWAL).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
-                downline_info['bouns'] = affiliate_tran.filter(
-                    transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
-                downline_info['adjustment'] = affiliate_tran.filter(
-                    transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-                downline_info['turnover'] = calculateTurnover(i)
-                downline_info['balance'] = i.main_wallet
-                downline_list_table.append(downline_info)
-            context["downline_list"] = downline_list_table
-
-            # CHANNEL REPORT TABLE
-            channel_repost = []
-            user_channel = ReferChannel.objects.filter(
-                user_id=affiliate).values_list('pk').distinct()
-            user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
+            # DOWNLINE LIST - FILTER
+            context["account_types"] = CustomUser.MEMBER_STATUS
+            context["donwline_status"] = AFFILIATE_STATUS
 
             # Total commission
             context["total_commission"] = commission_tran.aggregate(
@@ -532,10 +563,10 @@ class AgentDetailView(CommAdminView):
             manager = request.POST.get('manager')
             level_details = json.loads(level_detail)
             affiliate = CustomUser.objects.get(pk=affiliate_id)
-            
+
             try:
                 manager = CustomUser.objects.get(username=manager)
-                affiliate.managed_by=manager
+                affiliate.managed_by = manager
             except CustomUser.DoesNotExist:
                 manager = affiliate.managed_by
 
@@ -567,12 +598,13 @@ class AgentDetailView(CommAdminView):
                     logger.info("Update commission level " +
                                 i['level'] + " for affiliate " + affiliate.username)
                     commission_list.append(i['pk'])
-            deleted_commission_levels =  Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
+            deleted_commission_levels = Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
             deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
             if deleted_list.count() > 0:
-                logger.info("Admin user " + admin_user + " delete commission level " + str(deleted_list) + " for affiliate " + str(affiliate.username) )
+                logger.info("Admin user " + admin_user + " delete commission level " + str(
+                    deleted_list) + " for affiliate " + str(affiliate.username))
             deleted_commission_levels.delete()
-           
+
             # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
             # update affilite attributes
             manager = affiliate_detail[0]
@@ -596,6 +628,3 @@ class AgentDetailView(CommAdminView):
             subject = request.POST.get('subject')
             text = request.POST.get('text')
             return HttpResponse(status=200)
-
-
-

@@ -4,12 +4,11 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
 
-from users.models import CustomUser
+from users.models import CustomUser, UserAction
 from accounting.models import Transaction
 from utils.constants import *
 
 import logging
-import uuid
 
 logger = logging.getLogger('django')
 
@@ -114,3 +113,64 @@ def decode_user_id_from_referral_code(code):
             user_id += (36 ** i * index)
             i += 1
         return user_id
+
+
+# get user last login time
+def last_login(user):
+    action = UserAction.objects.filter(Q(user=user) &
+                                       Q(event_type=EVENT_CHOICES_LOGIN)).order_by('-created_time')
+    if action:
+        return action.created_time
+    return None
+
+
+'''
+@param date: mm/dd/yyyy
+@return: timezone datetime
+'''
+
+
+def dateToDatetime(date):
+    if date:
+        date = date.split('/')
+        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
+
+
+# TODO: functions need to be updated
+def calculateTurnover(user, start_time, end_time):
+    return 0
+
+
+def calculateGGR(user, start_time, end_time):
+    return 0
+
+
+def calculateDeposit(user, start_time, end_time):
+    count = 0
+    amount = 0
+    return count, amount
+
+
+def calculateWithdrawal(user, start_time, end_time):
+    count = 0
+    amount = 0
+    return count, amount
+
+
+def calculateBonus(user, start_time, end_time):
+    return 0
+
+
+def calculateNGR(user, start_time, end_time):
+    return 0
+
+
+def calculateAdjustment(user, start_time, end_time):
+    return 0
+
+
+def getUserBalance(user):
+    return user.main_wallet

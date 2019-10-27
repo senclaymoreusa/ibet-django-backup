@@ -16,28 +16,58 @@
         });
 
         var affiliate_id = $('#affiliate-id').val();
-        var admin_user = $('#admin_user').val();
+
+        $("#min_date").datepicker();
+        $("#max_date").datepicker();
 
         // DOWNLINE LIST TABLE
-        var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 1],
-            }],
+        var downlineListTable = $('#downline_list_table').DataTable({
+            "serverSide": true,
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
                 "infoEmpty": " 0 - 0 of 0",
                 "infoFiltered": "",
                 "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></i></button>",
+                    "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></i></button>"
                 },
                 "lengthMenu": "_MENU_",
             },
+            "columnDefs": [
+                {
+                    "orderable": false,
+                    "targets": 0
+                }
+            ],
+            "ajax": {
+                type: 'GET',
+                url: agent_detail_url,
+                data: {
+                    'type': 'downlinePerformance',
+                    'affiliateId': affiliate_id,
+                    'accountType': function() {var type=$('#account_type_filter :selected').val(); return type;},
+                    'status': function() {var status=$('#status_filter :selected').val(); return status;},
+                    'minDate': function () { return $('#min_date').val(); },
+                    'maxDate': function () { return $('#max_date').val(); },
+                },
+            },
+            columns: [
+                {data: "player_id"},
+                {data: 'player_id'},
+                {data: 'player_id'},
+                {data: 'channel'},
+                {data: 'ftd'},
+                {data: 'total_deposit'},
+                {data: 'total_withdrawal'},
+                {data: 'total_bonus'},
+                {data: 'total_adjustment'},
+                {data: 'balance'},
+                {data: 'turnover'},
+            ],
+        });
+
+        $('#account_type_filter, #status_filter, #channel').on('change', function () {
+            downlineListTable.draw();
         });
 
         var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
@@ -62,29 +92,8 @@
         })
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
 
-        // date range search
-        $.fn.dataTable.ext.search.push(
-            function (settings, data, dataIndex) {
-                var min = $('#min').datepicker("getDate");
-                var max = $('#max').datepicker("getDate");
-
-                var dateParts = data[2].split("/");
-                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
-                var startDate = new Date(newDate);
-
-                if (min == null && max == null) { return true; }
-                if (min == null && startDate <= max) { return true; }
-                if (max == null && startDate >= min) { return true; }
-                if (startDate <= max && startDate >= min) { return true; }
-                return false;
-            }
-        );
-
-        $("#min").datepicker({ onSelect: function () { downlineListTable.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { downlineListTable.draw(); }, changeMonth: true, changeYear: true });
-
         // Event listener to the two range filtering inputs to redraw on input
-        $('#min, #max').change(function () {
+        $('#min_date, #max_date').change(function () {
             downlineListTable.draw();
         });
 
@@ -162,7 +171,6 @@
                 });
             }
         });
-
 
         $(document).on("click", "#refer_link_remove", function () {
             var refer_link_id = $(this).parent().parent().find('#refer_link_id').val();
@@ -333,6 +341,7 @@
             });
         });
     });
+
     function copyToClipboard(value) {
         var aux = document.createElement("input");
         aux.setAttribute("value", value);
