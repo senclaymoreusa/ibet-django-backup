@@ -16,9 +16,4 @@ class Migration(migrations.Migration):
             name='vip_level',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='users.Segmentation'),
         ),
-        migrations.AlterField(
-            model_name='customuser',
-            name='security_question',
-            field=models.SmallIntegerField(blank=True, choices=[(0, 'What is your’s father birthday?'), (1, 'What is your’s mother birthday?'), (2, 'What is your’s spouse birthday?'), (3, 'What is your first company’s employee ID?'), (4, 'What is your primary school class teacher’s name?'), (5, 'What is your best childhood friend’s name?'), (6, 'What is the name of the person that influenced you the most?')], null=True),
-        ),
     ]
