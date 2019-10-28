@@ -1,10 +1,15 @@
 from django.views import View
 from django.http import HttpResponse
 from rest_framework.exceptions import ParseError
+from rest_framework import status
 
 from users.models import CustomUser
 
 import xmltodict
+import logging
+import decimal
+
+logger = logging.getLogger('django')
 
 class AuthenticateView(View):
 
@@ -105,7 +110,7 @@ class BalanceView(View):
 
     def post(self, request, *args, **kwargs):
         """
-        The Balance call makes a request to the Operator Account System to get the user account 
+        The Balance call makes a request to the Operator Account System to retrieve the user account 
         balance available to transfer to a provider. XML is the data format that this endpoint
         receives and responds with.
         """
@@ -123,18 +128,25 @@ class BalanceView(View):
             access_token = req_dict['balance']['accessToken']
 
             print(username, product_id, currency, game_id, access_token)
-
-            #user = CustomUser.objects.get(pk=username)
-            user_balance, user_currency, status_code = 1, 2, 3
             
+            # Retrieve balance of specified user and set status code based on user account status
             user = CustomUser.objects.get(username=username)
+
+            if user:
+                print("User " + username + " found!")
+            else:
+                print("User " + username + " not found!")
+
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
             user_currency = user.currency
-            status_code = 0
+
+            status_code = 0 # Default case is 0 (request successful)
 
             if user.block is True:
                 status_code = 5
-            if user.currency != currency:
+            elif user.active is False:
+                status_code = 6
+            elif user.currency != currency:
                 status_code = 3
 
             # Compose response dictionary and convert to response XML
@@ -153,8 +165,7 @@ class BalanceView(View):
             }
 
             res_msg = xmltodict.unparse(res_dict, pretty=True)
-            return HttpResponse(res_msg, content_type='text/xml') # Successful response
+            return HttpResponse(res_msg, content_type='text/xml')
 
-
-        except:
-            print("Error in BalanceView")
+        except Exception as e:
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
