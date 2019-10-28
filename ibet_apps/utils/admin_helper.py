@@ -88,7 +88,7 @@ def filterActiveUser(queryset, start_time, end_time):
     elif end_time:
         game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
     else:
-        return queryset
+        game_bet_tran = GameBet.objects.all()
 
     active_user_list = game_bet_tran.values_list('username', flat=True)
     if queryset:

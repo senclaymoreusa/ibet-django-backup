@@ -24,19 +24,19 @@ class VIPView(CommAdminView):
 
         elif get_type == "getVIPInfo":
             result = {}
-            # needs to filter out vip user later
-            queryset = CustomUser.objects.all().order_by('-created_time')
+            queryset = CustomUser.objects.filter(vip_level__isnull=False).order_by('-created_time')
+
             if request.GET.get("system") == 'vip_admin':
                 try:
                     draw = int(request.GET.get('draw', 1))
                     length = int(request.GET.get('length', 20))
                     start = int(request.GET.get('start', 0))
                     search_value = request.GET.get('search[value]', None)
-                    minDate = request.GET.get('minDate', None)
-                    maxDate = request.GET.get('maxDate', None)
+                    min_date = request.GET.get('minDate', None)
+                    max_date = request.GET.get('maxDate', None)
 
-                    queryset = filterActiveUser(queryset, dateToDatetime(minDate),
-                                                dateToDatetime(maxDate)).order_by('-created_time')
+                    queryset = filterActiveUser(queryset, dateToDatetime(min_date),
+                                                dateToDatetime(max_date)).order_by('-created_time')
 
                     #  TOTAL ENTRIES
                     total = queryset.count()
@@ -63,8 +63,8 @@ class VIPView(CommAdminView):
 
             vip_list = []
             for vip in queryset:
-                deposit_count, deposit_amount = calculateDeposit(vip, minDate, maxDate)
-                withdrawal_count, withdrawal_amount = calculateWithdrawal(vip, minDate, maxDate)
+                deposit_count, deposit_amount = calculateDeposit(vip, min_date, max_date)
+                withdrawal_count, withdrawal_amount = calculateWithdrawal(vip, min_date, max_date)
                 referee = vip.referred_by
                 if deposit_count == 0:
                     ave_deposit = 0
@@ -88,15 +88,15 @@ class VIPView(CommAdminView):
                     'phone_verified': vip.phone_verified,
                     'id_verified': vip.id_verified,
                     'affiliate_id': referee,  # the affiliate who referred this VIP user
-                    'ggr': calculateGGR(vip, minDate, maxDate),
-                    'turnover': calculateTurnover(vip, minDate, maxDate),
+                    'ggr': calculateGGR(vip, min_date, max_date),
+                    'turnover': calculateTurnover(vip, min_date, max_date),
                     'deposit': deposit_amount,
                     'deposit_count': deposit_count,
                     'ave_deposit': ave_deposit,
                     'withdrawal': withdrawal_amount,
                     'withdrawal_count': withdrawal_count,
-                    'bonus_cost': calculateBonus(vip, minDate, maxDate),
-                    'ngr': calculateNGR(vip, minDate, maxDate),
+                    'bonus_cost': calculateBonus(vip, min_date, max_date),
+                    'ngr': calculateNGR(vip, min_date, max_date),
                 }
                 vip_list.append(vip_dict)
             result['data'] = vip_list
