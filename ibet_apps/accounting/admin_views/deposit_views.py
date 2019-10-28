@@ -17,6 +17,7 @@ import pytz
 
 logger = logging.getLogger("django")
 
+
 class GetDeposits(CommAdminView):
     def get(self, request, page):
         context = super().get_context()
@@ -104,55 +105,8 @@ def filterByStatus(status, transactions):
 
     return all_transactions
 
+
 class DepositView(CommAdminView):
-    def get(self, request):
-        context = super().get_context()
-        title = "Deposits"
-        context["breadcrumbs"].append({"title": title})
-        context["title"] = title
-        context["time"] = timezone.now()
-
-        deposit_trans = Transaction.objects.filter(
-            transaction_type=TRANSACTION_DEPOSIT
-        )
-        # print(deposit_trans)
-
-        # pending deposit transaction
-        pending_tran = []
-        success_tran = []
-        fail_tran = []
-        cancel_tran = []
-        all_trans = []
-        for trans in deposit_trans:
-            trans_data = {}
-            trans_data["id"] = trans.user_id_id
-            trans_data["username"] = trans.user_id.username
-            trans_data["payment"] = trans.get_channel_display()
-            trans_data["tran_no"] = trans.transaction_id
-            trans_data["app_time"] = trans.request_time
-            trans_data["arr_time"] = trans.arrive_time
-            trans_data["order_id"] = trans.order_id
-            trans_data["amount"] = trans.amount
-            trans_data["note"] = trans.remark
-            trans_data["status"] = trans.get_status_display()
-            all_trans.append(trans_data)
-            if trans.status == TRAN_SUCCESS_TYPE:
-                success_tran.append(trans_data)
-            if trans.status == TRAN_CREATE_TYPE:
-                pending_tran.append(trans_data)
-            if trans.status == TRAN_FAIL_TYPE:
-                fail_tran.append(trans_data)
-            if trans.status == TRAN_CANCEL_TYPE:
-                cancel_tran.append(trans_data)
-
-        context["all_trans"] = all_trans
-        context["pending_tran"] = pending_tran
-        context["success_tran"] = success_tran
-        context["fail_tran"] = fail_tran
-        context["cancel_tran"] = cancel_tran
-
-        return render(request, "deposits.html", context)
-
     def post(self, request):
         post_type = request.POST.get("type")
 
@@ -174,6 +128,7 @@ class DepositView(CommAdminView):
                 current_tran.update(review_status=REVIEW_REJ)
                 logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Reject')
             return HttpResponseRedirect(reverse("xadmin:deposit_view"))
+
 
 class UserInfo(CommAdminView):
     def get(self, request):
@@ -236,6 +191,7 @@ class UserInfo(CommAdminView):
                 json.dumps(response_deposit_data, default=myconverter),
                 content_type="application/json",
             )
+
 
 def myconverter(o):
     if isinstance(o, timezone.date):

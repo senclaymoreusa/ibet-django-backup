@@ -1,5 +1,5 @@
 {% extends "xadmin/base_site.html" %}  # navigation side bar
-{% load staticfiles%}  # import css / other static files
+{% load staticfiles %}  # import css / other static files
 {% block content-nav %}
 {% endblock %}
 
@@ -62,9 +62,10 @@
                 </div>
             </div>
         </div>
+
         <!-- actual deposit table & data -->
         <div id="deposits-section" aria-labelledby="home-tab"
-            style="margin-bottom: 50px;">
+            >
             <table id="deposits-table" class="table-striped table-bordered hover compact"
                 style="table-layout: auto; width: 98.5%; margin-bottom: 20px">
                 <thead>
@@ -100,8 +101,10 @@
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
+                        {% if tran.method == 'ALIPAY' and tran.status == 'Pending' %}
                         <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
                                 data-target="#audit_deposit">Audit</button></td>
+                        {% endif %}
 {#                        <td>{{ tran.pk }}</td>#}
                     </tr>
                     {% endfor %}
@@ -125,6 +128,7 @@
             </div>
         </div>
     </div>
+
     <!-- audit popup window -->
     <div class="modal fade" id="audit_deposit" role="dialog">
         <div id="deposit_request_pop" class="modal-dialog">
@@ -136,9 +140,9 @@
                 <div class="modal-body">
                     <form action="{% url 'xadmin:deposit_view' %}" method="POST">
                         {% csrf_token %}
-                        <input type="hidden" name="type" value="audit_deposit"></input>
-                        <input type="hidden" id="dep_trans_no" name="dep_trans_no"></input>
-                        <input type="hidden" id="dep_row_index" name="dep_row_index"></input>
+                        <input type="hidden" name="type" value="audit_deposit">
+                        <input type="hidden" id="dep_trans_no" name="dep_trans_no">
+                        <input type="hidden" id="dep_row_index" name="dep_row_index">
 
                         <div class="row deposit-request-word">
                             <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>

@@ -15,6 +15,14 @@ import logging
 logger = logging.getLogger("django")
 
 
+class GetWithdrawals(CommAdminView):
+    def get(self, request, page):
+        context = super().get_context()
+
+        page = int(page)
+        return render(request, 'withdrawals.html', context=context, content_type="text/html; charset=utf-8")
+
+
 class WithdrawalView(CommAdminView):
     def get(self, request):
         get_type = request.GET.get("type")
