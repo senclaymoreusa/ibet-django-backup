@@ -1,26 +1,10 @@
-
-.dataTables_filter input { 
-    width: 350px;
-    height: 33px;
-    border-radius: 4px;
-    border: solid 1px #bdbdbd;  
-}
-
 #deposit_request_pop, #withdraw_request_pop {
     width: 80%;
     height: 800px;
 }
 
-table.dataTable {
-    border-spacing: 0;
-}
-
 #deposit-request-button {
     margin-top: 25px;
-}
-
-.dataTables_filter {
-    display: none; 
 }
 
 #edit-pending-detail-btn {
@@ -36,109 +20,6 @@ table.dataTable {
 .btn-look {
     background-color: #428bca;
 }
-
-.datatable table thead tr th {
-    font-family: Helvetica;
-    font-size: 10px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
-.datatable table tbody tr td {
-    font-family: Helvetica;
-    font-size: 13px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
-
-/* #success_deposit_table_wrapper .dataTables_scroll {
-    width: 100%
-} */
-
-.dataTables_paginate {
-    float: right;
-}
-
-
-.dataTables_paginate.paging_simple_numbers span{
-    display: none
-}
-
-.paginate_button.previous {
-    position:absolute;
-    bottom: 28px;
-    right: 49px;
-}
-
-.paginate_button.next {
-    position:absolute;
-    bottom: 28px;
-    right: 16px;
-}
-
-.dataTables_info {
-    position:absolute;
-    bottom: 34.9px;
-    right: 118px;
-}
-
-
-.dataTables_length label select{
-    width: 82px;
-    height: 33px;
-    border-radius: 4px;
-    border: solid 1px #bdbdbd;
-    background-color: #ffffff;
-    position: absolute;
-    bottom: 28px;
-    right: 201px;
-}
-
-.show-rows {
-    width: 82px;
-    height: 13px;
-    font-family: Helvetica;
-    font-size: 11px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-    position: absolute;
-    bottom: 63px;
-    right: 201px;
-}
-
-.dt-buttons{
-    width: 159px;
-    height: 32px;
-    border-radius: 4px;
-    text-align: center;
-    line-height: 30px;
-    border: solid 1px #357ebd;
-    background-color: #428bca;
-    position: absolute;
-    bottom: 25px;
-}
-.dt-buttons .dt-button.buttons-csv.buttons-html5{
-    font-family: Helvetica;
-    font-size: 14px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #ffffff;
-}
-
 
 .deposit-request-details {
     background-color: #f3f3f3;
@@ -162,8 +43,6 @@ table.dataTable {
 }
 
 
-
-
 /* other */
 
 
@@ -183,11 +62,6 @@ table.dataTable {
 #home-tab, .nav-item {
     font-family: Helvetica;
     font-weight: bold;
-}
-
-
-.paginate_button { 
-    margin-right: 15px;
 }
 
 
@@ -261,8 +135,6 @@ table.dataTable {
 }
 
 
-
-
 /* channel list */
 .remove-border {
     border: none;
@@ -292,6 +164,4 @@ table.dataTable {
     margin-top: 2%; 
     margin-left: 3%;
 }
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0,0,0,.05);
-}
+

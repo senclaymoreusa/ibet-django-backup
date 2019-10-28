@@ -4,6 +4,17 @@
 {% endblock %}
 
 {% block content %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
+</head>
+
+<body>
+<input type="hidden" id="admin_user" value={{ user.username }}>
 <div class="row ">
     <!-- AFFILIATE DETAILS -->
     <div class="panel panel-default panel-style">
@@ -108,13 +119,14 @@
                             <div class="col-md-6">
                                 <strong>Transfer between levels</strong>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 {{ balance }}
                             </div>
                             <div style="float: right;">
+                                <br>
                                 <button id="commission-detail-btn" type="button" data-toggle="modal"
                                     data-target="#affiliate_commission_detail"
-                                    style="background-color: #428bca; color:white;margin-right: 3px;"><i
+                                    style="background-color: #428bca; color:white; float:right; margin-right: 3px;"><i
                                         class="fa fa-search"></i></button>
                             </div>
                         </div>
@@ -348,14 +360,14 @@
                                     {{ link.refer_channel_name }}
                                 </div>
                                 <div class="col-md-4" id="refer_link">
-                                    {{ link.refer_link_url }}
+                                    {{ link.pk }}
                                 </div>
                                 <div class="col-md-3">
                                     {{ link.genarated_time|date:'d/m/y H:i:s' }}
                                 </div>
                                 <div class="col-md-1" style="margin-right: 2px;">
                                     <button class="btn btn-primary btn-sm" id="refer_link_copy"
-                                        onclick="copyToClipboard('{{ link.refer_link_url }}')">Copy</button>
+                                        onclick="copyToClipboard('{{ link.pk }}')">Copy</button>
                                 </div>
                                 <div class="col-md-1">
                                     <button class="btn btn-danger btn-sm" id="refer_link_remove">Remove</button>
@@ -684,8 +696,6 @@
         <div style="margin-top: 10px">
             <ul class="nav nav-tabs" style="padding-left: 10px">
                 <li class="active"><a data-toggle="tab" href="#home">DOWNLINE LIST</a></li>
-                <li><a data-toggle="tab" href="#menu1">CHANNEL REPORT</a></li>
-                <li><a data-toggle="tab" href="#menu2">PLATFORM WINLOSS ANALYSIS</a></li>
             </ul>
 
             <div class="tab-content">
@@ -755,418 +765,37 @@
                     </div>
                 </div>
 
-                <!-- CHANNEL REPORT -->
-                <div id="menu1" class="tab-pane fade">
-                    <div class="tab-content" style="margin-bottom: 50px">
-                        <table id="channel_report_table" class="table-striped table-bordered hover compact">
-                            <thead>
-                                <tr>
-                                    <th scope="col">CHANNEL NAME</th>
-                                    <th scope="col">DEPOSIT AMOUNT</th>
-                                    <th scope="col">WITHDRAWAL AMOUNT</th>
-                                    <th scope="col">SYSTEM BONUS</th>
-                                    <th scope="col">DOWNLINE TRANSFER</th>
-                                    <th scope="col">TURNOVER</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                        <label class="show-rows">SHOW ROWS</label>
-                    </div>
-                </div>
-
-                <!-- PLATFORM WINLOSS ANALYSIS -->
-                <div id="menu2" class="tab-pane fade">
-                    <div class="tab-content" style="margin-bottom: 50px">
-                        <table id="platform_winloss_table" class="table-striped table-bordered hover compact">
-                            <thead>
-                                <tr>
-                                    <th scope="col">PLATFORM TYPE</th>
-                                    <th scope="col">WINLOSS AMOUNT</th>
-                                    <th scope="col">TURNOVER AMOUNT</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                        <label class="show-rows">SHOW ROWS</label>
-                    </div>
-                </div>
-
             </div>
-
         </div>
     </div>
+</div>
 
-    <!-- datatables -->
-    <!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
-    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-    <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" language="javascript"
-        src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" language="javascript"
-        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" language="javascript"
-        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
+<!-- datatables -->
+<!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" language="javascript"
+    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
 
-    <!-- datepicker -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
-        type="text/css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<!-- datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+    type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
 
-    <script>
-        $(document).ready(function () {
-            var csrftoken = $.cookie("csrftoken");
+<script src="{% static 'xadmin/js/ibet-admin-agent-detail.js' %}"></script>
 
-            function csrfSafeMethod(method) {
-                // these HTTP methods do not require CSRF protection
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-            }
+<script>
+var agent_detail_url = "{% url 'xadmin:agent_detail' %}";
+</script>
+</body>
+</html>
 
-            $.ajaxSetup({
-                beforeSend: function (xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                    }
-                }
-            });
-
-            var affiliate_id = $('#affiliate-id').val();
-            var admin_user = "{{ user.username }}";
-
-            // DOWNLINE LIST TABLE
-            var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
-                responsive: true,
-                dom: 'B<ftilp>',
-                buttons: [
-                    'csv'
-                ],
-                "columnDefs": [{
-                    "searchable": false, "targets": [0, 1],
-                }],
-                "language": {
-                    "info": " _START_ - _END_ of _TOTAL_",
-                    "infoEmpty": " 0 - 0 of 0",
-                    "infoFiltered": "",
-                    "paginate": {
-                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                    },
-                    "lengthMenu": "_MENU_",
-                },
-            });
-
-            var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
-                responsive: true,
-                dom: 'B',
-                buttons: [
-                    'csv'
-                ],
-                "columnDefs": [{
-                    "searchable": false, "targets": [0, 1],
-                }],
-                "language": {
-                    "info": " _START_ - _END_ of _TOTAL_",
-                    "infoEmpty": " 0 - 0 of 0",
-                    "infoFiltered": "",
-                    "paginate": {
-                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                    },
-                    "lengthMenu": "_MENU_",
-                },
-            })
-            $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
-
-            // date range search
-            $.fn.dataTable.ext.search.push(
-                function (settings, data, dataIndex) {
-                    var min = $('#min').datepicker("getDate");
-                    var max = $('#max').datepicker("getDate");
-
-                    var dateParts = data[2].split("/");
-                    var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
-                    var startDate = new Date(newDate);
-
-                    if (min == null && max == null) { return true; }
-                    if (min == null && startDate <= max) { return true; }
-                    if (max == null && startDate >= min) { return true; }
-                    if (startDate <= max && startDate >= min) { return true; }
-                    return false;
-                }
-            );
-
-            $("#min").datepicker({ onSelect: function () { downlineListTable.draw(); }, changeMonth: true, changeYear: true });
-            $("#max").datepicker({ onSelect: function () { downlineListTable.draw(); }, changeMonth: true, changeYear: true });
-
-            // Event listener to the two range filtering inputs to redraw on input
-            $('#min, #max').change(function () {
-                downlineListTable.draw();
-            });
-
-            // ACTIVITY
-            $('#activity-type').change(function () {
-                var activity = $('#activity-type').val();
-                getActivityfilter(activity);
-            });
-
-            function getActivityfilter(activity) {
-                var affiliate_id = $('#affiliate-id').val();
-                $.ajax({
-                    type: 'POST',
-                    url: "{% url 'xadmin:agent_detail' %}",
-                    data: {
-                        'type': 'activity_filter',
-                        'activity_type': activity,
-                        'affiliate_id': affiliate_id,
-                    },
-                    success: function (data) {
-                        displayActivity(data);
-                    }
-                });
-            }
-
-            function displayActivity(data) {
-                $("#select-filter").empty();
-                content = "";
-                for (var i = 0; i < data.length; i++) {
-                    content += '<div class="note-author">' + data[i].adminUser + '</div>';
-                    content += '<div class="note-block">' + data[i].message + '</div>';
-                }
-                $("#select-filter").append(content);
-            }
-
-            $('#post-btn').click(function (e) {
-                e.preventDefault();
-                var message = $('#notes-input').val();
-                if (!message) {
-                    alert("Input cannout be empty");
-                }else{
-                    updateNote(message);
-                }
-            });
-
-            $('#adjustment_submit').click(function () {
-                var adjustment_amount = $('#adjustment_amount_input').val()
-                if (!adjustment_amount) {
-                    $('#errorMessage').text("Please fill the amount");
-                    $('#errorMessage').css('color', 'red');
-                } else {
-                    var subject = $('#adjustment_message_subject').val()
-                    var text = $('#adjustment_message_text').val()
-                    var remark = $('#reason_for_adjustment_changes').html();
-                    var send = false;
-                    if ($('#adjustment_message_checkbox').prop("checked")) {
-                        send = true;
-                    }
-                    $.ajax({
-                        type: 'POST',
-                        url: "{% url 'xadmin:agent_detail' %}",
-                        data: {
-                            'type': 'make_adjustment',
-                            'admin_user': admin_user,
-                            'remark': remark,
-                            'amount': adjustment_amount,
-                            'affiliate_id': affiliate_id,
-                            'subject': subject,
-                            'text': text,
-                            'send': send,
-                        },
-                        success: function (data) {
-                            location.reload();
-                        }
-                    });
-                }
-            });
-
-
-            $(document).on("click", "#refer_link_remove", function () {
-                var refer_link_id = $(this).parent().parent().find('#refer_link_id').val();
-                var refer_row = $(this).closest('.row')
-                $.ajax({
-                    type: 'POST',
-                    url: "{% url 'xadmin:agent_detail' %}",
-                    data: {
-                        'type': 'remove_refer_link',
-                        'refer_link': refer_link_id,
-                        'admin_user': admin_user,
-                        'affiliate_id': affiliate_id,
-                    },
-                    success: function (data) {
-                        refer_row.remove();
-                    }
-                });
-            });
-
-            $(document).on("click", "#add_commission_level", function () {
-                // check previous level has empty input or not
-                if (checkCommissionLevelEmpty() == false) {
-                    var delete_btn = $('#delete_commission_level')
-                    delete_btn.remove();
-                    var new_commission_level = $('#commission_level_details').clone();
-                    $(new_commission_level).find('input').val('');
-                    var level = $('.commission_levels #commission_level_details').last().find('#commission_level_label').text();
-                    $(new_commission_level).find('#commission_level_label').text(+level + 1);
-                    $(new_commission_level).append(delete_btn);
-                    $('.commission_levels').append(new_commission_level)
-                }
-            });
-
-            function checkCommissionLevelEmpty() {
-                var $empty = $(".commission_levels input[required]").filter(function () {
-                    return !this.value.trim();
-                }),
-                    valid = $empty.length == 0,
-                    items = $empty.map(function () {
-                        return this.placeholder
-                    }).get();
-
-                if (!valid) {
-                    // has empty
-                    $('#add_level_errorMessage').text("Please fill the empty input");
-                    $('#add_level_errorMessage').css('color', 'red');
-                    return true;
-                } else {
-                    // no empty
-                    return false;
-                }
-            }
-
-            $(document).on("click", "#delete_commission_level_btn", function () {
-                var current_level = $(this).parent().parent().find('#commission_level_label').html();
-                if (current_level === '1') {
-                    $('#add_level_errorMessage').text("You can't delete level 1");
-                    $('#add_level_errorMessage').css('color', 'red');
-                } else {
-                    var delete_btn = $('#delete_commission_level');
-                    var commission_id = $(this).parent().parent().find('#commission_id').val();
-                    var commission_row = $(this).prev().closest('.row');
-                    var commission_row_prev = commission_row.prev('.row')
-                    commission_row.remove();
-                    commission_row_prev.append(delete_btn);
-                }
-            });
-
-            $(document).on("click", "#affiliate_audit_save_btn", function () {
-                if (checkCommissionLevelEmpty() == false) {
-                    level_details = [];
-                    $(".commission_levels .row").each(function () {
-                        level_detail = {};
-                        level_detail['pk'] = $(this).find('#commission_id').val();
-                        level_detail['level'] = $(this).find('#commission_level_label').text();
-                        level_detail['rate'] = $(this).find('#commission_rate').val();
-                        level_detail['downline_rate'] = $(this).find('#downline_commission_rate').val();
-                        level_detail['active_downline'] = $(this).find('#active_downline').val();
-                        level_detail['downline_ftd'] = $(this).find('#downline_monthly_ftd').val();
-                        level_details.push(level_detail);
-                    });
-                    var affiliate_detail = [];
-                    affiliate_detail.push($('#affiliate-manager').val());
-                    if ($('#affiliate-level-normal').is(':checked')) {
-                        affiliate_detail.push("Normal");
-                    } else {
-                        affiliate_detail.push("VIP");
-                    }
-                    if ($('#affiliate-status-normal').is(':checked')) {
-                        affiliate_detail.push("Enable");
-                    } else {
-                        affiliate_detail.push("Disabled");
-                    }
-                    if ($('#commission-set-system').is(':checked')) {
-                        affiliate_detail.push("System");
-                    } else {
-                        affiliate_detail.push("Personal");
-                    }
-                    if ($('#commission-transfer-system').is(':checked')) {
-                        affiliate_detail.push("Yes");
-                    } else {
-                        affiliate_detail.push("No");
-                    }
-                    var manager = $('#affiliate-manager').val()
-                    $.ajax({
-                        type: 'POST',
-                        url: "{% url 'xadmin:agent_detail' %}",
-                        data: {
-                            'type': 'affiliate_audit',
-                            'admin_user': admin_user,
-                            'affiliate_detail[]': affiliate_detail,
-                            'level_details': JSON.stringify(level_details),
-                            'affiliate_id': affiliate_id,
-                            'manager':manager
-                        },
-                        success: function (data) {
-                            location.reload();
-                        }
-                    });
-                }
-            });
-
-            function updateNote(message) {
-                var affiliate_id = $('#affiliate-id').val();
-                $.ajax({
-                    type: 'POST',
-                    url: "{% url 'xadmin:agent_detail' %}",
-                    data: {
-                        'type': 'update_message',
-                        'affiliate_id': affiliate_id,
-                        'admin_user': admin_user,
-                        'message': message,
-                    },
-                    success: function (data) {
-                        location.reload();
-                    }
-                });
-            }
-
-            $('#affiliate-manager').keyup(function () {
-                var text = $('#affiliate-manager').val();
-                $("#affiliate-manager").autocomplete({
-                    source: function (request, response) {
-                        $.ajax({
-                            url: "{% url 'xadmin:agent_detail' %}",
-                            dataType: 'json',
-                            type: 'GET',
-                            data: { 
-                                'type': 'search_affiliate_manager',
-                                'text': text 
-                            },
-                            success: function (data) {
-                                response(data);
-                            }
-                        });
-                    },
-                    minLength: 1,
-                    //select
-                    select: function (e, ui) {
-                        // alert(ui.item.value);
-                    },
-                    open: function () {
-                        $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
-                    },
-                    close: function () {
-                        $(this).removeClass("ui-corner-top").addClass("ui-corner-all");
-                    }
-                });
-            });
-
-        });
-
-
-
-        function copyToClipboard(value) {
-            var aux = document.createElement("input");
-            aux.setAttribute("value", value);
-            document.body.appendChild(aux);
-            aux.select();
-            document.execCommand("copy");
-            document.body.removeChild(aux);
-        }
-
-    </script>
-
-    {% endblock %}
+{% endblock %}

@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
-#print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
+print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
@@ -45,7 +45,8 @@ CURRENCY_TYPES = (
     ('MYR', 'MYR'),
     ('VND', 'VND'),
     ('MMK', 'MMK'),
-    ('XBT', 'XBT')
+    ('XBT', 'XBT'),
+    ('TTC', 'TTC'),
 )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
@@ -160,8 +161,6 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-# transaction_deposit = 0
-# transaction_withdrawl = 1
 TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
@@ -192,6 +191,7 @@ LANGUAGE_CHOICES = (
     ('ko', 'Korean'),
     ('ja', 'Japanese'),
 )
+
 GAME_TYPE_CHOICES = (
     (0, 'Sports'),
     (1, 'Games'),
@@ -199,6 +199,21 @@ GAME_TYPE_CHOICES = (
     (3, 'Financial'),
     (4, 'General'),
 )
+
+SPREAD = 'SPREAD'
+MONEYLINE = 'LINE'
+TOTAL = 'OU'
+BET_TYPES_CHOICES = [
+    (SPREAD, 'Spread'),
+    (MONEYLINE, 'Moneyline'),
+    (TOTAL, 'Total O/U'),
+]
+OUTCOME_CHOICES = [
+    (0, 'Win'),
+    (1, 'Lose'),
+    (2, 'Tie/Push'),
+    (3, 'Void'),
+]
 
 ACTIVE_STATE = 0
 DISABLED_STATE = 1
@@ -502,6 +517,14 @@ EVENT_CHOICES = (
     (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
 
+#FGgame
+BRANDID = '524'
+BRAND_PASSWORD = 'Flow6refg'
+PLATFORM = 'NETENT_CAS',
+FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
+FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
+#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
+LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
 ASIAPAY_CMDTYPE = (
@@ -599,7 +622,7 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
 else:
-    API_DOMAIN = "https://03720ad2.ngrok.io/"
+    API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -650,6 +673,7 @@ GAME_FILTER_OPTION = [
         'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
     },
 ]
+
 # Notification
 MESSAGE_REJECTED = 0
 MESSAGE_PENDING  = 1
@@ -1127,16 +1151,15 @@ BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 
-
-
-
 # Error code define
-ERROR_CODE_SUCCESS = 1
+CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
+ERROR_CODE_EMPTY_RESULT = 105
+ERROR_CODE_DATABASE = 106
 
 
 BONUS_TYPE_VERIFICATION = 0
@@ -1160,11 +1183,20 @@ BONUS_STATUS_CHOICES = (
 )
 
 
+BONUS_START = 0
+BONUS_ACTIVE = 1
+BONUS_COMPLETED = 2
+BONUS_EXPIRED = 3
+BONUS_ISSUED = 4
+BONUS_REDEEMED = 5
+
 USER_BONUS_EVENT_TYPE_CHOICES = (
     (0, 'STARTED'),
     (1, 'ACTIVE'),
     (2, 'COMPLETED'),
     (3, 'EXPIRED'),
+    (4, 'ISSUED'),
+    (5, 'REDEEMED'),
 )
 
 BONUS_RELEASE_TYPE_CHOICES = (
@@ -1180,7 +1212,27 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
+
 BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
 )
+
+
+SECURITY_QUESTION = (
+    (0, _('What is your’s father birthday?')),
+    (1, _('What is your’s mother birthday?')),
+    (2, _('What is your’s spouse birthday?')),
+    (3, _('What is your first company’s employee ID?')),
+    (4, _('What is your primary school class teacher’s name?')),
+    (5, _('What is your best childhood friend’s name?')),
+    (6, _('What is the name of the person that influenced you the most?'))
+    
+)
+# Games
+
+# Kaiyuan Gaming
+KY_AGENT = "71452"
+KY_LINE_CODE_1 = "iBet01"
+KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
+KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
