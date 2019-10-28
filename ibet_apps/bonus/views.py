@@ -18,9 +18,10 @@ from django.db import transaction
 from rest_framework import status
 import datetime
 from django.utils import timezone
+from django.db.models import Sum
+from django.db.models import Count
 
 logger = logging.getLogger('django')
-
 
 # Create your views here.
 class BonusSearchView(View):
@@ -71,6 +72,26 @@ class BonusSearchView(View):
                     bonus_obj['categories'].append (category_json)
                 else:
                     bonus_obj['categories'] = [category_json]
+
+        # For each Bonus, we need to compute the 4 metrics over its history.
+        # These are only for our admin backend.
+        # DO NOT use them for frontend display.
+        for pk in bonuses.keys():
+
+            ###TODO: BELOW is NOT good design - as it requires hitting the database for 4 times.
+            ###Instead, we should get all the data at once and compute the sums and counts in the memory.
+            ###We should tune this if it turns out to be bad in performance testing.
+            (ube_sum_issued, ube_count_issued, ube_sum_redeemed, ube_count_redeemed) = (
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Sum('amount'))['amount__sum'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Count('amount'))['amount__count'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Sum('amount'))['amount__sum'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Count('amount'))['amount__count']
+            )
+
+            bonuses[pk]['total_amount_issued'] = ube_sum_issued
+            bonuses[pk]['total_count_issued'] = ube_count_issued
+            bonuses[pk]['total_amount_redeemed'] = ube_sum_redeemed
+            bonuses[pk]['total_count_redeemed'] = ube_count_redeemed
 
         return HttpResponse(json.dumps(bonuses), content_type='application/json')
 
@@ -149,6 +170,7 @@ class BonusView(View):
                     status = req_data['status'],
                     is_free_bid = req_data['is_free_bid'],
                     type = req_data['type'],
+                    currency = req_data['currency']
 
                     ## TODO: Need to deal with campaign if that's decided to be a P0 feature
                 )
@@ -263,6 +285,8 @@ class UserBonusEventView(View):
                 delivered_by = delivered_by_obj,
                 status = request.GET.get('status'),
                 notes = request.GET.get('notes'),
+                amount=request.GET.get('amount'),
+
             )
             event_obj.save()
         except Exception as e:

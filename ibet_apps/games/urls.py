@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EnquireHandicapView.as_view()), name='allbet_encrypt'),
 
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
+    path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),
     path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),

@@ -15,6 +15,20 @@ from utils.constants import *
 
 logger = logging.getLogger("django")
 
+class SessionCheck(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        sessionKey = request.GET['sessionKey']
+        rr = requests.get(FG_SESSION_CHECK ,params={
+            "sessionKey": sessionKey
+        })
+        if rr.status_code == 200:
+            rr = rr.text    
+           
+        else:
+            # Handle error
+            logger.info(rr)
+        return HttpResponse(rr) 
 
 class FGLogin(APIView):
 
@@ -121,8 +135,8 @@ class GetAccountDetail(APIView):
             "message" : "null",
             "errorCode" : "null",
             "uuid" : uuid,
-            "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-            "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+            "realBalance" : round(float(user.main_wallet),2),
+            "bonusBalance" : round(float(user.bonus_wallet),2),
             "loginName" : user.username,
             "firstName" :  user.first_name ,
             "lastName" : user.last_name,
@@ -162,8 +176,8 @@ class GetBalance(APIView):
                 "omegaSessionKey" : omegaSessionKey,
                 "message" : "null",
                 "errorCode" : "null",
-                "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')),
-                "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                "realBalance" : round(float(user.main_wallet),2),
+                "bonusBalance" : round(float(user.bonus_wallet),2),
             
             }
         except:
@@ -207,8 +221,8 @@ class ProcessTransaction(APIView):
                     "transactionId" : 1,
                     "tranType" : tranType,
                     "alreadyProcessed" : "false",
-                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realBalance" : round(float(user.main_wallet),2),
+                    "bonusBalance" : round(float(user.bonus_wallet),2), 
                     "realAmount" : amount,
                     "bonusAmount" : 0,
 
@@ -223,8 +237,8 @@ class ProcessTransaction(APIView):
                     "transactionId" : 1,
                     "tranType" : tranType,
                     "alreaduProcessed" : "false",
-                    "realBalance" :  decimal.Decimal(user.main_wallet) ,
-                    "bonusBalance" : decimal.Decimal(user.bonus_wallet),
+                    "realBalance" :  round(float(user.main_wallet),2), 
+                    "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
                     "bonusAmount" : 0,
 
@@ -245,8 +259,8 @@ class ProcessTransaction(APIView):
                     "errorCode" : "null",
                     "message" : "null",
                     "alreaduProcessed" : "false",
-                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realBalance" : round(float(user.main_wallet),2) ,
+                    "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
                     "bonusAmount" : 0,
 
@@ -261,8 +275,8 @@ class ProcessTransaction(APIView):
                     "currency" : currency,
                     "transactionId" : 1,
                     "alreaduProcessed" : "false",
-                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realBalance" : round(float(user.main_wallet),2) ,
+                    "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
                     "bonusAmount" : 0,
 
@@ -279,8 +293,8 @@ class ProcessTransaction(APIView):
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
                     "alreaduProcessed" : "false",
-                    "realBalance" : decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')) ,
-                    "bonusBalance" : decimal.Decimal(user.bonus_wallet).quantize(decimal.Decimal('0.00')),
+                    "realBalance" : round(float(user.main_wallet),2) ,
+                    "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
                     "bonusAmount" : 0,
 
