@@ -104,6 +104,8 @@ hr {
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
 <button type="button" class="btn btn-primary" id="player_csv">Upload player CSV</button>
 <input type="file" id="player_file">
+<button type="button" class="btn btn-primary" id="affiliate_csv">Upload affiliate CSV</button>
+<input type="file" id="affiliate_file">
 
 
 <div style="margin-top:30px">
@@ -961,6 +963,13 @@ $(document).ready(function() {
     }
   });
 
+  $("#affiliate_csv").click(function() {
+    $("#affiliate_file").click();
+  });
+
+  $("#affiliate_file").change(function() {
+    alert("xxx");
+  });
 /*
   $("#sendto").on('beforeItemAdd', function(event) {
     var data = event.item;

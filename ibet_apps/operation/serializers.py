@@ -79,7 +79,7 @@ class NotificationToUsersSerializer(serializers.ModelSerializer):
 class MessageUserGroupSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
-        if UserGroup.objects.filter(name=value, groupType=MESSAGE_GROUP):
+        if UserGroup.objects.filter(name=value, groupType=MESSAGE_STATIC_GROUP):
             raise serializers.ValidationError("The group name already exist.")
         return value
 
