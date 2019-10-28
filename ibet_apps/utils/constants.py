@@ -520,8 +520,9 @@ BRANDID = '524'
 BRAND_PASSWORD = 'Flow6refg'
 PLATFORM = 'NETENT_CAS',
 FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-
+FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
+#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
+LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
 ASIAPAY_CMDTYPE = (
@@ -1149,12 +1150,14 @@ BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 
 # Error code define
-ERROR_CODE_SUCCESS = 1
+CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
 ERROR_CODE_INVAILD_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
+ERROR_CODE_EMPTY_RESULT = 105
+ERROR_CODE_DATABASE = 106
 
 
 BONUS_TYPE_VERIFICATION = 0
@@ -1178,11 +1181,20 @@ BONUS_STATUS_CHOICES = (
 )
 
 
+BONUS_START = 0
+BONUS_ACTIVE = 1
+BONUS_COMPLETED = 2
+BONUS_EXPIRED = 3
+BONUS_ISSUED = 4
+BONUS_REDEEMED = 5
+
 USER_BONUS_EVENT_TYPE_CHOICES = (
     (0, 'STARTED'),
     (1, 'ACTIVE'),
     (2, 'COMPLETED'),
     (3, 'EXPIRED'),
+    (4, 'ISSUED'),
+    (5, 'REDEEMED'),
 )
 
 BONUS_RELEASE_TYPE_CHOICES = (
@@ -1204,6 +1216,17 @@ BRAND_OPTIONS = (
     ('ibet', 'iBet')
 )
 
+
+SECURITY_QUESTION = (
+    (0, _('What is your’s father birthday?')),
+    (1, _('What is your’s mother birthday?')),
+    (2, _('What is your’s spouse birthday?')),
+    (3, _('What is your first company’s employee ID?')),
+    (4, _('What is your primary school class teacher’s name?')),
+    (5, _('What is your best childhood friend’s name?')),
+    (6, _('What is the name of the person that influenced you the most?'))
+    
+)
 # Games
 
 # Kaiyuan Gaming
