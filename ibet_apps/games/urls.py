@@ -4,6 +4,7 @@ import games.views.eagameviews as eagameviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.fggameviews as fggameviews
+import games.views.mggameviews as mggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 from games.live_casino import *
@@ -31,6 +32,8 @@ urlpatterns = [
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
 
     #mg game
+    path('api/mg/login', mggameviews.MGLogin.as_view(), name = 'fg_login'),
+
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
