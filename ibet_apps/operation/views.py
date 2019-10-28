@@ -700,21 +700,30 @@ class MessageUserGroupView(CommAdminView):
             return HttpResponse(status=400)
 
 
-class StaticPlayerGroupValidationAPI(View):
+class StaticGroupValidationAPI(View):
     def get(self, request, *args, **kwargs):
-        # username = request.GET.get("username")
+        group_type = request.GET.get("type")
         # user = get_object_or_404(CustomUser, username=username)
         # players = json.loads(request.raw_post_data)
         valid_players = []
         players = request.GET.get("players")
         players = json.loads(players)
-        for player in players:
-            player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
-            if len(player) > 0:
-                valid_player = {}
-                valid_player["id"] = player[0].pk
-                valid_player["username"] = player[0].username
-                valid_players.append(valid_player)
+        if group_type == "player":
+            for player in players:
+                player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
+                if len(player) > 0:
+                    valid_player = {}
+                    valid_player["id"] = player[0].pk
+                    valid_player["username"] = player[0].username
+                    valid_players.append(valid_player)
+        else:
+            for player in players:
+                affiliate = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1])&Q(user_to_affiliate_time__isnull=False))
+                if len(affiliate) > 0:
+                    valid_player = {}
+                    valid_player["id"] = affiliate[0].pk
+                    valid_player["username"] = affiliate[0].username
+                    valid_players.append(valid_player)
 
         return HttpResponse(json.dumps(valid_players), content_type='application/json')
 

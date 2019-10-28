@@ -102,10 +102,9 @@ hr {
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
-<button type="button" class="btn btn-primary" id="player_csv">Upload player CSV</button>
-<input type="file" id="player_file">
-<button type="button" class="btn btn-primary" id="affiliate_csv">Upload affiliate CSV</button>
-<input type="file" id="affiliate_file">
+<button type="button" class="btn btn-primary" class="csv" id="player-csv">Upload player CSV</button>
+<input type="file" id="csv-file">
+<button type="button" class="btn btn-primary" class="csv" id="affiliate-csv">Upload affiliate CSV</button>
 
 
 <div style="margin-top:30px">
@@ -661,6 +660,7 @@ $.ajax({
 var pk_list;
 var user_list;
 var userList;
+var groupType;
 
 $(document).ready(function() {
   var previousURL = document.referrer;
@@ -907,11 +907,17 @@ $(document).ready(function() {
     $('#csv_file').click();
   });
 
-  $('#player_csv').click(function() {
-    $('#player_file').click();
+  $('#player-csv').click(function() {
+    groupType = "player";
+    $('#csv-file').click();
   });
 
-  $('#player_file').change(function(e) {
+  $('#affiliate-csv').click(function() {
+    groupType = "affiliate";
+    $('#csv-file').click();
+  });
+
+  $('#csv-file').change(function(e) {
     var file = e.target.files[0];
 
     if(file) {
@@ -926,8 +932,9 @@ $(document).ready(function() {
 
         $.ajax({
           type: "GET",
-          url: "{% url 'static-players-validation' %}",
+          url: "{% url 'static-group-validation' %}",
           data: {
+            "type": groupType,
             "players": players
           },
           success: function(data) {
@@ -950,24 +957,11 @@ $(document).ready(function() {
             */
           }
         });
-        /*
-        parsedCSV.forEach(function (d, i) {
-            if (i == 0) return true; // skip the header
-            $("#player_table").find('tbody')
-              .append($('<tr>')
-                .append($('<td>' + d[0] +'</td><td>' + d[1] + '</td>'))
-              )
-        });
-        */
       }
     }
   });
 
-  $("#affiliate_csv").click(function() {
-    $("#affiliate_file").click();
-  });
-
-  $("#affiliate_file").change(function() {
+  $("#affiliate-file").change(function() {
     alert("xxx");
   });
 /*
