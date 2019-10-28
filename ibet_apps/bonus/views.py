@@ -170,6 +170,7 @@ class BonusView(View):
                     status = req_data['status'],
                     is_free_bid = req_data['is_free_bid'],
                     type = req_data['type'],
+                    currency = req_data['currency']
 
                     ## TODO: Need to deal with campaign if that's decided to be a P0 feature
                 )
@@ -284,6 +285,8 @@ class UserBonusEventView(View):
                 delivered_by = delivered_by_obj,
                 status = request.GET.get('status'),
                 notes = request.GET.get('notes'),
+                amount=request.GET.get('amount'),
+
             )
             event_obj.save()
         except Exception as e:
