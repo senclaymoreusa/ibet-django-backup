@@ -13,6 +13,7 @@ from utils.constants import *
 
 import simplejson as json
 import logging
+import pytz
 
 logger = logging.getLogger("django")
 
@@ -20,12 +21,35 @@ class GetDeposits(CommAdminView):
     def get(self, request, page):
         context = super().get_context()
         search_params = request.GET.get('search_params')
-        print("search params:")
-        print(search_params)
+        status = request.GET.get('status')
+        date_from = request.GET.get('from')
+        date_to = request.GET.get('to')
+
+        print("search params: " + str(search_params))
+        print("status: " + str(status))
+
         page = int(page)
         type_deposit = Q(transaction_type=TRANSACTION_DEPOSIT)
-        deposits = Transaction.objects.filter(type_deposit).order_by('-request_time')
 
+        all_transactions = Transaction.objects.filter(type_deposit).order_by('-request_time')
+        # check for status
+        if status == 'created':
+            status_type = Q(status=2)
+            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
+        if status == 'pending':
+            status_type = Q(status=3)
+            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
+        if status == 'failed':
+            status_type = Q(status=1)
+            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
+        if status == 'success':
+            status_type = Q(status=0)
+            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
+        if status == 'canceled':
+            status_type = Q(status=5)
+            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
+
+        # do further filtering using search params, if any
         if search_params:
             name = Q(username__icontains=search_params)
             ids = Q(pk__icontains=search_params)
@@ -36,14 +60,25 @@ class GetDeposits(CommAdminView):
             user_ids = CustomUser.objects.filter(ids)  # get QuerySet of user_ids that match param
             all_user_matches = Q(user_id__in=(usernames | user_ids))
 
-            all_transactions = deposits.filter(ref_nos | all_user_matches).order_by('-request_time')
+            all_transactions = all_transactions.filter(ref_nos | all_user_matches).order_by('-request_time')
 
-            curr_page = all_transactions[page*20:(page+1)*20]
-            deposit_count = all_transactions.count()
-        else:
-            curr_page = deposits[page*20:(page+1)*20]
-            deposit_count = deposits.count()
-        print("deposit count: (to count total pages")
+        if date_from:
+            print("from: ", date_from)
+            from_date = timezone.datetime.strptime(date_from, "%m/%d/%Y")
+            from_date = pytz.utc.localize(from_date)
+            from_query = Q(request_time__gte=from_date)
+            all_transactions = all_transactions.filter(from_query)
+        if date_to:
+            print("to: ", date_to)
+            to_date = timezone.datetime.strptime(date_to, "%m/%d/%Y")
+            to_date = pytz.utc.localize(to_date)
+            to_query = Q(request_time__lte=to_date)
+            all_transactions = all_transactions.filter(to_query)
+
+        curr_page = all_transactions[page*20:(page+1)*20]
+        deposit_count = all_transactions.count()
+
+        print("deposit count: (to count total pages)")
         print(deposit_count)
         total_pages = (deposit_count - 1) // 20 if (deposit_count - 1) // 20 > 0 else 0
         context['page_no'] = page
