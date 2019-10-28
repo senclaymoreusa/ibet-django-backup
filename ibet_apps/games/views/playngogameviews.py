@@ -127,19 +127,20 @@ class BalanceView(View):
             game_id = req_dict['balance']['gameId']
             access_token = req_dict['balance']['accessToken']
 
-            print(username, product_id, currency, game_id, access_token)
+            # TODO: Verify accessToken after it is provided by PLAY'nGO
             
             # Retrieve balance of specified user and set status code based on user account status
             user = CustomUser.objects.get(username=username)
 
             if user:
-                print("User " + username + " found!")
+                # print("PLAY'nGO BalanceView: User " + username + " found!")
+                logger.info("PLAY'nGO BalanceView: User " + username + " found!")
             else:
-                print("User " + username + " not found!")
+                # print("PLAY'nGO BalanceView: User " + username + " not found!")
+                logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
 
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
             user_currency = user.currency
-
             status_code = 0 # Default case is 0 (request successful)
 
             if user.block is True:
@@ -168,4 +169,5 @@ class BalanceView(View):
             return HttpResponse(res_msg, content_type='text/xml')
 
         except Exception as e:
+            logger.error("PLAY'nGO BalanceView Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
