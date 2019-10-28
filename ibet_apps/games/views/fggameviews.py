@@ -125,15 +125,15 @@ class GetAccountDetail(APIView):
         omegaSessionKey = request.GET['omegaSessionKey']
 
         try:
-            fguser = FGSession.objects.get(session_key=omegaSessionKey)
+            fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
 
             response = {
             "seq" : seq,
             "partyId" : fguser.party_id ,
             "omegaSessionKey" : omegaSessionKey,
-            "message" : "null",
-            "errorCode" : "null",
+            "message" : None,
+            "errorCode" : None,
             "uuid" : uuid,
             "realBalance" : round(float(user.main_wallet),2),
             "bonusBalance" : round(float(user.bonus_wallet),2),
@@ -143,6 +143,7 @@ class GetAccountDetail(APIView):
             "currency" : user.currency,
             "email" : user.email,
             "country" : user.country,
+            "city": user.city,
             "language" : "ZH",
             "birthDate" : user.date_of_birth
     
@@ -167,15 +168,15 @@ class GetBalance(APIView):
         omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
         try:
-            fguser = FGSession.objects.get(session_key=omegaSessionKey)
+            fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
 
             response = {
                 "seq" : seq,
                 "partyId" : fguser.party_id ,
                 "omegaSessionKey" : omegaSessionKey,
-                "message" : "null",
-                "errorCode" : "null",
+                "message" : None,
+                "errorCode" : None,
                 "realBalance" : round(float(user.main_wallet),2),
                 "bonusBalance" : round(float(user.bonus_wallet),2),
             
@@ -204,47 +205,60 @@ class ProcessTransaction(APIView):
         providerTranId = request.GET["providerTranId"]
         platformCode = request.GET["platformCode"]
         gameTranId = request.GET["gameTranId"]
-        #
-        #
+        #transactionId = ""
+        
         try:
             fguser = FGSession.objects.get(uuid=uuid)
-            user = CustomUser.objects.get(username=fguser)
+            user = CustomUser.objects.get(username=fguser.user)
+          
 
-            if tranType == "GAME_BET" :
+        except:
+            response = {
+                "errorcode" : "PLAYER_NOT_FOUND",
+                "message" : "no user found"
+            }
+
+        if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameId = request.GET["gameId"]
+
                 response = {
                     "seq" : seq,
                     "omegaSessionKey" : omegaSessionKey,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 1,
+                    "transactionId" : "ibet" + uuid + timestamp ,
                     "tranType" : tranType,
-                    "alreadyProcessed" : "false",
-                    "realBalance" : round(float(user.main_wallet),2),
+                    "alreadyProcessed" : False,
+                    "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2), 
                     "realAmount" : amount,
-                    "bonusAmount" : 0,
+                    "bonusAmount" : 0.00,
 
                 }
+                user.main_wallet = user.main_wallet - decimal.Decimal(amount)
+                user.save()
 
-            if tranType == "GAME_WIN" :
+
+        elif tranType == "GAME_WIN" :
                 
                 response = {
                     "seq" : seq,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 1,
+                    "transactionId" : "ibet" + uuid,
                     "tranType" : tranType,
-                    "alreaduProcessed" : "false",
+                    "alreadyProcessed" : False,
                     "realBalance" :  round(float(user.main_wallet),2), 
                     "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
-                    "bonusAmount" : 0,
+                    "bonusAmount" : 0.00,
 
                 }
+                user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                user.save()
 
-            if tranType == "PLTFRM_BON" :
+        elif tranType == "PLTFRM_BON" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
                 isFinal = request.GET["isFinal"]
@@ -255,34 +269,34 @@ class ProcessTransaction(APIView):
                     "gameInfoId" : gameInfoId,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 1,
-                    "errorCode" : "null",
-                    "message" : "null",
-                    "alreaduProcessed" : "false",
+                    "transactionId" : "ibetfg" + uuid ,
+                    "errorCode" : None,
+                    "message" : None,
+                    "alreadyProcessed" : isFinal,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
-                    "bonusAmount" : 0,
+                    "bonusAmount" : 0.00,
 
                 }    
 
-            if tranType == "ROLLBACK" :
+        elif tranType == "ROLLBACK" :
                 gameId = request.GET["gameId"]
                 response = {
                     "seq" : seq,
                     "tranType" : tranType,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 1,
-                    "alreaduProcessed" : "false",
+                    "transactionId" : "ibetfg" + uuid ,
+                    "alreadyProcessed" : False,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
-                    "bonusAmount" : 0,
+                    "bonusAmount" : 0.00,
 
                 }  
 
-            if tranType == "END_GAME" :
+        elif tranType == "END_GAME" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
                 isFinal = request.GET["isFinal"]
@@ -292,18 +306,14 @@ class ProcessTransaction(APIView):
                     "tranType" : tranType,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "alreaduProcessed" : "false",
+                    "alreadyProcessed" : False,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2),
                     "realAmount" : amount,
-                    "bonusAmount" : 0,
+                    "bonusAmount" : 0.00,
 
                 }  
-        except:
-            response = {
-                "errorcode" : "PLAYER_NOT_FOUND",
-                "message" : "no user found"
-            }
+       
 
         return HttpResponse(json.dumps(response,cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
