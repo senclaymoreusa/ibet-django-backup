@@ -27,28 +27,16 @@ class GetDeposits(CommAdminView):
 
         print("search params: " + str(search_params))
         print("status: " + str(status))
+        print("from: ", date_from)
+        print("to: ", date_to)
 
         page = int(page)
         type_deposit = Q(transaction_type=TRANSACTION_DEPOSIT)
 
         all_transactions = Transaction.objects.filter(type_deposit).order_by('-request_time')
-        # check for status
-        if status == 'created':
-            status_type = Q(status=2)
-            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
-        if status == 'pending':
-            status_type = Q(status=3)
-            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
-        if status == 'failed':
-            status_type = Q(status=1)
-            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
-        if status == 'success':
-            status_type = Q(status=0)
-            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
-        if status == 'canceled':
-            status_type = Q(status=5)
-            all_transactions = all_transactions.objects.filter(status_type).order_by('-request_time')
-
+        # filter by status
+        if status and status != 'all':
+            all_transactions = filterByStatus(status, all_transactions)
         # do further filtering using search params, if any
         if search_params:
             name = Q(username__icontains=search_params)
@@ -61,15 +49,12 @@ class GetDeposits(CommAdminView):
             all_user_matches = Q(user_id__in=(usernames | user_ids))
 
             all_transactions = all_transactions.filter(ref_nos | all_user_matches).order_by('-request_time')
-
         if date_from:
-            print("from: ", date_from)
             from_date = timezone.datetime.strptime(date_from, "%m/%d/%Y")
             from_date = pytz.utc.localize(from_date)
             from_query = Q(request_time__gte=from_date)
             all_transactions = all_transactions.filter(from_query)
         if date_to:
-            print("to: ", date_to)
             to_date = timezone.datetime.strptime(date_to, "%m/%d/%Y")
             to_date = pytz.utc.localize(to_date)
             to_query = Q(request_time__lte=to_date)
@@ -110,8 +95,14 @@ class GetDeposits(CommAdminView):
         context['transactions'] = txn_data  # array of txn objects
         return render(request, 'deposits.html', context=context, content_type="text/html; charset=utf-8")
 
-    def post(self):
-        return render()
+
+def filterByStatus(status, transactions):
+    # check for status
+    status_code = TRAN_STATUS_DICT[status]
+    status_type = Q(status=status_code)
+    all_transactions = transactions.filter(status_type).order_by('-request_time')
+
+    return all_transactions
 
 class DepositView(CommAdminView):
     def get(self, request):
@@ -184,7 +175,6 @@ class DepositView(CommAdminView):
                 logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Reject')
             return HttpResponseRedirect(reverse("xadmin:deposit_view"))
 
-
 class UserInfo(CommAdminView):
     def get(self, request):
         get_type = request.GET.get("type")
@@ -246,7 +236,6 @@ class UserInfo(CommAdminView):
                 json.dumps(response_deposit_data, default=myconverter),
                 content_type="application/json",
             )
-
 
 def myconverter(o):
     if isinstance(o, timezone.date):

@@ -119,7 +119,7 @@ TRAN_REJECTED_TYPE = 8  # withdraw
 TRAN_HELD_TYPE = 9
 
 STATE_CHOICES = (
-    (TRAN_SUCCESS_TYPE, 'SUCCESS'), 
+    (TRAN_SUCCESS_TYPE, 'SUCCESS'),
     (TRAN_FAIL_TYPE, 'FAILED'),
     (TRAN_CREATE_TYPE, 'CREATED'),
     (TRAN_PENDING_TYPE, 'PENDING'),
@@ -130,6 +130,14 @@ STATE_CHOICES = (
     (TRAN_REJECTED_TYPE, 'REJECTED'),
     (TRAN_HELD_TYPE, 'HELD'),
 )
+
+TRAN_STATUS_DICT = {
+    'success': 0,
+    'failed': 1,
+    'created': 2,
+    'pending': 3,
+    'canceled': 5
+}
 
 REVIEW_APP = 0
 REVIEW_PEND = 1
