@@ -672,6 +672,34 @@ class MessageUserGroupView(CommAdminView):
                     "name": group_name,
                     "groupType": MESSAGE_STATIC_GROUP,
                     "creator": self.user.pk,
+                    "is_player": True
+                }
+
+                serializer = MessageUserGroupSerializer(data=data)
+
+                if serializer.is_valid():
+                    with transaction.atomic():
+                        group = serializer.save()
+                        logger.info("saved message user group")
+                        for user in user_list:
+                            user = CustomUser.objects.get(pk=int(user['id']))
+                            UserToUserGroup.objects.create(group=group, user=user)
+                        
+                        logger.info("saved message user group log")
+                        return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+                else:
+                    return HttpResponse(status=400)
+
+            elif postType == "create_affiliategroup":
+                group_name = request.POST.get('group_name')
+                user_list = request.POST.get('user_list')
+                user_list = json.loads(user_list)
+
+                data = {
+                    "name": group_name,
+                    "groupType": MESSAGE_STATIC_GROUP,
+                    "creator": self.user.pk,
+                    "is_affiliate": True
                 }
 
                 serializer = MessageUserGroupSerializer(data=data)
@@ -703,8 +731,6 @@ class MessageUserGroupView(CommAdminView):
 class StaticGroupValidationAPI(View):
     def get(self, request, *args, **kwargs):
         group_type = request.GET.get("type")
-        # user = get_object_or_404(CustomUser, username=username)
-        # players = json.loads(request.raw_post_data)
         valid_players = []
         players = request.GET.get("players")
         players = json.loads(players)

@@ -86,7 +86,7 @@ class MessageUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserGroup
         fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals', 
-        'product', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
+        'product', 'is_player', 'is_affiliate', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
         read_only_fields = ['pk', 'created_time', 'approvals']
 
 
