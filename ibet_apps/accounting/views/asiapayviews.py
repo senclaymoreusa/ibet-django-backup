@@ -399,19 +399,24 @@ class depositfinish(generics.GenericAPIView):
             })
             rdata = r.text
             tree = ET.fromstring(rdata)
-            StatusCode = tree.find('StatusCode').text
-            StatusMsg = tree.find('StatusMsg').text
-            if StatusCode == "00001":
-                orderData = Transaction.objects.get(transaction_id=order_id)
-                orderData.status = TRAN_CANCEL_TYPE
-                orderData.last_updated = timezone.now()
-                orderData.save()
-                success = True
-                break
-            else:
-                logger.info('The request information is nor correct, please try again')
-                sleep(delay)
-                logger.info(rdata)
+            try: 
+                StatusCode = tree.find('StatusCode').text
+                StatusMsg = tree.find('StatusMsg').text
+                if StatusCode == "00001":
+                    orderData = Transaction.objects.get(transaction_id=order_id)
+                    orderData.status = TRAN_CANCEL_TYPE
+                    orderData.last_updated = timezone.now()
+                    orderData.save()
+                    success = True
+                    break
+                else:
+                    logger.info('The request information is nor correct, please try again')
+                    sleep(delay)
+                    logger.info(rdata)
+            except StatusCode.DoesNotExist:
+                StatusCode = None
+                return Response({"StatusCode": "400", "StatusMsg": "Please send it again."}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response({"StatusCode": StatusCode, "StatusMsg": StatusMsg})
 
 class orderStatus(generics.GenericAPIView):
