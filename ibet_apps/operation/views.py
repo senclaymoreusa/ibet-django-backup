@@ -515,7 +515,6 @@ class MessageUserGroupView(CommAdminView):
         getType = request.GET.get('type')
         if getType == "get_member_info":
             groupName = request.GET.get('group_name')
-            # print(groupName)
 
             group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
             allUsers = UserToUserGroup.objects.filter(group=group)
@@ -567,9 +566,11 @@ class MessageUserGroupView(CommAdminView):
                 group_item = {}
                 group_item['pk'] = group.pk
                 group_item['name'] = group.name
+                group_item['is_player'] = group.is_player
                 group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
                 group_item['time_used'] = group.time_used
                 group_item['creator'] = group.creator
+                group_item['created_time'] = group.created_time
                 total_messages = 0
                 read_messages = 0
                 users = UserToUserGroup.objects.filter(group=group)
@@ -752,6 +753,29 @@ class StaticGroupValidationAPI(View):
                     valid_players.append(valid_player)
 
         return HttpResponse(json.dumps(valid_players), content_type='application/json')
+
+
+class MessageGroupDetailAPI(View):
+    def get(self, request, *arg, **kwargs):
+        group_id = request.GET.get('groupId')
+        group = UserGroup.objects.get(pk=group_id)
+
+        group_users = UserToUserGroup.objects.filter(group=group)
+
+        response = {}
+        
+        response["group"] = serializers.serialize('json', [group,])
+
+        user_list = []
+        for utog in group_users:
+            item = {}
+            item["pk"] = utog.user.pk
+            item["username"] = utog.user.username
+            user_list.append(item)
+
+        response["user_list"] = user_list
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
 class UserIsValidAPI(View):
@@ -1158,29 +1182,6 @@ class MessageGroupUserAPI(View):
         response["user"] = user_list
         response["pk_list"] = pk_list
         # return HttpResponse(response)
-        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
-
-
-class MessageGroupDetailAPI(View):
-    def get(self, request, *arg, **kwargs):
-        group_id = request.GET.get('groupId')
-        group = UserGroup.objects.get(pk=group_id)
-
-        group_users = UserToUserGroup.objects.filter(group=group)
-
-        response = {}
-        
-        response["group"] = serializers.serialize('json', [group,])
-
-        user_list = []
-        for utog in group_users:
-            item = {}
-            item["pk"] = utog.user.pk
-            item["username"] = utog.user.username
-            user_list.append(item)
-
-        response["user_list"] = user_list
-
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
