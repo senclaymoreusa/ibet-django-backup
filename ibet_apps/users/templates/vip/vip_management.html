@@ -9,17 +9,29 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-vip.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-vip.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
 </head>
 
 <body>
     <div id="vip_management">
         <div id="vip_table_container">
-            <div id="date_range">
-                <label>ACTIVE DATE RANGE</label>
-                <br>
-                <input name="min_date" id="min_date" type="text" placeholder="From">
-                <input name="max_date" id="max_date" type="text" placeholder="To">
+            <div class="row">
+                <div class="col-md-2" id="filter">
+                    <label for="segmentation_filter">PLAYER SEGMENT</label><br>
+                    <select id="segmentation_filter" class="form-control">
+                        <option value=-1>ALL</option>
+                        {% for type in segment_list %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6" id="date_range">
+                    <label>ACTIVE DATE RANGE</label>
+                    <br>
+                    <input name="min_date" id="min_date" type="text" placeholder="From">
+                    <input name="max_date" id="max_date" type="text" placeholder="To">
+                </div>
             </div>
             <table id="vip_table" class="table-striped table-bordered hover compact">
                 <thead>

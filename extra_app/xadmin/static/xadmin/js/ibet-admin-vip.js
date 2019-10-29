@@ -10,6 +10,7 @@ $(document).ready(function () {
             data: {
                 'type': 'getVIPInfo',
                 'system': 'vip_admin',
+                'segment': function() {var segment=$('#segmentation_filter :selected').val(); return segment;},
                 'minDate': function () { return $('#min_date').val(); },
                 'maxDate': function () { return $('#max_date').val(); },
             },
@@ -35,9 +36,33 @@ $(document).ready(function () {
             { data: 'country' },
             { data: 'address' },
             { data: 'phone_number' },
-            { data: 'email_verified' },
-            { data: 'phone_verified' },
-            { data: 'id_verified' },
+            { data: 'email_verified',
+             "render": function(data, type, row, meta){
+                if(data == false){
+                    data = 'No';
+                }else{
+                    data = 'Yes'
+                }
+                return data;
+             }},
+            { data: 'phone_verified',
+            "render": function(data, type, row, meta){
+                if(data == false){
+                    data = 'No';
+                }else{
+                    data = 'Yes'
+                }
+                return data;
+             }},
+            { data: 'id_verified',
+            "render": function(data, type, row, meta){
+                if(data == false){
+                    data = 'No';
+                }else{
+                    data = 'Yes'
+                }
+                return data;
+             }},
             { data: 'affiliate_id' },
             { data: 'ggr' },
             { data: 'turnover' },
@@ -69,7 +94,7 @@ $(document).ready(function () {
         $("#max_date").datepicker();
     });
 
-    $('#min_date, #max_date').change(function () {
+    $('#min_date, #max_date, #segmentation_filter').change(function () {
         vip_table.draw();
     });
 

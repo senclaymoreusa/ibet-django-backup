@@ -591,6 +591,9 @@ class Segmentation(models.Model):
     general_bonuses = models.BooleanField(default=False)
     product_turnover_bonuses = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.name
+
 
 @receiver(post_save, sender=CustomUser)
 def new_user_handler(sender, **kwargs):

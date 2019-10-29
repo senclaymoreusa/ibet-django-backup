@@ -4,10 +4,10 @@
 
 #date_range {
     float: right;
-    margin-bottom: -53px;
+    margin-right: -330px;
 }
 
-#date_range label {
+label {
     font-family: Helvetica;
     font-size: 11px;
     font-weight: normal;
@@ -57,5 +57,9 @@ table thead th {
 
 #vip_table_paginate a button{
     padding-left: 15px;
+}
+
+#filter {
+    width: 12%;
 }
 

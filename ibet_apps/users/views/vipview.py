@@ -5,6 +5,7 @@ from xadmin.views import CommAdminView
 import logging
 import simplejson as json
 
+from users.models import Segmentation
 from utils.admin_helper import *
 
 logger = logging.getLogger('django')
@@ -20,6 +21,7 @@ class VIPView(CommAdminView):
             title = "VIP overview"
             context["breadcrumbs"].append({'title': title})
             context["title"] = title
+            context["segment_list"] = Segmentation.objects.values_list('name', flat=True)
             return render(request, 'vip/vip_management.html', context)
 
         elif get_type == "getVIPInfo":
@@ -32,20 +34,25 @@ class VIPView(CommAdminView):
                     length = int(request.GET.get('length', 20))
                     start = int(request.GET.get('start', 0))
                     search_value = request.GET.get('search[value]', None)
+                    segment = request.GET.get('segment', None)
                     min_date = request.GET.get('minDate', None)
                     max_date = request.GET.get('maxDate', None)
 
-                    queryset = filterActiveUser(queryset, dateToDatetime(min_date),
-                                                dateToDatetime(max_date)).order_by('-created_time')
-
                     #  TOTAL ENTRIES
                     total = queryset.count()
+
+                    if min_date and max_date:
+                        queryset = filterActiveUser(queryset, dateToDatetime(min_date),
+                                                    dateToDatetime(max_date)).order_by('-created_time')
 
                     #  SEARCH BOX
                     if search_value:
                         queryset = queryset.filter(
                             Q(pk__icontains=search_value) | Q(username__icontains=search_value) | Q(
                                 managed_by__username__icontains=search_value))
+
+                    if segment != '-1':
+                        queryset = queryset.filter(vip_level__name=segment)
 
                     #  TOTAL ENTRIES AFTER FILTERED
                     count = queryset.count()
@@ -80,7 +87,7 @@ class VIPView(CommAdminView):
                     'player_id': vip.pk,
                     'username': vip.username,
                     'status': "",
-                    'player_segment': "",
+                    'player_segment': str(vip.vip_level) or '',
                     'country': vip.country or '',
                     'address': vip.get_user_address(),
                     'phone_number': vip.phone or '',
