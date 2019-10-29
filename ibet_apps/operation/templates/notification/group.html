@@ -129,7 +129,7 @@ hr {
             {% else %}
             <td>AFFILATES</td>
             {% endif %}
-            <td>STATIC</td>
+            <td>Static</td>
             <td><a onclick="return getMemberInfo('{{ group.name }}')">{{ group.members }}</a></td>
             <td>{{ group.time_used }}</td>
             <td><a onclick="return getCreator('{{ group.creator }}')">{{ group.creator }}</a></td>
@@ -937,7 +937,7 @@ $(document).ready(function() {
 
   $('#affiliate-csv').click(function() {
     groupType = "affiliate";
-     $("#static-modal").find(".modal-title").text("New static affiliate group");
+    $("#static-modal").find(".modal-title").text("New static affiliate group");
     $('#csv-file').click();
   });
 
@@ -1099,7 +1099,7 @@ $(document).ready(function() {
       url: url,
       data: {
         'csrfmiddlewaretoken': "{{ csrf_token }}",
-        'type': 'create_playergroup',
+        'type': groupType,
         'group_id': groupId,
         'group_name': group_name,
         'user_list': userList,

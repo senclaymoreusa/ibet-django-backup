@@ -664,7 +664,7 @@ class MessageUserGroupView(CommAdminView):
                     logger.error(serializer.errors['name'][0])
                     return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
             
-            elif postType == "create_playergroup":
+            elif postType == "player":
                 group_name = request.POST.get('group_name')
                 user_list = request.POST.get('user_list')
                 user_list = json.loads(user_list)
@@ -691,7 +691,7 @@ class MessageUserGroupView(CommAdminView):
                 else:
                     return HttpResponse(status=400)
 
-            elif postType == "create_affiliategroup":
+            elif postType == "affiliate":
                 group_name = request.POST.get('group_name')
                 user_list = request.POST.get('user_list')
                 user_list = json.loads(user_list)
