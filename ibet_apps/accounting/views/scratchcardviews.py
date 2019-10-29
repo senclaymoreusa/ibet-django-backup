@@ -11,7 +11,7 @@ from time import sleep
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-
+from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone
@@ -21,7 +21,8 @@ from users.models import CustomUser
 from utils.constants import *
 import utils.helpers as helpers
 from accounting.models import Transaction
-
+from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
 logger = logging.getLogger('django')
 
 
@@ -44,7 +45,15 @@ def create_deposit(request):
         secret = bytes(SCRATCHCARD_CODE, 'utf-8')
         sign = hmac.new(secret, msg=message, digestmod=hashlib.sha256).hexdigest()
         trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
-
+        if checkUserBlock(CustomUser.objects.get(username=request.user.username).pk):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return JsonResponse(data)
         r = requests.get(SCRATCHCARD_URL, params={
             'partner': SCRATCHCARD_PARTNER_ID,
             'pin': pin,

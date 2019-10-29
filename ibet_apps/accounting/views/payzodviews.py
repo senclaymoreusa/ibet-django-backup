@@ -8,10 +8,10 @@ import os
 from datetime import datetime
 from time import sleep
 from dotenv import load_dotenv
-
+from users.views.helper import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-
+from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone
@@ -21,8 +21,7 @@ from users.models import CustomUser
 from accounting.models import Transaction
 from utils.constants import *
 import utils.helpers as helpers
-
-
+from rest_framework.response import Response
 load_dotenv()
 logger = logging.getLogger('django')
 
@@ -52,6 +51,15 @@ def get_qr_code(request):
             "amount": amount,
             "merchant_name": PAYZOD_MERCHANT_NAME
         }
+        if checkUserBlock(CustomUser.objects.get(username=request.user.username).pk):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
         logger.info(payload)
         for x in range(3):
             if os.getenv("ENV") == "local":

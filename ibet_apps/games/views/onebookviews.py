@@ -7,9 +7,10 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from users.models import CustomUser
 from  games.models import *
-from zeep import Client
+import hashlib,logging,hmac,requests,xmltodict,random,string
+import xml.etree.ElementTree as ET
+from time import gmtime, strftime, strptime
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger('django')
 
-client = Client(wsdl='https://ibet-web-dev.claymoreeuro.com/production.svc?wsdl')
-#print(client.service.Add(12,13))
