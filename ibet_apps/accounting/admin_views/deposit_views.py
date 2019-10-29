@@ -84,8 +84,8 @@ class GetDeposits(CommAdminView):
             trans_data["payment"] = trans.get_channel_display()
             trans_data["method"] = trans.method
             trans_data["tran_no"] = trans.transaction_id
-            trans_data["app_time"] = trans.request_time
-            trans_data["arr_time"] = trans.arrive_time
+            trans_data["app_time"] = trans.request_time.strftime('%d %B %Y %X') if trans.request_time else ''
+            trans_data["arr_time"] = trans.arrive_time.strftime('%d %B %Y %X') if trans.arrive_time else ''
             trans_data["order_id"] = trans.order_id
             trans_data["amount"] = trans.amount
             trans_data["note"] = trans.remark

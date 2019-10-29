@@ -45,17 +45,17 @@
                     </div>
                 </div>
             </div>
-            <div class='col-md-2' style="padding: 10px 0 0 30px">
+            <div class='col-md-2' style="padding: 10px 30px 0 15px; float: right;">
                 <div class='input-group date' id='deposit_time_from'>
-                    <input type='text' class="form-control" placeholder="From" id='min' autocomplete="off" />
+                    <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
             </div>
-            <div class='col-md-2' style="padding: 10px 0 0 30px">
+            <div class='col-md-2' style="padding: 10px 15px 0 30px; float: right;">
                 <div class='input-group date' id='deposit_time_to'>
-                    <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
+                    <input type='text' class="form-control" placeholder="From" id='min' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
@@ -67,7 +67,21 @@
         <div id="deposits-section" aria-labelledby="home-tab"
             >
             <table id="deposits-table" class="table-striped table-bordered hover compact"
-                style="table-layout: auto; width: 98.5%; margin-bottom: 20px">
+                style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
+                <colgroup>
+                    <col style="width: 60px">
+                    <col style="width: 80px">
+                    <col style="width: 100px">
+                    <col style="width: 100px">
+                    <col style="width: 230px">
+                    <col style="width: 270px">
+                    <col style="width: 130px">
+                    <col style="width: 130px">
+                    <col style="width: 100px">
+                    <col style="width: 85px">
+                    <col style="width: 78px">
+                    <col style="width: 70px">
+                </colgroup>
                 <thead>
                     <tr>
 {#                            <th scope="col">#</th>#}
@@ -96,8 +110,8 @@
                         <td>{{ tran.method }}</td>
                         <td>{{ tran.tran_no }}</td>
                         <td>{{ tran.order_id }}</td>
-                        <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                        <td>{{ tran.arr_time|date:'d/m/y H:i:s' }}</td>
+                        <td>{{ tran.app_time }}</td>
+                        <td>{{ tran.arr_time }}</td>
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
@@ -154,10 +168,10 @@
                         <div class="row" style="margin-left:10px;margin-top: 10px">
                             <div class="col-md-3 deposit-request-details">
                                 <div class="col-md-6 deposit-request-title">
-                                    <p>Deposit slip</p>
+                                    <p>Deposit Slip</p>
                                     <p>Transaction No.</p>
-                                    <p>Application time</p>
-                                    <p>Transaction code</p>
+                                    <p>Created Time</p>
+                                    <p>Provider Ref No.</p>
                                     <p>Amount</p>
                                 </div>
                                 <div class="col-md-6 deposit-request-data" id="trans_deposit_detail">
@@ -388,12 +402,14 @@
 
         // send data to pop-up window
         $('#deposits-table tbody').on('click', 'button', function () {
-            var data = $(this).closest('tr').data();
+            let row = $(this).closest('tr');
+            let rowData = row.find('td');
+            let data = rowData.map(d => rowData[d].innerHTML);
             console.log(data);
             // transaction pk: data[13]
             showDepositDetail(data);
-            showBankDetail(data);
-            var user_id = data[1];
+            // showBankDetail(data);
+            let user_id = data[0];
             $.when(
                 $.ajax({
                     type: 'GET',
@@ -461,25 +477,27 @@
         function showDepositDetail (data) {
             console.log("show deposit detail");
             $("#trans_deposit_detail").empty();
-            var content = "";
-            content += "<p>...</p>";
-            content += "<p>" + data[4] + "</p>";
-            content += "<p>" + data[5] + "</p>";
-            content += "<p>" + data[11] + "</p>";
-            content += "<p>" + data[12] + "</p>";
+            let content = "";
+            content += "<p>...</p>";  // placeholder for deposit slip upload
+            content += "<p>" + data[4] + "</p>";  // transaction data
+            content += "<p>" + data[6] + "</p>";  // created time
+            content += "<p>" + data[5] + "</p>";  // ref no.
+            content += "<p>" + data[9] + "</p>";  // amount
             $("#trans_deposit_detail").append(content);
         }
+        /*
+            function showBankDetail (data) {
+                $("#bank_detail").empty();
+                var content = "";
+                content += "<p>" + data[6] + "</p>";  // bank name
+                content += "<p>" + data[7] + "</p>";  // bank branch
+                content += "<p>" + data[8] + "</p>";  // bank city
+                content += "<p>" + data[9] + "</p>";  // account holder name
+                content += "<p>" + data[10] + "</p>";  // account number
+                $("#bank_detail").append(content);
+            }
+         */
 
-        function showBankDetail (data) {
-            $("#bank_detail").empty();
-            var content = "";
-            content += "<p>" + data[6] + "</p>";
-            content += "<p>" + data[7] + "</p>";
-            content += "<p>" + data[8] + "</p>";
-            content += "<p>" + data[9] + "</p>";
-            content += "<p>" + data[10] + "</p>";
-            $("#bank_detail").append(content);
-        }
 
         // double click button
         $('#deposit-review-a').click(function () {

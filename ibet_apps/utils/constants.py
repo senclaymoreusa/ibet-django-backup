@@ -119,7 +119,7 @@ TRAN_REJECTED_TYPE = 8  # withdraw
 TRAN_HELD_TYPE = 9
 
 STATE_CHOICES = (
-    (TRAN_SUCCESS_TYPE, 'Successful'),
+    (TRAN_SUCCESS_TYPE, 'Success'),
     (TRAN_FAIL_TYPE, 'Failed'),
     (TRAN_CREATE_TYPE, 'Created'),
     (TRAN_PENDING_TYPE, 'Pending'),

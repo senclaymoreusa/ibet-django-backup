@@ -37,7 +37,8 @@ table.dataTable {
     background-color: #428bca;
 }
 
-#deposits-section table thead tr th {
+#deposits-section table thead tr th,
+#latest_deposit table thead tr th {
     font-family: Helvetica;
     font-size: 11px;
     font-weight: normal;
@@ -48,7 +49,8 @@ table.dataTable {
     color: #4a4a4a;
 }
 /*datatable table tbody tr td {*/
-#deposits-section table tbody tr td {
+#deposits-section table tbody tr td,
+#latest_deposit table tbody tr td {
     font-family: Helvetica;
     font-size: 14px;
     font-weight: normal;
@@ -58,6 +60,7 @@ table.dataTable {
     letter-spacing: normal;
     color: #4a4a4a;
     padding: 4px 7px 4px 7px;
+    word-wrap: break-word;
 }
 
 /* #success_deposit_table_wrapper .dataTables_scroll {
