@@ -124,7 +124,11 @@ hr {
         {% for group in message_groups %}
             <tr>
             <td>{{ group.name }}</td>
+            {% if group.is_player %}
             <td>PLAYERS</td>
+            {% else %}
+            <td>AFFILATES</td>
+            {% endif %}
             <td>STATIC</td>
             <td><a onclick="return getMemberInfo('{{ group.name }}')">{{ group.members }}</a></td>
             <td>{{ group.time_used }}</td>
@@ -339,7 +343,7 @@ hr {
                     <div id="errorMessage"></div>
                     <div style="margin-top:30px;">
                         <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+                        <!--<button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>-->
                         <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -370,17 +374,24 @@ hr {
             <label for="group-name">NAME *</label>
             <input type="text" class="form-control" name="group-name" placeholder="Give your group a descriptive name" required>
           </div>
-          <div class="input-group">
+          <div class="input-group" style="margin-top:25px;">
             <input type="button" class="btn btn-primary" value="Upload player CSV"> 
-            <label class="control-label" style="border: thin red solid;">Edit the list members by uploading a new CSV file.</label>
+            <label class="control-label" style="margin-left: 20px; font-size: 13px;">Edit the list members by uploading a new CSV file.</label>
           </div>
           <p class="manually-text">PLAYERS IN GROUP</p>
-          <table id="player_table" class="display" width="100%">
+          <table id="player-table" class="display" width="100%">
           </table>
+          <div class="form-group">
+            <button type="button" class="btn btn-primary">Export</button>
+          </div>
+          <div class="form-group">
+            <label for="group-name">REASON FOR CHANGES</label>
+            <textarea class="form-control" rows="5" placeholder="Please provide a brief explanation."></textarea>
+          </div>
           <div id="errorMessage"></div>
           <div style="margin-top:30px;">
               <button type="submit" class="btn btn-primary">Save</button>
-              <button type="button" class="btn btn-danger" id="delete-static-group"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+              <button type="button" class="btn btn-danger" id="delete" style="display: none;"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
               <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
           </div>
       </form>
@@ -879,6 +890,8 @@ $(document).ready(function() {
     groupFilter();
   });
 
+  //var dataTable = $("#player-table").DataTable();
+
   $('#csv_file').change(function(e) {
     var data = null;
     var file = e.target.files[0];
@@ -929,6 +942,11 @@ $(document).ready(function() {
   });
 
   $('#csv-file').change(function(e) {
+    // $("#player-table").DataTable().fnClearTable(this);
+    if ( $.fn.dataTable.isDataTable('#player-table')) {
+      $("#player-table").DataTable().destroy();
+    }
+
     var file = e.target.files[0];
 
     if(file) {
@@ -951,7 +969,7 @@ $(document).ready(function() {
           success: function(data) {
             userList = data;
             $("#static-modal").modal({'show' : true});
-            $("#player_table").DataTable({
+            $("#player-table").DataTable({
               data: data,
               columns: [
                   { data: "id" },
@@ -1329,19 +1347,26 @@ function getGroup(groupId) {
         'groupId': groupId
       },
       success: function(data)
-      {   
+      {
+        if ( $.fn.dataTable.isDataTable('#player-table')) {
+          $("#player-table").DataTable().destroy();
+        }
+
         var fields = JSON.parse(data["group"])[0]["fields"];
 
         $("#static-modal").find('input[name="group-name"]').val(fields["name"]);
 
         user_list = data["user_list"];
-        $("#player_table").DataTable({
+        $("#player-table").DataTable({
             data: user_list,
             columns: [
                 { data: "pk" },
                 { data: "username" }
             ]
         });
+
+        $("#delete").css("display", "");
+        $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")');
           /*
           var fields = JSON.parse(data["group"])[0]["fields"];
           user_list = data["user_list"];
