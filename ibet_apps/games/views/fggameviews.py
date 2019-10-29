@@ -11,6 +11,7 @@ import xmltodict
 import decimal
 import requests,json
 import logging
+import random
 from utils.constants import *
 
 logger = logging.getLogger("django")
@@ -220,43 +221,53 @@ class ProcessTransaction(APIView):
 
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
-                gameId = request.GET["gameId"]
+                gameInfoId = request.GET["gameInfoId"]
 
+                user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                user.save()
                 response = {
                     "seq" : seq,
                     "omegaSessionKey" : omegaSessionKey,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : "ibet" + uuid + timestamp ,
+                    "transactionId" : 2019 + random.randint(1000,9999) ,
                     "tranType" : tranType,
+                    "gameInfoId" : gameInfoId,
                     "alreadyProcessed" : False,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2), 
-                    "realAmount" : amount,
+                    "realAmount" : round(float(amount),2),
                     "bonusAmount" : 0.00,
+                    "errorCode" : None,
+                    "message" : None
 
                 }
-                user.main_wallet = user.main_wallet - decimal.Decimal(amount)
-                user.save()
-
+               
 
         elif tranType == "GAME_WIN" :
-                
+                omegaSessionKey = request.GET['omegaSessionKey']
+                gameInfoId = request.GET["gameInfoId"]
+                #isFinal = request.GET["isFinal"]
+                user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                user.save()
                 response = {
                     "seq" : seq,
+                    "omegaSessionKey" : omegaSessionKey,
                     "partyId" : fguser.party_id ,
+                    "gameInfoId" : gameInfoId,
                     "currency" : currency,
-                    "transactionId" : "ibet" + uuid,
+                    "transactionId" : 2019 + random.randint(1000,9999),
                     "tranType" : tranType,
                     "alreadyProcessed" : False,
                     "realBalance" :  round(float(user.main_wallet),2), 
                     "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : amount,
+                    "realAmount" : round(float(amount),2),
                     "bonusAmount" : 0.00,
+                    "errorCode" : None,
+                    "message" : None
 
                 }
-                user.main_wallet = user.main_wallet + decimal.Decimal(amount)
-                user.save()
+                
 
         elif tranType == "PLTFRM_BON" :
                 omegaSessionKey = request.GET['omegaSessionKey']
@@ -269,31 +280,34 @@ class ProcessTransaction(APIView):
                     "gameInfoId" : gameInfoId,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : "ibetfg" + uuid ,
+                    "transactionId" : 2019 + random.randint(1000,9999),
                     "errorCode" : None,
                     "message" : None,
                     "alreadyProcessed" : isFinal,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : amount,
+                    "realAmount" : round(float(amount),2),
                     "bonusAmount" : 0.00,
 
                 }    
 
         elif tranType == "ROLLBACK" :
-                gameId = request.GET["gameId"]
+                gameInfoId = request.GET["gameInfoId"]
+                omegaSessionKey = request.GET['omegaSessionKey']
                 response = {
                     "seq" : seq,
                     "tranType" : tranType,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : "ibetfg" + uuid ,
-                    "alreadyProcessed" : False,
+                    "transactionId" : 2019 + random.randint(1000,9999) ,
+                    "omegaSessionKey" : omegaSessionKey,
+                    "alreadyProcessed" : True,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : amount,
+                    "realAmount" : round(float(amount),2),
                     "bonusAmount" : 0.00,
-
+                    "errorCode" : None,
+                    "message" : None
                 }  
 
         elif tranType == "END_GAME" :
@@ -309,7 +323,7 @@ class ProcessTransaction(APIView):
                     "alreadyProcessed" : False,
                     "realBalance" : round(float(user.main_wallet),2) ,
                     "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : amount,
+                    "realAmount" : round(float(amount),2),
                     "bonusAmount" : 0.00,
 
                 }  
