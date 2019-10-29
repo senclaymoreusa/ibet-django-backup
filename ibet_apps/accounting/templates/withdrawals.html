@@ -323,7 +323,7 @@
             $.when(
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:withdrawal_view' %}",
+                    url: "{% url 'xadmin:modify_withdrawal' %}",
                     data: {
                         'type': 'getMemberInfo',
                         'user': user_id,
@@ -331,7 +331,7 @@
                 }),
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:withdrawal_view' %}",
+                    url: "{% url 'xadmin:modify_withdrawal' %}",
                     data: {
                         'type': 'getLatestWithdraw',
                         'user': user_id,
