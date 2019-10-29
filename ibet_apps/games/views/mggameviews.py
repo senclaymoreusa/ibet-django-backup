@@ -20,7 +20,9 @@ MG_RESPONSE_ERROR = {
     "6002" : "The player token expired.",
     "6101" : "Login validation failed. Login name or password is incorrect.",
     "6102" : "Account is locked.",
-    "6103" : "Account does not exist."
+    "6103" : "Account does not exist.",
+    "6111" : "Account is blacklisted.",
+    "6503" : "Player has insufficient funds.",
    
 }
 
@@ -85,6 +87,133 @@ class GetBalance(APIView):
                         "@token" : token,
                         "@balance" : "0",
                         "@bonusbalance" : "0",
+                        "extinfo" : {}
+                    },
+                    
+                }
+            }
+        }
+        res = xmltodict.unparse(response, pretty=True)
+        return HttpResponse(res, content_type='text/xml')
+
+class Play(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):   
+        data = request.body
+        print(data)
+        dd = xmltodict.parse(data)
+
+        name = dd['pkt']['methodcall']['@name']
+        timestamp = dd['pkt']['methodcall']['@timestamp']
+        loginname = dd['pkt']['methodcall']['auth']['@login']
+        seq = dd['pkt']['methodcall']['call']['@seq']
+        token = dd['pkt']['methodcall']['call']['@token']
+        response = {
+            "pkt" : {
+                "methodresponse" : {
+                    "@name" : name,
+                    "@timestamp" : timestamp,
+                    "result" : {
+                        "@seq" : seq,
+                        "@token" : token,
+                        "@balance" : "0",
+                        "@bonusbalance" : "0",
+                        "@exttransactionid" : "",
+                        "extinfo" : {}
+                    },
+                    
+                }
+            }
+        }
+        res = xmltodict.unparse(response, pretty=True)
+        return HttpResponse(res, content_type='text/xml')
+
+class AwardBonus(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):   
+        data = request.body
+        print(data)
+        dd = xmltodict.parse(data)
+
+        name = dd['pkt']['methodcall']['@name']
+        timestamp = dd['pkt']['methodcall']['@timestamp']
+        loginname = dd['pkt']['methodcall']['auth']['@login']
+        seq = dd['pkt']['methodcall']['call']['@seq']
+        token = dd['pkt']['methodcall']['call']['@token']
+        response = {
+            "pkt" : {
+                "methodresponse" : {
+                    "@name" : name,
+                    "@timestamp" : timestamp,
+                    "result" : {
+                        "@seq" : seq,
+                        "@balance" : "0",
+                        "@bonusbalance" : "0",
+                        "@exttransactionid" : "",
+                        "extinfo" : {}
+                    },
+                    
+                }
+            }
+        }
+        res = xmltodict.unparse(response, pretty=True)
+        return HttpResponse(res, content_type='text/xml')
+
+class EndGame(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):   
+        data = request.body
+        print(data)
+        dd = xmltodict.parse(data)
+
+        name = dd['pkt']['methodcall']['@name']
+        timestamp = dd['pkt']['methodcall']['@timestamp']
+        loginname = dd['pkt']['methodcall']['auth']['@login']
+        seq = dd['pkt']['methodcall']['call']['@seq']
+        token = dd['pkt']['methodcall']['call']['@token']
+        response = {
+            "pkt" : {
+                "methodresponse" : {
+                    "@name" : name,
+                    "@timestamp" : timestamp,
+                    "result" : {
+                        "@seq" : seq,
+                        "@token" : token,
+                        "@balance" : "0",
+                        "@bonusbalance" : "0",
+                        "extinfo" : {}
+                    },
+                    
+                }
+            }
+        }
+        res = xmltodict.unparse(response, pretty=True)
+        return HttpResponse(res, content_type='text/xml')
+
+class RefreshToken(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):   
+        data = request.body
+        print(data)
+        dd = xmltodict.parse(data)
+
+        name = dd['pkt']['methodcall']['@name']
+        timestamp = dd['pkt']['methodcall']['@timestamp']
+        loginname = dd['pkt']['methodcall']['auth']['@login']
+        seq = dd['pkt']['methodcall']['call']['@seq']
+        token = dd['pkt']['methodcall']['call']['@token']
+        response = {
+            "pkt" : {
+                "methodresponse" : {
+                    "@name" : name,
+                    "@timestamp" : timestamp,
+                    "result" : {
+                        "@seq" : seq,
+                        "@token" : token,
                         "extinfo" : {}
                     },
                     

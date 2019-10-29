@@ -34,6 +34,10 @@ urlpatterns = [
     #mg game
     path('api/mg/login/', mggameviews.MGLogin.as_view(), name = 'mg_login'),
     path('api/mg/getbalance/', mggameviews.GetBalance.as_view(), name = 'get_mg_balance'),
+    path('api/mg/play/', mggameviews.Play.as_view(), name = 'play'),
+    path('api/mg/awardbonus', mggameviews.AwardBonus.as_view(), name = 'award_bonus'),
+    path('api/mg/endgame/', mggameviews.EndGame.as_view(), name = 'end_game'),
+    path('api/mg/refreshtoken/', mggameviews.RefreshToken.as_view(), name = 'refresh_token'),
 
 
     # kaiyuan gaming
