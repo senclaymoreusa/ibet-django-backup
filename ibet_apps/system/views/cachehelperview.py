@@ -14,30 +14,32 @@ from utils.redisHelper import RedisHelper
 import logging
 logger = logging.getLogger('django')
 
+
+# This is just a test example for testing redis functions
 class CacheHelperTest(View):
 
     def post(self, request, *args, **kwargs):
 
         try:
             data = json.loads(request.body)
-            userId = data['userId']
-            deviceId = data['deviceId']
-            bonusId = data['bonusId']
+            user_id = data['user_id']
+            device_id = data['device_id']
+            bonus_id = data['bonus_id']
 
             r = RedisClient().connect()
 
             redis = RedisHelper()
-            if redis.can_claim_bonus(bonusId, deviceId):
+            if redis.can_claim_bonus(bonus_id, device_id):
                 print("Can claim bonus")
             else:
                 print("Can not claim bonus")
             
-            redis.set_bonus_by_device(bonusId, deviceId)
-            redis.set_device_by_user(userId, deviceId)
-            redis.set_user_by_device(userId, deviceId)
-            print(redis.get_bonuses_by_device(deviceId))
-            print(redis.get_devices_by_user(userId))
-            print(redis.get_users_by_device(deviceId))
+            redis.set_bonus_by_device(bonus_id, device_id)
+            redis.set_device_by_user(user_id, device_id)
+            redis.set_user_by_device(user_id, device_id)
+            print(redis.get_bonuses_by_device(device_id))
+            print(redis.get_devices_by_user(user_id))
+            print(redis.get_users_by_device(device_id))
 
             data = {}
 
