@@ -198,7 +198,7 @@ class LiveDealerSoapService(ServiceBase):
                                         category=cate,
                                         username=user, 
                                         currency=request.currency, 
-                                        market=2,
+                                        market=ibetCN,
                                         ref_no=request.transactionId,
                                         amount_wagered=request.amount,
                                         )
@@ -274,7 +274,7 @@ class LiveDealerSoapService(ServiceBase):
                                         category=cate,
                                         username=user, 
                                         currency=request.currency, 
-                                        market=2,
+                                        market=ibetCN,
                                         ref_no=request.transactionId,
                                         amount_wagered=request.amount,
                                         bet_type=TIP,
@@ -367,6 +367,9 @@ my_soap_application = csrf_exempt(django_soap_application)
 #     else:
 #         ip = request.META.get('REMOTE_ADDR')
 #     return ip
+
+#The following apis are for transfer wallet:
+
 class LoginView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
