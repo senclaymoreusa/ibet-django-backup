@@ -11,12 +11,12 @@ from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
-
+from django.utils.translation import ugettext_lazy as _
 from users.models import CustomUser
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from utils.constants import *
 import utils.helpers as helpers
-
+from users.serializers import LazyEncoder
 from ..serializers import help2payDepositSerialize, help2payDepositResultSerialize
 from django.conf import settings
 from des import DesKey
@@ -73,7 +73,7 @@ class SubmitDeposit(generics.GenericAPIView):
                     "detail": [errorMessage]
                 }
             }
-            return Response(data)
+            return Response(data, status=status.HTTP_401_UNAUTHORIZED)
         if currency == '2':
             merchant_code = HELP2PAY_MERCHANT_THB
             secret_key = HELP2PAY_SECURITY_THB

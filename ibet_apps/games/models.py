@@ -10,7 +10,6 @@ from users.models import CustomUser
 from utils.constants import *
 
 
-
 # Create your models here.
 class GameProvider(models.Model):
     provider_name = models.CharField(max_length=100)
@@ -153,6 +152,8 @@ class EATicket(models.Model):
     ticket = models.UUIDField()
     created_time = models.DateTimeField(default=timezone.now)
 
+    
+
 #FG model
 class FGSession(models.Model):
     
@@ -164,3 +165,4 @@ class FGSession(models.Model):
     
     def __str__(self):
         return '{0}'.format(self.user)
+

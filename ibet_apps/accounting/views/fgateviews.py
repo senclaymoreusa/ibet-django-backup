@@ -21,7 +21,7 @@ from time import gmtime, strftime, strptime, sleep
 from decimal import *
 from django.utils import timezone
 from users.views.helper import *
-
+from django.utils.translation import ugettext_lazy as _
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
@@ -85,7 +85,7 @@ class chargeCard(generics.GenericAPIView):
                 user_id=CustomUser.objects.get(username=user),
                 method='Fgo',
                 transaction_type=0,
-                channel=0,
+                channel=8,
                 request_time=timezone.now(),
                 arrive_time=timezone.now(),
             )

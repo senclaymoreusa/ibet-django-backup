@@ -15,3 +15,7 @@ def des_encode(key, data):
     cipher = AES.new(key, AES.MODE_ECB)
     cipher_text = cipher.encrypt(data)
     return cipher_text
+
+def generateHash(message):
+    hash = hashlib.sha256(message.encode('utf-8')).hexdigest()
+    return hash
