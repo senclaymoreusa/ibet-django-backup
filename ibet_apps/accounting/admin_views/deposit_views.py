@@ -157,20 +157,14 @@ class UserInfo(CommAdminView):
                 Q(user_id_id=user)
                 & Q(transaction_type=TRANSACTION_DEPOSIT)
                 & Q(request_time__gte=within_this_month)
-            )
+            ).order_by('-request_time')
             logger.info('Find ' + str(latest_deposit.count()) + ' latest deposits')
 
             response_deposit_data = []
             for deposit in latest_deposit:
                 depositDict = {}
                 bankAccount = deposit.user_bank_account
-                if bankAccount == None:
-                    depositDict["bank"] = ""
-                    depositDict["branch"] = ""
-                    depositDict["city"] = ""
-                    depositDict["name"] = ""
-                    depositDict["account"] = ""
-                else:
+                if bankAccount is not None:
                     bank = bankAccount.bank
                     depositDict["bank"] = bank.name
                     depositDict["branch"] = bank.branch
@@ -181,11 +175,11 @@ class UserInfo(CommAdminView):
                 depositDict["payment"] = deposit.get_channel_display()
                 depositDict["tran_no"] = deposit.transaction_id
                 depositDict["time_app"] = deposit.request_time.strftime(
-                    "%d/%m/%y %H:%M:%S"
+                    "%d %B %Y %X"
                 )
                 depositDict["amount"] = deposit.amount
-                depositDict["tran_code"] = deposit.order_id
-                depositDict["status"] = deposit.get_review_status_display()
+                depositDict["order_id"] = deposit.order_id
+                depositDict["status"] = deposit.get_status_display()
                 response_deposit_data.append(depositDict)
             return HttpResponse(
                 json.dumps(response_deposit_data, default=myconverter),

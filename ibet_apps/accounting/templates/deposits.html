@@ -197,14 +197,14 @@
                                     <p>First Name</p>
                                     <p>Last Name</p>
                                 </div>
-                                <div class="col-md-4 deposit-request-data" id="member_detail1">
+                                <div class="col-md-4 deposit-request-data" id="member-details">
                                 </div>
                                 <div class="col-md-3 deposit-request-title">
                                     <p>VIP Level</p>
                                     <p>Risk Level</p>
                                     <p>Balance</p>
                                 </div>
-                                <div class="col-md-2 deposit-request-data" id="member_detail2">
+                                <div class="col-md-2 deposit-request-data" id="risk-details">
                                 </div>
                             </div>
                         </div>
@@ -218,17 +218,17 @@
                                 style="width: 100%; margin-top: 10px; margin-bottom: 40px">
                                 <thead>
                                     <tr>
-                                        <th scope="col">#</th>
+{#                                        <th scope="col">#</th>#}
                                         <th scope="col">PAYMENT</th>
                                         <th scope="col">TRANSACTION NO.</th>
-                                        <th scope="col">TIME OF APPLICATION</th>
+                                        <th scope="col">CREATED TIME</th>
                                         <th scope="col">BANK</th>
                                         <th scope="col">BRANCH</th>
                                         <th scope="col">CITY</th>
                                         <th scope="col">NAME</th>
                                         <th scope="col">ACCOUNT</th>
-                                        <th scope="col">TRANSACTION CODE</th>
-                                        <th scope="col">APPLY AMOUNT</th>
+                                        <th scope="col">PROVIDER REF NO.</th>
+                                        <th scope="col">AMOUNT</th>
                                         <th scope="col">STATUS</th>
                                     </tr>
                                 </thead>
@@ -238,11 +238,10 @@
                         </div>
 
                         <!-- notes -->
-
                         <div class="form-group">
                             <label for="deposit_notes" class="deposit-request-word"
                                 style="margin-left: 10px">NOTES</label>
-                            <textarea type='text' id='notes' class="form-control" name="deposit_notes"
+                            <textarea id='notes' class="form-control" name="deposit_notes"
                                 style="width: 40%;height: 100px;" placeholder="Add anything of importance"></textarea>
 
                             <div id="deposit-request-button">
@@ -434,48 +433,52 @@
         });
 
         function addMemberDetails(data) {
-            $("#member_detail1").empty();
-            var content = "";
+            let userDetails = $("#member-details");
+            userDetails.empty();
+            let content = "";
             content += "<p>" + data[0].id + "</p>";
             content += "<p>" + data[0].username + "</p>";
             content += "<p>" + data[0].first_name + "</p>";
             content += "<p>" + data[0].last_name + "</p>";
-            $("#member_detail1").append(content);
+            userDetails.append(content);
 
-            $("#member_detail2").empty();
-            var content2 = "";
+            let riskDetails = $("#risk-details");
+            riskDetails.empty();
+            let content2 = "";
             content2 += "<p>.....</p>";
             content2 += "<p>" + data[0].risk_level + "</p>";
             content2 += "<p>" + data[0].balance + "</p>";
-            $("#member_detail2").append(content2);
+            riskDetails.append(content2);
         }
 
         function addDepositRecord(data, trans_pk, dep_row_index) {
-            $("#latest_deposits").empty();
-            content = "";
-            for (var i = 0; i < data[0].length; i++) {
-                content += '<tr>'
-                content += '<td>' + (i + 1) + '</td>';
+            let depositArea = $("#latest_deposits");
+            depositArea.empty();
+            let content = "";
+            for (let i = 0; i < data[0].length; i++) {
+                content += '<tr>';
+                // content += '<td>' + (i + 1) + '</td>';
                 content += '<td>' + data[0][i].payment + '</td>';
                 content += '<td>' + data[0][i].tran_no + '</td>';
                 content += '<td>' + data[0][i].time_app + '' + '</td>';
-                content += '<td>' + data[0][i].bank + '</td>';
-                content += '<td>' + data[0][i].branch + '</td>';
-                content += '<td>' + data[0][i].city + '</td>';
-                content += '<td>' + data[0][i].name + '</td>';
-                content += '<td>' + data[0][i].account + '</td>';
-                content += '<td>' + data[0][i].tran_code + '</td>';
+                content += '<td>' + (data[0][i].bank || '') + '</td>';
+                content += '<td>' + (data[0][i].branch || '') + '</td>';
+                content += '<td>' + (data[0][i].city || '') + '</td>';
+                content += '<td>' + (data[0][i].name || '') + '</td>';
+                content += '<td>' + (data[0][i].account || '') + '</td>';
+                content += '<td>' + data[0][i].order_id + '</td>';
                 content += '<td>' + data[0][i].amount + '</td>';
                 content += '<td>' + data[0][i].status + '</td>';
                 content += '</tr>'
             }
-            $("#latest_deposits").append(content);
-            $("#dep_trans_no").val(trans_pk)
+            depositArea.append(content);
+            $("#dep_trans_no").val(trans_pk);
             $("#dep_row_index").val(dep_row_index);
         }
 
         function showDepositDetail (data) {
-            console.log("show deposit detail");
+            // console.log("show deposit detail");
+            let depositDetail =
             $("#trans_deposit_detail").empty();
             let content = "";
             content += "<p>...</p>";  // placeholder for deposit slip upload
@@ -522,17 +525,14 @@
             location.reload();
         });
 
-        $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (e) {
+        $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (event) {
             // Get data from the first row
-            var dep_trans_no = $("#dep_trans_no").val();
-            var dep_row_index = $("#dep_row_index").val();
-            var pagination_num = table.page.len();
-            var table_size = table.rows().count();
+            let dep_trans_no = $("#dep_trans_no").val();
+            let dep_row_index = $("#dep_row_index").val();
+            let pagination_num = table.page.len();
+            let table_size = table.rows().count();
 
-            var audit_result = "Approve";
-            if (e.target.id == "deposit-review-rejnext") {
-                audit_result = "Reject";
-            }
+            let audit_result = event.target.id;
 
             if (dep_row_index == table_size) {
                 $('#lastDeposit').text("This is the last one");
