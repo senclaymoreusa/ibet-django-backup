@@ -32,7 +32,8 @@ urlpatterns = [
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
 
     #mg game
-    path('api/mg/login', mggameviews.MGLogin.as_view(), name = 'fg_login'),
+    path('api/mg/login/', mggameviews.MGLogin.as_view(), name = 'mg_login'),
+    path('api/mg/getbalance/', mggameviews.GetBalance.as_view(), name = 'get_mg_balance'),
 
 
     # kaiyuan gaming
