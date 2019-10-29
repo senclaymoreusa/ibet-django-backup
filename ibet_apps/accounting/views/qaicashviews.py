@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View, generic
 from django.utils import timezone
-from django.db import IntegrityError
+from django.db import DatabaseError, transaction
 from django.conf import settings
 
 from rest_framework import status, generics, parsers, renderers
@@ -20,7 +20,8 @@ from users.serializers import LazyEncoder
 from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
-
+from utils.helpers import addOrWithdrawBalance
+from django.utils.translation import ugettext_lazy as _
 from time import sleep, gmtime, strftime
 from users.views.helper import *
 
@@ -575,7 +576,6 @@ class approvePayout(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = approvePayoutSerialize
     permission_classes = [AllowAny,]
-    
 
     def post(self, request, *args, **kwargs):
         serializer = approvePayoutSerialize(self.queryset, many=True)
@@ -613,24 +613,31 @@ class approvePayout(generics.GenericAPIView):
         
         rdata = r.json()
         logger.info(rdata)
-        user = CustomUser.objects.get(username=rdata['userId'])   
-        try :
+
+        try:
+            user = CustomUser.objects.get(username=rdata['userId'])
             update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
 
-            update_data.order_id=rdata['transactionId']
-            update_data.last_updated=rdata["dateUpdated"]
-            update_data.status=4
+            update_data.order_id = rdata['transactionId']
+            update_data.last_updated = rdata["dateUpdated"]
+            update_data.status = 4
             update_data.review_status = REVIEW_APP
             update_data.remark = notes
             update_data.release_by = user
             update_data.save()
-            logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
+
+            logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
             return Response(rdata)
+
         except ObjectDoesNotExist as e:
             logger.error(e)
-            logger.info("matching transaction not found / does not exist")
-            
-            return Response({"error": "Could not find matching transaction", "code": ERROR_CODE_NOT_FOUND})
+            logger.info("matching user or transaction not found / does not exist" + str(e))
+            return Response({"error": "Could not find matching user or transaction", "code": ERROR_CODE_NOT_FOUND})
+
+        # this withdrawal transaction may not in held status
+        except Exception as e:
+            logger.error("Error processing this transaction " + str(e))
+            return Response({"error": "Error processing this transaction ", "code": ERROR_CODE_INVAILD_INFO})
 
 
 class rejectPayout(generics.GenericAPIView):
@@ -681,7 +688,7 @@ class rejectPayout(generics.GenericAPIView):
         rdata = r.json()
         #print(rdata)
         logger.info(rdata)
-        user = CustomUser.objects.get(username=rdata['userId'])
+
         if r.status_code == 200:  
             
             for x in Transaction._meta.get_field('currency').choices:
@@ -692,25 +699,36 @@ class rejectPayout(generics.GenericAPIView):
                 if rdata["status"] ==y[1]:
                     cur_status = y[0] 
             try:
-                update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
+                with transaction.atomic():
+                    user = CustomUser.objects.get(username=rdata['userId'])
+                    update_data = Transaction.objects.get(transaction_id=rdata['orderId'])
 
-                update_data.order_id = rdata['transactionId']
-                update_data.last_updated = rdata["dateUpdated"]
-                update_data.status = 8
-                update_data.review_status = 2
-                update_data.remark = notes
-                update_data.release_by = user
-                update_data.save()
-                logger.info('Finish update the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
-                return Response(rdata)
+                    update_data.order_id = rdata['transactionId']
+                    update_data.last_updated = rdata["dateUpdated"]
+                    update_data.status = 8
+                    update_data.review_status = 2
+                    update_data.remark = notes
+                    update_data.release_by = user
+                    update_data.save()
+
+                    addOrWithdrawBalance(user.username, update_data.amount, 'add')
+
+                    logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
+                    return Response(rdata)
             except ObjectDoesNotExist as e:
                 logger.error(e)
                 logger.info("matching transaction not found / does not exist")
                 return Response({"error": "Could not find matching transaction","code": ERROR_CODE_NOT_FOUND})
-            
+
+            except DatabaseError as e:
+                logger.info("Error update transaction " + str(e))
+                return Response({"error": "Error updating transaction ", "code": ERROR_CODE_DATABASE})
+
         else:
             logger.error('The request information is not correct, please try again.')
             return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVAILD_INFO})
+
+
 class getDepositTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize
