@@ -8,7 +8,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
 from games.models import FGSession
 import xmltodict
-import decimal
+import decimal,re, math
 import requests,json
 import logging
 import random
@@ -146,8 +146,8 @@ class GetAccountDetail(APIView):
             "message" : None,
             "errorCode" : None,
             "uuid" : uuid,
-            "realBalance" : round(float(user.main_wallet),2),
-            "bonusBalance" : round(float(user.bonus_wallet),2),
+            "realBalance" : math.floor(float(user.main_wallet * 100)) / 100,
+            "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
             "loginName" : user.username,
             "firstName" :  user.first_name ,
             "lastName" : user.last_name,
@@ -191,8 +191,8 @@ class GetBalance(APIView):
                 "omegaSessionKey" : omegaSessionKey,
                 "message" : None,
                 "errorCode" : None,
-                "realBalance" : round(float(user.main_wallet),2),
-                "bonusBalance" : round(float(user.bonus_wallet),2),
+                "realBalance" : math.floor(float(user.main_wallet * 100)) / 100,
+                "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
             
             }
         except:
@@ -248,13 +248,13 @@ class ProcessTransaction(APIView):
                     "omegaSessionKey" : omegaSessionKey,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 2019 + random.randint(1000,9999) ,
+                    "transactionId" : re.sub("[^0-9]", "", timestamp),
                     "tranType" : tranType,
                     "gameInfoId" : gameInfoId,
                     "alreadyProcessed" : False,
-                    "realBalance" : round(float(user.main_wallet),2) ,
-                    "bonusBalance" : round(float(user.bonus_wallet),2), 
-                    "realAmount" : round(float(amount),2),
+                    "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
+                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100, 
+                    "realAmount" : amount,
                     "bonusAmount" : 0.00,
                     "errorCode" : None,
                     "message" : None
@@ -274,12 +274,12 @@ class ProcessTransaction(APIView):
                     "partyId" : fguser.party_id ,
                     "gameInfoId" : gameInfoId,
                     "currency" : currency,
-                    "transactionId" : 2019 + random.randint(1000,9999),
+                    "transactionId" : re.sub("[^0-9]", "", timestamp),
                     "tranType" : tranType,
                     "alreadyProcessed" : False,
-                    "realBalance" :  round(float(user.main_wallet),2), 
-                    "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : round(float(amount),2),
+                    "realBalance" :  math.floor(float(user.main_wallet * 100)) / 100, 
+                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
+                    "realAmount" : amount,
                     "bonusAmount" : 0.00,
                     "errorCode" : None,
                     "message" : None
@@ -298,13 +298,13 @@ class ProcessTransaction(APIView):
                     "gameInfoId" : gameInfoId,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 2019 + random.randint(1000,9999),
+                    "transactionId" : re.sub("[^0-9]", "", timestamp),
                     "errorCode" : None,
                     "message" : None,
                     "alreadyProcessed" : isFinal,
-                    "realBalance" : round(float(user.main_wallet),2) ,
-                    "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : round(float(amount),2),
+                    "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
+                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
+                    "realAmount" : amount,
                     "bonusAmount" : 0.00,
 
                 }    
@@ -317,12 +317,12 @@ class ProcessTransaction(APIView):
                     "tranType" : tranType,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : 2019 + random.randint(1000,9999) ,
+                    "transactionId" : re.sub("[^0-9]", "", timestamp) ,
                     "omegaSessionKey" : omegaSessionKey,
                     "alreadyProcessed" : True,
-                    "realBalance" : round(float(user.main_wallet),2) ,
-                    "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : round(float(amount),2),
+                    "realBalance" : math.floor(float(user.main_wallet * 100)) / 100  ,
+                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
+                    "realAmount" : amount,
                     "bonusAmount" : 0.00,
                     "errorCode" : None,
                     "message" : None
@@ -339,9 +339,9 @@ class ProcessTransaction(APIView):
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
                     "alreadyProcessed" : False,
-                    "realBalance" : round(float(user.main_wallet),2) ,
-                    "bonusBalance" : round(float(user.bonus_wallet),2),
-                    "realAmount" : round(float(amount),2),
+                    "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
+                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
+                    "realAmount" : amount,
                     "bonusAmount" : 0.00,
 
                 }  
