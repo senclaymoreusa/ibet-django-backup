@@ -19,6 +19,9 @@ logger = logging.getLogger("django")
 class SessionCheck(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
+        """
+        The session check API is for checking whether the session key is alive.
+        """
         sessionKey = request.GET['sessionKey']
         rr = requests.get(FG_SESSION_CHECK ,params={
             "sessionKey": sessionKey
@@ -35,6 +38,9 @@ class FGLogin(APIView):
 
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
+        """
+        FGLogin - generate new session key and update in database.
+        """
         pk = request.GET['pk']
         user = CustomUser.objects.get(pk=pk)
         currency = user.currency
@@ -119,6 +125,10 @@ class GetAccountDetail(APIView):
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
+        """
+        GetAccountDetail - return the user info.
+        """
+
         seq = request.GET['seq']
         callerId = request.GET['callerId']
         callerPassword = request.GET['callerPassword']
@@ -162,6 +172,9 @@ class GetBalance(APIView):
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
+        """
+        GetBalance - return the user account balance to provider.
+        """
         seq = request.GET['seq']
         callerId = request.GET['callerId']
         callerPassword = request.GET['callerPassword']
@@ -194,6 +207,11 @@ class ProcessTransaction(APIView):
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
+
+        """
+        ProcessTransaction - process in game bet, game win, bonus, rollback and end game.
+        """
+
         seq = request.GET['seq']
         callerId = request.GET['callerId']
         callerPassword = request.GET['callerPassword']
