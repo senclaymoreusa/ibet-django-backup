@@ -40,6 +40,8 @@
                         <select id="status-filter">
                             <option value="all">ALL</option>
                             <option value="created">CREATED</option>
+                            <option value="review">REVIEW</option>  <!-- pending review -->
+                            <option value="rejected">REJECTED</option>
                             <option value="pending">PENDING</option>
                             <option value="success">SUCCESS</option>
                             <option value="failed">FAILED</option>
@@ -71,21 +73,21 @@
             <table id="deposits-table" class="table-striped table-bordered hover compact"
                 style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
                 <colgroup>
-                    <col style="width: 60px">
-                    <col style="width: 80px">
-                    <col style="width: 100px">
-                    <col style="width: 100px">
-                    <col style="width: 100px">
-                    <col style="width: 100px">
-                    <col style="width: 100px">
-                    <col style="width: 230px">
-                    <col style="width: 270px">
-                    <col style="width: 130px">
-                    <col style="width: 130px">
-                    <col style="width: 100px">
-                    <col style="width: 85px">
-                    <col style="width: 78px">
-                    <col style="width: 70px">
+                    <col style="width: 60px">  <!-- // player id    -->
+                    <col style="width: 80px">  <!-- // username -->
+                    <col style="width: 100px"> <!--  // player segment -->
+                    <col style="width: 56px">  <!-- // risk level -->
+                    <col style="width: 100px"> <!--  // user status -->
+                    <col style="width: 100px"> <!--  //  -->
+                    <col style="width: 100px"> <!--  // -->
+                    <col style="width: 230px"> <!--  // -->
+                    <col style="width: 270px"> <!--  // -->
+                    <col style="width: 130px"> <!--  // -->
+                    <col style="width: 130px"> <!--  // -->
+                    <col style="width: 100px"> <!--  // -->
+                    <col style="width: 85px">  <!-- // -->
+                    <col style="width: 78px">  <!-- // -->
+                    <col style="width: 70px">  <!-- // -->
                 </colgroup>
                 <thead>
                     <tr>
@@ -95,8 +97,8 @@
                         <th scope="col">PLAYER SEGMENT</th>
                         <th scope="col">RISK LEVEL</th>
                         <th scope="col">STATUS</th>
-                        <th scope="col">CHANNEL</th>
                         <th scope="col">METHOD</th>
+                        <th scope="col">CHANNEL</th>
                         <th scope="col">TRANSACTION NO.</th>
                         <th scope="col">PROVIDER REF NO.</th>
                         <th scope="col">CREATED TIME</th>
@@ -114,11 +116,11 @@
                         <!-- <td>{{ forloop.counter }}</td> -->
                         <td>{{ tran.id }}</td>
                         <td>{{ tran.username }}</td>
-                        <td>{{ tran.username }}</td>
-                        <td>{{ tran.username }}</td>
-                        <td>{{ tran.username }}</td>
-                        <td>{{ tran.payment }}</td>
+                        <td>Normal</td>
+                        <td>{{ tran.risk_level }}</td>
+                        <td>{{ tran.user_status }}</td>
                         <td>{{ tran.method }}</td>
+                        <td>{{ tran.payment }}</td>
                         <td>{{ tran.tran_no }}</td>
                         <td>{{ tran.order_id }}</td>
                         <td>{{ tran.app_time }}</td>
@@ -126,10 +128,10 @@
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
-                        {% if tran.status == 'Created' %}
+                        {% if tran.status == 'Review' %}
                         <!-- {#{% if tran.method == 'ALIPAY' and tran.status == 'Pending' %}#} -->
                         <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                                data-target="#audit_deposit">Audit</button></td>
+                                data-target="#audit_withdraw">Audit</button></td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -192,21 +194,21 @@
                                     </div>
                                 </div>
                                 <!-- MEMBER DETAILS -->
-                                <div class="col-md-4 withdraw-request-details" style="padding-bottom: 50px">
+                                <div class="col-md-4 withdraw-request-details" style="padding-bottom: 90px">
                                     <div class="col-md-4 withdraw-request-title">
                                         <p>Member ID</p>
                                         <p>Username</p>
                                         <p>First Name</p>
                                         <p>Last Name</p>
                                     </div>
-                                    <div class="col-md-3 withdraw-request-data" id="member_detail1">
+                                    <div class="col-md-3 withdraw-request-data" id="member-details">
                                     </div>
                                     <div class="col-md-3 withdraw-request-title">
                                         <p>VIP Level</p>
                                         <p>Risk Level</p>
                                         <p>Balance</p>
                                     </div>
-                                    <div class="col-md-2 withdraw-request-data" id="member_detail2">
+                                    <div class="col-md-2 withdraw-request-data" id="risk-details">
                                     </div>
                                 </div>
                             </div>
@@ -433,14 +435,14 @@
             let data = rowData.map(d => rowData[d].innerHTML);
             // transaction pk: data[12]
             // bank account: data[13]
-            showTransactionDetail(data);
+            // showTransactionDetail(data);
             showWithdrawDetail(data);
-            showBankDetail(data);
-            var user_id = data[1];
+            // showBankDetail(data);
+            var user_id = data[0];
             $.when(
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:modify_withdrawal' %}",
+                    url: "{% url 'xadmin:user_info' %}",
                     data: {
                         'type': 'getMemberInfo',
                         'user': user_id,
@@ -448,9 +450,9 @@
                 }),
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:modify_withdrawal' %}",
+                    url: "{% url 'xadmin:get_transactions' %}",
                     data: {
-                        'type': 'getLatestWithdraw',
+                        'type': 'withdrawals',
                         'user': user_id,
                     },
                 })
@@ -458,51 +460,57 @@
                 addMemberDetails(data1);
                 addWithdrawRecord(data2, data[12], data[0]);
             });
-            var container = $('#withdraw_request_pop');
-            $(document).mouseup(function (e) {
-                // if the target of the click isn't the container nor a descendant of the container
-                if (!container.is(e.target) && container.has(e.target).length === 0) {
-                    location.reload();
-                }
-            });
+            // var container = $('#withdraw_request_pop');
+            // $(document).mouseup(function (e) {
+            //     // if the target of the click isn't the container nor a descendant of the container
+            //     if (!container.is(e.target) && container.has(e.target).length === 0) {
+            //         location.reload();
+            //     }
+            // });
         });
 
         function addMemberDetails(data) {
-            $("#member_detail1").empty();
-            var content = "";
+            let userDetails = $("#member-details");
+            userDetails.empty();
+            let content = "";
             content += "<p>" + data[0].id + "</p>";
             content += "<p>" + data[0].username + "</p>";
             content += "<p>" + data[0].first_name + "</p>";
             content += "<p>" + data[0].last_name + "</p>";
-            $("#member_detail1").append(content);
+            userDetails.append(content);
 
-            $("#member_detail2").empty();
-            var content2 = "";
-            content2 += "<p>" + data[0].vip_level + "</p>";
-            content2 += "<p>" + data[0].risk_level + "</p>";
-            content2 += "<p style='margin-top:25px'>" + data[0].balance + "</p>";
-            $("#member_detail2").append(content2);
+            let riskDetails = $("#risk-details");
+            riskDetails.empty();
+            content = "";
+            content += "<p>.....</p>";
+            content += "<p>" + data[0].risk_level + "</p>";
+            content += "<p>" + data[0].balance + "</p>";
+            riskDetails.append(content);
         }
 
         function addWithdrawRecord(data, trans_pk, index) {
-            $("#latest_withdraws").empty();
-            content = "";
-            for (var i = 0; i < data[0].length; i++) {
-                content += '<tr>'
-                content += '<td>' + (i + 1) + '</td>';
+            let depositArea = $("#latest_deposits");
+            depositArea.empty();
+            let content = "";
+            for (let i = 0; i < data[0].length; i++) {
+                content += '<tr>';
+                // content += '<td>' + (i + 1) + '</td>';
+                content += '<td>' + data[0][i].payment + '</td>';
                 content += '<td>' + data[0][i].tran_no + '</td>';
-                content += '<td>' + data[0][i].app_time + '' + '</td>';
-                content += '<td>' + data[0][i].bank + '</td>';
-                content += '<td>' + data[0][i].city + '</td>';
-                content += '<td>' + data[0][i].name + '</td>';
-                content += '<td>' + data[0][i].account + '</td>';
+                content += '<td>' + data[0][i].time_app + '' + '</td>';
+                content += '<td>' + (data[0][i].bank || '') + '</td>';
+                content += '<td>' + (data[0][i].branch || '') + '</td>';
+                content += '<td>' + (data[0][i].city || '') + '</td>';
+                content += '<td>' + (data[0][i].name || '') + '</td>';
+                content += '<td>' + (data[0][i].account || '') + '</td>';
+                content += '<td>' + data[0][i].order_id + '</td>';
                 content += '<td>' + data[0][i].amount + '</td>';
                 content += '<td>' + data[0][i].status + '</td>';
                 content += '</tr>'
             }
-            $("#latest_withdraws").append(content);
+            depositArea.append(content);
             $("#wtd_trans_no").val(trans_pk);
-            $("#wtd_row_no").val(index);
+            // $("#wtd_row_no").val(index);
         }
 
         showBankDetail = function (data) {

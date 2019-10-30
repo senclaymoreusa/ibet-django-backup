@@ -107,16 +107,16 @@ CURRENCY_CHOICES = (
     (CURRENCY_GBP, 'GBP')
 )
 
-TRAN_SUCCESS_TYPE = 0  # deposit
-TRAN_FAIL_TYPE = 1  # deposit
-TRAN_CREATE_TYPE = 2  # deposit
-TRAN_PENDING_TYPE = 3  # deposit
-TRAN_APPROVED_TYPE = 4  # deposit
-TRAN_CANCEL_TYPE = 5
-TRAN_COMPLETED_TYPE = 6
-TRAN_RESEND_TYPE = 7
+TRAN_SUCCESS_TYPE = 0  # deposit / withdraw
+TRAN_FAIL_TYPE = 1  # deposit / withdraw
+TRAN_CREATE_TYPE = 2  # deposit / withdraw
+TRAN_PENDING_TYPE = 3  # deposit / withdraw
+TRAN_APPROVED_TYPE = 4  # not being used 
+TRAN_CANCEL_TYPE = 5  # deposit / withdraw
+TRAN_COMPLETED_TYPE = 6  
+TRAN_RESEND_TYPE = 7    
 TRAN_REJECTED_TYPE = 8  # withdraw
-TRAN_HELD_TYPE = 9
+TRAN_RISK_REVIEW = 9  # 
 
 STATE_CHOICES = (
     (TRAN_SUCCESS_TYPE, 'Success'),
@@ -128,7 +128,7 @@ STATE_CHOICES = (
     (TRAN_COMPLETED_TYPE, 'Completed'),
     (TRAN_RESEND_TYPE, 'Resent'),
     (TRAN_REJECTED_TYPE, 'Rejected'),
-    (TRAN_HELD_TYPE, 'Held'),
+    (TRAN_RISK_REVIEW, 'Review'),
 )
 
 TRAN_STATUS_DICT = {
@@ -136,7 +136,9 @@ TRAN_STATUS_DICT = {
     'failed': 1,
     'created': 2,
     'pending': 3,
-    'canceled': 5
+    'canceled': 5,
+    'rejected': 8,
+    'review': 9
 }
 
 REVIEW_APP = 0

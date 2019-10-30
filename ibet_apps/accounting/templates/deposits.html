@@ -69,26 +69,32 @@
             <table id="deposits-table" class="table-striped table-bordered hover compact"
                 style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
                 <colgroup>
-                    <col style="width: 60px">
-                    <col style="width: 80px">
-                    <col style="width: 100px">
-                    <col style="width: 100px">
-                    <col style="width: 230px">
-                    <col style="width: 270px">
-                    <col style="width: 130px">
-                    <col style="width: 130px">
-                    <col style="width: 100px">
-                    <col style="width: 85px">
-                    <col style="width: 78px">
-                    <col style="width: 70px">
+                    <col style="width: 60px">  <!-- // player id    -->
+                    <col style="width: 80px">  <!-- // username -->
+                    <col style="width: 100px"> <!--  // player segment -->
+                    <col style="width: 56px">  <!-- // risk level -->
+                    <col style="width: 100px"> <!--  // user status -->
+                    <col style="width: 100px"> <!--  //  -->
+                    <col style="width: 100px"> <!--  // -->
+                    <col style="width: 230px"> <!--  // -->
+                    <col style="width: 270px"> <!--  // -->
+                    <col style="width: 130px"> <!--  // -->
+                    <col style="width: 130px"> <!--  // -->
+                    <col style="width: 100px"> <!--  // -->
+                    <col style="width: 85px">  <!-- // -->
+                    <col style="width: 78px">  <!-- // -->
+                    <col style="width: 70px">  <!-- // -->
                 </colgroup>
                 <thead>
                     <tr>
 {#                            <th scope="col">#</th>#}
                         <th scope="col">PLAYER ID</th>
                         <th scope="col">USERNAME</th>
-                        <th scope="col">CHANNEL</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">RISK LEVEL</th>
+                        <th scope="col">USER STATUS</th>
                         <th scope="col">METHOD</th>
+                        <th scope="col">CHANNEL</th>
                         <th scope="col">TRANSACTION NO.</th>
                         <th scope="col">PROVIDER REF NO.</th>
                         <th scope="col">CREATED TIME</th>
@@ -106,8 +112,11 @@
 {#                            <td>{{ forloop.counter }}</td>#}
                         <td>{{ tran.id }}</td>
                         <td>{{ tran.username }}</td>
-                        <td>{{ tran.payment }}</td>
+                        <td>Normal</td>
+                        <td>{{ tran.risk_level }}</td>
+                        <td>{{ tran.user_status }}</td>
                         <td>{{ tran.method }}</td>
+                        <td>{{ tran.payment }}</td>
                         <td>{{ tran.tran_no }}</td>
                         <td>{{ tran.order_id }}</td>
                         <td>{{ tran.app_time }}</td>
@@ -419,15 +428,15 @@
                 }),
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:user_info' %}",
+                    url: "{% url 'xadmin:get_transactions' %}",
                     data: {
-                        'type': 'getLatestDeposit',
+                        'type': 'deposits',
                         'user': user_id,
                     },
                 })
-            ).then(function (data1, data2) {
-                addMemberDetails(data1);
-                addDepositRecord(data2, data[12], data[0]);
+            ).then(function (memberData, depositData) {
+                addMemberDetails(memberData);
+                addDepositRecord(depositData, data[12], data[0]);
             });
         });
 
@@ -444,11 +453,11 @@
 
             let riskDetails = $("#risk-details");
             riskDetails.empty();
-            let content2 = "";
-            content2 += "<p>.....</p>";
-            content2 += "<p>" + data[0].risk_level + "</p>";
-            content2 += "<p>" + data[0].balance + "</p>";
-            riskDetails.append(content2);
+            content = "";
+            content += "<p>.....</p>";
+            content += "<p>" + data[0].risk_level + "</p>";
+            content += "<p>" + data[0].balance + "</p>";
+            riskDetails.append(content);
         }
 
         // fill in latest deposit section of txn detail modal
@@ -484,10 +493,10 @@
             txnDetails.empty();
             let content = "";
             content += "<p>...</p>";  // placeholder for deposit slip upload
-            content += "<p>" + data[4] + "</p>";  // transaction data
-            content += "<p>" + data[6] + "</p>";  // created time
-            content += "<p>" + data[5] + "</p>";  // ref no.
-            content += "<p>" + data[9] + "</p>";  // amount
+            content += "<p>" + data[7] + "</p>";  // transaction no.
+            content += "<p>" + data[9] + "</p>";  // created time
+            content += "<p>" + data[8] + "</p>";  // ref no.
+            content += "<p>" + data[12] + "</p>";  // amount
             txnDetails.append(content);
         }
 
