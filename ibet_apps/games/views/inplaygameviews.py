@@ -27,7 +27,8 @@ logger = logging.getLogger('django')
 
 class InplayLoginAPI(View):
     def get(self, request, *arg, **kwargs):
-        data = json.loads(request.body)
+        user = 'Bobby'
+        name = 'too much'
         print(data['Token'])
         return HttpResponse(status=200)
 
