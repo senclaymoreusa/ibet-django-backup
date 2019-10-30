@@ -11,6 +11,7 @@ import hashlib,logging,hmac,requests,xmltodict,random,string
 import xml.etree.ElementTree as ET
 from time import gmtime, strftime, strptime
 from rest_framework.authtoken.models import Token
+from django.core.exceptions import  ObjectDoesNotExist
 
 logger = logging.getLogger('django')
 
@@ -18,7 +19,7 @@ logger = logging.getLogger('django')
 class CreateMember(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
-        username = request.POST['username']
+        username = request.POST.get('username')
         try :
             user = CustomUser.objects.get(username=username)
             currency = request.POST['currency']
