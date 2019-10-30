@@ -61,7 +61,7 @@ padding: 4px 20px 3px 20px;
 }
 
 .wrapper {
-    width: 1125px;
+    width: 1300px;
     overflow-x: scroll;
     white-space: nowrap;
 }
@@ -76,4 +76,14 @@ padding: 4px 20px 3px 20px;
 
 .interval-padding {
     padding: 6px 13px;
+}
+
+.testimonial-group {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.testimonial-group > .row > .col-md-4{
+    display: inline-block;
+    float: none;
 }

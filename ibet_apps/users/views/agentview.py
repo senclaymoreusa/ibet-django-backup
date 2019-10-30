@@ -24,7 +24,7 @@ from decimal import Decimal
 from xadmin.views import CommAdminView
 from utils.constants import *
 from accounting.models import *
-from users.models import CustomUser, UserAction, Commission, UserActivity, ReferLink
+from users.models import CustomUser, UserAction, Commission, UserActivity, ReferChannel
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
 
@@ -339,11 +339,11 @@ class AgentDetailView(CommAdminView):
             context["active_users"] = calculateActiveDownlineNumber(affiliate)
             context["downline_deposit"] = downline_deposit
             try:
-                context["promotion_link"] = ReferLink.objects.get(
-                    user_id=affiliate, refer_link_name="default").refer_link_url
+                context["promotion_link"] = ReferChannel.objects.get(
+                    user_id=affiliate, refer_channel_name="default").pk
             except ObjectDoesNotExist:
                 context["promotion_link"] = ""
-            context["promotion_link_list"] = ReferLink.objects.filter(
+            context["promotion_link_list"] = ReferChannel.objects.filter(
                 user_id=affiliate)
             
             # related affiliates
@@ -418,12 +418,12 @@ class AgentDetailView(CommAdminView):
 
             # CHANNEL REPORT TABLE
             channel_repost = []
-            user_channel = ReferLink.objects.filter(
-                user_id=affiliate).values_list('refer_link_url').distinct()
-            user_channel_list = ReferLink.objects.filter(pk__in=user_channel)
+            user_channel = ReferChannel.objects.filter(
+                user_id=affiliate).values_list('pk').distinct()
+            user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
 
             # Total commission
-            total_commission = commission_tran.aggregate(
+            context["total_commission"] = commission_tran.aggregate(
                 total_commission=Coalesce(Sum('amount'), 0))['total_commission']
 
             return render(request, "agent_detail.html", context)
@@ -516,11 +516,11 @@ class AgentDetailView(CommAdminView):
 
         elif post_type == 'remove_refer_link':
             link_id = request.POST.get('refer_link')
-            link_obj = ReferLink.objects.get(pk=link_id)
+            link_obj = ReferChannel.objects.get(pk=link_id)
             if link_obj:
                 link_obj.delete()
             logger.info(str(admin_user) + " delete channel " +
-                        str(link_obj.refer_link_name) + " for affiliate " + str(affiliate_id))
+                        str(link_obj.refer_channel_name) + " for affiliate " + str(affiliate_id))
 
             return HttpResponse(status=200)
 

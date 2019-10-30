@@ -61,6 +61,8 @@ urlpatterns += [
     path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
     path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
     path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
+    path('api/generategameurl/', gbsportsintegrationviews.GenerateGameURL.as_view(), name='generate_game_url'),
+    path('api/generatefakeusergameurl/', gbsportsintegrationviews.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
     path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
     path('api/Yggdrasil/',yggdrasilintegrationviews.YggdrasilAPI.as_view(), name='Yggdrasil_api'),
     path('api/sagetbalance/', saintegrationviews.SAGetUserBalance.as_view(), name='sa_get_balance'),
@@ -77,6 +79,10 @@ urlpatterns += [
     path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings"),
     path('api/bet-history/',views.GetBetHistory.as_view(), name="get_bet_history"),
     path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check"),
-    path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check-user-status")
-
+    path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check-user-status"),
+    path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security-question"),
+    path('api/user-security-question/', csrf_exempt(views.UserSecurityQuestion.as_view()), name="user-security-question"),
+    path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw-password"),
+    path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset-withdraw-password")
+    
 ]

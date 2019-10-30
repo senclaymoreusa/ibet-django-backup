@@ -63,6 +63,7 @@ from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
 from users.views.helper import *
+from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
 
@@ -79,6 +80,8 @@ from utils.constants import *
 import requests
 
 import xmltodict
+
+from django.db import transaction
 
 logger = logging.getLogger('django')
 
@@ -359,13 +362,13 @@ class LoginView(GenericAPIView):
             if self.serializer.is_valid(raise_exception=True):
                 return self.login()
         except Exception as e:
-            errorMessage = _('The current user is blocked!')
+            errorMessage = _('Invalid username/ passowrd')
             data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
+            data["errorCode"] = ERROR_CODE_INVAILD_INFO
             data["errorMsg"] = {
                 "detail": [errorMessage]
             }
-                
+            # TODO: ADD LOG
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
 
@@ -965,7 +968,7 @@ class GetUsernameByReferid(APIView):
 
     def get(self, request, *args, **kwargs):
         refer_id = request.GET.get('referid')
-        user = get_user_model().objects.filter(referral_id=refer_id)
+        user = get_user_model().objects.filter(referral_code=refer_id)
         if user:
             return Response(user[0].username)
         return Response('Failed')
@@ -1087,7 +1090,7 @@ class CheckUsernameExist(View):
             return HttpResponse(status=400)
         return HttpResponse(status=200)
 
-
+'''
 class GenerateActivationCode(APIView):
 
     permission_classes = (AllowAny,)
@@ -1100,6 +1103,52 @@ class GenerateActivationCode(APIView):
 
         send_sms(str(random_num), user[0].pk)
     
+        return Response(status=status.HTTP_200_OK)
+'''
+
+
+class GenerateActivationCode(APIView):
+
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        username = data['username']
+        postType = data['type']
+        try:
+            user = get_user_model().objects.filter(username=username)
+            if postType == "change_member_phone_num":
+                time = timezone.now() - datetime.timedelta(days=1)
+                event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
+                count = UserAction.objects.filter(event_filter).count()
+                if count <= 3:
+                    random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+
+                    # DB transaction atomic as a context manager:
+                    with transaction.atomic():
+                        user.update(activation_code=random_num)
+
+                        send_sms(str(random_num), user[0].pk)
+
+                        action = UserAction(
+                            user=user[0],
+                            event_type=EVENT_CHOICES_SMS_CODE,
+                            created_time=timezone.now()
+                        )
+                        action.save()
+
+                        return Response(status=status.HTTP_201_CREATED)
+
+                return Response(ERROR_CODE_MAX_EXCEED)
+            else:
+                # leave this for active code, currently no SMS system available
+                random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+                user.update(activation_code=random_num)
+                send_sms(str(random_num), user[0].pk) 
+        except Exception as e:
+            logger.error("Error Generating Activation Code: ", e)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         return Response(status=status.HTTP_200_OK)
 
 class VerifyActivationCode(APIView):
@@ -1669,7 +1718,7 @@ class CheckUserStatusAPI(View):
     def get(self, request, *args, **kwargs):
         userId = request.GET['userId']
         data = {
-            "errorCode": ERROR_CODE_SUCCESS,
+            "errorCode": CODE_SUCCESS,
             "errorMsg": _("Success")
         }
         if checkUserBlock(userId):
@@ -1679,3 +1728,144 @@ class CheckUserStatusAPI(View):
                 "detail": [errorMessage]
             }
         return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+
+class AllSecurityQuestion(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            data = []
+            for question in SECURITY_QUESTION:
+                data.append({"value": question[0], "question": question[1]})
+
+            logger.info("Sending all security question options response......... ")
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
+
+        except:
+            logger.error("Error getting all security question options: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    
+
+class UserSecurityQuestion(View):
+
+    def get(self, request, *args, **kwargs):
+        
+        try:
+            userId = request.GET.get('userId')
+            
+            user = CustomUser.objects.get(pk=userId)
+            if user.security_question:
+                data = {
+                    "value": user.security_question,
+                    "question": str(dict(SECURITY_QUESTION).get(user.security_question))
+                }
+            else: 
+                data = {
+                    "errorCode": ERROR_CODE_EMPTY_RESULT,
+                    "errorMessage": "You should set the security question"
+                }
+
+        except Exception as e:
+            logger.error("Error getting UserBonusEvent objects: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            question = data['question']
+            answer = data['answer']
+            user = CustomUser.objects.get(pk=userId)
+
+            user.security_question = question
+            user.security_answer = answer
+            user.save()
+
+            response = {
+                "code": CODE_SUCCESS,
+                "message": "Successfully set the security Question"
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Error setting security questions: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+class SetWithdrawPassword(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        try:
+            data = json.loads(request.body)
+            userId = data['userId'] 
+            withdrawPassword = data['withdrawPassword']
+            customUser = CustomUser.objects.get(pk=userId)
+            if customUser.withdraw_password:
+                response = {
+                    "code": ERROR_CODE_INVAILD_INFO,
+                    "message": "You already setting the withdraw password"
+                }
+                logger.info("Already setting the withdraw password: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
+            customUser.withdraw_password = make_password(withdrawPassword)
+            customUser.save()
+
+            response = {
+                "code": CODE_SUCCESS,
+                "message": "Successfully set the withdraw password"
+            }
+
+            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
+            return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
+        except Exception as e:
+            logger.error("Error setting withdraw password: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResetWithdrawPassword(View):
+
+    def post(self, request, *args, **kwargs):
+
+        response = {
+            "code": 0,
+            "message": ""
+        }
+        
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            oldWithdrawPassword = data['oldWithdrawPassword']
+            newWithdrawPassword = data['newWithdrawPassword']
+            customUser = CustomUser.objects.get(pk=userId)
+            if customUser.withdraw_password and check_password(oldWithdrawPassword, customUser.withdraw_password):
+                hashPassword = make_password(newWithdrawPassword)
+                customUser.withdraw_password = hashPassword
+                customUser.save()
+            elif not check_password(oldWithdrawPassword, customUser.withdraw_password):
+                response['code'] = ERROR_CODE_INVAILD_INFO
+                response['message'] = "The password you have entered does not match your current one."
+                logger.info("The password you have entered does not match your current one: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+            else:
+                response['code'] = ERROR_CODE_EMPTY_RESULT
+                response['message'] = "You should set the password first"
+                logger.info("You should set the withdraw password first: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+            
+            response['code'] = CODE_SUCCESS
+            response['message'] = "Successfully set the withdraw password"
+
+            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
+            return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
+        except Exception as e:
+            logger.error("Error resetting withdraw password: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

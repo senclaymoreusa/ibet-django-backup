@@ -26,7 +26,7 @@ logger = logging.getLogger('django')
 
 
 class InplayLoginAPI(View):
-    def get(self, request, *arg, **kwargs):
+    def post(self, request, *arg, **kwargs):
         user = 'Bobby'
         time_stamp = datetime.now()
         print(time_stamp)
