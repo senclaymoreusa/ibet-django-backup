@@ -159,11 +159,12 @@ class GetAccountDetail(APIView):
             "birthDate" : user.date_of_birth
     
         }
-        except:
+        except Exception as e:
             response = {
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
+            logger.error("cannot find user", e)
 
         
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
@@ -195,11 +196,12 @@ class GetBalance(APIView):
                 "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
             
             }
-        except:
+        except Exception as e:
             response = {
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
+            logger.error("cannot find user", e)
 
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
@@ -240,52 +242,70 @@ class ProcessTransaction(APIView):
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
+                wallet = user.main_wallet + decimal.Decimal(amount)
+                if (wallet > 0):
+                    user.main_wallet = wallet
+                    user.save()
+                    response = {
+                        "seq" : seq,
+                        "omegaSessionKey" : omegaSessionKey,
+                        "partyId" : fguser.party_id ,
+                        "currency" : currency,
+                        "transactionId" : re.sub("[^0-9]", "", timestamp),
+                        "tranType" : tranType,
+                        "gameInfoId" : gameInfoId,
+                        "alreadyProcessed" : False,
+                        "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
+                        "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100, 
+                        "realAmount" : amount,
+                        "bonusAmount" : 0.00,
+                        "errorCode" : None,
+                        "message" : None
 
-                user.main_wallet = user.main_wallet + decimal.Decimal(amount)
-                user.save()
-                response = {
-                    "seq" : seq,
-                    "omegaSessionKey" : omegaSessionKey,
-                    "partyId" : fguser.party_id ,
-                    "currency" : currency,
-                    "transactionId" : re.sub("[^0-9]", "", timestamp),
-                    "tranType" : tranType,
-                    "gameInfoId" : gameInfoId,
-                    "alreadyProcessed" : False,
-                    "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
-                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100, 
-                    "realAmount" : amount,
-                    "bonusAmount" : 0.00,
-                    "errorCode" : None,
-                    "message" : None
+                    }
+                else :
+                    response = {
+                        "errorcode" : "INSUFFICIENT_FUNDS",
+                        "message" : "user balance is not enough"
 
-                }
+                    }
+                    logger.error("user balance is not enough")
                
 
         elif tranType == "GAME_WIN" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
                 #isFinal = request.GET["isFinal"]
-                user.main_wallet = user.main_wallet + decimal.Decimal(amount)
-                user.save()
-                response = {
-                    "seq" : seq,
-                    "omegaSessionKey" : omegaSessionKey,
-                    "partyId" : fguser.party_id ,
-                    "gameInfoId" : gameInfoId,
-                    "currency" : currency,
-                    "transactionId" : re.sub("[^0-9]", "", timestamp),
-                    "tranType" : tranType,
-                    "alreadyProcessed" : False,
-                    "realBalance" :  math.floor(float(user.main_wallet * 100)) / 100, 
-                    "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
-                    "realAmount" : amount,
-                    "bonusAmount" : 0.00,
-                    "errorCode" : None,
-                    "message" : None
+                wallet = user.main_wallet + decimal.Decimal(amount)
+                if (wallet > 0):
+                    user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                    user.save()
+                    response = {
+                        "seq" : seq,
+                        "omegaSessionKey" : omegaSessionKey,
+                        "partyId" : fguser.party_id ,
+                        "gameInfoId" : gameInfoId,
+                        "currency" : currency,
+                        "transactionId" : re.sub("[^0-9]", "", timestamp),
+                        "tranType" : tranType,
+                        "alreadyProcessed" : False,
+                        "realBalance" :  math.floor(float(user.main_wallet * 100)) / 100, 
+                        "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
+                        "realAmount" : amount,
+                        "bonusAmount" : 0.00,
+                        "errorCode" : None,
+                        "message" : None
 
-                }
-                
+                    }
+
+                else :
+                    response = {
+                        "errorcode" : "INSUFFICIENT_FUNDS",
+                        "message" : "user balance is not enough"
+
+                    }
+                    logger.error("user balance is not enough")
+                    
 
         elif tranType == "PLTFRM_BON" :
                 omegaSessionKey = request.GET['omegaSessionKey']
