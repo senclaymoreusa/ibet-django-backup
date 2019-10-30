@@ -4,6 +4,7 @@ from django.http import HttpResponse
 
 # iBet
 from utils.constants import *
+from utils.aws_helper import getThirdPartyKeys
 
 # Libraries
 import json
@@ -30,7 +31,13 @@ class EncryptionView(View):
         (4) Set propertyId, data, and sign parameters of request
         (5) Send request and verify JSON response
     """
-    
+
+    third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+    AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
+    AB_DES_KEY = third_party_keys["ALLBET"]["DESKEY"]
+    AB_MD5_KEY = third_party_keys["ALLBET"]["MD5KEY"]
+    AB_BASE64_IV = third_party_keys["ALLBET"]["BASE64IV"]
+
     # These values may change based on the test so they should not be put under utils/constants.
     agent_name = "ftrwaa"
     endpoint = AB_URL + "query_agent_handicaps"
@@ -45,8 +52,8 @@ class EncryptionView(View):
         query_string = "agent=" + self.agent_name + "&random=" + str(secure_random_number)
 
         # Convert provided key and IV from base64 to bytes. 
-        byte_key = base64.b64decode(AB_DES_KEY)
-        byte_iv = base64.b64decode(AB_BASE64_IV)
+        byte_key = base64.b64decode(self.AB_DES_KEY)
+        byte_iv = base64.b64decode(self.AB_BASE64_IV)
         
         # Encrypt using CBC mode.
         des_obj = pyDes.triple_des(byte_key, pyDes.CBC, byte_iv, pad=None, padmode=pyDes.PAD_PKCS5)
@@ -64,7 +71,7 @@ class EncryptionView(View):
         """
         Signs encrypted data using MD5 hashing
         """
-        string_to_sign = data_string + AB_MD5_KEY
+        string_to_sign = data_string + self.AB_MD5_KEY
         hashed_result = hashlib.md5(string_to_sign.encode())
         byte_result = hashed_result.digest()
 
@@ -86,7 +93,7 @@ class EncryptionView(View):
 
             # Create encoded URL parameters.
             req_params = {}
-            req_params["propertyId"] = AB_PROPERTY_ID
+            req_params["propertyId"] = self.AB_PROPERTY_ID
             req_params["data"] = data_string
             req_params["sign"] = sign_string
             encoded_params = urllib.parse.urlencode(req_params)
