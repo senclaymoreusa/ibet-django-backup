@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 from users.models import CustomUser, UserAction
 from accounting.models import Transaction
+from games.models import GameBet
 from utils.constants import *
 
 import logging
@@ -120,7 +121,7 @@ def last_login(user):
     action = UserAction.objects.filter(Q(user=user) &
                                        Q(event_type=EVENT_CHOICES_LOGIN)).order_by('-created_time')
     if action:
-        return action.created_time
+        return action[0].created_time
     return None
 
 
@@ -128,12 +129,42 @@ def last_login(user):
 @param date: mm/dd/yyyy
 @return: timezone datetime
 '''
-
-
 def dateToDatetime(date):
     if date:
         date = date.split('/')
         date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
+
+
+'''
+@param queryset: users
+@return: queryset of active users between start_time and end_time
+'''
+def filterActiveUser(queryset, start_time, end_time):
+    # get bet transaction in this period
+    if start_time and end_time:
+        game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
+    elif start_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__gte=start_time)
+    elif end_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
+    else:
+        game_bet_tran = GameBet.objects.all()
+
+    active_user_list = game_bet_tran.values_list('username', flat=True)
+    if queryset:
+        queryset = queryset.filter(pk__in=active_user_list)
+    return queryset
+
+
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
         current_tz = timezone.get_current_timezone()
         date = date.astimezone(current_tz)
     return date

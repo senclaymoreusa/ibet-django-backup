@@ -323,27 +323,10 @@ ul.ui-autocomplete {
     margin-right: 3px;
 }
 
-#downline_list_table, #channel_report_table, #platform_winloss_table {
-    width: 100%;
-}
 #platform_winloss_table {
     margin-left: 20px;
 }
 
-#downline_list_table_wrapper, #channel_report_table_wrapper, #platform_winloss_table_wrapper .dt-buttons{
-    margin-left: 20px;
-}
-
-#downline_list_table, #channel_report_table, #platform_winloss_table, #affiliate-monthly-commission-table thead {
-    font-family: Helvetica;
-    font-size: 11px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
 
 #make_adjustment_details p{
     margin-top: 20px;
@@ -400,4 +383,64 @@ ul.ui-autocomplete {
     border-top: 1px solid; 
     overflow-y: auto; 
     height:807px;
+}
+
+#date-range {
+    float:right;
+    margin-right: -300px;
+}
+
+#downline-list {
+    padding: 5px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#donwline-list-filter {
+    margin: 5px;
+}
+
+#downline-list-table {
+    margin-top: 0px;
+    margin-bottom: 100px;
+}
+
+label {
+    font-weight: normal;
+    font-size: 11px;
+}
+
+table thead tr th {
+    font-weight: normal;
+    font-size: 10px;
+}
+
+#downline-list-table_paginate a button {
+    padding-left: 15px;
+}
+
+#downline-list-table_info {
+    margin-right: 80px;
+}
+
+ #downline-list-table_paginate a button {
+    margin-right: 80px;
+ }
+
+ #downline-list-table_length label select, .show-rows{
+    margin-right: 80px;
+ }
+
+#downline-list input{
+    width: 165px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
 }

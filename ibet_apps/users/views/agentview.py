@@ -275,21 +275,16 @@ class AgentView(CommAdminView):
             return HttpResponse(status=200)
 
 
-def get_downline_list(queryset, start_time, end_time):
+def getDownlineList(queryset, start_time, end_time):
     downline_list = []
 
     for downline in queryset:
-        downline_info = serializers.serialize("json", {downline}, fields=("pk", "time_of_registration",
-                                                                          "referred_by_channel", "ftd_time"))
-        print(downline_info)
-        downline_info = json.loads(downline_info)
-        print(downline_info)
         downline_dict = {
-            # 'player_id': downline.pk,
-            # 'channel': downline.referred_by_channel,
-            # 'ftd': downline.ftd_time,
-            # 'registration_date': downline.time_of_registration,
-            # 'last_login': last_login(downline),
+            'player_id': downline.pk,
+            'channel': str(downline.referred_by_channel or ''),
+            'ftd': str(downline.ftd_time),
+            'registration_date': str(utcToLocalDatetime(downline.time_of_registration)),
+            'last_login': str(last_login(downline)),
             'total_deposit': calculateDeposit(downline, start_time, end_time)[0],
             'total_withdrawal': calculateWithdrawal(downline, start_time, end_time)[0],
             'total_bonus': calculateBonus(downline, start_time, end_time),
@@ -297,9 +292,6 @@ def get_downline_list(queryset, start_time, end_time):
             'balance': getUserBalance(downline),
             'turnover': calculateTurnover(downline, start_time, end_time),
         }
-        print(downline_dict)
-        downline_dict.update(downline_info)
-        print(downline_dict)
 
         downline_list.append(downline_dict)
 
@@ -328,33 +320,40 @@ class AgentDetailView(CommAdminView):
             draw = int(request.GET.get('draw', 1))
             length = int(request.GET.get('length', 20))
             start = int(request.GET.get('start', 0))
-            account_type = request.GET.get('accountType', -1)
-            status = request.GET.get('status', -1)
+            # user member status
+            account_type = int(request.GET.get('accountType', -1))
             channel = request.GET.get('channel', -1)
             min_date = request.GET.get('minDate', None)
             max_date = request.GET.get('maxDate', None)
             affiliate_id = request.GET.get('affiliateId')
+            try:
+                affiliate = CustomUser.objects.get(pk=affiliate_id)
+            except Exception as e:
+                logger.error("Error getting User object: ", e)
 
-            # queryset = getDownline(affiliate_id).order_by('-time_of_registration')
-            min_date = dateToDatetime(min_date)
-            max_date = dateToDatetime(max_date)
-            queryset = CustomUser.objects.all()
+            queryset = getDownline(affiliate)
 
             #  TOTAL ENTRIES
             total = queryset.count()
 
-            # # -1 is All Type for filter
-            # if account_type != -1:
-            #     queryset = queryset.filter(affiliate_status=account_type)
-            # if status != -1:
-            #     queryset = queryset.filter(member_status=status)
+            if min_date and max_date:
+                queryset = filterActiveUser(queryset, dateToDatetime(min_date),
+                                            dateToDatetime(max_date)).order_by('-created_time')
+
+            # -1 is All Type for filter
+            if account_type != -1:
+                queryset = queryset.filter(member_status=account_type)
+
+            if channel != '-1':
+                queryset = queryset.filter(referred_by_channel__refer_channel_name=channel)
 
             #  TOTAL ENTRIES AFTER FILTERED
             count = queryset.count()
 
+            queryset = queryset.order_by('-time_of_registration')
             queryset = queryset[start:start + length]
 
-            queryset = get_downline_list(queryset, min_date, max_date)
+            queryset = getDownlineList(queryset, min_date, max_date)
 
             result = {
                 'data': queryset,
@@ -451,7 +450,10 @@ class AgentDetailView(CommAdminView):
 
             # DOWNLINE LIST - FILTER
             context["account_types"] = CustomUser.MEMBER_STATUS
-            context["donwline_status"] = AFFILIATE_STATUS
+            # TODO: needs to change to risk status
+            # affiliate refer channels
+            context["channel_list"] = ReferChannel.objects.filter(user_id=affiliate)\
+                .values_list('refer_channel_name', flat=True)
 
             # Total commission
             context["total_commission"] = commission_tran.aggregate(

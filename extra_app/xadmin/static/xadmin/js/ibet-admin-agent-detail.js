@@ -16,12 +16,22 @@
         });
 
         var affiliate_id = $('#affiliate-id').val();
-
-        $("#min_date").datepicker();
-        $("#max_date").datepicker();
+        
+        $(function () {
+            $('#min_date').datepicker({
+                autoclose: true,
+                todayHighlight: true,
+                endDate: new Date()
+            }).val('');
+            $('#max_date').datepicker({
+                autoclose: true,
+                todayHighlight: true,
+                endDate: new Date()
+            }).val('');
+        });
 
         // DOWNLINE LIST TABLE
-        var downlineListTable = $('#downline_list_table').DataTable({
+        var downlineListTable = $('#downline-list-table').DataTable({
             "serverSide": true,
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
@@ -46,17 +56,23 @@
                     'type': 'downlinePerformance',
                     'affiliateId': affiliate_id,
                     'accountType': function() {var type=$('#account_type_filter :selected').val(); return type;},
-                    'status': function() {var status=$('#status_filter :selected').val(); return status;},
+                    'channel': function() {var channel=$('#channel_filter :selected').val(); return channel;},
                     'minDate': function () { return $('#min_date').val(); },
                     'maxDate': function () { return $('#max_date').val(); },
                 },
             },
             columns: [
-                {data: "player_id"},
                 {data: 'player_id'},
-                {data: 'player_id'},
+                {data: 'registration_date', "render": function(data, type, row, meta){
+                        return formatDatetime(data);
+                }},
+                {data: 'last_login', "render": function(data, type, row, meta){
+                        return formatDatetime(data);
+                }},
                 {data: 'channel'},
-                {data: 'ftd'},
+                {data: 'ftd', "render": function(data, type, row, meta){
+                        return formatDatetime(data);
+                }},
                 {data: 'total_deposit'},
                 {data: 'total_withdrawal'},
                 {data: 'total_bonus'},
@@ -66,9 +82,18 @@
             ],
         });
 
-        $('#account_type_filter, #status_filter, #channel').on('change', function () {
+        $('#account_type_filter, #channel_filter, #min_date, #max_date').on('change', function () {
             downlineListTable.draw();
         });
+
+        function formatDatetime(data){
+            if(data === 'None'){
+                data = '';
+            }else{
+                data = moment(data).format('MMM DD YYYY, HH:mm');
+            }
+            return data;
+        }
 
         var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
             responsive: true,
@@ -91,11 +116,6 @@
             },
         })
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
-
-        // Event listener to the two range filtering inputs to redraw on input
-        $('#min_date, #max_date').change(function () {
-            downlineListTable.draw();
-        });
 
         // ACTIVITY
         $('#activity-type').change(function () {
@@ -133,7 +153,7 @@
             e.preventDefault();
             var message = $('#notes-input').val();
             if (!message) {
-                alert("Input cannout be empty");
+                alert("Input cannot be empty");
             }else{
                 updateNote(message);
             }

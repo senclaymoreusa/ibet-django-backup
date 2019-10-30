@@ -9,13 +9,8 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-<<<<<<< HEAD
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
-    <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"/>
-=======
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
->>>>>>> c2d1652bf72c993a5199e8ac518109220236ac67
 </head>
 
 <body>
@@ -696,21 +691,21 @@
 </div>
 
 <!-- PERFORMANCE -->
-<div class="panel panel-default panel-style" style="width: 100%">
+<div class="panel panel-default panel-style" style="width: 95%">
     <div class="panel-heading panel-heading-custom_perfomance">
         <h2 class="panel-title">
             <strong>Performance</strong>
         </h2>
     </div>
 
-    <div style="margin-top: 10px">
+    <div id="downline-list" style="margin-top: 10px">
         <ul class="nav nav-tabs" style="padding-left: 10px">
             <li class="active"><a data-toggle="tab" href="#home">DOWNLINE LIST</a></li>
         </ul>
 
         <div class="tab-content">
             <!-- time filter -->
-            <div class="row">
+            <div id="donwline-list-filter" class="row">
                 <div class="col-md-2">
                     <label for="account_type_filter">ACCOUNT TYPE</label><br>
                     <select id="account_type_filter" class="form-control">
@@ -722,17 +717,17 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label for="status_filter">STATUS</label><br>
-                    <select id="status_filter" class="form-control">
+                    <label for="channel_filter">CHANNEL</label><br>
+                    <select id="channel_filter" class="form-control">
                         <option value="-1">ALL</option>
-                        {% for status in donwline_status %}
-                        <option value="{{ status.0 }}">{{ status.1 }}</option>
+                        {% for channel in channel_list %}
+                        <option value="{{ channel }}">{{ channel }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="col-md-5">
-                    <div id="date_range">
+                    <div id="date-range">
                         <label>ACTIVE DATE RANGE</label>
                         <br>
                         <input name="min_date" id="min_date" type="text" placeholder="From">
@@ -743,26 +738,24 @@
 
             <!-- DOWNLINE LIST -->
             <div id="home" class="tab-pane fade in active">
-                <div style="margin-bottom: 50px;">
-                    <table id="downline_list_table" class="table-striped table-bordered hover compact">
-                        <thead>
-                        <tr>
-                            <th scope="col">PLAYER ID</th>
-                            <th scope="col">REGISTRATION DATE</th>
-                            <th scope="col">LAST LOGIN</th>
-                            <th scope="col">CHANNEL</th>
-                            <th scope="col">FTD</th>
-                            <th scope="col">TOTAL DEPOSIT</th>
-                            <th scope="col">TOTAL WITHDRAWAL</th>
-                            <th scope="col">TOTAL BOUNS</th>
-                            <th scope="col">ADJUSTMENT</th>
-                            <th scope="col">BALANCE</th>
-                            <th scope="col">TURNOVER</th>
-                        </tr>
-                        </thead>
-                    </table>
-                    <label class="show-rows">SHOW ROWS</label>
-                </div>
+                <table id="downline-list-table" class="table-striped table-bordered hover" width="100%">
+                    <thead>
+                    <tr>
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">REGISTRATION DATE</th>
+                        <th scope="col">LAST LOGIN</th>
+                        <th scope="col">CHANNEL</th>
+                        <th scope="col">FTD</th>
+                        <th scope="col">TOTAL DEPOSIT</th>
+                        <th scope="col">TOTAL WITHDRAWAL</th>
+                        <th scope="col">TOTAL BOUNS</th>
+                        <th scope="col">ADJUSTMENT</th>
+                        <th scope="col">BALANCE</th>
+                        <th scope="col">TURNOVER</th>
+                    </tr>
+                    </thead>
+                </table>
+                <label class="show-rows">SHOW ROWS</label>
             </div>
 
         </div>
