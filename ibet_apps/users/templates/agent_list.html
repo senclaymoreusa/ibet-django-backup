@@ -9,8 +9,8 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
 </head>
 
 <body>
@@ -83,28 +83,30 @@
         <div>
             <table id="commission" class="table-striped table-title" style="margin-bottom: 100px">
                 <thead>
-                    <tr>
-                        <th scope="col">MONTH</th>
-                        <th scope="col">AFFILIATE COUNT</th>
-                        <th scope="col">ACTIVE DOWNLINE</th>
-                        <th scope="col">COMMISSION</th>
-                        <th scope="col">STATUS</th>
-                        <th></th>
-                    </tr>
+                <tr>
+                    <th scope="col">MONTH</th>
+                    <th scope="col">AFFILIATE COUNT</th>
+                    <th scope="col">ACTIVE DOWNLINE</th>
+                    <th scope="col">COMMISSION</th>
+                    <th scope="col">STATUS</th>
+                    <th></th>
+                </tr>
                 </thead>
                 <tbody style="font-size: 13px">
-                    {% for tran in commission_transaction %}
-                    <tr>
-                        <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}
-                        </td>
-                        <td>{{ tran.affiliate_number }}</td>
-                        <td>{{ tran.active_downline }}</td>
-                        <td>{{ tran.total_commission }}</td>
-                        <td>{{ tran.commission_status }}</td>
-                        <td><button id="audit-commission-btn" type="button" data-toggle="modal"
-                                data-target="#audit_commission"><i class="fa fa-search"></i></button></td>
-                    </tr>
-                    {% endfor %}
+                {% for tran in commission_transaction %}
+                <tr>
+                    <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}
+                    </td>
+                    <td>{{ tran.affiliate_number }}</td>
+                    <td>{{ tran.active_downline }}</td>
+                    <td>{{ tran.total_commission }}</td>
+                    <td>{{ tran.commission_status }}</td>
+                    <td>
+                        <button id="audit-commission-btn" type="button" data-toggle="modal"
+                                data-target="#audit_commission"><i class="fa fa-search"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <label class="show-rows">SHOW ROWS</label>
@@ -144,22 +146,22 @@
                     <div id="commission_monthly_history">
                         <table id="commission_detail" class="table-striped table-bordered">
                             <thead>
-                                <tr>
-                                    <th scope="col">ALL</th>
-                                    <th scope="col">AFFILIATE ID</th>
-                                    <th scope="col">ACTIVE PLAYERS</th>
-                                    <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
-                                    <th scope="col">COMMISSION RATE</th>
-                                    <th scope="col">DEPOSIT</th>
-                                    <th scope="col">WITHDRAWAL</th>
-                                    <th scope="col">SYSTEM BONUS</th>
-                                    <th scope="col">TOTAL WINLOSS</th>
-                                    <th scope="col">COMMISSION</th>
-                                    <th scope="col">STATUS</th>
-                                    <th scope="col">TIME OF RELEASE</th>
-                                    <th scope="col">OPEARTOR</th>
-                                    <th scope="col" style="display: none"></th>
-                                </tr>
+                            <tr>
+                                <th scope="col">ALL</th>
+                                <th scope="col">AFFILIATE ID</th>
+                                <th scope="col">ACTIVE PLAYERS</th>
+                                <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
+                                <th scope="col">COMMISSION RATE</th>
+                                <th scope="col">DEPOSIT</th>
+                                <th scope="col">WITHDRAWAL</th>
+                                <th scope="col">SYSTEM BONUS</th>
+                                <th scope="col">TOTAL WINLOSS</th>
+                                <th scope="col">COMMISSION</th>
+                                <th scope="col">STATUS</th>
+                                <th scope="col">TIME OF RELEASE</th>
+                                <th scope="col">OPEARTOR</th>
+                                <th scope="col" style="display: none"></th>
+                            </tr>
                             </thead>
                             <tbody id=commission_statement>
                             </tbody>
@@ -192,24 +194,27 @@
         <div style="overflow-x: scroll;">
             <table id="affiliate_application" class="table-striped table-title" style="margin-bottom: 100px">
                 <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">USER ID</th>
-                        <th scope="col">APPLICATION DATE</th>
-                        <th scope="col"></th>
-                    </tr>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">USER ID</th>
+                    <th scope="col">APPLICATION DATE</th>
+                    <th scope="col"></th>
+                </tr>
                 </thead>
                 <tbody style="font-size: 13px">
-                    {% for affiliate in affiliate_application_list %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td><a id="userID" href="{% url 'xadmin:user_detail' affiliate.pk %}">{{ affiliate.pk }}</a>
-                        </td>
-                        <td>{{ affiliate.user_application_time|date:'d/m/y H:i:s' }}</td>
-                        <td><button id="audit-affiliate-application-btn" type="button" data-toggle="modal"
-                                data-target="#audit-affiliate-application">Review</button></td>
-                    </tr>
-                    {% endfor %}
+                {% for affiliate in affiliate_application_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><a id="userID" href="{% url 'xadmin:user_detail' affiliate.pk %}">{{ affiliate.pk }}</a>
+                    </td>
+                    <td>{{ affiliate.user_application_time|date:'d/m/y H:i:s' }}</td>
+                    <td>
+                        <button id="audit-affiliate-application-btn" type="button" data-toggle="modal"
+                                data-target="#audit-affiliate-application">Review
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <label class="show-rows">SHOW ROWS</label>
@@ -229,25 +234,25 @@
             <div class="user-application-info">
                 <div class="row">
                     <div class="col-md-3"><strong>
-                            <ul style="list-style: none;">
-                                <li>Player ID</li>
-                                <li>Username</li>
-                                <li>First name</li>
-                                <li>Last name</li>
-                                <li>Birthday</li>
-                            </ul>
-                        </strong></div>
+                        <ul style="list-style: none;">
+                            <li>Player ID</li>
+                            <li>Username</li>
+                            <li>First name</li>
+                            <li>Last name</li>
+                            <li>Birthday</li>
+                        </ul>
+                    </strong></div>
                     <div class="col-md-3">
                         <ul id="user-info-first-col" style="list-style: none;">
                         </ul>
                     </div>
                     <div class="col-md-2"><strong>
-                            <ul style="list-style: none;">
-                                <li>Email</li>
-                                <li>Phone</li>
-                                <li>Address</li>
-                            </ul>
-                        </strong></div>
+                        <ul style="list-style: none;">
+                            <li>Email</li>
+                            <li>Phone</li>
+                            <li>Address</li>
+                        </ul>
+                    </strong></div>
                     <div class="col-md-3">
                         <ul id="user-info-second-col" style="list-style: none;">
                         </ul>
@@ -266,7 +271,7 @@
                 <br>
                 <p>REASON</p>
                 <textarea type='text' id="affiliate_application_remark" class="form-control"
-                    placeholder="Add reason for approving or rejecting application"></textarea>
+                          placeholder="Add reason for approving or rejecting application"></textarea>
             </div>
 
             <div class="modal-body">
@@ -274,9 +279,11 @@
                     <div id="affiliate-application-button">
                         <input type="hidden" id="affiliate_id">
                         <button type="button" class="btn btn-success"
-                            id="affiliate-application-approve-btn">Approve</button>
+                                id="affiliate-application-approve-btn">Approve
+                        </button>
                         <button type="button" class="btn btn-danger"
-                            id="affiliate-application-decline-btn">Decline</button>
+                                id="affiliate-application-decline-btn">Decline
+                        </button>
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                     </div>
                 </div>
@@ -297,47 +304,47 @@
         <div class='row' style="width:35%; margin-left: 5px">
             <div class="input-group">
                 <input type=" text" id="search" class="form-control"
-                    placeholder="Enter affiliate ID, username ">
+                       placeholder="Enter affiliate ID, username ">
                 <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                         class="glyphicon glyphicon-search"></span></span>
             </div>
         </div>
         <div style="overflow-x: scroll;">
             <table id="affiliates" class="table-striped table-bordered table-title hover compact"
-                style="margin-bottom: 100px">
+                   style="margin-bottom: 100px">
                 <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">AFFILIATE ID</th>
-                        <th scope="col">MANAGER</th>
-                        <th scope="col">ACTIVE USERS</th>
-                        <th scope="col">DOWNLINE DEPOSIT</th>
-                        <th scope="col">TURNOVER</th>
-                        <th scope="col">DOWNLINE GGR</th>
-                        <th scope="col">COMMISSION LAST MONTH</th>
-                        <th scope="col">COMMISSION MONTH BEFORE</th>
-                        <th scope="col">BALANCE</th>
-                        <th scope="col">STATUS</th>
-                        <th scope="col">LEVEL</th>
-                    </tr>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">AFFILIATE ID</th>
+                    <th scope="col">MANAGER</th>
+                    <th scope="col">ACTIVE USERS</th>
+                    <th scope="col">DOWNLINE DEPOSIT</th>
+                    <th scope="col">TURNOVER</th>
+                    <th scope="col">DOWNLINE GGR</th>
+                    <th scope="col">COMMISSION LAST MONTH</th>
+                    <th scope="col">COMMISSION MONTH BEFORE</th>
+                    <th scope="col">BALANCE</th>
+                    <th scope="col">STATUS</th>
+                    <th scope="col">LEVEL</th>
+                </tr>
                 </thead>
                 <tbody style="font-size: 13px">
-                    {% for i in affiliates_table %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td><a href="{% url 'xadmin:agent_detail' i.id %}"> {{ i.id }}</a></td>
-                        <td>{{ i.manager }}</td>
-                        <td>{{ i.active_users }}</td>
-                        <td>{{ i.downlines_deposit }}</td>
-                        <td>{{ i.turnover }}</td>
-                        <td>{{ i.downlines_ggr }}</td>
-                        <td>{{ i.commission_last_month }}</td>
-                        <td>{{ i.commission_month_before }}</td>
-                        <td>{{ i.balance }}</td>
-                        <td>{{ i.status }}</td>
-                        <td>{{ i.level }}</td>
-                    </tr>
-                    {% endfor %}
+                {% for i in affiliates_table %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><a href="{% url 'xadmin:agent_detail' i.id %}"> {{ i.id }}</a></td>
+                    <td>{{ i.manager }}</td>
+                    <td>{{ i.active_users }}</td>
+                    <td>{{ i.downlines_deposit }}</td>
+                    <td>{{ i.turnover }}</td>
+                    <td>{{ i.downlines_ggr }}</td>
+                    <td>{{ i.commission_last_month }}</td>
+                    <td>{{ i.commission_month_before }}</td>
+                    <td>{{ i.balance }}</td>
+                    <td>{{ i.status }}</td>
+                    <td>{{ i.level }}</td>
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <label class="show-rows">SHOW ROWS</label>
@@ -351,15 +358,15 @@
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
 
 <!-- datepicker -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
-    type="text/css" />
+      type="text/css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -370,6 +377,7 @@
 
 <script>
 var agent_list_url = "{% url 'xadmin:agent_detail' %}";
+
 </script>
 </body>
 </html>
