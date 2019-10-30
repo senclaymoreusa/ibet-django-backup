@@ -7,6 +7,7 @@ import hashlib
 import secrets
 import urllib
 import requests
+import pyDes
 from des import DesKey
 
 logger = logging.getLogger('django')
@@ -31,67 +32,57 @@ class EnquireHandicapView(View):
         (5) Send request and verify response
         """
         try:
+            print("")
             # Hardcode for now; move to constants later.
             property_id = "2615593"
-            des_key = "KH8hS7tG/hi/EjpQuReZ6kj/fSOvfLOS"
-            md5_key = "gu7rCKSdumZ2bcChb1PgonDMtzh90mdRd9snXcquHi0="
+            des_key = "KH8hS7tG/hi/EjpQuReZ6kj/fSOvfLOS" # base64 string
+            md5_key = "gu7rCKSdumZ2bcChb1PgonDMtzh90mdRd9snXcquHi0=" # base64 string
+            base64_iv = "AAAAAAAAAAA=" # base64 string
 
             secure_random_number = secrets.randbits(32) # 32-bit random integer
 
             # Build query string
-            query_string = "agent=fftrwa&random=" + str(secure_random_number)
+            query_string = "agent=ftrwaa&random=" + str(secure_random_number)
             print("query_string: " + query_string)
 
-            # Convert base64 to bytes 
-            decoded_key = base64.b64decode(des_key)
-            print("decoded_key: " + str(decoded_key))
+            # Convert provided encryption key from base64 to bytes 
+            byte_key = base64.b64decode(des_key)
+            print("byte_key: " + str(byte_key))
 
-            # Encrypt the query string using DES key provided by AllBet
-            des_key = DesKey(decoded_key)
-            print("des_key.is_single(): " + str(des_key.is_single()))
-            print("des_key.is_triple(): " + str(des_key.is_triple()))
+            # Convert provided IV from base64 to bytes 
+            byte_iv = base64.b64decode(base64_iv)
+            print("byte_iv: " + str(byte_iv))
 
-            byte_query_string = str.encode(query_string)
+            # Convert url to bytes
+            byte_query_string = query_string.encode()
             print("byte_query_string: " + str(byte_query_string))
+            
+            des_obj = pyDes.triple_des(byte_key, pyDes.CBC, byte_iv, pad=None, padmode=pyDes.PAD_PKCS5)
+            encrypted_msg = des_obj.encrypt(byte_query_string)
 
-            encrypted_query_string = des_key.encrypt(byte_query_string, padding=True)
-            print("encrypted_query_string: " + str(encrypted_query_string))
+            print("Encrypted message: %r" % encrypted_msg)
+            print("Decrypted message: %r" % des_obj.decrypt(encrypted_msg))
 
-            # Convert encrypted_query_string back to base64 string
-            data_bytes = base64.b64encode(encrypted_query_string)
-            print("data_bytes: " + str(data_bytes))
-            data = data_bytes.decode()
-            print("data: " + data)
+            # Convert encrypted_msg (bytes) to base64 string
+            data_string = base64.b64encode(encrypted_msg)
+            print("data_string: " + str(data_string))
 
-
-
-
-            ### 3des encryption done at this point
+            print("")
 
 
 
 
-            string_to_sign = data + md5_key
-            print("string_to_sign: " + string_to_sign)
-
-
-            # Convert string_to_sign to bytes, do some md5 signing, convert resulting byte array back to base64 string
-            bytes_string_to_sign = base64.b64decode(string_to_sign)
-            print("bytes_string_to_sign: " + str(bytes_string_to_sign))
-
-            hash_result = hashlib.md5(bytes_string_to_sign) 
-            print(hash_result)
-            byte_result = hash_result.digest()
-            print("byte_result: " + str(byte_result))
 
 
 
-            # convert bytes to base 64 string
-            sign_bytes = base64.b64encode(byte_result) # Convert sign bytes to base 64
-            print("sign: " + str(sign_bytes))
-            sign_string = sign_bytes.decode() # byte to str
-            print("sign_string: " + sign_string)
 
+
+
+
+            ### encryption done at this point
+
+            data = "test"
+            sign_string = "test"
 
 
             ### all encryption done at this point??? maybe
