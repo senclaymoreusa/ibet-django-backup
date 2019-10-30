@@ -216,6 +216,7 @@
                 var delete_btn = $('#delete_commission_level')
                 delete_btn.remove();
                 var new_commission_level = $('#commission_level_details').clone();
+                console.log(new_commission_level)
                 $(new_commission_level).find('input').val('');
                 var level = $('.commission_levels #commission_level_details').last().find('#commission_level_label').text();
                 $(new_commission_level).find('#commission_level_label').text(+level + 1);
@@ -243,6 +244,16 @@
                 return false;
             }
         }
+
+        $(document).on("click", '#copy-link', function(){
+            var link = $('#promotion-link').text();
+            copyToClipboard(link);
+        });
+
+        $(document).on("click", '#copy-link-list', function(){
+            var link = $(this).parent().parent().find('#promotion-link-list').text();
+            copyToClipboard(link);
+        });
 
         $(document).on("click", "#delete_commission_level_btn", function () {
             var current_level = $(this).parent().parent().find('#commission_level_label').html();

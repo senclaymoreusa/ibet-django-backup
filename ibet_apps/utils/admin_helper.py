@@ -31,8 +31,6 @@ bonus_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_BONUS)
 commission_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_COMMISSION)
-bet_tran = Transaction.objects.filter(
-    transaction_type=TRANSACTION_BET_PLACED)
 
 
 # get downline list for affiliate or affiliates
@@ -44,21 +42,22 @@ def getDownline(affiliates):
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
-            downline = users.filter(referred_by=affiliate)
+            downline = affiliate.referees.all()
             if downline:
-                downline_list.append(users.filter(referred_by=affiliate))
+                downline_list.append(downline)
     else:
-        downline_list = users.filter(referred_by=affiliates)
+        downline_list = affiliates.referees.all()
     return downline_list
 
 
 def calculateActiveDownlineNumber(affiliate_id):
     # check affiliate_id first
     downlines = affiliate_id.referees.all()
+    active_user_list = GameBet.objects.values_list('username', flat=True).distinct()
     affiliate_active_users = 0
-    if downlines is not None:
-        for tran in bet_tran:
-            if tran.user_id in downlines:
+    if downlines:
+        for downline in downlines:
+            if downline.pk in active_user_list:
                 affiliate_active_users += 1
     return affiliate_active_users
 

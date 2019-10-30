@@ -28,12 +28,11 @@ class AgentView(CommAdminView):
         if get_type == "getCommissionHistory":
             date = request.GET.get("date")
             date = datetime.datetime.strptime(date, '%b %Y')
-            # year =
+
             commission_transaction_this_month = Transaction.objects.filter(
                 Q(transaction_type=TRANSACTION_COMMISSION) & Q(request_time__gte=date) & Q(
                     request_time__lte=date + relativedelta(months=1)))
 
-            response = {}
             commission_this_month_record = []
 
             for commission_transaction in commission_transaction_this_month:
@@ -73,7 +72,6 @@ class AgentView(CommAdminView):
                     tranDict['release_time'] = str(
                         commission_transaction.arrive_time)
                 tranDict['operator'] = ""
-
                 commission_this_month_record.append(tranDict)
             return HttpResponse(json.dumps(commission_this_month_record), content_type='application/json')
 
@@ -145,8 +143,8 @@ class AgentView(CommAdminView):
                 ftd_time__gte=last_month).count()
 
             # ACTIVE THIS MONTH
-            context["actives_this_month"] = bet_tran.filter(Q(request_time__gte=last_month) & Q(
-                user_id__in=affiliates)).values_list('user_id').distinct().count()
+            context["actives_this_month"] = GameBet.objects.filter(Q(resolved_time__gte=last_month) & Q(
+                username__in=affiliates)).values_list('username').distinct().count()
 
             # GGR NEEDS BET TRANSACTION TABLE
             context["ggr_this_month"] = "/"
@@ -171,8 +169,8 @@ class AgentView(CommAdminView):
                     user_to_affiliate_time__gte=current_month + relativedelta(months=1))
                 commission_dict['affiliate_number'] = affiliates_this_month.count()
                 downline_list_this_month = getDownline(affiliates_this_month)
-                commission_dict['active_downline'] = bet_tran.filter(
-                    user_id__in=affiliates).values_list('user_id').distinct().count()
+                commission_dict['active_downline'] = GameBet.objects.filter(
+                    username__in=affiliates).values_list('username').distinct().count()
 
                 # commission status(tran_type=commission, user_id in affiliate, month=current month)
                 commission_status = commission_transaction.filter(Q(request_time__gte=current_month) & Q(
@@ -403,6 +401,8 @@ class AgentDetailView(CommAdminView):
             context["downline_number"] = getDownline(affiliate).count()
             context["active_users"] = calculateActiveDownlineNumber(affiliate)
             context["downline_deposit"] = downline_deposit
+            context['domain'] = LETOU_DOMAIN
+            context['referral_code'] = affiliate.referral_code
             try:
                 context["promotion_link"] = ReferChannel.objects.get(
                     user_id=affiliate, refer_channel_name="default").pk

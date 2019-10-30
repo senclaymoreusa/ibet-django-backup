@@ -22,7 +22,7 @@
             showCommissionDetail(data);
             $.ajax({
                 type: 'GET',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'getCommissionHistory',
                     'date': data[0],
@@ -139,7 +139,7 @@
             var data = $(this).closest('tr').find('#userID').html();
             $.ajax({
                 type: 'GET',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'getAffiliateApplicationDetail',
                     'user_id': data,
@@ -175,7 +175,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'affiliateApplication',
                     'result': "Yes",
@@ -194,7 +194,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'affiliateApplication',
                     'result': "No",

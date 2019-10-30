@@ -306,16 +306,14 @@
 
             <p style="margin-top: 20px;">Promotion link</p>
             <div class="row promotion-link">
-                <div class="col-md-5" id='promotion_link' style="margin-top: 4px; float: left; font-size: 13px;">
-                    {{ promotion_link }}
+                <div class="col-md-5" id='promotion-link' style="margin-top: 4px; float: left; font-size: 13px;">
+                    {{ domain }}{{ referral_code }}/{{ promotion_link }}
                 </div>
                 <div class="col-md-5" style="float:right">
                     <button class="btn btn-primary" data-toggle="modal" data-target="#affiliate_channels">View
                         all
                     </button>
-                    <button class="btn btn-primary" onclick="copyToClipboard('{{ promotion_link }}')">Copy
-                        link
-                    </button>
+                    <button class="btn btn-primary" id="copy-link">Copy link</button>
                 </div>
             </div>
         </div>
@@ -339,7 +337,7 @@
                             <div class="col-md-2">
                                 CHANNEL NAME
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 PROMOTION LINK
                             </div>
                             <div class="col-md-3">
@@ -352,15 +350,15 @@
                             <div class="col-md-2">
                                 {{ link.refer_channel_name }}
                             </div>
-                            <div class="col-md-4" id="refer_link">
-                                {{ link.pk }}
+                            <div class="col-md-4" id="promotion-link-list">
+                                {{ domain }}{{ referral_code }}/{{ link.pk }}
                             </div>
                             <div class="col-md-3">
                                 {{ link.genarated_time|date:'d/m/y H:i:s' }}
                             </div>
                             <div class="col-md-1" style="margin-right: 2px;">
-                                <button class="btn btn-primary btn-sm" id="refer_link_copy"
-                                        onclick="copyToClipboard('{{ link.pk }}')">Copy
+                                <button class="btn btn-primary btn-sm" id="copy-link-list">
+                                    Copy
                                 </button>
                             </div>
                             <div class="col-md-1">
