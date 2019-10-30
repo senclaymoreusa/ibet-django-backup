@@ -1298,7 +1298,6 @@ ONEBOOK_OPERATORID = "ibetclaymore"
 ONEBOOK_MAXTRANSFER = "50000"
 ONEBOOK_MINTRANSFER = "10"
 ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
-ONEBOOK_DIRECTION = (
-    (0, 'withdraw'),
-    (1, 'deposit'),
-)
+ONEBOOK_DIRECTION_withdraw = 0
+ONEBOOK_DIRECTION_deposit = 1
+

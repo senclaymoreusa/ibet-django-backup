@@ -46,4 +46,6 @@ urlpatterns = [
 
     #onebook
     path('api/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
+    path('api/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
+    path('api/login', onebookviews.Login.as_view(), name="Login"),
 ]
