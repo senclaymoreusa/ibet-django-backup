@@ -97,7 +97,7 @@
                         <th scope="col">AMOUNT</th>
                         <th scope="col">STATUS</th>
                         <th scope="col"></th>
-{#                        <th scope="col">pk</th>#}
+                        <th scope="col" style="display: none;">pk</th>
                     </tr>
                 </thead>
                 <tbody id="pending_deposit_data">
@@ -120,7 +120,7 @@
                         <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
                                 data-target="#audit_deposit">Audit</button></td>
                         {% endif %}
-{#                        <td>{{ tran.pk }}</td>#}
+                        <td style="display: none">{{ tran.pk }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -153,7 +153,7 @@
                     Deposit request details
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'xadmin:deposit_view' %}" method="POST">
+                    <form action="/" method="POST">
                         {% csrf_token %}
                         <input type="hidden" name="type" value="audit_deposit">
                         <input type="hidden" id="dep_trans_no" name="dep_trans_no">
@@ -399,7 +399,7 @@
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
         // fill in input fields with search params if pre-existing
 
-        // send data to pop-up window
+        // open modal and populate details data
         $('#deposits-table tbody').on('click', 'button', function () {
             let row = $(this).closest('tr');
             let rowData = row.find('td');
@@ -428,10 +428,11 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addDepositRecord(data2, data[13], data[0]);
+                addDepositRecord(data2, data[12], data[0]);
             });
         });
 
+        // fill in user data into transaction detail modal
         function addMemberDetails(data) {
             let userDetails = $("#member-details");
             userDetails.empty();
@@ -451,6 +452,7 @@
             riskDetails.append(content2);
         }
 
+        // fill in latest deposit section of txn detail modal
         function addDepositRecord(data, trans_pk, dep_row_index) {
             let depositArea = $("#latest_deposits");
             depositArea.empty();
@@ -473,20 +475,21 @@
             }
             depositArea.append(content);
             $("#dep_trans_no").val(trans_pk);
-            $("#dep_row_index").val(dep_row_index);
+            // $("#dep_row_index").val(dep_row_index);
         }
 
+        // fill in deposit details of modal
         function showDepositDetail (data) {
             // console.log("show deposit detail");
-            let depositDetail =
-            $("#trans_deposit_detail").empty();
+            let txnDetails = $("#trans_deposit_detail");
+            txnDetails.empty();
             let content = "";
             content += "<p>...</p>";  // placeholder for deposit slip upload
             content += "<p>" + data[4] + "</p>";  // transaction data
             content += "<p>" + data[6] + "</p>";  // created time
             content += "<p>" + data[5] + "</p>";  // ref no.
             content += "<p>" + data[9] + "</p>";  // amount
-            $("#trans_deposit_detail").append(content);
+            txnDetails.append(content);
         }
         /*
             function showBankDetail (data) {
@@ -501,23 +504,48 @@
             }
          */
 
-
         // double click button
         $('#deposit-review-a').click(function () {
-            $('#deposit-review-a').html('Click to Approve');
-            $('#deposit-review-a').attr('id', 'deposit-review-app');
+            $(this).html('Click to Approve');
+            $(this).attr('id', 'deposit-review-app');
             $('#deposit-review-app').click(function () {
-                $('#deposit-review-app').attr('type', 'submit')
-                $('#deposit-review-app').attr('name', 'deposit-review-app')
+                // $(this).attr('type', 'submit');
+                // $(this).attr('name', 'deposit-review-app');
+                let thisTransNo = $("#dep_trans_no").val();
+                $.ajax({
+                    method: 'POST',
+                    url: "{% url 'xadmin:modify_deposit' %}",
+                    data: {
+                        'type': 'updateTransaction',
+                        'dep_trans_no': thisTransNo,
+                        'result': 'approve',
+                    }
+                })
+                .done(function() {
+                    location.reload();
+                })
             });
         });
 
         $('#deposit-review-r').click(function () {
-            $('#deposit-review-r').html('Click to Reject');
-            $('#deposit-review-r').attr('id', 'deposit-review-rej');
+            $(this).html('Click to Reject');
+            $(this).attr('id', 'deposit-review-rej');
             $('#deposit-review-rej').click(function () {
-                $('#deposit-review-rej').attr('type', 'submit')
-                $('#deposit-review-rej').attr('name', 'deposit-review-rej')
+                // $(this).attr('type', 'submit');
+                // $(this).attr('name', 'deposit-review-rej');
+                let thisTransNo = $("#dep_trans_no").val();
+                $.ajax({
+                    method: 'POST',
+                    url: "{% url 'xadmin:modify_deposit' %}",
+                    data: {
+                        'type': 'updateTransaction',
+                        'dep_trans_no': thisTransNo,
+                        'result': 'reject',
+                    }
+                })
+                .done(function() {
+                    location.reload();
+                })
             });
         });
 
@@ -539,16 +567,17 @@
                 $('#lastDeposit').css('color', 'red');
             }
 
+            /*
             if (dep_row_index % pagination_num == 0) {
                 table.page('next').draw('page');
                 dep_row_index = dep_row_index % pagination_num;
             } else if (dep_row_index > pagination_num) {
                 dep_row_index = dep_row_index % pagination_num;
             }
-
+            */
             $.ajax({
                 type: 'POST',
-                url: "{% url 'xadmin:deposit_view' %}",
+                url: "{% url 'xadmin:modify_deposit' %}",
                 data: {
                     'type': 'reviewTransaction',
                     'dep_trans_no': dep_trans_no,

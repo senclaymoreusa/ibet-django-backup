@@ -14,7 +14,7 @@ from accounting.admin_views.withdrawal_views import *
 from accounting.admin_views.channel_list import *
 
 
-xadmin.site.register_view('deposit/<int:page>/', DepositView, name='deposit_view')
+xadmin.site.register_view(r'deposits/modify', DepositView, name='modify_deposit')
 xadmin.site.register_view(r'user_info/', UserInfo, name='user_info')
 xadmin.site.register_view(r'payment_config/', PaymentConfig, name='psp_config')
 xadmin.site.register_view(r'withdrawals/(?P<page>-?\d*)/$', GetWithdrawals, name='get_withdrawals')

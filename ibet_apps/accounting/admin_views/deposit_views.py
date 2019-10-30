@@ -109,7 +109,6 @@ def filterByStatus(status, transactions):
 class DepositView(CommAdminView):
     def post(self, request):
         post_type = request.POST.get("type")
-
         if post_type == "audit_deposit":
             deposit_notes = request.POST.get("deposit_notes")
             dep_trans_no = request.POST.get("dep_trans_no")
@@ -128,7 +127,23 @@ class DepositView(CommAdminView):
                 current_tran.update(review_status=REVIEW_REJ)
                 logger.info('Finish update the status of deposit' + str(dep_trans_no) + ' to Reject')
             return HttpResponseRedirect(reverse("xadmin:deposit_view"))
+        elif post_type == "updateTransaction":
+            dep_trans_no = request.POST.get("dep_trans_no")
+            result = request.POST.get("result")
+            print(request.POST)
+            print(post_type)
+            print(dep_trans_no)
+            print(result)
+            current_deposit = Transaction.objects.get(pk=dep_trans_no)
 
+            if result == "approve":
+                current_deposit.status = 0
+                logger.info('Finish update the status of deposit ' + str(dep_trans_no) + ' to Approve')
+            else:
+                current_deposit.status = 1
+                logger.info('Finish update the status of deposit ' + str(dep_trans_no) + ' to Reject')
+            current_deposit.save()
+            return HttpResponse(status=200)
 
 class UserInfo(CommAdminView):
     def get(self, request):

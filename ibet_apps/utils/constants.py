@@ -108,7 +108,7 @@ CURRENCY_CHOICES = (
 )
 
 TRAN_SUCCESS_TYPE = 0  # deposit
-TRAN_FAIL_TYPE = 1
+TRAN_FAIL_TYPE = 1  # deposit
 TRAN_CREATE_TYPE = 2  # deposit
 TRAN_PENDING_TYPE = 3  # deposit
 TRAN_APPROVED_TYPE = 4  # deposit
