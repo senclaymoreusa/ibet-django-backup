@@ -170,9 +170,6 @@ class Transaction(models.Model):
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")
     )
-    review_status = models.SmallIntegerField(
-        choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
-    )
     # reviewer for withdraw transations
     remark = models.CharField(max_length=200, blank=True, verbose_name=_("Memo"))
     transfer_from = models.CharField(
