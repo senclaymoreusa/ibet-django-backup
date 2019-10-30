@@ -20,7 +20,7 @@
                 <div class="col-md-2" id="filter">
                     <label for="segmentation_filter">PLAYER SEGMENT</label><br>
                     <select id="segmentation_filter" class="form-control">
-                        <option value=-1>ALL</option>
+                        <option value="-1">ALL</option>
                         {% for type in segment_list %}
                             <option value="{{ type }}">{{ type }}</option>
                         {% endfor %}

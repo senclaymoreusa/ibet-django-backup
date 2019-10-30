@@ -45,14 +45,20 @@ class VIPView(CommAdminView):
                         queryset = filterActiveUser(queryset, dateToDatetime(min_date),
                                                     dateToDatetime(max_date)).order_by('-created_time')
 
+                    query_filter = None
                     #  SEARCH BOX
                     if search_value:
-                        queryset = queryset.filter(
-                            Q(pk__icontains=search_value) | Q(username__icontains=search_value) | Q(
-                                managed_by__username__icontains=search_value))
+                        query_filter = Q(pk__icontains=search_value) | Q(username__icontains=search_value) | Q(
+                                managed_by__username__icontains=search_value)
 
                     if segment != '-1':
-                        queryset = queryset.filter(vip_level__name=segment)
+                        if query_filter:
+                            query_filter = query_filter & Q(vip_level__name=segment)
+                        else:
+                            query_filter = Q(vip_level__name=segment)
+
+                    if query_filter:
+                        queryset = queryset.filter(query_filter)
 
                     #  TOTAL ENTRIES AFTER FILTERED
                     count = queryset.count()
