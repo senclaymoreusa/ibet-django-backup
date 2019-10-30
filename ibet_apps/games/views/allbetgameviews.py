@@ -65,21 +65,12 @@ class EnquireHandicapView(View):
 
             # Convert encrypted_msg (bytes) to base64 string
             data_string = base64.b64encode(encrypted_msg)
-            print("data_string: " + str(data_string))
-
+            print("data_string: " + data_string.decode())
             print("")
 
 
 
-
-
-
-
-
-
-
-
-            ### encryption done at this point
+            ### 3DES encryption done at this point
 
             data = "test"
             sign_string = "test"
