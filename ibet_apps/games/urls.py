@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
 
     # AllBet
-    path('api/allbet/encryption', csrf_exempt(allbetgameviews.EnquireHandicapView.as_view()), name='allbet_encrypt'),
+    path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
 
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),
