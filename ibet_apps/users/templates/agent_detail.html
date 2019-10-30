@@ -15,7 +15,7 @@
 
 <body>
 <!-- AFFILIATE DETAILS -->
-<div class="panel panel-default panel-style">
+<div class="panel panel-default panel-style" id="affiliate-details">
     <div class="panel-heading panel-affiliate-heading">
         <h2 class="panel-title">
             <strong>Affiliate Detail</strong>
@@ -23,7 +23,7 @@
     </div>
     <div class="panel-body">
         <div class="row">
-            <div class="col-md-5" style="width: 47%">
+            <div class="col-md-5" style="width: 50%">
                 <label class="affiliate_details_title">AFFILIATE DETAILS</label>
                 <div class="affiliates_detail_commission">
                     <div class="row">
@@ -78,7 +78,7 @@
 
                 </div>
             </div>
-            <div class="col-md-5" style="width: 47%">
+            <div class="col-md-5" style="width: 50%">
                 <label class="affiliate_details_title">COMMISSION</label>
                 <div class="affiliates_detail_commission">
                     <div class="row">
@@ -170,14 +170,6 @@
                                     <th scope="col">OPERATOR</th>
                                 </tr>
                                 </thead>
-                                <tbody>
-                                {% for afffiliate in related_affiliates %}
-                                <tr>
-                                    <td style="margin-right: 2px;">{{ afffiliate.member_id }}</td>
-                                    <td>{{ afffiliate.balance }}</td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -303,10 +295,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for afffiliate in related_affiliates %}
+                {% for affiliate in related_affiliates %}
                 <tr>
-                    <td style="margin-right: 2px;">{{ afffiliate.member_id }}</td>
-                    <td>{{ afffiliate.balance }}</td>
+                    <td style="margin-right: 2px;">{{ affiliate.member_id }}</td>
+                    <td>{{ affiliate.balance }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -551,7 +543,7 @@
                                         <div class="col-md-2">
                                             <label><br>NET PROFIT</label>
                                             <input type="number" class="form-control" id='downline_net_profit'
-                                                   name="downline_monthly_ftd"
+                                                   name="downline_net_profit"
                                                    value="{{ i.monthly_downline_ftd_needed }}" required="required">
                                         </div>
                                         {% if forloop.last %}
@@ -692,7 +684,7 @@
 </div>
 
 <!-- PERFORMANCE -->
-<div class="panel panel-default panel-style" style="width: 95%">
+<div class="panel panel-default panel-style" id="performance-panel">
     <div class="panel-heading panel-heading-custom_perfomance">
         <h2 class="panel-title">
             <strong>Performance</strong>
