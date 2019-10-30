@@ -1,6 +1,11 @@
+# Django
 from django.views import View
 from django.http import HttpResponse
 
+# iBet
+from utils.constants import *
+
+# Libraries
 import json
 import logging
 import base64
@@ -9,7 +14,6 @@ import secrets
 import urllib
 import requests
 import pyDes
-from des import DesKey
 
 logger = logging.getLogger('django')
 
@@ -26,30 +30,30 @@ class EncryptionView(View):
         (4) Set propertyId, data, and sign parameters of request
         (5) Send request and verify JSON response
     """
-
-    property_id = "2615593"
-    des_key = "KH8hS7tG/hi/EjpQuReZ6kj/fSOvfLOS"
-    md5_key = "gu7rCKSdumZ2bcChb1PgonDMtzh90mdRd9snXcquHi0="
-    base64_iv = "AAAAAAAAAAA="
+    
+    # These values may change based on the test so they should not be put under utils/constants.
     agent_name = "ftrwaa"
-    endpoint = "https://platform-api.apidemo.net:8443/query_agent_handicaps"
+    endpoint = AB_URL + "query_agent_handicaps"
 
 
     def threeDES(self):
+        """
+        Encrypts key-value pairs using 3DES cipher
+        """
         secure_random_number = secrets.randbits(32) # 32-bit random integer
 
         query_string = "agent=" + self.agent_name + "&random=" + str(secure_random_number)
 
-        # Convert provided key and IV from base64 to bytes 
-        byte_key = base64.b64decode(self.des_key)
-        byte_iv = base64.b64decode(self.base64_iv)
+        # Convert provided key and IV from base64 to bytes. 
+        byte_key = base64.b64decode(AB_DES_KEY)
+        byte_iv = base64.b64decode(AB_BASE64_IV)
         
-        # Encrypt using CBC mode
+        # Encrypt using CBC mode.
         des_obj = pyDes.triple_des(byte_key, pyDes.CBC, byte_iv, pad=None, padmode=pyDes.PAD_PKCS5)
         byte_query_string = query_string.encode()
         encrypted_msg = des_obj.encrypt(byte_query_string)
 
-        # Convert encrypted_msg (bytes) to base64 string
+        # Convert encrypted_msg (bytes) to base64 string.
         data_bytes = base64.b64encode(encrypted_msg)
         data_string = data_bytes.decode()
 
@@ -57,11 +61,14 @@ class EncryptionView(View):
 
 
     def md5(self, data_string):
-        string_to_sign = data_string + self.md5_key
+        """
+        Signs encrypted data using MD5 hashing
+        """
+        string_to_sign = data_string + AB_MD5_KEY
         hashed_result = hashlib.md5(string_to_sign.encode())
         byte_result = hashed_result.digest()
 
-        # Convert byte_result to base64 string
+        # Convert byte_result to base64 string.
         sign_bytes = base64.b64encode(byte_result)
         sign_string = sign_bytes.decode()
 
@@ -69,13 +76,17 @@ class EncryptionView(View):
 
 
     def get(self, request, *args, **kwargs):
+        """
+        Main method that encrypts the query string, hashes it, sends the request, and displays the
+        JSON response sent by AllBet API.
+        """
         try:
             data_string = self.threeDES()
             sign_string = self.md5(data_string)
 
-            # Create encoded URL parameters
+            # Create encoded URL parameters.
             req_params = {}
-            req_params["propertyId"] = self.property_id
+            req_params["propertyId"] = AB_PROPERTY_ID
             req_params["data"] = data_string
             req_params["sign"] = sign_string
             encoded_params = urllib.parse.urlencode(req_params)

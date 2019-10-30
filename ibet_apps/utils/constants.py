@@ -1234,3 +1234,10 @@ KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+
+# AllBet
+AB_PROPERTY_ID = "2615593"
+AB_DES_KEY = "KH8hS7tG/hi/EjpQuReZ6kj/fSOvfLOS"
+AB_MD5_KEY = "gu7rCKSdumZ2bcChb1PgonDMtzh90mdRd9snXcquHi0="
+AB_BASE64_IV = "AAAAAAAAAAA="
+AB_URL = "https://platform-api.apidemo.net:8443/"
