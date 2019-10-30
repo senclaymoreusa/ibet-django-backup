@@ -191,6 +191,7 @@ class Transaction(models.Model):
     # payer_id is Returned by Paypal
     # payer_id = models.CharField(max_length = 100, default=0)
 
+    # bank account details (used for offline local bank transfer)
     # The user Account
     user_bank_account = models.ForeignKey(
         BankAccount, on_delete=models.CASCADE, null=True, blank=True

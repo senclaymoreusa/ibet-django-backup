@@ -18,22 +18,46 @@
         <div class="row">
             <div class='col-md-4'>
                 <div class="input-group">
-                    <input type=" text" id="search" class="form-control"
+                    <label for="search"></label>
+                    <input type="text" id="search" class="form-control"
                         placeholder="Enter user ID, username or transaction number">
                     <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                             class="glyphicon glyphicon-search"></span></span>
                 </div>
             </div>
-            <div class='col-md-2' style="float: right">
-                <div class='input-group date' id='withdraw_time_to'>
+            <div class='col-sm-1'>
+                <div class="input-group">
+                    <span id="clear-search-btn" class="input-group-addon" style="cursor: pointer; background-color: #428bca; color:white">Clear Search</span>
+                </div>
+            </div>
+        </div>
+        <!-- status filter & date range -->
+        <div class="row">
+            <div class="col-md-4" style="padding: 10px 0 0 30px">
+                <div class="input-group">
+                    <label for="status-filter">STATUS</label>
+                    <div class="row">
+                        <select id="status-filter">
+                            <option value="all">ALL</option>
+                            <option value="created">CREATED</option>
+                            <option value="pending">PENDING</option>
+                            <option value="success">SUCCESS</option>
+                            <option value="failed">FAILED</option>
+                            <option value="canceled">CANCELED</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-2' style="padding: 10px 30px 0 15px; float: right;">
+                <div class='input-group date' id='deposit_time_from'>
                     <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
             </div>
-            <div class='col-md-2' style="float: right">
-                <div class='input-group date' id='withdraw_time_from'>
+            <div class='col-md-2' style="padding: 10px 15px 0 30px; float: right;">
+                <div class='input-group date' id='deposit_time_to'>
                     <input type='text' class="form-control" placeholder="From" id='min' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
@@ -41,7 +65,78 @@
                 </div>
             </div>
         </div>
-
+        <!-- actual transaction table & data -->
+        <div id="deposits-section" aria-labelledby="home-tab"
+            >
+            <table id="deposits-table" class="table-striped table-bordered hover compact"
+                style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
+                <colgroup>
+                    <col style="width: 60px">
+                    <col style="width: 80px">
+                    <col style="width: 100px">
+                    <col style="width: 100px">
+                    <col style="width: 100px">
+                    <col style="width: 100px">
+                    <col style="width: 100px">
+                    <col style="width: 230px">
+                    <col style="width: 270px">
+                    <col style="width: 130px">
+                    <col style="width: 130px">
+                    <col style="width: 100px">
+                    <col style="width: 85px">
+                    <col style="width: 78px">
+                    <col style="width: 70px">
+                </colgroup>
+                <thead>
+                    <tr>
+{#                            <th scope="col">#</th>#}
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">USERNAME</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">RISK LEVEL</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">CHANNEL</th>
+                        <th scope="col">METHOD</th>
+                        <th scope="col">TRANSACTION NO.</th>
+                        <th scope="col">PROVIDER REF NO.</th>
+                        <th scope="col">CREATED TIME</th>
+                        <th scope="col">RESOLVE TIME</th>
+                        <th scope="col">BANK</th>
+                        <th scope="col">AMOUNT</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col"></th>
+                        <th scope="col" style="display: none;">pk</th>
+                    </tr>
+                </thead>
+                <tbody id="pending_deposit_data">
+                    {% for tran in transactions %}
+                    <tr>
+                        <!-- <td>{{ forloop.counter }}</td> -->
+                        <td>{{ tran.id }}</td>
+                        <td>{{ tran.username }}</td>
+                        <td>{{ tran.username }}</td>
+                        <td>{{ tran.username }}</td>
+                        <td>{{ tran.username }}</td>
+                        <td>{{ tran.payment }}</td>
+                        <td>{{ tran.method }}</td>
+                        <td>{{ tran.tran_no }}</td>
+                        <td>{{ tran.order_id }}</td>
+                        <td>{{ tran.app_time }}</td>
+                        <td>{{ tran.arr_time }}</td>
+                        <td>{{ tran.bank }}</td>
+                        <td>{{ tran.amount }}</td>
+                        <td>{{ tran.status }}</td>
+                        {% if tran.status == 'Created' %}
+                        <!-- {#{% if tran.method == 'ALIPAY' and tran.status == 'Pending' %}#} -->
+                        <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                                data-target="#audit_deposit">Audit</button></td>
+                        {% endif %}
+                        <td style="display: none">{{ tran.pk }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- audit popup window -->
         <div class="modal fade" id="audit_withdraw" role="dialog">
@@ -214,17 +309,13 @@
 
 
 <script>
-
-
-    $(document).ready(function () {
-
-        var csrftoken = $.cookie("csrftoken")
+    function initCSRF() {
+         let csrftoken = $.cookie("csrftoken");
 
         function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
         }
-
         $.ajaxSetup({
             beforeSend: function (xhr, settings) {
                 if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -232,88 +323,114 @@
                 }
             }
         });
+    }
+    function initSearchParams() {
+        if (window.location.search) {
+            let params = new URLSearchParams(window.location.search);
+            document.getElementById('search').value = params.get('search_params');
 
-        // draw DataTable
-        var table = $('#withdrawal_pending_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
+            if (params.get('status')) {
+                let selectedStatus = document.getElementById('status-filter');
+                for(let i = 0; i < selectedStatus.options.length; i++) {
+                    if (params.get('status') === selectedStatus.options[i].value) {
+                        selectedStatus.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (params.get('from')) {
+                document.getElementById('min').value = params.get('from');
+            }
+            if (params.get('to')) {
+                document.getElementById('max').value = params.get('to');
+            }
+        }
+    }
+    function initEventHandlers() {
+        // filter by status
+        $('#status-filter').on('change', function(event) {
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('status', event.target.value);
+            window.location = "{% url 'xadmin:get_deposits' page=0 %}?"+queryString.toString();
         });
 
-        var other_table = $('#approved_table, #rejected_table, #success_table, #rejected_table, #failed_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 10, 11, 12],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
+        // for submitting a search
+        $('#search-btn').on('click', function () {
+            let searchTerm = document.getElementById('search').value;
+            let fromDate = document.getElementById('min').value;
+            let toDate = document.getElementById('max').value;
+
+            console.log("searching for: " + searchTerm);
+            console.log("date range: " + fromDate + ", " + toDate);
+
+            let queryString = new URLSearchParams(window.location.search);
+            if (searchTerm) queryString.set('search_params', searchTerm);
+            if (fromDate) queryString.set('from', fromDate);
+            if (toDate) queryString.set('to', toDate);
+            // fetch data and redraw rows
+            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_deposits' page=0 %}?"+queryString.toString();
+            else window.location = "{% url 'xadmin:get_deposits' page=0 %}";
         });
+
+        $('#clear-search-btn').on('click', function() {
+            document.getElementById('search').value = '';
+            document.getElementById('min').value = '';
+            document.getElementById('max').value = '';
+            document.getElementById('status-filter').selectedIndex = 0;
+        });
+
+        // scroll between pages
+        $('#prev-page').click(() => {
+            window.location = "{% url 'xadmin:get_deposits' page=page_no|add:'-1' %}" + window.location.search;
+        });
+        $('#next-page').click(() => {
+            window.location= "{% url 'xadmin:get_deposits' page=page_no|add:'1' %}" + window.location.search;
+        });
+
+        let dateFormat = "mm/dd/yy";
+        let dateFrom = $("#min").
+            datepicker({
+                defaultDate: "+1w",
+                changeMonth: true,
+                changeYear: true
+            })
+            .on("change", function() {
+                dateTo.datepicker( "option", "minDate", getDate( this ) );
+            });
+        let dateTo = $("#max").
+            datepicker({
+                defaultDate: "+1w",
+                changeMonth: true,
+                changeYear: true
+            })
+            .on("change", function() {
+                dateFrom.datepicker( "option", "maxDate", getDate( this ) );
+            });
+
+        function getDate( element ) {
+            let date;
+            try {
+                date = $.datepicker.parseDate( dateFormat, element.value );
+            } catch( error ) {
+                console.log("date error");
+                date = null;
+            }
+            return date;
+        }
+    }
+
+    $(document).ready(function () {
+        initCSRF();
+        initSearchParams();
+        initEventHandlers();
 
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
 
-        // user id, username, transaction no. search
-        $('#search-btn').on('keyup click', function () {
-            table.search($('#search').val()).draw();
-            other_table.search($('#search').val()).draw();
-        });
-
-        // date range search
-        $.fn.dataTable.ext.search.push(
-            function (settings, data, dataIndex) {
-                var min = $('#min').datepicker("getDate");
-                var max = $('#max').datepicker("getDate");
-
-                var dateParts = data[9].split("/");
-                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
-                var startDate = new Date(newDate);
-
-                if (min == null && max == null) { return true; }
-                if (min == null && startDate <= max) { return true; }
-                if (max == null && startDate >= min) { return true; }
-                if (startDate <= max && startDate >= min) { return true; }
-                return false;
-            }
-        );
-
-        $("#min").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
-
-        // Event listener to the two range filtering inputs to redraw on input
-        $('#min, #max').change(function () {
-            table.draw();
-            other_table.draw();
-        });
-
         // send data to pop-up window
-        $('#withdrawal_pending_table tbody').on('click', 'button', function () {
-            var data = table.row($(this).parents('tr')).data();
+        $('#deposits-table tbody').on('click', 'button', function () {
+            let row = $(this).closest('tr');
+            let rowData = row.find('td');
+            let data = rowData.map(d => rowData[d].innerHTML);
             // transaction pk: data[12]
             // bank account: data[13]
             showTransactionDetail(data);

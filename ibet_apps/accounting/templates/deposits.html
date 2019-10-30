@@ -397,7 +397,6 @@
         initEventHandlers();
 
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
-        // fill in input fields with search params if pre-existing
 
         // open modal and populate details data
         $('#deposits-table tbody').on('click', 'button', function () {
@@ -491,7 +490,7 @@
             content += "<p>" + data[9] + "</p>";  // amount
             txnDetails.append(content);
         }
-        /*
+
         function showBankDetail (data) {
             let bankDetails = $("#bank_detail");
             bankDetails.empty();
@@ -503,7 +502,7 @@
             content += "<p>" + data[10] + "</p>";  // account number
             bankDetails.append(content);
         }
-        */
+
 
         // double click approve button
         $('#deposit-review-a').click(function () {
