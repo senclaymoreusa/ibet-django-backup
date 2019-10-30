@@ -64,13 +64,41 @@ class EnquireHandicapView(View):
             print("Decrypted message: %r" % des_obj.decrypt(encrypted_msg))
 
             # Convert encrypted_msg (bytes) to base64 string
-            data_string = base64.b64encode(encrypted_msg)
-            print("data_string: " + data_string.decode())
+            data_bytes = base64.b64encode(encrypted_msg)
+            print("data_bytes: " + str(data_bytes))
+            data_string = data_bytes.decode()
+            print("data_string: " + data_string)
             print("")
 
 
 
             ### 3DES encryption done at this point
+
+            string_to_sign = data_string + md5_key
+            print("string_to_sign: " + string_to_sign)
+
+            hashed_result = hashlib.md5(string_to_sign.encode())
+            byte_result = hashed_result.digest()
+            print("byte_result: " + str(byte_result))
+
+            # Convert byte_result to base64 string
+            sign_bytes = base64.b64encode(byte_result)
+            print("sign_bytes: " + str(sign_bytes))
+            sign_string = sign_bytes.decode()
+            print("sign_string: " + sign_string)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             data = "test"
             sign_string = "test"
