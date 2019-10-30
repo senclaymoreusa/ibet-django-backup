@@ -28,8 +28,8 @@ logger = logging.getLogger('django')
 class InplayLoginAPI(View):
     def get(self, request, *arg, **kwargs):
         user = 'Bobby'
-        name = 'too much'
-        print(data['Token'])
+        time_stamp = datetime.now()
+        print(time_stamp)
         return HttpResponse(status=200)
 
 
