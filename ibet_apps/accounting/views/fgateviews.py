@@ -20,7 +20,8 @@ from des import DesKey
 from time import gmtime, strftime, strptime, sleep
 from decimal import *
 from django.utils import timezone
-
+from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
 logger = logging.getLogger("django")
 def generateHash(key, message):
     hash = hmac.new(key, msg=message, digestmod=hashlib.sha256)
@@ -39,6 +40,15 @@ class chargeCard(generics.GenericAPIView):
         message = bytes(transaction_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
+        if checkUserBlock(CustomUser.objects.get(username=user).pk):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
         data = {
             "pin": pin,
             "serial": serial,
@@ -75,7 +85,7 @@ class chargeCard(generics.GenericAPIView):
                 user_id=CustomUser.objects.get(username=user),
                 method='Fgo',
                 transaction_type=0,
-                channel=0,
+                channel=8,
                 request_time=timezone.now(),
                 arrive_time=timezone.now(),
             )
