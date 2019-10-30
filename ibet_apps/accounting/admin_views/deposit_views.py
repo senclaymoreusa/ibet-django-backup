@@ -91,6 +91,8 @@ class GetDeposits(CommAdminView):
             trans_data["note"] = trans.remark
             trans_data["pk"] = trans.pk
             trans_data["status"] = trans.get_status_display()
+
+
             txn_data.append(trans_data)
 
         context['transactions'] = txn_data  # array of txn objects
@@ -168,24 +170,16 @@ class UserInfo(CommAdminView):
         elif get_type == "getLatestDeposit":
             user = CustomUser.objects.get(pk=user_id)
             within_this_month = timezone.now() - timezone.timedelta(days=30)
-            latest_deposit = Transaction.objects.filter(
+            latest_deposits = Transaction.objects.filter(
                 Q(user_id_id=user)
                 & Q(transaction_type=TRANSACTION_DEPOSIT)
                 & Q(request_time__gte=within_this_month)
             ).order_by('-request_time')
-            logger.info('Find ' + str(latest_deposit.count()) + ' latest deposits')
+            logger.info('Find ' + str(latest_deposits.count()) + ' latest deposits')
 
             response_deposit_data = []
-            for deposit in latest_deposit:
+            for deposit in latest_deposits:
                 depositDict = {}
-                bankAccount = deposit.user_bank_account
-                if bankAccount is not None:
-                    bank = bankAccount.bank
-                    depositDict["bank"] = bank.name
-                    depositDict["branch"] = bank.branch
-                    depositDict["city"] = bank.city
-                    depositDict["name"] = bankAccount
-                    depositDict["account"] = deposit.user_bank_account
 
                 depositDict["payment"] = deposit.get_channel_display()
                 depositDict["tran_no"] = deposit.transaction_id

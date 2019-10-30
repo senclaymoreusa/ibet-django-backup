@@ -246,11 +246,11 @@
 
                             <div id="deposit-request-button">
                                 <button type="button" class="btn btn-success" id="deposit-review-a">Approve</button>
-                                <button type="button" class="btn btn-success" id="deposit-review-appnext">Approve and
-                                    Next</button>
+                                <!-- <button type="button" class="btn btn-success" id="deposit-review-appnext">Approve and
+                                    Next</button> -->
                                 <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button>
-                                <button type="button" class="btn btn-danger" id="deposit-review-rejnext">Reject and
-                                    Next</button>
+                                <!-- <button type="button" class="btn btn-danger" id="deposit-review-rejnext">Reject and
+                                    Next</button> -->
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
@@ -492,19 +492,20 @@
             txnDetails.append(content);
         }
         /*
-            function showBankDetail (data) {
-                $("#bank_detail").empty();
-                var content = "";
-                content += "<p>" + data[6] + "</p>";  // bank name
-                content += "<p>" + data[7] + "</p>";  // bank branch
-                content += "<p>" + data[8] + "</p>";  // bank city
-                content += "<p>" + data[9] + "</p>";  // account holder name
-                content += "<p>" + data[10] + "</p>";  // account number
-                $("#bank_detail").append(content);
-            }
-         */
+        function showBankDetail (data) {
+            let bankDetails = $("#bank_detail");
+            bankDetails.empty();
+            var content = "";
+            content += "<p>" + data[6] + "</p>";  // bank name
+            content += "<p>" + data[7] + "</p>";  // bank branch
+            content += "<p>" + data[8] + "</p>";  // bank city
+            content += "<p>" + data[9] + "</p>";  // account holder name
+            content += "<p>" + data[10] + "</p>";  // account number
+            bankDetails.append(content);
+        }
+        */
 
-        // double click button
+        // double click approve button
         $('#deposit-review-a').click(function () {
             $(this).html('Click to Approve');
             $(this).attr('id', 'deposit-review-app');
@@ -526,7 +527,7 @@
                 })
             });
         });
-
+        // double click reject button
         $('#deposit-review-r').click(function () {
             $(this).html('Click to Reject');
             $(this).attr('id', 'deposit-review-rej');
@@ -553,44 +554,44 @@
             location.reload();
         });
 
-        $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (event) {
-            // Get data from the first row
-            let dep_trans_no = $("#dep_trans_no").val();
-            let dep_row_index = $("#dep_row_index").val();
-            let pagination_num = table.page.len();
-            let table_size = table.rows().count();
-
-            let audit_result = event.target.id;
-
-            if (dep_row_index == table_size) {
-                $('#lastDeposit').text("This is the last one");
-                $('#lastDeposit').css('color', 'red');
-            }
-
-            /*
-            if (dep_row_index % pagination_num == 0) {
-                table.page('next').draw('page');
-                dep_row_index = dep_row_index % pagination_num;
-            } else if (dep_row_index > pagination_num) {
-                dep_row_index = dep_row_index % pagination_num;
-            }
-            */
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'xadmin:modify_deposit' %}",
-                data: {
-                    'type': 'reviewTransaction',
-                    'dep_trans_no': dep_trans_no,
-                    'result': audit_result,
-                },
-                success: function (data) {
-                    // auto open next row audit btn
-                    $('#deposits-table tbody tr').eq(dep_row_index).find('#edit-pending-detail-btn').click();
-                }
-            })
-        })
-
     })
 </script>
 
 {% endblock %}
+
+/*
+$('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (event) {
+    // Get data from the first row
+    let dep_trans_no = $("#dep_trans_no").val();
+    let dep_row_index = $("#dep_row_index").val();
+
+    let audit_result = event.target.id;
+
+
+    console.log(dep_trans_no);  // transaction pk in db
+    console.log(dep_row_index);  // location of transaction row in admin page
+    console.log(audit_result);  // approve / reject
+
+    if (dep_row_index % pagination_num == 0) {
+        table.page('next').draw('page');
+        dep_row_index = dep_row_index % pagination_num;
+    } else if (dep_row_index > pagination_num) {
+        dep_row_index = dep_row_index % pagination_num;
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'xadmin:modify_deposit' %}",
+        data: {
+            'type': 'reviewTransaction',
+            'dep_trans_no': dep_trans_no,
+            'result': audit_result,
+        },
+        success: function (data) {
+            // auto open next row audit btn
+            $('#deposits-table tbody tr').eq(dep_row_index).find('#edit-pending-detail-btn').click();
+        }
+    })
+
+})
+*/
