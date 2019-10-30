@@ -34,7 +34,7 @@ class GetDeposits(CommAdminView):
         page = int(page)
         type_deposit = Q(transaction_type=TRANSACTION_DEPOSIT)
 
-        all_transactions = Transaction.objects.filter(type_deposit).order_by('-request_time')
+        all_transactions = Transaction.objects.select_related('user_id').filter(type_deposit).order_by('-request_time')
         # filter by status
         if status and status != 'all':
             all_transactions = filterByStatus(status, all_transactions)
@@ -91,11 +91,16 @@ class GetDeposits(CommAdminView):
             trans_data["note"] = trans.remark
             trans_data["pk"] = trans.pk
             trans_data["status"] = trans.get_status_display()
-
+            
+            trans_data["risk_level"] = trans.user_id.get_risk_level_display()
+            # trans_data["player_segment"] = trans.user_id.player_segment
+            trans_data["user_status"] = trans.user_id.get_member_status_display()
 
             txn_data.append(trans_data)
 
+            
         context['transactions'] = txn_data  # array of txn objects
+
         return render(request, 'deposits.html', context=context, content_type="text/html; charset=utf-8")
 
 
@@ -167,33 +172,40 @@ class UserInfo(CommAdminView):
             return HttpResponse(
                 json.dumps(response_data), content_type="application/json"
             )
-        elif get_type == "getLatestDeposit":
-            user = CustomUser.objects.get(pk=user_id)
-            within_this_month = timezone.now() - timezone.timedelta(days=30)
-            latest_deposits = Transaction.objects.filter(
-                Q(user_id_id=user)
-                & Q(transaction_type=TRANSACTION_DEPOSIT)
-                & Q(request_time__gte=within_this_month)
-            ).order_by('-request_time')
-            logger.info('Find ' + str(latest_deposits.count()) + ' latest deposits')
 
-            response_deposit_data = []
-            for deposit in latest_deposits:
-                depositDict = {}
+class GetTransactions(CommAdminView):
+    def get(self, request):
+        get_type = request.GET.get("type")
+        user_id = request.GET.get("user")
 
-                depositDict["payment"] = deposit.get_channel_display()
-                depositDict["tran_no"] = deposit.transaction_id
-                depositDict["time_app"] = deposit.request_time.strftime(
-                    "%d %B %Y %X"
-                )
-                depositDict["amount"] = deposit.amount
-                depositDict["order_id"] = deposit.order_id
-                depositDict["status"] = deposit.get_status_display()
-                response_deposit_data.append(depositDict)
-            return HttpResponse(
-                json.dumps(response_deposit_data, default=myconverter),
-                content_type="application/json",
-            )
+        
+        txn_type = Q(transaction_type=TRANSACTION_DEPOSIT) if get_type == "deposits" else Q(transaction_type=TRANSACTION_WITHDRAWAL)
+        
+        user = CustomUser.objects.get(pk=user_id)
+
+        latest_transactions = Transaction.objects.filter(
+            Q(user_id_id=user)
+            & txn_type
+        ).order_by('-request_time')
+        logger.info('Find ' + str(latest_transactions.count()) + ' latest ' + get_type)
+
+        # within_this_month = timezone.now() - timezone.timedelta(days=30)
+        # month_query = Q(request_time__gte=within_this_month)
+        txn_data = []
+
+        for trans in latest_transactions[:20]:
+            txn = dict()
+            txn["payment"] = trans.get_channel_display()
+            txn["tran_no"] = trans.transaction_id
+            txn["time_app"] = trans.request_time.strftime("%d %B %Y %X")
+            txn["amount"] = trans.amount
+            txn["order_id"] = trans.order_id
+            txn["status"] = trans.get_status_display()
+            txn_data.append(txn)
+        return HttpResponse(
+            json.dumps(txn_data, default=myconverter),
+            content_type="application/json",
+        )
 
 
 def myconverter(o):
