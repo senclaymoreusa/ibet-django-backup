@@ -9,8 +9,8 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
 </head>
 
 <body>
@@ -437,15 +437,16 @@
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="affiliate-level"
                                                id="affiliate-level-normal" value="{{ affiliate.affiliate_level }}"
-                                               {% if affiliate.affiliate_level == "Normal" %} checked="checked" {% endif %}>
+                                               {% if affiliate.affiliate_level== "Normal" %} checked="checked" {% endif
+                                        %}>
                                         <label class="form-check-label" for="affiliate-level">Normal</label>
                                     </div>
                                     <div class="col-md-3">
 
                                         <input class="form-check-input" type="radio" name="affiliate-level"
                                                id="affiliate-level-vip" value="{{ affiliate.affiliate_level }}"
-                                               {% if affiliate.affiliate_level == 'VIP' %}checked="checked" {% endif %}>
-                                        <label class="form-check-label" for= "affiliate-level">VIP</label>
+                                               {% if affiliate.affiliate_level== 'VIP' %}checked="checked" {% endif %}>
+                                        <label class="form-check-label" for="affiliate-level">VIP</label>
                                     </div>
                                 </div>
 
@@ -455,17 +456,17 @@
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="affiliate-status"
                                                id="affiliate-status-normal" value="{{ affiliate.affiliate_status }}"
-                                               {% if affiliate.affiliate_status != "Deactivated" %} checked="checked"
+                                               {% if affiliate.affiliate_status !="Deactivated" %} checked="checked"
                                                {% endif %}>
-                                        <label class="form-check-label" for= "affiliate-status">Enabled</label>
+                                        <label class="form-check-label" for="affiliate-status">Enabled</label>
 
                                     </div>
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="affiliate-status"
                                                id="affiliate-status-vip" value="{{ affiliate.affiliate_status }}"
-                                               {% if affiliate.affiliate_status == "Deactivated" %} checked="checked"
-                                               {% endif %}>
-                                        <label class="form-check-label" for= "affiliate-status">Disabled</label>
+                                               {% if affiliate.affiliate_status== "Deactivated" %} checked="checked"
+                                        {% endif %}>
+                                        <label class="form-check-label" for="affiliate-status">Disabled</label>
                                     </div>
                                 </div>
 
@@ -475,17 +476,17 @@
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="commission-set"
                                                id="commission-set-system" value="{{ affiliate.commission_setting }}"
-                                               {% if affiliate.commission_setting == 'System' %}checked="checked"
+                                               {% if affiliate.commission_setting== 'System' %}checked="checked"
                                         {% endif %}>
-                                        <label class="form-check-label" for= "commission-set">System</label>
+                                        <label class="form-check-label" for="commission-set">System</label>
 
                                     </div>
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="commission-set"
                                                id="commission-set-personal" value="{{ affiliate.commission_setting }}"
-                                               {% if affiliate.commission_setting == 'Personal' %}checked="checked"
+                                               {% if affiliate.commission_setting== 'Personal' %}checked="checked"
                                         {% endif %}>
-                                        <label class="form-check-label" for= "commission-set">Personal</label>
+                                        <label class="form-check-label" for="commission-set">Personal</label>
                                     </div>
                                 </div>
 
@@ -496,17 +497,17 @@
                                         <input class="form-check-input" type="radio" name="commission-transfer"
                                                id="commission-transfer-system"
                                                value="{{ affiliate.transerfer_between_levels }}"
-                                               {% if affiliate.transerfer_between_levels == True %}checked="checked"
+                                               {% if affiliate.transerfer_between_levels== True %}checked="checked"
                                                {% endif %}>
-                                        <label class="form-check-label" for= "commission-transfer">Yes</label>
+                                        <label class="form-check-label" for="commission-transfer">Yes</label>
                                     </div>
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="commission-transfer"
                                                id="commission-transfer-personal"
                                                value="{{ affiliate.transerfer_between_levels }}"
-                                               {% if affiliate.transerfer_between_levels == False %}checked="checked"
+                                               {% if affiliate.transerfer_between_levels== False %}checked="checked"
                                                {% endif %}>
-                                        <label class="form-check-label" for= "commission-transfer">No</label>
+                                        <label class="form-check-label" for="commission-transfer">No</label>
                                     </div>
                                 </div>
                             </fieldset>
@@ -788,6 +789,8 @@
 <script>
 var agent_detail_url = "{% url 'xadmin:agent_detail' %}";
 var admin_user = "{{ user.username }}"
+
+
 
 </script>
 </body>
