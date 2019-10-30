@@ -417,13 +417,13 @@ class AgentDetailView(CommAdminView):
             affiliate_ip_list = UserAction.objects.filter(
                 user=affiliate.pk).values_list('ip_addr').distinct()
             related_affiliate_list = UserAction.objects.filter(
-                ip_addr__in=affiliate_ip_list).values('user').exclude(user=affiliate.pk).distinct()
+                ip_addr__in=affiliate_ip_list).exclude(user=affiliate.pk).distinct()
 
             related_affiliates_data = []
             for related_affiliate in related_affiliate_list:
                 related_affiliates_info = {}
-                related_affiliates_info['member_id'] = related_affiliate['user']
-                related_affiliates_info['balance'] = related_affiliate.main_wallet
+                related_affiliates_info['member_id'] = related_affiliate.user.pk
+                related_affiliates_info['balance'] = related_affiliate.user.main_wallet
                 related_affiliates_data.append(related_affiliates_info)
             context["related_affiliates"] = related_affiliates_data
 
