@@ -1,6 +1,7 @@
 from django.views import View
 from django.http import HttpResponse
 
+import json
 import logging
 import base64
 import hashlib
@@ -89,46 +90,24 @@ class EnquireHandicapView(View):
 
 
 
+            ### MD5 hashing done at this point
 
-
-
-
-
-
-
-
-
-
-
-            data = "test"
-            sign_string = "test"
-
-
-            ### all encryption done at this point??? maybe
             req_params = {}
             req_params["propertyId"] = property_id
-            req_params["data"] = data
+            req_params["data"] = data_string
             req_params["sign"] = sign_string
 
             encoded_params = urllib.parse.urlencode(req_params)
-
             print("encoded_params: " + encoded_params)
 
             url = 'https://platform-api.apidemo.net:8443/query_agent_handicaps' + '?' + encoded_params
-
             print("url: " + url)
 
-
-            res = requests.get(url)
-            if res.status_code == 200:
-                return HttpResponse(json.dumps(res.json()), content_type='application/json')
+            response = requests.get(url)
+            if response.status_code == 200:
+                return HttpResponse(json.dumps(response.json()), content_type='application/json')
             else:
-                return HttpResponse(res)
-
-
-
-
-
+                return HttpResponse(response)
 
         except Exception as e:
             print(e)
