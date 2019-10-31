@@ -23,10 +23,10 @@ class GetWithdrawals(CommAdminView):
         date_from = request.GET.get('from')
         date_to = request.GET.get('to')
 
-        print("search params: " + str(search_params))
-        print("status: " + str(status))
-        print("from: ", date_from)
-        print("to: ", date_to)
+        # print("search params: " + str(search_params))
+        # print("status: " + str(status))
+        # print("from: ", date_from)
+        # print("to: ", date_to)
 
         page = int(page)
         txn_type = Q(transaction_type=TRANSACTION_WITHDRAWAL)
@@ -61,8 +61,8 @@ class GetWithdrawals(CommAdminView):
         curr_page = all_transactions[page * 20:(page + 1) * 20]
         txn_count = all_transactions.count()
 
-        print("deposit count: (to count total pages)")
-        print(txn_count)
+        # print("transaction count: (to count total pages)")
+        # print(txn_count)
         total_pages = (txn_count - 1) // 20 if (txn_count - 1) // 20 > 0 else 0
         context['page_no'] = page
         context['total_pages'] = total_pages

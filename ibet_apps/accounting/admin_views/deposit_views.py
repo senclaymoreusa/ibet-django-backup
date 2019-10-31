@@ -33,10 +33,10 @@ class GetDeposits(CommAdminView):
         date_from = request.GET.get('from')
         date_to = request.GET.get('to')
 
-        print("search params: " + str(search_params))
-        print("status: " + str(status))
-        print("from: ", date_from)
-        print("to: ", date_to)
+        # print("search params: " + str(search_params))
+        # print("status: " + str(status))
+        # print("from: ", date_from)
+        # print("to: ", date_to)
 
         page = int(page)
         type_deposit = Q(transaction_type=TRANSACTION_DEPOSIT)
@@ -71,8 +71,8 @@ class GetDeposits(CommAdminView):
         curr_page = all_transactions[page*20:(page+1)*20]
         deposit_count = all_transactions.count()
 
-        print("deposit count: (to count total pages)")
-        print(deposit_count)
+        # print("deposit count: (to count total pages)")
+        # print(deposit_count)
         total_pages = (deposit_count - 1) // 20 if (deposit_count - 1) // 20 > 0 else 0
         context['page_no'] = page
         context['total_pages'] = total_pages

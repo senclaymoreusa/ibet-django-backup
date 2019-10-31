@@ -140,7 +140,6 @@
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
-                        {#{% if tran.status == 'Review' %}#}
                         {% if tran.status == 'Review' %}
                             {% if tran.channel == 'Qaicash' or tran.channel == 'Help2Pay' %}
                                 <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
@@ -149,7 +148,7 @@
                         {% endif %}
                         {% if tran.status == 'Pending' %}
                         <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                            data-target="#audit_withdraw">Audit</button></td>
+                            data-target="#audit_withdraw">Confirm</button></td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
