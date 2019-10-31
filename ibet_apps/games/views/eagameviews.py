@@ -12,7 +12,7 @@ from users.models import CustomUser
 import simplejson as json
 import xmltodict
 from decimal import Decimal
-import requests, xml.etree.ElementTree as ET
+import requests
 from utils.constants import *
 import random
 import hashlib 
