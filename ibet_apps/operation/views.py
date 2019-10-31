@@ -89,7 +89,7 @@ class NotifierTagsInput(View):
     def get(self, request, *args, **kwargs):
     
         search_member = CustomUser.objects.all()
-        search_group = UserGroup.objects.filter(groupType=MESSAGE_STATIC_GROUP)
+        search_group = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
 
         search_member = serializers.serialize('json', search_member)
         search_group = serializers.serialize('json', search_group)
@@ -560,7 +560,7 @@ class MessageUserGroupView(CommAdminView):
             #     user_list.push(item)
 
             # context['user_list'] = user_list
-            groups = UserGroup.objects.filter(groupType=MESSAGE_STATIC_GROUP).order_by('-created_time')
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP).order_by('-created_time')
             message_groups = []
             for group in groups:
                 group_item = {}
@@ -639,7 +639,7 @@ class MessageUserGroupView(CommAdminView):
 
                 data = {
                     "name": group_name,
-                    "groupType": MESSAGE_STATIC_GROUP,
+                    "groupType": MESSAGE_GROUP,
                     "creator": self.user.pk,
                     "is_range": is_range,
                     "product": product,
@@ -671,9 +671,10 @@ class MessageUserGroupView(CommAdminView):
 
                 data = {
                     "name": group_name,
-                    "groupType": MESSAGE_STATIC_GROUP,
+                    "groupType": MESSAGE_GROUP,
                     "creator": self.user.pk,
-                    "is_player": True
+                    "is_static": True,
+                    "is_player": True,
                 }
 
                 serializer = MessageUserGroupSerializer(data=data)
@@ -698,9 +699,10 @@ class MessageUserGroupView(CommAdminView):
 
                 data = {
                     "name": group_name,
-                    "groupType": MESSAGE_STATIC_GROUP,
+                    "groupType": MESSAGE_GROUP,
                     "creator": self.user.pk,
-                    "is_affiliate": True
+                    "is_static": True,
+                    "is_player": False
                 }
 
                 serializer = MessageUserGroupSerializer(data=data)
@@ -721,7 +723,7 @@ class MessageUserGroupView(CommAdminView):
                 
             elif postType == "delete_group":
                 group_name = request.POST.get('group_name')
-                UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_STATIC_GROUP)).delete()
+                UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
                 return HttpResponse("success delete")
 
         except Exception as e:
@@ -817,7 +819,7 @@ class CampaignView(CommAdminView):
 
         elif getType == 'get_all_group':
             data = []
-            groups = UserGroup.objects.filter(groupType=MESSAGE_STATIC_GROUP)
+            groups = UserGroup.objects.filter(groupType=MESSAGE_GROUP)
             for i in groups:
                 groupData = {
                     'id': i.pk,
@@ -926,7 +928,7 @@ class CampaignView(CommAdminView):
             campaign = Campaign.objects.create(name=campaignName, creator=creator)
             # print(groups)
             for groupName in groups:
-                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_STATIC_GROUP)
+                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
                 CampaignToGroup.objects.create(campaign=campaign, group=group)
 
             return HttpResponse("success")
@@ -948,7 +950,7 @@ class CampaignView(CommAdminView):
             CampaignToGroup.objects.filter(campaign=camp).delete()
 
             for groupName in groups:
-                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_STATIC_GROUP)
+                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
                 # print(group)
                 CampaignToGroup.objects.create(campaign=camp, group=group)
             
@@ -1200,7 +1202,7 @@ class MessageGroupUpdateAPI(View):
         if group_name != group.name:
             # exsit = get_object_or_404(UserGroup, name=group_name)
             # exsit = UserGroup.objects.get(name=group_name)
-            if UserGroup.objects.filter(name=group_name, groupType=MESSAGE_STATIC_GROUP):
+            if UserGroup.objects.filter(name=group_name, groupType=MESSAGE_GROUP):
                 logger.error("group name already exists")
                 return HttpResponse(json.dumps({ "error": "group name already exists", "errorCode": 1}), content_type='application/json')
 

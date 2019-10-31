@@ -129,7 +129,11 @@ hr {
             {% else %}
             <td>AFFILIATES</td>
             {% endif %}
+            {% if group.is_static %}
             <td>Static</td>
+            {% else %}
+            <td>Dynamic</td>
+            {% endif %}
             <td><a onclick="return getMemberInfo('{{ group.name }}')">{{ group.members }}</a></td>
             <td>{{ group.time_used }}</td>
             <td><a onclick="return getCreator('{{ group.creator }}')">{{ group.creator }}</a></td>

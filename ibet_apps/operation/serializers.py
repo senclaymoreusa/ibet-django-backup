@@ -79,14 +79,14 @@ class NotificationToUsersSerializer(serializers.ModelSerializer):
 class MessageUserGroupSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
-        if UserGroup.objects.filter(name=value, groupType=MESSAGE_STATIC_GROUP):
+        if UserGroup.objects.filter(name=value, groupType=MESSAGE_GROUP):
             raise serializers.ValidationError("The group name already exist.")
         return value
 
     class Meta:
         model = UserGroup
         fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals', 
-        'product', 'is_player', 'is_affiliate', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
+        'product', 'is_static', 'is_player', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
         read_only_fields = ['pk', 'created_time', 'approvals']
 
 
