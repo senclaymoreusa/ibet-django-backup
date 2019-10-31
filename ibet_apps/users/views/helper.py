@@ -81,7 +81,7 @@ def set_temporary_timeout(user, intervalOption):
     # print(user.temporary_block_time)
     # print(user.temporary_block_timespan)
     user.save()
-    logger.info("Setting temporary timeout of user: {}, and temporary interval options is {} from ".format(str(user.username), str(intervalOption)))
+    logger.info("Setting temporary timeout of user: {}, and temporary interval is {} from ".format(str(user.username), str(intervalOption)))
 
 def set_permanent_timeout(user, intervalOption):
     user.permanent_block_time = timezone.now()
@@ -92,7 +92,7 @@ def set_permanent_timeout(user, intervalOption):
         user.permanent_block_interval = None
         user.permanent_block_time = None
     user.save()
-    logger.info("Setting permanent timeout of user: {}, and permanent interval options is {} from ".format(str(user.username), str(intervalOption)))
+    logger.info("Setting permanent timeout of user: {}, and permanent interval is {} from ".format(str(user.username), str(intervalOption)))
 
 
 def get_old_limitations(userId):
