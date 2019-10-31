@@ -16,7 +16,7 @@ logger = logging.getLogger("django")
 
 
 class GetWithdrawals(CommAdminView):
-    def get(self, request, page):
+    def get(self, request, page=0):
         context = super().get_context()
         search_params = request.GET.get('search_params')
         status = request.GET.get('status')
@@ -78,7 +78,7 @@ class GetWithdrawals(CommAdminView):
             trans_data = dict()
             trans_data["id"] = trans.user_id_id
             trans_data["username"] = trans.user_id.username
-            trans_data["payment"] = trans.get_channel_display()
+            trans_data["channel"] = trans.get_channel_display()
             trans_data["method"] = trans.method
             trans_data["tran_no"] = trans.transaction_id
             trans_data["app_time"] = trans.request_time.strftime('%d %B %Y %X') if trans.request_time else ''
@@ -92,7 +92,7 @@ class GetWithdrawals(CommAdminView):
             trans_data["risk_level"] = trans.user_id.get_risk_level_display()
             # trans_data["player_segment"] = trans.user_id.player_segment
             trans_data["user_status"] = trans.user_id.get_member_status_display()
-            
+
             txn_data.append(trans_data)
 
         context['transactions'] = txn_data  # array of txn objects

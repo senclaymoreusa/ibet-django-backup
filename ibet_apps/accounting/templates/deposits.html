@@ -108,7 +108,7 @@
                 </thead>
                 <tbody id="pending_deposit_data">
                     {% for tran in transactions %}
-                    <tr>
+                    <tr id="{{ tran.pk }}">
 {#                            <td>{{ forloop.counter }}</td>#}
                         <td>{{ tran.id }}</td>
                         <td>{{ tran.username }}</td>
@@ -127,7 +127,8 @@
                         {% if tran.status == 'Created' %}
 {#                        {% if tran.method == 'ALIPAY' and tran.status == 'Pending' %}#}
                         <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                                data-target="#audit_deposit">Audit</button></td>
+                                data-target="#audit_deposit"><span
+                                class="glyphicon glyphicon-search"></span></button></td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>

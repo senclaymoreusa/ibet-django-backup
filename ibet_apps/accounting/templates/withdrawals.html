@@ -78,16 +78,16 @@
                     <col style="width: 100px"> <!--  // player segment -->
                     <col style="width: 56px">  <!-- // risk level -->
                     <col style="width: 100px"> <!--  // user status -->
-                    <col style="width: 100px"> <!--  //  -->
-                    <col style="width: 100px"> <!--  // -->
-                    <col style="width: 230px"> <!--  // -->
-                    <col style="width: 270px"> <!--  // -->
-                    <col style="width: 130px"> <!--  // -->
-                    <col style="width: 130px"> <!--  // -->
-                    <col style="width: 100px"> <!--  // -->
-                    <col style="width: 85px">  <!-- // -->
-                    <col style="width: 78px">  <!-- // -->
-                    <col style="width: 70px">  <!-- // -->
+                    <col style="width: 100px"> <!--  // method  -->
+                    <col style="width: 100px"> <!--  // channel -->
+                    <col style="width: 230px"> <!--  // transaction no.-->
+                    <col style="width: 270px"> <!--  // order no. -->
+                    <col style="width: 130px"> <!--  // created time -->
+                    <col style="width: 130px"> <!--  // resolved time -->
+                    <col style="width: 100px"> <!--  // bank -->
+                    <col style="width: 85px">  <!-- // amount -->
+                    <col style="width: 78px">  <!-- // status -->
+                    <col style="width: 80px">  <!-- // button -->
                 </colgroup>
                 <thead>
                     <tr>
@@ -112,7 +112,7 @@
                 </thead>
                 <tbody id="pending_deposit_data">
                     {% for tran in transactions %}
-                    <tr>
+                    <tr id="{{ tran.pk }}">
                         <!-- <td>{{ forloop.counter }}</td> -->
                         <td>{{ tran.id }}</td>
                         <td>{{ tran.username }}</td>
@@ -120,7 +120,7 @@
                         <td>{{ tran.risk_level }}</td>
                         <td>{{ tran.user_status }}</td>
                         <td>{{ tran.method }}</td>
-                        <td>{{ tran.payment }}</td>
+                        <td>{{ tran.channel }}</td>
                         <td>{{ tran.tran_no }}</td>
                         <td>{{ tran.order_id }}</td>
                         <td>{{ tran.app_time }}</td>
@@ -128,10 +128,16 @@
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
+                        {#{% if tran.status == 'Review' %}#}
                         {% if tran.status == 'Review' %}
-                        <!-- {#{% if tran.method == 'ALIPAY' and tran.status == 'Pending' %}#} -->
+                            {% if tran.channel == 'Qaicash' or tran.channel == 'Help2Pay' %}
+                                <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                                        data-target="#audit_withdraw">Review</button></td>
+                            {% endif %}
+                        {% endif %}
+                        {% if tran.status == 'Pending' %}
                         <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                                data-target="#audit_withdraw">Audit</button></td>
+                            data-target="#audit_withdraw">Audit</button></td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -139,7 +145,22 @@
                 </tbody>
             </table>
         </div>
-
+        <!-- pagination -->
+        <div class="container" style="padding-bottom: 50px">
+            <div class="row">
+                <div class="col-md-offset-11">
+                    <p>Page {{ page_no|add:'1' }} of {{ total_pages|add:'1' }}</p>
+                </div>
+                <div class="col-md-offset-11">
+                    {% if page_no != 0 %}
+                        <button id="prev-page">Prev</button>
+                    {% endif %}
+                    {% if page_no != total_pages %}
+                        <button id="next-page">Next</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         <!-- audit popup window -->
         <div class="modal fade" id="audit_withdraw" role="dialog">
             <div id="withdraw_request_pop" class="modal-dialog">
@@ -356,7 +377,7 @@
         $('#status-filter').on('change', function(event) {
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
-            window.location = "{% url 'xadmin:get_deposits' page=0 %}?"+queryString.toString();
+            window.location = "{% url 'xadmin:get_withdrawals' page=0 %}?"+queryString.toString();
         });
 
         // for submitting a search
@@ -373,8 +394,8 @@
             if (fromDate) queryString.set('from', fromDate);
             if (toDate) queryString.set('to', toDate);
             // fetch data and redraw rows
-            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_deposits' page=0 %}?"+queryString.toString();
-            else window.location = "{% url 'xadmin:get_deposits' page=0 %}";
+            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_withdrawals' page=0 %}?"+queryString.toString();
+            else window.location = "{% url 'xadmin:get_withdrawals' page=0 %}";
         });
 
         $('#clear-search-btn').on('click', function() {
@@ -386,10 +407,10 @@
 
         // scroll between pages
         $('#prev-page').click(() => {
-            window.location = "{% url 'xadmin:get_deposits' page=page_no|add:'-1' %}" + window.location.search;
+            window.location = "{% url 'xadmin:get_withdrawals' page=page_no|add:'-1' %}" + window.location.search;
         });
         $('#next-page').click(() => {
-            window.location= "{% url 'xadmin:get_deposits' page=page_no|add:'1' %}" + window.location.search;
+            window.location= "{% url 'xadmin:get_withdrawals' page=page_no|add:'1' %}" + window.location.search;
         });
 
         let dateFormat = "mm/dd/yy";
@@ -557,7 +578,6 @@
             $('#withdraw-review-a').html('Click to Approve');
             $('#withdraw-review-a').attr('id', 'withdraw-review-app');
             $('#withdraw-review-app').click(function () {
-                // $('#withdraw-review-app').attr('type', 'submit')
                 $('#withdraw-review-app').attr('name', 'withdraw-review-app')
                 var remark = $('#notes').val();
                 var id = $('#trans_withdraw_detail p').first().html();

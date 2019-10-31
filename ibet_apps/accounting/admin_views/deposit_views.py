@@ -18,8 +18,15 @@ import pytz
 logger = logging.getLogger("django")
 
 
+# class TestView(CommAdminView):
+#     def get(self, request, type, page):
+#         if type == "deposits":
+#             return render(request, 'deposits.html')
+#         else:
+#             return render(request, 'withdrawals.html')
+
 class GetDeposits(CommAdminView):
-    def get(self, request, page):
+    def get(self, request, page=0):
         context = super().get_context()
         search_params = request.GET.get('search_params')
         status = request.GET.get('status')
