@@ -330,11 +330,12 @@ class LiveDealerSoapService(ServiceBase):
 class SlotSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def GetUserBalance(ctx, userId, currency):
+        res = Container()
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet
             token = Token.objects.get(user=user)
-            res = Container()
+            
             res.StatusCode = 0
             res.UserBalance = userBalance
             return res
