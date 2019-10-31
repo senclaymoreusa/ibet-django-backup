@@ -33,7 +33,8 @@ def pad(m):
 class InplayLoginAPI(View):
     def post(self, request, *arg, **kwargs):
         try:
-            user = 'Bobby'
+            user = CustomUser.objects.get(username='Bobby')
+            token = user.token
 
             key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
 
