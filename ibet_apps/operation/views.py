@@ -1201,8 +1201,8 @@ class MessageGroupUpdateAPI(View):
             # exsit = get_object_or_404(UserGroup, name=group_name)
             # exsit = UserGroup.objects.get(name=group_name)
             if UserGroup.objects.filter(name=group_name, groupType=MESSAGE_STATIC_GROUP):
-                logger.error("group name already exist")
-                return HttpResponse(json.dumps({ "error": "group name already exist", "errorCode": 1}), content_type='application/json')
+                logger.error("group name already exists")
+                return HttpResponse(json.dumps({ "error": "group name already exists", "errorCode": 1}), content_type='application/json')
 
         pk_list = request.POST.getlist('pk[]')
         product = request.POST.get("product")
