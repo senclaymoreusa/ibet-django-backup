@@ -11,10 +11,6 @@
     height: 800px;
 }
 
-table.dataTable {
-    border-spacing: 0;
-}
-
 #deposit-request-button {
     margin-top: 25px;
 }
@@ -163,8 +159,6 @@ table.dataTable {
     padding-bottom: 20px;
     height: 123px;
 }
-
-
 
 
 /* other */

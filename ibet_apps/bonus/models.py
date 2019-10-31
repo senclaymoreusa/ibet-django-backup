@@ -36,6 +36,7 @@ class Bonus(models.Model):
     affiliate_limit = models.FloatField(null=True, blank=True)
     release_type = models.SmallIntegerField(choices=BONUS_RELEASE_TYPE_CHOICES, default=0, verbose_name=_('Bonus Release Type'))
     image_s3 = models.CharField(max_length=500, null=True, blank=True)
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Bonus Currency'))
 
 
 # Mapping between Bonuses and Categories
@@ -73,6 +74,4 @@ class UserBonusEvent(models.Model):
     delivered_by = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Operator'))
     status = models.SmallIntegerField(choices=USER_BONUS_EVENT_TYPE_CHOICES, default=0, verbose_name=_('User Bonus Event Type'))
     notes = models.TextField(null=True, blank=True)
-
-
-
+    amount = models.FloatField(null=True, blank=True)

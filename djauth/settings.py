@@ -200,6 +200,14 @@ if os.getenv("ENV") == "local":
             'PORT': 5432,
         }
     }
+
+
+    print("[" + str(datetime.datetime.now()) + "] Using local Redis...")
+    REDIS = {
+        "HOST": 'localhost',
+        "PORT": 6379
+    }
+
 elif "ENV" in os.environ:
     print("[" + str(datetime.datetime.now()) + "] Using db of " + os.environ["ENV"])
     AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.environ["ENV"]
@@ -218,6 +226,11 @@ elif "ENV" in os.environ:
         }
     }
 
+    print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
+    REDIS = {
+        "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
+        "PORT": 6379
+    }
 
 
 # Password validation

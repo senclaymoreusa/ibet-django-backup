@@ -1,7 +1,5 @@
 import xadmin
-from .models import Bonus
-from .models import Requirement
-from .models import UserBonusEvent
+from .models import *
 
 class BonusAdmin(object):
     list_display = ('name', 'description', 'start_time', 'end_time', 'expiration_days','countries','amount','percentage','coupon_code',
@@ -13,7 +11,11 @@ class RequirementAdmin(object):
 class UserBonusEventAdmin(object):
     list_display = ('owner', 'bonus', 'timestamp', 'delivered_by', 'status', 'notes')
 
+class BonusCategoryAdmin(object):
+    list_display = ('bonus', 'category')
+
 
 xadmin.site.register(Bonus,BonusAdmin)
 xadmin.site.register(Requirement,RequirementAdmin)
 xadmin.site.register(UserBonusEvent,UserBonusEventAdmin)
+xadmin.site.register(BonusCategory,BonusCategoryAdmin)

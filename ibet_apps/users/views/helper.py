@@ -69,8 +69,7 @@ def set_deposit_limitation(userId, depositLimit, depositLimitInterval, oldLimitM
 
 
 
-def set_temporary_timeout(userId, intervalOption):
-    user = CustomUser.objects.get(pk=userId)
+def set_temporary_timeout(user, intervalOption):
     user.temporary_block_time = timezone.now()
     intervalOption = int(intervalOption)
     if intervalOption >= 0:
@@ -82,10 +81,9 @@ def set_temporary_timeout(userId, intervalOption):
     # print(user.temporary_block_time)
     # print(user.temporary_block_timespan)
     user.save()
-    logger.info("Setting temporary timeout of user: {}, and temporary interval options is {} from ".format(str(user.username), str(intervalOption)))
+    logger.info("Setting temporary timeout of user: {}, and temporary interval is {} from ".format(str(user.username), str(intervalOption)))
 
-def set_permanent_timeout(userId, intervalOption):
-    user = CustomUser.objects.get(pk=userId)
+def set_permanent_timeout(user, intervalOption):
     user.permanent_block_time = timezone.now()
     intervalOption = int(intervalOption)
     if intervalOption >= 0:
@@ -94,7 +92,7 @@ def set_permanent_timeout(userId, intervalOption):
         user.permanent_block_interval = None
         user.permanent_block_time = None
     user.save()
-    logger.info("Setting permanent timeout of user: {}, and permanent interval options is {} from ".format(str(user.username), str(intervalOption)))
+    logger.info("Setting permanent timeout of user: {}, and permanent interval is {} from ".format(str(user.username), str(intervalOption)))
 
 
 def get_old_limitations(userId):
@@ -123,10 +121,9 @@ def get_old_limitations(userId):
     return oldLimitMap
 
 
-def checkUserBlock(userId):
+def checkUserBlock(user):
     
-    user = get_object_or_404(CustomUser, pk=userId)
-    if user.block is True:
+    if user.block:
         return True
     elif user.temporary_block_time or user.permanent_block_time:
         expired_time = ''
@@ -168,4 +165,3 @@ def checkUserBlock(userId):
             return False
 
     return False
-    

@@ -63,6 +63,7 @@ from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
 from users.views.helper import *
+from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
 
@@ -181,6 +182,48 @@ class UserDetailsView(RetrieveUpdateAPIView):
     serializer_class = UserDetailsSerializer
     permission_classes = (IsAuthenticated,)
 
+    def get(self, request):
+        try:
+            user = self.get_object()
+            serializer = UserDetailsSerializer(user)
+            if checkUserBlock(self.request.user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return Response(data)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error("Error getting user details", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        try:
+            user = self.get_object()
+            if checkUserBlock(self.request.user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return Response(data)
+
+            serializer = UserDetailsSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            
+            logger.info("User details format is not correct", e)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error("Error updating user details", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
     def get_object(self):
         return self.request.user
 
@@ -293,7 +336,7 @@ class LoginView(GenericAPIView):
         # print('login language code: ' + languageCode)
         
         self.user = self.serializer.validated_data['user']
-        if checkUserBlock(self.user.pk):
+        if checkUserBlock(self.user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -363,7 +406,7 @@ class LoginView(GenericAPIView):
         except Exception as e:
             errorMessage = _('Invalid username/ passowrd')
             data = {}
-            data["errorCode"] = ERROR_CODE_INVAILD_INFO
+            data["errorCode"] = ERROR_CODE_INVALID_INFO
             data["errorMsg"] = {
                 "detail": [errorMessage]
             }
@@ -555,14 +598,19 @@ class LanguageView(APIView):
         return response
 
     def get(self, request, *args, **kwargs):
-        languageCode = 'en'
-        if LANGUAGE_SESSION_KEY in request.session:
-            languageCode = request.session[LANGUAGE_SESSION_KEY]
-        
-        
-        # print('get: ' + languageCode)
-        return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)  
 
+        try:
+            languageCode = 'en'
+            if LANGUAGE_SESSION_KEY in request.session:
+                languageCode = request.session[LANGUAGE_SESSION_KEY]
+    
+            # print('get: ' + languageCode)
+            logger.info("Getting the language code: {}".format(languageCode))
+            return Response({'languageCode': languageCode}, status = status.HTTP_200_OK)  
+        
+        except:
+            logger.error("Error getting language code")
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class NoticeMessageView(ListAPIView):
     serializer_class = NoticeMessageSerializer
@@ -1064,7 +1112,7 @@ class ChangePassword(APIView):
             username = request.data['username']
             password = request.data['password']
             user = get_user_model().objects.get(username=username)
-            if checkUserBlock(user.pk):
+            if checkUserBlock(user):
                 data = {}
                 errorMessage = _('The current user is blocked!')
                 data["errorCode"] = ERROR_CODE_BLOCK
@@ -1167,88 +1215,95 @@ class VerifyActivationCode(APIView):
 
 class UserSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
-        search = request.GET['search']
-        # block = request.GET['block'] == 'true'
 
-        logger.info('Search user, key: ' + search)
-        # search_id = CustomUser.objects.filter(Q(pk__contains=search)&Q(block=block))
-        # search_username = CustomUser.objects.filter(Q(username__contains=search)&Q(block=block))
-        # search_email = CustomUser.objects.filter(Q(email__contains=search)&Q(block=block))
-        # search_phone = CustomUser.objects.filter(Q(phone__contains=search)&Q(block=block))
-        # search_first_name = CustomUser.objects.filter(Q(first_name__contains=search)&Q(block=block))
-        # search_last_name = CustomUser.objects.filter(Q(last_name__contains=search)&Q(block=block))
+        #search keyword in username/phone/first name/last name/email
+        try:
+            search = request.GET['search']
+            # block = request.GET['block'] == 'true'
+            
+            logger.info('Search user, key: ' + search)
+            # search_id = CustomUser.objects.filter(Q(pk__contains=search)&Q(block=block))
+            # search_username = CustomUser.objects.filter(Q(username__contains=search)&Q(block=block))
+            # search_email = CustomUser.objects.filter(Q(email__contains=search)&Q(block=block))
+            # search_phone = CustomUser.objects.filter(Q(phone__contains=search)&Q(block=block))
+            # search_first_name = CustomUser.objects.filter(Q(first_name__contains=search)&Q(block=block))
+            # search_last_name = CustomUser.objects.filter(Q(last_name__contains=search)&Q(block=block))
 
-        search_id = CustomUser.objects.filter(pk__contains=search)
-        search_username = CustomUser.objects.filter(username__contains=search)
-        search_email = CustomUser.objects.filter(email__contains=search)
-        search_phone = CustomUser.objects.filter(phone__contains=search)
-        search_first_name = CustomUser.objects.filter(first_name__contains=search)
-        search_last_name = CustomUser.objects.filter(last_name__contains=search)
+            search_id = CustomUser.objects.filter(pk__contains=search)
+            search_username = CustomUser.objects.filter(username__contains=search)
+            search_email = CustomUser.objects.filter(email__contains=search)
+            search_phone = CustomUser.objects.filter(phone__contains=search)
+            search_first_name = CustomUser.objects.filter(first_name__contains=search)
+            search_last_name = CustomUser.objects.filter(last_name__contains=search)
 
-        search_id = serializers.serialize('json', search_id)
-        search_username = serializers.serialize('json', search_username)
-        search_email = serializers.serialize('json', search_email)
-        search_phone = serializers.serialize('json', search_phone)
-        search_first_name = serializers.serialize('json', search_first_name)
-        search_last_name = serializers.serialize('json', search_last_name)
+            search_id = serializers.serialize('json', search_id)
+            search_username = serializers.serialize('json', search_username)
+            search_email = serializers.serialize('json', search_email)
+            search_phone = serializers.serialize('json', search_phone)
+            search_first_name = serializers.serialize('json', search_first_name)
+            search_last_name = serializers.serialize('json', search_last_name)
 
-        search_id = json.loads(search_id)
-        search_username = json.loads(search_username)
-        search_email = json.loads(search_email)
-        search_phone = json.loads(search_phone)
-        search_first_name = json.loads(search_first_name)
-        search_last_name = json.loads(search_last_name)
-        response = {}
+            search_id = json.loads(search_id)
+            search_username = json.loads(search_username)
+            search_email = json.loads(search_email)
+            search_phone = json.loads(search_phone)
+            search_first_name = json.loads(search_first_name)
+            search_last_name = json.loads(search_last_name)
+            response = {}
 
-        id_data = []
-        for user in search_id:
-            userMap = {}
-            userMap['id'] = user['pk']
-            id_data.append(userMap)
-        response['id'] = id_data
+            id_data = []
+            for user in search_id:
+                userMap = {}
+                userMap['id'] = user['pk']
+                id_data.append(userMap)
+            response['id'] = id_data
 
-        username_data = []
-        for user in search_username:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['username'] = user['fields']['username']
-            username_data.append(userMap)
-        response['username'] = username_data
+            username_data = []
+            for user in search_username:
+                userMap = {}
+                userMap['id'] = user['pk']
+                userMap['username'] = user['fields']['username']
+                username_data.append(userMap)
+            response['username'] = username_data
 
-        email_data = []
-        for user in search_email:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['email'] = user['fields']['email']
-            email_data.append(userMap)
-        response['email'] = email_data
+            email_data = []
+            for user in search_email:
+                userMap = {}
+                userMap['id'] = user['pk']
+                userMap['email'] = user['fields']['email']
+                email_data.append(userMap)
+            response['email'] = email_data
 
-        phone_data = []
-        for user in search_phone:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['phone'] = user['fields']['phone']
-            phone_data.append(userMap)
-        response['phone'] = phone_data
+            phone_data = []
+            for user in search_phone:
+                userMap = {}
+                userMap['id'] = user['pk']
+                userMap['phone'] = user['fields']['phone']
+                phone_data.append(userMap)
+            response['phone'] = phone_data
 
-        first_name_data = []
-        for user in search_first_name:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['firstName'] = user['fields']['first_name']
-            first_name_data.append(userMap)
-        response['firstName'] = first_name_data
+            first_name_data = []
+            for user in search_first_name:
+                userMap = {}
+                userMap['id'] = user['pk']
+                userMap['firstName'] = user['fields']['first_name']
+                first_name_data.append(userMap)
+            response['firstName'] = first_name_data
 
-        last_name_data = []
-        for user in search_last_name:
-            userMap = {}
-            userMap['id'] = user['pk']
-            userMap['lastName'] = user['fields']['last_name']
-            last_name_data.append(userMap)
-        response['lastName'] = last_name_data
-        # print(str(response))
-        logger.info('Search response: ' + json.dumps(response))
-        return HttpResponse(json.dumps(response), content_type='application/json')
+            last_name_data = []
+            for user in search_last_name:
+                userMap = {}
+                userMap['id'] = user['pk']
+                userMap['lastName'] = user['fields']['last_name']
+                last_name_data.append(userMap)
+            response['lastName'] = last_name_data
+            # print(str(response))
+            logger.info('Search response: ' + json.dumps(response))
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Error from searching user: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 class ValidateAndResetPassowrd(APIView):
@@ -1284,446 +1339,721 @@ from users.views.helper import set_loss_limitation, set_deposit_limitation, set_
 class SetLimitation(View):
 
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-        userId = data['user_id']
-        limit = data['limit']
-        interval = data['interval']
-        limit_type = data['type']
 
-        if checkUserBlock(userId):
-            data = {}
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
-        
-        # print(limit, interval, user_id, limit_type)
-        user = CustomUser.objects.get(pk=userId)
+        try:
+            data = json.loads(request.body)
+            userId = data['user_id']
+            limit = data['limit']
+            interval = data['interval']
+            limit_type = data['type']
+            user = CustomUser.objects.get(pk=userId)
 
-        oldLimitMap = get_old_limitations(userId)
-        # print(oldLimitMap)
+            if checkUserBlock(user):
+                data = {}
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            
+            # print(limit, interval, user_id, limit_type)
+            oldLimitMap = get_old_limitations(userId)
+            # print(oldLimitMap)
 
-        if limit_type == 'loss':
-            otherLimits = oldLimitMap[LIMIT_TYPE_LOSS]
-            set_loss_limitation(userId, limit, interval, oldLimitMap, user)
-        elif limit_type == 'deposit':
-            set_deposit_limitation(userId, limit, interval, oldLimitMap, user)
+            if limit_type == 'loss':
+                otherLimits = oldLimitMap[LIMIT_TYPE_LOSS]
+                set_loss_limitation(userId, limit, interval, oldLimitMap, user)
+            elif limit_type == 'deposit':
+                set_deposit_limitation(userId, limit, interval, oldLimitMap, user)
 
-        return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
+            return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
+
+        except Exception as e:
+            logger.error("Error from setting user's limitation: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)      
 
 class DeleteLimitation(View):
 
     def post(self, request, *args, **kwargs):
         
-        data = json.loads(request.body)
-        userId = data['user_id']
-        if checkUserBlock(userId):
-            data = {}
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
+        try:
+            data = json.loads(request.body)
+            userId = data['user_id']
+            user = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(user):
+                data = {}
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            
+            # limit = data['limit']
+            interval = data['interval']
+            limit_type = data['type']
+            limit_id = data['id']
+            
+            if limit_type == 'deposit':
+                limit_type = LIMIT_TYPE_DEPOSIT
+            elif limit_type == 'loss':
+                limit_type = LIMIT_TYPE_LOSS
+
+            limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
+            time = timezone.now() + datetime.timedelta(days=1)
+            limit.expiration_time = time
+            limit.temporary_amount = limit.amount
+            limit.amount = None
+            limit.save()
+            # return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
+            message = 'Successfully delete the {} limitation and interval is {}'.format(limit_type, interval)
+            current_tz = timezone.get_current_timezone()
+            time = time.astimezone(current_tz)
+            expiration_timeStr = str(time.astimezone(current_tz))
+
+            response = {
+                "expire_time": expiration_timeStr,
+                "message": message
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            
+            return HttpResponse(json.dumps(response, cls=LazyEncoder), content_type="application/json")
         
-        # limit = data['limit']
-        interval = data['interval']
-        limit_type = data['type']
-        limit_id = data['id']
-        
-        if limit_type == 'deposit':
-            limit_type = LIMIT_TYPE_DEPOSIT
-        elif limit_type == 'loss':
-            limit_type = LIMIT_TYPE_LOSS
+        except Exception as e:
+            logger.error("Error from delete user's limitation: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        user = CustomUser.objects.get(pk=userId)
-
-        limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
-        time = timezone.now() + datetime.timedelta(days=1)
-        limit.expiration_time = time
-        limit.temporary_amount = limit.amount
-        limit.amount = None
-        limit.save()
-        # return HttpResponse(('Successfully delete the {} limitation'.format(limit_type)), status = 200)
-        message = 'Successfully delete the {} limitation and interval is {}'.format(limit_type, interval)
-        current_tz = timezone.get_current_timezone()
-        time = time.astimezone(current_tz)
-        expiration_timeStr = str(time.astimezone(current_tz))
-
-        
-        response = {
-            "expire_time": expiration_timeStr,
-            "message": message
-        }
-        
-        return JsonResponse(response, status = 200)
 
 
 class CancelDeleteLimitation(View):
 
     def post(self, request, *args, **kwargs):
         
-        data = json.loads(request.body)
-        userId = data['user_id']
-        if checkUserBlock(userId):
-            data = {}
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+        try:
+            data = json.loads(request.body)
+            userId = data['user_id']
+            user = CustomUser.objects.get(pk=userId)
 
-        # limit = data['limit']
-        interval = data['interval']
-        limit_type = data['type']
-        limit_id = data['id']
+            if checkUserBlock(user):
+                data = {}
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
-        if limit_type == 'deposit':
-            limit_type = LIMIT_TYPE_DEPOSIT
-        elif limit_type == 'loss':
-            limit_type = LIMIT_TYPE_LOSS
+            # limit = data['limit']
+            interval = data['interval']
+            limit_type = data['type']
+            limit_id = data['id']
 
-        user = CustomUser.objects.get(pk=userId)
+            if limit_type == 'deposit':
+                limit_type = LIMIT_TYPE_DEPOSIT
+            elif limit_type == 'loss':
+                limit_type = LIMIT_TYPE_LOSS
 
-        limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
-        limit.expiration_time = None
-        limit.amount = limit.temporary_amount
-        limit.temporary_amount = None
-        limit.save()
+            limit = Limitation.objects.get(user=user, limit_type=limit_type, interval=interval)
+            limit.expiration_time = None
+            limit.amount = limit.temporary_amount
+            limit.temporary_amount = None
+            limit.save()
 
-        return HttpResponse(('Successfully cancel delete the {} limitation action'.format(limit_type)), status = 200)
+            return HttpResponse(('Successfully cancel the {} limitation action'.format(limit_type)), status=200)
+
+        except Exception as e:
+            logger.error("Error from delete user's limitation: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class GetLimitation(View):
 
     def get(self, request, *args, **kwargs):
-        userId = request.GET.get('id')
-        # limit_type = request.GET.get('type')
-        # limit_type = limit_type.capitalize()
-        # limitDict = dict(LIMIT_TYPE)
-        # for key, value in limitDict.items():
-        #     if value == limit_type:
-        #         limit_type = key
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
+
+        try:
+            userId = request.GET.get('id')
+            # limit_type = request.GET.get('type')
+            # limit_type = limit_type.capitalize()
+            # limitDict = dict(LIMIT_TYPE)
+            # for key, value in limitDict.items():
+            #     if value == limit_type:
+            #         limit_type = key
+
+            user = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {}
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+            userJson = serializers.serialize('json', [user])
+            userJson = json.loads(userJson)
+            # print(userJson)
+
+            # print(user)
+            userLimitation = Limitation.objects.filter(user=user)
+
+            intervalMap = {}
+            for t in Limitation._meta.get_field('interval').choices:
+                intervalMap[t[0]] = t[1]
+
+            limitationDict = {
+                'bet': [],
+                'loss': [],
+                'deposit': [],
+                'withdraw': [],
+                'tempBlock': {},
+                'permBlock': {}
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            for limitation in userLimitation:
+                temporary_amount = decimal.Decimal(0) if limitation.temporary_amount is None else  decimal.Decimal(limitation.temporary_amount)
+                amount = None if limitation.amount is None else decimal.Decimal(limitation.amount)
+                expiration_timeStr = ''
+                expiration_time = ""
+                if limitation.expiration_time:
+                    current_tz = timezone.get_current_timezone()
+                    expiration_time = limitation.expiration_time.astimezone(current_tz)
+                    expiration_timeStr = str(limitation.expiration_time.astimezone(current_tz))
 
-        user = CustomUser.objects.get(pk=userId)
-        userJson = serializers.serialize('json', [user])
-        userJson = json.loads(userJson)
-        # print(userJson)
-
-        # print(user)
-        userLimitation = Limitation.objects.filter(user=user)
-
-        intervalMap = {}
-        for t in Limitation._meta.get_field('interval').choices:
-            intervalMap[t[0]] = t[1]
-
-        limitationDict = {
-            'bet': [],
-            'loss': [],
-            'deposit': [],
-            'withdraw': [],
-            'tempBlock': {},
-            'permBlock': {}
-        }
-        for limitation in userLimitation:
-            temporary_amount = decimal.Decimal(0) if limitation.temporary_amount is None else  decimal.Decimal(limitation.temporary_amount)
-            amount = None if limitation.amount is None else decimal.Decimal(limitation.amount)
-            expiration_timeStr = ''
-            expiration_time = ""
-            if limitation.expiration_time:
-                current_tz = timezone.get_current_timezone()
-                expiration_time = limitation.expiration_time.astimezone(current_tz)
-                expiration_timeStr = str(limitation.expiration_time.astimezone(current_tz))
-
-            if not limitation.amount and not expiration_time:
-                continue
-            else:
-                if expiration_time and expiration_time <= timezone.now():
+                if not limitation.amount and not expiration_time:
                     continue
-            
-            if limitation.limit_type == LIMIT_TYPE_LOSS:
-                lossMap = {
-                    'amount': amount,
-                    'intervalValue': limitation.interval,
-                    'interval': intervalMap[limitation.interval],
-                    'limitId': limitation.pk,
-                    'temporary_amount': temporary_amount,
-                    'expiration_time': expiration_timeStr
-                }
-                limitationDict['loss'].append(lossMap)
-            elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
+                else:
+                    if expiration_time and expiration_time <= timezone.now():
+                        continue
                 
-                depositMap = {
-                    'amount': amount,
-                    'intervalValue': limitation.interval,
-                    'interval': intervalMap[limitation.interval],
-                    'limitId': limitation.pk,
-                    'temporary_amount': temporary_amount,
-                    'expiration_time': expiration_timeStr
+                if limitation.limit_type == LIMIT_TYPE_LOSS:
+                    lossMap = {
+                        'amount': amount,
+                        'intervalValue': limitation.interval,
+                        'interval': intervalMap[limitation.interval],
+                        'limitId': limitation.pk,
+                        'temporary_amount': temporary_amount,
+                        'expiration_time': expiration_timeStr
+                    }
+                    limitationDict['loss'].append(lossMap)
+                elif limitation.limit_type == LIMIT_TYPE_DEPOSIT:
+                    
+                    depositMap = {
+                        'amount': amount,
+                        'intervalValue': limitation.interval,
+                        'interval': intervalMap[limitation.interval],
+                        'limitId': limitation.pk,
+                        'temporary_amount': temporary_amount,
+                        'expiration_time': expiration_timeStr
+                    }
+                    limitationDict['deposit'].append(depositMap)
+        
+            if user.temporary_block_interval:
+                # print(user.temporary_block_timespan)
+                # print(userJson[0]['fields']['temporary_block_timespan'])
+                # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
+                # time = timeList[0]
+                # time = int(time)
+                tempMap = {
+                    'temporary_block': user.temporary_block_interval
                 }
-                limitationDict['deposit'].append(depositMap)
-    
-        if user.temporary_block_interval:
-            # print(user.temporary_block_timespan)
-            # print(userJson[0]['fields']['temporary_block_timespan'])
-            # timeList = userJson[0]['fields']['temporary_block_timespan'].split(' ')
-            # time = timeList[0]
-            # time = int(time)
-            tempMap = {
-                'temporary_block': user.temporary_block_interval
-            }
-            limitationDict['tempBlock'] = tempMap
+                limitationDict['tempBlock'] = tempMap
 
-        if user.permanent_block_interval:
-            permanentMap = {
-                'permanent_block': user.permanent_block_interval
-            }
-            limitationDict['permBlock'] = permanentMap
-            # print(limitationDict)
+            if user.permanent_block_interval:
+                permanentMap = {
+                    'permanent_block': user.permanent_block_interval
+                }
+                limitationDict['permBlock'] = permanentMap
+                # print(limitationDict)
 
-        return HttpResponse(json.dumps(limitationDict, cls=DjangoJSONEncoder), content_type="application/json", status = 200)
+            return HttpResponse(json.dumps(limitationDict, cls=DjangoJSONEncoder), content_type="application/json", status=200)
+        
+        except Exception as e:
+            logger.error("Error from getting user's limitations: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class SetBlockTime(View):
 
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-        lock_timespan = data['timespan']
-        userId = data['userId']
+        try:
+            data = json.loads(request.body)
+            lock_timespan = data['timespan']
+            userId = data['userId']
 
-        if checkUserBlock(userId):
-            data = {}
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            user = CustomUser.objects.get(pk=userId)
 
-        # lock_type = data['type']
-        tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
-        # print(userId, lock_type, lock_timespan)
-        if lock_timespan not in tempIntervals:
-            set_permanent_timeout(userId, lock_timespan)
-            set_temporary_timeout(userId, -1)
-        else:
-            set_temporary_timeout(userId, lock_timespan)
-            set_permanent_timeout(userId, -1)
+            if checkUserBlock(user):
+                data = {}
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+            # lock_type = data['type']
+            tempIntervals = list(map(lambda x: x[0], TEMPORARY_INTERVAL))
+            # print(userId, lock_type, lock_timespan)
+            if lock_timespan not in tempIntervals:
+                set_permanent_timeout(user, lock_timespan)
+                set_temporary_timeout(user, -1)
+            else:
+                set_temporary_timeout(user, lock_timespan)
+                set_permanent_timeout(user, -1)
+            
+            return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(userId, lock_timespan)), status=200)
         
-        return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(userId, lock_timespan)), status = 200)
+        except Exception as e:
+            logger.error("Error from setting user's blocking time : ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        
  
 class MarketingSettings(View):
 
     def get(self, request, *args, **kwargs):
-        userId = request.GET['userId']
 
-        if checkUserBlock(userId):
-            data = {}
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
+        try:
+            userId = request.GET['userId']
+            user = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(user):
+                data = {}
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+            contact_methods = user.contact_methods
+
+            response = {
+                "email": False,
+                "phone": False,
+                "sms": False,
+                "postal": False
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            
+            if contact_methods:
+                contact_methods_list = contact_methods.split(',')
+                for i in contact_methods_list:
+                    response[i] = True
 
-        user = CustomUser.objects.get(pk=userId)
-        contact_methods = user.contact_methods
+            response.update(socialMedia=user.social_media)
 
-        response = {
-            "email": False,
-            "phone": False,
-            "sms": False,
-            "postal": False
-        }
-           
-        if contact_methods:
-            contact_methods_list = contact_methods.split(',')
-            for i in contact_methods_list:
-                response[i] = True
-
-        response.update(socialMedia=user.social_media)
-
-        # print(response)
-        logger.info("Sending marketing settings response: {}".format(json.dumps(response)))
-        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+            # print(response)
+            logger.info("Sending marketing settings response: {}".format(json.dumps(response)))
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+        
+        except Exception as e:
+            logger.error("Error getting marketing for a user", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-        # print(data)
-        email = data['email']
-        phone = data['phone']
-        sms = data['sms']
-        postal_mail = data['postalMail']
-        social_media = data['socialMedia']
-        userId = data['userId']
 
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+        try:
+            data = json.loads(request.body)
+            # print(data)
+            email = data['email']
+            phone = data['phone']
+            sms = data['sms']
+            postal_mail = data['postalMail']
+            social_media = data['socialMedia']
+            userId = data['userId']
 
-        contact_methods = []
-        # print(email, phone, sms, postal_mail, social_media, userId)
-        if email is True:
-            contact_methods.append("email")
-        if phone is True:
-            contact_methods.append("phone")
-        if sms is True:
-            contact_methods.append("sms")
-        if postal_mail is True:
-            contact_methods.append("postal")
-        
-        contact_methods_str = ''
-        contact_methods_str = ','.join(str(i) for i in contact_methods)
+            user = CustomUser.objects.get(pk=userId)
 
-        # print(contact_methods_str)
-        # print(social_media)
-        user = CustomUser.objects.get(pk=userId)
-        user.social_media = social_media
-        user.contact_methods = contact_methods_str
-        user.save()
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {}
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
-        logger.info("Marketing settings for user: {}".format(str(user.username)))
-        logger.info("Email: {}, Phone: {}, SMS: {}, Mail: {}, Social Media: {}".format(email, phone, sms, postal_mail, social_media))
+            contact_methods = []
+            # print(email, phone, sms, postal_mail, social_media, userId)
+            if email:
+                contact_methods.append("email")
+            if phone:
+                contact_methods.append("phone")
+            if sms:
+                contact_methods.append("sms")
+            if postal_mail:
+                contact_methods.append("postal")
+            
+            contact_methods_str = ''
+            contact_methods_str = ','.join(str(i) for i in contact_methods)
 
-        return HttpResponse(('Successfully set the marketing setting'), status = 200)
+            # print(contact_methods_str)
+            # print(social_media)
+            user.social_media = social_media
+            user.contact_methods = contact_methods_str
+            user.save()
+
+            logger.info("Marketing settings for user: {}".format(str(user.username)))
+            logger.info("Email: {}, Phone: {}, SMS: {}, Mail: {}, Social Media: {}".format(email, phone, sms, postal_mail, social_media))
+
+            return HttpResponse(('Successfully set the marketing setting'), status=200)
+
+        except Exception as e:
+            logger.error("Error setting marketing for a user", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 
 class PrivacySettings(View):
 
     def get(self, request, *args, **kwargs):
-        userId = request.GET['userId']
 
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
+        try:
+            userId = request.GET['userId']
+            user = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {}
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            
+            
+            response = {
+                "bonus": user.bonusesProgram,
+                "vip": user.vipProgram
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
-        
-        user = CustomUser.objects.get(pk=userId)
-        response = {
-            "bonus": user.bonusesProgram,
-            "vip": user.vipProgram
-        }
 
-        logger.info("Sending privacy settings response: {}".format(json.dumps(response)))
-        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+            logger.info("Sending privacy settings response: {}".format(json.dumps(response)))
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+        except Exception as e:
+            logger.error("Error getting privacy setting for a user", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
 
-        bonuses = data['bonuses']
-        vip = data['vip']
-        userId = data['userId']
+        try:
+            data = json.loads(request.body)
 
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            bonuses = data['bonuses']
+            vip = data['vip']
+            userId = data['userId']
 
-        user = CustomUser.objects.get(pk=userId)
-        user.bonusesProgram = bonuses
-        user.vipProgram = vip
-        user.save()
+            user = CustomUser.objects.get(pk=userId)
 
-        logger.info("Privacy setting for user: {}".format(str(user.username)))
-        logger.info("Bonuses: {}, VIP: {}".format(bonuses, vip))
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {}
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            
+            user.bonusesProgram = bonuses
+            user.vipProgram = vip
+            user.save()
 
-        return HttpResponse(('Successfully set the privacy setting'), status = 200)
+            logger.info("Privacy setting for user: {}".format(str(user.username)))
+            logger.info("Bonuses: {}, VIP: {}".format(bonuses, vip))
+
+            return HttpResponse(('Successfully set the privacy setting'), status=200)
+
+        except Exception as e:
+            logger.error("Error getting privacy setting for a user", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetBetHistory(View):
 
-    #permission_classes = (IsAuthenticated, )
     def get(self, request, *args, **kwargs):
-        user_name = request.GET['username']
-        bet = GameRequestsModel.objects.filter(MemberID=user_name)
-        #print(bet)
-        response = {
-            "bet": list(bet.values())
-        }
-        
-        return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+        try:
+            user_name = request.GET['username']
+            user = CustomUser.objects.get(username=user_name)
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {}
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+            bet = GameRequestsModel.objects.filter(MemberID=user_name)
+            #print(bet)
+            response = {
+                "bet": list(bet.values())
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json',status=200)
+
+        except Exception as e:
+            logger.error("Error getting bet history for a user", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class ActivityCheckSetting(View):
 
 
     def get(self, request, *args, **kwargs):
-        userId= request.GET['userId']
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data = {}
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
+
+        try:
+            userId= request.GET['userId']
+            user = CustomUser.objects.get(pk=userId)
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {}
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+
+            response = {
+                "activityOpt": user.activity_check
             }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
-        user = CustomUser.objects.get(pk=userId)
-
-        response = {
-            "activityOpt": user.activity_check
-        }
-
-        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+        
+        except Exception as e:
+            logger.error("Error getting privacy setting for a user", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-        userId = data['userId']
-        activityOpt = data['activityOpt']
 
-        if checkUserBlock(userId):
-            data = {}
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
-            }
-            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            activityOpt = data['activityOpt']
 
-        user = CustomUser.objects.get(pk=userId)
-        user.activity_check = activityOpt
-        user.save()
-        logger.info("Activity check setting for user: {}, and time option is: {}".format(str(user.username), activityOpt))
+            user = CustomUser.objects.get(pk=userId)
+            if checkUserBlock(user):
+                data = {}
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
 
-        return HttpResponse(('Successfully set the activity check setting'), status = 200)
+            user.activity_check = activityOpt
+            user.save()
+            logger.info("Activity check setting for user: {}, and time option is: {}".format(str(user.username), activityOpt))
+
+            return HttpResponse(('Successfully set the activity check setting'), status=200)
+        
+        except Exception as e:
+            logger.error("Error from setting privacy", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 
 class CheckUserStatusAPI(View):
 
     def get(self, request, *args, **kwargs):
-        userId = request.GET['userId']
-        data = {
-            "errorCode": ERROR_CODE_SUCCESS,
-            "errorMsg": _("Success")
-        }
-        if checkUserBlock(userId):
-            errorMessage = _('The current user is blocked!')
-            data["errorCode"] = ERROR_CODE_BLOCK
-            data["errorMsg"] = {
-                "detail": [errorMessage]
+
+        try:
+            userId = request.GET['userId']
+            data = {
+                "errorCode": CODE_SUCCESS,
+                "errorMsg": _("Success")
             }
-        return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+            user = CustomUser.objects.get(pk=userId)
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data["errorCode"] = ERROR_CODE_BLOCK
+                data["errorMsg"] = {
+                    "detail": [errorMessage]
+                }
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
+        
+        except Exception as e:
+            logger.error("Error from setting privacy", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+
+class AllSecurityQuestion(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            data = []
+            for question in SECURITY_QUESTION:
+                data.append({"value": question[0], "question": question[1]})
+
+            logger.info("Sending all security question options response......... ")
+            return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
+
+        except:
+            logger.error("Error getting all security question options: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    
+
+class UserSecurityQuestion(View):
+
+    def get(self, request, *args, **kwargs):
+        
+        try:
+            userId = request.GET.get('userId')
+            user = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
+            
+            if user.security_question:
+                data = {
+                    "value": user.security_question,
+                    "question": str(dict(SECURITY_QUESTION).get(user.security_question))
+                }
+            else: 
+                data = {
+                    "errorCode": ERROR_CODE_EMPTY_RESULT,
+                    "errorMessage": "You should set the security question"
+                }
+
+            return HttpResponse(json.dumps(data), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Error getting security question for a user: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            question = data['question']
+            answer = data['answer']
+            user = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
+
+            user.security_question = question
+            user.security_answer = answer
+            user.save()
+
+            response = {
+                "code": CODE_SUCCESS,
+                "message": "Successfully set the security Question"
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Error setting security questions: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+class SetWithdrawPassword(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        try:
+            data = json.loads(request.body)
+            userId = data['userId'] 
+            withdrawPassword = data['withdrawPassword']
+            customUser = CustomUser.objects.get(pk=userId)
+            print(customUser)
+            if checkUserBlock(customUser):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
+
+            if customUser.withdraw_password:
+                response = {
+                    "code": ERROR_CODE_INVALID_INFO,
+                    "message": "You already setting the withdraw password"
+                }
+                logger.info("Already setting the withdraw password: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
+            customUser.withdraw_password = make_password(withdrawPassword)
+            customUser.save()
+
+            response = {
+                "code": CODE_SUCCESS,
+                "message": "Successfully set the withdraw password"
+            }
+
+            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
+            return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
+
+        except Exception as e:
+            logger.error("Error setting withdraw password: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResetWithdrawPassword(View):
+
+    def post(self, request, *args, **kwargs):
+
+        response = {
+            "code": 0,
+            "message": ""
+        }
+        
+        try:
+            data = json.loads(request.body)
+            userId = data['userId']
+            oldWithdrawPassword = data['oldWithdrawPassword']
+            newWithdrawPassword = data['newWithdrawPassword']
+            customUser = CustomUser.objects.get(pk=userId)
+
+            if checkUserBlock(customUser):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json')
+
+            if customUser.withdraw_password and check_password(oldWithdrawPassword, customUser.withdraw_password):
+                hashPassword = make_password(newWithdrawPassword)
+                customUser.withdraw_password = hashPassword
+                customUser.save()
+            elif not check_password(oldWithdrawPassword, customUser.withdraw_password):
+                response['code'] = ERROR_CODE_INVALID_INFO
+                response['message'] = "The password you have entered does not match your current one."
+                logger.info("The password you have entered does not match your current one: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+            else:
+                response['code'] = ERROR_CODE_EMPTY_RESULT
+                response['message'] = "You should set the password first"
+                logger.info("You should set the withdraw password first: {}".format(customUser.username))
+                return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+            
+            response['code'] = CODE_SUCCESS
+            response['message'] = "Successfully set the withdraw password"
+
+            logger.info("Finished set the {} withdraw password.........".format(customUser.username))
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+        except Exception as e:
+            logger.error("Error resetting withdraw password: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
