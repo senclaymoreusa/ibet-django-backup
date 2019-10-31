@@ -34,6 +34,7 @@ urlpatterns = [
     # Play n Go
     path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
+    path('api/playngo/reserve/', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
 
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),

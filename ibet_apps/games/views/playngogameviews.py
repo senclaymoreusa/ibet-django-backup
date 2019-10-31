@@ -171,3 +171,62 @@ class BalanceView(View):
         except Exception as e:
             logger.error("PLAY'nGO BalanceView Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReserveView(View):
+    
+    def post(self, request, *args, **kwargs):
+        """
+        The Reserve call makes a request to the Operator Account System to deduct a bet amount from
+        the user's wallet. XML is the data format that this endpoint receives and responds with.
+        """
+        data = request.body
+
+        try:
+            # Extract data fields from request XML
+            req_dict = xmltodict.parse(data)
+
+            username = req_dict['reserve']['externalId']
+            bet_amount_str = req_dict['reserve']['real']
+            
+            user = CustomUser.objects.get(username=username)
+            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
+            bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
+
+
+
+
+
+            print("")
+            print(type(user_balance))
+            print(str(user_balance))
+            print(type(bet_amount_decimal))
+            print(str(bet_amount_decimal))
+            print("")
+
+
+            # TODO: 
+            # Add entry into GameBet model
+
+            if user_balance >= bet_amount_decimal:
+                # Bet can go through 
+                balance_after_bet = user_balance - bet_amount_decimal
+                user.main_wallet = balance_after_bet
+                user.save()
+
+            else:
+                # Insufficient funds
+                print("Error: Bet amount exceeds wallet balance!")
+
+
+
+
+
+
+
+
+            return HttpResponse("testing ReserveView...")
+
+        except Exception as e:
+            print("PLAY'nGO ReserveView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
