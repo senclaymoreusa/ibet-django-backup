@@ -21,16 +21,34 @@ import uuid
 from  games.models import *
 import json
 
+from Crypto.Cipher import DES3
+import base64
+
 
 logger = logging.getLogger('django')
 
+def pad(m):
+    return m+chr(16-len(m)%16)*(16-len(m)%16)
 
 class InplayLoginAPI(View):
     def post(self, request, *arg, **kwargs):
-        user = 'Bobby'
-        time_stamp = datetime.now()
-        print(time_stamp)
-        return HttpResponse(status=200)
+        try:
+            user = 'Bobby'
+
+            key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
+
+            cipher = DES3.new(key, DES3.MODE_ECB)
+            time_stamp = datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+            print(time_stamp)
+
+            time_stamp = cipher.encrypt(pad(time_stamp))
+            time_stamp = base64.b64encode(time_stamp)
+            time_stamp = str(time_stamp, "utf-8")
+            print(time_stamp)
+
+            return HttpResponse(status=200)
+        except Exception as e:
+            print("Error:", repr(e))
 
 
 class InplayGetBalanceAPI(View):
