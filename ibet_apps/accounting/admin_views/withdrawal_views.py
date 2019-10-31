@@ -31,7 +31,7 @@ class GetWithdrawals(CommAdminView):
         page = int(page)
         txn_type = Q(transaction_type=TRANSACTION_WITHDRAWAL)
 
-        all_transactions = Transaction.objects.filter(txn_type).order_by('-request_time')
+        all_transactions = Transaction.objects.select_related('user_id').filter(txn_type).order_by('-request_time')
         # filter by status
         if status and status != 'all':
             all_transactions = filterByStatus(status, all_transactions)
@@ -88,6 +88,11 @@ class GetWithdrawals(CommAdminView):
             trans_data["note"] = trans.remark
             trans_data["pk"] = trans.pk
             trans_data["status"] = trans.get_status_display()
+
+            trans_data["risk_level"] = trans.user_id.get_risk_level_display()
+            # trans_data["player_segment"] = trans.user_id.player_segment
+            trans_data["user_status"] = trans.user_id.get_member_status_display()
+            
             txn_data.append(trans_data)
 
         context['transactions'] = txn_data  # array of txn objects

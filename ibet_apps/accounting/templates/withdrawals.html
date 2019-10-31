@@ -242,13 +242,16 @@
                                     style="width: 100%; margin-top: 10px; margin-bottom: 40px">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
+                                            {#                                        <th scope="col">#</th>#}
+                                            <th scope="col">PAYMENT</th>
                                             <th scope="col">TRANSACTION NO.</th>
-                                            <th scope="col">APPLICATION TIME</th>
+                                            <th scope="col">CREATED TIME</th>
                                             <th scope="col">BANK</th>
+                                            <th scope="col">BRANCH</th>
                                             <th scope="col">CITY</th>
                                             <th scope="col">NAME</th>
                                             <th scope="col">ACCOUNT</th>
+                                            <th scope="col">PROVIDER REF NO.</th>
                                             <th scope="col">AMOUNT</th>
                                             <th scope="col">STATUS</th>
                                         </tr>
@@ -433,10 +436,11 @@
             let row = $(this).closest('tr');
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
+            console.log(data);
             // transaction pk: data[12]
             // bank account: data[13]
-            // showTransactionDetail(data);
-            showWithdrawDetail(data);
+            showTransactionDetail(data);
+            // showWithdrawDetail(data);
             // showBankDetail(data);
             var user_id = data[0];
             $.when(
@@ -489,8 +493,8 @@
         }
 
         function addWithdrawRecord(data, trans_pk, index) {
-            let depositArea = $("#latest_deposits");
-            depositArea.empty();
+            let txnArea = $("#latest_withdraws");
+            txnArea.empty();
             let content = "";
             for (let i = 0; i < data[0].length; i++) {
                 content += '<tr>';
@@ -508,7 +512,7 @@
                 content += '<td>' + data[0][i].status + '</td>';
                 content += '</tr>'
             }
-            depositArea.append(content);
+            txnArea.append(content);
             $("#wtd_trans_no").val(trans_pk);
             // $("#wtd_row_no").val(index);
         }
@@ -539,11 +543,11 @@
             $("#trans_withdraw_detail").empty();
             var content = "";
             // tran no.
-            content += "<p id='transaction_id'>" + data[3] + "</p>";
+            content += "<p id='transaction_id'>" + data[7] + "</p>";
             // application time
             content += "<p>" + data[9] + "</p>";
             // amount
-            content += "<p>" + data[8] + "</p>";
+            content += "<p>" + data[12] + "</p>";
             $("#trans_withdraw_detail").append(content);
         }
 

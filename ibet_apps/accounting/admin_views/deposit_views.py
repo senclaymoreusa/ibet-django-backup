@@ -98,7 +98,6 @@ class GetDeposits(CommAdminView):
 
             txn_data.append(trans_data)
 
-            
         context['transactions'] = txn_data  # array of txn objects
 
         return render(request, 'deposits.html', context=context, content_type="text/html; charset=utf-8")

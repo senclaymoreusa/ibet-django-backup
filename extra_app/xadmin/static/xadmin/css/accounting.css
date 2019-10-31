@@ -38,7 +38,8 @@ table.dataTable {
 }
 
 #deposits-section table thead tr th,
-#latest_deposit table thead tr th {
+#latest_deposit table thead tr th,
+#latest_withdraw table thead tr th {
     font-family: Helvetica;
     font-size: 11px;
     font-weight: normal;
@@ -50,7 +51,8 @@ table.dataTable {
 }
 /*datatable table tbody tr td {*/
 #deposits-section table tbody tr td,
-#latest_deposit table tbody tr td {
+#latest_deposit table tbody tr td,
+#latest_withdraw table thead tr td {
     font-family: Helvetica;
     font-size: 14px;
     font-weight: normal;
