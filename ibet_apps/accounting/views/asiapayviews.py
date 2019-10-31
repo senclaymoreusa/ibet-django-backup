@@ -106,7 +106,7 @@ class submitDeposit(generics.GenericAPIView):
         RealName = self.request.POST.get("RealName")
         logger.info(SignCode)
         logger.info(MD5(SignCode))
-        if checkUserBlock(user.pk):
+        if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -278,7 +278,7 @@ class submitCashout(generics.GenericAPIView):
         logger.info(SignCode)
         currency = self.request.POST.get("currency")
         cashoutMethod = self.request.POST.get("cashoutMethod")
-        if checkUserBlock(user.pk):
+        if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,

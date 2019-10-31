@@ -154,11 +154,12 @@ class LiveDealerSoapService(ServiceBase):
         userId = request.userId
         loginToken = request.loginToken
         currency = request.currency
+        res = Container()
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet
             token = Token.objects.get(user=user)
-            res = Container()
+            
 
             res.StatusCode = 0
             res.UserBalance = userBalance
@@ -167,15 +168,16 @@ class LiveDealerSoapService(ServiceBase):
         except ObjectDoesNotExist as e:
             # raise ObjectNotFoundError(e)
             res.StatusCode = -1
-            res.UserBalance = userBalance
+            res.UserBalance = 0
             return res
 
     @rpc(DebitRequest, _body_style='bare', _returns=Container)
     def Debit(crx, request):
+        res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
             userBalance = user.main_wallet - request.amount
-            res = Container()
+            
             if userBalance > 0:
                 token = Token.objects.get(user=user)
                 user.main_wallet = userBalance
@@ -213,19 +215,20 @@ class LiveDealerSoapService(ServiceBase):
             
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
-            res.UserBalance = userBalance
+            res.UserBalance = 0
             return res
 
 
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
+        res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
             userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
-            res = Container()
+            
             CATEGORY = request.gameType
             if CATEGORY == '6':
                 category = 'Baccarat'
@@ -253,15 +256,16 @@ class LiveDealerSoapService(ServiceBase):
                 return res
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
-            res.UserBalance = userBalance
+            res.UserBalance = 0
             return res
     
     @rpc(TipRequest,_body_style='bare', _returns=Container)
     def Tip(crx, request):  
+        res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
             userBalance = user.main_wallet - request.amount
-            res = Container()
+            
             if userBalance > 0:
                 token = Token.objects.get(user=user)
                 user.main_wallet = userBalance
@@ -290,18 +294,19 @@ class LiveDealerSoapService(ServiceBase):
                 return res 
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
-            res.UserBalance = userBalance
+            res.UserBalance = 0
             return res
     
     @rpc(CancelRequest,_body_style='bare', _returns=Container)
-    def Cancel(crx, request):  
+    def Cancel(crx, request): 
+        res = Container() 
         try:
             user = CustomUser.objects.get(username=request.userId)
             userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
             user.main_wallet = userBalance
             user.save()
-            res = Container()
+            
             
             try: 
                 record = GameBet.objects.get(ref_no=request.transactionId,
@@ -319,17 +324,18 @@ class LiveDealerSoapService(ServiceBase):
             
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
-            res.UserBalance = userBalance
+            res.UserBalance = 0
             return res
 
 class SlotSoapService(ServiceBase):
     @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
     def GetUserBalance(ctx, userId, currency):
+        res = Container()
         try:
             user = CustomUser.objects.get(username=userId)
             userBalance = user.main_wallet
             token = Token.objects.get(user=user)
-            res = Container()
+            
             res.StatusCode = 0
             res.UserBalance = userBalance
             return res

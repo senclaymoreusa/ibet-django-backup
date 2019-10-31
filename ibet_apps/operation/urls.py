@@ -4,15 +4,6 @@ from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
-    # path('api/games/', views.GameAPIListView.as_view(), name='api_games'),
-    # path('api/games-detail/', views.GameDetailAPIListView.as_view(), name='games_detail'),
-    # path('api/user/', views.UserDetailsView.as_view(), name='rest_user_details'),
-    # path('api/signup/', views.RegisterView.as_view(), name='api_register'),
-    # path('api/login/', views.LoginView.as_view(), name='api_login'),
-    # path('api/sendemail/', views.SendEmail.as_view(), name='sendemail'),
-    # path('api/reset-password/verify-token/', views.CustomPasswordTokenVerificationView.as_view(), name='password_reset_verify_token'),
-    # path('api/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
-    # path('api/language/', views.LanguageView.as_view(), name='language'),
     path('api/read_message/<int:pk>', csrf_exempt(views.NotificationUserIsReadAPI.as_view()), name="read_message"),
     path('api/delete_message/<int:pk>', csrf_exempt(views.NotificationUserIsDeleteAPI.as_view()), name="delete_message"),
     path('api/notification-detail/<int:pk>', views.NotificationDetailAPIView.as_view(), name='notification-detail'),
@@ -33,11 +24,4 @@ urlpatterns = [
     path('api/group-update/', views.MessageGroupUpdateAPI.as_view(), name='group-update'),
     path('api/user-valid/', views.UserIsValidAPI.as_view(), name='user-valid'),
     path('api/static-group-validation/', views.StaticGroupValidationAPI.as_view(), name='static-group-validation'),
-    # path('api/referral/', views.ReferralAward.as_view(), name='referral'),
-    # path('api/checkreferral/', views.CheckReferral.as_view(), name='checkreferral'),
-    # path('api/referraltree/', views.ReferralTree.as_view(), name='referraltree'),
-    # path('api/config/', views.Global.as_view(), name='config'),
-    # path('api/addbalance/', csrf_exempt(views.AddBalance.as_view()), name='add_balance'),
-    # path('api/activate/', csrf_exempt(views.Activation.as_view()), name='activate'),
-    # path('api/activate-verify/', csrf_exempt(views.ActivationVerify.as_view()), name='activate_verify')
 ]

@@ -1162,7 +1162,7 @@ PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 # Error code define
 CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
-ERROR_CODE_INVAILD_INFO = 101
+ERROR_CODE_INVALID_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
@@ -1292,3 +1292,6 @@ KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+
+# AllBet
+AB_URL = "https://platform-api.apidemo.net:8443/"

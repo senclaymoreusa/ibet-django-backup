@@ -51,7 +51,7 @@ def get_qr_code(request):
             "amount": amount,
             "merchant_name": PAYZOD_MERCHANT_NAME
         }
-        if checkUserBlock(CustomUser.objects.get(username=request.user.username).pk):
+        if checkUserBlock(CustomUser.objects.get(username=request.user.username)):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
