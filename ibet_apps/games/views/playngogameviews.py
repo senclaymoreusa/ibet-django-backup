@@ -4,6 +4,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework import status
 
 from users.models import CustomUser
+from games.models import GameBet
 
 import xmltodict
 import logging
@@ -196,7 +197,6 @@ class ReserveView(View):
 
 
 
-
             print("")
             print(type(user_balance))
             print(str(user_balance))
@@ -216,16 +216,33 @@ class ReserveView(View):
 
             else:
                 # Insufficient funds
-                print("Error: Bet amount exceeds wallet balance!")
+                return HttpResponse("Error: Bet amount exceeds wallet balance!")
+
+
+
+
+            # Compose response dictionary and convert to response XML
+            res_dict = {
+                "reserve": {
+                    "real": {
+                        "#text": str(user.main_wallet)
+                    },
+                    "currency": {
+                        "#text": ""
+                    },
+                    "statusCode": {
+                        "#text": ""
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            return HttpResponse(res_msg, content_type='text/xml')
 
 
 
 
 
-
-
-
-            return HttpResponse("testing ReserveView...")
 
         except Exception as e:
             print("PLAY'nGO ReserveView Error: " + str(e))
