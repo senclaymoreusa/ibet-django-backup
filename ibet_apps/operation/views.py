@@ -734,33 +734,37 @@ class MessageUserGroupView(CommAdminView):
 
         except Exception as e:
             logger.error("Group Error: %s", repr(e))
-            return HttpResponse(status=400)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 class StaticGroupValidationAPI(View):
     def get(self, request, *args, **kwargs):
-        group_type = request.GET.get("type")
-        valid_players = []
-        players = request.GET.get("players")
-        players = json.loads(players)
-        if group_type == "player":
-            for player in players:
-                player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
-                if len(player) > 0:
-                    valid_player = {}
-                    valid_player["id"] = player[0].pk
-                    valid_player["username"] = player[0].username
-                    valid_players.append(valid_player)
-        else:
-            for player in players:
-                affiliate = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1])&Q(user_to_affiliate_time__isnull=False))
-                if len(affiliate) > 0:
-                    valid_player = {}
-                    valid_player["id"] = affiliate[0].pk
-                    valid_player["username"] = affiliate[0].username
-                    valid_players.append(valid_player)
+        try:
+            group_type = request.GET.get("type")
+            valid_players = []
+            players = request.GET.get("players")
+            players = json.loads(players)
+            if group_type == "player":
+                for player in players:
+                    player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
+                    if len(player) > 0:
+                        valid_player = {}
+                        valid_player["id"] = player[0].pk
+                        valid_player["username"] = player[0].username
+                        valid_players.append(valid_player)
+            else:
+                for player in players:
+                    affiliate = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1])&Q(user_to_affiliate_time__isnull=False))
+                    if len(affiliate) > 0:
+                        valid_player = {}
+                        valid_player["id"] = affiliate[0].pk
+                        valid_player["username"] = affiliate[0].username
+                        valid_players.append(valid_player)
 
-        return HttpResponse(json.dumps(valid_players), content_type='application/json')
+            return HttpResponse(json.dumps(valid_players), content_type='application/json')
+        except Exception as e:
+            logger.error("CSV Format Invalid Error:", repr(e))
+            return HttpResponse(status=)
 
 
 class MessageGroupDetailAPI(View):
