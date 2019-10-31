@@ -34,6 +34,21 @@ class SessionCheck(APIView):
             logger.info(rr)
         return HttpResponse(rr) 
 
+class GetSessionKey(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        pk = request.GET['pk']
+        try:
+            user = FGSession.objects.get(user=pk)
+            data = {
+                "sessionKey" : user.session_key
+            }
+        except:
+            data = {
+                "sessionKey" : None
+            }
+        return HttpResponse(json.dumps(data),content_type='application/json',status=200)
+
 class FGLogin(APIView):
 
     permission_classes = (AllowAny, )
@@ -48,7 +63,7 @@ class FGLogin(APIView):
         rr = requests.get(FG_URL, params={
             "brandId": BRANDID,
             "brandPassword": BRAND_PASSWORD, 
-            "currency": currency,
+            "currency": "CNY",
             "uuid": uuid,
             "loginName": user.username
             })

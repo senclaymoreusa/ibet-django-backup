@@ -35,8 +35,10 @@ urlpatterns = [
     path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
 
+    # fg
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),
+    path('api/fg/getSessionKey', fggameviews.GetSessionKey.as_view(), name = 'fg_get_sessionkey' ),
     path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
