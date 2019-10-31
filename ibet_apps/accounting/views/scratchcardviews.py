@@ -45,7 +45,7 @@ def create_deposit(request):
         secret = bytes(SCRATCHCARD_CODE, 'utf-8')
         sign = hmac.new(secret, msg=message, digestmod=hashlib.sha256).hexdigest()
         trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
-        if checkUserBlock(CustomUser.objects.get(username=request.user.username).pk):
+        if checkUserBlock(CustomUser.objects.get(username=request.user.username)):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,

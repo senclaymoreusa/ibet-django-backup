@@ -26,6 +26,10 @@ from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys, getAWSClient
+from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
+from users.serializers import LazyEncoder
+
 
 logger = logging.getLogger('django')
 
@@ -1233,24 +1237,53 @@ def send_sms(content_text, notifier):
 
 class NotificationUserIsReadAPI(View):
     def post(self, request, *args, **kwargs):
-        notification_to_user_id = self.kwargs.get('pk')
-        message = NotificationToUsers.objects.get(pk=notification_to_user_id)
-        if message.is_read:
-            return HttpResponse(status=200)
-        else:
-            NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
-            return HttpResponse(status=201)
+        try:
+            notification_to_user_id = self.kwargs.get('pk')
+            message = NotificationToUsers.objects.get(pk=notification_to_user_id)
+            if checkUserBlock(message.notifier_id):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json', status=200)
+
+            message = NotificationToUsers.objects.get(pk=notification_to_user_id)
+            if message.is_read:
+                return HttpResponse(status=200)
+            else:
+                NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_read=True)
+                return HttpResponse(status=201)
+
+        except Exception as e:
+            logger.error("reading message error:", e)
+            return HttpResponse(status=400)
 
 
 class NotificationUserIsDeleteAPI(View):
     def post(self, request, *args, **kwargs):
-        notification_to_user_id = self.kwargs.get('pk')
         try:
-            NotificationToUsers.objects.filter(pk=notification_to_user_id).update(is_deleted=True)
+            notification_to_user_id = self.kwargs.get('pk')
+            message = NotificationToUsers.objects.get(pk=notification_to_user_id)
+            if checkUserBlock(message.notifier_id):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json', status=200)
+            
+            message.is_deleted = True
+            message.save()
+            return HttpResponse(status=200)
+            
         except Exception as e:
             logger.error("delete message error:", e)
-
-        return HttpResponse(status=200)
+            return HttpResponse(status=400)
 
 
 class NotificationsForUserAPIView(View):
@@ -1288,32 +1321,46 @@ class NotificationToUsersView(ListAPIView):
 
 class NotificationToUsersDetailView(View):
     def get(self, request, *args, **kwargs):
-        notifier_id = self.kwargs.get('pk')
+        try:
+            notifier_id = self.kwargs.get('pk')
 
-        response = []
-        # response['unread_list'] = []
-        # response['read_list'] = []
-        
-        message_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_deleted=False)).order_by('-pk')
+            response = []
+            # response['unread_list'] = []
+            # response['read_list'] = []
+            user = CustomUser.objects.get(pk=notifier_id)
+            if checkUserBlock(user):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type='application/json', status=200)
+            
+            message_list = NotificationToUsers.objects.filter(Q(notifier_id=notifier_id)&Q(is_deleted=False)).order_by('-pk')
 
-        for msg in message_list:
-            notification = Notification.objects.get(pk=msg.notification_id.pk)
-            message = {}
-            message["pk"] = msg.pk
-            message["subject"] = notification.subject
-            message["content"] = notification.content_text
-            publish_on_str = ''
-            if notification.publish_on:
-                current_tz = timezone.get_current_timezone()
-                publish_time = notification.publish_on.astimezone(current_tz)
-                publish_on_str = notification.publish_on.astimezone(current_tz).strftime("%b %d, %Y")
-            message["publish_on"] = publish_on_str
-            message["is_read"] = msg.is_read
-            message["is_deleted"] = False
-            response.append(message)
+            for msg in message_list:
+                notification = Notification.objects.get(pk=msg.notification_id.pk)
+                message = {}
+                message["pk"] = msg.pk
+                message["subject"] = notification.subject
+                message["content"] = notification.content_text
+                publish_on_str = ''
+                if notification.publish_on:
+                    current_tz = timezone.get_current_timezone()
+                    publish_time = notification.publish_on.astimezone(current_tz)
+                    publish_on_str = notification.publish_on.astimezone(current_tz).strftime("%b %d, %Y")
+                message["publish_on"] = publish_on_str
+                message["is_read"] = msg.is_read
+                message["is_deleted"] = False
+                response.append(message)
 
-        # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
-        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+            # logger.info('user: ', notifier_id, 'received messages: ',  json.dumps(response))
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+        except Exception as e:
+            logger.error("delete message error:", repr(e))
+            return HttpResponse(status=400)
 
 
 class NotificationToUsersUnreadCountView(ListAPIView):

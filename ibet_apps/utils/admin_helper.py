@@ -61,18 +61,83 @@ def calculateActiveDownlineNumber(affiliate_id):
                 affiliate_active_users += 1
     return affiliate_active_users
 
+'''
+@param date: mm/dd/yyyy
+@return: timezone datetime
+'''
+def dateToDatetime(date):
+    if date:
+        date = date.split('/')
+        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
+
+'''
+@param queryset: users
+@return: queryset of active users between start_time and end_time
+'''
+def filterActiveUser(queryset, start_time, end_time):
+    # get bet transaction in this period
+    if start_time and end_time:
+        game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
+    elif start_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__gte=start_time)
+    elif end_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
+    else:
+        game_bet_tran = GameBet.objects.all()
+
+    active_user_list = game_bet_tran.values_list('username', flat=True)
+    if queryset:
+        queryset = queryset.filter(pk__in=active_user_list)
+    return queryset
+
 
 # calculate ftd user number in certain user_group within certain time range
-def calculateFTD(user_group, start_date, end_date):
+def calculateFTD(user_group, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
-    ftd = user_group.filter(Q(ftd_time__gte=start_date)
-                            & Q(ftd_time__lte=end_date)).count()
+    ftd = user_group.filter(Q(ftd_time__gte=start_time)
+                            & Q(ftd_time__lte=end_time)).count()
     return ftd
 
 
-def calculateTurnover(user):
+# TODO: functions need to be updated
+def calculateTurnover(user, start_time, end_time):
     return 0
+
+
+def calculateGGR(user, start_time, end_time):
+    return 0
+
+
+def calculateDeposit(user, start_time, end_time):
+    count = 0
+    amount = 0
+    return count, amount
+
+
+def calculateWithdrawal(user, start_time, end_time):
+    count = 0
+    amount = 0
+    return count, amount
+
+
+def calculateBonus(user, start_time, end_time):
+    return 0
+
+
+def calculateNGR(user, start_time, end_time):
+    return 0
+
+
+def calculateAdjustment(user, start_time, end_time):
+    return 0
+
+
+def getUserBalance(user):
+    return user.main_wallet
 
 
 # USER SYSTEM
@@ -168,39 +233,3 @@ def utcToLocalDatetime(date):
         date = date.astimezone(current_tz)
     return date
 
-
-# TODO: functions need to be updated
-def calculateTurnover(user, start_time, end_time):
-    return 0
-
-
-def calculateGGR(user, start_time, end_time):
-    return 0
-
-
-def calculateDeposit(user, start_time, end_time):
-    count = 0
-    amount = 0
-    return count, amount
-
-
-def calculateWithdrawal(user, start_time, end_time):
-    count = 0
-    amount = 0
-    return count, amount
-
-
-def calculateBonus(user, start_time, end_time):
-    return 0
-
-
-def calculateNGR(user, start_time, end_time):
-    return 0
-
-
-def calculateAdjustment(user, start_time, end_time):
-    return 0
-
-
-def getUserBalance(user):
-    return user.main_wallet
