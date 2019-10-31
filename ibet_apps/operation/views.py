@@ -566,6 +566,7 @@ class MessageUserGroupView(CommAdminView):
                 group_item = {}
                 group_item['pk'] = group.pk
                 group_item['name'] = group.name
+                group_item['is_static'] = group.is_static
                 group_item['is_player'] = group.is_player
                 group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
                 group_item['time_used'] = group.time_used
@@ -724,6 +725,7 @@ class MessageUserGroupView(CommAdminView):
             elif postType == "delete_group":
                 group_name = request.POST.get('group_name')
                 UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
+                logger.info("Deleted group: ", group_name)
                 return HttpResponse("success delete")
 
         except Exception as e:
