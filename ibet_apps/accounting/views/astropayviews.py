@@ -75,7 +75,7 @@ def astroNewInvoice(request):
         "x_email":email,
         "control":my_hmac,
     }
-    if checkUserBlock(user.pk):
+    if checkUserBlock(user):
         errorMessage = _('The current user is blocked!')
         data = {
             "errorCode": ERROR_CODE_BLOCK,

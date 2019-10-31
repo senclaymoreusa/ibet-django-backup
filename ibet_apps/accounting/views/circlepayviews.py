@@ -32,7 +32,7 @@ def create_deposit(request):
     
     if request.method == "POST":  # can only allow post requests
         user_id = CustomUser.objects.get(username=request.user.username)
-        if checkUserBlock(user_id.pk):
+        if checkUserBlock(user_id):
                 errorMessage = _('The current user is blocked!')
                 data = {
                     "errorCode": ERROR_CODE_BLOCK,

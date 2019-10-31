@@ -3,7 +3,7 @@ import logging
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
-from games.models import Game
+from games.models import Game, GameProvider
 from users.serializers import GameSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -80,38 +80,46 @@ class GamesSearchView(View):
                 gameFilter = gameFilter & Q(category_id__name__iexact=category)
             logger.info("Filter by game category: " + str(gameType))
 
-        providerFilter = Q()
-        if provider:
-            for provider in providerList:
-                # print('provider: ' + str(provider))
-                for gameProvider in GAME_PROVIDERS:
-                    name = gameProvider[1]
-                    if provider.lower() == name.lower():
-                        providerFilter = providerFilter | Q(provider=gameProvider[0])
-                    else:
-                        providerFilter = providerFilter | Q(provider=-1)
+        # providerFilter = Q()
+        # if provider:
+        #     gameFilter |= (
+        #         Q(provider__provider_name__icontains=q)
+            # all_providers = GameProvider.objects.all()
+            # for each_provider in providerList:
+            #     # print('provider: ' + str(provider))
+            #     for gameProvider in GAME_PROVIDERS:
+            #         name = gameProvider[1]
+            #         if provider.lower() == name.lower():
+            #             providerFilter = providerFilter | Q(provider=gameProvider[0])
+            #         else:
+            #             providerFilter = providerFilter | Q(provider=-1)
+            # GameProvider.objects.all()
 
-        gameFilter = gameFilter & providerFilter
+
+        # gameFilter = gameFilter & providerFilter
+        if provider:
+            gameFilter |= (
+                Q(provider__provider_name__icontains=q)
+            )
 
         for attr in attributeList:
             gameFilter = gameFilter & Q(attribute__icontains=attr)
             logger.info("Filter by attributes: " + str(attr)) 
 
         if sort == 'popularity':
-            data = Game.objects.filter(filter).order_by('-popularity')
+            data = Game.objects.filter(gameFilter).order_by('-popularity')
             logger.info("Order list of games by: popularity") 
         elif sort == 'jackpot-size-asc':
-            data = Game.objects.filter(filter).order_by(F('jackpot_size').asc(nulls_last=True))
+            data = Game.objects.filter(gameFilter).order_by(F('jackpot_size').asc(nulls_last=True))
             logger.info("Order list of games by: jackpot size asc") 
         elif sort == 'jackpot-size-desc':
-            data = Game.objects.filter(filter).order_by(F('jackpot_size').desc(nulls_last=True))
+            data = Game.objects.filter(gameFilter).order_by(F('jackpot_size').desc(nulls_last=True))
             logger.info("Order list of games by: jackpot size desc") 
         else:
-            data = Game.objects.filter(filter).order_by('name')
+            data = Game.objects.filter(gameFilter).order_by('name')
             logger.info("Re-order list of games alphabetically by name") 
         
-        print("games found")
-        print(data)
+        
         if not data:
             logger.info('Search q did not match any categories or token')
         
