@@ -152,7 +152,7 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CURRENCY_TYPES, blank=True, default='USD')
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True,default=0)
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
