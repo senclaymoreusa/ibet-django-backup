@@ -76,7 +76,4 @@ django-user-agents==0.4.0
 django-ckeditor==5.7.1 
 pyDes==2.0.1
 redis==3.3.11
-<<<<<<< HEAD
-=======
 spyne==2.13.2a0
->>>>>>> 7677374718236445339267871e60c2e48d165740
