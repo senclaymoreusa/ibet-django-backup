@@ -764,7 +764,7 @@ class StaticGroupValidationAPI(View):
             return HttpResponse(json.dumps(valid_players), content_type='application/json')
         except Exception as e:
             logger.error("CSV Format Invalid Error:", repr(e))
-            return HttpResponse(status=)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 class MessageGroupDetailAPI(View):
