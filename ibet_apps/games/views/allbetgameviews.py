@@ -43,14 +43,10 @@ class EncryptionView(View):
     endpoint = AB_URL + "query_agent_handicaps"
 
 
-    def threeDES(self):
+    def threeDES(self, query_string):
         """
         Encrypts key-value pairs using 3DES cipher
         """
-        secure_random_number = secrets.randbits(32) # 32-bit random integer
-
-        query_string = "agent=" + self.agent_name + "&random=" + str(secure_random_number)
-
         # Convert provided key and IV from base64 to bytes. 
         byte_key = base64.b64decode(self.AB_DES_KEY)
         byte_iv = base64.b64decode(self.AB_BASE64_IV)
@@ -88,7 +84,10 @@ class EncryptionView(View):
         JSON response sent by AllBet API.
         """
         try:
-            data_string = self.threeDES()
+            secure_random_number = secrets.randbits(32) # 32-bit random integer
+            query_string = "agent=" + self.agent_name + "&random=" + str(secure_random_number)
+
+            data_string = self.threeDES(query_string)
             sign_string = self.md5(data_string)
 
             # Create encoded URL parameters.
