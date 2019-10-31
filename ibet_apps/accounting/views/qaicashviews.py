@@ -21,7 +21,7 @@ from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from utils.helpers import addOrWithdrawBalance
-
+from django.utils.translation import ugettext_lazy as _
 from time import sleep, gmtime, strftime
 from users.views.helper import *
 
