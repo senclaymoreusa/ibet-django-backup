@@ -181,7 +181,7 @@
                         Withdrawal request details
                     </div>
                     <div class="modal-body">
-                        <form action="{% url 'xadmin:modify_withdrawal' %}" method="POST">
+                        <form action="/" method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="type" value="audit_withdraw"></input>
                             <input type="hidden" id="wtd_trans_no" name="wtd_trans_no"></input>
@@ -321,8 +321,9 @@
                 </div>
             </div>
         </div>
-    </div>
+        
 </div>
+
 
 <!-- datatables -->
 <!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->

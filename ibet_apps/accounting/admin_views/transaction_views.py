@@ -18,14 +18,7 @@ import pytz
 logger = logging.getLogger("django")
 
 
-# class TestView(CommAdminView):
-#     def get(self, request, type, page):
-#         if type == "deposits":
-#             return render(request, 'deposits.html')
-#         else:
-#             return render(request, 'withdrawals.html')
 
-# class GetDeposits(CommAdminView):
 class GetTransactions(CommAdminView):
     def get(self, request, txn_type, page=0):
         context = super().get_context()
@@ -80,8 +73,8 @@ class GetTransactions(CommAdminView):
 
         if page > txn_count // 20:
             raise Http404("This page does not exist")
-
-        context['title'] = "Withdrawals"
+        
+        context['title'] = "Accounting Admin"
         context['time'] = timezone.now()
 
         txn_data = []
@@ -120,7 +113,7 @@ def filterByStatus(status, transactions):
 
     return all_transactions
 
-
+# 
 class ConfirmSettlement(CommAdminView):
     def post(self, request):
         txn_pk = request.POST.get("dep_trans_no")
@@ -138,10 +131,20 @@ class ConfirmSettlement(CommAdminView):
         current_deposit.save()
         return HttpResponse(status=200)
 
+# change status from review to either 1) rejected 2) approved/pending
+class RiskReview(CommAdminView):
+    def post(self, request):
+        pass
+
+# modify success to failure or vice-versa (and modify amount?)
+class OverrideTransaction(CommAdminView):
+    def post(self, request):
+        pass
+
+# get user details for modal
 class UserInfo(CommAdminView):
     def get(self, request):
         user_id = request.GET.get("user")
-
         user = CustomUser.objects.get(pk=user_id)
         logger.info("Get user" + str(user))
         response_data = {
@@ -157,6 +160,7 @@ class UserInfo(CommAdminView):
             json.dumps(response_data), content_type="application/json"
         )
 
+# get latest txns by specific user for modal
 class GetLatestTransactions(CommAdminView):
     def get(self, request):
         get_type = request.GET.get("type")

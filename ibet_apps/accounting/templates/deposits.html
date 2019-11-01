@@ -93,7 +93,7 @@
                     <col style="width: 100px"> <!--  // -->
                     <col style="width: 85px">  <!-- // -->
                     <col style="width: 78px">  <!-- // -->
-                    <col style="width: 70px">  <!-- // -->
+                    <col style="width: 90px">  <!-- // -->
                 </colgroup>
                 <thead>
                     <tr>
@@ -134,17 +134,24 @@
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
-                        {% if tran.status == 'Created' %}
-{#                        {% if tran.method == 'ALIPAY' and tran.status == 'Pending' %}#}
-                        <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                                data-target="#audit_deposit"><span
-                                class="glyphicon glyphicon-search"></span></button></td>
+                        {#{% if tran.status == 'Created' %}#}
+                        {# {% if tran.method == "Local Bank Transfer" and tran.status =='Pending'%} #}
+                        {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
+                        <td>
+                            <button id="edit-pending-detail-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                <!-- <span class="glyphicon glyphicon-search"></span> -->
+                                Confirm
+                            </button>
+                        </td>
                         
                         {% endif %}
                         {% if tran.status == 'Success' %}
                             {#{% if tran.method == "Local Bank Transfer" %}#}
-                        <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                            data-target="#override_deposit">Override</button></td>
+                        <td>
+                            <button id="edit-pending-detail-btn" type="button" data-toggle="modal" data-target="#override_deposit">
+                                Override
+                            </button>
+                        </td>
                             {#{% endif %}#}
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
@@ -171,7 +178,7 @@
         </div>
     </div>
 
-    <!-- audit popup window -->
+    <!-- audit/confirm settlement modal -->
     <div class="modal fade" id="audit_deposit" role="dialog">
         <div id="deposit_request_pop" class="modal-dialog">
             <!-- Modal content-->
@@ -287,6 +294,7 @@
         </div>
     </div>
 
+    <!-- override txn modal -->
     <div class="modal fade" id="override_deposit" role="dialog">
         <div id="override" class="modal-dialog">
                 <!-- Modal content-->
@@ -362,11 +370,12 @@
         }
     }
     function initEventHandlers() {
+        const BASEURL = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}";
         // filter by status
         $('#status-filter').on('change', function(event) {
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
-            window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}?"+queryString.toString();
+            window.location = BASEURL+queryString.toString();
         });
 
         // for submitting a search
@@ -383,8 +392,8 @@
             if (fromDate) queryString.set('from', fromDate);
             if (toDate) queryString.set('to', toDate);
             // fetch data and redraw rows
-            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}?"+queryString.toString();
-            else window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}";
+            if (searchTerm || fromDate || toDate) window.location = BASEURL+queryString.toString();
+            else window.location = BASEURL;
         });
 
         $('#clear-search-btn').on('click', function() {

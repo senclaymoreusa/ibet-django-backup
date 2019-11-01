@@ -1,25 +1,18 @@
 import xadmin
 from xadmin.layout import Main, Side, Fieldset
 
-from .models import *
-# from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
-from .admin_views.deposit_views import *
-from .admin_views.psp_views import *
-from .admin_views.withdrawal_views import *
-from .admin_views.channel_list import *
-from .models import Transaction, DepositAccessManagement, DepositChannel, WithdrawAccessManagement, WithdrawChannel
-from .forms import DepositReviewForm, WithdrawReviewForm, TransactionForm
-from accounting.admin_views.deposit_views import *
-from accounting.admin_views.withdrawal_views import *
+
+from accounting.admin_views.transaction_views import *
+from accounting.admin_views.psp_views import *
 from accounting.admin_views.channel_list import *
 
 
 xadmin.site.register_view(r'user_info/', UserInfo, name='user_info')
 xadmin.site.register_view(r'(?P<txn_type>deposit|withdraw)/(?P<page>-?\d*)/$', GetTransactions, name='get_transactions')
-# xadmin.site.register_view(r'withdrawals/(?P<page>-?\d*)/$', GetWithdrawals, name='get_withdrawals')
-xadmin.site.register_view(r'withdrawals/modify/', ModifyWithdrawal, name='modify_withdrawal')
-# xadmin.site.register_view(r'deposits/(?P<page>-?\d*)/$', GetDeposits, name='get_deposits')
-xadmin.site.register_view(r'deposits/confirm', ConfirmSettlement, name='confirm_settlement')
+# xadmin.site.register_view(r'withdrawals/confirm/', ConfirmSettlement, name='confirm_settlement')
+xadmin.site.register_view(r'accounting/confirm', ConfirmSettlement, name='confirm_settlement')
+xadmin.site.register_view(r'accounting/review', RiskReview, name='risk_review')
+xadmin.site.register_view(r'accounting/override', OverrideTransaction, name='override_txn')
 xadmin.site.register_view(r'channel_list/$', ChannelListView, name='channel_list')
 xadmin.site.register_view(r'payment_config/', PaymentConfig, name='psp_config')
 xadmin.site.register_view(r'get_transactions/', GetLatestTransactions, name='get_latest_transactions')
