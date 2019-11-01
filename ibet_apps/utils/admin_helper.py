@@ -3,6 +3,7 @@ from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
+from datetime import date
 
 from users.models import CustomUser
 from accounting.models import Transaction
@@ -17,7 +18,7 @@ logger = logging.getLogger('django')
 users = CustomUser.objects.all()
 
 # date
-today = timezone.now()
+today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
 last_month = this_month + relativedelta(months=-1)
@@ -131,6 +132,17 @@ def calculateBonus(user, start_time, end_time):
 
 def calculateNGR(user, start_time, end_time):
     return 0
+
+
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
 
 
 # USER SYSTEM

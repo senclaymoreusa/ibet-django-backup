@@ -508,3 +508,7 @@ ul.ui-autocomplete {
 #add-level-btn, #system-commission-change, #system-commission-btn-group {
     margin: 20px;
 }
+
+table.table-bordered {
+    margin-top: 0px;
+}
