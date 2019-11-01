@@ -90,6 +90,7 @@ CURRENCY_XBT = 9
 CURRENCY_EUR = 10
 CURRENCY_NOK = 11
 CURRENCY_GBP = 12
+CURRENCY_TEST = 20
 
 CURRENCY_CHOICES = (
     (CURRENCY_CNY, 'CNY'),
@@ -104,7 +105,8 @@ CURRENCY_CHOICES = (
     (CURRENCY_XBT, 'XBT'),
     (CURRENCY_EUR, 'EUR'),
     (CURRENCY_NOK, 'NOK'),
-    (CURRENCY_GBP, 'GBP')
+    (CURRENCY_GBP, 'GBP'),
+    (CURRENCY_TEST, 'UUD'),
 )
 
 TRAN_SUCCESS_TYPE = 0
@@ -221,6 +223,9 @@ OUTCOME_CHOICES = [
     (1, 'Lose'),
     (2, 'Tie/Push'),
     (3, 'Void'),
+    (4, 'Running'),
+    (5, 'Draw'),
+    (6, 'Half lose'),
 ]
 
 ACTIVE_STATE = 0

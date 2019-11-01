@@ -46,7 +46,9 @@ urlpatterns = [
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
 
     #onebook
-    path('api/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
-    path('api/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
-    path('api/login', onebookviews.Login.as_view(), name="Login"),
+    path('api/onebook/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
+    path('api/onebook/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
+    path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
+    path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
+    path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
 ]
