@@ -1172,7 +1172,8 @@ ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
 ERROR_CODE_EMPTY_RESULT = 105
 ERROR_CODE_DATABASE = 106
-
+ERROR_CODE_FAIL = 107
+ERROR_CODE_DUPE = 108
 
 BONUS_TYPE_VERIFICATION = 0
 BONUS_TYPE_DEPOSIT = 1
@@ -1305,6 +1306,6 @@ ONEBOOK_MINTRANSFER = "10"
 ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
 ONEBOOK_DIRECTION_withdraw = 0
 ONEBOOK_DIRECTION_deposit = 1
-
+ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"

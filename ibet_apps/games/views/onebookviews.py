@@ -41,6 +41,68 @@ outcomeConversion = {
     "draw":5,
     "half lose":6,
 }
+def createMember(username, oddsType):
+    try:
+        user = CustomUser.objects.get(username=username)
+        if user.currency == CURRENCY_CNY:
+            currency = 13
+        elif user.currency == CURRENCY_USD:
+            currency = 3
+        elif user.currency == CURRENCY_THB:
+            currency = 4
+        elif user.currency == CURRENCY_EUR:
+            currency = 6
+        elif user.currency == CURRENCY_IDR:
+            currency = 15
+        elif user.currency == CURRENCY_VND:
+            currency = 51
+        elif user.currency == CURRENCY_TEST:
+            currency = 20
+
+        headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+        delay = 5
+        success = False
+        for x in range(3):
+            r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
+                "vendor_id": ONEBOOK_VENDORID,
+                "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                "OperatorId": ONEBOOK_OPERATORID,
+                "UserName": username + "_test",  #will remove _test when go production
+                "OddsType": oddsType,
+                "Currency": currency,
+                "MaxTransfer": ONEBOOK_MAXTRANSFER,
+                "MinTransfer": ONEBOOK_MINTRANSFER,
+            })
+            rdata = r.json()
+            print(rdata)
+            if r.status_code == 200:
+                success = True
+                break
+            elif r.status_code == 204:
+                success = True
+                # Handle error
+                logger.info("Failed to complete a request for createMember...")
+                logger.error(rdata)
+                return ERROR_CODE_FAIL
+            elif r.status_code == 500:
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
+                sleep(delay)
+        if not success:
+            return ERROR_CODE_FAIL
+        
+        if rdata['error_code'] == 0:
+            return CODE_SUCCESS
+        elif rdata['error_code'] == 2 or rdata['error_code'] == 6:
+            return ERROR_CODE_DUPE
+        else:
+            return ERROR_CODE_FAIL
+        
+    except ObjectDoesNotExist as e:
+        logger.error(e)
+        return ERROR_CODE_FAIL
+        
+
 
 class CreateMember(APIView):
     permission_classes = (AllowAny,)
@@ -92,6 +154,176 @@ class CreateMember(APIView):
         except ObjectDoesNotExist as e:
             return Response({"error":"The user is not existed."}) 
 
+def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
+    trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+    try:
+        user = CustomUser.objects.get(username=username)
+
+        if user.currency == CURRENCY_CNY:
+            currency = 13
+        elif user.currency == CURRENCY_USD:
+            currency = 3
+        elif user.currency == CURRENCY_THB:
+            currency = 4
+        elif user.currency == CURRENCY_EUR:
+            currency = 6
+        elif user.currency == CURRENCY_IDR:
+            currency = 15
+        elif user.currency == CURRENCY_VND:
+            currency = 51
+        elif user.currency == CURRENCY_TEST:
+            currency = 20
+ 
+        wallet_name = fund_wallet + "_wallet"  #for example: onebook_wallet
+        wallet = getattr(user, wallet_name)
+        if direction == '1' and wallet - amount < 0:
+        #deposit
+            logger.info('balance is not enough.')
+        else: 
+            headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+            delay = 5
+            success = False
+            username = user.username
+            for x in range(3):
+                r = requests.post(ONEBOOK_API_URL + "FundTransfer/", headers=headers, data={
+                    "vendor_id": ONEBOOK_VENDORID,
+                    "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                    "vendor_trans_id": trans_id,
+                    "amount": amount,
+                    "currency": currency,
+                    "direction":direction,
+                    "wallet_id":wallet_id,
+                })
+            
+                rdata = r.json()
+                print(rdata)
+                if r.status_code == 200:
+                    success = True
+                    break
+                elif r.status_code == 204:
+                    success = True
+                    # Handle error
+                    logger.info("Failed to complete a request for FundTransfer...")
+                    logger.error(rdata)
+                    return ERROR_CODE_FAIL
+                elif r.status_code == 500:
+                    logger.info("Request failed {} time(s)'.format(x+1)")
+                    logger.info("Waiting for %s seconds before retrying again")
+                    sleep(delay)
+            if not success:
+                return ERROR_CODE_FAIL
+            if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
+                # amount = Decimal(amount.replace(',',''))
+                if direction == '1':
+                    #deposit
+                    wallet = wallet - amount
+                    user.onebook_wallet = user.onebook_wallet + amount
+                    
+                    Transaction.objects.create(transaction_id=trans_id,
+                                            user_id=user,
+                                            order_id=trans_id,
+                                            amount=amount,
+                                            currency=user.currency,
+                                            transfer_from='Onebook',
+                                            transfer_to=fund_wallet,
+                                            product=0,
+                                            transaction_type=TRANSACTION_TRANSFER_OUT,
+                                            status=TRAN_SUCCESS_TYPE)
+                
+                elif direction == '0':
+                    #withdraw
+                    wallet = wallet + amount
+                    user.onebook_wallet = user.onebook_wallet - amount
+                    Transaction.objects.create(transaction_id=trans_id,
+                                            user_id=user,
+                                            order_id=trans_id,
+                                            amount=amount,
+                                            currency=user.currency,
+                                            transfer_from=fund_wallet,
+                                            transfer_to='Onebook',
+                                            product=0,
+                                            transaction_type=TRANSACTION_TRANSFER_IN,
+                                            status=TRAN_SUCCESS_TYPE)
+                user.save()
+            
+                return CODE_SUCCESS
+            elif rdata['Data']['status'] == 1 :
+                
+                return ERROR_CODE_FAIL   
+            elif rdata['Data']['status'] == 2:  #call checkFundTransfer api
+                for x in range(3):
+                    rr = requests.post(ONEBOOK_API_URL + "CheckFundTransfer/", headers=headers, data={
+                        "vendor_id": ONEBOOK_VENDORID,
+                        "vendor_trans_id": trans_id,  
+                        "wallet_id": wallet_id,
+                    })
+                    rrdata = rr.json()
+                    print(rrdata)
+                    if rr.status_code == 200:
+                        try:
+                            rcode = rrdata['error_code']
+                            if rcode == 0:  #transfer success, will update user's balance
+                                if direction == '1':
+                                #deposit
+                                    wallet = wallet - amount
+                                    user.onebook_wallet = user.onebook_wallet + amount
+                                    
+                                    Transaction.objects.create(transaction_id=trans_id,
+                                                            user_id=user,
+                                                            order_id=trans_id,
+                                                            amount=amount,
+                                                            currency=user.currency,
+                                                            transfer_from='Onebook',
+                                                            transfer_to=fund_wallet,
+                                                            product=0,
+                                                            transaction_type=TRANSACTION_TRANSFER_OUT,
+                                                            status=TRAN_SUCCESS_TYPE)
+                                elif direction == '0':
+                                    #withdraw
+                                    wallet = wallet + amount
+                                    user.onebook_wallet = user.onebook_wallet - amount
+                                    Transaction.objects.create(transaction_id=trans_id,
+                                                            user_id=user,
+                                                            order_id=trans_id,
+                                                            amount=amount,
+                                                            currency=user.currency,
+                                                            transfer_from=fund_wallet,
+                                                            transfer_to='Onebook',
+                                                            product=0,
+                                                            transaction_type=TRANSACTION_TRANSFER_IN,
+                                                            status=TRAN_SUCCESS_TYPE)
+                                user.save()         
+                                return CODE_SUCCESS
+                                break
+                            elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
+                                return ERROR_CODE_FAIL
+                                break
+                            elif rcode == 3:
+                                logger.info("Request failed {} time(s)'.format(x+1)")
+                                logger.info("Waiting for %s seconds before retrying again")
+                                sleep(300) #wait for 5 minites then try again  
+                        except NameError as error:
+                            logger.error(error)          
+                    elif rr.status_code == 204:
+                        # Handle error
+                        logger.info("Failed to complete a request for check fund transfer...")
+                        logger.error(rrdata)
+                        return ERROR_CODE_FAIL
+            else:    
+                return ERROR_CODE_FAIL
+    except ObjectDoesNotExist as e:
+        logger.error(e)
+        return  ERROR_CODE_FAIL 
+
+
+class test(View):
+    def get(self, request, *args, **kwargs):
+        # response = fundTransfer("angela", 200, "main", '1', '1')
+        response = createMember("angela05", "1")
+        return HttpResponse(response)
+
+    
+
 class FundTransfer(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
@@ -101,7 +333,6 @@ class FundTransfer(APIView):
             currency = request.POST['currency']
             amount = request.POST['amount']
             direction = request.POST['direction']
-            oddsType = request.POST['oddsType']
             wallet_id = request.POST['wallet_id']
             trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
             if direction == '1' and user.main_wallet - Decimal(amount.replace(',','')) < 0:
@@ -199,14 +430,14 @@ class GetBetDetail(APIView):
         delay = kwargs.get("delay", 2)
         success = False
         version_key = GameProvider.objects.get(provider_name='Onebook').notes
-        print(version_key)
+        
         for x in range(0,3000):
             r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
                 "vendor_id": ONEBOOK_VENDORID,
                 "version_key": version_key,
             })
             rdata = r.json()
-            print(rdata)
+            logger.info(rdata)
             version_key = rdata["Data"]["last_version_key"]
             updates = GameProvider.objects.get(provider_name='Onebook')
             updates.notes = version_key
@@ -248,7 +479,7 @@ class GetBetDetail(APIView):
                                                     )
                 sleep(delay)    
             else:
-                print("BetDetails is not existed.")
+                logger.info("BetDetails is not existed.")
                 break
         return Response(rdata)   
 
@@ -267,7 +498,7 @@ class Login(APIView):
                     "vendor_member_id": username + '_test',
                 })
                 rdata = r.json()
-                print(rdata)
+                
                 if r.status_code == 200:
                     success = True
                     break
@@ -284,8 +515,18 @@ class Login(APIView):
             if not success:
                 return Response(rdata)
             try:
-                code = rdata['error_code']
-                return Response(rdata)
+                Data = rdata['Data']
+                if user.language == 'English':
+                    lang = 'en'
+                elif user.language == 'Chinese':
+                    lang = 'cs'
+                elif user.language == 'Thai':
+                    lang = 'th'
+                elif user.language == 'Vietnamese':
+                    lang = 'vn'
+
+                loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
+                return Response({"login url":loginUrl})
             except NameError as e:
                 logger.error(e)
                 return Response({"error": "Cannot find the code."})
