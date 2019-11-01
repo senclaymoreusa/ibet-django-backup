@@ -86,12 +86,12 @@ class GlobalSettings(object):
                 'menus': (
                     {
                         'title': _('Deposits'),
-                        'url': '/xadmin/deposits/0',
+                        'url': '/xadmin/deposit/0',
                         'icon': 'fa fa-arrow-right'
                     },
                     {
                         'title': _('Withdrawals'),
-                        'url': '/xadmin/withdrawals/0',
+                        'url': '/xadmin/withdraw/0',
                         'icon': 'fa fa-arrow-left'
                     },
                     {

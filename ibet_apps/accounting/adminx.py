@@ -15,14 +15,14 @@ from accounting.admin_views.channel_list import *
 
 
 xadmin.site.register_view(r'user_info/', UserInfo, name='user_info')
+xadmin.site.register_view(r'(?P<txn_type>deposit|withdraw)/(?P<page>-?\d*)/$', GetTransactions, name='get_transactions')
 xadmin.site.register_view(r'withdrawals/(?P<page>-?\d*)/$', GetWithdrawals, name='get_withdrawals')
-xadmin.site.register_view(r'withdrawals/modify/', WithdrawalView, name='modify_withdrawal')
-xadmin.site.register_view(r'deposits/(?P<page>-?\d*)/$', GetDeposits, name='get_deposits')
-xadmin.site.register_view(r'deposits/modify', DepositView, name='modify_deposit')
+xadmin.site.register_view(r'withdrawals/modify/', ModifyWithdrawal, name='modify_withdrawal')
+# xadmin.site.register_view(r'deposits/(?P<page>-?\d*)/$', GetDeposits, name='get_deposits')
+xadmin.site.register_view(r'deposits/confirm', ConfirmSettlement, name='confirm_settlement')
 xadmin.site.register_view(r'channel_list/$', ChannelListView, name='channel_list')
 xadmin.site.register_view(r'payment_config/', PaymentConfig, name='psp_config')
-xadmin.site.register_view(r'get_transactions/', GetTransactions, name='get_transactions')
-
+xadmin.site.register_view(r'get_transactions/', GetLatestTransactions, name='get_latest_transactions')
 # xadmin.site.register_view(r'(?P<type>deposits|withdrawals)/(?P<page>-?\d*)/$', TestView, name='get_transactions')
 # xadmin.site.register_view('deposits/$', GetDeposits, name='get_deposits')
 

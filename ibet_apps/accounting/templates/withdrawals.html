@@ -480,7 +480,7 @@
                 }),
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:get_transactions' %}",
+                    url: "{% url 'xadmin:get_latest_transactions' %}",
                     data: {
                         'type': 'withdrawals',
                         'user': user_id,

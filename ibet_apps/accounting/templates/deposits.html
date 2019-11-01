@@ -366,7 +366,7 @@
         $('#status-filter').on('change', function(event) {
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
-            window.location = "{% url 'xadmin:get_deposits' page=0 %}?"+queryString.toString();
+            window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}?"+queryString.toString();
         });
 
         // for submitting a search
@@ -383,8 +383,8 @@
             if (fromDate) queryString.set('from', fromDate);
             if (toDate) queryString.set('to', toDate);
             // fetch data and redraw rows
-            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_deposits' page=0 %}?"+queryString.toString();
-            else window.location = "{% url 'xadmin:get_deposits' page=0 %}";
+            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}?"+queryString.toString();
+            else window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}";
         });
 
         $('#clear-search-btn').on('click', function() {
@@ -396,10 +396,10 @@
 
         // scroll between pages
         $('#prev-page').click(() => {
-            window.location = "{% url 'xadmin:get_deposits' page=page_no|add:'-1' %}" + window.location.search;
+            window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=page_no|add:'-1' %}" + window.location.search;
         });
         $('#next-page').click(() => {
-            window.location= "{% url 'xadmin:get_deposits' page=page_no|add:'1' %}" + window.location.search;
+            window.location= "{% url 'xadmin:get_transactions' txn_type='deposit' page=page_no|add:'1' %}" + window.location.search;
         });
 
         let dateFormat = "mm/dd/yy";
@@ -447,22 +447,22 @@
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
             console.log(data);
-            // transaction pk: data[13]
+
             showDepositDetail(data);
             // showBankDetail(data);
+            let txn_pk = data[15];
             let user_id = data[0];
             $.when(
                 $.ajax({
                     type: 'GET',
                     url: "{% url 'xadmin:user_info' %}",
                     data: {
-                        'type': 'getMemberInfo',
                         'user': user_id,
                     },
                 }),
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:get_transactions' %}",
+                    url: "{% url 'xadmin:get_latest_transactions' %}",
                     data: {
                         'type': 'deposits',
                         'user': user_id,
@@ -470,7 +470,7 @@
                 })
             ).then(function (memberData, depositData) {
                 addMemberDetails(memberData);
-                addDepositRecord(depositData, data[12], data[0]);
+                addDepositRecord(depositData, txn_pk);
             });
         });
 
@@ -495,7 +495,7 @@
         }
 
         // fill in latest deposit section of txn detail modal
-        function addDepositRecord(data, trans_pk, dep_row_index) {
+        function addDepositRecord(data, trans_pk) {
             let depositArea = $("#latest_deposits");
             depositArea.empty();
             let content = "";
@@ -552,14 +552,11 @@
             $(this).html('Click to Approve');
             $(this).attr('id', 'deposit-review-app');
             $('#deposit-review-app').click(function () {
-                // $(this).attr('type', 'submit');
-                // $(this).attr('name', 'deposit-review-app');
                 let thisTransNo = $("#dep_trans_no").val();
                 $.ajax({
                     method: 'POST',
-                    url: "{% url 'xadmin:modify_deposit' %}",
+                    url: "{% url 'xadmin:confirm_settlement' %}",
                     data: {
-                        'type': 'updateTransaction',
                         'dep_trans_no': thisTransNo,
                         'result': 'approve',
                     }
@@ -574,12 +571,11 @@
             $(this).html('Click to Reject');
             $(this).attr('id', 'deposit-review-rej');
             $('#deposit-review-rej').click(function () {
-                // $(this).attr('type', 'submit');
-                // $(this).attr('name', 'deposit-review-rej');
                 let thisTransNo = $("#dep_trans_no").val();
+                
                 $.ajax({
                     method: 'POST',
-                    url: "{% url 'xadmin:modify_deposit' %}",
+                    url: "{% url 'xadmin:confirm_settlement' %}",
                     data: {
                         'type': 'updateTransaction',
                         'dep_trans_no': thisTransNo,
@@ -623,7 +619,7 @@ $('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (even
 
     $.ajax({
         type: 'POST',
-        url: "{% url 'xadmin:modify_deposit' %}",
+        url: "{% url 'xadmin:confirm_settlement' %}",
         data: {
             'type': 'reviewTransaction',
             'dep_trans_no': dep_trans_no,
