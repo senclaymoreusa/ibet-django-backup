@@ -101,7 +101,7 @@ hr {
 
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
+<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>-->
 <button type="button" class="btn btn-primary" class="csv" id="player-csv">Upload player CSV</button>
 <input type="file" id="csv-file" accept=".csv">
 <button type="button" class="btn btn-primary" class="csv" id="affiliate-csv">Upload affiliate CSV</button>
@@ -378,20 +378,20 @@ hr {
             <label for="group-name">NAME *</label>
             <input type="text" class="form-control" name="group-name" placeholder="Give your group a descriptive name" required>
           </div>
-          <div class="input-group" style="margin-top:25px;">
+          <!--<div class="input-group" style="margin-top:25px;">
             <input type="button" class="btn btn-primary" value="Upload player CSV"> 
             <label class="control-label" style="margin-left: 20px; font-size: 13px;">Edit the list members by uploading a new CSV file.</label>
-          </div>
+          </div>-->
           <p class="manually-text">PLAYERS IN GROUP</p>
           <table id="player-table" class="display" width="100%">
           </table>
-          <div class="form-group">
+          <!--<div class="form-group">
             <button id="export-csv" type="button" class="btn btn-primary">Export</button>
           </div>
           <div id="notes" class="form-group">
             <label for="group-name">REASON FOR CHANGES</label>
             <textarea class="form-control" rows="5" placeholder="Please provide a brief explanation."></textarea>
-          </div>
+          </div>-->
           <div id="errorMessage"></div>
           <div style="margin-top:30px;">
               <button type="submit" class="btn btn-primary">Save</button>
@@ -1088,13 +1088,19 @@ $(document).ready(function() {
     var group_name = form.find('input[name="group-name"]').val();
     var is_range = $('#range').prop("checked");
     var is_deposit = $('#onlydeposited').prop("checked");
-    var groupId = null;
+    var action
+    var url;
+    var groupId;
 
     if(formId == "playergroup") {
-      var action = form.attr('action');
-      console.log(action);
-      var url = action.split('?')[0];
-      console.log(url);
+      if($('#static-modal .modal-title').text()=="Edit Group"){
+        action = form.attr('action');
+        url = action.split('?')[0];
+        groupId = action.split('?')[1];
+      } else {
+        action = form.attr('action');
+        url = action.split('?')[0];
+      }
     }
 
     userList = JSON.stringify(userList);
@@ -1104,8 +1110,8 @@ $(document).ready(function() {
       url: url,
       data: {
         'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'groupId': groupId,
         'type': groupType,
-        'group_id': groupId,
         'group_name': group_name,
         'user_list': userList,
         'product': userFilter['product'],
@@ -1374,6 +1380,7 @@ function getGroup(groupId) {
         $("#notes").css("display", "");
         $("#export-csv").css("display", "");
         $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")');
+        $('#playergroup').attr('action', "{% url 'group-update'%}" + "?" + groupId);
           /*
           var fields = JSON.parse(data["group"])[0]["fields"];
           user_list = data["user_list"];
@@ -1406,9 +1413,9 @@ function deleteGroup(groupName) {
     type: "POST",
     url: "{% url 'xadmin:messagegroups' %}",
     data:{ 
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
         'type': 'delete_group',
         'group_name': groupName,
-        "csrfmiddlewaretoken": "{{ csrf_token }}",
     },
     success: function(response)
     {

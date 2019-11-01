@@ -725,15 +725,14 @@ class MessageUserGroupView(CommAdminView):
                 else:
                     return HttpResponse(status=400)
 
-                
             elif postType == "delete_group":
                 group_name = request.POST.get('group_name')
                 UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
-                logger.info("Deleted group: ", group_name)
-                return HttpResponse("success delete")
+                logger.info("Deleted group: '{0}'".format(group_name))
+                return HttpResponse("success delete", status=200)
 
         except Exception as e:
-            logger.error("Group Error: %s", repr(e))
+            logger.error("Group Error: '{0}'".format(repr(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -979,7 +978,6 @@ class CampaignView(CommAdminView):
             return HttpResponse("success update")
 
 
-
 class AWSTopicView(CommAdminView):
     def get(self, request, *arg, **kwargs):
         context = super().get_context()
@@ -1200,7 +1198,7 @@ class MessageGroupUserAPI(View):
 class MessageGroupUpdateAPI(View):
     def post(self, request, *arg, **kwargs):
         # group_id = self.kwargs.get('pk')
-        group_id = request.POST.get('group_id')
+        group_id = request.POST.get('groupId')
         group = UserGroup.objects.get(pk=int(group_id))
 
         if group is None:
@@ -1270,6 +1268,7 @@ class MessageGroupUpdateAPI(View):
 
             return HttpResponse(status=200)
         except Exception as e:
+            print(repr(e))
             logger.error(e)
             return HttpResponse(e, status=500)
 
