@@ -1,11 +1,16 @@
+# Django
 from django.views import View
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ParseError
 from rest_framework import status
 
+# iBet
 from users.models import CustomUser
-from games.models import GameBet
+from games.models import GameBet, GameProvider, Category
+from utils.constants import *
 
+# Libraries
 import xmltodict
 import logging
 import decimal
@@ -189,11 +194,11 @@ class ReserveView(View):
 
             username = req_dict['reserve']['externalId']
             bet_amount_str = req_dict['reserve']['real']
+            transaction_id = req_dict['reserve']['transactionId']
             
             user = CustomUser.objects.get(username=username)
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
             bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
-
 
 
 
@@ -205,8 +210,6 @@ class ReserveView(View):
             print("")
 
 
-            # TODO: 
-            # Add entry into GameBet model
 
             if user_balance >= bet_amount_decimal:
                 # Bet can go through 
@@ -214,10 +217,37 @@ class ReserveView(View):
                 user.main_wallet = balance_after_bet
                 user.save()
 
-            else:
-                # Insufficient funds
-                return HttpResponse("Error: Bet amount exceeds wallet balance!")
+                # Move this later; GameBet object may not be created even when user balance is deducted.
+                try:
+                    PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+                    CATEGORY = Category.objects.get(name="TESTCATEGORY")
+                except ObjectDoesNotExist:
+                    print("Error fetching provider or category")
 
+                # Create a GameBet entry upon successful placement of a bet
+                GameBet.objects.create(
+                    provider = PROVIDER,
+                    category = CATEGORY,
+                    #game = "",
+                    #game_name = "",
+                    username = user,
+                    amount_wagered = bet_amount_decimal,
+                    amount_won = 0.00,
+                    #outcome = "",
+                    #odds = "",
+                    #bet_type = "",
+                    #line = "",
+                    currency = user.currency,
+                    market = ibetVN,
+                    ref_no = transaction_id,
+                    #bet_time = "",
+                    #resolved_time = "",
+                    #other_data = {}
+                )
+
+            else:
+                # TODO: return XML, not HttpResponse
+                return HttpResponse("Error: Bet amount exceeds wallet balance!")
 
 
 
@@ -228,7 +258,7 @@ class ReserveView(View):
                         "#text": str(user.main_wallet)
                     },
                     "currency": {
-                        "#text": ""
+                        "#text": str(user.currency)
                     },
                     "statusCode": {
                         "#text": ""
@@ -238,9 +268,6 @@ class ReserveView(View):
 
             res_msg = xmltodict.unparse(res_dict, pretty=True)
             return HttpResponse(res_msg, content_type='text/xml')
-
-
-
 
 
 
