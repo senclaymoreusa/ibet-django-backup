@@ -745,20 +745,26 @@ class StaticGroupValidationAPI(View):
             players = json.loads(players)
             if group_type == "player":
                 for player in players:
-                    player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
-                    if len(player) > 0:
-                        valid_player = {}
-                        valid_player["id"] = player[0].pk
-                        valid_player["username"] = player[0].username
-                        valid_players.append(valid_player)
+                    if player[0].isnumeric():
+                        player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
+                        if len(player) > 0:
+                            valid_player = {}
+                            valid_player["id"] = player[0].pk
+                            valid_player["username"] = player[0].username
+                            valid_players.append(valid_player)
+                    else:
+                        return HttpResponse("invalid")
             else:
                 for player in players:
-                    affiliate = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1])&Q(user_to_affiliate_time__isnull=False))
-                    if len(affiliate) > 0:
-                        valid_player = {}
-                        valid_player["id"] = affiliate[0].pk
-                        valid_player["username"] = affiliate[0].username
-                        valid_players.append(valid_player)
+                    if player[0].isnumeric():
+                        affiliate = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1])&Q(user_to_affiliate_time__isnull=False))
+                        if len(affiliate) > 0:
+                            valid_player = {}
+                            valid_player["id"] = affiliate[0].pk
+                            valid_player["username"] = affiliate[0].username
+                            valid_players.append(valid_player)
+                    else:
+                        return HttpResponse("invalid")
 
             return HttpResponse(json.dumps(valid_players), content_type='application/json')
         except Exception as e:
@@ -1268,7 +1274,6 @@ class MessageGroupUpdateAPI(View):
 
             return HttpResponse(status=200)
         except Exception as e:
-            print(repr(e))
             logger.error(e)
             return HttpResponse(e, status=500)
 
