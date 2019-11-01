@@ -42,6 +42,7 @@ admin.site.register(Commission)
 admin.site.register(ReferChannel)
 admin.site.register(UserAction)
 admin.site.register(Segmentation)
+admin.site.register(SystemCommission)
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm

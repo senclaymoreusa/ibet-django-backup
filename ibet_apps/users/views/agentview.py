@@ -24,7 +24,7 @@ from decimal import Decimal
 from xadmin.views import CommAdminView
 from utils.constants import *
 from accounting.models import *
-from users.models import CustomUser, UserAction, Commission, UserActivity, ReferChannel
+from users.models import CustomUser, UserAction, Commission, UserActivity, ReferChannel, SystemCommission
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
 
@@ -97,17 +97,14 @@ class AgentView(CommAdminView):
             user_detail = {}
             user_detail['id'] = user_id
             user_detail['username'] = user_obj.username
-            user_detail['first_name'] = user_obj.first_name
-            user_detail['last_name'] = user_obj.last_name
-            user_detail['email'] = user_obj.email
-            user_detail['phone'] = user_obj.phone
-            user_detail['address'] = str(user_obj.street_address_1) + ', ' + str(user_obj.street_address_2) + ', ' + str(
-                user_obj.city) + ', ' + str(user_obj.state) + ', ' + str(user_obj.zipcode) + ', ' + str(user_obj.country)
-            intro = user_obj.user_application_info
-            if intro is None:
-                user_detail["intro"] = ""
-            else:
-                user_detail["intro"] = intro
+            user_detail['first_name'] = user_obj.first_name or ''
+            user_detail['last_name'] = user_obj.last_name or ''
+            user_detail['email'] = user_obj.email or ''
+            user_detail['birthday'] = user_obj.date_of_birth or ''
+            user_detail['phone'] = user_obj.phone or ''
+            user_detail['address'] = user_obj.get_user_address()
+            # user_detail['email_verified'] = user_obj.
+
             return HttpResponse(json.dumps(user_detail), content_type='application/json')
 
         else:
@@ -234,6 +231,20 @@ class AgentView(CommAdminView):
                     affiliates_dict['level'] = affiliate.affiliate_level
                     affiliates_table.append(affiliates_dict)
             context["affiliates_table"] = affiliates_table
+
+            # SYSTEM COMMISSION
+            system_commission = SystemCommission.objects.all()
+            # if there is no system commission, will set up a default one
+            if len(system_commission) == 0:
+                default_sc_level = SystemCommission(
+                    commission_level=1,
+                    commission_percentage=10,
+                    downline_commission_percentage=10,
+                    ngr=2000,
+                )
+                default_sc_level.save()
+            context["system_commission_type"] = system_commission.order_by('commission_level')
+
             return render(request, 'agent_list.html', context)
 
     def post(self, request):
@@ -265,6 +276,19 @@ class AgentView(CommAdminView):
             if result == "Yes":
                 user.user_to_affiliate_time = timezone.now()
                 user.affiliate_status = 'Active'
+                # if this user was an affiliate or he/she referred other people before he/she becomes an affiliate
+                if user.referral_path:
+                    referral_path = str(user.referral_path) + '/' + str(user.pk) + '/'
+                else:
+                    referral_path = str(user.pk) + '/'
+
+                if user.referred_by:
+                    try:
+                        referral_path = str(user.referred_by.referral_path) + referral_path
+                    except Exception as e:
+                        logger.error("Error referrer's referral_path " + str(e))
+                user.referral_path = referral_path
+                user.save()
                 affiliate_default_commission = Commission.objects.create(
                     user_id=user,
                     commission_level=1,
@@ -283,6 +307,47 @@ class AgentView(CommAdminView):
                     activity_type=ACTIVITY_REMARK,
                 )
             return HttpResponse(status=200)
+
+        elif post_type == 'systemCommissionChange':
+            level_details = request.POST.get('level_details')
+            admin_user = request.POST.get('admin_user')
+
+            level_details = json.loads(level_details)
+            commission_list = []
+            # update commission levels
+            for i in level_details:
+                if i['pk'] == '':
+                    current_commission = SystemCommission.objects.create(
+                        commission_percentage=i['rate'],
+                        downline_commission_percentage=i['downline_rate'],
+                        commission_level=i['level'],
+                        active_downline_needed=i['active_downline'],
+                        monthly_downline_ftd_needed=i['downline_ftd'],
+                        ngr = i['downline_ngr'],
+                    )
+                    current_commission.save()
+                    commission_list.append(current_commission.pk)
+                    logger.info(str(admin_user) + " create new system commission level " + i['level'])
+                else:
+                    current_commission = SystemCommission.objects.filter(pk=i['pk'])
+                    current_commission.update(
+                        commission_percentage=i['rate'],
+                        downline_commission_percentage=i['downline_rate'],
+                        commission_level=i['level'],
+                        active_downline_needed=i['active_downline'],
+                        monthly_downline_ftd_needed=i['downline_ftd'],
+                        ngr=i['downline_ngr'],
+                    )
+                    logger.info(str(admin_user) + "update commission level " + i['level'])
+                    commission_list.append(i['pk'])
+
+            deleted_commission_levels = SystemCommission.objects.exclude(pk__in=commission_list)
+            deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
+            if deleted_list.count() > 0:
+                logger.info("Admin user " + admin_user + " delete commission level " + str(
+                    deleted_list))
+                deleted_commission_levels.delete()
+        return HttpResponse(status=200)
 
 
 class AgentDetailView(CommAdminView):
@@ -357,7 +422,8 @@ class AgentDetailView(CommAdminView):
             related_affiliates_data = []
             for related_affiliate in related_affiliate_list:
                 related_affiliates_info = {}
-                related_affiliates_info['member_id'] = related_affiliate['user']
+                related_affiliate = CustomUser.objects.get(pk=related_affiliate['user'])
+                related_affiliates_info['member_id'] = related_affiliate.pk
                 related_affiliates_info['balance'] = related_affiliate.main_wallet
                 related_affiliates_data.append(related_affiliates_info)
             context["related_affiliates"] = related_affiliates_data
@@ -411,7 +477,7 @@ class AgentDetailView(CommAdminView):
                     transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
                 downline_info['adjustment'] = affiliate_tran.filter(
                     transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-                downline_info['turnover'] = calculateTurnover(i)
+                downline_info['turnover'] = calculateTurnover(i, None, None)
                 downline_info['balance'] = i.main_wallet
                 downline_list_table.append(downline_info)
             context["downline_list"] = downline_list_table
@@ -596,6 +662,7 @@ class AgentDetailView(CommAdminView):
             subject = request.POST.get('subject')
             text = request.POST.get('text')
             return HttpResponse(status=200)
+
 
 
 

@@ -1,4 +1,4 @@
-(function($) {
+
     $(document).ready(function () {
         var csrftoken = $.cookie("csrftoken")
 
@@ -22,7 +22,7 @@
             showCommissionDetail(data);
             $.ajax({
                 type: 'GET',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'getCommissionHistory',
                     'date': data[0],
@@ -139,7 +139,7 @@
             var data = $(this).closest('tr').find('#userID').html();
             $.ajax({
                 type: 'GET',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'getAffiliateApplicationDetail',
                     'user_id': data,
@@ -149,6 +149,7 @@
                 },
             })
         })
+
         addUserInfo = function (data) {
             $("#user-info-first-col").empty();
             content_col1 = "";
@@ -164,8 +165,6 @@
             content_col2 += '<li>' + data.phone + '</li>';
             content_col2 += '<li>' + data.address + '</li>';
             $("#user-info-second-col").append(content_col2);
-            $("#user_intro").empty();
-            $("#user_intro").append(data.intro);
             $("#affiliate_id").val(data.id);
         };
 
@@ -175,7 +174,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'affiliateApplication',
                     'result': "Yes",
@@ -188,13 +187,17 @@
                 },
             })
         });
-        $('#affiliate-application-decline-btn').click(function () {
+
+        $('#affiliate-application-decline-btn').click(function(){
+            $('#affiliate-application-decline-btn').html('Click to Decline ');
+            $('#affiliate-application-decline-btn').attr('id', 'affiliate-application-decline-confirm-btn');
+            $('#affiliate-application-decline-confirm-btn').click(function () {
             var remark = $('textarea#affiliate_application_remark').val();
             var userID = $(this).prev().prev('input').val();
 
             $.ajax({
                 type: 'POST',
-                url: agent_detail_url,
+                url: agent_list_url,
                 data: {
                     'type': 'affiliateApplication',
                     'result': "No",
@@ -207,6 +210,9 @@
                 },
             })
         });
+        })
+
+
 
         // datatable
 
@@ -277,5 +283,82 @@
 
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
 
-    })
-})(django.jQuery);
+        $(document).on("click", "#add-commission-level", function () {
+            // check previous level has empty input or not
+            if (checkCommissionLevelEmpty() == false) {
+                var delete_btn = $('#delete-commission-level')
+                delete_btn.remove();
+                var new_commission_level = $('#system-commission-level-details').clone();
+                $(new_commission_level).find('.input-value, #commission_id').val('');
+                var level = $('.system-commission-levels #system-commission-level-details').last().find('#commission_level_label').text();
+                $(new_commission_level).find('#commission_level_label').text(+level + 1);
+                $(new_commission_level).append(delete_btn);
+                $('.system-commission-levels').append(new_commission_level);
+            }
+        });
+
+        function checkCommissionLevelEmpty() {
+            var $empty = $(".system-commission-levels input[required]").filter(function () {
+                return !this.value.trim();
+            }),
+                valid = $empty.length == 0,
+                items = $empty.map(function () {
+                    return this.placeholder
+                }).get();
+
+            if (!valid) {
+                // has empty
+                $('#add-level-errorMessage').text("Please fill the empty input");
+                $('#add-level-errorMessage').css('color', 'red');
+                return true;
+            } else {
+                // no empty
+                return false;
+            }
+        }
+
+        $(document).on("click", "#system-commission-save-btn", function () {
+            if (checkCommissionLevelEmpty() == false) {
+                level_details = [];
+                $(".system-commission-levels .row").each(function () {
+                    level_detail = {};
+                    level_detail['pk'] = $(this).find('#commission_id').val();
+                    level_detail['level'] = $(this).find('#commission_level_label').text();
+                    level_detail['rate'] = $(this).find('#commission_rate').val();
+                    level_detail['downline_rate'] = $(this).find('#downline_commission_rate').val();
+                    level_detail['active_downline'] = $(this).find('#active_downline').val();
+                    level_detail['downline_ftd'] = $(this).find('#downline_monthly_ftd').val();
+                    level_detail['downline_ngr'] = $(this).find('#downline_ngr').val();
+                    level_details.push(level_detail);
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: agent_list_url,
+                    data: {
+                        'type': 'systemCommissionChange',
+                        'admin_user': admin_user,
+                        'level_details': JSON.stringify(level_details),
+                    },
+                    success: function (data) {
+                        location.reload();
+                    }
+                });
+            }
+        });
+
+        $(document).on("click", "#delete-commission-level-btn", function () {
+            var current_level = $(this).parent().parent().find('#commission_level_label').html();
+            if (current_level === '1') {
+                $('#add-level-errorMessage').text("You can't delete level 1");
+                $('#add-level-errorMessage').css('color', 'red');
+            } else {
+                var delete_btn = $('#delete-commission-level');
+                var commission_id = $(this).parent().parent().find('#commission_id').val();
+                var commission_row = $(this).prev().closest('.row');
+                var commission_row_prev = commission_row.prev('.row')
+                commission_row.remove();
+                commission_row_prev.append(delete_btn);
+            }
+        });
+    });

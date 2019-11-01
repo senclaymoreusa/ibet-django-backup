@@ -1,3 +1,12 @@
+body {
+    font-family: Helvetica;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+}
+
 .overview-subtitle {
     font-size: 11px;
 }
@@ -119,11 +128,12 @@ table.dataTable {
 /* Affiliate application pop up */
 
 #audit_affiliate_app_pop {
+    top: 20%;
     width: 50%;
 }
 
 .user-application-info {
-    margin: 10px;
+    margin-top: 10px;
 }
 
 #affiliate_application_remark {
@@ -132,8 +142,57 @@ table.dataTable {
     display: block;
 }
 
+.modal-header {
+    border-radius: 4px;
+    height: 30px;
+    position: relative;
+}
 
+.modal-header .close {
+    margin-top: -12px;
+}
 
+.modal-header .model-header-text{
+    font-size: 18px;
+    position: absolute;
+    top: 10%;
+}
+
+.modal-header .model-header-time{
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #000000;
+    float: right;
+    position: absolute;
+    top: 10%;
+    right: 6%;
+}
+
+.user-application-info ul {
+    list-style: none;
+}
+
+.user-application-info .row div {
+    padding-left: 0px;
+}
+
+.user-application-info .row div ul li {
+    height: 30px;
+}
+
+#affiliate-application-button {
+    padding: 20px;
+}
+
+#affiliate-application-button button{
+    width: 16%;
+    margin-right: 5px;
+}
 
 
 .agent_detail {
@@ -304,6 +363,7 @@ ul.ui-autocomplete {
     letter-spacing: normal;
     color: #4a4a4a;
 }
+
 #commission_level_label {
     font-family: Helvetica;
     font-size: 18px;
@@ -400,4 +460,51 @@ ul.ui-autocomplete {
     border-top: 1px solid; 
     overflow-y: auto; 
     height:807px;
+}
+
+/* System commission levels setting */
+#edit-commission-pop {
+    width: 60%;
+}
+
+.system-commission-levels {
+    margin: 20px;
+}
+
+.system-commission-levels label {
+    font-size: 11px;
+    font-weight: normal;
+    color: #4a4a4a;
+}
+
+#system-commission-level-details {
+    width: 95%;
+    margin: 20px 10px 0 0;
+    border-radius: 4px;
+    background-color: #f1f1f1;
+}
+
+#system-commission-level-details div {
+    padding-top: 10px;
+}
+
+#system-commission-level-details .input-value {
+    width: 80px;
+    height: 35px;
+    text-align: center;
+    border: solid 1px #bdbdbd;
+}
+
+#system-commission-level-details .sign {
+    width: 20px;
+    height: 35px;
+    text-align: center;
+    margin-left: -5px;
+    margin-right: -5px;
+    border: solid 1px #bdbdbd;
+    background-color: #eaeaea;
+}
+
+#add-level-btn, #system-commission-change, #system-commission-btn-group {
+    margin: 20px;
 }
