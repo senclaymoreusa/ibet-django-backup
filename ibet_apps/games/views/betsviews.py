@@ -20,7 +20,8 @@ def getBetHistory(request):
             data["category"] = bet.category.name
             data["provider"] = bet.provider.provider_name
             bet_data.append(data)
-        print('hi')
+
         return JsonResponse({
-            'results': bet_data
+            'results': bet_data,
+            'full_raw_data': list(all_bets.values)
         })
