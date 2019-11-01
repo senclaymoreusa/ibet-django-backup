@@ -382,7 +382,7 @@
         $('#status-filter').on('change', function(event) {
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
-            window.location = "{% url 'xadmin:get_withdrawals' page=0 %}?"+queryString.toString();
+            window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}?"+queryString.toString();
         });
 
         // for submitting a search
@@ -399,8 +399,8 @@
             if (fromDate) queryString.set('from', fromDate);
             if (toDate) queryString.set('to', toDate);
             // fetch data and redraw rows
-            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_withdrawals' page=0 %}?"+queryString.toString();
-            else window.location = "{% url 'xadmin:get_withdrawals' page=0 %}";
+            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}?"+queryString.toString();
+            else window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}";
         });
 
         $('#clear-search-btn').on('click', function() {
@@ -412,10 +412,10 @@
 
         // scroll between pages
         $('#prev-page').click(() => {
-            window.location = "{% url 'xadmin:get_withdrawals' page=page_no|add:'-1' %}" + window.location.search;
+            window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=page_no|add:'-1' %}" + window.location.search;
         });
         $('#next-page').click(() => {
-            window.location= "{% url 'xadmin:get_withdrawals' page=page_no|add:'1' %}" + window.location.search;
+            window.location= "{% url 'xadmin:get_transactions' txn_type='withdraw' page=page_no|add:'1' %}" + window.location.search;
         });
 
         let dateFormat = "mm/dd/yy";

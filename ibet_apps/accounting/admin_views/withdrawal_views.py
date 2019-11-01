@@ -13,13 +13,3 @@ import simplejson as json
 import logging
 
 logger = logging.getLogger("django")
-
-
-class ModifyWithdrawal(CommAdminView):
-    def post(self, request):
-        txn_num = request.POST.get()
-        pass
-
-def myconverter(o):
-    if isinstance(o, timezone.date):
-        return o.__str__()
