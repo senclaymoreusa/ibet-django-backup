@@ -4,7 +4,8 @@ import logging
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from users.models import CustomUser
-from games.views.eagameviews import requestEADeposit
+# from games.views.eagameviews import requestEADeposit
+# from games.views.transferwallet import TransferDeposit, TransferWithdraw
 
 logger = logging.getLogger("django")
 
@@ -70,6 +71,7 @@ def addOrWithdrawBalance(username, balance, type_balance):
 
 
 def get_client_ip(request):
+    print(request)
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]

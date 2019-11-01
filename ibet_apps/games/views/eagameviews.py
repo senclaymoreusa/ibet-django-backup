@@ -26,6 +26,7 @@ from accounting.models import *
 from utils.constants import *
 
 
+
 logger = logging.getLogger('django')
 
 EA_GAME_HOST_URL = ""
@@ -152,7 +153,8 @@ class DepositEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            requestEADeposit(user, amount)
+            if requestEADeposit(user, amount) == ERROR_CODE_FAIL:
+                return HttpResponse("Fail deposit money to EA")
 
             return HttpResponse("Finished deposit money to EA")
         except Exception as e:
@@ -162,7 +164,7 @@ class DepositEAView(View):
 
         
 
-def requestEADeposit(user, amount):
+def requestEADeposit(user, amount, from_wallet):
 
     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
     # print(trans_id)
@@ -177,7 +179,7 @@ def requestEADeposit(user, amount):
                     order_id=trans_id,
                     amount=amount,
                     currency=currency,
-                    transfer_from="Main",
+                    transfer_from=from_wallet,
                     transfer_to="EA",
                     product=2,
                     transaction_type=TRANSACTION_TRANSFER,
@@ -278,8 +280,8 @@ def requestEADeposit(user, amount):
                 trans.status = TRAN_APPROVED_TYPE
                 trans.save()
 
-                user.ea_wallet = user.ea_wallet + Decimal(float(amount))
-                user.save()
+                # user.ea_wallet = user.ea_wallet + Decimal(float(amount))
+                # user.save()
 
         elif properties_status == "105":
             logger.error("Invalid currency for user: {} play EA game".format(user.username))
@@ -298,7 +300,10 @@ def requestEADeposit(user, amount):
         logger.error("request deposit from EA: ", e)
     
     finally:
-        comfirmEADeposit(request_id, properties_payment_id, status_code)
+        if comfirmEADeposit(request_id, properties_payment_id, status_code):
+            return CODE_SUCCESS
+        else:
+            return ERROR_CODE_FAIL
 
     
            
@@ -356,12 +361,15 @@ def comfirmEADeposit(request_id, properties_payment_id, status_code):
         response = requests.post(url, data=request_data, headers=headers)
         if response.status_code == 200:
             # print(response.status_code)
+            return True
             logger.info("Finished deposit money to EA")
         else:
             # print(response.status_code)
+            return False
             logger.error("The transaction is not comfirmed by EA")
 
     except Exception as e:
+        return False
         logger.error("There is something wrong when comfirm deposit request")
 
 
@@ -385,7 +393,7 @@ class WithdrawEAView(View):
 
 
 
-def requestEAWithdraw(user, amount):
+def requestEAWithdraw(user, amount, to_wallet):
 
     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
     user_currency = user.currency
@@ -398,7 +406,7 @@ def requestEAWithdraw(user, amount):
                     amount=amount,
                     currency=user_currency,
                     transfer_from="EA",
-                    transfer_to="Main",
+                    transfer_to=to_wallet,
                     product=2,
                     transaction_type=TRANSACTION_TRANSFER,
                     status=TRAN_PENDING_TYPE
@@ -476,38 +484,40 @@ def requestEAWithdraw(user, amount):
             elif i['@name'] == 'errdesc' and "#text" in i:
                 properties_error = i['#text']
 
-        api_response = {
-            "error_message": "Successfully comfirm withdraw",
-            "status_code": CODE_SUCCESS
-        }
-        error_message = ""
+        # api_response = {
+        #     "error_message": "Successfully comfirm withdraw",
+        #     "status_code": CODE_SUCCESS
+        # }
+        # error_message = ""
         if properties_status == "0":
             error_message = "Successfully comfirm withdraw"
             with transaction.atomic():
                 trans.status = TRAN_APPROVED_TYPE
                 trans.save()
 
-                user.ea_wallet = user.ea_wallet - Decimal(float(amount))
-                user.save()
+                # user.ea_wallet = user.ea_wallet - Decimal(float(amount))
+                # user.save()
 
             logger.info("Finished withdraw from EA")
+            return CODE_SUCCESS
+            
         elif properties_status == "204":
-            error_message = "Exceed amount"
-            api_response["error_message"] = error_message
-            api_response["status_code"] = ERROR_CODE_MAX_EXCEED
+            # error_message = "Exceed amount"
+            # api_response["error_message"] = error_message
+            # api_response["status_code"] = ERROR_CODE_MAX_EXCEED
             logger.info("Exceed amount from EA withdraw")
+            return ERROR_CODE_FAIL
         elif properties_status == "205":
-            error_message = "Invalid vendor"
-            api_response["error_message"] = error_message
-            api_response["status_code"] = ERROR_CODE_INVAILD_INFO
+            # error_message = "Invalid vendor"
+            # api_response["error_message"] = error_message
+            # api_response["status_code"] = ERROR_CODE_INVAILD_INFO
             logger.error("Invalid vendor for user: {} play EA game".format(user.username))
-        
-        return json.dumps(api_response)
+            return ERROR_CODE_FAIL
 
     except Exception as e:
         logger.error("request withdraw from EA: ", e)
-        api_response = {}
-        return json.dumps(api_response)
+        # api_response = {}
+        return ERROR_CODE_FAIL
 
 
 
@@ -879,4 +889,18 @@ class AutoCashierLoginEA(View):
         }
         
         response = xmltodict.unparse(data, pretty=True)
+        return HttpResponse(response, content_type='text/xml')
+
+
+
+from games.helper import transferRequest
+
+class TestView(View):
+
+    def get(self, request, *args, **kwargs):
+
+        user = CustomUser.objects.get(pk=30)
+        print(user)
+        transferRequest(user, 100, "ea", "main")
+        response = {}
         return HttpResponse(response, content_type='text/xml')
