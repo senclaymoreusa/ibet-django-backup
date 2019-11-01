@@ -74,7 +74,7 @@ def createMember(username, oddsType):
                 "MinTransfer": ONEBOOK_MINTRANSFER,
             })
             rdata = r.json()
-            print(rdata)
+            logger.info(rdata)
             if r.status_code == 200:
                 success = True
                 break
@@ -127,7 +127,7 @@ class CreateMember(APIView):
                     "MinTransfer": ONEBOOK_MINTRANSFER,
                 })
                 rdata = r.json()
-                print(rdata)
+                logger.info(rdata)
                 if r.status_code == 200:
                     success = True
                     break
@@ -143,7 +143,7 @@ class CreateMember(APIView):
                     sleep(delay)
             if not success:
                 return Response(rdata)
-            print(rdata)
+            logger.info(rdata)
             if rdata['error_code'] == 0:
                 return Response({"success":"The user is created successful."})
             else:
@@ -196,7 +196,7 @@ def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
                 })
             
                 rdata = r.json()
-                print(rdata)
+                logger.info(rdata)
                 if r.status_code == 200:
                     success = True
                     break
@@ -258,7 +258,7 @@ def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
                         "wallet_id": wallet_id,
                     })
                     rrdata = rr.json()
-                    print(rrdata)
+                    logger.info(rrdata)
                     if rr.status_code == 200:
                         try:
                             rcode = rrdata['error_code']
@@ -354,7 +354,7 @@ class FundTransfer(APIView):
                     })
                     
                     rdata = r.json()
-                    print(rdata)
+                    logger.info(rdata)
                     if r.status_code == 200:
                         success = True
                         break
@@ -443,7 +443,7 @@ class GetBetDetail(APIView):
             updates.notes = version_key
             updates.save()
             if  "BetDetails" in rdata['Data']:
-                # print(rdata["Data"]["BetDetails"])
+                # logger.info(rdata["Data"]["BetDetails"])
                 
 
                 for i in range(len(rdata["Data"]["BetDetails"])):
