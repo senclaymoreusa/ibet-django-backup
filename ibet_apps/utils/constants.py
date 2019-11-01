@@ -1166,7 +1166,7 @@ PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 # Error code define
 CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
-ERROR_CODE_INVAILD_INFO = 101
+ERROR_CODE_INVALID_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
@@ -1306,3 +1306,5 @@ ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
 ONEBOOK_DIRECTION_withdraw = 0
 ONEBOOK_DIRECTION_deposit = 1
 
+# AllBet
+AB_URL = "https://platform-api.apidemo.net:8443/"
