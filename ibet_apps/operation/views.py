@@ -2,6 +2,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse, JsonRespons
 from django.urls import reverse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Q
 from django.views import View
 from django.core import serializers
@@ -20,7 +21,7 @@ import pytz
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from operation.serializers import AWSTopicSerializer, NotificationSerializer, NotificationLogSerializer, NotificationToUsersSerializer, UserToAWSTopicSerializer, MessageUserGroupSerializer, CampaignSerializer
-from operation.models import AWSTopic, Notification, NotificationLog, NotificationToUsers, NotificationToGroup, UserToAWSTopic, Campaign, CampaignToGroup
+from operation.models import *
 from users.models import CustomUser
 from system.models import UserGroup, UserToUserGroup
 from xadmin.views import CommAdminView
@@ -306,6 +307,7 @@ class NotificationView(CommAdminView):
         queryset = Notification.objects.filter(msg_filter)
 
         notification_list = []
+
         for msg in queryset:
             notification_item = {}
             notification_item['pk'] = msg.pk
@@ -317,6 +319,8 @@ class NotificationView(CommAdminView):
             notifiers = NotificationToUsers.objects.filter(notification_id=msg)
             if len(notifiers) > 1:
                 notification_item["notifiers"] = str(len(notifiers)) + " users"
+            elif len(notifiers) == 0:
+                notification_item["notifiers"] = "None"
             else:
                 notification_item["notifiers"] = notifiers[0].notifier_id
 
@@ -331,6 +335,7 @@ class NotificationView(CommAdminView):
 
         paginator = Paginator(notification_list, pageSize)
         context["notifications"] = paginator.get_page(offset)
+
         campArr = []
         appCamp = Campaign.objects.all().distinct('name')
         for i in appCamp:
@@ -508,12 +513,12 @@ class AuditNotificationView(CommAdminView):
             return HttpResponse(e)
 
 
+# User Group related views
 class MessageUserGroupView(CommAdminView):
     def get(self, request, *arg, **kwargs):
         getType = request.GET.get('type')
         if getType == "get_member_info":
             groupName = request.GET.get('group_name')
-            # print(groupName)
 
             group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
             allUsers = UserToUserGroup.objects.filter(group=group)
@@ -565,9 +570,12 @@ class MessageUserGroupView(CommAdminView):
                 group_item = {}
                 group_item['pk'] = group.pk
                 group_item['name'] = group.name
+                group_item['is_static'] = group.is_static
+                group_item['is_player'] = group.is_player
                 group_item['members'] = UserToUserGroup.objects.filter(group=group).count()
                 group_item['time_used'] = group.time_used
                 group_item['creator'] = group.creator
+                group_item['created_time'] = group.created_time
                 total_messages = 0
                 read_messages = 0
                 users = UserToUserGroup.objects.filter(group=group)
@@ -590,82 +598,211 @@ class MessageUserGroupView(CommAdminView):
             return render(request, 'notification/group.html', context)
 
     def post(self, request, *arg, **kwargs):
-        postType = request.POST.get('type')
+        try:
+            postType = request.POST.get('type')
 
-        if postType == "create_new_usergroup":
-            group_name = request.POST.get('group_name')
-            pk_list = request.POST.getlist('pk[]')
-            product = request.POST.get("product")
-            is_range = request.POST.get("is_range")
-            active_from = request.POST.get("active_from")
-            active_to = request.POST.get('active_to')
-            register_from = request.POST.get('register_from')
-            register_to = request.POST.get('register_to')
-            is_deposit = request.POST.get('is_deposit')
+            if postType == "create_new_usergroup":
+                group_name = request.POST.get('group_name')
+                pk_list = request.POST.getlist('pk[]')
+                product = request.POST.get("product")
+                is_range = request.POST.get("is_range")
+                active_from = request.POST.get("active_from")
+                active_to = request.POST.get('active_to')
+                register_from = request.POST.get('register_from')
+                register_to = request.POST.get('register_to')
+                is_deposit = request.POST.get('is_deposit')
 
-            if is_range == "true":
-                is_range = True
+                if is_range == "true":
+                    is_range = True
+                else:
+                    is_range = False
+
+                if isDateFormat(active_from):
+                    active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
+                else:
+                    active_from = None
+
+                if isDateFormat(active_to):
+                    active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
+                else:
+                    active_to = None
+
+                if isDateFormat(register_from):
+                    register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
+                else:
+                    register_from = None
+
+                if isDateFormat(register_to):
+                    register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
+                else:
+                    register_to = None
+
+                if is_deposit == "true":
+                    is_deposit = True
+                else:
+                    is_deposit = False
+
+                data = {
+                    "name": group_name,
+                    "groupType": MESSAGE_GROUP,
+                    "creator": self.user.pk,
+                    "is_range": is_range,
+                    "product": product,
+                    "active_from": active_from,
+                    "active_to": active_to,
+                    "register_from": register_from,
+                    "register_to": register_to,
+                    "is_deposit": is_deposit
+                }
+
+                serializer = MessageUserGroupSerializer(data=data)
+                if serializer.is_valid():
+                    group = serializer.save()
+                    logger.info("saved message user group")
+                    for pk in pk_list:
+                        user = CustomUser.objects.get(pk=int(pk))
+                        log = UserToUserGroup.objects.create(group=group, user=user)
+                        
+                    logger.info("saved message user group log")
+                    return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+                else:
+                    logger.error(serializer.errors['name'][0])
+                    return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+            
+            elif postType == "player":
+                group_name = request.POST.get('group_name')
+                user_list = request.POST.get('user_list')
+                user_list = json.loads(user_list)
+
+                data = {
+                    "name": group_name,
+                    "groupType": MESSAGE_GROUP,
+                    "creator": self.user.pk,
+                    "is_static": True,
+                    "is_player": True,
+                }
+
+                serializer = MessageUserGroupSerializer(data=data)
+
+                if serializer.is_valid():
+                    with transaction.atomic():
+                        group = serializer.save()
+                        logger.info("saved message user group")
+                        for user in user_list:
+                            user = CustomUser.objects.get(pk=int(user['id']))
+                            UserToUserGroup.objects.create(group=group, user=user)
+                        
+                        logger.info("saved message user group log")
+                        return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+                else:
+                    return HttpResponse(status=400)
+
+            elif postType == "affiliate":
+                group_name = request.POST.get('group_name')
+                user_list = request.POST.get('user_list')
+                user_list = json.loads(user_list)
+
+                data = {
+                    "name": group_name,
+                    "groupType": MESSAGE_GROUP,
+                    "creator": self.user.pk,
+                    "is_static": True,
+                    "is_player": False
+                }
+
+                serializer = MessageUserGroupSerializer(data=data)
+
+                if serializer.is_valid():
+                    with transaction.atomic():
+                        group = serializer.save()
+                        logger.info("saved message user group")
+                        for user in user_list:
+                            user = CustomUser.objects.get(pk=int(user['id']))
+                            UserToUserGroup.objects.create(group=group, user=user)
+                        
+                        logger.info("saved message user group log")
+                        return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+                else:
+                    return HttpResponse(status=400)
+
+            elif postType == "delete_group":
+                group_name = request.POST.get('group_name')
+                UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
+                logger.info("Deleted group: '{0}'".format(group_name))
+                return HttpResponse("success delete", status=200)
+
+        except Exception as e:
+            logger.error("Group Error: '{0}'".format(repr(e)))
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+
+class StaticGroupValidationAPI(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            group_type = request.GET.get("type")
+            valid_players = []
+            players = request.GET.get("players")
+            players = json.loads(players)
+            if group_type == "player":
+                for player in players:
+                    if player[0].isnumeric():
+                        player = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1]))
+                        if len(player) > 0:
+                            valid_player = {}
+                            valid_player["id"] = player[0].pk
+                            valid_player["username"] = player[0].username
+                            valid_players.append(valid_player)
+                    else:
+                        return HttpResponse("invalid")
             else:
-                is_range = False
+                for player in players:
+                    if player[0].isnumeric():
+                        affiliate = CustomUser.objects.filter(Q(pk=player[0])&Q(username=player[1])&Q(user_to_affiliate_time__isnull=False))
+                        if len(affiliate) > 0:
+                            valid_player = {}
+                            valid_player["id"] = affiliate[0].pk
+                            valid_player["username"] = affiliate[0].username
+                            valid_players.append(valid_player)
+                    else:
+                        return HttpResponse("invalid")
 
-            if isDateFormat(active_from):
-                active_from = datetime.datetime.strptime(active_from, "%m/%d/%Y").date()
-            else:
-                active_from = None
+            return HttpResponse(json.dumps(valid_players), content_type='application/json')
+        except Exception as e:
+            logger.error("CSV Format Invalid Error:", repr(e))
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-            if isDateFormat(active_to):
-                active_to = datetime.datetime.strptime(active_to, "%m/%d/%Y").date()
-            else:
-                active_to = None
 
-            if isDateFormat(register_from):
-                register_from = datetime.datetime.strptime(register_from, "%m/%d/%Y").date()
-            else:
-                register_from = None
+class MessageGroupDetailAPI(View):
+    def get(self, request, *arg, **kwargs):
+        group_id = request.GET.get('groupId')
+        group = UserGroup.objects.get(pk=group_id)
 
-            if isDateFormat(register_to):
-                register_to = datetime.datetime.strptime(register_to, "%m/%d/%Y").date()
-            else:
-                register_to = None
+        group_users = UserToUserGroup.objects.filter(group=group)
 
-            if is_deposit == "true":
-                is_deposit = True
-            else:
-                is_deposit = False
-
-            data = {
-                "name": group_name,
-                "groupType": MESSAGE_GROUP,
-                "creator": self.user.pk,
-                "is_range": is_range,
-                "product": product,
-                "active_from": active_from,
-                "active_to": active_to,
-                "register_from": register_from,
-                "register_to": register_to,
-                "is_deposit": is_deposit
-            }
-
-            serializer = MessageUserGroupSerializer(data=data)
-            if serializer.is_valid():
-                group = serializer.save()
-                logger.info("saved message user group")
-                for pk in pk_list:
-                    user = CustomUser.objects.get(pk=int(pk))
-                    log = UserToUserGroup.objects.create(group=group, user=user)
-                    
-                logger.info("saved message user group log")
-                return HttpResponseRedirect(reverse('xadmin:messagegroups'))
-            else:
-                logger.error(serializer.errors['name'][0])
-                return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
+        response = {}
         
-        elif postType == "delete_group":
-            group_name = request.POST.get('group_name')
-            UserGroup.objects.filter(Q(name=group_name)&Q(groupType=MESSAGE_GROUP)).delete()
-            return HttpResponse("success delete")
+        response["group"] = serializers.serialize('json', [group,])
+
+        user_list = []
+        for utog in group_users:
+            item = {}
+            item["pk"] = utog.user.pk
+            item["username"] = utog.user.username
+            user_list.append(item)
+
+        response["user_list"] = user_list
+
+        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
+class UserIsValidAPI(View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get("username")
+        user = get_object_or_404(CustomUser, username=username)
+        return HttpResponse(status=200)
+
+
+# Campaign 
 class CampaignView(CommAdminView):
     def get(self, request, *arg, **kwargs):
         getType = request.GET.get('type')
@@ -845,7 +982,6 @@ class CampaignView(CommAdminView):
             #         campaign.delete()
 
             return HttpResponse("success update")
-
 
 
 class AWSTopicView(CommAdminView):
@@ -1065,33 +1201,10 @@ class MessageGroupUserAPI(View):
         return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
-class MessageGroupDetailAPI(View):
-    def get(self, request, *arg, **kwargs):
-        group_id = request.GET.get('groupId')
-        group = UserGroup.objects.get(pk=group_id)
-
-        group_users = UserToUserGroup.objects.filter(group=group)
-
-        response = {}
-        
-        response["group"] = serializers.serialize('json', [group,])
-
-        user_list = []
-        for utog in group_users:
-            item = {}
-            item["pk"] = utog.user.pk
-            item["username"] = utog.user.username
-            user_list.append(item)
-
-        response["user_list"] = user_list
-
-        return HttpResponse(json.dumps(response), content_type='application/json', status=200)
-
-
 class MessageGroupUpdateAPI(View):
     def post(self, request, *arg, **kwargs):
         # group_id = self.kwargs.get('pk')
-        group_id = request.POST.get('group_id')
+        group_id = request.POST.get('groupId')
         group = UserGroup.objects.get(pk=int(group_id))
 
         if group is None:
@@ -1104,9 +1217,8 @@ class MessageGroupUpdateAPI(View):
             # exsit = get_object_or_404(UserGroup, name=group_name)
             # exsit = UserGroup.objects.get(name=group_name)
             if UserGroup.objects.filter(name=group_name, groupType=MESSAGE_GROUP):
-                logger.error("group name already exist")
-                return HttpResponse(json.dumps({ "error": "group name already exist", "errorCode": 1}), content_type='application/json')
-
+                logger.error("group name already exists")
+                return HttpResponse(json.dumps({ "error": "group name already exists", "errorCode": 1}), content_type='application/json')
 
         pk_list = request.POST.getlist('pk[]')
         product = request.POST.get("product")
@@ -1377,9 +1489,5 @@ class UserToAWSTopicView(ListAPIView):
     serializer_class = UserToAWSTopicSerializer
     queryset = UserToAWSTopic.objects.all()
 
-class UserIsValidAPI(View):
-    def get(self, request, *args, **kwargs):
-        username = request.GET.get("username")
-        user = get_object_or_404(CustomUser, username=username)
-        return HttpResponse(status=200)
+
         
