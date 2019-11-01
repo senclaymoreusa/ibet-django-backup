@@ -60,7 +60,7 @@ class UserDetailView(CommAdminView):
             context['blockDetail'] = data
             context['block'] = True
 
-        elif checkUserBlock(self.kwargs.get('pk')):
+        elif checkUserBlock(customUser):
             expired_time = ""
             blocked_time = ""
             temporaryStr = ""
