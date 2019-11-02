@@ -9,6 +9,8 @@ import users.views.saintegrationviews as saintegrationviews
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
 from django.views.decorators.csrf import csrf_exempt
+import users.views.transferview as transferview
+
 
 urlpatterns = [
     path('signup/', views.SignUp.as_view(), name='signup'),
@@ -83,6 +85,8 @@ urlpatterns += [
     path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security-question"),
     path('api/user-security-question/', csrf_exempt(views.UserSecurityQuestion.as_view()), name="user-security-question"),
     path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw-password"),
-    path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset-withdraw-password")
+    path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset-withdraw-password"),
+    path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view")
+
     
 ]

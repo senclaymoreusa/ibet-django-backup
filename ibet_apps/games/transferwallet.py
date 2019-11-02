@@ -36,13 +36,12 @@ class TransferWithdraw():
         self.amount = amount
         self.to_wallet = to_wallet
         # self.game_func_options = {'eaWithdraw': self.eaWithdraw,
-        #                           'onbookWithdraw': self.onbookWithdraw,
+        #                           'onebookWithdraw': self.onebookWithdraw,
 
         #                          }
 
     def eaWithdraw(self):
         return requestEAWithdraw(self.user, self.amount, self.to_wallet)
 
-    def onbookWithdraw(self):
-        # requestEAWithdraw(user, amount, to_wallet)
-        print("request onbook withdraw")
+    # def onebookWithdraw(self):
+        # print("request onbook withdraw")

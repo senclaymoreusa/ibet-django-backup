@@ -890,17 +890,3 @@ class AutoCashierLoginEA(View):
         
         response = xmltodict.unparse(data, pretty=True)
         return HttpResponse(response, content_type='text/xml')
-
-
-
-from games.helper import transferRequest
-
-class TestView(View):
-
-    def get(self, request, *args, **kwargs):
-
-        user = CustomUser.objects.get(pk=30)
-        print(user)
-        transferRequest(user, 100, "ea", "main")
-        response = {}
-        return HttpResponse(response, content_type='text/xml')

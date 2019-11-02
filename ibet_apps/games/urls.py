@@ -50,8 +50,4 @@ urlpatterns = [
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
-
-
-
-    path('api/test/', eagameviews.TestView.as_view(), name="test_view")
 ]

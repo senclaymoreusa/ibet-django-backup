@@ -71,7 +71,6 @@ def addOrWithdrawBalance(username, balance, type_balance):
 
 
 def get_client_ip(request):
-    print(request)
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
