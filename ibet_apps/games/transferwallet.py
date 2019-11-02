@@ -24,11 +24,11 @@ class TransferDeposit():
         return requestEADeposit(self.user, self.amount, self.from_wallet)
 
     def onbookDeposit(self):
+        pass
         # requestEADeposit(user, amount, from_wallet)
-        print("request onbook deposit")
+        # print("request onbook deposit")
 
     
-
 class TransferWithdraw():
 
     def __init__(self, user, amount, to_wallet):
@@ -43,5 +43,6 @@ class TransferWithdraw():
     def eaWithdraw(self):
         return requestEAWithdraw(self.user, self.amount, self.to_wallet)
 
-    # def onebookWithdraw(self):
+    def onebookWithdraw(self):
+        pass
         # print("request onbook withdraw")
