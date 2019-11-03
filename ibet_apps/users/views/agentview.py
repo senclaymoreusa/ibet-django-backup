@@ -86,9 +86,11 @@ class AgentView(CommAdminView):
                 'email': user_obj.email or '',
                 'birthday': user_obj.date_of_birth or '',
                 'phone': user_obj.phone or '',
-                'address': user_obj.get_user_address()
+                'address': user_obj.get_user_address(),
+                'email_verified': user_obj.email_verified,
+                'phone_verified': user_obj.phone_verified,
+                'address_verified': user_obj.address_verified,
             }
-            # user_detail['email_verified'] = user_obj.
 
             return HttpResponse(json.dumps(user_detail), content_type='application/json')
 

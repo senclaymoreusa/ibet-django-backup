@@ -498,4 +498,12 @@ ul.ui-autocomplete {
     left: 140px;
 }
 
+.verified-invalid {
+    color: #e2e2e2;
+}
+
+.verified-valid {
+    color: #509e2f;
+}
+
 

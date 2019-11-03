@@ -155,9 +155,21 @@
             $("#user-info-first-col").append(content_col1);
             $("#user-info-second-col").empty();
             content_col2 = "";
-            content_col2 += '<li>' + data.email + '</li>';
-            content_col2 += '<li>' + data.phone + '</li>';
-            content_col2 += '<li>' + data.address + '</li>';
+            if (data.email_verified == false){
+                content_col2 += '<li>' + data.email + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-invalid"></i>' + '</li>';
+            }else{
+                content_col2 += '<li>' + data.email + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-valid"></i>' + '</li>';
+            }
+            if (data.phone_verified == false){
+                content_col2 += '<li>' + data.phone + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-invalid"></i>' + '</li>';
+            }else{
+                content_col2 += '<li>' + data.phone + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-valid"></i>' + '</li>';
+            }
+            if (data.address_verified == false){
+                content_col2 += '<li>' + data.address + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-invalid"></i>' + '</li>';
+            }else{
+                content_col2 += '<li>' + data.address + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-valid"></i>' + '</li>';
+            }
             $("#user-info-second-col").append(content_col2);
             $("#affiliate_id").val(data.id);
         };
