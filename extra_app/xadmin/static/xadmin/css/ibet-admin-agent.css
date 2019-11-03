@@ -11,21 +11,6 @@ body {
     font-size: 11px;
 }
 
-table.dataTable {
-    border-spacing: 0;
-}
-
-.datatable table thead tr th {
-    font-family: Helvetica;
-    font-size: 10px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
-
 .table-block {
     background-color: rgb(243, 243, 243); 
     margin-right: 5px;
@@ -509,6 +494,8 @@ ul.ui-autocomplete {
     margin: 20px;
 }
 
-table.table-bordered {
-    margin-top: 0px;
+#commission_wrapper div .dt-buttons {
+    left: 140px;
 }
+
+

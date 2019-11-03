@@ -73,10 +73,7 @@
             var commission_detail_table = $('#commission_detail').DataTable({
                 retrieve: true,
                 responsive: true,
-                dom: 'B<ftilp>',
-                buttons: [
-                    'csv'
-                ],
+                dom: '<<t>Bpil>',
                 "columnDefs": [{
                     "searchable": false, "targets": [1],
                 }],
@@ -91,8 +88,6 @@
                     "lengthMenu": "_MENU_",
                 },
             });
-            $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
-
         }
 
         releaseCommission = function () {
@@ -218,7 +213,7 @@
 
         var affiliateTable = $('#affiliates').DataTable({
             responsive: true,
-            dom: 'B<ftilp>',
+            dom: '<<t>Bpil>',
             buttons: [
                 'csv'
             ],
@@ -238,7 +233,7 @@
         });
         var commissionTable = $('#commission').DataTable({
             responsive: true,
-            dom: 'B<ftilp>',
+            dom: '<<t>Bpil>',
             buttons: [
                 'csv'
             ],
@@ -258,7 +253,7 @@
         });
         var premiumApplicationTable = $('#affiliate_application').DataTable({
             responsive: true,
-            dom: 'B<ftilp>',
+            dom: '<<t>Bpil>',
             buttons: [
                 'csv'
             ],

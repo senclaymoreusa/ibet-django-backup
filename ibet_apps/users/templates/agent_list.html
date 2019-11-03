@@ -9,12 +9,13 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
 </head>
 
 <body>
 <input type="hidden" id="admin_user" value={{ user.username }}>
+
 <!-- Overview -->
 <div class="panel panel-default">
     <div class="panel-heading">
@@ -311,7 +312,6 @@
     </div>
 </div>
 
-
 <!-- Affiliate Application Pop up -->
 <div class="modal fade" id="audit-affiliate-application" role="dialog">
     <div id="audit_affiliate_app_pop" class="modal-dialog">
@@ -371,7 +371,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Affiliate Table -->
 <div class="panel panel-default">
