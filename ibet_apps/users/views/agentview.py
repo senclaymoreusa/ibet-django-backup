@@ -1,29 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.core import serializers
-from django.http import HttpResponseRedirect, HttpResponse
-from django.urls import reverse, reverse_lazy
-from django.views import generic
-from django.views import View
-from django.utils.translation import ugettext_lazy as _
-from django.utils.timezone import timedelta, localtime, now
+from django.http import HttpResponse
+
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth, TruncYear, TruncDate, Coalesce
-from django.contrib import messages
 from django.shortcuts import render
-from django.template.defaulttags import register
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.mail import EmailMultiAlternatives
-from django.dispatch import receiver
-from django.template.loader import render_to_string
-from django.conf import settings
-from dateutil.relativedelta import relativedelta
-from django.shortcuts import render_to_response
 from decimal import Decimal
 
 from xadmin.views import CommAdminView
-from utils.constants import *
-from accounting.models import *
 from users.models import CustomUser, UserAction, Commission, UserActivity, ReferChannel, SystemCommission
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
@@ -73,8 +59,8 @@ class AgentView(CommAdminView):
                 # query from bet history
                 tranDict['winorloss'] = 0
                 tranDict['commission'] = \
-                commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
-                    total_commission=Coalesce(Sum('amount'), 0))['total_commission']
+                    commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
+                        total_commission=Coalesce(Sum('amount'), 0))['total_commission']
                 if commission_transaction.status == TRAN_APPROVED_TYPE:
                     tranDict['status'] = "Released"
                 else:
@@ -319,8 +305,23 @@ class AgentView(CommAdminView):
         elif post_type == 'systemCommissionChange':
             level_details = request.POST.get('level_details')
             admin_user = request.POST.get('admin_user')
+            comments = request.POST.get('comments')
 
             level_details = json.loads(level_details)
+
+            try:
+                admin_user_obj = CustomUser.objects.get(username=admin_user)
+                # add system commission change log
+                admin_activity = UserActivity(
+                    user=admin_user_obj,
+                    admin=admin_user_obj,
+                    message=comments,
+                    activity_type=ACTIVITY_SYSTEM,
+                )
+                admin_activity.save()
+            except Exception as e:
+                logger.info('Error get admin user object: ' + str(e))
+
             commission_list = []
             # update commission levels
             for i in level_details:
@@ -355,6 +356,7 @@ class AgentView(CommAdminView):
                 logger.info("Admin user " + admin_user + " delete commission level " + str(
                     deleted_list))
                 deleted_commission_levels.delete()
+
         return HttpResponse(status=200)
 
 
@@ -479,7 +481,6 @@ class AgentDetailView(CommAdminView):
                     downline_info['ftd_time'] = ""
                 else:
                     downline_info['ftd_time'] = utcToLocalDatetime(i.ftd_time)
-
 
                 downline_info['channel'] = ""
                 downline_info['deposit'] = affiliate_tran.filter(

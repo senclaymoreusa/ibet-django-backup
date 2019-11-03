@@ -116,3 +116,7 @@ table.dataTable {
     background-color: rgba(0,0,0,.05);
 }
 
+table.table-bordered {
+    margin-top: 0px;
+}
+

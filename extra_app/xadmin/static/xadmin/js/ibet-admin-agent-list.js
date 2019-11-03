@@ -63,7 +63,7 @@
                 content += '<td>' + data[i].winorloss + '</td>';
                 content += '<td>' + data[i].commission + '</td>';
                 content += '<td>' + data[i].status + '</td>';
-                content += '<td>' + data[i].release_time + '</td>';
+                content += '<td>' + formatDatetime(data[i].release_time) + '</td>';
                 content += '<td>' + data[i].operator + '</td>';
                 content += '<td style="display: none" id="tran_pk">' + data[i].trans_pk + '</td>';
                 content += '</tr>';
@@ -82,8 +82,8 @@
                     "infoEmpty": " 0 - 0 of 0",
                     "infoFiltered": "",
                     "paginate": {
-                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                        "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></button>",
+                        "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></button>"
                     },
                     "lengthMenu": "_MENU_",
                 },
@@ -128,7 +128,6 @@
                 })
             });
         }
-
 
         $('#affiliate_application tbody').on('click', 'button', function () {
             var data = $(this).closest('tr').find('#userID').html();
@@ -225,8 +224,8 @@
                 "infoEmpty": " 0 - 0 of 0",
                 "infoFiltered": "",
                 "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></button>",
+                    "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></button>"
                 },
                 "lengthMenu": "_MENU_",
             },
@@ -245,8 +244,8 @@
                 "infoEmpty": " 0 - 0 of 0",
                 "infoFiltered": "",
                 "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></button>",
+                    "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></button>"
                 },
                 "lengthMenu": "_MENU_",
             },
@@ -265,15 +264,15 @@
                 "infoEmpty": " 0 - 0 of 0",
                 "infoFiltered": "",
                 "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></button>",
+                    "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></button>"
                 },
                 "lengthMenu": "_MENU_",
             },
         });
 
         $('#search-btn').on('keyup click', function () {
-            affiliateTable.search($('#search').val()).draw();
+            affiliateTable.search($('#affiliate-search').val()).draw();
         });
 
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
@@ -327,12 +326,16 @@
                     level_details.push(level_detail);
                 });
 
+                comments = $('#system-commission-change-remark').val();
+
+
                 $.ajax({
                     type: 'POST',
                     url: agent_list_url,
                     data: {
                         'type': 'systemCommissionChange',
                         'admin_user': admin_user,
+                        'comments': comments,
                         'level_details': JSON.stringify(level_details),
                     },
                     success: function (data) {
@@ -356,4 +359,14 @@
                 commission_row_prev.append(delete_btn);
             }
         });
+
+        function formatDatetime(data){
+            if(data === 'None'){
+                data = '';
+            }else{
+                data = moment(data).format('MMM DD YYYY, HH:mm');
+            }
+            return data;
+        }
+
     });
