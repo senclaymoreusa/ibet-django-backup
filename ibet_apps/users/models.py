@@ -305,8 +305,8 @@ class SystemCommission(models.Model):
     commission_level = models.IntegerField(unique=True)
     commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    active_downline_needed = models.IntegerField(default=6)
-    monthly_downline_ftd_needed = models.IntegerField(default=6)
+    active_downline_needed = models.IntegerField(default=0)
+    monthly_downline_ftd_needed = models.IntegerField(default=0)
     ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
 
 

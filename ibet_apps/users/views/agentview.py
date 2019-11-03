@@ -232,9 +232,6 @@ class AgentView(CommAdminView):
             if len(system_commission) == 0:
                 default_sc_level = SystemCommission(
                     commission_level=1,
-                    commission_percentage=10,
-                    downline_commission_percentage=10,
-                    ngr=2000,
                 )
                 default_sc_level.save()
             context["system_commission_type"] = system_commission.order_by('commission_level')
