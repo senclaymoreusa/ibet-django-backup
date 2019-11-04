@@ -17,13 +17,13 @@ class TransferDeposit():
         self.amount = amount
         self.from_wallet = from_wallet
         # self.game_func_options = {'eaDeposit': self.eaDeposit,
-        #                           'onbookDeposit': self.onbookDeposit,
+        #                           'onebookWithdraw': self.onebookWithdraw,
         #                          }
 
     def eaDeposit(self):
         return requestEADeposit(self.user, self.amount, self.from_wallet)
 
-    def onbookDeposit(self):
+    def onebookDeposit(self):
         pass
         # requestEADeposit(user, amount, from_wallet)
         # print("request onbook deposit")

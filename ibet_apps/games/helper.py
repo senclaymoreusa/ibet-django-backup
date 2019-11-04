@@ -42,9 +42,9 @@ def transferRequest(user, amount, from_wallet, to_wallet):
     # print(user, amount, from_wallet, to_wallet)
     # print(user.main_wallet)
     if from_wallet == "main":
-        tranfer_to = TransferDeposit(user, amount, from_wallet)
+        transfer_to = TransferDeposit(user, amount, from_wallet)
         function_name = to_wallet + 'Deposit'
-        status = getattr(tranfer_to, function_name)()
+        status = getattr(transfer_to, function_name)()
         if status == CODE_SUCCESS:
             field_name = to_wallet + '_wallet'
             user.main_wallet -= Decimal(float(amount))
@@ -54,9 +54,9 @@ def transferRequest(user, amount, from_wallet, to_wallet):
             user.save()
 
     else:
-        tranfer_from = TransferWithdraw(user, amount, to_wallet)
+        transfer_from = TransferWithdraw(user, amount, to_wallet)
         function_name = from_wallet + 'Withdraw'
-        status = getattr(tranfer_from, function_name)()
+        status = getattr(transfer_from, function_name)()
         if status == CODE_SUCCESS:
 
             from_field_name = from_wallet + '_wallet'
@@ -71,9 +71,9 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                 # print("new amount :" + str(user.main_wallet))
                 
             else:
-                tranfer_to = TransferDeposit(user, amount, from_wallet)
+                transfer_to = TransferDeposit(user, amount, from_wallet)
                 function_name = to_wallet + 'Deposit'
-                status = getattr(tranfer_to, function_name)()
+                status = getattr(transfer_to, function_name)()
                 if status == CODE_SUCCESS:
                     to_field_name = to_wallet + '_wallet'
                     to_old_amount = getattr(user, to_field_name)
@@ -82,7 +82,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
 
                 else:
                     function_name = from_wallet + 'Deposit'
-                    getattr(tranfer_to, function_name)()
+                    getattr(transfer_to, function_name)()
                     from_field_name = from_wallet + '_wallet'
                     from_old_amount = getattr(user, from_field_name)
                     from_new_amount = from_old_amount + Decimal(float(amount))
