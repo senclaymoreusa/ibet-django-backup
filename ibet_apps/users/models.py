@@ -91,7 +91,8 @@ class CustomUser(AbstractBaseUser):
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
-        ('French', 'French')
+        ('Thai', 'Thai'),
+        ('Vietnamese', 'Vietnamese'),
     )
 
     # add additional fields in here
@@ -172,6 +173,7 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
 
     # agent
