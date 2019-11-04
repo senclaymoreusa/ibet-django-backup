@@ -1,12 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.core import serializers
+from django.db import transaction, IntegrityError
 from django.http import HttpResponse
 
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth, TruncYear, TruncDate, Coalesce
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
 
 from xadmin.views import CommAdminView
@@ -257,48 +257,57 @@ class AgentView(CommAdminView):
                         current_trans.arrive_time = timezone.now()
                         current_trans.save()
             return HttpResponse(status=200)
+
         elif post_type == "affiliateApplication":
             result = request.POST.get("result")
             remark = request.POST.get("remark")
             userID = request.POST.get("user_id")
 
             admin_user = request.POST.get("admin_user")
-            user = CustomUser.objects.get(pk=userID)
+            try:
+                user = CustomUser.objects.get(pk=userID)
+                admin_user = CustomUser.objects.get(username=admin_user)
+            except ObjectDoesNotExist as e:
+                logger.error("Error getting user or admin " + str(e))
 
-            admin_user = CustomUser.objects.get(username=admin_user)
-            if result == "Yes":
-                user.user_to_affiliate_time = timezone.now()
-                user.affiliate_status = 'Active'
-                # if this user was an affiliate or he/she referred other people before he/she becomes an affiliate
-                if user.referral_path:
-                    referral_path = str(user.referral_path) + '/' + str(user.pk) + '/'
-                else:
-                    referral_path = str(user.pk) + '/'
+            try:
+                with transaction.atomic():
+                    if result == "Yes":
+                        user.user_to_affiliate_time = timezone.now()
+                        user.affiliate_status = 'Active'
+                        # if this user was an affiliate or he/she referred other people before he/she becomes an affiliate
+                        if user.referral_path:
+                            referral_path = str(user.referral_path) + '/' + str(user.pk) + '/'
+                        else:
+                            referral_path = str(user.pk) + '/'
 
-                if user.referred_by:
-                    try:
-                        referral_path = str(user.referred_by.referral_path) + referral_path
-                    except Exception as e:
-                        logger.error("Error referrer's referral_path " + str(e))
-                user.referral_path = referral_path
-                user.save()
-                affiliate_default_commission = Commission.objects.create(
-                    user_id=user,
-                    commission_level=1,
-                )
-                logger.info(
-                    "Auto add commission level 1 for new affiliate " + user.username)
+                        if user.referred_by:
+                            try:
+                                referral_path = str(user.referred_by.referral_path) + referral_path
+                            except Exception as e:
+                                logger.error("Error referrer's referral_path " + str(e))
+                        user.referral_path = referral_path
+                        user.save()
+                        affiliate_default_commission = Commission.objects.create(
+                            user_id=user,
+                            commission_level=1,
+                        )
+                        logger.info(
+                            "Auto add commission level 1 for new affiliate " + user.username)
+                    else:
+                        user.user_application_time = None
+                    user.save()
+                    if remark:
+                        activity = UserActivity.objects.create(
+                            user=user,
+                            admin=admin_user,
+                            message=remark,
+                            activity_type=ACTIVITY_REMARK,
+                        )
 
-            else:
-                user.user_application_time = None
-            user.save()
-            if remark:
-                activity = UserActivity.objects.create(
-                    user=user,
-                    admin=admin_user,
-                    message=remark,
-                    activity_type=ACTIVITY_REMARK,
-                )
+            except IntegrityError as e:
+                logger.error("Error handle affiliate application " + str(e))
+
             return HttpResponse(status=200)
 
         elif post_type == 'systemCommissionChange':
@@ -319,42 +328,48 @@ class AgentView(CommAdminView):
                 )
                 admin_activity.save()
             except Exception as e:
-                logger.info('Error get admin user object: ' + str(e))
+                logger.info('Error getting admin user object: ' + str(e))
 
-            commission_list = []
-            # update commission levels
-            for i in level_details:
-                if i['pk'] == '':
-                    current_commission = SystemCommission.objects.create(
-                        commission_percentage=i['rate'],
-                        downline_commission_percentage=i['downline_rate'],
-                        commission_level=i['level'],
-                        active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd'],
-                        ngr=i['downline_ngr'],
-                    )
-                    current_commission.save()
-                    commission_list.append(current_commission.pk)
-                    logger.info(str(admin_user) + " create new system commission level " + i['level'])
-                else:
-                    current_commission = SystemCommission.objects.filter(pk=i['pk'])
-                    current_commission.update(
-                        commission_percentage=i['rate'],
-                        downline_commission_percentage=i['downline_rate'],
-                        commission_level=i['level'],
-                        active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd'],
-                        ngr=i['downline_ngr'],
-                    )
-                    logger.info(str(admin_user) + "update commission level " + i['level'])
-                    commission_list.append(i['pk'])
+            try:
+                with transaction.atomic():
 
-            deleted_commission_levels = SystemCommission.objects.exclude(pk__in=commission_list)
-            deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
-            if deleted_list.count() > 0:
-                logger.info("Admin user " + admin_user + " delete commission level " + str(
-                    deleted_list))
-                deleted_commission_levels.delete()
+                    commission_list = []
+                    # update commission levels
+                    for i in level_details:
+                        if i['pk'] == '':
+                            current_commission = SystemCommission.objects.create(
+                                commission_percentage=i['rate'],
+                                downline_commission_percentage=i['downline_rate'],
+                                commission_level=i['level'],
+                                active_downline_needed=i['active_downline'],
+                                monthly_downline_ftd_needed=i['downline_ftd'],
+                                ngr=i['downline_ngr'],
+                            )
+                            current_commission.save()
+                            commission_list.append(current_commission.pk)
+                            logger.info(str(admin_user) + " create new system commission level " + i['level'])
+                        else:
+                            current_commission = SystemCommission.objects.filter(pk=i['pk'])
+                            current_commission.update(
+                                commission_percentage=i['rate'],
+                                downline_commission_percentage=i['downline_rate'],
+                                commission_level=i['level'],
+                                active_downline_needed=i['active_downline'],
+                                monthly_downline_ftd_needed=i['downline_ftd'],
+                                ngr=i['downline_ngr'],
+                            )
+                            logger.info(str(admin_user) + "update commission level " + i['level'])
+                            commission_list.append(i['pk'])
+
+                    deleted_commission_levels = SystemCommission.objects.exclude(pk__in=commission_list)
+                    deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
+                    if deleted_list.count() > 0:
+                        logger.info("Admin user " + admin_user + " delete commission level " + str(
+                            deleted_list))
+                        deleted_commission_levels.delete()
+
+            except IntegrityError as e:
+                logger.info('Error updating system commission setting: ' + str(e))
 
         return HttpResponse(status=200)
 
