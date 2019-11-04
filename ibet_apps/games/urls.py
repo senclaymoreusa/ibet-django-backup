@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
 
     # fg
+    path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),
     path('api/fg/getSessionKey', fggameviews.GetSessionKey.as_view(), name = 'fg_get_sessionkey' ),
@@ -43,6 +44,7 @@ urlpatterns = [
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
+    
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),

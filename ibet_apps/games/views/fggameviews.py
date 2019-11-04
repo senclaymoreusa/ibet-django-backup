@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
-from games.models import FGSession
+from games.models import FGSession, Game
 import xmltodict
 import decimal,re, math
 import requests,json
@@ -15,6 +15,17 @@ import random
 from utils.constants import *
 
 logger = logging.getLogger("django")
+
+class GetAllGame(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        provider = request.GET['provider']
+        game = Game.objects.filter(provider=provider)
+        
+        return JsonResponse({
+        'game': list(game.values())
+    })
+        #return JsonResponse(json.dumps(data),content_type='application/json',status=200)
 
 class SessionCheck(APIView):
     permission_classes = (AllowAny, )
