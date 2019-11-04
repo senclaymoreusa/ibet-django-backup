@@ -8,17 +8,23 @@ import games.views.fggameviews as fggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 import games.views.gdcasinoviews as gdcasino
+import games.views.betsviews as bets
 from games.live_casino import *
-
+import games.views.onebookviews as onebookviews
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
-    path('api/login-ea/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
-    path('api/single-login-ea/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
-    path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
-    path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
+    path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
+
+    #ea live casino
+    path('api/ea/login/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
+    path('api/ea/single-login/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
+    path('api/ea/deposit/', csrf_exempt(eagameviews.DepositEAView.as_view()), name="ea_deposit"),
+    path('api/ea/withdraw/', csrf_exempt(eagameviews.WithdrawEAView.as_view()), name="ea_withdraw"),
+    path('api/ea/get-balance/', csrf_exempt(eagameviews.GetEABalance.as_view()),name="ea_get_balance"),
+    path('api/ea/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="ea_auto_cashier_login"),
     
     #gd casino
     path('api/gd/', gdcasino.my_soap_application, name = 'my_soap_application'),
@@ -48,4 +54,13 @@ urlpatterns = [
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
+
+    #onebook
+    path('api/onebook/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
+    path('api/onebook/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
+    path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
+    path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
+    path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
+    path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+
 ]
