@@ -71,10 +71,11 @@ class FGLogin(APIView):
         user = CustomUser.objects.get(pk=pk)
         currency = user.currency
         uuid = 'fg'+ user.username
+        
         rr = requests.get(FG_URL, params={
             "brandId": BRANDID,
             "brandPassword": BRAND_PASSWORD, 
-            "currency": "CNY",
+            "currency": CURRENCY_CHOICES[currency][1],
             "uuid": uuid,
             "loginName": user.username
             })
