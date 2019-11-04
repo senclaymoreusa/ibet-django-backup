@@ -193,30 +193,27 @@ class ReserveView(View):
             req_dict = xmltodict.parse(data)
 
             username = req_dict['reserve']['externalId']
-            bet_amount_str = req_dict['reserve']['real']
             transaction_id = req_dict['reserve']['transactionId']
+            bet_amount_str = req_dict['reserve']['real']
             req_currency = req_dict['reserve']['currency']
             
             user = CustomUser.objects.get(username=username)
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
             bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
 
-
+            user_currency_text = CURRENCY_CHOICES[user.currency][1]
+            status_code = PNG_STATUS_OK
 
             print("")
             print(type(user_balance))
             print(str(user_balance))
             print(type(bet_amount_decimal))
             print(str(bet_amount_decimal))
-            print("")
-
             print("req_currency: " + req_currency)
             print("user.currency: " + str(user.currency))
+            print("user_currency_text: " + user_currency_text)
+            print("")
 
-            print(CURRENCY_CHOICES[user.currency][1])
-            user_currency_text = CURRENCY_CHOICES[user.currency][1]
-
-            status_code = 0
             if user_currency_text != req_currency:
                 # Checking currency type takes priority over making a bet.
                 status_code = PNG_STATUS_INVALIDCURRENCY
@@ -247,8 +244,8 @@ class ReserveView(View):
                     #odds = "",
                     #bet_type = "",
                     #line = "",
-                    currency = user.currency,
-                    market = ibetVN,
+                    currency = user_currency_text,
+                    market = ibetVN, # Always?
                     ref_no = transaction_id,
                     #bet_time = "",
                     #resolved_time = "",
@@ -262,7 +259,7 @@ class ReserveView(View):
             res_dict = {
                 "reserve": {
                     "real": {
-                        "#text": str(user.main_wallet)
+                        "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
                     },
                     "currency": {
                         "#text": str(user_currency_text)
@@ -275,8 +272,6 @@ class ReserveView(View):
 
             res_msg = xmltodict.unparse(res_dict, pretty=True)
             return HttpResponse(res_msg, content_type='text/xml')
-
-
 
         except Exception as e:
             print("PLAY'nGO ReserveView Error: " + str(e))
