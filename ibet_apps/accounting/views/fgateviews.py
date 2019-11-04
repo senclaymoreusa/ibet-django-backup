@@ -40,7 +40,7 @@ class chargeCard(generics.GenericAPIView):
         message = bytes(transaction_id + pin + serial + FGATE_TYPE, 'utf-8')
         secret = bytes(FGATE_PARTNERKEY, 'utf-8')
         token = generateHash(secret, message)
-        if checkUserBlock(CustomUser.objects.get(username=user).pk):
+        if checkUserBlock(CustomUser.objects.get(username=user)):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,

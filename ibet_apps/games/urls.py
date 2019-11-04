@@ -3,6 +3,7 @@ from rest_framework import routers
 import games.views.eagameviews as eagameviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
+import games.views.allbetgameviews as allbetgameviews
 import games.views.fggameviews as fggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
@@ -35,6 +36,9 @@ urlpatterns = [
     path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
     path('api/playngo/reserve/', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
+
+    # AllBet
+    path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
 
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),

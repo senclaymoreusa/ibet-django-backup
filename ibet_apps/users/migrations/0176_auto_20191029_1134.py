@@ -10,7 +10,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='customuser',
+            name='currency',
+        ),
+
+        migrations.AddField(
             model_name='customuser',
             name='currency',
             field=models.SmallIntegerField(blank=True, choices=[(0, 'CNY'), (1, 'USD'), (2, 'THB'), (3, 'IDR'), (4, 'HKD'), (5, 'AUD'), (6, 'MYR'), (7, 'VND'), (8, 'MMK'), (9, 'XBT'), (10, 'EUR'), (11, 'NOK'), (12, 'GBP')], default=0),
