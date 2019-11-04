@@ -18,7 +18,6 @@ import pytz
 logger = logging.getLogger("django")
 
 
-
 class GetTransactions(CommAdminView):
     def get(self, request, txn_type, page=0):
         context = super().get_context()
@@ -120,21 +119,31 @@ class ConfirmSettlement(CommAdminView):
         result = request.POST.get("result")
         # print(dep_trans_no)
         # print(result)
-        current_deposit = Transaction.objects.get(pk=txn_pk)
+        curr_txn = Transaction.objects.get(pk=txn_pk)
 
         if result == "approve":
-            current_deposit.status = 0
+            curr_txn.status = 0
             logger.info('Finish update the status of deposit ' + str(txn_pk) + ' to Approve')
         else:
-            current_deposit.status = 1
+            curr_txn.status = 1
             logger.info('Finish update the status of deposit ' + str(txn_pk) + ' to Reject')
-        current_deposit.save()
+        curr_txn.save()
         return HttpResponse(status=200)
 
 # change status from review to either 1) rejected 2) approved/pending
 class RiskReview(CommAdminView):
     def post(self, request):
-        pass
+        user_id = request.POST.get("user_id")
+        txn_no = request.POST.get("txn_no")
+        decision = request.POST.get("decision")
+        curr_txn = Transaction.objects.get(transaction_id=txn_no, user_id=user_id)
+
+        print(curr_txn)
+        curr_txn.status = TRAN_PENDING_TYPE if decision == "approve" else TRAN_REJECTED_TYPE
+        curr_txn.save()
+        print(curr_txn)
+        response = f'Updated transaction {curr_txn.transaction_id}! (Result: {decision})'
+        return HttpResponse(content=response,status=200)
 
 # modify success to failure or vice-versa (and modify amount?)
 class OverrideTransaction(CommAdminView):

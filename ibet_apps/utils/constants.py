@@ -116,7 +116,7 @@ TRAN_CANCEL_TYPE = 5  # deposit / withdraw
 TRAN_COMPLETED_TYPE = 6  
 TRAN_RESEND_TYPE = 7    
 TRAN_REJECTED_TYPE = 8  # withdraw
-TRAN_RISK_REVIEW = 9  # 
+TRAN_RISK_REVIEW = 9  # withdraw
 
 STATE_CHOICES = (
     (TRAN_SUCCESS_TYPE, 'Success'),
