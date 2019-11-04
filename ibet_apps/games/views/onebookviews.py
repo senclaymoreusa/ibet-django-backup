@@ -423,6 +423,10 @@ class FundTransfer(APIView):
 class GetBetDetail(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name="Onebook")
+        except ObjectDoesNotExist:
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
         delay = kwargs.get("delay", 2)
         success = False
@@ -439,10 +443,7 @@ class GetBetDetail(APIView):
             updates = GameProvider.objects.get(provider_name='Onebook')
             updates.notes = version_key
             updates.save()
-            try:
-                PROVIDER = GameProvider.objects.get(provider_name="Onebook")
-            except ObjectDoesNotExist:
-                logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            
             if  "BetDetails" in rdata['Data']:
                 # logger.info(rdata["Data"]["BetDetails"])
                 
