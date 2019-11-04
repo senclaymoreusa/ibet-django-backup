@@ -204,34 +204,35 @@ class ReserveView(View):
             user_currency_text = CURRENCY_CHOICES[user.currency][1]
             status_code = PNG_STATUS_OK
 
-            print("")
-            print(type(user_balance))
-            print(str(user_balance))
-            print(type(bet_amount_decimal))
-            print(str(bet_amount_decimal))
-            print("req_currency: " + req_currency)
-            print("user.currency: " + str(user.currency))
-            print("user_currency_text: " + user_currency_text)
-            print("")
+            PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+            CATEGORY = Category.objects.get(name="TESTCATEGORY")
 
+            #print("")
+            #print(type(user_balance))
+            #print(str(user_balance))
+            #print(type(bet_amount_decimal))
+            #print(str(bet_amount_decimal))
+            #print("req_currency: " + req_currency)
+            #print("user.currency: " + str(user.currency))
+            #print("user_currency_text: " + user_currency_text)
+            #print("")
+
+            # Checking currency type takes priority over making a bet.
             if user_currency_text != req_currency:
-                # Checking currency type takes priority over making a bet.
                 status_code = PNG_STATUS_INVALIDCURRENCY
+                logger.error("PLAY'nGO ReserveView Error: Currency mismatch.")
 
+            elif str(bet_amount_decimal) == "0.00":
+                logger.error("PLAY'nGO ReserveView Error: User attempted to place bet of 0 value.")
+                raise ValueError("User attempted to place bet of 0 value.")
+
+            # Bet can go through. 
             elif user_balance >= bet_amount_decimal:
-                # Bet can go through 
                 balance_after_bet = user_balance - bet_amount_decimal
                 user.main_wallet = balance_after_bet
                 user.save()
 
-                # Move this later; GameBet object may not be created even when user balance is deducted.
-                try:
-                    PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
-                    CATEGORY = Category.objects.get(name="TESTCATEGORY")
-                except ObjectDoesNotExist:
-                    print("Error fetching provider or category")
-
-                # Create a GameBet entry upon successful placement of a bet
+                # Create a GameBet entry upon successful placement of a bet.
                 GameBet.objects.create(
                     provider = PROVIDER,
                     category = CATEGORY,
@@ -252,13 +253,17 @@ class ReserveView(View):
                     #other_data = {}
                 )
 
+                logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user.username)
+
             else:
                 status_code = PNG_STATUS_NOTENOUGHMONEY
+                logger.error("PLAY'nGO ReserveView Error: Not enough money to place bet.")
 
-            # Compose response dictionary and convert to response XML
+            # Compose response dictionary and convert to response XML.
             res_dict = {
                 "reserve": {
                     "real": {
+                        # Cannot use balance_after_bet in case bet did not go through
                         "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
                     },
                     "currency": {
@@ -274,5 +279,5 @@ class ReserveView(View):
             return HttpResponse(res_msg, content_type='text/xml')
 
         except Exception as e:
-            print("PLAY'nGO ReserveView Error: " + str(e))
+            logger.error("PLAY'nGO ReserveView Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
