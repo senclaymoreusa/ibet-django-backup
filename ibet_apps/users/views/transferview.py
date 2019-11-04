@@ -21,6 +21,8 @@ from accounting.models import *
 from utils.constants import *
 
 
+logger = logging.getLogger('django')
+
 
 class Transfer(View):
 
@@ -35,13 +37,14 @@ class Transfer(View):
 
             user = CustomUser.objects.get(pk=user_id)
 
-            transferRequest(user, amount, from_wallet, from_wallet)
+            transferRequest(user, amount, from_wallet, to_wallet)
             response = {
                 "status_code": CODE_SUCCESS,
                 "error_message": "Successfully transfer"
             }
 
-            return HttpResponse(response, content_type='application/json')
+            logger.info("Successfully transfer money from" + str(from_wallet) + " " + str(to_wallet))
+            return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
             logger.error("Request transfer error: ", e)

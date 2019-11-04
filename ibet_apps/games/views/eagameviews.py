@@ -635,7 +635,8 @@ def getEAWalletBalance(user):
             currency = CURRENCY_VND
         
         api_response['currency'] = currency
-        
+    
+    logger.info("Successfully get the balance from EA and amount is: " + propertiesBalance)
     return json.dumps(api_response)
 
 
@@ -827,7 +828,7 @@ class AutoCashierLoginEA(View):
         data = request.body
         dic = xmltodict.parse(data)
         response = json.dumps(dic)
-        print(response)
+        # print(response)
 
         action = dic["request"]["@action"]
         request_id = dic["request"]["element"]["@id"]
