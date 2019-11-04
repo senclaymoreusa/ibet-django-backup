@@ -21,6 +21,9 @@ class UserGroup(models.Model):
     time_used = models.IntegerField(default=0)
     approvals = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
 
+    is_static = models.BooleanField(default=False)
+    is_player = models.BooleanField(default=False)
+
     is_range = models.BooleanField(default=False)
     product = models.CharField(blank=True, null=True, max_length=50)
     active_from = models.DateField('Active From', blank=True, null=True)

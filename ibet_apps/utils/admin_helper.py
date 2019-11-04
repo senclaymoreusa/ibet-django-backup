@@ -172,3 +172,12 @@ def decode_user_id_from_referral_code(code):
             i += 1
         return user_id
 
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
