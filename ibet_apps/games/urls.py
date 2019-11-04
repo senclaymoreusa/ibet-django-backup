@@ -8,6 +8,7 @@ import games.views.fggameviews as fggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 import games.views.gdcasinoviews as gdcasino
+import games.views.betsviews as bets
 from games.live_casino import *
 
 urlpatterns = [
@@ -19,7 +20,7 @@ urlpatterns = [
     path('api/single-login-ea/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
     path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
-    
+    path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
     #gd casino
     path('api/gd/', gdcasino.my_soap_application, name = 'my_soap_application'),
     path('api/gd/login', gdcasino.LoginView.as_view(), name = 'GDCasino_Login'),
