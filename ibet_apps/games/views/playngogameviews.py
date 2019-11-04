@@ -146,15 +146,15 @@ class BalanceView(View):
                 logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
 
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
-            user_currency = user.currency
-            status_code = 0 # Default case is 0 (request successful)
+            user_currency = CURRENCY_CHOICES[user.currency][1]
+            status_code = PNG_STATUS_OK # Default case is 0 (request successful)
 
             if user.block is True:
-                status_code = 5
+                status_code = PNG_STATUS_ACCOUNTLOCKED
             elif user.active is False:
-                status_code = 6
-            elif user.currency != currency:
-                status_code = 3
+                status_code = PNG_STATUS_ACCOUNTDISABLED
+            elif user_currency != currency:
+                status_code = PNG_STATUS_INVALIDCURRENCY
 
             # Compose response dictionary and convert to response XML
             res_dict = {
@@ -195,6 +195,7 @@ class ReserveView(View):
             username = req_dict['reserve']['externalId']
             bet_amount_str = req_dict['reserve']['real']
             transaction_id = req_dict['reserve']['transactionId']
+            req_currency = req_dict['reserve']['currency']
             
             user = CustomUser.objects.get(username=username)
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
@@ -209,9 +210,18 @@ class ReserveView(View):
             print(str(bet_amount_decimal))
             print("")
 
+            print("req_currency: " + req_currency)
+            print("user.currency: " + str(user.currency))
 
+            print(CURRENCY_CHOICES[user.currency][1])
+            user_currency_text = CURRENCY_CHOICES[user.currency][1]
 
-            if user_balance >= bet_amount_decimal:
+            status_code = 0
+            if user_currency_text != req_currency:
+                # Checking currency type takes priority over making a bet.
+                status_code = PNG_STATUS_INVALIDCURRENCY
+
+            elif user_balance >= bet_amount_decimal:
                 # Bet can go through 
                 balance_after_bet = user_balance - bet_amount_decimal
                 user.main_wallet = balance_after_bet
@@ -246,10 +256,7 @@ class ReserveView(View):
                 )
 
             else:
-                # TODO: return XML, not HttpResponse
-                return HttpResponse("Error: Bet amount exceeds wallet balance!")
-
-
+                status_code = PNG_STATUS_NOTENOUGHMONEY
 
             # Compose response dictionary and convert to response XML
             res_dict = {
@@ -258,10 +265,10 @@ class ReserveView(View):
                         "#text": str(user.main_wallet)
                     },
                     "currency": {
-                        "#text": str(user.currency)
+                        "#text": str(user_currency_text)
                     },
                     "statusCode": {
-                        "#text": ""
+                        "#text": str(status_code)
                     },
                 }
             }
