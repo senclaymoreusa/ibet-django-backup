@@ -16,11 +16,16 @@ urlpatterns = [
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
-    path('api/login-ea/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
-    path('api/single-login-ea/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
-    path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
-    path('api/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="auto_cashier_login"),
     path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
+
+    #ea live casino
+    path('api/ea/login/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
+    path('api/ea/single-login/', csrf_exempt(eagameviews.EASingleLoginValidation.as_view()), name="ea_single_login"),
+    path('api/ea/deposit/', csrf_exempt(eagameviews.DepositEAView.as_view()), name="ea_deposit"),
+    path('api/ea/withdraw/', csrf_exempt(eagameviews.WithdrawEAView.as_view()), name="ea_withdraw"),
+    path('api/ea/get-balance/', csrf_exempt(eagameviews.GetEABalance.as_view()),name="ea_get_balance"),
+    path('api/ea/auto-cashier-login/', csrf_exempt(eagameviews.AutoCashierLoginEA.as_view()), name="ea_auto_cashier_login"),
+    
     #gd casino
     path('api/gd/', gdcasino.my_soap_application, name = 'my_soap_application'),
     path('api/gd/login', gdcasino.LoginView.as_view(), name = 'GDCasino_Login'),
