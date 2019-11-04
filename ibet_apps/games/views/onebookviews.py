@@ -224,7 +224,7 @@ def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
                                             transfer_from='Onebook',
                                             transfer_to=fund_wallet,
                                             product=0,
-                                            transaction_type=TRANSACTION_TRANSFER_OUT,
+                                            transaction_type=TRANSACTION_TRANSFER,
                                             status=TRAN_SUCCESS_TYPE)
                 
                 elif direction == '0':
@@ -239,7 +239,7 @@ def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
                                             transfer_from=fund_wallet,
                                             transfer_to='Onebook',
                                             product=0,
-                                            transaction_type=TRANSACTION_TRANSFER_IN,
+                                            transaction_type=TRANSACTION_TRANSFER,
                                             status=TRAN_SUCCESS_TYPE)
                 user.save()
             
