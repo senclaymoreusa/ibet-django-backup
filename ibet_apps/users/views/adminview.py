@@ -820,7 +820,7 @@ class UserListView(CommAdminView):
         search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
-        block = request.GET.get('block') == 'true'
+        block = request.GET.get('block')
 
         # print("search: " + str(search))
 
@@ -833,29 +833,38 @@ class UserListView(CommAdminView):
             offset = 0
         else:
             offset = int(offset)
-
-        if block is None or block is False:
-            block = False
-        else:
-            block = True
-
+    
         context = super().get_context()
         title = 'Member List'
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
+        # if search:
+        #     count = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))).count()
+        #     customUser = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)))[offset:offset+pageSize]
+
+        #     if count == 0:
+        #         count = CustomUser.objects.filter(block=block).count()
+        #         customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
+        #         context['searchError'] = _("No search data")
+
+        # else:
+        #     count = CustomUser.objects.filter(block=block).count()
+        #     customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
+
+        user_filter = Q()
+
+        if block == '1':
+            user_filter &= Q(block=True)
+        elif block == '0':
+            user_filter &= Q(block=False)
+        
         if search:
-            count = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))).count()
-            customUser = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)))[offset:offset+pageSize]
+            user_filter &= (Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))
 
-            if count == 0:
-                count = CustomUser.objects.filter(block=block).count()
-                customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
-                context['searchError'] = _("No search data")
+        customUser = CustomUser.objects.filter(user_filter)
+        count = customUser.count()
 
-        else:
-            count = CustomUser.objects.filter(block=block).count()
-            customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
 
         if offset == 0:
             context['isFirstPage'] = True
