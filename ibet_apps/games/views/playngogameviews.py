@@ -193,19 +193,26 @@ class ReserveView(View):
             req_dict = xmltodict.parse(data)
 
             username = req_dict['reserve']['externalId']
+            product_id = req_dict['reserve']['productId']
             transaction_id = req_dict['reserve']['transactionId']
             bet_amount_str = req_dict['reserve']['real']
             req_currency = req_dict['reserve']['currency']
+            game_id = req_dict['reserve']['gameId']
+            game_session_id = req_dict['reserve']['gameSessionId']
+            access_token = req_dict['reserve']['accessToken']
+            round_id = req_dict['reserve']['roundId']
+            channel = req_dict['reserve']['channel']
+            free_game_external_id = req_dict['reserve']['freegameExternalId']
+            actual_value = req_dict['reserve']['actualValue']
             
             user = CustomUser.objects.get(username=username)
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
             bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
-
             user_currency_text = CURRENCY_CHOICES[user.currency][1]
-            status_code = PNG_STATUS_OK
 
+            status_code = PNG_STATUS_OK
             PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
-            CATEGORY = Category.objects.get(name="TESTCATEGORY")
+            CATEGORY = Category.objects.get(name="SLOTS")
 
             #print("")
             #print(type(user_balance))
@@ -236,20 +243,20 @@ class ReserveView(View):
                 GameBet.objects.create(
                     provider = PROVIDER,
                     category = CATEGORY,
-                    #game = "",
-                    #game_name = "",
+                    #game = None,
+                    #game_name = None,
                     username = user,
                     amount_wagered = bet_amount_decimal,
                     amount_won = 0.00,
-                    #outcome = "",
-                    #odds = "",
-                    #bet_type = "",
-                    #line = "",
+                    #outcome = None,
+                    #odds = None,
+                    #bet_type = None,
+                    #line = None,
                     currency = user_currency_text,
-                    market = ibetVN, # Always?
+                    market = ibetVN, # Need to clarify with provider
                     ref_no = transaction_id,
-                    #bet_time = "",
-                    #resolved_time = "",
+                    #bet_time = None,
+                    #resolved_time = None,
                     #other_data = {}
                 )
 
