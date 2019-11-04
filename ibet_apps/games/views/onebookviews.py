@@ -18,10 +18,7 @@ from datetime import datetime
 from utils.admin_helper import *
 
 logger = logging.getLogger('django')
-try:
-    PROVIDER = GameProvider.objects.get(provider_name="Onebook")
-except ObjectDoesNotExist:
-    logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+
 
 
 convertCurrency = {
@@ -442,6 +439,10 @@ class GetBetDetail(APIView):
             updates = GameProvider.objects.get(provider_name='Onebook')
             updates.notes = version_key
             updates.save()
+            try:
+                PROVIDER = GameProvider.objects.get(provider_name="Onebook")
+            except ObjectDoesNotExist:
+                logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
             if  "BetDetails" in rdata['Data']:
                 # logger.info(rdata["Data"]["BetDetails"])
                 

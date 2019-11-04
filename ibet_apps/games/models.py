@@ -8,6 +8,8 @@ from django.contrib.postgres.fields import JSONField
 from users.models import CustomUser
 
 from utils.constants import *
+from django.utils import timezone
+import uuid
 
 
 # Create your models here.
@@ -167,4 +169,3 @@ class FGSession(models.Model):
     
     def __str__(self):
         return '{0}'.format(self.user)
-

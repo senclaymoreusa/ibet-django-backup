@@ -90,7 +90,11 @@ CURRENCY_XBT = 9
 CURRENCY_EUR = 10
 CURRENCY_NOK = 11
 CURRENCY_GBP = 12
+<<<<<<< HEAD
 CURRENCY_TEST = 20
+=======
+CURRENCY_TTC = 13
+>>>>>>> 0683bff4293ad3da5233fd03512661e42c414737
 
 CURRENCY_CHOICES = (
     (CURRENCY_CNY, 'CNY'),
@@ -106,7 +110,11 @@ CURRENCY_CHOICES = (
     (CURRENCY_EUR, 'EUR'),
     (CURRENCY_NOK, 'NOK'),
     (CURRENCY_GBP, 'GBP'),
+<<<<<<< HEAD
     (CURRENCY_TEST, 'UUD'),
+=======
+    (CURRENCY_TTC, 'TTC')
+>>>>>>> 0683bff4293ad3da5233fd03512661e42c414737
 )
 
 TRAN_SUCCESS_TYPE = 0
@@ -167,19 +175,17 @@ TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
-TRANSACTION_TRANSFER_IN = 4
-TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONUS = 6
-TRANSACTION_ADJUSTMENT = 7
-TRANSACTION_COMMISSION = 8
+TRANSACTION_TRANSFER = 4
+TRANSACTION_BONUS = 5
+TRANSACTION_ADJUSTMENT = 6
+TRANSACTION_COMMISSION = 7
 
 TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_DEPOSIT, 'Deposit'),
     (TRANSACTION_WITHDRAWAL, 'Withdrawal'),
     (TRANSACTION_BET_PLACED, 'Bet Placed'),
     (TRANSACTION_SETTLED, 'Bet Settled'),
-    (TRANSACTION_TRANSFER_IN, 'Transfer in'),
-    (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
+    (TRANSACTION_TRANSFER, 'Transfer'),
     (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
@@ -634,11 +640,13 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
 else:
     API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
