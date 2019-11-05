@@ -153,7 +153,7 @@ class DepositEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            if requestEADeposit(user, amount) == ERROR_CODE_FAIL:
+            if requestEADeposit(user, amount, "main") == ERROR_CODE_FAIL:
                 return HttpResponse("Fail deposit money to EA")
 
             return HttpResponse("Finished deposit money to EA")
@@ -383,9 +383,15 @@ class WithdrawEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            obj = requestEAWithdraw(user, amount)
+            if float(user.ea_wallet) < float(amount):
+                return HttpResponse("Balance not enough")
+
+            if requestEAWithdraw(user, amount, "main") == CODE_SUCCESS:
+                return HttpResponse("Successfully withdraw money from EA")
+            else:
+                return HttpResponse("There is something wrong")
             
-            return HttpResponse(obj, content_type="application/json")
+            # return HttpResponse(obj, content_type="application/json")
         
         except Exception as e:
             logger.error("Error withdraw money from EA wallet", e)
