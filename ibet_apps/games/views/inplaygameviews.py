@@ -77,11 +77,13 @@ class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
         # data = requests.body
         data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
-        key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
+        # key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
+        key = "9d25ee5d1ffa0e01"
 
         cipher = DES3.new(key, DES3.MODE_ECB)
         plain_text = cipher.decrypt(data)
         print(plain_text)
+        print(str(plain_text, "utf-8"))
 
         return HttpResponse(status=200)
 
