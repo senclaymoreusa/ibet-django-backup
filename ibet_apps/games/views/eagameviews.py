@@ -297,6 +297,10 @@ def requestEADeposit(user, amount, from_wallet):
             logger.error("Invalid vendor for user: {} play EA game".format(user.username))
             return ERROR_CODE_FAIL
 
+        else:
+            logger.error("There is something wrong when request EA deposit method {}".format(user.username))
+            return ERROR_CODE_FAIL
+
     except Exception as e:
         logger.error("request deposit from EA: ", e)
         return ERROR_CODE_FAIL
@@ -481,11 +485,7 @@ def requestEAWithdraw(user, amount, to_wallet):
             elif i['@name'] == 'errdesc' and "#text" in i:
                 properties_error = i['#text']
 
-        # api_response = {
-        #     "error_message": "Successfully comfirm withdraw",
-        #     "status_code": CODE_SUCCESS
-        # }
-        # error_message = ""
+
         if properties_status == "0":
             error_message = "Successfully comfirm withdraw"
             with transaction.atomic():
@@ -499,21 +499,19 @@ def requestEAWithdraw(user, amount, to_wallet):
             return CODE_SUCCESS
             
         elif properties_status == "204":
-            # error_message = "Exceed amount"
-            # api_response["error_message"] = error_message
-            # api_response["status_code"] = ERROR_CODE_MAX_EXCEED
             logger.info("Exceed amount from EA withdraw")
             return ERROR_CODE_FAIL
+
         elif properties_status == "205":
-            # error_message = "Invalid vendor"
-            # api_response["error_message"] = error_message
-            # api_response["status_code"] = ERROR_CODE_INVAILD_INFO
             logger.error("Invalid vendor for user: {} play EA game".format(user.username))
+            return ERROR_CODE_FAIL
+
+        else:
+            logger.error("There is something wrong when request EA deposit method {}".format(user.username))
             return ERROR_CODE_FAIL
 
     except Exception as e:
         logger.error("request withdraw from EA: ", e)
-        # api_response = {}
         return ERROR_CODE_FAIL
 
 
