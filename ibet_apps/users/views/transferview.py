@@ -37,11 +37,17 @@ class Transfer(View):
 
             user = CustomUser.objects.get(pk=user_id)
 
-            transferRequest(user, amount, from_wallet, to_wallet)
-            response = {
-                "status_code": CODE_SUCCESS,
-                "error_message": "Successfully transfer"
-            }
+            if transferRequest(user, amount, from_wallet, to_wallet):
+                response = {
+                    "status_code": CODE_SUCCESS,
+                    "error_message": "Successfully transfer"
+                }
+            else:
+
+                response = {
+                    "status_code": CODE_FAIL,
+                    "error_message": "Transfer fail"
+                }
 
             logger.info("Successfully transfer money from" + str(from_wallet) + " " + str(to_wallet))
             return HttpResponse(json.dumps(response), content_type='application/json')

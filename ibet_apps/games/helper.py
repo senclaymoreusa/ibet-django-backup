@@ -52,6 +52,9 @@ def transferRequest(user, amount, from_wallet, to_wallet):
             new_amount = old_amount + amount
             setattr(user, field_name, new_amount)
             user.save()
+            return True
+
+        return False
 
     else:
         transfer_from = TransferWithdraw(user, amount, to_wallet)
@@ -69,7 +72,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                 # print("old amount :" + str(old_amount))
                 user.main_wallet = old_amount + Decimal(float(amount))
                 # print("new amount :" + str(user.main_wallet))
-                
+                return True
             else:
                 transfer_to = TransferDeposit(user, amount, from_wallet)
                 function_name = to_wallet + 'Deposit'
@@ -79,7 +82,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                     to_old_amount = getattr(user, to_field_name)
                     to_new_amount = to_old_amount + Decimal(float(amount))
                     setattr(user, to_field_name, to_new_amount)
-
+                    return True
                 else:
                     function_name = from_wallet + 'Deposit'
                     getattr(transfer_to, function_name)()
@@ -87,5 +90,6 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                     from_old_amount = getattr(user, from_field_name)
                     from_new_amount = from_old_amount + Decimal(float(amount))
                     setattr(user, from_field_name, from_new_amount)
-
+                    return False
             user.save()
+        return False
