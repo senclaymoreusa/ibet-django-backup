@@ -229,7 +229,7 @@ $(document).ready(function() {
         paramsMap['block'] = parsedUrl.searchParams.get("block");
     }
 
-    if (parsedUrl.searchParams.get("block") == '') {
+    if (parsedUrl.searchParams.get("block") == '' || !parsedUrl.searchParams.get("block")) {
         $("#status-selection").val("-1");
     } else {
         $("#status-selection").val(parsedUrl.searchParams.get("block"));
