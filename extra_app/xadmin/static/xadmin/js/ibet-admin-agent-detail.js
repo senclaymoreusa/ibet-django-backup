@@ -21,7 +21,7 @@
         // DOWNLINE LIST TABLE
         var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
             responsive: true,
-            dom: 'B<ftilp>',
+            dom: '<<t>Bpil>',
             buttons: [
                 'csv'
             ],
