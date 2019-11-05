@@ -8,14 +8,17 @@ from django.contrib.postgres.fields import JSONField
 from users.models import CustomUser
 
 from utils.constants import *
-
+from django.utils import timezone
+import uuid
 
 
 # Create your models here.
 class GameProvider(models.Model):
     provider_name = models.CharField(max_length=100)
     type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
-    market = models.CharField(max_length=50)
+    market = models.CharField(max_length=50,null=True)
+    notes = models.CharField(max_length=100, null=True, blank=True)
+
     def __str__(self):
         return self.provider_name
 
@@ -101,7 +104,7 @@ class GameBet(models.Model):
     amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-    odds = models.IntegerField(null=True, blank=True) # payout odds (in american odds), e.g. +500, -110, etc.
+    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
 
@@ -152,6 +155,8 @@ class EATicket(models.Model):
     
     ticket = models.UUIDField()
     created_time = models.DateTimeField(default=timezone.now)
+
+    
 
 #FG model
 class FGSession(models.Model):
