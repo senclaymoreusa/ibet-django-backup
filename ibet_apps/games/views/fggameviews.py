@@ -51,10 +51,11 @@ class GetSessionKey(APIView):
                 logger.info(rr)
 
                
-        except:
+        except Exception as e:
             data = {
                 "sessionKey" : None
             }
+            logger.error("no sessionKey", e)
         return HttpResponse(json.dumps(data),content_type='application/json',status=200)
 
 class FGLogin(APIView):
