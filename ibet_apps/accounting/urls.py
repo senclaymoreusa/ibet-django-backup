@@ -56,6 +56,7 @@ urlpatterns = [
     path('api/help2pay/deposit_result', help2pay.DepositResult.as_view(), name='Help2pay_deposit_result'),
     path('api/help2pay/deposit_success', help2pay.depositFrontResult, name = 'Help2pay_deposit_sucess'),
     path('api/help2pay/deposit_status', help2pay.depositStatus, name = 'Help2pay_deposit_status'),
+    path('api/help2pay/request_withdraw', csrf_exempt(help2pay.RequestWithdraw.as_view()), name = 'Help2pay_withdraw_request'),
     path('api/fgate/chargeCard', fgate.chargeCard.as_view(), name = 'fgate_Charge_Card'),
     path('api/circlepay/deposit', csrf_exempt(circlepay.create_deposit), name="CirclePay_create_deposit"),
     path('api/circlepay/confirm', csrf_exempt(circlepay.confirm_payment), name="CirclePay_Confirm_Payment"),

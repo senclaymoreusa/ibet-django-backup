@@ -161,6 +161,13 @@ class DepositResult(generics.GenericAPIView):
         }, status=status.HTTP_200_OK)
 
 
+class RequestWithdraw(View):
+    def get(self, request):
+        return HttpResponse("Get withdraw request!")
+    def post(self, request):
+        return HttpResponse("Post withdraw request!")
+
+
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def depositFrontResult(request):
