@@ -29,7 +29,7 @@ MG_RESPONSE_ERROR = {
 class MGLogin(APIView):
 
     permission_classes = (AllowAny, )
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         data = request.body
         print(data)
         dd = xmltodict.parse(data)
@@ -67,7 +67,7 @@ class MGLogin(APIView):
 class GetBalance(APIView):
     permission_classes = (AllowAny, )
 
-    def get(self, request, *args, **kwargs):   
+    def post(self, request, *args, **kwargs):   
         data = request.body
         print(data)
         dd = xmltodict.parse(data)
@@ -99,7 +99,7 @@ class GetBalance(APIView):
 class Play(APIView):
     permission_classes = (AllowAny, )
 
-    def get(self, request, *args, **kwargs):   
+    def post(self, request, *args, **kwargs):   
         data = request.body
         print(data)
         dd = xmltodict.parse(data)
@@ -132,7 +132,7 @@ class Play(APIView):
 class AwardBonus(APIView):
     permission_classes = (AllowAny, )
 
-    def get(self, request, *args, **kwargs):   
+    def post(self, request, *args, **kwargs):   
         data = request.body
         print(data)
         dd = xmltodict.parse(data)
@@ -164,7 +164,7 @@ class AwardBonus(APIView):
 class EndGame(APIView):
     permission_classes = (AllowAny, )
 
-    def get(self, request, *args, **kwargs):   
+    def post(self, request, *args, **kwargs):   
         data = request.body
         print(data)
         dd = xmltodict.parse(data)
@@ -196,7 +196,7 @@ class EndGame(APIView):
 class RefreshToken(APIView):
     permission_classes = (AllowAny, )
 
-    def get(self, request, *args, **kwargs):   
+    def post(self, request, *args, **kwargs):   
         data = request.body
         print(data)
         dd = xmltodict.parse(data)
