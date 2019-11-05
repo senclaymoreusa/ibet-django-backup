@@ -82,12 +82,6 @@ class CustomUser(AbstractBaseUser):
         (2, _('Advertisements'))
     )
 
-    MEMBER_STATUS = (
-        (0, _('Active')),
-        (1, _('Inactive')),
-        (2, _('Blocked'))
-    )
-
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),

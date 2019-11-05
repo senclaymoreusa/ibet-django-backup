@@ -820,7 +820,7 @@ class UserListView(CommAdminView):
         search = request.GET.get('search')
         pageSize = request.GET.get('pageSize')
         offset = request.GET.get('offset')
-        block = request.GET.get('block')
+        status = request.GET.get('status')
 
         # print("search: " + str(search))
 
@@ -839,6 +839,7 @@ class UserListView(CommAdminView):
         context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
         context['title'] = title
         context['time'] = timezone.now()
+        context['status'] = dict(MEMBER_STATUS)
         # if search:
         #     count = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))).count()
         #     customUser = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)))[offset:offset+pageSize]
@@ -854,13 +855,11 @@ class UserListView(CommAdminView):
 
         user_filter = Q()
 
-        if block == '1':
-            user_filter &= Q(block=True)
-        elif block == '0':
-            user_filter &= Q(block=False)
+        if status:
+            user_filter &= Q(member_status=status)
         
         if search:
-            user_filter &= (Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))
+            user_filter &= (Q(pk__contains=search)|Q(username__icontains=search)|Q(email__icontains=search)|Q(phone__contains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
 
         customUser = CustomUser.objects.filter(user_filter)
         count = customUser.count()

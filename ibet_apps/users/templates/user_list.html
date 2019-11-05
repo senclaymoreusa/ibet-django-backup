@@ -10,8 +10,9 @@
         <div style="font-size: 0.9em; padding-bottom:5px;padding-top:10px;">STATUS</div>
         <select class="form-control" id="status-selection">
             <option value="-1">ALL</option>
-            <option value="0">Active</option>
-            <option value="1">Block</option>
+            {% for key, value in status.items %}
+                <option value="{{ key }}">{{ value }}</option>
+            {% endfor %}
         </select>
     </div>
 
@@ -213,7 +214,7 @@ $(document).ready(function() {
         'search': '',
         'pageSize': 20,
         'offset': 0,
-        'block': -1
+        'status': -1
     };
     var parsedUrl = new URL(window.location.href);
     if (parsedUrl.searchParams.get("search") !== null) {
@@ -225,14 +226,14 @@ $(document).ready(function() {
     if (parsedUrl.searchParams.get("offset") !== null) {
         paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
     }
-    if (parsedUrl.searchParams.get("block") !== null) {
-        paramsMap['block'] = parsedUrl.searchParams.get("block");
+    if (parsedUrl.searchParams.get("status") !== null) {
+        paramsMap['status'] = parsedUrl.searchParams.get("status");
     }
 
-    if (parsedUrl.searchParams.get("block") == '' || !parsedUrl.searchParams.get("block")) {
+    if (parsedUrl.searchParams.get("status") == '' || !parsedUrl.searchParams.get("status")) {
         $("#status-selection").val("-1");
     } else {
-        $("#status-selection").val(parsedUrl.searchParams.get("block"));
+        $("#status-selection").val(parsedUrl.searchParams.get("status"));
     }
     
     // if (parsedUrl.searchParams.get("block") == 'true') {
@@ -246,19 +247,17 @@ $(document).ready(function() {
 
     $("#status-selection").on('change', function() {
         var active = $(this).val();
-        if (active == "1") {
-            paramsMap['block'] = active;
-        } else if (active == "0") {
-            paramsMap['block'] = active;
+        if (active == "-1") {
+            paramsMap['status'] = ""
         } else {
-            paramsMap['block'] = ""
+            paramsMap['status'] = active
         }
         var pageSize = paramsMap['pageSize'];
         // var oldFromItem = 0;
         // var newFromItem = Number(oldFromItem) + Number(pageSize);
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
         
-        window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, 0, status, "");
     });
 
     $('#pagination_value').val(paramsMap['pageSize']);
@@ -288,8 +287,8 @@ $(document).ready(function() {
 
     function searchOpen() {
         var search = $('#search').val();
-        var block = paramsMap['block'];
-        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search + "&block=" + block;
+        var status = paramsMap['status'];
+        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search + "&status=" + status;
         $.ajax({
             url: url,
             type: 'GET',
@@ -489,17 +488,17 @@ $(document).ready(function() {
     $('#pagination_value').on('change', function() {
         var pageSize = $("#pagination_value").val();;
         var oldFromItem = paramsMap['offset'];
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, 0, status, "");
     });
 
     $("#search-btn").click(function(){
         var pageSize = $("#pagination_value").val();
         // var oldFromItem = paramsMap['offset'];
         var search = $('#search').val();
-        var block = paramsMap['block'];
-        window.location.href = getUserListRedirectUrl(pageSize, 0, block, search);
+        var status = paramsMap['status'];
+        window.location.href = getUserListRedirectUrl(pageSize, 0, status, search);
     });
 
     getNext = function() {
@@ -509,9 +508,9 @@ $(document).ready(function() {
         var pageSize = paramsMap['pageSize'];
         var oldFromItem = paramsMap['offset'];
         var newFromItem = Number(oldFromItem) + Number(pageSize);
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, status, "");
     }
 
     getPervious = function () {
@@ -521,9 +520,9 @@ $(document).ready(function() {
         var pageSize = paramsMap['pageSize'];
         var oldFromItem = paramsMap['offset'];
         var newFromItem = Number(oldFromItem) - Number(pageSize);
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, status, "");
     }
 
 });
@@ -539,7 +538,7 @@ function cleanFloatField(field) {
     return field.toFixed(2);
 }
 
-function getUserListRedirectUrl(pageSize, offset, block, search) {
+function getUserListRedirectUrl(pageSize, offset, status, search) {
     var curUrl = window.location.href;
     // console.log(curUrl);
     var parts = curUrl.split('?');
@@ -549,7 +548,7 @@ function getUserListRedirectUrl(pageSize, offset, block, search) {
     redirectUrl += '?search=' + search;
     redirectUrl += "&pageSize=" + pageSize;
     redirectUrl += '&offset=' + offset;
-    redirectUrl += '&block=' + block;
+    redirectUrl += '&status=' + status;
     // console.log(redirectUrl);
     return redirectUrl;
 }
