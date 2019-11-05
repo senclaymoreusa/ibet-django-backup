@@ -37,11 +37,22 @@ class Transfer(View):
 
             user = CustomUser.objects.get(pk=user_id)
 
-            if transferRequest(user, amount, from_wallet, to_wallet):
+            from_wallet_field_name = from_wallet + '_wallet'
+            current_from_wallet_amount = getattr(user, from_wallet_field_name)
+
+            if float(current_from_wallet_amount) < float(amount):
+
+                response = {
+                    "status_code": CODE_FAIL,
+                    "error_message": "Balance is not enough"
+                }
+
+            elif transferRequest(user, amount, from_wallet, to_wallet):
                 response = {
                     "status_code": CODE_SUCCESS,
                     "error_message": "Successfully transfer"
                 }
+
             else:
 
                 response = {
