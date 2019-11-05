@@ -197,7 +197,6 @@ class UserDetailView(CommAdminView):
 
         currencyMap = {}
         for t in Transaction._meta.get_field('currency').choices:
-            print(t[0], t[1])
             currencyMap[t[0]] = t[1]
         
         channelMap = {}

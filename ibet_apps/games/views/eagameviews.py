@@ -167,7 +167,7 @@ class DepositEAView(View):
 def requestEADeposit(user, amount, from_wallet):
 
     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-    print(trans_id)
+    # print(trans_id)
     # print(user.currency)
     user_currency = int(user.currency)
     currency = 156
@@ -459,10 +459,10 @@ def requestEAWithdraw(user, amount, to_wallet):
         }
 
         requestData = xmltodict.unparse(data, pretty=True)
-        print(requestData)
+        # print(requestData)
         response = requests.post(url, data=requestData, headers=headers)
         response = response.text.strip()
-        print(response)
+        # print(response)
         response = xmltodict.parse(response)
         action  = response['request']['@action']
         # print(action)
