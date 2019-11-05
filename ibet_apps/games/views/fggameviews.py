@@ -27,23 +27,7 @@ class GetAllGame(APIView):
     })
         #return JsonResponse(json.dumps(data),content_type='application/json',status=200)
 
-class SessionCheck(APIView):
-    permission_classes = (AllowAny, )
-    def get(self, request, *args, **kwargs):
-        """
-        The session check API is for checking whether the session key is alive.
-        """
-        sessionKey = request.GET['sessionKey']
-        rr = requests.get(FG_SESSION_CHECK ,params={
-            "sessionKey": sessionKey
-        })
-        if rr.status_code == 200:
-            rr = rr.text    
-           
-        else:
-            # Handle error
-            logger.info(rr)
-        return HttpResponse(rr) 
+
 
 class GetSessionKey(APIView):
     permission_classes = (AllowAny, )
@@ -51,9 +35,22 @@ class GetSessionKey(APIView):
         pk = request.GET['pk']
         try:
             user = FGSession.objects.get(user=pk)
-            data = {
-                "sessionKey" : user.session_key
-            }
+            rr = requests.get(FG_SESSION_CHECK ,params={
+                "sessionKey": user.session_key
+            })
+            if rr.status_code == 200:
+                data = {
+                    "sessionKey" : user.session_key,
+                    "alive" :  rr.json()['alive']
+                    
+                }
+                # rr = rr.text  
+                
+            else:
+                # Handle error
+                logger.info(rr)
+
+               
         except:
             data = {
                 "sessionKey" : None
