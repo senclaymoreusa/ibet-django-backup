@@ -163,6 +163,31 @@ class DepositResult(generics.GenericAPIView):
 
 class RequestWithdraw(View):
     def get(self, request):
+        print(self.request.POST)
+        language = self.request.POST.get("language")
+        user_id = self.request.POST.get("user_id")
+        trans_id = self.request.POST.get("transaction_no")
+        if currency == '2':
+            merchant_code = HELP2PAY_MERCHANT_THB
+            secret_key = HELP2PAY_SECURITY_THB
+        elif currency == '8':
+            merchant_code = HELP2PAY_MERCHANT_VND
+            secret_key = HELP2PAY_SECURITY_VND
+        data = {
+            "Merchant": merchant_code,
+            "Customer": user_id,
+            "Currency": currencyConversion[currency],
+            "Reference": str(trans_id),
+            "Key": MD5(merchant_code+trans_id+str(user_id)+amount+currencyConversion[currency]+key_time+secret_key+ip),
+            "Amount": amount,
+            "Datetime": Datetime,
+            "FrontURI": API_DOMAIN + HELP2PAY_SUCCESS_PATH,
+            "BackURI": API_DOMAIN + HELP2PAY_CONFIRM_PATH,
+            "Bank": bank,
+            "Language": language,
+            "ClientIP": ip,
+        }
+
         return HttpResponse("Get withdraw request!")
     def post(self, request):
         return HttpResponse("Post withdraw request!")
