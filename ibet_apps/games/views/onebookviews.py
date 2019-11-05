@@ -16,6 +16,7 @@ from decimal import Decimal
 from time import sleep
 from datetime import datetime
 from utils.admin_helper import *
+from background_task import background
 
 logger = logging.getLogger('django')
 
@@ -418,6 +419,69 @@ class FundTransfer(APIView):
         except ObjectDoesNotExist:
             return Response({"error":"The user is not existed."}) 
 
+@background(schedule=5) 
+def getBetDetail():
+    try:
+        PROVIDER = GameProvider.objects.get(provider_name="Onebook")
+    except ObjectDoesNotExist:
+        logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    delay = 2
+    success = False
+    version_key = GameProvider.objects.get(provider_name='Onebook').notes
+    for x in range(0,3000):
+        print(str(x) + "loop:")
+        r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
+            "vendor_id": ONEBOOK_VENDORID,
+            "version_key": version_key,
+        })
+        rdata = r.json()
+        logger.info(rdata)
+        print(rdata)
+        version_key = rdata["Data"]["last_version_key"]
+        updates = GameProvider.objects.get(provider_name='Onebook')
+        updates.notes = version_key
+        updates.save()
+            
+        if  "BetDetails" in rdata['Data']:
+            # logger.info(rdata["Data"]["BetDetails"])
+            for i in range(len(rdata["Data"]["BetDetails"])):
+                username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
+                # print(username)
+                cate = Category.objects.get(name='SPORTS')
+                if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
+                    
+                    GameBet.objects.get_or_create(provider=PROVIDER,
+                                                category=cate,
+                                                username=CustomUser.objects.get(username=username),
+                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                market=ibetCN,
+                                                )
+                else:
+                    resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                        
+                    GameBet.objects.get_or_create(provider=PROVIDER,
+                                                category=cate,
+                                                username=CustomUser.objects.get(username=username),
+                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                resolved_time=utcToLocalDatetime(resolve),
+                                                market=ibetCN,
+                                                )
+                sleep(delay)    
+        else:
+            logger.info("BetDetails is not existed.")
+            break
+    return rdata
 
 
 class GetBetDetail(APIView):

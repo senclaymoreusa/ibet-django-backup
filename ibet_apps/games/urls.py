@@ -62,5 +62,8 @@ urlpatterns = [
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+    
 
 ]
+
+#onebookviews.getBetDetail(repeat=300,repeat_until=None)
