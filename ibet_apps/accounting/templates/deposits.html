@@ -375,7 +375,7 @@
         $('#status-filter').on('change', function(event) {
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
-            window.location = BASEURL+queryString.toString();
+            window.location = "{% url 'xadmin:get_transactions' txn_type='deposit' page=0 %}?"+queryString.toString();
         });
 
         // for submitting a search
