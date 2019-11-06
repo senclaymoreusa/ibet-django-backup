@@ -1,12 +1,13 @@
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
 from dateutil.relativedelta import relativedelta
 
 from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet
+from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
 import logging
@@ -172,3 +173,35 @@ def decode_user_id_from_referral_code(code):
             i += 1
         return user_id
 
+
+# Return a list of user in Manager Group
+def getManagerList():
+
+    try:
+        manager_group = UserGroup.objects.get(groupType=OTHER_GROUP, name="Manager Group")
+    except ObjectDoesNotExist:
+        manager_group = UserGroup(
+            name="Manager Group",
+            groupType=OTHER_GROUP,
+        )
+        manager_group.save()
+        manager_id_list = CustomUser.objects.values_list('managed_by__pk', flat=True).distinct()
+        for manager in manager_id_list:
+            if manager:
+                new_manager = UserToUserGroup(
+                    user=CustomUser.objects.get(pk=manager),
+                    group=manager_group,
+                )
+                new_manager.save()
+        logger.info("Create a new Manager Group")
+
+    except Exception as e:
+        logger.error("Error getting manager group")
+        return None
+
+    managers = []
+    manager_group = UserToUserGroup.objects.filter(group=manager_group).distinct()
+    if manager_group:
+        for manager in manager_group:
+            managers.append(manager.user.username)
+    return managers

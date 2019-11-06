@@ -1,5 +1,20 @@
 $(document).ready(function () {
 
+    var csrftoken = $.cookie("csrftoken");
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
     var vip_table = $('#vip_table').DataTable({
         "serverSide": true,
         "searching": true,
@@ -20,7 +35,7 @@ $(document).ready(function () {
             { data: 'player_id',
               "render": function(data, type, row, meta){
                 if(type === 'display'){
-                    data = '<a href=' + user_link + data + '>' + data+ '</a>';
+                    data = '<a id="user-id" href=' + user_link + data + '>' + data+ '</a>';
                 }
                 return data;
              }},
@@ -73,6 +88,10 @@ $(document).ready(function () {
             { data: 'withdrawal_count' },
             { data: 'bonus_cost' },
             { data: 'ngr' },
+            {
+                data: null,
+                defaultContent:  "<button id='edit-vip-btn' class='btn btn-primary' type='button' data-toggle='modal' data-target='#edit-vip'><i class='fa fa-search'></i></button>"
+            }
         ],
 
         "language": {
@@ -97,5 +116,66 @@ $(document).ready(function () {
     $('#min_date, #max_date, #segmentation_filter').change(function () {
         vip_table.draw();
     });
+
+    $('#vip_table tbody').on('click', 'button', function () {
+        var userId = $(this).closest('tr').find('#user-id').html();
+        $.ajax({
+            type: 'GET',
+            url: vip_url,
+            data: {
+                'type': 'getVIPDetailInfo',
+                'userId': userId,
+            },
+            success: function (data) {
+                addVIPUserInfo(data);
+            },
+        })
+    })
+
+    addVIPUserInfo = function (data) {
+        // DISPLAY VIP DETAIL INFO
+        $("#vip-player-info").empty();
+        content = "";
+        content += data.username + '<br>';
+        content += data.segment + '<br>';
+        content += data.manager + '<br>';
+        content += data.name + '<br>';
+        content += data.id_number + '<br>';
+        if (data.email_verified == false){
+            content += data.email + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-invalid"></i>' + '<br>';
+        }else{
+            content += data.email + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-valid"></i>' + '<br>';
+        }
+        if (data.phone_verified == false){
+            content += data.phone + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-invalid"></i>' + '<br>';
+        }else{
+            content += data.phone + "&nbsp;&nbsp;&nbsp;" + '<i class="fa fa-check-circle-o verified-valid"></i>' + '<br>';
+        }
+        content += data.birthday + '<br>';
+        content += data.preferred_product + '<br>';
+        content += data.preferred_contact + '<br>';
+        $("#vip-player-info").append(content);
+    };
+
+    $('.manager-assign').chosen({ width: "70%" });
+
+    $('#vip-details-save').click(function () {
+        var segment = $('#segmentation-assign :selected').val();
+        var manager = $('#manager_assign_chosen a span').html();
+        var changeReason = $('#vip-change-reason').val();
+        var userId =
+        $.ajax({
+            type: 'POST',
+            url: vip_url,
+            data: {
+                'type': 'editVIPDetail',
+
+            },
+            success: function (data) {
+                addVIPUserInfo(data);
+            },
+        })
+    });
+
 
 });

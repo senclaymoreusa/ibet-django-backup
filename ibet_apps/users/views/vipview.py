@@ -21,7 +21,8 @@ class VIPView(CommAdminView):
             title = "VIP overview"
             context["breadcrumbs"].append({'title': title})
             context["title"] = title
-            context["segment_list"] = Segmentation.objects.values_list('name', flat=True)
+            context["segment_list"] = Segmentation.objects.values_list('level', flat=True)
+            context["managers"] = getManagerList()
             return render(request, 'vip/vip_management.html', context)
 
         elif get_type == "getVIPInfo":
@@ -49,13 +50,13 @@ class VIPView(CommAdminView):
                     #  SEARCH BOX
                     if search_value:
                         query_filter = Q(pk__icontains=search_value) | Q(username__icontains=search_value) | Q(
-                                managed_by__username__icontains=search_value)
+                            managed_by__username__icontains=search_value)
 
                     if segment != '-1':
                         if query_filter:
-                            query_filter = query_filter & Q(vip_level__name=segment)
+                            query_filter = query_filter & Q(vip_level__level=segment)
                         else:
-                            query_filter = Q(vip_level__name=segment)
+                            query_filter = Q(vip_level__level=segment)
 
                     if query_filter:
                         queryset = queryset.filter(query_filter)
@@ -117,3 +118,40 @@ class VIPView(CommAdminView):
                 json.dumps(result), content_type="application/json"
             )
 
+        elif get_type == 'getVIPDetailInfo':
+            user_id = request.GET.get('userId')
+
+            response = {}
+
+            try:
+                user = CustomUser.objects.get(pk=user_id)
+                response = {
+                    'username': user.username,
+                    'segment': '',
+                    'manager': '',
+                    'name': str(user.first_name) + ' ' + str(user.last_name),
+                    'id_number': "SL67988C",
+                    'email': user.email or '',
+                    'phone': user.phone or '',
+                    'birthday': user.date_of_birth or '',
+                    'preferred_product': "Casino",
+                    'preferred_contact': "SMS",
+                    'email_verified': user.email_verified,
+                    'phone_verified': user.phone_verified,
+                }
+                if user.managed_by:
+                    response['manager'] = user.managed_by.username
+                if user.vip_level:
+                    response['segment'] = user.vip_level.level
+            except Exception as e:
+                logger.error("Error getting VIP user: " + str(e))
+
+            return HttpResponse(json.dumps(response), content_type="application/json")
+
+    def post(self, request):
+        post_type = request.POST.get("type")
+
+        if post_type == "editVIPDetail":
+
+            response = {}
+            return HttpResponse(json.dumps(response), content_type="application/json")

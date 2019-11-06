@@ -9,6 +9,7 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" />
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-vip.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
 </head>
@@ -33,7 +34,7 @@
                     <input name="max_date" id="max_date" type="text" placeholder="To">
                 </div>
             </div>
-            <table id="vip_table" class="table-striped table-bordered hover compact">
+            <table id="vip_table" class="table-striped table-bordered hover" style="width:100%">
                 <thead>
                     <tr>
                         <th scope="col">PLAYER ID</th>
@@ -56,6 +57,7 @@
                         <th scope="col">WITHDRAWAL COUNT</th>
                         <th scope="col">BONUS COST</th>
                         <th scope="col">NGR</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,9 +65,84 @@
                     </tr>
                 </tbody>
             </table>
-             <label class="show-rows">SHOW ROWS</label>
+
+            <label class="show-rows">SHOW ROWS</label>
         </div>
     </div>
+
+    <!-- VIP Detail Pop up -->
+    <div class="modal fade" id="edit-vip" role="dialog">
+        <div id="edit-vip-pop-up" class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <strong class="model-header-text">VIP Player Details</strong>
+                    <div class="model-header-time">
+                        {{ time }}
+                    </div>
+                </div>
+
+                <div id="vip-player-details">
+                    <div class="row">
+                      <div class="col-md-4">
+                          <strong>
+                              Username<br>
+                              Segment<br>
+                              VIP manager<br>
+                              Name<br>
+                              ID number<br>
+                              Email<br>
+                              Phone<br>
+                              Birthday<br>
+                              Preferred product<br>
+                              Contact preference<br>
+                          </strong>
+                      </div>
+                       <div class="col-md-4" id="vip-player-info" >
+                       </div>
+                       <div class="col-md-4" id="vip-player-segment" >
+                            <p>You can override the system assigned player segment. This setting is not affected by
+                            the player's activity.</p>
+                            <label for="segmentation-assign">SEGMENT</label><br>
+                            <select id="segmentation-assign" class="form-control" style="width: 60%">
+                                {% for type in segment_list %}
+                                    <option value="{{ type }}">{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                            <br>
+                            <label for="manager-assign">VIP MANAGER</label><br>
+
+                            <select id="manager-assign" class="manager-assign">
+                            {% if manager %}
+                                <option value="" selected disabled style="display:None">{{ manager }}</option>
+                            {% else %}
+                                <option value="" selected disabled style="display:None">Select manager</option>
+                            {% endif %}
+                            {% for manager in managers %}
+                                <option value="{{ manager }}">{{ manager }}</option>
+                            {% endfor %}
+                            </select>
+
+                       </div>
+                    </div>
+
+                    <div class="reason-box">
+                        <p>REASON FOR CHANGES</p>
+                        <textarea type='text' class="form-control" id="vip-change-reason" style=""
+                                  placeholder="Please provide a brief explaination."></textarea>
+                    </div>
+                </div>
+
+                <div class="vip-details-btn">
+                    <p id='errorMessage'>&nbsp;</p>
+                    <button type="button" class="btn btn-primary" id="vip-details-save">Save</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
@@ -73,6 +150,7 @@
     <script type="text/javascript" language="javascript"
         src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
     <script src="{% static 'xadmin/js/ibet-admin-vip.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 
     <script>
         var vip_url = "{% url 'xadmin:vipview' %}"
@@ -81,5 +159,4 @@
 
 </body>
 </html>
-
 {% endblock %}
