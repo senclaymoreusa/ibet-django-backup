@@ -25,6 +25,7 @@ from rest_framework.authtoken.models import Token
 from Crypto.Cipher import DES3
 # from pyDes import *
 import base64
+import pytz
 
 
 logger = logging.getLogger('django')
@@ -37,7 +38,6 @@ logger = logging.getLogger('django')
 #     de = k.decrypt(base64.b64decode(s), padmode=PAD_PKCS7)
 #     return de
 
-
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
 
@@ -48,19 +48,26 @@ class InplayLoginAPI(View):
 
             user = CustomUser.objects.get(username='Bobby')
             if user:
-                sessionToken = Token.objects.get(user_id=user)
-                print(sessionToken)
-                # token = user.token
+                # sessionToken = Token.objects.get(user_id=user)
+                # print(sessionToken)
+                token = {}
+                token["agent"] = agent
+                req_param["timestamp"] = str(timestamp)
+                req_param["param"] = param
+                req_param["key"] = key
+                # url += "?agent=" + agent
+                # url += "&timestamp=" + str(timestamp)
+                # url += "&param=" + param
+                # url += "&key=" + str(key)
+                req = urllib.parse.urlencode(req_param)
             else:
                 print("User not exist")
 
 
-            key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
-
-            # cipher = des(key, ECB, "")
+            key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
 
             cipher = DES3.new(key, DES3.MODE_ECB)
-            time_stamp = datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+            time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             print(time_stamp)
 
             time_stamp = cipher.encrypt(pad(time_stamp))
@@ -73,6 +80,13 @@ class InplayLoginAPI(View):
             print("Error:", repr(e))
 
 
+class ValidateTokenAPI(View):
+    def get(self, request, *arg, **kwargs):
+        data = request.body
+        print(data)
+        return HttpResponse(status=400)
+
+
 class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
         # data = requests.body
@@ -80,12 +94,15 @@ class InplayGetBalanceAPI(View):
         # key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
         key = "9d25ee5d1ffa0e01"
 
-        cipher = DES3.new(key, DES3.MODE_ECB)
-        plain_text = cipher.decrypt(data)
-        print(plain_text)
-        print(str(plain_text, "utf-8"))
+        try:
+            cipher = DES3.new(key, DES3.MODE_ECB)
+            plain_text = cipher.decrypt(data)
+            print(plain_text)
+            print(str(plain_text, "utf-8"))
 
-        return HttpResponse(status=200)
+            return HttpResponse(status=200)
+        except Exception as e:
+            print(e)
 
 
 # class InplayGetApprovalAPI(View):
