@@ -1187,11 +1187,39 @@ class GenerateActivationCode(APIView):
                         return Response(status=status.HTTP_201_CREATED)
 
                 return Response(ERROR_CODE_MAX_EXCEED)
+            elif postType == "change_member_email":
+                random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+
+                # DB transaction atomic as a context manager:
+                with transaction.atomic():
+                    user.update(activation_code=random_num)
+
+                    from_email_address = 'claymore@claymoreusa.com'
+                    to_email_address = user[0].email
+                    email_subject = str(_('Activation Code')) + ' '
+                    email_content = str(_('Your activation code is ')) + str(random_num)
+
+                    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+                    from_email = Email(from_email_address)
+                    to_email = Email(to_email_address)
+                    subject = email_subject
+                    content = Content("text/plain", email_content)
+                    mail = Mail(from_email, subject, to_email, content)
+                    response = sg.client.mail.send.post(request_body=mail.get())
+
+                    action = UserAction(
+                        user=user[0],
+                        event_type=EVENT_CHOICES_SMS_CODE,
+                        created_time=timezone.now()
+                    )
+                    action.save()
+
+                    return Response(status=status.HTTP_201_CREATED)
             else:
                 # leave this for active code, currently no SMS system available
                 random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
                 user.update(activation_code=random_num)
-                send_sms(str(random_num), user[0].pk) 
+                send_sms(str(random_num), user[0].pk)
         except Exception as e:
             logger.error("Error Generating Activation Code: ", e)
             return Response(status=status.HTTP_400_BAD_REQUEST)

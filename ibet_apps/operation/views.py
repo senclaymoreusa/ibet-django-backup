@@ -1347,6 +1347,87 @@ def send_sms(content_text, notifier):
             return "Data Format Incorrect!"
 
 
+@transaction.atomic
+def send_email(subject, content_text, notifier):
+        data = {
+            "subject": subject,
+            "content_text": content_text,
+            "is_email_message": True,
+            "status": MESSAGE_APPROVED,
+        }
+
+        serializer = NotificationSerializer(data=data)
+        
+        if serializer.is_valid():
+            notification = serializer.save()
+            # logger.info("create a Email notification")
+
+            notifier = CustomUser.objects.get(username=notifier)
+
+            # logger.info("Save notification log")
+
+            try:
+                # connect AWS S3
+                third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+                # AWS SES Client
+                # ses = boto3.resource('ses', region_name=AWS_SES_REGION)
+                client = getAWSClient('ses', third_party_keys, AWS_SES_REGION)
+
+                email = str(notifier.email)
+                # client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # response = client.send_custom_verification_email(
+                #     EmailAddress=email,
+                #     TemplateName='EmailVerification'
+                # )
+
+                response = client.send_email(
+                    Source='rundong@claymoreusa.com',
+                    Destination={
+                        'ToAddresses': [
+                            'samet@claymoreusa.com',
+                        ],
+                        'CcAddresses': [
+                        ],
+                        'BccAddresses': [
+                        ]
+                    },
+                    Message={
+                        'Subject': {
+                            'Data': subject,
+                            'Charset': 'utf-8'
+                        },
+                        'Body': {
+                            'Text': {
+                                'Data': content_text,
+                                'Charset': 'utf-8'
+                            },
+                        }
+                    }
+                )
+
+    
+                logger.info("Enabled SES Notification")
+            except Exception as e:
+                logger.error(repr(e))
+                return "AWS ERROR!"
+
+            return "Success"
+        else:
+            logger.error("Sending Email Notification Data Format Incorrect Error!")
+            return "Data Format Incorrect!"
+
+
+class EmailNotificationTest(View):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        subject = data["subject"]
+        content_text = data["content_text"]
+        notifier = data["notifier"]
+        send_email(subject, content_text, notifier)
+        return HttpResponse(status=200)
+
+
 class NotificationUserIsReadAPI(View):
     def post(self, request, *args, **kwargs):
         try:
@@ -1370,7 +1451,7 @@ class NotificationUserIsReadAPI(View):
                 return HttpResponse(status=201)
 
         except Exception as e:
-            logger.error("reading message error:", e)
+            logger.error("reading message error:", repr(e))
             return HttpResponse(status=400)
 
 
