@@ -25,11 +25,12 @@ class GetTransactions(CommAdminView):
         status = request.GET.get('status')
         date_from = request.GET.get('from')
         date_to = request.GET.get('to')
-
+        num_per_page = int(request.GET.get('show')) if request.GET.get('show') else 20
         print("search params: " + str(search_params))
         print("status: " + str(status))
         print("from: ", date_from)
         print("to: ", date_to)
+        print("num_per_page: ", request.GET.get('show'))
 
         page = int(page)
         txn_q = Q(transaction_type=TRANSACTION_DEPOSIT) if txn_type == "deposit" else Q(transaction_type=TRANSACTION_WITHDRAWAL)
@@ -61,16 +62,16 @@ class GetTransactions(CommAdminView):
             to_query = Q(request_time__lte=to_date)
             all_transactions = all_transactions.filter(to_query)
 
-        curr_page = all_transactions[page * 20:(page + 1) * 20]
+        curr_page = all_transactions[page * num_per_page:(page + 1) * num_per_page]
         txn_count = all_transactions.count()
 
-        # print("transaction count: (to count total pages)")
-        # print(txn_count)
-        total_pages = (txn_count - 1) // 20 if (txn_count - 1) // 20 > 0 else 0
+        print("transaction count: (to count total pages)")
+        print(txn_count)
+        total_pages = (txn_count - 1) // num_per_page if (txn_count - 1) // num_per_page > 0 else 0
         context['page_no'] = page
         context['total_pages'] = total_pages
 
-        if page > txn_count // 20:
+        if page > txn_count // num_per_page:
             raise Http404("This page does not exist")
         
         context['title'] = "Accounting Admin"

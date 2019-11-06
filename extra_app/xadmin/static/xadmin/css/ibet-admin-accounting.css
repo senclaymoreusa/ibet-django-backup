@@ -19,12 +19,25 @@
     display: none;
 }
 
-#edit-pending-detail-btn {
+.manual-override {
+    background-color: white;
+}
+
+#confirm-settlement-btn {
     height: 100%;
     width: 100%;
     background-color: #428bca;
     color: #ffffff;
 }
+
+#result-override-btn {
+    height: 100%;
+    width: 100%;
+    background-color: #ec7a09;
+    color: #ffffff;
+}
+
+
 
 .btn-note {
     background-color: #72befb;
@@ -320,4 +333,8 @@
 
 .supplier-table {
     color: #00a281;
+}
+
+.row .per-page {
+    margin: 20px 0 20px 0;
 }

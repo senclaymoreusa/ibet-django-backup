@@ -170,6 +170,16 @@
                         <button id="next-page">Next</button>
                     {% endif %}
                 </div>
+                <div class="row per-page">
+                    <div class="col-md-offset-10" id="num-per-page">
+                        <select id="num-per-page-select">
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <label for="num-per-page-select">results per page</label>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- audit popup window -->
@@ -369,6 +379,15 @@
                     }
                 }
             }
+            if (params.get('show')) {
+                let numPages = document.getElementById('num-per-page-select');
+                for(let i = 0; i < numPages.options.length; i++) {
+                    if (params.get('show') == numPages.options[i].value) {
+                        numPages.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
             if (params.get('from')) {
                 document.getElementById('min').value = params.get('from');
             }
@@ -378,11 +397,18 @@
         }
     }
     function initEventHandlers() {
+        const BASEURL = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}?"
         // filter by status
         $('#status-filter').on('change', function(event) {
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
-            window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}?"+queryString.toString();
+            window.location = BASEURL +queryString.toString();
+        });
+        
+        $('#num-per-page-select').on('change', function(event) {
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('show', event.target.value);
+            window.location = BASEURL + queryString.toString();
         });
 
         // for submitting a search
@@ -399,8 +425,8 @@
             if (fromDate) queryString.set('from', fromDate);
             if (toDate) queryString.set('to', toDate);
             // fetch data and redraw rows
-            if (searchTerm || fromDate || toDate) window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}?"+queryString.toString();
-            else window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}";
+            if (searchTerm || fromDate || toDate) window.location = BASEURL + queryString.toString();
+            else window.location = BASEURL;
         });
 
         $('#clear-search-btn').on('click', function() {
