@@ -5,7 +5,7 @@ from utils.redisClient import RedisClient
 REDIS_KEY_PREFIX_BONUS_BY_DEVICE = 'bonuses_by_device:'
 REDIS_KEY_PREFIX_DEVICES_BY_USER = 'devices_by_user:'
 REDIS_KEY_PREFIX_USERS_BY_DEVICE = 'users_by_device:'
-
+REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS = 'onebook_history:'
 
 def getBonusByDeviceRedisKey(device_id):
     return REDIS_KEY_PREFIX_BONUS_BY_DEVICE + str(device_id)
@@ -15,6 +15,11 @@ def getDevicesByUserRedisKey(user_id):
 
 def getUsersByDeviceRedisKey(device_id):
     return REDIS_KEY_PREFIX_USERS_BY_DEVICE + str(device_id)
+
+def getOnebookBetDetailsRedisKey():
+    return REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS
+
+
 
 
 class RedisHelper():
@@ -49,3 +54,15 @@ class RedisHelper():
     def get_users_by_device(self, device_id):
         users_by_device_key = getUsersByDeviceRedisKey(device_id)
         return self.r.smembers(users_by_device_key)
+
+    def set_onebook_bet_details(self, onebook_run):
+        onebook_bet_details = getOnebookBetDetails()
+        return self.r.sadd(onebook_bet_details, onebook_run)
+
+    def check_onebook_bet_details(self, onebook_run):
+        onebook_bet_details = getOnebookBetDetails()
+        return self.r.sismember(onebook_bet_details, onebook_run)
+
+    def remove_onebook_bet_details(self, onebook_run):
+        onebook_bet_details = getOnebookBetDetails()
+        return self.r.spop(onebook_bet_details, onebook_run)
