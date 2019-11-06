@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
-from games.models import FGSession
+from games.models import FGSession, Game
 import xmltodict
 import decimal,re, math
 import requests,json
@@ -16,23 +16,47 @@ from utils.constants import *
 
 logger = logging.getLogger("django")
 
-class SessionCheck(APIView):
+class GetAllGame(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        """
-        The session check API is for checking whether the session key is alive.
-        """
-        sessionKey = request.GET['sessionKey']
-        rr = requests.get(FG_SESSION_CHECK ,params={
-            "sessionKey": sessionKey
-        })
-        if rr.status_code == 200:
-            rr = rr.text    
-           
-        else:
-            # Handle error
-            logger.info(rr)
-        return HttpResponse(rr) 
+        provider = request.GET['provider']
+        game = Game.objects.filter(provider=provider)
+        
+        return JsonResponse({
+        'game': list(game.values())
+    })
+        #return JsonResponse(json.dumps(data),content_type='application/json',status=200)
+
+
+
+class GetSessionKey(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        pk = request.GET['pk']
+        try:
+            user = FGSession.objects.get(user=pk)
+            rr = requests.get(FG_SESSION_CHECK ,params={
+                "sessionKey": user.session_key
+            })
+            if rr.status_code == 200:
+                data = {
+                    "sessionKey" : user.session_key,
+                    "alive" :  rr.json()['alive']
+                    
+                }
+                # rr = rr.text  
+                
+            else:
+                # Handle error
+                logger.info(rr)
+
+               
+        except Exception as e:
+            data = {
+                "sessionKey" : None
+            }
+            logger.error("no sessionKey", e)
+        return HttpResponse(json.dumps(data),content_type='application/json',status=200)
 
 class FGLogin(APIView):
 
@@ -45,10 +69,11 @@ class FGLogin(APIView):
         user = CustomUser.objects.get(pk=pk)
         currency = user.currency
         uuid = 'fg'+ user.username
+        
         rr = requests.get(FG_URL, params={
             "brandId": BRANDID,
             "brandPassword": BRAND_PASSWORD, 
-            "currency": currency,
+            "currency": CURRENCY_CHOICES[currency][1],
             "uuid": uuid,
             "loginName": user.username
             })
