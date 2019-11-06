@@ -56,13 +56,13 @@ class RedisHelper():
         return self.r.smembers(users_by_device_key)
 
     def set_onebook_bet_details(self, onebook_run):
-        onebook_bet_details = getOnebookBetDetails()
+        onebook_bet_details = getOnebookBetDetailsRedisKey()
         return self.r.sadd(onebook_bet_details, onebook_run)
 
     def check_onebook_bet_details(self, onebook_run):
-        onebook_bet_details = getOnebookBetDetails()
+        onebook_bet_details = getOnebookBetDetailsRedisKey()
         return self.r.sismember(onebook_bet_details, onebook_run)
 
     def remove_onebook_bet_details(self, onebook_run):
-        onebook_bet_details = getOnebookBetDetails()
-        return self.r.spop(onebook_bet_details, onebook_run)
+        onebook_bet_details = getOnebookBetDetailsRedisKey()
+        return self.r.srem(onebook_bet_details, onebook_run)
