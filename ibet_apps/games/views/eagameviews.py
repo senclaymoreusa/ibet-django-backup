@@ -92,6 +92,9 @@ class EALiveCasinoClientLoginView(View):
             elif user.currency == CURRENCY_TTC:
                 currency = 1111
                 vendor = 2
+            else:
+                currency = 1111
+                vendor = 2
 
         except:
             status_code = 101
@@ -196,6 +199,9 @@ def requestEADeposit(user, amount, from_wallet):
             currency = 704
             vendor = 5
         elif user_currency == CURRENCY_TTC:
+            currency = 1111
+            vendor = 2
+        else:
             currency = 1111
             vendor = 2
 
@@ -430,6 +436,9 @@ def requestEAWithdraw(user, amount, to_wallet):
         elif user_currency == CURRENCY_TTC:
             currency = 1111
             vendor = 2
+        else:
+            currency = 1111
+            vendor = 2
 
         request_id = "W"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
@@ -563,6 +572,9 @@ def getEAWalletBalance(user):
     elif user_currency == CURRENCY_TTC:
         currency = 1111
         vendor = 2
+    else:
+        currency = 1111
+        vendor = 2
     
     request_id = "C"
     request_id = request_id + "%0.12d" % random.randint(0,999999999999)
@@ -688,6 +700,9 @@ class EASingleLoginValidation(View):
                 currency = 704
                 vendor = 5
             elif user_currency == CURRENCY_TTC:
+                currency = 1111
+                vendor = 2
+            else:
                 currency = 1111
                 vendor = 2
 
