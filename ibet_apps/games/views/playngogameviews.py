@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ParseError
 from rest_framework import status
+from django.db import transaction
 
 # iBet
 from users.models import CustomUser
@@ -186,6 +187,8 @@ class ReserveView(View):
         The Reserve call makes a request to the Operator Account System to deduct a bet amount from
         the user's wallet. XML is the data format that this endpoint receives and responds with.
         """
+        # TODO: Follow up with provider about special case where a bet amount of 0.00 is allowed.
+
         data = request.body
 
         try:
@@ -229,38 +232,35 @@ class ReserveView(View):
                 status_code = PNG_STATUS_INVALIDCURRENCY
                 logger.error("PLAY'nGO ReserveView Error: Currency mismatch.")
 
-            elif str(bet_amount_decimal) == "0.00":
-                logger.error("PLAY'nGO ReserveView Error: User attempted to place bet of 0 value.")
-                raise ValueError("User attempted to place bet of 0 value.")
-
             # Bet can go through. 
             elif user_balance >= bet_amount_decimal:
-                balance_after_bet = user_balance - bet_amount_decimal
-                user.main_wallet = balance_after_bet
-                user.save()
+                with transaction.atomic():
+                    balance_after_bet = user_balance - bet_amount_decimal
+                    user.main_wallet = balance_after_bet
+                    user.save()
 
-                # Create a GameBet entry upon successful placement of a bet.
-                GameBet.objects.create(
-                    provider = PROVIDER,
-                    category = CATEGORY,
-                    #game = None,
-                    #game_name = None,
-                    username = user,
-                    amount_wagered = bet_amount_decimal,
-                    amount_won = 0.00,
-                    #outcome = None,
-                    #odds = None,
-                    #bet_type = None,
-                    #line = None,
-                    currency = user_currency_text,
-                    market = ibetVN, # Need to clarify with provider
-                    ref_no = transaction_id,
-                    #bet_time = None,
-                    #resolved_time = None,
-                    #other_data = {}
-                )
+                    # Create a GameBet entry upon successful placement of a bet.
+                    GameBet.objects.create(
+                        provider = PROVIDER,
+                        category = CATEGORY,
+                        #game = None,
+                        #game_name = None,
+                        username = user,
+                        amount_wagered = bet_amount_decimal,
+                        amount_won = 0.00,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        currency = user_currency_text,
+                        market = ibetVN, # Need to clarify with provider
+                        ref_no = transaction_id,
+                        #bet_time = None,
+                        #resolved_time = None,
+                        #other_data = {}
+                    )
 
-                logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user.username)
+                    logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user.username)
 
             else:
                 status_code = PNG_STATUS_NOTENOUGHMONEY
