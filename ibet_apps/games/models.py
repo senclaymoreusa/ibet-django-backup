@@ -46,7 +46,7 @@ class GameProviderWithCategory(models.Model):
 
 
 class Game(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
     name_zh = models.CharField(max_length=50, null=True, blank=True)
     name_fr = models.CharField(max_length=50, null=True, blank=True)
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
