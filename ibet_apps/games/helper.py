@@ -39,9 +39,6 @@ def generateHash(message):
 
 def transferRequest(user, amount, from_wallet, to_wallet):
     
-    # print(user, amount, from_wallet, to_wallet)
-    # print(user.main_wallet)
-    
     if from_wallet == "main":
         transfer_to = TransferDeposit(user, amount, from_wallet)
         function_name = to_wallet + 'Deposit'
@@ -53,8 +50,10 @@ def transferRequest(user, amount, from_wallet, to_wallet):
             new_amount = old_amount + amount
             setattr(user, field_name, new_amount)
             user.save()
+            logger.info("main wallet transfer to " + str(to_wallet))
             return True
 
+        logger.info("Fail transfer money from main to " + str(to_wallet))
         return False
 
     else:
@@ -70,10 +69,9 @@ def transferRequest(user, amount, from_wallet, to_wallet):
 
             if to_wallet == "main":
                 old_amount = user.main_wallet
-                # print("old amount :" + str(old_amount))
                 user.main_wallet = old_amount + Decimal(float(amount))
-                # print("new amount :" + str(user.main_wallet))
                 user.save()
+                logger.info("Transfer money from " + str(to_wallet) + "to main")
                 return True
             else:
                 transfer_to = TransferDeposit(user, amount, from_wallet)
@@ -85,15 +83,18 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                     to_new_amount = to_old_amount + Decimal(float(amount))
                     setattr(user, to_field_name, to_new_amount)
                     user.save()
+                    logger.info("Transfer money from " + str(from_wallet) + " to " + str(to_wallet))
                     return True
                 else:
                     function_name = from_wallet + 'Deposit'
-                    getattr(transfer_to, function_name)()
-                    from_field_name = from_wallet + '_wallet'
-                    from_old_amount = getattr(user, from_field_name)
-                    from_new_amount = from_old_amount + Decimal(float(amount))
-                    setattr(user, from_field_name, from_new_amount)
-                    user.save()
-                    return False
+                    status = getattr(transfer_to, function_name)()
+                    if status == CODE_SUCCESS:
+                        from_field_name = from_wallet + '_wallet'
+                        from_old_amount = getattr(user, from_field_name)
+                        from_new_amount = from_old_amount + Decimal(float(amount))
+                        setattr(user, from_field_name, from_new_amount)
+                        user.save()
+                        logger.info("Fail transfer money from " + str(from_wallet) + " to " + str(to_wallet))
+                        return False
         user.save()
         return False

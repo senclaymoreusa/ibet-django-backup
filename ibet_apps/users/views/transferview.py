@@ -43,9 +43,11 @@ class Transfer(View):
             if float(current_from_wallet_amount) < float(amount):
 
                 response = {
-                    "status_code": CODE_FAIL,
+                    "status_code": ERROR_CODE_FAIL,
                     "error_message": "Balance is not enough"
                 }
+
+                logger.info("Balance is not enough => transfer money from" + str(from_wallet) + " " + str(to_wallet))
 
             elif transferRequest(user, amount, from_wallet, to_wallet):
                 response = {
@@ -53,14 +55,18 @@ class Transfer(View):
                     "error_message": "Successfully transfer"
                 }
 
+                logger.info("Successfully transfer money from" + str(from_wallet) + " " + str(to_wallet))
+
             else:
 
                 response = {
-                    "status_code": CODE_FAIL,
+                    "status_code": ERROR_CODE_FAIL,
                     "error_message": "Transfer fail"
                 }
 
-            logger.info("Successfully transfer money from" + str(from_wallet) + " " + str(to_wallet))
+                logger.info("Fail to transfer money from" + str(from_wallet) + " " + str(to_wallet))
+
+            
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
