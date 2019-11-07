@@ -165,8 +165,6 @@ DEPOSIT_METHOD_CHOICES = (
 
 )
 
-# transaction_deposit = 0
-# transaction_withdrawl = 1
 TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
@@ -537,8 +535,9 @@ BRANDID = '524'
 BRAND_PASSWORD = 'Flow6refg'
 PLATFORM = 'NETENT_CAS',
 FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-
+FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
+#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
+LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
 ASIAPAY_CMDTYPE = (
@@ -636,7 +635,7 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
 else:
-    API_DOMAIN = "https://03720ad2.ngrok.io/"
+    API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -1164,17 +1163,17 @@ BONUS_QUEUE_CL_NAME = "bonus_queue_cl"
 
 PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 
-
-
-
 # Error code define
-ERROR_CODE_SUCCESS = 1
+CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
-ERROR_CODE_INVAILD_INFO = 101
+ERROR_CODE_INVALID_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
-
+ERROR_CODE_EMPTY_RESULT = 105
+ERROR_CODE_DATABASE = 106
+ERROR_CODE_FAIL = 107
+ERROR_CODE_DUPE = 108
 
 BONUS_TYPE_VERIFICATION = 0
 BONUS_TYPE_DEPOSIT = 1
@@ -1197,11 +1196,20 @@ BONUS_STATUS_CHOICES = (
 )
 
 
+BONUS_START = 0
+BONUS_ACTIVE = 1
+BONUS_COMPLETED = 2
+BONUS_EXPIRED = 3
+BONUS_ISSUED = 4
+BONUS_REDEEMED = 5
+
 USER_BONUS_EVENT_TYPE_CHOICES = (
     (0, 'STARTED'),
     (1, 'ACTIVE'),
     (2, 'COMPLETED'),
     (3, 'EXPIRED'),
+    (4, 'ISSUED'),
+    (5, 'REDEEMED'),
 )
 
 BONUS_RELEASE_TYPE_CHOICES = (
@@ -1217,9 +1225,102 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (4, 'LATEST'),
 )
 
+#GD CASINO
+
+GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
+GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
+GDCASINO_MERCHANT_CODE = 'IBPHtest'
+GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
+
+GDCASINO_STATUS_CODE =(
+    (-1, 'UNKNOWN_ERROR'),
+    (0, 'OK'),
+    (1,'INVAILD_PARAMETER'),
+    (2, 'INVAILD_TOKEN_ID'),
+    (3, 'BET_ALREDY_SETTLED'),
+    (4, 'BET_DOES_NOT_EXIST'),
+    (5, 'BET_ALREADY_EXIST'),
+    (6, 'ACCOUNT_LOCKED'),
+    (7, 'INSUFFUCIENT_FUNDS'),
+    (8, 'RETRY_TRANSACTION'),
+    (201, 'INSUFFUCIENT_FUNDS_1(for maxbet)'),
+    (202, 'ACCOUNT_LOCKED_1(for maxbet)'),
+    (206, 'ABOVE_PLAYER_LIMIT_1(for maxbet)')
+)
+
+GDCASINO_STATUS = (
+    (0, 'PENDING'),
+    (1, 'DEBIT'),
+    (2, 'CREDIT'),
+    (3, 'TIP'),
+    (4, 'CANCEL'),
+)
+GDCASINO_GAME_TYPE = (
+    (0, 'None'),
+    (6, 'Baccarat'),
+    (28, 'Roulette'),
+    (29, 'Sic bo'),
+    (100, 'Slot game'),
+)
+
+
+GDCASINO_CANCEL_REASON = (
+    ('NONE', 'None'),
+    ('CANCELLED_ROUND', 'Game round is cancelled.'),
+    ('DEBIT_TIME_OUT', 'Debit response timeout.'),
+    ('VOIDED_BET', 'Abnormal bet is voided.'),
+    ('BETTING_TIME_FINISHED', 'Betting time is ended'),
+    ('INVALID_DEBIT_REPLY', 'Debit reply is in wrong format.'),
+)
+
 
 BRAND_OPTIONS = (
     ('letou', 'Letou'),
     ('ibet', 'iBet')
 )
 
+
+SECURITY_QUESTION = (
+    (0, _('What is your’s father birthday?')),
+    (1, _('What is your’s mother birthday?')),
+    (2, _('What is your’s spouse birthday?')),
+    (3, _('What is your first company’s employee ID?')),
+    (4, _('What is your primary school class teacher’s name?')),
+    (5, _('What is your best childhood friend’s name?')),
+    (6, _('What is the name of the person that influenced you the most?'))
+
+)
+# Games
+
+# Playngo
+PNG_STATUS_OK = 0
+PNG_STATUS_NOUSER = 1
+PNG_STATUS_INTERNAL = 2
+PNG_STATUS_INVALIDCURRENCY = 3
+PNG_STATUS_WRONGUSERNAMEPASSWORD = 4
+PNG_STATUS_ACCOUNTLOCKED = 5
+PNG_STATUS_ACCOUNTDISABLED = 6
+PNG_STATUS_NOTENOUGHMONEY = 7
+PNG_STATUS_MAXCONCURRENTCALLS = 8
+PNG_STATUS_SPENDINGBUDGETEXCEEDED = 9
+PNG_STATUS_SESSIONEXPIRED = 10
+PNG_STATUS_TIMEBUDGETEXCEEDED = 11
+PNG_STATUS_SERVICEUNAVAILABLE = 12
+
+# Kaiyuan Gaming
+KY_AGENT = "71452"
+KY_LINE_CODE_1 = "iBet01"
+KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
+KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+
+#onebook
+ONEBOOK_VENDORID = "xmV64h8RULU"
+ONEBOOK_OPERATORID = "ibetclaymore"
+ONEBOOK_MAXTRANSFER = "50000"
+ONEBOOK_MINTRANSFER = "10"
+ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
+ONEBOOK_DIRECTION_withdraw = 0
+ONEBOOK_DIRECTION_deposit = 1
+ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
+# AllBet
+AB_URL = "https://platform-api.apidemo.net:8443/"
