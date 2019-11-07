@@ -58,7 +58,7 @@ table thead th {
 /* Edit VIP Detail Pop Up*/
 
 #edit-vip-pop-up {
-    width: 60%;
+    width: 50%;
     top: 20%;
 }
 
@@ -100,7 +100,7 @@ table thead th {
 }
 
 .reason-box, .vip-details-btn {
-    padding: 10px 25px 10px 25px;
+    margin: 25px;
 }
 
 

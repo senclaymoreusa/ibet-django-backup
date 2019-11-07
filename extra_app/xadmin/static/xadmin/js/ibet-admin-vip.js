@@ -31,7 +31,7 @@ $(document).ready(function () {
             },
         },
 
-        columns: [
+        "columns": [
             { data: 'player_id',
               "render": function(data, type, row, meta){
                 if(type === 'display'){
@@ -136,6 +136,7 @@ $(document).ready(function () {
         // DISPLAY VIP DETAIL INFO
         $("#vip-player-info").empty();
         content = "";
+        content += "<input type='hidden' id='vip-pk' value=" + data.pk + ">";
         content += data.username + '<br>';
         content += data.segment + '<br>';
         content += data.manager + '<br>';
@@ -155,24 +156,46 @@ $(document).ready(function () {
         content += data.preferred_product + '<br>';
         content += data.preferred_contact + '<br>';
         $("#vip-player-info").append(content);
+        if (data.segment == ''){
+            $('#segmentation-assign').append("<option value='' selected disabled style='display:None'>Select segment</option>")
+        }else{
+            $('#segmentation-assign').append("<option value='' selected disabled style='display:None'>" + data.segment + "</option>")
+        }
+
+        if (data.manager == ''){
+            console.log("empty")
+            $('#manager-assign-default').val("Select manager")
+            $('#manager-assign-default').text("Select manager")
+        }else{
+            console.log(data.manager)
+            $('#manager-assign-default').val(data.manager)
+            $('#manager-assign-default').text(data.manager)
+        }
+        $('.manager-assign').chosen({ width: "70%" });
+
     };
 
-    $('.manager-assign').chosen({ width: "70%" });
+
 
     $('#vip-details-save').click(function () {
         var segment = $('#segmentation-assign :selected').val();
         var manager = $('#manager_assign_chosen a span').html();
         var changeReason = $('#vip-change-reason').val();
-        var userId =
+        var userId = $('#vip-pk').val();
+
         $.ajax({
             type: 'POST',
             url: vip_url,
             data: {
                 'type': 'editVIPDetail',
-
+                'userId': userId,
+                'segment': segment,
+                'manager': manager,
+                'changeReason': changeReason,
+                'admin_user': admin_user,
             },
             success: function (data) {
-                addVIPUserInfo(data);
+                window.location.reload();
             },
         })
     });

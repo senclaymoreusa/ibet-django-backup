@@ -112,13 +112,8 @@
                             </select>
                             <br>
                             <label for="manager-assign">VIP MANAGER</label><br>
-
                             <select id="manager-assign" class="manager-assign">
-                            {% if manager %}
-                                <option value="" selected disabled style="display:None">{{ manager }}</option>
-                            {% else %}
-                                <option value="" selected disabled style="display:None">Select manager</option>
-                            {% endif %}
+                                <option id="manager-assign-default" value="" selected disabled style="display:None"></option>
                             {% for manager in managers %}
                                 <option value="{{ manager }}">{{ manager }}</option>
                             {% endfor %}
@@ -135,7 +130,6 @@
                 </div>
 
                 <div class="vip-details-btn">
-                    <p id='errorMessage'>&nbsp;</p>
                     <button type="button" class="btn btn-primary" id="vip-details-save">Save</button>
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                 </div>
@@ -155,6 +149,7 @@
     <script>
         var vip_url = "{% url 'xadmin:vipview' %}"
         var user_link = "{% url 'xadmin:user_detail' %}"
+        var admin_user = "{{ user.username }}";
     </script>
 
 </body>
