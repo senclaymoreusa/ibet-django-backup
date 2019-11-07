@@ -21,7 +21,7 @@ from users.models import Game, CustomUser, Category, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from utils.helpers import addOrWithdrawBalance
-
+from django.utils.translation import ugettext_lazy as _
 from time import sleep, gmtime, strftime
 from users.views.helper import *
 
@@ -352,7 +352,7 @@ class submitDeposit(generics.GenericAPIView):
 
         #retry
         success = False
-        if checkUserBlock(user.pk):
+        if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -458,7 +458,7 @@ class submitPayout(generics.GenericAPIView):
         email = self.request.GET.get('email')
          #retry
         success = False
-        if checkUserBlock(user.pk):
+        if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -726,9 +726,7 @@ class rejectPayout(generics.GenericAPIView):
 
         else:
             logger.error('The request information is not correct, please try again.')
-            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVAILD_INFO})
-
-
+            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVALID_INFO})
 class getDepositTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize

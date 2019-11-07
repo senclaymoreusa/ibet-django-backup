@@ -15,7 +15,7 @@ from accounting.serializers import astroPaymentStatusSerialize
 from utils.constants import *
 from time import sleep, gmtime, strftime
 from django.utils import timezone
-
+from django.utils.translation import ugettext_lazy as _
 import asyncio
 from accounting.views.sqs_message import send_message_sqs 
 
@@ -75,7 +75,7 @@ def astroNewInvoice(request):
         "x_email":email,
         "control":my_hmac,
     }
-    if checkUserBlock(user.pk):
+    if checkUserBlock(user):
         errorMessage = _('The current user is blocked!')
         data = {
             "errorCode": ERROR_CODE_BLOCK,
@@ -370,12 +370,22 @@ def cancel_cashout_card(request):
 @permission_classes((IsAuthenticated,))
 def capture_transaction(request):
     if (request.method == "POST"):
+        
         requestURL = ASTROPAY_URL + "/verif/validator"
         
         # need to parse card num, code, exp date, amount, and currency from POST body
         body = json.loads(request.body)
         userid = request.user.username
-
+        
+        if checkUserBlock(CustomUser.objects.get(username=userid).pk):
+            errorMessage = _('The current user is blocked!')
+            data = {
+                "errorCode": ERROR_CODE_BLOCK,
+                "errorMsg": {
+                    "detail": [errorMessage]
+                }
+            }
+            return Response(data)
 
         # etc.
         card_num = body.get("card_num")

@@ -25,6 +25,7 @@ import base64, socket
 from time import gmtime, strftime, strptime
 from django.utils import timezone
 from users.views.helper import *
+from django.utils.translation import ugettext_lazy as _
 
 logger = logging.getLogger("django")
 
@@ -105,7 +106,7 @@ class submitDeposit(generics.GenericAPIView):
         RealName = self.request.POST.get("RealName")
         logger.info(SignCode)
         logger.info(MD5(SignCode))
-        if checkUserBlock(user.pk):
+        if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -175,9 +176,12 @@ class submitDeposit(generics.GenericAPIView):
         })
         rdata = r.text
         logger.info(rdata)
+        #print(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
+            #print(tree)
             StatusCode = tree.find('StatusCode').text
+            #print(StatusCode)
             StatusMsg = tree.find('StatusMsg').text
             
             if StatusMsg == 'OK':
@@ -274,7 +278,7 @@ class submitCashout(generics.GenericAPIView):
         logger.info(SignCode)
         currency = self.request.POST.get("currency")
         cashoutMethod = self.request.POST.get("cashoutMethod")
-        if checkUserBlock(user.pk):
+        if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -382,26 +386,38 @@ class depositfinish(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         userid = self.request.POST.get("userid")
         OrderID = self.request.POST.get("order_id")
+        order_id = OrderID.split("D")[1]
         uID = "n" + userid
-        r = requests.post(url + '/standard/getway/depositfinish', data={
-            "cID":ASIAPAY_CID,
-            "uID":uID,
-            "CmdType":"02",
-            "OrderID":OrderID,
-        })
-        rdata = r.text
-        tree = ET.fromstring(rdata)
-        StatusCode = tree.find('StatusCode').text
-        if StatusCode == "00001":
-            orderData = Transaction.objects.get(user_id=CustomUser.objects.get(pk=userid),
-            transaction_id=OrderID)
-            orderData.status = 3
-            orderData.last_updated = timezone.now(),
-            orderData.save()
-        else:
-            logger.info('The request information is nor correct, please try again')
-        logger.info(rdata)
-        return Response(rdata)
+        delay = kwargs.get("delay", 5)
+        success = False
+        for x in range(3):
+            r = requests.post(url + '/standard/getway/depositfinish', data={
+                "cID":ASIAPAY_CID,
+                "uID":uID,
+                "CmdType":"02",
+                "OrderID":OrderID,
+            })
+            rdata = r.text
+            tree = ET.fromstring(rdata)
+            try: 
+                StatusCode = tree.find('StatusCode').text
+                StatusMsg = tree.find('StatusMsg').text
+                if StatusCode == "00001":
+                    orderData = Transaction.objects.get(transaction_id=order_id)
+                    orderData.status = TRAN_CANCEL_TYPE
+                    orderData.last_updated = timezone.now()
+                    orderData.save()
+                    success = True
+                    break
+                else:
+                    logger.info('The request information is nor correct, please try again')
+                    sleep(delay)
+                    logger.info(rdata)
+            except StatusCode.DoesNotExist:
+                StatusCode = None
+                return Response({"StatusCode": "400", "StatusMsg": "Please send it again."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"StatusCode": StatusCode, "StatusMsg": StatusMsg})
 
 class orderStatus(generics.GenericAPIView):
     queryset = Transaction.objects.all()
