@@ -204,16 +204,15 @@ class SubmitPayout(View):
     def post(self, request): # user will need to submit bank acc information
         username = request.user.username
 
-        toBankAccountName = 'orion'
-        toBankAccountNumber = '12345123'
-        # toBankAccountName = request.POST.get("toBankAccountName")
-        # toBankAccountNumber = request.POST.get("toBankAccountNumber")
+        # toBankAccountName = 'orion'
+        # toBankAccountNumber = '12345123'
+        toBankAccountName = request.POST.get("toBankAccountName")
+        toBankAccountNumber = request.POST.get("toBankAccountNumber")
 
         amount = float(request.POST.get("amount"))
-        # amount = str('%.2f' % amount)
 
-        # trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
-        trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         ip = helpers.get_client_ip(request)
         bank = 'KKR'
         language = 'en-Us'
