@@ -211,7 +211,7 @@ class SubmitPayout(View):
 
         amount = float(request.POST.get("amount"))
 
-        trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         ip = helpers.get_client_ip(request)
         bank = 'KKR'
@@ -233,7 +233,6 @@ class SubmitPayout(View):
         secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
         checksum = MD5(secretMsg)
 
-        
         db_currency_code = 2 if currency == '2' else 7
         try:
             with transaction.atomic():
@@ -249,9 +248,9 @@ class SubmitPayout(View):
                     other_data={'checksum': checksum},
                 )
                 withdraw_request.save()
-                print("Withdraw request created: " + str(withdraw_request))
-                can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
-                # can_withdraw = helpers.addOrWithdrawBalance(request.user.username, amount, "withdraw")
+                logger.info("Withdraw request created: " + str(withdraw_request))
+                # can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
+                can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
         except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
             print(repr(e))
