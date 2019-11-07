@@ -54,6 +54,7 @@ class GameSerializer(serializers.ModelSerializer):
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     security_question = ChoicesSerializerField()
+    currency = ChoicesSerializerField()
 
     class Meta:
         model = CustomUser

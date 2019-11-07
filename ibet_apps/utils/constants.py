@@ -90,6 +90,7 @@ CURRENCY_XBT = 9
 CURRENCY_EUR = 10
 CURRENCY_NOK = 11
 CURRENCY_GBP = 12
+CURRENCY_TEST = 20
 CURRENCY_TTC = 13
 
 CURRENCY_CHOICES = (
@@ -106,6 +107,7 @@ CURRENCY_CHOICES = (
     (CURRENCY_EUR, 'EUR'),
     (CURRENCY_NOK, 'NOK'),
     (CURRENCY_GBP, 'GBP'),
+    (CURRENCY_TEST, 'UUD'),
     (CURRENCY_TTC, 'TTC')
 )
 
@@ -221,6 +223,9 @@ OUTCOME_CHOICES = [
     (1, 'Lose'),
     (2, 'Tie/Push'),
     (3, 'Void'),
+    (4, 'Running'),
+    (5, 'Draw'),
+    (6, 'Half lose'),
 ]
 
 ACTIVE_STATE = 0
@@ -1171,7 +1176,7 @@ ERROR_CODE_MAX_EXCEED = 104
 ERROR_CODE_EMPTY_RESULT = 105
 ERROR_CODE_DATABASE = 106
 ERROR_CODE_FAIL = 107
-
+ERROR_CODE_DUPE = 108
 
 BONUS_TYPE_VERIFICATION = 0
 BONUS_TYPE_DEPOSIT = 1
@@ -1296,5 +1301,14 @@ KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
 
+#onebook
+ONEBOOK_VENDORID = "xmV64h8RULU"
+ONEBOOK_OPERATORID = "ibetclaymore"
+ONEBOOK_MAXTRANSFER = "50000"
+ONEBOOK_MINTRANSFER = "10"
+ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
+ONEBOOK_DIRECTION_withdraw = 0
+ONEBOOK_DIRECTION_deposit = 1
+ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"

@@ -28,10 +28,6 @@ from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
 from spyne.model.complex import ComplexModel, XmlAttribute, Array
 
-try:
-    PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
-except ObjectDoesNotExist:
-    logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
 class Container(ComplexModel):
     # __namespace__ = 'https://testgdgame-namespace.org'
@@ -173,6 +169,11 @@ class LiveDealerSoapService(ServiceBase):
 
     @rpc(DebitRequest, _body_style='bare', _returns=Container)
     def Debit(crx, request):
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+        except ObjectDoesNotExist:
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+
         res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
@@ -221,6 +222,11 @@ class LiveDealerSoapService(ServiceBase):
 
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+        except ObjectDoesNotExist:
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+
         res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
@@ -260,7 +266,12 @@ class LiveDealerSoapService(ServiceBase):
             return res
     
     @rpc(TipRequest,_body_style='bare', _returns=Container)
-    def Tip(crx, request):  
+    def Tip(crx, request): 
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+        except ObjectDoesNotExist:
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+ 
         res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)

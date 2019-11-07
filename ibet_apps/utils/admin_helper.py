@@ -173,7 +173,6 @@ def decode_user_id_from_referral_code(code):
             i += 1
         return user_id
 
-
 # Return a list of user in Manager Group
 def getManagerList():
 
@@ -205,3 +204,13 @@ def getManagerList():
         for manager in manager_group:
             managers.append(manager.user.username)
     return managers
+
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
