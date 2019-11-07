@@ -186,7 +186,10 @@ class CustomUser(AbstractBaseUser):
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                             related_name='AffiliateManager')
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                       related_name='VIPManager')
 
     #commission
     commission_status = models.BooleanField(default=False)               # for current month

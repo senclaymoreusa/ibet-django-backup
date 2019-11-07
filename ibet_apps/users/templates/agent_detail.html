@@ -418,7 +418,7 @@
                                     <!-- Affiliate Manager -->
                                     <div class="row" style="margin-bottom: 20px">
                                         <div class="col-md-4"><strong>Affiliate Manager</strong></div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
 
                                             <select id="manager-assign" class="manager-assign">
                                             {% if manager %}
@@ -430,6 +430,11 @@
                                                 <option value="{{ manager }}">{{ manager }}</option>
                                             {% endfor %}
                                             </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            {% if managers == None %}
+                                            <p style="color:red">{{ empty_manager_group }}</p>
+                                            {% endif %}
                                         </div>
                                     </div>
 

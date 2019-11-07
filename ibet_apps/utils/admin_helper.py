@@ -173,29 +173,20 @@ def decode_user_id_from_referral_code(code):
             i += 1
         return user_id
 
-# Return a list of user in Manager Group
-def getManagerList():
+
+# Return a list of user in VIP Manager Group
+def getManagerList(list_type):
+    if list_type == "VIP":
+        group_name = "VIP Manager"
+    elif list_type == "Affiliate":
+        group_name = "Affiliate Manager"
+    else:
+        group_name = ""
 
     try:
-        manager_group = UserGroup.objects.get(groupType=OTHER_GROUP, name="Manager Group")
-    except ObjectDoesNotExist:
-        manager_group = UserGroup(
-            name="Manager Group",
-            groupType=OTHER_GROUP,
-        )
-        manager_group.save()
-        manager_id_list = CustomUser.objects.values_list('managed_by__pk', flat=True).distinct()
-        for manager in manager_id_list:
-            if manager:
-                new_manager = UserToUserGroup(
-                    user=CustomUser.objects.get(pk=manager),
-                    group=manager_group,
-                )
-                new_manager.save()
-        logger.info("Create a new Manager Group")
-
+        manager_group = UserGroup.objects.get(groupType=MANAGER_GROUP, name=group_name)
     except Exception as e:
-        logger.error("Error getting manager group")
+        logger.info("Error getting {} group ".format(group_name) + str(e))
         return None
 
     managers = []

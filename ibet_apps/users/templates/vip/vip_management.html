@@ -125,6 +125,10 @@
                                 <option value="{{ manager }}">{{ manager }}</option>
                             {% endfor %}
                             </select>
+                           {% if managers == None %}
+                           <p style="color:red">{{ empty_manager_group }}</p>
+                           {% endif %}
+
 
                        </div>
                     </div>

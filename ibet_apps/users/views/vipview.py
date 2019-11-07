@@ -23,7 +23,9 @@ class VIPView(CommAdminView):
             context["breadcrumbs"].append({'title': title})
             context["title"] = title
             context["segment_list"] = Segmentation.objects.values_list('level', flat=True)
-            context["managers"] = getManagerList()
+            context["managers"] = getManagerList("VIP")
+            context["empty_manager_group"] = "Please create VIP Manager group in System Admin. "
+
             return render(request, 'vip/vip_management.html', context)
 
         elif get_type == "getVIPInfo":
@@ -140,8 +142,8 @@ class VIPView(CommAdminView):
                     'email_verified': user.email_verified,
                     'phone_verified': user.phone_verified,
                 }
-                if user.managed_by:
-                    response['manager'] = user.managed_by.username
+                if user.vip_managed_by:
+                    response['manager'] = user.vip_managed_by.username
                 if user.vip_level:
                     response['segment'] = user.vip_level.level
             except Exception as e:
@@ -169,7 +171,7 @@ class VIPView(CommAdminView):
 
                     if manager is not "Select manager":
                         manager = CustomUser.objects.get(username=manager)
-                        user.managed_by = manager
+                        user.vip_managed_by = manager
 
                     user.save()
 
