@@ -8,7 +8,8 @@ djauth/.DS_Store
 logs/
 .env
 .idea/
-
+# test socket server
+Server.py
 apps/accounting/views/testview.py
 djauth/third_party_keys.py
 # Elastic Beanstalk Files

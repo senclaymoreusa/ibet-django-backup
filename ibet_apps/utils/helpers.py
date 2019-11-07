@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from users.models import CustomUser
 
-
 logger = logging.getLogger("django")
 
 
@@ -47,10 +46,10 @@ def addOrWithdrawBalance(username, balance, type_balance):
         return True
 
     else:
-        if decimal.Decimal(balance) > currrent_balance:
+        if decimal.Decimal(balance) > current_balance:
             return False
 
-        new_balance = currrent_balance - decimal.Decimal(balance)
+        new_balance = current_balance - decimal.Decimal(balance)
         user.update(main_wallet=new_balance, modified_time=timezone.now())
 
         # obj, created = Transaction.objects.create(
@@ -66,7 +65,7 @@ def addOrWithdrawBalance(username, balance, type_balance):
         #     dollar_amount=balance
         # )
         # action.save()
-        return created
+        return True
 
 
 def get_client_ip(request):

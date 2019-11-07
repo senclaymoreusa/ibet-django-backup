@@ -4,5 +4,9 @@ from .models import *
 
 admin.site.register(Category)
 admin.site.register(Game)
-admin.site.register(GameAttribute)
+admin.site.register(GameProvider)
+admin.site.register(GameProviderWithCategory)
+admin.site.register(GameBet)
+# admin.site.register(GameAttribute)
 admin.site.register(FGSession)
+

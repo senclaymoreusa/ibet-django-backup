@@ -1,7 +1,6 @@
 import xadmin
-from .models import Bonus
-from .models import Requirement
-from .models import UserBonusEvent
+
+from .models import *
 from bonus.adminview import *
 
 class BonusAdmin(object):
@@ -14,9 +13,13 @@ class RequirementAdmin(object):
 class UserBonusEventAdmin(object):
     list_display = ('owner', 'bonus', 'timestamp', 'delivered_by', 'status', 'notes')
 
+class BonusCategoryAdmin(object):
+    list_display = ('bonus', 'category')
+
 
 xadmin.site.register(Bonus,BonusAdmin)
 xadmin.site.register(Requirement,RequirementAdmin)
 xadmin.site.register(UserBonusEvent,UserBonusEventAdmin)
+xadmin.site.register(BonusCategory,BonusCategoryAdmin)
 
 xadmin.site.register_view(r'bonus_records/$', BonusRecordsView, name='bonus_records')

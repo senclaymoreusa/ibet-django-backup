@@ -20,6 +20,18 @@ from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
 
+class ChoicesSerializerField(serializers.SerializerMethodField):
+    """
+    A read-only field that return the representation of a model field with choices.
+    """
+    def to_representation(self, value):
+        # sample: 'get_XXXX_display'
+        method_name = 'get_{field_name}_display'.format(field_name=self.field_name)
+        # retrieve instance method
+        method = getattr(value, method_name)
+        # finally use instance method to return result of get_XXXX_display()
+        return method()
+
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -41,9 +53,12 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+    security_question = ChoicesSerializerField()
+    currency = ChoicesSerializerField()
+
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time', 'security_question', 'security_answer', 'withdraw_password')
         read_only_fields = ('pk', )
 
 

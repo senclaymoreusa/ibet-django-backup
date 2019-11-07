@@ -20,6 +20,10 @@ p, label {
   color: #4a4a4a;
 }
 
+table {
+  width: 100%;
+}
+
 thead {
   height: 12px;
   font-family: Helvetica;
@@ -41,6 +45,10 @@ tbody>tr:nth-child(odd)>th {
    background-color: #f3f3f3;
 }
 
+input[type="file"] {
+    display: none;
+}
+
 .modal-header {
   border-radius: 4px;
   border: solid 1px #bdbdbd;
@@ -58,6 +66,12 @@ tbody>tr:nth-child(odd)>th {
 .form-group {
   padding-top: 20px;
   border-bottom: 0;
+}
+
+.manually-text {
+  margin: 32px 0 20px 0;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 #details {
@@ -87,28 +101,45 @@ hr {
 
 {% if err_msg %}<p><strong>{{ err_msg }}</strong></p>{% endif %}
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>
+<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_group" style="width:10%;" onclick="newGroup()">New group</button>-->
+<button type="button" class="btn btn-primary" class="csv" id="player-csv">Upload player CSV</button>
+<input type="file" id="csv-file" accept=".csv">
+<button type="button" class="btn btn-primary" class="csv" id="affiliate-csv">Upload affiliate CSV</button>
+
 
 <div style="margin-top:30px">
     <table>
         <thead class="thead-dark">
             <tr>
-            <th style="width: 40%;">NAME</th>
-            <th style="width: 15%;">MEMBERS</th>
-            <th style="width: 15%;">TIMES USED</th>
-            <th style="width: 15%;">CREATOR</th>
-            <th style="width: 15%;">OPEN RATE</th>
+              <th style="width: 20%;">NAME</th>
+              <th style="width: 12%;">PLAYERS/AFFILIATES</th>
+              <th style="width: 12%;">DYNAMIC/STATIC</th>
+              <th style="width: 12%;">MEMBERS IN GROUP</th>
+              <th style="width: 12%;">TIMES USED</th>
+              <th style="width: 12%;">CREATOR</th>
+              <th style="width: 20%;">TIME OF CREATION</th>
             </tr>
         </thead>
         <tbody>
         {% for group in message_groups %}
             <tr>
             <td>{{ group.name }}</td>
+            {% if group.is_player %}
+            <td>PLAYERS</td>
+            {% else %}
+            <td>AFFILIATES</td>
+            {% endif %}
+            {% if group.is_static %}
+            <td>Static</td>
+            {% else %}
+            <td>Dynamic</td>
+            {% endif %}
             <td><a onclick="return getMemberInfo('{{ group.name }}')">{{ group.members }}</a></td>
             <td>{{ group.time_used }}</td>
             <td><a onclick="return getCreator('{{ group.creator }}')">{{ group.creator }}</a></td>
-            <td>66.67%</td>
-            <td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button" onclick="return getGroup('{{ group.pk }}')">Edit</a></td>
+            <td>{{ group.created_time }}</td>
+            <td><button class="btn btn-primary" onclick="return getGroup('{{ group.pk }}')">Edit</button></td>
+            <!--<td><a class="btn btn-primary" href="#" data-toggle="modal" data-target="#create_group" role="button" onclick="return getGroup('{{ group.pk }}')">Edit</a></td>-->
             <td><a class="btn btn-primary" href="#" role="button" disabled><i class="fa fa-info"></i></a></td>
             <!--<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#details">
                 <i class="fa fa-info"></i>
@@ -178,7 +209,7 @@ hr {
       <div style="padding:5px; margin-top:10px;">
         <ul class="nav nav-tabs">
             <li id="member-group"><a data-toggle="tab" class="tab-label active" href="#membergroup">MEMBER GROUP</a></li>
-            <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AFFILATE GROUP</a></li>
+            <li id="automated-messages"><a data-toggle="tab"  class="tab-label" style="width: 220px"  href="#automated-message">AFFILIATE GROUP</a></li>
         </ul>
         <div class="tab-content">
             <div id="membergroup" class="tab-pane active">
@@ -316,7 +347,7 @@ hr {
                     <div id="errorMessage"></div>
                     <div style="margin-top:30px;">
                         <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+                        <!--<button type="button" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>-->
                         <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -330,6 +361,48 @@ hr {
     </div>
   </div>
 </div>
+
+
+<div class="modal fade bd-example-modal-lg" id="static-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" style="width:48%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">New player group</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="playergroup" action="{% url 'xadmin:messagegroups' %}">
+        {% csrf_token %}
+          <div class="form-group">
+            <label for="group-name">NAME *</label>
+            <input type="text" class="form-control" name="group-name" placeholder="Give your group a descriptive name" required>
+          </div>
+          <!--<div class="input-group" style="margin-top:25px;">
+            <input type="button" class="btn btn-primary" value="Upload player CSV"> 
+            <label class="control-label" style="margin-left: 20px; font-size: 13px;">Edit the list members by uploading a new CSV file.</label>
+          </div>-->
+          <p class="manually-text">PLAYERS IN GROUP</p>
+          <table id="player-table" class="display" width="100%">
+          </table>
+          <!--<div class="form-group">
+            <button id="export-csv" type="button" class="btn btn-primary">Export</button>
+          </div>
+          <div id="notes" class="form-group">
+            <label for="group-name">REASON FOR CHANGES</label>
+            <textarea class="form-control" rows="5" placeholder="Please provide a brief explanation."></textarea>
+          </div>-->
+          <div id="errorMessage"></div>
+          <div style="margin-top:30px;">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-danger" id="delete" style="display: none;"><i class="fas fa-trash-alt"></i>&nbsp;Delete group</button>
+              <button type="reset" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
 <div class="modal fade bd-example-modal-lg" id="view-group" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -541,7 +614,7 @@ hr {
         </div>
         <div class='col-md-3' style="padding-left: 0">
           <button class="btn btn-primary" id="csv_btn">Upload CSV</button>
-          <input type="file" id="csv_file">
+          <input type="file" id="csv_file" accept=".csv">
         </div>
       </div>
       <button id="add-btn" class="btn btn-primary" style="margin-top: 20px; margin-left: 16px" disabled>Add member to group</button>
@@ -574,6 +647,9 @@ hr {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+
 <script>
 
 $.ajax({
@@ -607,6 +683,8 @@ $.ajax({
 
 var pk_list;
 var user_list;
+var userList;
+var groupType;
 
 $(document).ready(function() {
   var previousURL = document.referrer;
@@ -816,6 +894,8 @@ $(document).ready(function() {
     groupFilter();
   });
 
+  //var dataTable = $("#player-table").DataTable();
+
   $('#csv_file').change(function(e) {
     var data = null;
     var file = e.target.files[0];
@@ -851,6 +931,76 @@ $(document).ready(function() {
 
   $('#csv_btn').click(function() {
     $('#csv_file').click();
+  });
+
+  $('#player-csv').click(function() {
+    groupType = "player";
+    $("#static-modal").find(".modal-title").text("New static player group");
+    $('#csv-file').click();
+  });
+
+  $('#affiliate-csv').click(function() {
+    groupType = "affiliate";
+    $("#static-modal").find(".modal-title").text("New static affiliate group");
+    $('#csv-file').click();
+  });
+
+  $('#csv-file').change(function(e) {
+    // $("#player-table").DataTable().fnClearTable(this);
+    if ( $.fn.dataTable.isDataTable('#player-table')) {
+      $("#player-table").DataTable().destroy();
+    }
+
+    $("#delete").css("display", "none");
+    $("#export-csv").css("display", "none");
+    $("#notes").css("display", "none");
+
+    var file = e.target.files[0];
+
+    if(file) {
+      var reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = function (event) {
+        var csvData = event.target.result;
+
+        var parsedCSV = d3.csv.parseRows(csvData);
+
+        var players = JSON.stringify(parsedCSV);
+
+        $.ajax({
+          type: "GET",
+          url: "{% url 'static-group-validation' %}",
+          data: {
+            "type": groupType,
+            "players": players
+          },
+          success: function(data) {
+            if(data == "invalid") {
+              alert("Invalid Data Format!");
+            }
+            else {
+              userList = data;
+              $("#static-modal").modal({'show' : true});
+              $("#player-table").DataTable({
+                data: data,
+                columns: [
+                    { data: "id" },
+                    { data: "username" }
+                ]
+              });
+            }
+            /*
+            if (data.errorCode === 1) {
+              $('#errorMessage').text(data.error);
+              $('#errorMessage').css('color', 'red');
+            } else {
+              window.location.reload();
+            }
+            */
+          }
+        });
+      }
+    }
   });
 
 /*
@@ -935,6 +1085,58 @@ $(document).ready(function() {
     }
   });
 
+  $('form').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    formId = form.attr("id");
+
+    var group_name = form.find('input[name="group-name"]').val();
+    var is_range = $('#range').prop("checked");
+    var is_deposit = $('#onlydeposited').prop("checked");
+    var action
+    var url;
+    var groupId;
+
+    if(formId == "playergroup") {
+      if($('#static-modal .modal-title').text()=="Edit Group"){
+        action = form.attr('action');
+        url = action.split('?')[0];
+        groupId = action.split('?')[1];
+      } else {
+        action = form.attr('action');
+        url = action.split('?')[0];
+      }
+    }
+
+    userList = JSON.stringify(userList);
+
+    $.ajax({
+      type: "POST",
+      url: url,
+      data: {
+        'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'groupId': groupId,
+        'type': groupType,
+        'group_name': group_name,
+        'user_list': userList,
+        'product': userFilter['product'],
+        'is_range': is_range,
+        'active_from': userFilter['active_from'],
+        'active_to': userFilter['active_to'],
+        'register_from': userFilter['register_from'],
+        'register_to': userFilter['register_to'],
+        'is_deposit': is_deposit,
+      },
+      success: function(data) {
+        if (data.errorCode === 1) {
+            $('#errorMessage').text(data.error);
+            $('#errorMessage').css('color', 'red');
+        } else {
+            window.location.reload();
+        }  
+      }
+    });
+  });
 
   $('#newgroup').submit(function(e) {
     e.preventDefault();
@@ -1151,7 +1353,9 @@ function newGroup() {
 }
 
 function getGroup(groupId) {
-  $('#create_group .modal-title').text("Edit Group");
+  //$('#create_group .modal-title').text("Edit Group");
+  $('#static-modal').modal({'show' : true});
+  $('#static-modal .modal-title').text("Edit Group");
   $.ajax({
       type: "GET",
       url: "{% url 'group-detail' %}",
@@ -1159,9 +1363,33 @@ function getGroup(groupId) {
         'groupId': groupId
       },
       success: function(data)
-      {   
+      {
+        if ( $.fn.dataTable.isDataTable('#player-table')) {
+          $("#player-table").DataTable().destroy();
+        }
+
+        var fields = JSON.parse(data["group"])[0]["fields"];
+
+        $("#static-modal").find('input[name="group-name"]').val(fields["name"]);
+
+        user_list = data["user_list"];
+        $("#player-table").DataTable({
+            data: user_list,
+            columns: [
+                { data: "pk" },
+                { data: "username" }
+            ]
+        });
+
+        $("#delete").css("display", "");
+        $("#notes").css("display", "");
+        $("#export-csv").css("display", "");
+        $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")');
+        $('#playergroup').attr('action', "{% url 'group-update'%}" + "?" + groupId);
+          /*
           var fields = JSON.parse(data["group"])[0]["fields"];
           user_list = data["user_list"];
+          
           $("#newgroup").trigger("reset");
 
           $("#newgroup").find('input[name="group_name"]').val(fields["name"]);
@@ -1180,6 +1408,7 @@ function getGroup(groupId) {
           $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
           $("#delete").css("display", "");
           $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")')
+          */
       }
   });
 }
@@ -1189,9 +1418,9 @@ function deleteGroup(groupName) {
     type: "POST",
     url: "{% url 'xadmin:messagegroups' %}",
     data:{ 
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
         'type': 'delete_group',
         'group_name': groupName,
-        "csrfmiddlewaretoken": "{{ csrf_token }}",
     },
     success: function(response)
     {
@@ -1199,6 +1428,7 @@ function deleteGroup(groupName) {
     }
   });
 }
+
 
 function manuallyUpload() {
   $('#manually').modal({'show' : true});

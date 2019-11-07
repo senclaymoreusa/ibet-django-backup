@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
-#print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
+print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
@@ -34,19 +34,20 @@ CONTACT_OPTIONS = (
     ('Push_Notification', 'Push Notification')
 )
 
-CURRENCY_TYPES = (
-    ('USD', 'USD'),
-    ('EUR', 'EUR'),
-    ('JPY', 'JPY'),
-    ('CNY', 'CNY'),
-    ('HKD', 'HKD'),
-    ('AUD', 'AUD'),
-    ('THB', 'THB'),
-    ('MYR', 'MYR'),
-    ('VND', 'VND'),
-    ('MMK', 'MMK'),
-    ('XBT', 'XBT')
-)
+# CURRENCY_TYPES = (
+#     ('USD', 'USD'),
+#     ('EUR', 'EUR'),
+#     ('JPY', 'JPY'),
+#     ('CNY', 'CNY'),
+#     ('HKD', 'HKD'),
+#     ('AUD', 'AUD'),
+#     ('THB', 'THB'),
+#     ('MYR', 'MYR'),
+#     ('VND', 'VND'),
+#     ('MMK', 'MMK'),
+#     ('XBT', 'XBT'),
+#     ('TTC', 'TTC'),
+# )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
@@ -89,6 +90,8 @@ CURRENCY_XBT = 9
 CURRENCY_EUR = 10
 CURRENCY_NOK = 11
 CURRENCY_GBP = 12
+CURRENCY_TEST = 20
+CURRENCY_TTC = 13
 
 CURRENCY_CHOICES = (
     (CURRENCY_CNY, 'CNY'),
@@ -103,7 +106,9 @@ CURRENCY_CHOICES = (
     (CURRENCY_XBT, 'XBT'),
     (CURRENCY_EUR, 'EUR'),
     (CURRENCY_NOK, 'NOK'),
-    (CURRENCY_GBP, 'GBP')
+    (CURRENCY_GBP, 'GBP'),
+    (CURRENCY_TEST, 'UUD'),
+    (CURRENCY_TTC, 'TTC')
 )
 
 TRAN_SUCCESS_TYPE = 0
@@ -166,19 +171,17 @@ TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
-TRANSACTION_TRANSFER_IN = 4
-TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONUS = 6
-TRANSACTION_ADJUSTMENT = 7
-TRANSACTION_COMMISSION = 8
+TRANSACTION_TRANSFER = 4
+TRANSACTION_BONUS = 5
+TRANSACTION_ADJUSTMENT = 6
+TRANSACTION_COMMISSION = 7
 
 TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_DEPOSIT, 'Deposit'),
     (TRANSACTION_WITHDRAWAL, 'Withdrawal'),
     (TRANSACTION_BET_PLACED, 'Bet Placed'),
     (TRANSACTION_SETTLED, 'Bet Settled'),
-    (TRANSACTION_TRANSFER_IN, 'Transfer in'),
-    (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
+    (TRANSACTION_TRANSFER, 'Transfer'),
     (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
@@ -192,6 +195,7 @@ LANGUAGE_CHOICES = (
     ('ko', 'Korean'),
     ('ja', 'Japanese'),
 )
+
 GAME_TYPE_CHOICES = (
     (0, 'Sports'),
     (1, 'Games'),
@@ -199,6 +203,32 @@ GAME_TYPE_CHOICES = (
     (3, 'Financial'),
     (4, 'General'),
 )
+
+SPREAD = 'SPREAD'
+MONEYLINE = 'LINE'
+TOTAL = 'OU'
+TIP = 'TIP'
+SINGLE = 'Single'
+PARLAY = 'Parlay'
+
+BET_TYPES_CHOICES = [
+    (SPREAD, 'Spread'),
+    (MONEYLINE, 'Moneyline'),
+    (TOTAL, 'Total O/U'),
+    (TIP, 'Tip'),
+    (SINGLE, 'Single'),
+    (PARLAY,'Parlay'),
+
+]
+OUTCOME_CHOICES = [
+    (0, 'Win'),
+    (1, 'Lose'),
+    (2, 'Tie/Push'),
+    (3, 'Void'),
+    (4, 'Running'),
+    (5, 'Draw'),
+    (6, 'Half lose'),
+]
 
 ACTIVE_STATE = 0
 DISABLED_STATE = 1
@@ -226,10 +256,11 @@ VIP_CHOICES = (
 
 ibetVN = 0
 ibetTH = 1
-
+ibetCN = 2
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
+    (ibetCN, "ibet-CN"),
 )
 
 COUNTRY_CHOICES = (
@@ -266,10 +297,11 @@ AGENT_STATUS = (
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
 MESSAGE_GROUP = 2
+MESSAGE_DYNAMIC_GROUP = 3
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
-    (MESSAGE_GROUP, 'message'),
+    (MESSAGE_GROUP, 'Static'),
     (OTHER_GROUP, 'other')
 )
 
@@ -1164,20 +1196,12 @@ BONUS_STATUS_CHOICES = (
     (2, 'DISABLED'),
 )
 
-BONUS_START = 0
-BONUS_ACTIVE = 1
-BONUS_COMPLETED = 2
-BONUS_EXPIRED = 3
-BONUS_ISSUED = 4
-BONUS_REDEEMED = 5
 
 USER_BONUS_EVENT_TYPE_CHOICES = (
     (0, 'STARTED'),
     (1, 'ACTIVE'),
     (2, 'COMPLETED'),
     (3, 'EXPIRED'),
-    (4, 'ISSUED'),
-    (5, 'REDEEMED')
 )
 
 BONUS_RELEASE_TYPE_CHOICES = (

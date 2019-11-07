@@ -2,7 +2,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
 from bonus.models import *
-from users.models import *
+from users.models import CustomUser
+from games.models import Category
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -17,12 +18,12 @@ from django.db import transaction
 from rest_framework import status
 import datetime
 from django.utils import timezone
-
+from django.db.models import Sum
+from django.db.models import Count
 
 logger = logging.getLogger('django')
 
 # Create your views here.
-
 class BonusSearchView(View):
 
     # Returns a dictionary in JSON where the key is the PK of each bonus, and the value is the whole object
@@ -42,6 +43,7 @@ class BonusSearchView(View):
             req_data = json.loads(req_data)[0]
 
             pk = bonus_data[0]['pk']
+
             if pk in bonuses:
                 bonuses[pk]['requirements'].append(req_data)
             else:
@@ -56,6 +58,40 @@ class BonusSearchView(View):
             bonus_left = serializers.serialize('json', [bonus])
             bonus_left = json.loads(bonus_left)
             bonuses[bonus_left[0]['pk']] = bonus_left[0]['fields']
+
+        # Now that bonuses keep all the bonus objects. We need to join with the BonusCategory table to get
+        # all the applicable categories for each bonus.
+        for pk in bonuses.keys():
+            for bc_obj in BonusCategory.objects.all():
+                if str(bc_obj.bonus.pk) != pk:
+                    continue
+                bonus_obj = bonuses[pk]
+                category_json = serializers.serialize('json', {bc_obj.category})
+                category_json = json.loads(category_json)
+                if 'categories' in bonus_obj.keys():
+                    bonus_obj['categories'].append (category_json)
+                else:
+                    bonus_obj['categories'] = [category_json]
+
+        # For each Bonus, we need to compute the 4 metrics over its history.
+        # These are only for our admin backend.
+        # DO NOT use them for frontend display.
+        for pk in bonuses.keys():
+
+            ###TODO: BELOW is NOT good design - as it requires hitting the database for 4 times.
+            ###Instead, we should get all the data at once and compute the sums and counts in the memory.
+            ###We should tune this if it turns out to be bad in performance testing.
+            (ube_sum_issued, ube_count_issued, ube_sum_redeemed, ube_count_redeemed) = (
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Sum('amount'))['amount__sum'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Count('amount'))['amount__count'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Sum('amount'))['amount__sum'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Count('amount'))['amount__count']
+            )
+
+            bonuses[pk]['total_amount_issued'] = ube_sum_issued
+            bonuses[pk]['total_count_issued'] = ube_count_issued
+            bonuses[pk]['total_amount_redeemed'] = ube_sum_redeemed
+            bonuses[pk]['total_count_redeemed'] = ube_count_redeemed
 
         return HttpResponse(json.dumps(bonuses), content_type='application/json')
 
@@ -84,6 +120,17 @@ class BonusView(View):
                     bonus_data['requirements'].append(req_data)
                 else:
                     bonus_data['requirements'] = [req_data]
+
+            # We need to join with the BonusCategory table to get all the applicable categories for this bonus.
+            for bc_obj in BonusCategory.objects.all():
+                if str(bc_obj.bonus.pk) != bonus_pk:
+                    continue
+                category_json = serializers.serialize('json', {bc_obj.category})
+                category_json = json.loads(category_json)
+                if 'categories' in bonus_data.keys():
+                    bonus_data['categories'].append(category_json)
+                else:
+                    bonus_data['categories'] = [category_json]
 
         except Exception as e:
             logger.error("Error getting Bonus object: ", e)
@@ -123,6 +170,7 @@ class BonusView(View):
                     status = req_data['status'],
                     is_free_bid = req_data['is_free_bid'],
                     type = req_data['type'],
+                    currency = req_data['currency']
 
                     ## TODO: Need to deal with campaign if that's decided to be a P0 feature
                 )
@@ -131,25 +179,41 @@ class BonusView(View):
                 logger.error("Error saving new Bonus object: ", e)
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-            try:
-                requirements = req_data['requirements']
-                for req in requirements:
+            if 'requirements' in req_data.keys():
+                try:
+                    requirements = req_data['requirements']
+                    for req in requirements:
 
-                    req_new = Requirement (
-                        field_name = req['field_name'],
-                        aggregate_method = req['aggregate_method'],
-                        time_limit = req['time_limit'],
-                        turnover_multiplier = req['turnover_multiplier'],
-                        amount_threshold = req['amount_threshold'],
-                        bonus = bonus_obj,
-                    )
-                    req_new.save()
-            except Exception as e:
-                logger.error("Error saving new Requirement object: ", e)
-                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+                        req_new = Requirement (
+                            field_name = req['field_name'],
+                            aggregate_method = req['aggregate_method'],
+                            time_limit = req['time_limit'],
+                            turnover_multiplier = req['turnover_multiplier'],
+                            amount_threshold = req['amount_threshold'],
+                            bonus = bonus_obj,
+                        )
+                        req_new.save()
+                except Exception as e:
+                    logger.error("Error saving new Requirement object: ", e)
+                    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            if 'categories' in req_data.keys():
+                try:
+                    categories = req_data['categories']
+                    for cat in categories:
+                        cat_pk = cat[0]['pk']
+                        bc_obj = BonusCategory (
+                            bonus = bonus_obj,
+                            category = Category.objects.get(pk=cat_pk),
+                        )
+                        bc_obj.save()
+
+                except Exception as e:
+                    logger.error("Error saving new BonusCategory object: ", e)
+                    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         ## I don't think we should allow all the fields of a bonus to be updated
-        ## We also assume we cannot update requirements
+        ## We also assume we cannot update requirements or categories
         else:
 
             try:
@@ -173,7 +237,6 @@ class BonusView(View):
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(status=status.HTTP_200_OK)
-
 
 
 class UserBonusEventView(View):
@@ -222,6 +285,8 @@ class UserBonusEventView(View):
                 delivered_by = delivered_by_obj,
                 status = request.GET.get('status'),
                 notes = request.GET.get('notes'),
+                amount=request.GET.get('amount'),
+
             )
             event_obj.save()
         except Exception as e:
