@@ -349,7 +349,7 @@ class AgentView(CommAdminView):
                             commission_list.append(current_commission.pk)
                             logger.info(str(admin_user) + " create new system commission level " + i['level'])
                         else:
-                            current_commission = SystemCommission.objects.filter(pk=i['pk'])
+                            current_commission = SystemCommission.objects.filter(pk=int(i['pk']))
                             current_commission.update(
                                 commission_percentage=i['rate'],
                                 downline_commission_percentage=i['downline_rate'],
