@@ -38,13 +38,36 @@ class Transfer(View):
 
             user = CustomUser.objects.get(pk=user_id)
 
-            transferRequest(user, amount, from_wallet, to_wallet)
-            response = {
-                "status_code": CODE_SUCCESS,
-                "error_message": "Successfully transfer"
-            }
+            from_wallet_field_name = from_wallet + '_wallet'
+            current_from_wallet_amount = getattr(user, from_wallet_field_name)
 
-            logger.info("Successfully transfer money from" + str(from_wallet) + " " + str(to_wallet))
+            if float(current_from_wallet_amount) < float(amount):
+
+                response = {
+                    "status_code": ERROR_CODE_FAIL,
+                    "error_message": "Balance is not enough"
+                }
+
+                logger.info("Balance is not enough => transfer money from" + str(from_wallet) + " " + str(to_wallet))
+
+            elif transferRequest(user, amount, from_wallet, to_wallet):
+                response = {
+                    "status_code": CODE_SUCCESS,
+                    "error_message": "Successfully transfer"
+                }
+
+                logger.info("Successfully transfer money from" + str(from_wallet) + " " + str(to_wallet))
+
+            else:
+
+                response = {
+                    "status_code": ERROR_CODE_FAIL,
+                    "error_message": "Transfer fail"
+                }
+
+                logger.info("Fail to transfer money from" + str(from_wallet) + " " + str(to_wallet))
+
+            
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
