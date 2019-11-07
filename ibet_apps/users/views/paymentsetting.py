@@ -30,19 +30,21 @@ class PaymentSetting(View):
         try:
             data = json.loads(request.body)
             user_id = data["user_id"]
-            payment_id = data["payment_id"]
+            payment_name = data["payment"]
 
             user = CustomUser.objects.get(pk=user_id)
+            user.favorite_payment_method = payment_name
+            user.save()
             # print(user)
-            DepositAccessManagement.objects.filter(user_id=user).update(deposit_favorite_method=False)
-            DepositAccessManagement.objects.filter(user_id=user, deposit_channel_id=payment_id).update(deposit_favorite_method=True)
+            # DepositAccessManagement.objects.filter(user_id=user).update(deposit_favorite_method=False)
+            # DepositAccessManagement.objects.filter(user_id=user, deposit_channel_name=payment_id).update(deposit_favorite_method=True)
 
             response = {
                 'status_code': CODE_SUCCESS,
                 'message': "Successfully set favorite deposit method"
             }
 
-            logger.info("Save {} to favorite deposit method for user: {}".format(payment_id, user.username))
+            logger.info("Save {} to favorite deposit method for user: {}".format(payment_name, user.username))
             return HttpResponse(json.dumps(response), content_type="application/json")
 
         except Exception as e:

@@ -231,7 +231,6 @@ class DepositAccessManagement(models.Model):
         related_name="deposit_access_channel",
         verbose_name=_("Channel"),
     )
-    deposit_favorite_method = models.BooleanField(null=True, blank=True)
 
     class Meta:
         unique_together = (("user_id", "deposit_channel"),)
