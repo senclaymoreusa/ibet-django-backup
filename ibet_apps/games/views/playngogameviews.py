@@ -1,10 +1,17 @@
+# Django
 from django.views import View
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ParseError
 from rest_framework import status
+from django.db import transaction
 
+# iBet
 from users.models import CustomUser
+from games.models import GameBet, GameProvider, Category
+from utils.constants import *
 
+# Libraries
 import xmltodict
 import logging
 import decimal
@@ -140,15 +147,15 @@ class BalanceView(View):
                 logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
 
             user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
-            user_currency = user.currency
-            status_code = 0 # Default case is 0 (request successful)
+            user_currency = CURRENCY_CHOICES[user.currency][1]
+            status_code = PNG_STATUS_OK # Default case is 0 (request successful)
 
             if user.block is True:
-                status_code = 5
+                status_code = PNG_STATUS_ACCOUNTLOCKED
             elif user.active is False:
-                status_code = 6
-            elif user.currency != currency:
-                status_code = 3
+                status_code = PNG_STATUS_ACCOUNTDISABLED
+            elif user_currency != currency:
+                status_code = PNG_STATUS_INVALIDCURRENCY
 
             # Compose response dictionary and convert to response XML
             res_dict = {
@@ -170,4 +177,114 @@ class BalanceView(View):
 
         except Exception as e:
             logger.error("PLAY'nGO BalanceView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReserveView(View):
+    
+    def post(self, request, *args, **kwargs):
+        """
+        The Reserve call makes a request to the Operator Account System to deduct a bet amount from
+        the user's wallet. XML is the data format that this endpoint receives and responds with.
+        """
+        # TODO: Follow up with provider about special case where a bet amount of 0.00 is allowed.
+
+        data = request.body
+
+        try:
+            # Extract data fields from request XML
+            req_dict = xmltodict.parse(data)
+
+            username = req_dict['reserve']['externalId']
+            product_id = req_dict['reserve']['productId']
+            transaction_id = req_dict['reserve']['transactionId']
+            bet_amount_str = req_dict['reserve']['real']
+            req_currency = req_dict['reserve']['currency']
+            game_id = req_dict['reserve']['gameId']
+            game_session_id = req_dict['reserve']['gameSessionId']
+            access_token = req_dict['reserve']['accessToken']
+            round_id = req_dict['reserve']['roundId']
+            channel = req_dict['reserve']['channel']
+            free_game_external_id = req_dict['reserve']['freegameExternalId']
+            actual_value = req_dict['reserve']['actualValue']
+            
+            user = CustomUser.objects.get(username=username)
+            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
+            bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
+            user_currency_text = CURRENCY_CHOICES[user.currency][1]
+
+            status_code = PNG_STATUS_OK
+            PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+            CATEGORY = Category.objects.get(name="SLOTS")
+
+            #print("")
+            #print(type(user_balance))
+            #print(str(user_balance))
+            #print(type(bet_amount_decimal))
+            #print(str(bet_amount_decimal))
+            #print("req_currency: " + req_currency)
+            #print("user.currency: " + str(user.currency))
+            #print("user_currency_text: " + user_currency_text)
+            #print("")
+
+            # Checking currency type takes priority over making a bet.
+            if user_currency_text != req_currency:
+                status_code = PNG_STATUS_INVALIDCURRENCY
+                logger.error("PLAY'nGO ReserveView Error: Currency mismatch.")
+
+            # Bet can go through. 
+            elif user_balance >= bet_amount_decimal:
+                with transaction.atomic():
+                    balance_after_bet = user_balance - bet_amount_decimal
+                    user.main_wallet = balance_after_bet
+                    user.save()
+
+                    # Create a GameBet entry upon successful placement of a bet.
+                    GameBet.objects.create(
+                        provider = PROVIDER,
+                        category = CATEGORY,
+                        #game = None,
+                        #game_name = None,
+                        username = user,
+                        amount_wagered = bet_amount_decimal,
+                        amount_won = 0.00,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        currency = user_currency_text,
+                        market = ibetVN, # Need to clarify with provider
+                        ref_no = transaction_id,
+                        #bet_time = None,
+                        #resolved_time = None,
+                        #other_data = {}
+                    )
+
+                    logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user.username)
+
+            else:
+                status_code = PNG_STATUS_NOTENOUGHMONEY
+                logger.error("PLAY'nGO ReserveView Error: Not enough money to place bet.")
+
+            # Compose response dictionary and convert to response XML.
+            res_dict = {
+                "reserve": {
+                    "real": {
+                        # Cannot use balance_after_bet in case bet did not go through
+                        "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
+                    },
+                    "currency": {
+                        "#text": str(user_currency_text)
+                    },
+                    "statusCode": {
+                        "#text": str(status_code)
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            return HttpResponse(res_msg, content_type='text/xml')
+
+        except Exception as e:
+            logger.error("PLAY'nGO ReserveView Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
