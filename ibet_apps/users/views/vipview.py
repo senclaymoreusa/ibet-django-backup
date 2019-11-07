@@ -35,7 +35,7 @@ class VIPView(CommAdminView):
                     draw = int(request.GET.get('draw', 1))
                     length = int(request.GET.get('length', 20))
                     start = int(request.GET.get('start', 0))
-                    search_value = request.GET.get('search[value]', None)
+                    search_value = request.GET.get('search', None)
                     segment = request.GET.get('segment', None)
                     min_date = request.GET.get('minDate', None)
                     max_date = request.GET.get('maxDate', None)
@@ -50,8 +50,7 @@ class VIPView(CommAdminView):
                     query_filter = None
                     #  SEARCH BOX
                     if search_value:
-                        query_filter = Q(pk__icontains=search_value) | Q(username__icontains=search_value) | Q(
-                            managed_by__username__icontains=search_value)
+                        query_filter = Q(pk__contains=search_value) | Q(username__icontains=search_value)
 
                     if segment != '-1':
                         if query_filter:

@@ -28,6 +28,7 @@ $(document).ready(function () {
                 'segment': function() {var segment=$('#segmentation_filter :selected').val(); return segment;},
                 'minDate': function () { return $('#min_date').val(); },
                 'maxDate': function () { return $('#max_date').val(); },
+                'search': function () { return $('#vip-search').val(); },
             },
         },
 
@@ -114,6 +115,10 @@ $(document).ready(function () {
     });
 
     $('#min_date, #max_date, #segmentation_filter').change(function () {
+        vip_table.draw();
+    });
+
+    $('#vip-search-btn').click(function () {
         vip_table.draw();
     });
 
