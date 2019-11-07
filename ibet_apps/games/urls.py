@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 import games.views.eagameviews as eagameviews
+import games.views.betsofrviews as betsofrviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.allbetgameviews as allbetgameviews
@@ -67,5 +68,9 @@ urlpatterns = [
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+
+
+    #betsoft
+    path('api/betsoft/authenticate', betsofrviews.BetSoftAuthenticate.as_view(), name="betsoft_authenticate")
 
 ]
