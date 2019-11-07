@@ -75,6 +75,7 @@ def astroNewInvoice(request):
         "x_email":email,
         "control":my_hmac,
     }
+
     if checkUserBlock(user):
         errorMessage = _('The current user is blocked!')
         data = {
@@ -377,7 +378,7 @@ def capture_transaction(request):
         body = json.loads(request.body)
         userid = request.user.username
         
-        if checkUserBlock(CustomUser.objects.get(username=userid).pk):
+        if checkUserBlock(CustomUser.objects.get(username=userid)):
             errorMessage = _('The current user is blocked!')
             data = {
                 "errorCode": ERROR_CODE_BLOCK,
@@ -392,7 +393,7 @@ def capture_transaction(request):
         card_code = body.get("card_code")
         exp_date = body.get("exp_date")
         amount = body.get("amount")
-        currency = "THB"
+        currency = "BRL"
 
         orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
@@ -421,7 +422,7 @@ def capture_transaction(request):
                 'transaction_id':userid,
                 'amount':amount,
                 'user_id':CustomUser.objects.get(username=userid),
-                'currency':currencyConversion[currency],
+                'currency':2,
                 'transaction_type':0,
                 'channel':2,
                 'status':0,
