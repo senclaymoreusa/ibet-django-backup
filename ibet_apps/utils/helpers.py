@@ -4,8 +4,6 @@ import logging
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from users.models import CustomUser
-# from games.views.eagameviews import requestEADeposit
-# from games.views.transferwallet import TransferDeposit, TransferWithdraw
 
 logger = logging.getLogger("django")
 
