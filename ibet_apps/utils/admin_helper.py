@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 
+from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet
@@ -191,6 +192,14 @@ def utcToLocalDatetime(date):
         current_tz = timezone.get_current_timezone()
         date = date.astimezone(current_tz)
     return date
+
+
+def displayChoiceValue(bonuses):
+    # display SmallIntegerField value for read
+    bonuses['status'] = BONUS_STATUS_CHOICES[bonuses['status']][1]
+    bonuses['type'] = BONUS_TYPE_CHOICES[bonuses['type']][1]
+    bonuses['campaign'] = Campaign.objects.get(pk=int(bonuses['campaign'])).name
+    return bonuses
 
 
 '''

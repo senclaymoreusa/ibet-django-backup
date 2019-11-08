@@ -4,6 +4,7 @@ from django.views import View
 from bonus.models import *
 from users.models import CustomUser
 from games.models import Category
+from utils.admin_helper import displayChoiceValue
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -31,44 +32,22 @@ class BonusSearchView(View):
     # This will also return bonuses that are NOT active.
     def get(self, request, *args, **kwargs):
         bonuses = {}
-
-        admin = False
-        if request.GET.get('type') == "adminBonusList":
-            admin = True
-
-        if not admin:
-            # We iterate through all requirements and find all bonuses that they are attached to
-            reqs = Requirement.objects.all()
-            for req in reqs:
-
-                bonus_data = serializers.serialize('json', [req.bonus])
-                bonus_data = json.loads(bonus_data)
-                req_data = serializers.serialize('json', [req])
-                req_data = json.loads(req_data)[0]
-
-                pk = bonus_data[0]['pk']
-
-                if pk in bonuses:
-                    bonuses[pk]['requirements'].append(req_data)
-                else:
-                    bonuses[pk] = bonus_data[0]['fields']
-                    bonuses[pk]['requirements'] = [req_data]
-
-        # In rare cases, there could be bonuses that do not have any requirements
         bonus_all = Bonus.objects.all()
+        admin = False
 
-        if admin:
-            result = {}
+        try:
+            request_type = request.GET.get('type')
+            length = int(request.GET.get('length', 20))
+            start = int(request.GET.get('start', 0))
+            search_value = request.GET.get('search', None)
+            order_column = int(request.GET.get('order[0][column]', -1))
+            order = request.GET.get('order[0][dir]', None)
+            bonus_type = int(request.GET.get('bonus_type', -1))
+            bonus_status = int(request.GET.get('bonus_status', -1))
 
-            try:
-                length = int(request.GET.get('length', 20))
-                start = int(request.GET.get('start', 0))
-                search_value = request.GET.get('search', None)
-                order_column = int(request.GET.get('order[0][column]', -1))
-                order = request.GET.get('order[0][dir]', None)
-                bonus_type = int(request.GET.get('bonus_type', -1))
-                bonus_status = int(request.GET.get('bonus_status', -1))
-
+            if request_type == "adminBonusList":
+                admin = True
+                result = {}
                 bonus_filter = Q()
 
                 # BONUS TYPE AND STATUS FILTER
@@ -102,20 +81,36 @@ class BonusSearchView(View):
                 result['recordsTotal'] = total
                 result['recordsFiltered'] = count
 
-            except Exception as e:
-                logger.error("Error getting Bonus List Table: ", e)
+        except Exception as e:
+            logger.error("Error getting request: ", e)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+        # We iterate through all requirements and find all bonuses that they are attached to
+        reqs = Requirement.objects.all()
+        for req in reqs:
+            if req.bonus not in bonus_all:
+                continue
+            bonus_data = serializers.serialize('json', [req.bonus])
+            bonus_data = json.loads(bonus_data)
+            bonus_data[0]['fields'] = displayChoiceValue(bonus_data[0]['fields'])
+            req_data = serializers.serialize('json', [req])
+            req_data = json.loads(req_data)[0]
+            pk = bonus_data[0]['pk']
+
+            if pk in bonuses:
+                bonuses[pk]['requirements'].append(req_data)
+            else:
+                bonuses[pk] = bonus_data[0]['fields']
+                bonuses[pk]['requirements'] = [req_data]
+
+        # In rare cases, there could be bonuses that do not have any requirements
         for bonus in bonus_all:
             if str(bonus.pk) in bonuses.keys():
                 continue
             bonus_left = serializers.serialize('json', [bonus])
             bonus_left = json.loads(bonus_left)
-            # display SmallIntegerField value for read
-            bonus_left[0]['fields']['status'] = BONUS_STATUS_CHOICES[bonus_left[0]['fields']['status']][1]
-            bonus_left[0]['fields']['type'] = BONUS_TYPE_CHOICES[bonus_left[0]['fields']['type']][1]
-            bonus_left[0]['fields']['campaign'] = Campaign.objects.get(pk=int(bonus_left[0]['fields']['campaign'])).name
 
-            bonuses[bonus_left[0]['pk']] = bonus_left[0]['fields']
+            bonuses[bonus_left[0]['pk']] = displayChoiceValue(bonus_left[0]['fields'])
 
         # Now that bonuses keep all the bonus objects. We need to join with the BonusCategory table to get
         # all the applicable categories for each bonus.
@@ -357,4 +352,3 @@ class UserBonusEventView(View):
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(status=status.HTTP_200_OK)
-
