@@ -49,7 +49,6 @@ urlpatterns = [
 
     # fg
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
-
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/getSessionKey', fggameviews.GetSessionKey.as_view(), name = 'fg_get_sessionkey' ),
     path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
