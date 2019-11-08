@@ -32,8 +32,8 @@ class BonusSearchView(View):
     # This will also return bonuses that are NOT active.
     def get(self, request, *args, **kwargs):
         bonuses = {}
+        result = {}
         bonus_all = Bonus.objects.all()
-        admin = False
 
         try:
             request_type = request.GET.get('type')
@@ -46,8 +46,6 @@ class BonusSearchView(View):
             bonus_status = int(request.GET.get('bonus_status', -1))
 
             if request_type == "adminBonusList":
-                admin = True
-                result = {}
                 bonus_filter = Q()
 
                 # BONUS TYPE AND STATUS FILTER
@@ -146,12 +144,9 @@ class BonusSearchView(View):
             bonuses[pk]['total_amount_redeemed'] = ube_sum_redeemed
             bonuses[pk]['total_count_redeemed'] = ube_count_redeemed
 
-        if admin:
-            result['data'] = list(bonuses.values())
-            return HttpResponse(json.dumps(result), content_type='application/json')
+        result['data'] = list(bonuses.values())
+        return HttpResponse(json.dumps(result), content_type='application/json')
 
-        # print(bonuses)
-        return HttpResponse(json.dumps(bonuses), content_type='application/json')
 
 class BonusView(View):
 
