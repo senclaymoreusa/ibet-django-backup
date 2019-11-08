@@ -49,12 +49,10 @@ class BonusSearchView(View):
                 bonus_filter = Q()
 
                 # BONUS TYPE AND STATUS FILTER
-                if bonus_type != -1 and bonus_status != -1:
-
-                    bonus_filter &= (Q(status=bonus_status) & Q(type=bonus_type))
-                elif bonus_type != -1:
+                if bonus_type != -1:
                     bonus_filter &= Q(type=bonus_type)
-                elif bonus_status != -1:
+
+                if bonus_status != -1:
                     bonus_filter &= Q(status=bonus_status)
 
                 #  TOTAL ENTRIES
@@ -107,7 +105,6 @@ class BonusSearchView(View):
                 continue
             bonus_left = serializers.serialize('json', [bonus])
             bonus_left = json.loads(bonus_left)
-
             bonuses[bonus_left[0]['pk']] = displayChoiceValue(bonus_left[0]['fields'])
 
         # Now that bonuses keep all the bonus objects. We need to join with the BonusCategory table to get
