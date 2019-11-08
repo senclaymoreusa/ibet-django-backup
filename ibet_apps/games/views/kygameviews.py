@@ -76,6 +76,7 @@ class KaiyuanAPI(View):
 
         # Login
         if s == 0:
+            print(1)
             money = data["money"]
             order_time = time.strftime("%Y%m%d%H%M%S")
             orderid = agent + str(order_time) + account
@@ -83,6 +84,7 @@ class KaiyuanAPI(View):
             kind_id = data["KindID"]
 
             param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
+            print(param)
         # Get Balance
         elif s == 1:
             param = "s=" + str(s) + "&account=" + account
@@ -128,6 +130,7 @@ class KaiyuanAPI(View):
         # kind_id = '0' # game lobby
         # "&KindID=" + kind_id
         try:
+            print(param)
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
             param = str(param, "utf-8")
