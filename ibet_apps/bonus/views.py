@@ -46,6 +46,9 @@ class BonusSearchView(View):
             bonus_status = int(request.GET.get('bonus_status', -1))
 
             if request_type == "adminBonusList":
+                #  TOTAL ENTRIES
+                total = bonus_all.count()
+
                 bonus_filter = Q()
 
                 # BONUS TYPE AND STATUS FILTER
@@ -54,9 +57,6 @@ class BonusSearchView(View):
 
                 if bonus_status != -1:
                     bonus_filter &= Q(status=bonus_status)
-
-                #  TOTAL ENTRIES
-                total = bonus_all.count()
 
                 #  SEARCH BOX
                 if search_value:

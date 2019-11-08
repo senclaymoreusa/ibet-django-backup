@@ -1254,7 +1254,7 @@ GDCASINO_STATUS_CODE =(
 GDCASINO_STATUS = (
     (0, 'PENDING'),
     (1, 'DEBIT'),
-    (2, 'CREDIT'),
+    (2, 'CREDIT'), 
     (3, 'TIP'),
     (4, 'CANCEL'),
 )
@@ -1291,6 +1291,7 @@ SECURITY_QUESTION = (
     (4, _('What is your primary school class teacher’s name?')),
     (5, _('What is your best childhood friend’s name?')),
     (6, _('What is the name of the person that influenced you the most?'))
+    
 )
 # Games
 
