@@ -18,7 +18,7 @@ from django.db import transaction
 from rest_framework import status
 import datetime
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models import Count
 
 logger = logging.getLogger('django')
@@ -30,33 +30,91 @@ class BonusSearchView(View):
     # (containing all the requirements as a list)
     # This will also return bonuses that are NOT active.
     def get(self, request, *args, **kwargs):
-
         bonuses = {}
 
-        # We iterate through all requirements and find all bonuses that they are attached to
-        reqs = Requirement.objects.all()
-        for req in reqs:
+        admin = False
+        if request.GET.get('type') == "adminBonusList":
+            admin = True
 
-            bonus_data = serializers.serialize('json', [req.bonus])
-            bonus_data = json.loads(bonus_data)
-            req_data = serializers.serialize('json', [req])
-            req_data = json.loads(req_data)[0]
+        if not admin:
+            # We iterate through all requirements and find all bonuses that they are attached to
+            reqs = Requirement.objects.all()
+            for req in reqs:
 
-            pk = bonus_data[0]['pk']
+                bonus_data = serializers.serialize('json', [req.bonus])
+                bonus_data = json.loads(bonus_data)
+                req_data = serializers.serialize('json', [req])
+                req_data = json.loads(req_data)[0]
 
-            if pk in bonuses:
-                bonuses[pk]['requirements'].append(req_data)
-            else:
-                bonuses[pk] = bonus_data[0]['fields']
-                bonuses[pk]['requirements'] = [req_data]
+                pk = bonus_data[0]['pk']
+
+                if pk in bonuses:
+                    bonuses[pk]['requirements'].append(req_data)
+                else:
+                    bonuses[pk] = bonus_data[0]['fields']
+                    bonuses[pk]['requirements'] = [req_data]
 
         # In rare cases, there could be bonuses that do not have any requirements
         bonus_all = Bonus.objects.all()
+
+        if admin:
+            result = {}
+
+            try:
+                length = int(request.GET.get('length', 20))
+                start = int(request.GET.get('start', 0))
+                search_value = request.GET.get('search', None)
+                order_column = int(request.GET.get('order[0][column]', -1))
+                order = request.GET.get('order[0][dir]', None)
+                bonus_type = int(request.GET.get('bonus_type', -1))
+                bonus_status = int(request.GET.get('bonus_status', -1))
+
+                bonus_filter = Q()
+
+                # BONUS TYPE AND STATUS FILTER
+                if bonus_type != -1 and bonus_status != -1:
+
+                    bonus_filter &= (Q(status=bonus_status) & Q(type=bonus_type))
+                elif bonus_type != -1:
+                    bonus_filter &= Q(type=bonus_type)
+                elif bonus_status != -1:
+                    bonus_filter &= Q(status=bonus_status)
+
+                #  TOTAL ENTRIES
+                total = bonus_all.count()
+
+                #  SEARCH BOX
+                if search_value:
+                    bonus_filter &= (Q(name__icontains=search_value) | Q(campaign__name__icontains=search_value))
+
+                bonus_all = bonus_all.filter(bonus_filter)
+
+                # START TIME SORTING
+                count = bonus_all.count()
+                if order_column:
+                    if order == 'desc':
+                        bonus_all = bonus_all.order_by('-start_time')[start:start + length]
+                    else:
+                        bonus_all = bonus_all.order_by('start_time')[start:start + length]
+                else:
+                    bonus_all = bonus_all[start:start + length]
+
+                result['recordsTotal'] = total
+                result['recordsFiltered'] = count
+
+            except Exception as e:
+                logger.error("Error getting Bonus List Table: ", e)
+
         for bonus in bonus_all:
             if str(bonus.pk) in bonuses.keys():
                 continue
             bonus_left = serializers.serialize('json', [bonus])
             bonus_left = json.loads(bonus_left)
+            # display SmallIntegerField value for read
+            bonus_left[0]['fields']['status'] = BONUS_STATUS_CHOICES[bonus_left[0]['fields']['status']][1]
+            bonus_left[0]['fields']['type'] = BONUS_TYPE_CHOICES[bonus_left[0]['fields']['type']][1]
+            bonus_left[0]['fields']['campaign'] = Campaign.objects.get(pk=int(bonus_left[0]['fields']['campaign'])).name
+
             bonuses[bonus_left[0]['pk']] = bonus_left[0]['fields']
 
         # Now that bonuses keep all the bonus objects. We need to join with the BonusCategory table to get
@@ -82,9 +140,9 @@ class BonusSearchView(View):
             ###Instead, we should get all the data at once and compute the sums and counts in the memory.
             ###We should tune this if it turns out to be bad in performance testing.
             (ube_sum_issued, ube_count_issued, ube_sum_redeemed, ube_count_redeemed) = (
-                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Sum('amount'))['amount__sum'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Sum('amount'))['amount__sum'] or 0,
                 UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Count('amount'))['amount__count'],
-                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Sum('amount'))['amount__sum'],
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Sum('amount'))['amount__sum'] or 0,
                 UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Count('amount'))['amount__count']
             )
 
@@ -93,6 +151,11 @@ class BonusSearchView(View):
             bonuses[pk]['total_amount_redeemed'] = ube_sum_redeemed
             bonuses[pk]['total_count_redeemed'] = ube_count_redeemed
 
+        if admin:
+            result['data'] = list(bonuses.values())
+            return HttpResponse(json.dumps(result), content_type='application/json')
+
+        # print(bonuses)
         return HttpResponse(json.dumps(bonuses), content_type='application/json')
 
 class BonusView(View):

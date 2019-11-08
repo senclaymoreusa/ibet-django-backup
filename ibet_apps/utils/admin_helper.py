@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
 from django.db.models import Q
+from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 
 from users.models import CustomUser
@@ -11,6 +12,8 @@ from utils.constants import *
 
 import logging
 import uuid
+import csv
+
 
 logger = logging.getLogger('django')
 
@@ -188,3 +191,20 @@ def utcToLocalDatetime(date):
         current_tz = timezone.get_current_timezone()
         date = date.astimezone(current_tz)
     return date
+
+
+'''
+@param date: filename, table header, table body data
+@return: response
+'''
+def exportCSV(filename, row_title, data):
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=filename'
+
+    writer = csv.writer(response)
+    writer.writerow(row_title)
+    for i in data:
+        writer.writerow(i)
+
+    return response

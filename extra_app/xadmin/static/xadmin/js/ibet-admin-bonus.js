@@ -17,33 +17,60 @@ $(document).ready(function() {
         },
         "columnDefs": [
             {
-                orderable: true,
-                targets: "sort"
+                orderable: false,
+                targets: "no-sort"
             }
         ],
         "ajax": {
             type: 'GET',
+            url: bonus_url,
             data: {
-                'type': 'getBonusList',
+                'type': 'adminBonusList',
                 'bonus_type': function() {var type=$('#bonus_type_filter :selected').val(); return type;},
                 'bonus_status': function() {var status=$('#bonus_status_filter :selected').val(); return status;},
+                'search': function () { return $('#bonus-search').val(); },
             },
         },
         columns: [
-            { data: 'name' },
-            { data: 'campaign' },
-            { data: 'type' },
-            { data: 'amount_issued' },
-            { data: 'quantity_issued' },
-            { data: 'amount_redeemed' },
-            { data: 'quantity_redeemed' },
-            { data: 'start_date' },
-            { data: 'end_date' },
-            { data: 'status' },
+            { "data": 'name' },
+            { "data": 'campaign' },
+            { "data": 'type' },
+            { "data": 'total_amount_issued' },
+            { "data": 'total_count_issued' },
+            { "data": 'total_amount_redeemed' },
+            { "data": 'total_count_redeemed',},
+            { "data": 'start_time',
+                "render": function(data, type, row, meta){
+                    data = formatDatetime(data)
+                    return data;
+                }
+             },
+            { "data": 'end_time',
+                "render": function(data, type, row, meta){
+                    data = formatDatetime(data)
+                    return data;
+                }
+             },
+            { "data": 'status' },
         ],
     });
 
-    $('#bonus_status_filter, #bonus_type_filter').on('change', function () {
+    $('#bonus_status_filter, #bonus_type_filter').change(function () {
         bonus_table.draw();
     });
+
+    $('#bonus-search-btn').click(function () {
+        bonus_table.draw();
+    });
+
+    function formatDatetime(data){
+        if(data === 'None'){
+            data = '';
+        }else{
+            data = moment(data).format('MMM DD YYYY, HH:mm');
+        }
+        return data;
+    }
 });
+
+

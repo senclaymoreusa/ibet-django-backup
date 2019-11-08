@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     {% load staticfiles%}
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-bonus.css' %}" />
-    <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
 </head>
 
 <body>
@@ -38,22 +38,27 @@
             {% endfor %}
         </select>
     </div>
+    <div class="col-md-3 input-group" style="margin-top:22px;float:right;">
+        <input type="text" id="bonus-search" class="form-control" placeholder="Enter bonus or campaign name ">
+        <span id="bonus-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
+                class="glyphicon glyphicon-search"></span></span>
+    </div>
 </div>
 
 <div>
     <table id="bonus_table" class="table-striped table-bordered hover">
         <thead>
             <tr>
-                <td>BONUS NAME</td>
-                <td>CAMPAIGN</td>
-                <td>BONUS TYPE</td>
-                <td>AMOUNT ISSUED</td>
-                <td>QUANTITY ISSUED</td>
-                <td>AMOUNT REDEEMED</td>
-                <td>QUANTITY REDEEMED</td>
-                <td class="sort">START DATE</td>
-                <td>END DATE</td>
-                <td>STATUS</td>
+                <td class="no-sort">BONUS NAME</td>
+                <td class="no-sort">CAMPAIGN</td>
+                <td class="no-sort">BONUS TYPE</td>
+                <td class="no-sort">AMOUNT ISSUED</td>
+                <td class="no-sort">QUANTITY ISSUED</td>
+                <td class="no-sort">AMOUNT REDEEMED</td>
+                <td class="no-sort">QUANTITY REDEEMED</td>
+                <td>START DATE</td>
+                <td class="no-sort">END DATE</td>
+                <td class="no-sort">STATUS</td>
             </tr>
         </thead>
         <tbody id="bonus_table_body">
@@ -67,10 +72,12 @@
 <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" language="javascript"
     src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
-
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="{% static 'xadmin/js/ibet-admin-bonus.js' %}"></script>
 
 </body>
 </html>
-
+<script>
+    var bonus_url = '{% url "bonus_search" %}'
+</script>
 {% endblock %}
