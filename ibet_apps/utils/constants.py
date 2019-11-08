@@ -1327,3 +1327,9 @@ ONEBOOK_DIRECTION_deposit = 1
 ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
+
+# SA
+SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
+SA_ENCRYPT_KEY = 'g9G16nTs'
+SA_MD5KEY = 'GgaIMaiNNtg'
+SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
