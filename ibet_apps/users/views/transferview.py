@@ -27,7 +27,6 @@ logger = logging.getLogger('django')
 class Transfer(View):
 
     def post(self, request, *args, **kwargs):
-        
         try:
             body = json.loads(request.body)
             user_id = body["user_id"]

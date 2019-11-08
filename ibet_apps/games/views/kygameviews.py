@@ -59,78 +59,85 @@ def get_timestamp():
 
 class KaiyuanAPI(View):
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-
-        s = data["s"]
-        ip = get_client_ip(request)
-
-        # timestamp = lambda: int(round(time.time() * 1000))
-        timestamp = get_timestamp()
-
-        agent = KY_AGENT
-
-        s = int(s)
-
-        if s != 6:
-            account = data["account"]
-
-        # Login
-        if s == 0:
-            print(1)
-            money = data["money"]
-            order_time = time.strftime("%Y%m%d%H%M%S")
-            orderid = agent + str(order_time) + account
-            linecode = KY_LINE_CODE_1
-            kind_id = data["KindID"]
-
-            param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
-            print(param)
-        # Get Balance
-        elif s == 1:
-            param = "s=" + str(s) + "&account=" + account
-        # Change Balance
-        elif s == 2:
-            money = data["money"]
-            order_time = time.strftime("%Y%m%d%H%M%S")
-            orderid = agent + str(order_time) + account
-
-            param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
-        # Refund
-        elif s == 3:
-            money = data["money"]
-            order_time = time.strftime("%Y%m%d%H%M%S")
-            orderid = agent + str(order_time) + account
-
-            param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
-        # Order Query
-        elif s == 4:
-            order_time = time.strftime("%Y%m%d%H%M%S")
-            orderid = agent + str(order_time) + account
-
-            param = "s=" + str(s) + "&orderid=" + orderid
-        # Query The Player's Online Status
-        elif s == 5:
-            param = "s=" + str(s) + "&account=" + account
-        # Query Bet Order
-        elif s == 6:
-            startTime = data["startTime"]
-            endTime = data["endTime"]
-
-            param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
-        # Query The Player's Total Points
-        elif s == 7:
-            param = "s=" + str(s) + "&account=" + account
-        # Kick Player off
-        elif s == 8:
-            param = "s=" + str(s) + "&account=" + account
-        else:
-            return HttpResponse("Undefined request type")
-        
-        
-        # kind_id = '0' # game lobby
-        # "&KindID=" + kind_id
         try:
-            print(param)
+            data = json.loads(request.body)
+
+            s = data["s"]
+            ip = get_client_ip(request)
+
+            # timestamp = lambda: int(round(time.time() * 1000))
+            timestamp = get_timestamp()
+
+            agent = KY_AGENT
+
+            s = int(s)
+
+            if s != 6:
+                account = data["account"]
+                usr = CustomUser.objects.get(username=account)
+
+            # Login
+            if s == 0:
+                money = data["money"]
+                order_time = time.strftime("%Y%m%d%H%M%S")
+                orderid = agent + str(order_time) + account
+                linecode = KY_LINE_CODE_1
+                kind_id = data["KindID"]
+
+                param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
+            # Get Balance
+            elif s == 1:
+                param = "s=" + str(s) + "&account=" + account
+            # Change Balance
+            elif s == 2:
+                # req_data = {}
+                # req_data["user_id"] = usr.pk
+                # req_data["from_wallet"] = "main_wallet"
+                # req_data["to_wallet"] ="ky_wallet"
+                # req_data["amount"] = data["amount"]
+                money = data["money"]
+                if transferRequest(usr, money, "main", "ky"):
+                    order_time = time.strftime("%Y%m%d%H%M%S")
+                    orderid = agent + str(order_time) + account
+
+                    param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
+                else:
+                    return HttpResponse(status=400)
+
+            # Refund
+            elif s == 3:
+                money = data["money"]
+                order_time = time.strftime("%Y%m%d%H%M%S")
+                orderid = agent + str(order_time) + account
+
+                param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
+            # Order Query
+            elif s == 4:
+                order_time = time.strftime("%Y%m%d%H%M%S")
+                orderid = agent + str(order_time) + account
+
+                param = "s=" + str(s) + "&orderid=" + orderid
+            # Query The Player's Online Status
+            elif s == 5:
+                param = "s=" + str(s) + "&account=" + account
+            # Query Bet Order
+            elif s == 6:
+                startTime = data["startTime"]
+                endTime = data["endTime"]
+
+                param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
+            # Query The Player's Total Points
+            elif s == 7:
+                param = "s=" + str(s) + "&account=" + account
+            # Kick Player off
+            elif s == 8:
+                param = "s=" + str(s) + "&account=" + account
+            else:
+                return HttpResponse("Undefined request type")
+            
+            
+            # kind_id = '0' # game lobby
+            # "&KindID=" + kind_id
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
             param = str(param, "utf-8")
@@ -154,9 +161,16 @@ class KaiyuanAPI(View):
             url = url + '?' + req
             res = requests.get(url)
             if res.status_code == 200:
+                res_data = res.json()
+                print(res_data)
+                if res_data['s'] == 101:
+                    balance = float(res_data['d']['money'])
+                elif res_data['s'] == 102:
+                    balance = float(res_data['d']['money'])
+
                 return HttpResponse(json.dumps(res.json()), content_type='application/json')
             else:
                 return HttpResponse("404 Not Found")
         except Exception as e:
-            logger.error("Bad Request for Kaiyuan Gaming: ", e)
+            logger.error("Bad Request for Kaiyuan Gaming: {}".format(repr(e)))
             return HttpResponse(status=400)
