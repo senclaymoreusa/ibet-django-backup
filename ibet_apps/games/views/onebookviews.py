@@ -434,7 +434,7 @@ def getBetDetail():
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     delay = 2
     success = False
-    version_key = GameProvider.objects.get(provider_name='Onebook').notes
+    version_key = PROVIDER.notes
     onebook_run = "run"
     r = RedisClient().connect()
     redis = RedisHelper()
@@ -616,7 +616,7 @@ class Login(APIView):
                     lang = 'vn'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
-                return Response({"login url":loginUrl})
+                return Response({"login_url":loginUrl})
             except NameError as e:
                 logger.error(e)
                 return Response({"error": "Cannot find the code."})
