@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
-from games.models import FGSession, Game
+from games.models import FGSession, Game, GameBet, GameProvider, Category
 import xmltodict
 import decimal,re, math
 import requests,json
@@ -20,8 +20,7 @@ class GetAllGame(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
         provider = request.GET['provider']
-        game = Game.objects.filter(provider=provider)
-        
+        game = Game.objects.filter(provider=provider)     
         return JsonResponse({
         'game': list(game.values())
     })
@@ -159,7 +158,6 @@ class GetAccountDetail(APIView):
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
-
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
@@ -207,17 +205,20 @@ class GetBalance(APIView):
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
+       
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
 
             response = {
+               
                 "seq" : seq,
                 "partyId" : fguser.party_id ,
                 "omegaSessionKey" : omegaSessionKey,
                 "message" : None,
                 "errorCode" : None,
                 "realBalance" : math.floor(float(user.main_wallet * 100)) / 100,
+               
                 "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
             
             }
@@ -271,18 +272,28 @@ class ProcessTransaction(APIView):
                 if (wallet > 0):
                     user.main_wallet = wallet
                     user.save()
+                    transactionId = re.sub("[^0-9]", "", timestamp)
+                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
+                                                    category=Category.objects.get(name='Slots'),
+                                                    username=user,
+                                                    amount_wagered=-float(amount),
+                                                    currency=currency,
+                                                    amount_won=0.00,
+                                                    market=ibetCN,
+                                                    transaction_id=transactionId
+                                                    )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
                         "partyId" : fguser.party_id ,
                         "currency" : currency,
-                        "transactionId" : re.sub("[^0-9]", "", timestamp),
+                        "transactionId" : transactionId,
                         "tranType" : tranType,
                         "gameInfoId" : gameInfoId,
                         "alreadyProcessed" : False,
                         "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
                         "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100, 
-                        "realAmount" : amount,
+                        "realAmount" : float(amount),
                         "bonusAmount" : 0.00,
                         "errorCode" : None,
                         "message" : None
@@ -305,13 +316,23 @@ class ProcessTransaction(APIView):
                 if (wallet > 0):
                     user.main_wallet = user.main_wallet + decimal.Decimal(amount)
                     user.save()
+                    transactionId = re.sub("[^0-9]", "", timestamp)
+                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
+                                                    category=Category.objects.get(name='Slots'),
+                                                    username=user,
+                                                    amount_wagered=0.00,
+                                                    currency=currency,
+                                                    amount_won=float(amount),
+                                                    market=ibetCN,
+                                                    transaction_id=transactionId
+                                                    )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
                         "partyId" : fguser.party_id ,
                         "gameInfoId" : gameInfoId,
                         "currency" : currency,
-                        "transactionId" : re.sub("[^0-9]", "", timestamp),
+                        "transactionId" : transactionId,
                         "tranType" : tranType,
                         "alreadyProcessed" : False,
                         "realBalance" :  math.floor(float(user.main_wallet * 100)) / 100, 
