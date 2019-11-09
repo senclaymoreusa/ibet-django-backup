@@ -65,7 +65,7 @@ class UserTag(models.Model):
 
     class Meta:
         verbose_name_plural = _('User Tag')
-    
+
     def __str__(self):
         return self.name
 
@@ -82,16 +82,11 @@ class CustomUser(AbstractBaseUser):
         (2, _('Advertisements'))
     )
 
-    MEMBER_STATUS = (
-        (0, _('Active')),
-        (1, _('Inactive')),
-        (2, _('Blocked'))
-    )
-
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
-        ('French', 'French')
+        ('Thai', 'Thai'),
+        ('Vietnamese', 'Vietnamese'),
     )
 
     # add additional fields in here
@@ -112,8 +107,8 @@ class CustomUser(AbstractBaseUser):
         blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
-    user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
-    user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
+    # user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
+    # user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=25)
@@ -125,10 +120,19 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
+
+    # verification
+    email_verified = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
+    id_verified = models.BooleanField(default=False)
+    address_verified = models.BooleanField(default=False)
+
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
     reward_points = models.IntegerField(default=0)
+    vip_level = models.ForeignKey('users.Segmentation', on_delete=models.CASCADE, null=True)
+
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
     active = models.BooleanField(default=False)
@@ -143,7 +147,7 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CURRENCY_TYPES, blank=True, default='USD')
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True,default=0)
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
@@ -152,7 +156,7 @@ class CustomUser(AbstractBaseUser):
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
     verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
-    id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
+    id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='')
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
@@ -163,7 +167,9 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    
+    onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
+
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
     user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
@@ -206,7 +212,10 @@ class CustomUser(AbstractBaseUser):
     withdraw_password = models.CharField(_('withdraw password'), max_length=128, blank=True, null=True)
     security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
     security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
-    
+
+    # favorite payment method
+    favorite_payment_method = models.CharField(max_length=128, blank=True, null=True)
+
     created_time = models.DateTimeField(
         _('Created Time'),
         auto_now_add=True,
@@ -228,6 +237,20 @@ class CustomUser(AbstractBaseUser):
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
+
+    def get_user_address(self):
+        address = ''
+        if self.street_address_1:
+            address += str(self.street_address_1) + ', '
+        if self.street_address_2:
+            address += str(self.street_address_2) + ' '
+        if self.city:
+            address += str(self.city) + ' '
+        if self.state:
+            address += str(self.state) + ' '
+        if self.zipcode:
+            address += str(self.zipcode)
+        return address
 
     def __str__(self):
         return self.username
@@ -253,14 +276,14 @@ class CustomUser(AbstractBaseUser):
         return True
 
 class Commission(models.Model):
-    
+
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
     downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
     commission_level = models.IntegerField(default=1)
     active_downline_needed = models.IntegerField(default=6)
     monthly_downline_ftd_needed = models.IntegerField(default=6)
-    
+
     def save(self, *args, **kwargs):
         if self._state.adding:
             # Get the maximum display_id value from the database
@@ -298,7 +321,7 @@ class UserWithTag(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     tag = models.ForeignKey(UserTag, on_delete=models.CASCADE, verbose_name=_('Tag'))
     status = models.SmallIntegerField(default=0, choices=STATUS_CHOICES, verbose_name=_('Status'))
-    
+
     def __str__(self):
         return '{0}'.format(self.tag)
     class Meta:
@@ -306,7 +329,7 @@ class UserWithTag(models.Model):
         verbose_name = "Tag"
         verbose_name_plural = _('Assign tag to user')
 
-    
+
 class Status(models.Model):
     status_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
@@ -347,7 +370,7 @@ class Game(models.Model):
     game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
-    
+
     def __str__(self):
         return '{0}: {1}'.format(self.name, self.category_id)
 
@@ -370,7 +393,7 @@ class Language(models.Model):
         """
         return self.name
 
-class NoticeMessage(models.Model): 
+class NoticeMessage(models.Model):
 
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
@@ -394,9 +417,9 @@ class Config(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 class UserAction(models.Model):
-    
+
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
@@ -463,9 +486,9 @@ class GameRequestsModel(models.Model):
 
     # GB Sports only
 
-    Method         = models.CharField(max_length=30)                            
+    Method         = models.CharField(max_length=30)
     Success        = models.CharField(choices=Success_Status, max_length=1)
-                              
+
     ThirdPartyCode = models.CharField(max_length=30)
     BetTotalCnt    = models.CharField(max_length=30)
     BetTotalAmt    = models.CharField(max_length=30)
@@ -555,6 +578,21 @@ class GameRequestsModel(models.Model):
 
     def __str__(self):
         return  self.MemberID + ' ' + self.TransType
+
+
+# Member VIP System
+class Segmentation(models.Model):
+    name = models.CharField(max_length=50)
+    turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
+    annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
+    platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
+    deposit_amount_daily = models.DecimalField(max_digits=20, decimal_places=2)
+    deposit_amount_monthly = models.DecimalField(max_digits=20, decimal_places=2)
+    general_bonuses = models.BooleanField(default=False)
+    product_turnover_bonuses = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
 
 
 @receiver(post_save, sender=CustomUser)

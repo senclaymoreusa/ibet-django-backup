@@ -34,20 +34,20 @@ CONTACT_OPTIONS = (
     ('Push_Notification', 'Push Notification')
 )
 
-CURRENCY_TYPES = (
-    ('USD', 'USD'),
-    ('EUR', 'EUR'),
-    ('JPY', 'JPY'),
-    ('CNY', 'CNY'),
-    ('HKD', 'HKD'),
-    ('AUD', 'AUD'),
-    ('THB', 'THB'),
-    ('MYR', 'MYR'),
-    ('VND', 'VND'),
-    ('MMK', 'MMK'),
-    ('XBT', 'XBT'),
-    ('TTC', 'TTC'),
-)
+# CURRENCY_TYPES = (
+#     ('USD', 'USD'),
+#     ('EUR', 'EUR'),
+#     ('JPY', 'JPY'),
+#     ('CNY', 'CNY'),
+#     ('HKD', 'HKD'),
+#     ('AUD', 'AUD'),
+#     ('THB', 'THB'),
+#     ('MYR', 'MYR'),
+#     ('VND', 'VND'),
+#     ('MMK', 'MMK'),
+#     ('XBT', 'XBT'),
+#     ('TTC', 'TTC'),
+# )
 
 USERNAME_REGEX = '^[a-zA-Z0-9.+-]*$'
 
@@ -90,6 +90,8 @@ CURRENCY_XBT = 9
 CURRENCY_EUR = 10
 CURRENCY_NOK = 11
 CURRENCY_GBP = 12
+CURRENCY_TEST = 20
+CURRENCY_TTC = 13
 
 CURRENCY_CHOICES = (
     (CURRENCY_CNY, 'CNY'),
@@ -104,7 +106,9 @@ CURRENCY_CHOICES = (
     (CURRENCY_XBT, 'XBT'),
     (CURRENCY_EUR, 'EUR'),
     (CURRENCY_NOK, 'NOK'),
-    (CURRENCY_GBP, 'GBP')
+    (CURRENCY_GBP, 'GBP'),
+    (CURRENCY_TEST, 'UUD'),
+    (CURRENCY_TTC, 'TTC')
 )
 
 TRAN_SUCCESS_TYPE = 0
@@ -165,19 +169,17 @@ TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
-TRANSACTION_TRANSFER_IN = 4
-TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONUS = 6
-TRANSACTION_ADJUSTMENT = 7
-TRANSACTION_COMMISSION = 8
+TRANSACTION_TRANSFER = 4
+TRANSACTION_BONUS = 5
+TRANSACTION_ADJUSTMENT = 6
+TRANSACTION_COMMISSION = 7
 
 TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_DEPOSIT, 'Deposit'),
     (TRANSACTION_WITHDRAWAL, 'Withdrawal'),
     (TRANSACTION_BET_PLACED, 'Bet Placed'),
     (TRANSACTION_SETTLED, 'Bet Settled'),
-    (TRANSACTION_TRANSFER_IN, 'Transfer in'),
-    (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
+    (TRANSACTION_TRANSFER, 'Transfer'),
     (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
@@ -203,16 +205,27 @@ GAME_TYPE_CHOICES = (
 SPREAD = 'SPREAD'
 MONEYLINE = 'LINE'
 TOTAL = 'OU'
+TIP = 'TIP'
+SINGLE = 'Single'
+PARLAY = 'Parlay'
+
 BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
     (MONEYLINE, 'Moneyline'),
     (TOTAL, 'Total O/U'),
+    (TIP, 'Tip'),
+    (SINGLE, 'Single'),
+    (PARLAY,'Parlay'),
+
 ]
 OUTCOME_CHOICES = [
     (0, 'Win'),
     (1, 'Lose'),
     (2, 'Tie/Push'),
     (3, 'Void'),
+    (4, 'Running'),
+    (5, 'Draw'),
+    (6, 'Half lose'),
 ]
 
 ACTIVE_STATE = 0
@@ -241,10 +254,11 @@ VIP_CHOICES = (
 
 ibetVN = 0
 ibetTH = 1
-
+ibetCN = 2
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
+    (ibetCN, "ibet-CN"),
 )
 
 COUNTRY_CHOICES = (
@@ -266,6 +280,23 @@ ACTIVITY_TYPE = (
     (3, 'Note'),
 )
 
+
+MEMBER_STATUS_NORMAL = 0
+MEMBER_STATUS_SUSPICIOUS = 1
+MEMBER_STATUS_RESTRICTED = 2
+MEMBER_STATUS_CLOSED = 3
+MEMBER_STATUS_BLACKLISTED = 4
+
+
+MEMBER_STATUS = (
+    (MEMBER_STATUS_NORMAL, _('Normal')),
+    (MEMBER_STATUS_SUSPICIOUS, _('Suspicious')),
+    (MEMBER_STATUS_RESTRICTED, _('Restricted')),
+    (MEMBER_STATUS_CLOSED, _('Closed')),
+    (MEMBER_STATUS_BLACKLISTED, _('Blacklisted'))
+)
+
+
 AFFILIATE_STATUS = (
     ('Active', 'Active'),
     ('VIP', 'VIP'),
@@ -281,10 +312,11 @@ AGENT_STATUS = (
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
 MESSAGE_GROUP = 2
+MESSAGE_DYNAMIC_GROUP = 3
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
-    (MESSAGE_GROUP, 'message'),
+    (MESSAGE_GROUP, 'Static'),
     (OTHER_GROUP, 'other')
 )
 
@@ -520,8 +552,9 @@ BRANDID = '524'
 BRAND_PASSWORD = 'Flow6refg'
 PLATFORM = 'NETENT_CAS',
 FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-
+FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
+#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
+LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
 ASIAPAY_CMDTYPE = (
@@ -618,11 +651,13 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
 else:
     API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -1151,12 +1186,14 @@ PUBLIC_S3_BUCKET = "https://ibet-web.s3-us-west-1.amazonaws.com/"
 # Error code define
 CODE_SUCCESS = 1
 ERROR_CODE_BLOCK = 100
-ERROR_CODE_INVAILD_INFO = 101
+ERROR_CODE_INVALID_INFO = 101
 ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
 ERROR_CODE_EMPTY_RESULT = 105
-
+ERROR_CODE_DATABASE = 106
+ERROR_CODE_FAIL = 107
+ERROR_CODE_DUPE = 108
 
 BONUS_TYPE_VERIFICATION = 0
 BONUS_TYPE_DEPOSIT = 1
@@ -1179,11 +1216,20 @@ BONUS_STATUS_CHOICES = (
 )
 
 
+BONUS_START = 0
+BONUS_ACTIVE = 1
+BONUS_COMPLETED = 2
+BONUS_EXPIRED = 3
+BONUS_ISSUED = 4
+BONUS_REDEEMED = 5
+
 USER_BONUS_EVENT_TYPE_CHOICES = (
     (0, 'STARTED'),
     (1, 'ACTIVE'),
     (2, 'COMPLETED'),
     (3, 'EXPIRED'),
+    (4, 'ISSUED'),
+    (5, 'REDEEMED'),
 )
 
 BONUS_RELEASE_TYPE_CHOICES = (
@@ -1197,6 +1243,54 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
     (2, 'AVERAGE'),
     (3, 'MAX'),
     (4, 'LATEST'),
+)
+
+#GD CASINO
+
+GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
+GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
+GDCASINO_MERCHANT_CODE = 'IBPHtest'
+GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
+
+GDCASINO_STATUS_CODE =(
+    (-1, 'UNKNOWN_ERROR'),
+    (0, 'OK'),
+    (1,'INVAILD_PARAMETER'),
+    (2, 'INVAILD_TOKEN_ID'),
+    (3, 'BET_ALREDY_SETTLED'),
+    (4, 'BET_DOES_NOT_EXIST'),
+    (5, 'BET_ALREADY_EXIST'),
+    (6, 'ACCOUNT_LOCKED'),
+    (7, 'INSUFFUCIENT_FUNDS'),
+    (8, 'RETRY_TRANSACTION'),
+    (201, 'INSUFFUCIENT_FUNDS_1(for maxbet)'),
+    (202, 'ACCOUNT_LOCKED_1(for maxbet)'),
+    (206, 'ABOVE_PLAYER_LIMIT_1(for maxbet)')
+)
+
+GDCASINO_STATUS = (
+    (0, 'PENDING'),
+    (1, 'DEBIT'),
+    (2, 'CREDIT'), 
+    (3, 'TIP'),
+    (4, 'CANCEL'),
+)
+GDCASINO_GAME_TYPE = (
+    (0, 'None'),
+    (6, 'Baccarat'),
+    (28, 'Roulette'),
+    (29, 'Sic bo'),
+    (100, 'Slot game'),
+)
+
+
+GDCASINO_CANCEL_REASON = (
+    ('NONE', 'None'),
+    ('CANCELLED_ROUND', 'Game round is cancelled.'),
+    ('DEBIT_TIME_OUT', 'Debit response timeout.'),
+    ('VOIDED_BET', 'Abnormal bet is voided.'),
+    ('BETTING_TIME_FINISHED', 'Betting time is ended'),
+    ('INVALID_DEBIT_REPLY', 'Debit reply is in wrong format.'),
 )
 
 
@@ -1218,8 +1312,35 @@ SECURITY_QUESTION = (
 )
 # Games
 
+# Playngo
+PNG_STATUS_OK = 0
+PNG_STATUS_NOUSER = 1
+PNG_STATUS_INTERNAL = 2
+PNG_STATUS_INVALIDCURRENCY = 3
+PNG_STATUS_WRONGUSERNAMEPASSWORD = 4
+PNG_STATUS_ACCOUNTLOCKED = 5
+PNG_STATUS_ACCOUNTDISABLED = 6
+PNG_STATUS_NOTENOUGHMONEY = 7
+PNG_STATUS_MAXCONCURRENTCALLS = 8
+PNG_STATUS_SPENDINGBUDGETEXCEEDED = 9
+PNG_STATUS_SESSIONEXPIRED = 10
+PNG_STATUS_TIMEBUDGETEXCEEDED = 11
+PNG_STATUS_SERVICEUNAVAILABLE = 12
+
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+
+#onebook
+ONEBOOK_VENDORID = "xmV64h8RULU"
+ONEBOOK_OPERATORID = "ibetclaymore"
+ONEBOOK_MAXTRANSFER = "50000"
+ONEBOOK_MINTRANSFER = "10"
+ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
+ONEBOOK_DIRECTION_withdraw = 0
+ONEBOOK_DIRECTION_deposit = 1
+ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
+# AllBet
+AB_URL = "https://platform-api.apidemo.net:8443/"
