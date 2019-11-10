@@ -26,19 +26,22 @@ class GetTransactions(CommAdminView):
         date_from = request.GET.get('from')
         date_to = request.GET.get('to')
         num_per_page = int(request.GET.get('show')) if request.GET.get('show') else 20
-        print("search params: " + str(search_params))
-        print("status: " + str(status))
-        print("from: ", date_from)
-        print("to: ", date_to)
-        print("num_per_page: ", request.GET.get('show'))
+        # print("search params: " + str(search_params))
+        # print("status: " + str(status))
+        # print("from: ", date_from)
+        # print("to: ", date_to)
+        # print("num_per_page: ", request.GET.get('show'))
 
         page = int(page)
         txn_q = Q(transaction_type=TRANSACTION_DEPOSIT) if txn_type == "deposit" else Q(transaction_type=TRANSACTION_WITHDRAWAL)
         
+        # select all transactions and the associated users (based off the foreign key field in the transaction object)
         all_transactions = Transaction.objects.select_related('user_id').filter(txn_q).order_by('-request_time')
+
         # filter by status
         if status and status != 'all':
             all_transactions = filterByStatus(status, all_transactions)
+        
         # do further filtering using search params, if any
         if search_params:
             name = Q(username__icontains=search_params)
@@ -62,11 +65,12 @@ class GetTransactions(CommAdminView):
             to_query = Q(request_time__lte=to_date)
             all_transactions = all_transactions.filter(to_query)
 
+        # pagination logic / counting
         curr_page = all_transactions[page * num_per_page:(page + 1) * num_per_page]
         txn_count = all_transactions.count()
 
-        print("transaction count: (to count total pages)")
-        print(txn_count)
+        # print("transaction count: (to count total pages)")
+        # print(txn_count)
         total_pages = (txn_count - 1) // num_per_page if (txn_count - 1) // num_per_page > 0 else 0
         context['page_no'] = page
         context['total_pages'] = total_pages
@@ -98,8 +102,8 @@ class GetTransactions(CommAdminView):
             trans_data["user_status"] = trans.user_id.get_member_status_display()
 
             txn_data.append(trans_data)
-
         context['transactions'] = txn_data  # array of txn objects
+        
         if txn_type == "deposit":
             return render(request, 'deposits.html', context=context, content_type="text/html; charset=utf-8")
         else:
