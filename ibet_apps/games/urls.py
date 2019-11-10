@@ -1,16 +1,23 @@
 from django.urls import path, include
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
+
 import games.views.eagameviews as eagameviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.allbetgameviews as allbetgameviews
 import games.views.fggameviews as fggameviews
-from django.views.decorators.csrf import csrf_exempt
-from games.views.views import *
+import games.views.onebookviews as onebookviews
 import games.views.gdcasinoviews as gdcasino
 import games.views.betsviews as bets
-from games.live_casino import *
-import games.views.onebookviews as onebookviews
+import games.views.bti_views as bti
+
+from games.views.views import *
+
+
+
+
+
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -69,4 +76,14 @@ urlpatterns = [
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
 
+
+    # bti
+    path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="Test Function"),
+    # path('api/bti/reserve', bti.TestFunction.as_view(), name="Test Function"),
+    # path('api/bti/debitreserve', bti.TestFunction.as_view(), name="Test Function"),
+    # path('api/bti/cancelreserve', bti.TestFunction.as_view(), name="Test Function"),
+    # path('api/bti/commitreserve', bti.TestFunction.as_view(), name="Test Function"),
+    # path('api/bti/debitcustomer', bti.TestFunction.as_view(), name="Test Function"),
+    # path('api/bti/creditcustomer', bti.TestFunction.as_view(), name="Test Function"),
+    
 ]
