@@ -190,7 +190,7 @@ class LiveDealerSoapService(ServiceBase):
                 category = 'Slots'
             cate = Category.objects.get(name=category)
             token = Token.objects.get(user=user)
-            if request.gameId:
+            if request.gameId == '81297':
                 if CATEGORY == '100': #fishing
                     if str(token) == request.loginToken:
                         res.StatusCode = 0
@@ -216,7 +216,9 @@ class LiveDealerSoapService(ServiceBase):
                         user.save()
                     
                         if CATEGORY == '100': #slot
-                            GameBet.objects.create(provider=PROVIDER,   
+                            res.StatusCode = 0
+                            GameBet.objects.create(provider=PROVIDER,
+                                        
                                         category=cate,
                                         username=user, 
                                         currency=request.currency, 
@@ -227,7 +229,8 @@ class LiveDealerSoapService(ServiceBase):
                         else:
                             if str(token) == request.loginToken:
                                 res.StatusCode = 0
-                                GameBet.objects.create(provider=PROVIDER,   
+                                GameBet.objects.create(provider=PROVIDER, 
+                                                    game_name=request.gameId,  
                                                     category=cate,
                                                     username=user, 
                                                     currency=request.currency, 
@@ -278,27 +281,53 @@ class LiveDealerSoapService(ServiceBase):
             if CATEGORY == '100':
                 with transaction.atomic():
                     if request.gameId == '81297':
-                        GameBet.objects.create(provider=PROVIDER,   
-                                                category=cate,
-                                                username=user, 
-                                                currency=request.currency, 
-                                                market=ibetCN,
-                                                ref_no=request.transactionId,
-                                                amount_wagered=request.amount,
-                                                amount_won=request.winLoss,
-                                                outcome=0,
-                                                )
-                        
-                    else:
-                        GameBet.objects.create(provider=PROVIDER,   
+                        if int(request.winLoss) < 0:
+                            GameBet.objects.create(provider=PROVIDER,   
                                                     category=cate,
                                                     username=user, 
+                                                    game_name=request.gameId,
                                                     currency=request.currency, 
                                                     market=ibetCN,
                                                     ref_no=request.transactionId,
-                                                    amount_won=request.amount,
+                                                    amount_wagered=request.amount,
+                                                    amount_won=request.winLoss,
+                                                    outcome=1,
+                                                    )
+                        else:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                    category=cate,
+                                                    username=user, 
+                                                    game_name=request.gameId,
+                                                    currency=request.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.transactionId,
+                                                    amount_wagered=request.amount,
+                                                    amount_won=request.winLoss,
                                                     outcome=0,
                                                     )
+                        
+                    else:
+                        if int(request.amount) < 0:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                        category=cate,
+                                                        username=user, 
+                                                        currency=request.currency, 
+                                                        market=ibetCN,
+                                                        ref_no=request.transactionId,
+                                                        amount_won=request.amount,
+                                                        outcome=1,
+                                                        )
+                        else:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                        category=cate,
+                                                        username=user, 
+                                                        currency=request.currency, 
+                                                        market=ibetCN,
+                                                        ref_no=request.transactionId,
+                                                        amount_won=request.amount,
+                                                        outcome=0,
+                                                        )
+                    
                 res.UserBalance = userBalance
                 res.StatusCode = 0
                 return res
