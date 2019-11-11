@@ -78,7 +78,7 @@ class RegUserInfo(APIView):
                 elif r.status_code == 400:
                     success = True
                     # Handle error
-                    logger.info("Failed to complete a request for RegUserInfo...")
+                    logger.error("Failed to complete a request for RegUserInfo...")
                     logger.error(rdata)
                     return Response(rdata)
                 elif r.status_code == 500:
@@ -126,7 +126,7 @@ class LoginRequest(APIView):
                 elif r.status_code == 400:
                     success = True
                     # Handle error
-                    logger.info("Failed to complete a request for RegUserInfo...")
+                    logger.error("Failed to complete a request for RegUserInfo...")
                     logger.error(rdata)
                     return Response(rdata)
                 elif r.status_code == 500:
