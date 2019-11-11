@@ -20,6 +20,7 @@ from background_task import background
 import redis
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+from django.db import DatabaseError, transaction
 
 logger = logging.getLogger('django')
 
@@ -215,37 +216,38 @@ def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
                 return ERROR_CODE_FAIL
             if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
                 # amount = Decimal(amount.replace(',',''))
-                if direction == '1':
-                    #deposit
-                    wallet = wallet - amount
-                    user.onebook_wallet = user.onebook_wallet + amount
+                with transaction.atomic():
+                    if direction == '1':
+                        #deposit
+                        wallet = wallet - amount
+                        user.onebook_wallet = user.onebook_wallet + amount
+                        
+                        Transaction.objects.create(transaction_id=trans_id,
+                                                user_id=user,
+                                                order_id=trans_id,
+                                                amount=amount,
+                                                currency=user.currency,
+                                                transfer_from='Onebook',
+                                                transfer_to=fund_wallet,
+                                                product=0,
+                                                transaction_type=TRANSACTION_TRANSFER,
+                                                status=TRAN_SUCCESS_TYPE)
                     
-                    Transaction.objects.create(transaction_id=trans_id,
-                                            user_id=user,
-                                            order_id=trans_id,
-                                            amount=amount,
-                                            currency=user.currency,
-                                            transfer_from='Onebook',
-                                            transfer_to=fund_wallet,
-                                            product=0,
-                                            transaction_type=TRANSACTION_TRANSFER,
-                                            status=TRAN_SUCCESS_TYPE)
-                
-                elif direction == '0':
-                    #withdraw
-                    wallet = wallet + amount
-                    user.onebook_wallet = user.onebook_wallet - amount
-                    Transaction.objects.create(transaction_id=trans_id,
-                                            user_id=user,
-                                            order_id=trans_id,
-                                            amount=amount,
-                                            currency=user.currency,
-                                            transfer_from=fund_wallet,
-                                            transfer_to='Onebook',
-                                            product=0,
-                                            transaction_type=TRANSACTION_TRANSFER,
-                                            status=TRAN_SUCCESS_TYPE)
-                user.save()
+                    elif direction == '0':
+                        #withdraw
+                        wallet = wallet + amount
+                        user.onebook_wallet = user.onebook_wallet - amount
+                        Transaction.objects.create(transaction_id=trans_id,
+                                                user_id=user,
+                                                order_id=trans_id,
+                                                amount=amount,
+                                                currency=user.currency,
+                                                transfer_from=fund_wallet,
+                                                transfer_to='Onebook',
+                                                product=0,
+                                                transaction_type=TRANSACTION_TRANSFER,
+                                                status=TRAN_SUCCESS_TYPE)
+                    user.save()
             
                 return CODE_SUCCESS
             elif rdata['Data']['status'] == 1 :
@@ -264,36 +266,37 @@ def fundTransfer(username, amount, fund_wallet, direction, wallet_id):
                         try:
                             rcode = rrdata['error_code']
                             if rcode == 0:  #transfer success, will update user's balance
-                                if direction == '1':
-                                #deposit
-                                    wallet = wallet - amount
-                                    user.onebook_wallet = user.onebook_wallet + amount
-                                    
-                                    Transaction.objects.create(transaction_id=trans_id,
-                                                            user_id=user,
-                                                            order_id=trans_id,
-                                                            amount=amount,
-                                                            currency=user.currency,
-                                                            transfer_from='Onebook',
-                                                            transfer_to=fund_wallet,
-                                                            product=0,
-                                                            transaction_type=TRANSACTION_TRANSFER_OUT,
-                                                            status=TRAN_SUCCESS_TYPE)
-                                elif direction == '0':
-                                    #withdraw
-                                    wallet = wallet + amount
-                                    user.onebook_wallet = user.onebook_wallet - amount
-                                    Transaction.objects.create(transaction_id=trans_id,
-                                                            user_id=user,
-                                                            order_id=trans_id,
-                                                            amount=amount,
-                                                            currency=user.currency,
-                                                            transfer_from=fund_wallet,
-                                                            transfer_to='Onebook',
-                                                            product=0,
-                                                            transaction_type=TRANSACTION_TRANSFER_IN,
-                                                            status=TRAN_SUCCESS_TYPE)
-                                user.save()         
+                                with transaction.atomic():
+                                    if direction == '1':
+                                    #deposit
+                                        wallet = wallet - amount
+                                        user.onebook_wallet = user.onebook_wallet + amount
+                                        
+                                        Transaction.objects.create(transaction_id=trans_id,
+                                                                user_id=user,
+                                                                order_id=trans_id,
+                                                                amount=amount,
+                                                                currency=user.currency,
+                                                                transfer_from='Onebook',
+                                                                transfer_to=fund_wallet,
+                                                                product=0,
+                                                                transaction_type=TRANSACTION_TRANSFER_OUT,
+                                                                status=TRAN_SUCCESS_TYPE)
+                                    elif direction == '0':
+                                        #withdraw
+                                        wallet = wallet + amount
+                                        user.onebook_wallet = user.onebook_wallet - amount
+                                        Transaction.objects.create(transaction_id=trans_id,
+                                                                user_id=user,
+                                                                order_id=trans_id,
+                                                                amount=amount,
+                                                                currency=user.currency,
+                                                                transfer_from=fund_wallet,
+                                                                transfer_to='Onebook',
+                                                                product=0,
+                                                                transaction_type=TRANSACTION_TRANSFER_IN,
+                                                                status=TRAN_SUCCESS_TYPE)
+                                    user.save()         
                                 return CODE_SUCCESS
                                 break
                             elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
@@ -375,15 +378,16 @@ class FundTransfer(APIView):
                 
                 if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
                     amount = Decimal(amount.replace(',',''))
-                    if direction == '1':
-                        #deposit
-                        user.main_wallet = user.main_wallet - amount
-                        user.onebook_wallet = user.onebook_wallet + amount
-                    elif direction == '0':
-                        #withdraw
-                        user.main_wallet = user.main_wallet + amount
-                        user.onebook_wallet = user.onebook_wallet - amount
-                    user.save()
+                    with transaction.atomic():
+                        if direction == '1':
+                            #deposit
+                            user.main_wallet = user.main_wallet - amount
+                            user.onebook_wallet = user.onebook_wallet + amount
+                        elif direction == '0':
+                            #withdraw
+                            user.main_wallet = user.main_wallet + amount
+                            user.onebook_wallet = user.onebook_wallet - amount
+                        user.save()
                     
                     return Response(rdata)
                 elif rdata['Data']['status'] == 1 :
@@ -428,7 +432,7 @@ class FundTransfer(APIView):
 @background(schedule=5) 
 def getBetDetail():
     try:
-        PROVIDER = GameProvider.objects.get(provider_name="Onebook")
+        PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -450,9 +454,11 @@ def getBetDetail():
             logger.info(rdata)
             # print(rdata)
             version_key = rdata["Data"]["last_version_key"]
-            updates = GameProvider.objects.get(provider_name='Onebook')
-            updates.notes = version_key
-            updates.save()
+            
+            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+            with transaction.atomic():
+                updates.notes = version_key
+                updates.save()
                 
             if  "BetDetails" in rdata['Data']:
                 
@@ -512,13 +518,13 @@ class GetBetDetail(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="Onebook")
+            PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
         delay = kwargs.get("delay", 2)
         success = False
-        version_key = GameProvider.objects.get(provider_name='Onebook').notes
+        version_key = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER).notes
         
         for x in range(0,3000):
             r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
@@ -528,9 +534,10 @@ class GetBetDetail(APIView):
             rdata = r.json()
             logger.info(rdata)
             version_key = rdata["Data"]["last_version_key"]
-            updates = GameProvider.objects.get(provider_name='Onebook')
-            updates.notes = version_key
-            updates.save()
+            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+            with transaction.atomic():
+                updates.notes = version_key
+                updates.save()
             
             if  "BetDetails" in rdata['Data']:
                 # logger.info(rdata["Data"]["BetDetails"])
