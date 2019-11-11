@@ -30,7 +30,7 @@ class ValidateToken(View):
         token = request.GET.get("auth_token")
         try:
             res = "error_code=0\r\n" # 0 = success
-            res += "error_msg=Token not found\r\n"
+            res += "error_msg=Success!\r\n"
             res += "cust_id=123456789\r\n"
             res += "balance=999999\r\n"
             res += "cust_login=orion\r\n"
