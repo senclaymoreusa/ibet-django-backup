@@ -59,10 +59,10 @@ class RegUserInfo(APIView):
             #string = "method=RegUserInfo&Key=F0E5C6E337F84A13960D57B06C4E361F&Time=20191030004110&Username=angela&CurrencyType=CNY"
             
             q = des_encrypt(string)
-            print(q)
+            
             s_string = string + SA_MD5KEY + time + SA_SECRET_KEY
             s = MD5(s_string)
-            print(s)
+            
             delay = kwargs.get("delay", 5)
             success = False
             for x in range(3):
@@ -107,10 +107,10 @@ class LoginRequest(APIView):
 
             string = "method=" + method + "&Key=" + SA_SECRET_KEY + "&Time=" + time + "&Username=" + username + "&CurrencyType=" + currency
             q = des_encrypt(string)
-            print(q)
+            
             s_string = string + SA_MD5KEY + time + SA_SECRET_KEY
             s = MD5(s_string)
-            print(s)
+            
             delay = kwargs.get("delay", 5)
             success = False
             for x in range(3):

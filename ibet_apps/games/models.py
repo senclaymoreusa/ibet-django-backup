@@ -100,7 +100,7 @@ class GameBet(models.Model):
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
     username = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, null=True) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
+    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
     amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
