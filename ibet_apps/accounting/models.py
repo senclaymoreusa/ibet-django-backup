@@ -162,9 +162,6 @@ class Transaction(models.Model):
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
-    channel = models.SmallIntegerField(
-        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
-    )
     
     # Transaction types: Deposit, Withdrawal, Bet Placed, Bet Settled, etc.
     transaction_type = models.SmallIntegerField(
