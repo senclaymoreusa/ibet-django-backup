@@ -1251,6 +1251,7 @@ GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
 GDCASINO_MERCHANT_CODE = 'IBPHtest'
 GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
+GDCASINO_FISHING_GAMEID = '81297'
 
 GDCASINO_STATUS_CODE =(
     (-1, 'UNKNOWN_ERROR'),
