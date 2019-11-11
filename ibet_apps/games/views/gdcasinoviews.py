@@ -28,7 +28,7 @@ from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
 from spyne.model.complex import ComplexModel, XmlAttribute, Array
 
-
+from django.db import transaction
 class Container(ComplexModel):
     # __namespace__ = 'https://testgdgame-namespace.org'
     StatusCode = Integer
@@ -167,6 +167,7 @@ class LiveDealerSoapService(ServiceBase):
             res.UserBalance = 0
             return res
 
+    
     @rpc(DebitRequest, _body_style='bare', _returns=Container)
     def Debit(crx, request):
         try:
@@ -210,32 +211,32 @@ class LiveDealerSoapService(ServiceBase):
                     return res
             else:
                 if userBalance >= 0:
+                    with transaction.atomic():
+                        user.main_wallet = userBalance
+                        user.save()
                     
-                    user.main_wallet = userBalance
-                    user.save()
-                    
-                    if CATEGORY == '100': #slot
-                        GameBet.objects.create(provider=PROVIDER,   
-                                    category=cate,
-                                    username=user, 
-                                    currency=request.currency, 
-                                    market=ibetCN,
-                                    ref_no=request.transactionId,
-                                    amount_wagered=request.amount,
-                                    )
-                    else:
-                        if str(token) == request.loginToken:
-                            res.StatusCode = 0
+                        if CATEGORY == '100': #slot
                             GameBet.objects.create(provider=PROVIDER,   
-                                                category=cate,
-                                                username=user, 
-                                                currency=request.currency, 
-                                                market=ibetCN,
-                                                ref_no=request.transactionId,
-                                                amount_wagered=request.amount,
-                                                )
+                                        category=cate,
+                                        username=user, 
+                                        currency=request.currency, 
+                                        market=ibetCN,
+                                        ref_no=request.transactionId,
+                                        amount_wagered=request.amount,
+                                        )
                         else:
-                            res.StatusCode = 2
+                            if str(token) == request.loginToken:
+                                res.StatusCode = 0
+                                GameBet.objects.create(provider=PROVIDER,   
+                                                    category=cate,
+                                                    username=user, 
+                                                    currency=request.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.transactionId,
+                                                    amount_wagered=request.amount,
+                                                    )
+                            else:
+                                res.StatusCode = 2
                     res.UserBalance = userBalance
                     return res
                 else:
@@ -275,28 +276,29 @@ class LiveDealerSoapService(ServiceBase):
                 category = 'Slots'
             cate = Category.objects.get(name=category)
             if CATEGORY == '100':
-                if request.gameId == '81297':
-                    GameBet.objects.create(provider=PROVIDER,   
-                                            category=cate,
-                                            username=user, 
-                                            currency=request.currency, 
-                                            market=ibetCN,
-                                            ref_no=request.transactionId,
-                                            amount_wagered=request.amount,
-                                            amount_won=request.winLoss,
-                                            outcome=0,
-                                            )
-                    
-                else:
-                    GameBet.objects.create(provider=PROVIDER,   
+                with transaction.atomic():
+                    if request.gameId == '81297':
+                        GameBet.objects.create(provider=PROVIDER,   
                                                 category=cate,
                                                 username=user, 
                                                 currency=request.currency, 
                                                 market=ibetCN,
                                                 ref_no=request.transactionId,
-                                                amount_won=request.amount,
+                                                amount_wagered=request.amount,
+                                                amount_won=request.winLoss,
                                                 outcome=0,
                                                 )
+                        
+                    else:
+                        GameBet.objects.create(provider=PROVIDER,   
+                                                    category=cate,
+                                                    username=user, 
+                                                    currency=request.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.transactionId,
+                                                    amount_won=request.amount,
+                                                    outcome=0,
+                                                    )
                 res.UserBalance = userBalance
                 res.StatusCode = 0
                 return res
@@ -305,10 +307,11 @@ class LiveDealerSoapService(ServiceBase):
                     betTrans = GameBet.objects.get(provider=PROVIDER, category=cate,ref_no=request.transactionId,username=user)
                     
                     if str(token) == request.loginToken:
-                        res.StatusCode = 0
-                        betTrans.amount_won = request.amount
-                        betTrans.outcome = 0
-                        betTrans.save()
+                        with transaction.atomic():
+                            res.StatusCode = 0
+                            betTrans.amount_won = request.amount
+                            betTrans.outcome = 0
+                            betTrans.save()
                     else:
                         res.StatusCode = 2
                     res.UserBalance = userBalance
