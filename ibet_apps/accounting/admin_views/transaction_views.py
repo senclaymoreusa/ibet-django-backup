@@ -45,7 +45,11 @@ class GetTransactions(CommAdminView):
         # do further filtering using search params, if any
         if search_params:
             name = Q(username__icontains=search_params)
-            ids = Q(pk__icontains=search_params)
+            try:
+                ids = Q(pk__icontains=int(search_params))
+            except ValueError:
+                ids = Q()
+                
             ref_nos = Q(transaction_id__icontains=search_params)
 
             # get username & user id matches
