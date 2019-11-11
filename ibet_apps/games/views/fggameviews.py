@@ -282,7 +282,7 @@ class ProcessTransaction(APIView):
                                                         currency=currency,
                                                         amount_won=0.00,
                                                         market=ibetCN,
-                                                        transaction_id=transactionId
+                                                        ref_no=transactionId
                                                         )
                     response = {
                         "seq" : seq,
@@ -327,7 +327,7 @@ class ProcessTransaction(APIView):
                                                         currency=currency,
                                                         amount_won=float(amount),
                                                         market=ibetCN,
-                                                        transaction_id=transactionId
+                                                        ref_no=transactionId
                                                         )
                     response = {
                         "seq" : seq,
