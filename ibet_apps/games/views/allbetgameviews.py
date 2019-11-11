@@ -3,6 +3,7 @@ from django.views import View
 from django.http import HttpResponse
 
 # iBet
+from users.models import CustomUser
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys
 
@@ -109,3 +110,26 @@ class EncryptionView(View):
         except Exception as e:
             logger.error("AllBet EncryptionView Error: " + str(e))
             return HttpResponse("Error in encryption: " + str(e))
+
+
+class BalanceView(View):
+    """
+    """
+    def get(self, request, player_account_name):
+        try:
+            # TODO: Check Authorization header
+            auth_header = request.META['HTTP_AUTHORIZATION']
+            print(str(auth_header))
+
+            # Check the provided auth header against generated signature
+
+            string_to_sign = "GET + \n "
+
+
+
+            user = CustomUser.objects.get(username=player_account_name)
+            return HttpResponse(str(user.main_wallet))
+
+        except Exception as e:
+            logger.error("AllBet BalanceView Error: " + str(e))
+            return HttpResponse("AllBet BalanceView Error: " + str(e))
