@@ -251,7 +251,7 @@ def requestEADeposit(user, amount, from_wallet):
         # print(requestData)
         response = requests.post(url, data=requestData, headers=headers)
         response = response.text.strip()
-        print(response)
+        
         response = xmltodict.parse(response)
         action  = response['request']['@action']
         request_id = response['request']['element']['@id']
