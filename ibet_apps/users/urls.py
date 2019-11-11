@@ -10,6 +10,7 @@ import users.views.saintegrationviews as saintegrationviews
 from django.urls import include
 from django.views.decorators.csrf import csrf_exempt
 import users.views.transferview as transferview
+import users.views.paymentsetting as paymentsettingview
 
 
 urlpatterns = [
@@ -80,13 +81,14 @@ urlpatterns += [
     path('api/marketing-settings/', csrf_exempt(views.MarketingSettings.as_view()), name="market_settings"),
     path('api/privacy-settings/', csrf_exempt(views.PrivacySettings.as_view()), name="privacy_settings"),
     path('api/bet-history/',views.GetBetHistory.as_view(), name="get_bet_history"),
-    path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity-check"),
-    path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check-user-status"),
-    path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security-question"),
-    path('api/user-security-question/', csrf_exempt(views.UserSecurityQuestion.as_view()), name="user-security-question"),
-    path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw-password"),
-    path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset-withdraw-password"),
-    path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view")
+    path('api/activity-check/', csrf_exempt(views.ActivityCheckSetting.as_view()), name="activity_check"),
+    path('api/check-user-status/', views.CheckUserStatusAPI.as_view(), name="check_user_status"),
+    path('api/security-question/', views.AllSecurityQuestion.as_view(), name="security_question"),
+    path('api/user-security-question/', csrf_exempt(views.UserSecurityQuestion.as_view()), name="user_security_question"),
+    path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw_password"),
+    path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset_withdraw_password"),
+    path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view"),
+    path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting")
 
     
 ]

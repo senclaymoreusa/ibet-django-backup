@@ -1,5 +1,7 @@
 import xadmin
+
 from .models import *
+from bonus.adminview import *
 
 class BonusAdmin(object):
     list_display = ('name', 'description', 'start_time', 'end_time', 'expiration_days','countries','amount','percentage','coupon_code',
@@ -19,3 +21,5 @@ xadmin.site.register(Bonus,BonusAdmin)
 xadmin.site.register(Requirement,RequirementAdmin)
 xadmin.site.register(UserBonusEvent,UserBonusEventAdmin)
 xadmin.site.register(BonusCategory,BonusCategoryAdmin)
+
+xadmin.site.register_view(r'bonus_records/$', BonusRecordsView, name='bonus_records')
