@@ -7,6 +7,7 @@ from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
 from games.models import FGSession, Game, GameBet, GameProvider, Category
+from django.db import transaction
 import xmltodict
 import decimal,re, math
 import requests,json
@@ -270,18 +271,19 @@ class ProcessTransaction(APIView):
                 gameInfoId = request.GET["gameInfoId"]
                 wallet = user.main_wallet + decimal.Decimal(amount)
                 if (wallet > 0):
-                    user.main_wallet = wallet
-                    user.save()
-                    transactionId = re.sub("[^0-9]", "", timestamp)
-                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
-                                                    category=Category.objects.get(name='Slots'),
-                                                    username=user,
-                                                    amount_wagered=-float(amount),
-                                                    currency=currency,
-                                                    amount_won=0.00,
-                                                    market=ibetCN,
-                                                    transaction_id=transactionId
-                                                    )
+                    with transaction.atomic():
+                        user.main_wallet = wallet
+                        user.save()
+                        transactionId = re.sub("[^0-9]", "", timestamp)
+                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
+                                                        category=Category.objects.get(name='Slots'),
+                                                        username=user,
+                                                        amount_wagered=-float(amount),
+                                                        currency=currency,
+                                                        amount_won=0.00,
+                                                        market=ibetCN,
+                                                        transaction_id=transactionId
+                                                        )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
@@ -314,18 +316,19 @@ class ProcessTransaction(APIView):
                 #isFinal = request.GET["isFinal"]
                 wallet = user.main_wallet + decimal.Decimal(amount)
                 if (wallet > 0):
-                    user.main_wallet = user.main_wallet + decimal.Decimal(amount)
-                    user.save()
-                    transactionId = re.sub("[^0-9]", "", timestamp)
-                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
-                                                    category=Category.objects.get(name='Slots'),
-                                                    username=user,
-                                                    amount_wagered=0.00,
-                                                    currency=currency,
-                                                    amount_won=float(amount),
-                                                    market=ibetCN,
-                                                    transaction_id=transactionId
-                                                    )
+                    with transaction.atomic():
+                        user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                        user.save()
+                        transactionId = re.sub("[^0-9]", "", timestamp)
+                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
+                                                        category=Category.objects.get(name='Slots'),
+                                                        username=user,
+                                                        amount_wagered=0.00,
+                                                        currency=currency,
+                                                        amount_won=float(amount),
+                                                        market=ibetCN,
+                                                        transaction_id=transactionId
+                                                        )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
