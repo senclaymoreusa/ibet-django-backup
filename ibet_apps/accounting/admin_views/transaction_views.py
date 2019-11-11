@@ -147,10 +147,10 @@ class RiskReview(CommAdminView):
         decision = request.POST.get("decision")
         curr_txn = Transaction.objects.get(transaction_id=txn_no, user_id=user_id)
 
-        print(curr_txn)
+        # print(curr_txn)
         curr_txn.status = TRAN_PENDING_TYPE if decision == "approve" else TRAN_REJECTED_TYPE
         curr_txn.save()
-        print(curr_txn)
+        # print(curr_txn)
         response = f'Updated transaction {curr_txn.transaction_id}! (Result: {decision})'
         return HttpResponse(content=response,status=200)
 
