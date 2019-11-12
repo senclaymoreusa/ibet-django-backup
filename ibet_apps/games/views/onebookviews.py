@@ -178,159 +178,6 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
     else:
         currency = 20
 
-<<<<<<< HEAD
-        if user.currency == CURRENCY_CNY:
-            currency = 13
-        elif user.currency == CURRENCY_USD:
-            currency = 3
-        elif user.currency == CURRENCY_THB:
-            currency = 4
-        elif user.currency == CURRENCY_EUR:
-            currency = 6
-        elif user.currency == CURRENCY_IDR:
-            currency = 15
-        elif user.currency == CURRENCY_VND:
-            currency = 51
-        elif user.currency == CURRENCY_TEST:
-            currency = 20
- 
-        wallet_name = fund_wallet + "_wallet"  #for example: onebook_wallet
-        wallet = getattr(user, wallet_name)
-        if direction == '1' and wallet - amount < 0:
-        #deposit
-            logger.info('balance is not enough.')
-        else: 
-            headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
-            delay = 5
-            success = False
-            username = user.username
-            for x in range(3):
-                r = requests.post(ONEBOOK_API_URL + "FundTransfer/", headers=headers, data={
-                    "vendor_id": ONEBOOK_VENDORID,
-                    "Vendor_Member_ID": username + "_test",  #will remove _test when go production
-                    "vendor_trans_id": trans_id,
-                    "amount": amount,
-                    "currency": currency,
-                    "direction":direction,
-                    "wallet_id":wallet_id,
-                })
-            
-                rdata = r.json()
-                logger.info(rdata)
-                if r.status_code == 200:
-                    success = True
-                    break
-                elif r.status_code == 204:
-                    success = True
-                    # Handle error
-                    logger.info("Failed to complete a request for FundTransfer...")
-                    logger.error(rdata)
-                    return ERROR_CODE_FAIL
-                elif r.status_code == 500:
-                    logger.info("Request failed {} time(s)'.format(x+1)")
-                    logger.info("Waiting for %s seconds before retrying again")
-                    sleep(delay)
-            if not success:
-                return ERROR_CODE_FAIL
-            if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
-                # amount = Decimal(amount.replace(',',''))
-                with transaction.atomic():
-                    if direction == '1':
-                        #deposit
-                        wallet = wallet - amount
-                        user.onebook_wallet = user.onebook_wallet + amount
-                        
-                        Transaction.objects.create(transaction_id=trans_id,
-                                                user_id=user,
-                                                order_id=trans_id,
-                                                amount=amount,
-                                                currency=user.currency,
-                                                transfer_from='Onebook',
-                                                transfer_to=fund_wallet,
-                                                product=0,
-                                                transaction_type=TRANSACTION_TRANSFER,
-                                                status=TRAN_SUCCESS_TYPE)
-                    
-                    elif direction == '0':
-                        #withdraw
-                        wallet = wallet + amount
-                        user.onebook_wallet = user.onebook_wallet - amount
-                        Transaction.objects.create(transaction_id=trans_id,
-                                                user_id=user,
-                                                order_id=trans_id,
-                                                amount=amount,
-                                                currency=user.currency,
-                                                transfer_from=fund_wallet,
-                                                transfer_to='Onebook',
-                                                product=0,
-                                                transaction_type=TRANSACTION_TRANSFER,
-                                                status=TRAN_SUCCESS_TYPE)
-                    user.save()
-            
-                return CODE_SUCCESS
-            elif rdata['Data']['status'] == 1 :
-                
-                return ERROR_CODE_FAIL   
-            elif rdata['Data']['status'] == 2:  #call checkFundTransfer api
-                for x in range(3):
-                    rr = requests.post(ONEBOOK_API_URL + "CheckFundTransfer/", headers=headers, data={
-                        "vendor_id": ONEBOOK_VENDORID,
-                        "vendor_trans_id": trans_id,  
-                        "wallet_id": wallet_id,
-                    })
-                    rrdata = rr.json()
-                    logger.info(rrdata)
-                    if rr.status_code == 200:
-                        try:
-                            rcode = rrdata['error_code']
-                            if rcode == 0:  #transfer success, will update user's balance
-                                with transaction.atomic():
-                                    if direction == '1':
-                                    #deposit
-                                        wallet = wallet - amount
-                                        user.onebook_wallet = user.onebook_wallet + amount
-                                        
-                                        Transaction.objects.create(transaction_id=trans_id,
-                                                                user_id=user,
-                                                                order_id=trans_id,
-                                                                amount=amount,
-                                                                currency=user.currency,
-                                                                transfer_from='Onebook',
-                                                                transfer_to=fund_wallet,
-                                                                product=0,
-                                                                transaction_type=TRANSACTION_TRANSFER_OUT,
-                                                                status=TRAN_SUCCESS_TYPE)
-                                    elif direction == '0':
-                                        #withdraw
-                                        wallet = wallet + amount
-                                        user.onebook_wallet = user.onebook_wallet - amount
-                                        Transaction.objects.create(transaction_id=trans_id,
-                                                                user_id=user,
-                                                                order_id=trans_id,
-                                                                amount=amount,
-                                                                currency=user.currency,
-                                                                transfer_from=fund_wallet,
-                                                                transfer_to='Onebook',
-                                                                product=0,
-                                                                transaction_type=TRANSACTION_TRANSFER_IN,
-                                                                status=TRAN_SUCCESS_TYPE)
-                                    user.save()         
-                                return CODE_SUCCESS
-                                break
-                            elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
-                                return ERROR_CODE_FAIL
-                                break
-                            elif rcode == 3:
-                                logger.info("Request failed {} time(s)'.format(x+1)")
-                                logger.info("Waiting for %s seconds before retrying again")
-                                sleep(300) #wait for 5 minites then try again  
-                        except NameError as error:
-                            logger.error(error)          
-                    elif rr.status_code == 204:
-                        # Handle error
-                        logger.info("Failed to complete a request for check fund transfer...")
-                        logger.error(rrdata)
-=======
     # wallet_name = fund_wallet + "_wallet"  #for example: onebook_wallet
     # wallet = getattr(user, wallet_name)
     # if direction == '1' and wallet - amount < 0:
@@ -452,7 +299,6 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
                         return CODE_SUCCESS
                         break
                     elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
->>>>>>> b55b86a0a11bfa45058637fc5b6c5adc59607b23
                         return ERROR_CODE_FAIL
                         break
                     elif rcode == 3:
@@ -578,7 +424,7 @@ class FundTransfer(APIView):
 
 
 
-
+@transaction.atomic
 @background(schedule=5) 
 def getBetDetail():
     try:
@@ -603,12 +449,12 @@ def getBetDetail():
             rdata = r.json()
             logger.info(rdata)
             # print(rdata)
-            version_key = rdata["Data"]["last_version_key"]
+            version_key = rdata["Data"]["last_version_key"]        
             
             updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
-            with transaction.atomic():
-                updates.notes = version_key
-                updates.save()
+            
+            updates.notes = version_key
+            updates.save()
                 
             if  "BetDetails" in rdata['Data']:
                 
