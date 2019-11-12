@@ -107,7 +107,7 @@ class GameBet(models.Model):
     odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-
+    # transaction_id = models.CharField(max_length=50,null=True)
     currency = models.CharField(max_length=3, verbose_name=_('Currency'))
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
     ref_no = models.CharField(max_length=100, null=True, blank=True)
