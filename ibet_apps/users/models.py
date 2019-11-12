@@ -122,10 +122,10 @@ class CustomUser(AbstractBaseUser):
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
 
     # verification
-    email_verified = models.BooleanField(default=False)
-    phone_verified = models.BooleanField(default=False)
-    id_verified = models.BooleanField(default=False)
-    address_verified = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False, null=True, blank=True)
+    phone_verified = models.BooleanField(default=False, null=True, blank=True)
+    id_verified = models.BooleanField(default=False, null=True, blank=True)
+    address_verified = models.BooleanField(default=False, null=True, blank=True)
 
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
