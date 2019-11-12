@@ -280,7 +280,6 @@ class ProcessTransaction(APIView):
                                                         username=user,
                                                         amount_wagered=-float(amount),
                                                         currency=currency,
-                                                        amount_won=0.00,
                                                         market=ibetCN,
                                                         ref_no=transactionId
                                                         )
