@@ -509,7 +509,7 @@ def getBetDetail():
         logger.info("skip running this time.")
  
 
-
+@transaction.atomic
 class GetBetDetail(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
@@ -531,9 +531,9 @@ class GetBetDetail(APIView):
             logger.info(rdata)
             version_key = rdata["Data"]["last_version_key"]
             updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
-            with transaction.atomic():
-                updates.notes = version_key
-                updates.save()
+            
+            updates.notes = version_key
+            updates.save()
             
             if  "BetDetails" in rdata['Data']:
                 # logger.info(rdata["Data"]["BetDetails"])
