@@ -52,6 +52,17 @@ class GlobalSettings(object):
                 )
             },
             {
+                'title': _('Bonuses'),
+                'icon': 'fa fa-ravelry',
+                'menus': (
+                    {
+                        'title': _('Bonus records'),
+                        'url': '/xadmin/bonus_records/',
+                        'icon': 'fas fa-clock-o'
+                    },
+                )
+            },
+            {
                 'title': _('Affiliate'),
                 'icon': 'fa fa-smile-o',
                 'url': '/xadmin/agentview',
