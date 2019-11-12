@@ -27,23 +27,37 @@ MG_RESPONSE_ERROR = {
    
 }
 
+def parse_data(data):
+    try: 
+        dd = xmltodict.parse(data)
+        return dd
+    except Exception as e:
+        logger.error("MG parse data Error: " + str(e))
+        return None
+            
+
 class MGLogin(APIView):
 
     permission_classes = (AllowAny, )
     def post(self, request, *args, **kwargs):
         data = request.body
         # print(data)
-        dd = xmltodict.parse(data)
-
-        name = dd['pkt']['methodcall']['@name']
-        timestamp = dd['pkt']['methodcall']['@timestamp']
-        loginname = dd['pkt']['methodcall']['auth']['@login']
-        seq = dd['pkt']['methodcall']['call']['@seq']
-        token = dd['pkt']['methodcall']['call']['@token']
+        dd = parse_data(data)
+        if (dd is None):
+            return HttpResponse("MG parse data Error", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            name = dd['pkt']['methodcall']['@name']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            loginname = dd['pkt']['methodcall']['auth']['@login']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            token = dd['pkt']['methodcall']['call']['@token']
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
         # print(name)
         try:
-            user = MGToken.objects.get(token=token)
-            user = CustomUser.objects.get(username=user)   
+            mguser = MGToken.objects.get(token=token)
+            user = CustomUser.objects.get(username=mguser.user)   
           
 
             response = {
@@ -92,16 +106,21 @@ class GetBalance(APIView):
     def post(self, request, *args, **kwargs):   
         data = request.body
         #print(data)
-        dd = xmltodict.parse(data)
-
-        name = dd['pkt']['methodcall']['@name']
-        timestamp = dd['pkt']['methodcall']['@timestamp']
-        loginname = dd['pkt']['methodcall']['auth']['@login']
-        seq = dd['pkt']['methodcall']['call']['@seq']
-        token = dd['pkt']['methodcall']['call']['@token']
+        dd = parse_data(data)
+        if (dd is None):
+            return HttpResponse("MG parse data Error", status=status.HTTP_400_BAD_REQUEST)
         try:
-            user = MGToken.objects.get(token=token)
-            user = CustomUser.objects.get(username=user)   
+            name = dd['pkt']['methodcall']['@name']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            loginname = dd['pkt']['methodcall']['auth']['@login']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            token = dd['pkt']['methodcall']['call']['@token']
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+        try:
+            mguser = MGToken.objects.get(token=token)
+            user = CustomUser.objects.get(username=mguser.user)   
             response = {
                 "pkt" : {
                     "methodresponse" : {
@@ -142,19 +161,24 @@ class Play(APIView):
 
     def post(self, request, *args, **kwargs):   
         data = request.body
-        dd = xmltodict.parse(data)
-
-        name = dd['pkt']['methodcall']['@name']
-        timestamp = dd['pkt']['methodcall']['@timestamp']
-        loginname = dd['pkt']['methodcall']['auth']['@login']
-        seq = dd['pkt']['methodcall']['call']['@seq']
-        token = dd['pkt']['methodcall']['call']['@token']
-        playtype = dd['pkt']['methodcall']['call']['@playtype']
-        amount = dd['pkt']['methodcall']['call']['@amount']
+        dd = parse_data(data)
+        if (dd is None):
+            return HttpResponse("MG parse data Error", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            name = dd['pkt']['methodcall']['@name']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            loginname = dd['pkt']['methodcall']['auth']['@login']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            token = dd['pkt']['methodcall']['call']['@token']
+            playtype = dd['pkt']['methodcall']['call']['@playtype']
+            amount = dd['pkt']['methodcall']['call']['@amount']
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
         # here should judge the currency later...
         try:
-            user = MGToken.objects.get(token=token)          
-            user = CustomUser.objects.get(username=user)  
+            mguser = MGToken.objects.get(token=token)
+            user = CustomUser.objects.get(username=mguser.user)  
            
             if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
                 wallet = user.main_wallet + decimal.Decimal(amount)/100
@@ -220,18 +244,22 @@ class AwardBonus(APIView):
 
     def post(self, request, *args, **kwargs):   
         data = request.body
-        # print(data)
-        dd = xmltodict.parse(data)
-
-        name = dd['pkt']['methodcall']['@name']
-        timestamp = dd['pkt']['methodcall']['@timestamp']
-        loginname = dd['pkt']['methodcall']['auth']['@login']
-        seq = dd['pkt']['methodcall']['call']['@seq']
-        token = dd['pkt']['methodcall']['call']['@token']
+        dd = parse_data(data)
+        if (dd is None):
+            return HttpResponse("MG parse data Error", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            name = dd['pkt']['methodcall']['@name']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            loginname = dd['pkt']['methodcall']['auth']['@login']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            token = dd['pkt']['methodcall']['call']['@token']
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
         # bonus here should add more work later...
         try:
-            user = MGToken.objects.get(token=token)
-            user = CustomUser.objects.get(username=user)  
+            mguser = MGToken.objects.get(token=token)
+            user = CustomUser.objects.get(username=mguser.user)   
             response = {
                 "pkt" : {
                     "methodresponse" : {
@@ -272,17 +300,21 @@ class EndGame(APIView):
 
     def post(self, request, *args, **kwargs):   
         data = request.body
-        # print(data)
-        dd = xmltodict.parse(data)
-
-        name = dd['pkt']['methodcall']['@name']
-        timestamp = dd['pkt']['methodcall']['@timestamp']
-        loginname = dd['pkt']['methodcall']['auth']['@login']
-        seq = dd['pkt']['methodcall']['call']['@seq']
-        token = dd['pkt']['methodcall']['call']['@token']
+        dd = parse_data(data)
+        if (dd is None):
+            return HttpResponse("MG parse data Error", status=status.HTTP_400_BAD_REQUEST)
         try:
-            user = MGToken.objects.get(token=token)
-            user = CustomUser.objects.get(username=user)  
+            name = dd['pkt']['methodcall']['@name']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            loginname = dd['pkt']['methodcall']['auth']['@login']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            token = dd['pkt']['methodcall']['call']['@token']
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+        try:
+            mguser = MGToken.objects.get(token=token)
+            user = CustomUser.objects.get(username=mguser.user)  
             response = {
                 "pkt" : {
                     "methodresponse" : {
@@ -324,14 +356,18 @@ class RefreshToken(APIView):
     def post(self, request, *args, **kwargs):   
         data = request.body
         # print(data)
-        dd = xmltodict.parse(data)
-
-        name = dd['pkt']['methodcall']['@name']
-        timestamp = dd['pkt']['methodcall']['@timestamp']
-        loginname = dd['pkt']['methodcall']['auth']['@login']
-        seq = dd['pkt']['methodcall']['call']['@seq']
-        token = dd['pkt']['methodcall']['call']['@token']
-
+        dd = parse_data(data)
+        if (dd is None):
+            return HttpResponse("MG parse data Error", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            name = dd['pkt']['methodcall']['@name']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            loginname = dd['pkt']['methodcall']['auth']['@login']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            token = dd['pkt']['methodcall']['call']['@token']
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
         #more work need here...
         response = {
             "pkt" : {
