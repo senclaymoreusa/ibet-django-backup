@@ -30,12 +30,13 @@ class ValidateToken(View):
         token = request.GET.get("auth_token")
         try:
             res = "error_code=0\r\n" # 0 = success
-            res += "error_msg=Success!\r\n"
+            res += "error_message=success\r\n"
             res += "cust_id=123456789\r\n"
-            res += "balance=999999\r\n"
+            res += "balance=999999.99\r\n"
             res += "cust_login=orion\r\n"
             res += "city=Sunnyvale\r\n"
             res += "country=USA\r\n"
+            res += "currency_code=CNY\r\n"
             res += "extSessionId=a1b2c3d4e5\r\n"
             return HttpResponse(res)
 
