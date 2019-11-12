@@ -50,8 +50,6 @@ urlpatterns = [
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
     path('api/playngo/reserve/', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
 
-   
-
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
 
@@ -76,10 +74,9 @@ urlpatterns = [
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
 
-
     # bti
-    path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="Test Function"),
-    # path('api/bti/reserve', bti.TestFunction.as_view(), name="Test Function"),
+    path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
+    path('api/bti/reserve', csrf_exempt(bti.Reserve.as_view()), name="bti_reserve_bet"),
     # path('api/bti/debitreserve', bti.TestFunction.as_view(), name="Test Function"),
     # path('api/bti/cancelreserve', bti.TestFunction.as_view(), name="Test Function"),
     # path('api/bti/commitreserve', bti.TestFunction.as_view(), name="Test Function"),
