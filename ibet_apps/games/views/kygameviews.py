@@ -5,9 +5,11 @@ from rest_framework.views import APIView
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from django.db import transaction, IntegrityError
 from users.models import CustomUser
+from accounting.models import * 
 import simplejson as json
-import decimal
+from decimal import Decimal
 import requests
 from utils.constants import *
 import random
@@ -57,7 +59,151 @@ def get_timestamp():
     return int(round(time.time() * 1000))
 
 
+def kyDeposit(user, amount, from_wallet):
+    try:
+        trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+        user_currency = int(user.currency)
+
+        if user.currency == CURRENCY_CNY:
+            amount = amount
+        elif user.currency == CURRENCY_USD:
+            amount = 6.2808 * amount
+        elif user.currency == CURRENCY_THB:
+            amount = 0.2016 * amount
+        elif user.currency == CURRENCY_EUR:
+            amount = 7.616 * amount
+        elif user.currency == CURRENCY_IDR:
+            amount = 0.0005 * amount
+        elif user.currency == CURRENCY_VND:
+            amount = 0.0003 * amount
+        elif user.currency == CURRENCY_MYR:
+            amount = 1.6229 * amount
+        elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
+            amount = 20
+        else:
+            amount = 10
+
+        trans = Transaction.objects.create(
+            transaction_id=trans_id,
+            user_id=user,
+            order_id=trans_id,
+            amount=amount,
+            currency=user_currency,
+            transfer_from=from_wallet,
+            transfer_to="KY",
+            product=1,
+            transaction_type=TRANSACTION_TRANSFER,
+            status=TRAN_PENDING_TYPE
+        )
+
+        order_time = time.strftime("%Y%m%d%H%M%S")
+        orderid = agent + str(order_time) + account
+        param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
+
+        param = aes_encode(KY_AES_KEY, param)
+        param = base64.b64encode(param)
+        param = str(param, "utf-8")
+
+        key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+        key = hashlib.md5(key.encode())
+        key = key.hexdigest()
+
+        url = KY_API_URL if s != 6 else KY_RECORD_URL
+
+        req_param = {}
+        req_param["agent"] = agent
+        req_param["timestamp"] = str(timestamp)
+        req_param["param"] = param
+        req_param["key"] = key
+        req = urllib.parse.urlencode(req_param)
+        url = url + '?' + req
+
+        res = requests.get(url)
+
+        if res.
+
+
+    except Exception as e:
+        logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
+        return HttpResponse(status=400)
+    return NULL
+
+
+def queryUrl(s, user, money, kind_id, order_id):
+    # Login
+    if s == 0:
+        order_time = time.strftime("%Y%m%d%H%M%S")
+        orderid = agent + str(order_time) + account
+        linecode = KY_LINE_CODE_1
+
+        param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
+    # Get Balance
+    elif s == 1:
+        param = "s=" + str(s) + "&account=" + account
+    # Change Balance
+    elif s == 2:
+        order_time = time.strftime("%Y%m%d%H%M%S")
+        orderid = agent + str(order_time) + account
+
+        param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
+    # Refund
+    elif s == 3:
+        order_time = time.strftime("%Y%m%d%H%M%S")
+        orderid = agent + str(order_time) + account
+
+        param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
+    # Order Query
+    elif s == 4:
+        param = "s=" + str(s) + "&orderid=" + orderid
+    # Query The Player's Online Status
+    elif s == 5:
+        param = "s=" + str(s) + "&account=" + account
+    # Query Bet Order
+    elif s == 6:
+        startTime = data["startTime"]
+        endTime = data["endTime"]
+
+        param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
+    # Query The Player's Total Points
+    elif s == 7:
+        param = "s=" + str(s) + "&account=" + account
+    # Kick Player off
+    elif s == 8:
+        param = "s=" + str(s) + "&account=" + account
+    else:
+        return HttpResponse("Undefined request type")
+
+
 class KaiyuanAPI(View):
+    def fundTransfer(user, amount):
+        try:
+            trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+
+            if user.currency == CURRENCY_CNY:
+                amount = amount
+            elif user.currency == CURRENCY_USD:
+                amount = 6.2808 * amount
+            elif user.currency == CURRENCY_THB:
+                amount = 0.2016 * amount
+            elif user.currency == CURRENCY_EUR:
+                amount = 7.616 * amount
+            elif user.currency == CURRENCY_IDR:
+                amount = 0.0005 * amount
+            elif user.currency == CURRENCY_VND:
+                amount = 0.0003 * amount
+            elif user.currency == CURRENCY_MYR:
+                amount = 1.6229 * amount
+            elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
+                currency = 20
+            else:
+                currency = 20
+
+            return amount
+
+        except Exception as e:
+            logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
+            return HttpResponse(status=400)
+
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
@@ -74,7 +220,7 @@ class KaiyuanAPI(View):
 
             if s != 6:
                 account = data["account"]
-                usr = CustomUser.objects.get(username=account)
+                user = CustomUser.objects.get(username=account)
 
             # Login
             if s == 0:
@@ -90,19 +236,12 @@ class KaiyuanAPI(View):
                 param = "s=" + str(s) + "&account=" + account
             # Change Balance
             elif s == 2:
-                # req_data = {}
-                # req_data["user_id"] = usr.pk
-                # req_data["from_wallet"] = "main_wallet"
-                # req_data["to_wallet"] ="ky_wallet"
-                # req_data["amount"] = data["amount"]
-                money = data["money"]
-                if transferRequest(usr, money, "main", "ky"):
-                    order_time = time.strftime("%Y%m%d%H%M%S")
-                    orderid = agent + str(order_time) + account
+                money = float(data["money"])
+                # money = self.fundTransfer(money)
+                order_time = time.strftime("%Y%m%d%H%M%S")
+                orderid = agent + str(order_time) + account
 
-                    param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
-                else:
-                    return HttpResponse(status=400)
+                param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
 
             # Refund
             elif s == 3:
@@ -114,7 +253,8 @@ class KaiyuanAPI(View):
             # Order Query
             elif s == 4:
                 order_time = time.strftime("%Y%m%d%H%M%S")
-                orderid = agent + str(order_time) + account
+                # orderid = agent + str(order_time) + account
+                orderid = data["orderid"]
 
                 param = "s=" + str(s) + "&orderid=" + orderid
             # Query The Player's Online Status
@@ -167,6 +307,32 @@ class KaiyuanAPI(View):
                     balance = float(res_data['d']['money'])
                 elif res_data['s'] == 102:
                     balance = float(res_data['d']['money'])
+                elif res_data['s'] == 103:
+                    amount = float(money)
+                    balance = float(res_data['d']['money'])
+                    if amount > 0 and balance > 0:
+                        try:
+                            with transaction.atomic():
+                                user.main_wallet = user.main_wallet + Decimal(money)
+                                user.ky_wallet = Decimal(balance)
+                                user.save()
+
+                                trans_id = user.username + time.strftime("%Y%m%d%H%M%S") + str(random.randint(0,10000000))
+
+                                Transaction.objects.create(
+                                    transaction_id=trans_id,
+                                    user_id=user,
+                                    order_id=orderid,
+                                    amount=amount,
+                                    currency=user.currency,
+                                    transfer_from='main',
+                                    transfer_to='ky',
+                                    product=1,
+                                    transaction_type=TRANSACTION_DEPOSIT,
+                                    status=TRAN_SUCCESS_TYPE
+                                )
+                        except Exception as e:
+                                print(repr(e))
 
                 return HttpResponse(json.dumps(res.json()), content_type='application/json')
             else:

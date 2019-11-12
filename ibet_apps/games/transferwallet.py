@@ -27,6 +27,9 @@ class TransferDeposit():
     def onebookDeposit(self):
         return fundTransfer(self.user, self.amount, self.from_wallet, 1, 1)
 
+    def kaiyuanDeposit(self):
+        return kaiyuanDeposit()
+
     
 class TransferWithdraw():
 
