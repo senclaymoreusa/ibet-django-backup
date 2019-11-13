@@ -76,8 +76,8 @@ urlpatterns = [
     path('api/betsoft/result', betsoftviews.BetSoftBetResult.as_view(), name="betsoft_bet_result"),
     path('api/betsoft/refundBet', betsoftviews.BetSoftBetRefund.as_view(), name="betsoft_refund"),
     path('api/betsoft/account', betsoftviews.BetSoftGetInfo.as_view(), name="betsoft_get_info"),
-    path('api/betsoft/bonusRelease', betsoftviews.BonusRelease.as_view(), name="betsoft_bonus_release"),
-    path('api/betsoft/bonusWin', betsoftviews.BonusWin.as_view(), name="betsoft_bonus_win"),
+    # path('api/betsoft/bonusRelease', betsoftviews.BonusRelease.as_view(), name="betsoft_bonus_release"),
+    # path('api/betsoft/bonusWin', betsoftviews.BonusWin.as_view(), name="betsoft_bonus_win"),
 
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
