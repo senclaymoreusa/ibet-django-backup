@@ -199,20 +199,44 @@ class BetSoftBetResult(View):
                     win = win.split("|")
                     win_amount = win[0]
                     ref_id = win[1]
-                    user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
+                    with transaction.atomic():
+                        user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
+                        user.save()
+                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                                                        category=Category.objects.get(name='Slots'),
+                                                        username=user,
+                                                        amount_wagered=0.00,
+                                                        currency=user.currency,
+                                                        amount_won=decimal.Decimal(int(win_amount)/100),
+                                                        market=ibetCN,
+                                                        ref_no=ref_id,
+                                                        transaction_id=trans_id
+                                                        ) 
+
 
                 if bet:
                     bet = bet.split("|")
                     bet_amount = bet[0]
                     ref_id = bet[1]
+                    amount = bet_amount
                     if decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
                         response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
                         response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(300)
                         return HttpResponse(response, content_type='text/xml')
 
-                    user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
-                user.save()
-
+                    with transaction.atomic():
+                        user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
+                        user.save()
+                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                                                        category=Category.objects.get(name='Slots'),
+                                                        username=user,
+                                                        amount_wagered=decimal.Decimal(int(bet_amount)/100),
+                                                        currency=user.currency,
+                                                        amount_won=0.00,
+                                                        market=ibetCN,
+                                                        ref_no=ref_id,
+                                                        transaction_id=trans_id
+                                                        )
                 
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                 response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
