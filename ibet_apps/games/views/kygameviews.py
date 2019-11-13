@@ -23,6 +23,10 @@ from  games.models import *
 import json
 import time
 import urllib
+from background_task import background
+import redis
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
 
 from Crypto.Cipher import AES
 # from Crypto.Util.Padding import pad
@@ -191,36 +195,8 @@ def kyTransfer(user, amount, wallet, method):
 
 
 
-'''
+
 def generateUrl(s, account, money, kind_id, order_id):
-    # Login
-    if s == 0:
-        order_time = time.strftime("%Y%m%d%H%M%S")
-        orderid = agent + str(order_time) + account
-        linecode = KY_LINE_CODE_1
-
-        param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
-    # Get Balance
-    elif s == 1:
-        param = "s=" + str(s) + "&account=" + account
-    # Change Balance
-    elif s == 2:
-        order_time = time.strftime("%Y%m%d%H%M%S")
-        orderid = agent + str(order_time) + account
-
-        param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
-    # Refund
-    elif s == 3:
-        order_time = time.strftime("%Y%m%d%H%M%S")
-        orderid = agent + str(order_time) + account
-
-        param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
-    # Order Query
-    elif s == 4:
-        param = "s=" + str(s) + "&orderid=" + orderid
-    # Query The Player's Online Status
-    elif s == 5:
-        param = "s=" + str(s) + "&account=" + account
     # Query Bet Order
     elif s == 6:
         startTime = data["startTime"]
@@ -259,7 +235,7 @@ def generateUrl(s, account, money, kind_id, order_id):
     req = urllib.parse.urlencode(req_param)
     url = url + '?' + req
     res = requests.get(url)
-'''
+
 
 class TestTransferAPI(View):
     def post(self, request, *args, **kwargs):
