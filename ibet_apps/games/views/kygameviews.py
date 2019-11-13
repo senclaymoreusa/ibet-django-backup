@@ -59,56 +59,88 @@ def get_timestamp():
     return int(round(time.time() * 1000))
 
 
-def kyDeposit(user, amount, from_wallet):
+def kyTransfer(user, amount, wallet, method):
     try:
-        trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+        # trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+        trans_id = user.username + time.strftime("%Y%m%d%H%M%S") + str(random.randint(0,10000000))
         user_currency = int(user.currency)
 
-        if user.currency == CURRENCY_CNY:
-            amount = amount
-        elif user.currency == CURRENCY_USD:
-            amount = 6.2808 * amount
-        elif user.currency == CURRENCY_THB:
-            amount = 0.2016 * amount
-        elif user.currency == CURRENCY_EUR:
-            amount = 7.616 * amount
-        elif user.currency == CURRENCY_IDR:
-            amount = 0.0005 * amount
-        elif user.currency == CURRENCY_VND:
-            amount = 0.0003 * amount
-        elif user.currency == CURRENCY_MYR:
-            amount = 1.6229 * amount
-        elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
-            amount = 20
-        else:
-            amount = 10
+        s = 1
 
-        trans = Transaction.objects.create(
-            transaction_id=trans_id,
-            user_id=user,
-            order_id=trans_id,
-            amount=amount,
-            currency=user_currency,
-            transfer_from=from_wallet,
-            transfer_to="KY",
-            product=1,
-            transaction_type=TRANSACTION_TRANSFER,
-            status=TRAN_PENDING_TYPE
-        )
+        if method == 0:
+            s = 2
+            if user.currency == CURRENCY_CNY:
+                amount = amount
+            elif user.currency == CURRENCY_USD:
+                amount = 6.2808 * amount
+            elif user.currency == CURRENCY_THB:
+                amount = 0.2016 * amount
+            elif user.currency == CURRENCY_EUR:
+                amount = 7.616 * amount
+            elif user.currency == CURRENCY_IDR:
+                amount = 0.0005 * amount
+            elif user.currency == CURRENCY_VND:
+                amount = 0.0003 * amount
+            elif user.currency == CURRENCY_MYR:
+                amount = 1.6229 * amount
+            elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
+                amount = 20
+            else:
+                amount = 10
+
+        elif method == 1:
+            s = 3
+            if user.currency == CURRENCY_CNY:
+                amount = amount
+            elif user.currency == CURRENCY_USD:
+                amount = amount / 6.2808
+            elif user.currency == CURRENCY_THB:
+                amount = amount / 0.2016
+            elif user.currency == CURRENCY_EUR:
+                amount = amount /  7.616
+            elif user.currency == CURRENCY_IDR:
+                amount = amount / 0.0005
+            elif user.currency == CURRENCY_VND:
+                amount = amount / 0.0003
+            elif user.currency == CURRENCY_MYR:
+                amount = amount / 1.6229
+            elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
+                amount = 20
+            else:
+                amount = 10
+        
+        else:
+            amount = 0
+
+        # trans = Transaction.objects.create(
+        #     transaction_id=trans_id,
+        #     user_id=user,
+        #     order_id=trans_id,
+        #     amount=amount,
+        #     currency=user_currency,
+        #     transfer_from=from_wallet,
+        #     transfer_to="KY",
+        #     product=1,
+        #     transaction_type=TRANSACTION_TRANSFER,
+        #     status=TRAN_PENDING_TYPE
+        # )
 
         order_time = time.strftime("%Y%m%d%H%M%S")
-        orderid = agent + str(order_time) + account
-        param = "s=" + str(s) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
+
+        agent = KY_AGENT
+        orderid = agent + str(order_time) + user.username
+        param = "s=" + str(s) + "&account=" + user.username + "&orderid=" + orderid + "&money=" + amount
 
         param = aes_encode(KY_AES_KEY, param)
         param = base64.b64encode(param)
         param = str(param, "utf-8")
 
+        timestamp = get_timestamp()
         key = KY_AGENT + str(timestamp) + KY_MD5_KEY
         key = hashlib.md5(key.encode())
         key = key.hexdigest()
 
-        url = KY_API_URL if s != 6 else KY_RECORD_URL
+        url = KY_API_URL
 
         req_param = {}
         req_param["agent"] = agent
@@ -120,16 +152,47 @@ def kyDeposit(user, amount, from_wallet):
 
         res = requests.get(url)
 
-        if res.
-
+        if res.status_code == 200:
+            res_data = res.json()
+            if res_data['s'] == 102:
+                Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=orderid,
+                    amount=amount,
+                    currency=user.currency,
+                    transfer_from=wallet,
+                    transfer_to='ky',
+                    product=1,
+                    transaction_type=TRANSACTION_DEPOSIT,
+                    status=TRAN_SUCCESS_TYPE
+                )
+            elif res_data['s'] == 102:
+                Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=orderid,
+                    amount=amount,
+                    currency=user.currency,
+                    transfer_from='ky',
+                    transfer_to=wallet,
+                    product=1,
+                    transaction_type=TRANSACTION_DEPOSIT,
+                    status=TRAN_SUCCESS_TYPE
+                )
+            else:
+                logger.error("Wrong S type: {}".format(res_data['s']))
+        else:
+            logger.error("Failed response: {}".format(res.status_code))
 
     except Exception as e:
         logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
         return HttpResponse(status=400)
-    return NULL
 
 
-def queryUrl(s, user, money, kind_id, order_id):
+
+'''
+def generateUrl(s, account, money, kind_id, order_id):
     # Login
     if s == 0:
         order_time = time.strftime("%Y%m%d%H%M%S")
@@ -172,6 +235,45 @@ def queryUrl(s, user, money, kind_id, order_id):
         param = "s=" + str(s) + "&account=" + account
     else:
         return HttpResponse("Undefined request type")
+
+
+    param = aes_encode(KY_AES_KEY, param)
+    param = base64.b64encode(param)
+    param = str(param, "utf-8")
+
+    key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+    key = hashlib.md5(key.encode())
+    key = key.hexdigest()
+
+    url = KY_API_URL if s != 6 else KY_RECORD_URL
+
+    req_param = {}
+    req_param["agent"] = agent
+    req_param["timestamp"] = str(timestamp)
+    req_param["param"] = param
+    req_param["key"] = key
+    # url += "?agent=" + agent
+    # url += "&timestamp=" + str(timestamp)
+    # url += "&param=" + param
+    # url += "&key=" + str(key)
+    req = urllib.parse.urlencode(req_param)
+    url = url + '?' + req
+    res = requests.get(url)
+'''
+
+class TestTransferAPI(View):
+    def post(self, requests, *args, **kwargs):
+        try:
+            data = json.loads(requests.body)
+            account = data["account"]
+            user = CustomUser.objects.get(username=account)
+            amount = data["money"]
+            from_wallet = data["from_wallet"]
+            kyDeposit(user, amount, from_wallet)
+            return HttpResponse(status=200)
+        except Exception as e:
+            print("Error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class KaiyuanAPI(View):
@@ -332,7 +434,7 @@ class KaiyuanAPI(View):
                                     status=TRAN_SUCCESS_TYPE
                                 )
                         except Exception as e:
-                                print(repr(e))
+                            print(repr(e))
 
                 return HttpResponse(json.dumps(res.json()), content_type='application/json')
             else:
