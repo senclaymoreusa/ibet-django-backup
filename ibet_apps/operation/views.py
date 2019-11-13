@@ -1306,7 +1306,7 @@ class AWSTopicAPIView(GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def send_sms(content_text, notifier):
+def send_sms(content_text, notifier, phone_num):
         data = {
             "content_text": content_text,
             "is_sms_message": True,
@@ -1333,8 +1333,8 @@ def send_sms(content_text, notifier):
             client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
             try:
-                phone = str(notifier.phone)
-                client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # phone = str(notifier.phone)
+                client.publish(PhoneNumber=phone_num, Message=notification.content_text)
     
                 logger.info("Enabled SMS Notification")
             except Exception as e:

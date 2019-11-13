@@ -1165,6 +1165,7 @@ class GenerateActivationCode(APIView):
         try:
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
+                phone = data['phone']
                 time = timezone.now() - datetime.timedelta(days=1)
                 event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
                 count = UserAction.objects.filter(event_filter).count()
@@ -1188,6 +1189,7 @@ class GenerateActivationCode(APIView):
 
                 return Response(ERROR_CODE_MAX_EXCEED)
             elif postType == "change_member_email":
+                email = data['email']
                 random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
 
                 # DB transaction atomic as a context manager:
@@ -1195,7 +1197,8 @@ class GenerateActivationCode(APIView):
                     user.update(activation_code=random_num)
 
                     from_email_address = 'claymore@claymoreusa.com'
-                    to_email_address = user[0].email
+                    # to_email_address = user[0].email
+                    to_email_address = email
                     email_subject = str(_('Activation Code')) + ' '
                     email_content = str(_('Your activation code is ')) + str(random_num)
 
