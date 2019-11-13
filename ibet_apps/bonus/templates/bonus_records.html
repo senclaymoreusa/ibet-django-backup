@@ -9,23 +9,26 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-bonus.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-bonus.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
 </head>
 
 <body>
 <div id="btn-group">
-    <button id="new_bonus" type="button" class="btn btn-primary">New bonus</button>
-    <button id="view_templates" type="button" class="btn btn-light">View your templates</button>
+    <button id="new_bonus" type="button" class="btn btn-primary" data-toggle="modal"
+            data-target="#bonus-01">New bonus
+    </button>
+    <!--    <button id="view_templates" type="button" class="btn btn-light">View your templates</button>-->
 </div>
 
+<!--bonus records search bar-->
 <div id="search_row" class="row">
     <div class="col-md-2">
         <label for="bonus_type_filter">BONUS TYPE</label><br>
         <select id="bonus_type_filter" class="form-control">
             <option value="-1">ALL</option>
             {% for type in bonuses_types %}
-                <option value="{{ type.0 }}">{{ type.1 }}</option>
+            <option value="{{ type.0 }}">{{ type.1 }}</option>
             {% endfor %}
         </select>
     </div>
@@ -34,7 +37,7 @@
         <select id="bonus_status_filter" class="form-control">
             <option value="-1">ALL</option>
             {% for status in bonuses_status %}
-                <option value="{{ status.0 }}">{{ status.1 }}</option>
+            <option value="{{ status.0 }}">{{ status.1 }}</option>
             {% endfor %}
         </select>
     </div>
@@ -45,21 +48,22 @@
     </div>
 </div>
 
+<!--bonus records table-->
 <div>
     <table id="bonus_table" class="table-striped table-bordered hover">
         <thead>
-            <tr>
-                <td class="no-sort">BONUS NAME</td>
-                <td class="no-sort">CAMPAIGN</td>
-                <td class="no-sort">BONUS TYPE</td>
-                <td class="no-sort">AMOUNT ISSUED</td>
-                <td class="no-sort">QUANTITY ISSUED</td>
-                <td class="no-sort">AMOUNT REDEEMED</td>
-                <td class="no-sort">QUANTITY REDEEMED</td>
-                <td>START DATE</td>
-                <td class="no-sort">END DATE</td>
-                <td class="no-sort">STATUS</td>
-            </tr>
+        <tr>
+            <td class="no-sort">BONUS NAME</td>
+            <td class="no-sort">CAMPAIGN</td>
+            <td class="no-sort">BONUS TYPE</td>
+            <td class="no-sort">AMOUNT ISSUED</td>
+            <td class="no-sort">QUANTITY ISSUED</td>
+            <td class="no-sort">AMOUNT REDEEMED</td>
+            <td class="no-sort">QUANTITY REDEEMED</td>
+            <td>START DATE</td>
+            <td class="no-sort">END DATE</td>
+            <td class="no-sort">STATUS</td>
+        </tr>
         </thead>
         <tbody id="bonus_table_body">
         </tbody>
@@ -68,17 +72,72 @@
     <button id="bonus-table-export" class="btn btn-primary">Export</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
-<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<script src="{% static 'xadmin/js/ibet-admin-bonus.js' %}"></script>
+<!--bonus detail 01: name and duration-->
+<div id="bonus-01" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #f5f5f5;">
+                <strong class="model-header-text">New bonus</strong>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div id="bonus-detail-01">
+                <p><strong>BONUS DETAILS</strong></p>
+                <label for="bonus-name">NAME*</label><br>
+                <input id="bonus-name" placeholder="ID Verification bonus"><br>
+                <label for="bonus-duration">BONUS DURATION*</label><br>
+                <div id="bonus-duration">
+                    <input class="bonus-duration-title" value="From" disabled>
+                    <input id="bonus-start-time">
+                    <input class="bonus-duration-title" value="To" disabled>
+                    <input id="bonus-end-time">
+                </div><br>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bonus-02">Next</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--bonus detail 02: bonus master type, category and issue-->
+<div id="bonus-02" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #f5f5f5;">
+                <strong class="model-header-text">New bonus</strong>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div id="bonus-detail-02">
+                <label for="bonus-type">BONUS MASTER TYPE*</label><br>
+                <input id="bonus-type"><br>
+                <label for="bonus-category">BONUS CATEGORY*</label><br>
+                <div id="bonus-category">
+                    <input type="radio">Manual
+                    <input type="radio">Triggered
+                </div><br>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bonus-01">Previous</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bonus-03">Next</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+        <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+        <script type="text/javascript" language="javascript"
+                src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+        <script type='text/javascript'
+                src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+        <script src="{% static 'xadmin/js/ibet-admin-bonus.js' %}"></script>
 
 </body>
 </html>
 <script>
     var bonus_url = '{% url "bonus_search" %}'
+
 </script>
 {% endblock %}
