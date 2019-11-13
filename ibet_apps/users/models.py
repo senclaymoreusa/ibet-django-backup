@@ -82,12 +82,6 @@ class CustomUser(AbstractBaseUser):
         (2, _('Advertisements'))
     )
 
-    MEMBER_STATUS = (
-        (0, _('Active')),
-        (1, _('Inactive')),
-        (2, _('Blocked'))
-    )
-
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
@@ -113,8 +107,8 @@ class CustomUser(AbstractBaseUser):
         blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
-    user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
-    user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
+    # user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
+    # user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=25)
@@ -128,10 +122,10 @@ class CustomUser(AbstractBaseUser):
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
 
     # verification
-    email_verified = models.BooleanField(default=False)
-    phone_verified = models.BooleanField(default=False)
-    id_verified = models.BooleanField(default=False)
-    address_verified = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False, null=True, blank=True)
+    phone_verified = models.BooleanField(default=False, null=True, blank=True)
+    id_verified = models.BooleanField(default=False, null=True, blank=True)
+    address_verified = models.BooleanField(default=False, null=True, blank=True)
 
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
@@ -218,6 +212,9 @@ class CustomUser(AbstractBaseUser):
     withdraw_password = models.CharField(_('withdraw password'), max_length=128, blank=True, null=True)
     security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
     security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
+
+    # favorite payment method
+    favorite_payment_method = models.CharField(max_length=128, blank=True, null=True)
 
     created_time = models.DateTimeField(
         _('Created Time'),
