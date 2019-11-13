@@ -2,9 +2,11 @@ from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
 from django.db.models import Q
+from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 from datetime import date
 
+from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet
@@ -12,6 +14,8 @@ from utils.constants import *
 
 import logging
 import uuid
+import csv
+
 
 logger = logging.getLogger('django')
 
@@ -193,3 +197,28 @@ def utcToLocalDatetime(date):
         current_tz = timezone.get_current_timezone()
         date = date.astimezone(current_tz)
     return date
+
+
+def displayChoiceValue(bonuses):
+    # display SmallIntegerField value for read
+    bonuses['status'] = BONUS_STATUS_CHOICES[bonuses['status']][1]
+    bonuses['type'] = BONUS_TYPE_CHOICES[bonuses['type']][1]
+    bonuses['campaign'] = Campaign.objects.get(pk=int(bonuses['campaign'])).name
+    return bonuses
+
+
+'''
+@param date: filename, table header, table body data
+@return: response
+'''
+def exportCSV(filename, row_title, data):
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=filename'
+
+    writer = csv.writer(response)
+    writer.writerow(row_title)
+    for i in data:
+        writer.writerow(i)
+
+    return response
