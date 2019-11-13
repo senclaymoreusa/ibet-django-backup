@@ -9,6 +9,8 @@ from users.models import CustomUser
 from games.transferwallet import TransferDeposit, TransferWithdraw
 from utils.constants import *
 from decimal import Decimal
+from pyDes import des, CBC, PAD_PKCS5
+import base64, hashlib
 
 logger = logging.getLogger("django")
 
@@ -99,3 +101,15 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                         return False
         user.save()
         return False
+
+def des_decrypt(s):
+    encrypt_key = SA_ENCRYPT_KEY
+    iv = encrypt_key
+    k = des(encrypt_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
+    de = k.decrypt(base64.b64decode(s), padmode=PAD_PKCS5)
+    return de
+
+def MD5(code):
+    res = hashlib.md5(code.encode()).hexdigest()
+    return res
+
