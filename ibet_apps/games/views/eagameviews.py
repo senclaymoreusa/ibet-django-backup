@@ -92,6 +92,9 @@ class EALiveCasinoClientLoginView(View):
             elif user.currency == CURRENCY_TTC:
                 currency = 1111
                 vendor = 2
+            else:
+                currency = 1111
+                vendor = 2
 
         except:
             status_code = 101
@@ -153,7 +156,7 @@ class DepositEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            if requestEADeposit(user, amount) == ERROR_CODE_FAIL:
+            if requestEADeposit(user, amount, "main") == ERROR_CODE_FAIL:
                 return HttpResponse("Fail deposit money to EA")
 
             return HttpResponse("Finished deposit money to EA")
@@ -178,7 +181,7 @@ def requestEADeposit(user, amount, from_wallet):
                     user_id=user,
                     order_id=trans_id,
                     amount=amount,
-                    currency=currency,
+                    currency=user_currency,
                     transfer_from=from_wallet,
                     transfer_to="EA",
                     product=2,
@@ -196,6 +199,9 @@ def requestEADeposit(user, amount, from_wallet):
             currency = 704
             vendor = 5
         elif user_currency == CURRENCY_TTC:
+            currency = 1111
+            vendor = 2
+        else:
             currency = 1111
             vendor = 2
 
@@ -245,7 +251,7 @@ def requestEADeposit(user, amount, from_wallet):
         # print(requestData)
         response = requests.post(url, data=requestData, headers=headers)
         response = response.text.strip()
-        # print(response)
+        
         response = xmltodict.parse(response)
         action  = response['request']['@action']
         request_id = response['request']['element']['@id']
@@ -273,37 +279,38 @@ def requestEADeposit(user, amount, from_wallet):
         # if got properties_status == 0 => success
         # update transaction database status
         # after update transaction status send request to EA Server using comfirmEADeposit function
-        
         if properties_status == "0" and properties_payment_id:
             status_code = "0"
             with transaction.atomic():
                 trans.status = TRAN_APPROVED_TYPE
                 trans.save()
+            
+            if comfirmEADeposit(request_id, properties_payment_id, status_code):
+                # print("success")
+                return CODE_SUCCESS
+            else:
+                # print("fail")
+                return ERROR_CODE_FAIL
 
                 # user.ea_wallet = user.ea_wallet + Decimal(float(amount))
                 # user.save()
 
         elif properties_status == "105":
             logger.error("Invalid currency for user: {} play EA game".format(user.username))
-            status_code = "201"
+            return ERROR_CODE_FAIL
 
         elif properties_status == "205":
             logger.error("Invalid vendor for user: {} play EA game".format(user.username))
-            status_code = "201"
-    
-    except DatabaseError as e:
-        status_code = "202"
-        logger.error("request deposit from EA: ", e)
+            return ERROR_CODE_FAIL
+
+        else:
+            logger.error("There is something wrong when request EA deposit method {}".format(user.username))
+            return ERROR_CODE_FAIL
 
     except Exception as e:
-        status_code = "003"
         logger.error("request deposit from EA: ", e)
+        return ERROR_CODE_FAIL
     
-    finally:
-        if comfirmEADeposit(request_id, properties_payment_id, status_code):
-            return CODE_SUCCESS
-        else:
-            return ERROR_CODE_FAIL
 
     
            
@@ -314,15 +321,14 @@ def requestEADeposit(user, amount, from_wallet):
 #properties_status => response status
 #properties_payment_id => payment ID in EA game
 def comfirmEADeposit(request_id, properties_payment_id, status_code):
-
     try:
 
         if status_code == "0":
-            error_message = "Successfully comfirm deposit"
+            error_message = "SUCCESS"
         elif status_code == "003":
-            error_message = "error occur in system operation"
+            error_message = "ERR_SYSTEM_OPR"
         elif status_code == "201":
-            error_message = "error occur in database operation"
+            error_message = "ERR_INVALID_REQ"
 
         url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
         headers = {'Content-Type': 'application/xml'}
@@ -383,9 +389,15 @@ class WithdrawEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            obj = requestEAWithdraw(user, amount)
+            if float(user.ea_wallet) < float(amount):
+                return HttpResponse("Balance not enough")
+
+            if requestEAWithdraw(user, amount, "main") == CODE_SUCCESS:
+                return HttpResponse("Successfully withdraw money from EA")
+            else:
+                return HttpResponse("There is something wrong")
             
-            return HttpResponse(obj, content_type="application/json")
+            # return HttpResponse(obj, content_type="application/json")
         
         except Exception as e:
             logger.error("Error withdraw money from EA wallet", e)
@@ -422,6 +434,9 @@ def requestEAWithdraw(user, amount, to_wallet):
             currency = 704
             vendor = 5
         elif user_currency == CURRENCY_TTC:
+            currency = 1111
+            vendor = 2
+        else:
             currency = 1111
             vendor = 2
 
@@ -463,6 +478,7 @@ def requestEAWithdraw(user, amount, to_wallet):
         }
 
         requestData = xmltodict.unparse(data, pretty=True)
+        # print(requestData)
         response = requests.post(url, data=requestData, headers=headers)
         response = response.text.strip()
         # print(response)
@@ -484,11 +500,7 @@ def requestEAWithdraw(user, amount, to_wallet):
             elif i['@name'] == 'errdesc' and "#text" in i:
                 properties_error = i['#text']
 
-        # api_response = {
-        #     "error_message": "Successfully comfirm withdraw",
-        #     "status_code": CODE_SUCCESS
-        # }
-        # error_message = ""
+
         if properties_status == "0":
             error_message = "Successfully comfirm withdraw"
             with transaction.atomic():
@@ -502,21 +514,19 @@ def requestEAWithdraw(user, amount, to_wallet):
             return CODE_SUCCESS
             
         elif properties_status == "204":
-            # error_message = "Exceed amount"
-            # api_response["error_message"] = error_message
-            # api_response["status_code"] = ERROR_CODE_MAX_EXCEED
             logger.info("Exceed amount from EA withdraw")
             return ERROR_CODE_FAIL
+
         elif properties_status == "205":
-            # error_message = "Invalid vendor"
-            # api_response["error_message"] = error_message
-            # api_response["status_code"] = ERROR_CODE_INVAILD_INFO
             logger.error("Invalid vendor for user: {} play EA game".format(user.username))
+            return ERROR_CODE_FAIL
+
+        else:
+            logger.error("There is something wrong when request EA deposit method {}".format(user.username))
             return ERROR_CODE_FAIL
 
     except Exception as e:
         logger.error("request withdraw from EA: ", e)
-        # api_response = {}
         return ERROR_CODE_FAIL
 
 
@@ -560,6 +570,9 @@ def getEAWalletBalance(user):
         currency = 704
         vendor = 5
     elif user_currency == CURRENCY_TTC:
+        currency = 1111
+        vendor = 2
+    else:
         currency = 1111
         vendor = 2
     
@@ -687,6 +700,9 @@ class EASingleLoginValidation(View):
                 currency = 704
                 vendor = 5
             elif user_currency == CURRENCY_TTC:
+                currency = 1111
+                vendor = 2
+            else:
                 currency = 1111
                 vendor = 2
 

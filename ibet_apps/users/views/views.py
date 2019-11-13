@@ -1269,11 +1269,11 @@ class UserSearchAutocomplete(View):
             # search_last_name = CustomUser.objects.filter(Q(last_name__contains=search)&Q(block=block))
 
             search_id = CustomUser.objects.filter(pk__contains=search)
-            search_username = CustomUser.objects.filter(username__contains=search)
-            search_email = CustomUser.objects.filter(email__contains=search)
+            search_username = CustomUser.objects.filter(username__icontains=search)
+            search_email = CustomUser.objects.filter(email__icontains=search)
             search_phone = CustomUser.objects.filter(phone__contains=search)
-            search_first_name = CustomUser.objects.filter(first_name__contains=search)
-            search_last_name = CustomUser.objects.filter(last_name__contains=search)
+            search_first_name = CustomUser.objects.filter(first_name__icontains=search)
+            search_last_name = CustomUser.objects.filter(last_name__icontains=search)
 
             search_id = serializers.serialize('json', search_id)
             search_username = serializers.serialize('json', search_username)
