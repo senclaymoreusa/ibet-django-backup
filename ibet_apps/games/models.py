@@ -100,14 +100,14 @@ class GameBet(models.Model):
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
     username = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
+    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
     amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
     odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-
+    # transaction_id = models.CharField(max_length=50,null=True)
     currency = models.CharField(max_length=3, verbose_name=_('Currency'))
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
     ref_no = models.CharField(max_length=100, null=True, blank=True)

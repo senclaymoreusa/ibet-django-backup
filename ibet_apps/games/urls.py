@@ -12,6 +12,7 @@ import games.views.gdcasinoviews as gdcasino
 import games.views.betsviews as bets
 from games.live_casino import *
 import games.views.onebookviews as onebookviews
+import games.views.sagameviews as sagameviews
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -76,5 +77,9 @@ urlpatterns = [
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+
+    #sa
+    path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
+    path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
 
 ]

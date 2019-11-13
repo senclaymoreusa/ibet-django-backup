@@ -193,7 +193,6 @@ class PermissionGroupView(CommAdminView):
             if user.department:
                 userRole = UserToUserGroup.objects.get(user=user)
                 # departmentList = json.loads(DEPARTMENT_LIST)
-                # print(userRole.group.name)
                 for i in DEPARTMENT_LIST:
                     # print(type(user.department))
                     # print(type(i['code']))
@@ -251,16 +250,11 @@ class PermissionGroupView(CommAdminView):
 
             logger.info('Create a new admin user username: {}, password: {}, email: {}, phone: {}, first_name: {}, last_name: {}, roleId: {}, departmentId: {}, ibetMarkets: {}, letouMarkets: {}' .format
                         (username, password, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets))
-            # department = ''
-            # for i in DEPARTMENT_LIST:
-            #     if i['code'] == departmentId:
-            #         department = i['name']
-                    # print(department)
-
-            if not departmentId.isdigit():
+            
+            if not departmentId or not departmentId.isdigit():
                 return JsonResponse({ "code": 1, "message": "Please choose the department"})
 
-            if not roleId.isdigit():
+            if not roleId or not roleId.isdigit():
                 return JsonResponse({ "code": 1, "message": "Please choose the role"})
 
             if not username or not password or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets) :
@@ -352,6 +346,11 @@ class PermissionGroupView(CommAdminView):
             letouMarkets = request.POST.get('letouMarkets')
             letouMarketsList = letouMarkets.split(',')
 
+            if not departmentId or not departmentId.isdigit():
+                return JsonResponse({ "code": 1, "message": "Please choose the department"})
+
+            if not roleId or not roleId.isdigit():
+                return JsonResponse({ "code": 1, "message": "Please choose the role"})
             # print(username, email, phone, first_name, last_name, roleId, departmentId, ibetMarkets, letouMarkets)
 
             if not username or not email or not phone or not departmentId or not first_name or not last_name and (not ibetMarkets or not letouMarkets):

@@ -280,6 +280,23 @@ ACTIVITY_TYPE = (
     (3, 'Note'),
 )
 
+
+MEMBER_STATUS_NORMAL = 0
+MEMBER_STATUS_SUSPICIOUS = 1
+MEMBER_STATUS_RESTRICTED = 2
+MEMBER_STATUS_CLOSED = 3
+MEMBER_STATUS_BLACKLISTED = 4
+
+
+MEMBER_STATUS = (
+    (MEMBER_STATUS_NORMAL, _('Normal')),
+    (MEMBER_STATUS_SUSPICIOUS, _('Suspicious')),
+    (MEMBER_STATUS_RESTRICTED, _('Restricted')),
+    (MEMBER_STATUS_CLOSED, _('Closed')),
+    (MEMBER_STATUS_BLACKLISTED, _('Blacklisted'))
+)
+
+
 AFFILIATE_STATUS = (
     ('Active', 'Active'),
     ('VIP', 'VIP'),
@@ -1234,6 +1251,7 @@ GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
 GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
 GDCASINO_MERCHANT_CODE = 'IBPHtest'
 GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
+GDCASINO_FISHING_GAMEID = '81297'
 
 GDCASINO_STATUS_CODE =(
     (-1, 'UNKNOWN_ERROR'),
@@ -1327,3 +1345,9 @@ ONEBOOK_DIRECTION_deposit = 1
 ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
+
+# SA
+SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
+SA_ENCRYPT_KEY = 'g9G16nTs'
+SA_MD5KEY = 'GgaIMaiNNtg'
+SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
