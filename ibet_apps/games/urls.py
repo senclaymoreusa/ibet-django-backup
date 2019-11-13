@@ -11,10 +11,8 @@ import games.views.onebookviews as onebookviews
 import games.views.gdcasinoviews as gdcasino
 import games.views.betsviews as bets
 import games.views.bti_views as bti
-
+import games.views.sagameviews as sagameviews
 from games.views.views import *
-
-
 
 
 
@@ -83,4 +81,7 @@ urlpatterns = [
     # path('api/bti/debitcustomer', bti.TestFunction.as_view(), name="Test Function"),
     # path('api/bti/creditcustomer', bti.TestFunction.as_view(), name="Test Function"),
     
+    #sa
+    path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
+    path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
 ]
