@@ -167,7 +167,7 @@ def kyTransfer(user, amount, wallet, method):
                     transaction_type=TRANSACTION_DEPOSIT,
                     status=TRAN_SUCCESS_TYPE
                 )
-            elif res_data['s'] == 102:
+            elif res_data['s'] == 103:
                 Transaction.objects.create(
                     transaction_id=trans_id,
                     user_id=user,
@@ -181,9 +181,9 @@ def kyTransfer(user, amount, wallet, method):
                     status=TRAN_SUCCESS_TYPE
                 )
             else:
-                logger.error("Wrong S type: {}".format(res_data['s']))
+                logger.info("Wrong S type: {}".format(res_data['s']))
         else:
-            logger.error("Failed response: {}".format(res.status_code))
+            logger.info("Failed response: {}".format(res.status_code))
 
     except Exception as e:
         logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
@@ -262,14 +262,15 @@ def generateUrl(s, account, money, kind_id, order_id):
 '''
 
 class TestTransferAPI(View):
-    def post(self, requests, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
-            data = json.loads(requests.body)
+            data = json.loads(request.body)
             account = data["account"]
             user = CustomUser.objects.get(username=account)
             amount = data["money"]
             from_wallet = data["from_wallet"]
-            kyDeposit(user, amount, from_wallet)
+            method = int(data["method"])
+            kyTransfer(user, amount, from_wallet, method)
             return HttpResponse(status=200)
         except Exception as e:
             print("Error: {}".format(repr(e)))
@@ -277,47 +278,20 @@ class TestTransferAPI(View):
 
 
 class KaiyuanAPI(View):
-    def fundTransfer(user, amount):
-        try:
-            trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
-
-            if user.currency == CURRENCY_CNY:
-                amount = amount
-            elif user.currency == CURRENCY_USD:
-                amount = 6.2808 * amount
-            elif user.currency == CURRENCY_THB:
-                amount = 0.2016 * amount
-            elif user.currency == CURRENCY_EUR:
-                amount = 7.616 * amount
-            elif user.currency == CURRENCY_IDR:
-                amount = 0.0005 * amount
-            elif user.currency == CURRENCY_VND:
-                amount = 0.0003 * amount
-            elif user.currency == CURRENCY_MYR:
-                amount = 1.6229 * amount
-            elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
-                currency = 20
-            else:
-                currency = 20
-
-            return amount
-
-        except Exception as e:
-            logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
-            return HttpResponse(status=400)
-
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
-
             s = data["s"]
-            ip = get_client_ip(request)
-
+            # ip = get_client_ip(request)
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+        
             # timestamp = lambda: int(round(time.time() * 1000))
             timestamp = get_timestamp()
-
             agent = KY_AGENT
-
             s = int(s)
 
             if s != 6:
@@ -333,6 +307,7 @@ class KaiyuanAPI(View):
                 kind_id = data["KindID"]
 
                 param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
+                print(param)
             # Get Balance
             elif s == 1:
                 param = "s=" + str(s) + "&account=" + account
@@ -384,6 +359,8 @@ class KaiyuanAPI(View):
             param = base64.b64encode(param)
             param = str(param, "utf-8")
 
+            print(param)
+
             key = KY_AGENT + str(timestamp) + KY_MD5_KEY
             key = hashlib.md5(key.encode())
             key = key.hexdigest()
@@ -401,41 +378,10 @@ class KaiyuanAPI(View):
             # url += "&key=" + str(key)
             req = urllib.parse.urlencode(req_param)
             url = url + '?' + req
+            print(url)
             res = requests.get(url)
             if res.status_code == 200:
                 res_data = res.json()
-                print(res_data)
-                if res_data['s'] == 101:
-                    balance = float(res_data['d']['money'])
-                elif res_data['s'] == 102:
-                    balance = float(res_data['d']['money'])
-                elif res_data['s'] == 103:
-                    amount = float(money)
-                    balance = float(res_data['d']['money'])
-                    if amount > 0 and balance > 0:
-                        try:
-                            with transaction.atomic():
-                                user.main_wallet = user.main_wallet + Decimal(money)
-                                user.ky_wallet = Decimal(balance)
-                                user.save()
-
-                                trans_id = user.username + time.strftime("%Y%m%d%H%M%S") + str(random.randint(0,10000000))
-
-                                Transaction.objects.create(
-                                    transaction_id=trans_id,
-                                    user_id=user,
-                                    order_id=orderid,
-                                    amount=amount,
-                                    currency=user.currency,
-                                    transfer_from='main',
-                                    transfer_to='ky',
-                                    product=1,
-                                    transaction_type=TRANSACTION_DEPOSIT,
-                                    status=TRAN_SUCCESS_TYPE
-                                )
-                        except Exception as e:
-                            print(repr(e))
-
                 return HttpResponse(json.dumps(res.json()), content_type='application/json')
             else:
                 return HttpResponse("404 Not Found")
