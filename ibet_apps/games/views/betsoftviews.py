@@ -192,51 +192,94 @@ class BetSoftBetResult(View):
 
             user = CustomUser.objects.get(username=user_id)
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+            if win:
+                win = win.split("|")
+                win_amount = win[0]
+                ref_id = win[1]
+                with transaction.atomic():
+                    user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
+                    user.save()
+                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                                                    category=Category.objects.get(name='Slots'),
+                                                    username=user,
+                                                    amount_wagered=0.00,
+                                                    currency=user.currency,
+                                                    amount_won=decimal.Decimal(int(win_amount)/100),
+                                                    market=ibetCN,
+                                                    ref_no=ref_id,
+                                                    transaction_id=trans_id
+                                                    ) 
+
+
+            if bet:
+                bet = bet.split("|")
+                bet_amount = bet[0]
+                ref_id = bet[1]
+                amount = bet_amount
+                if decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
+                    response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
+                    response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(300)
+                    return HttpResponse(response, content_type='text/xml')
+
+                with transaction.atomic():
+                    user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
+                    user.save()
+                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                                                    category=Category.objects.get(name='Slots'),
+                                                    username=user,
+                                                    amount_wagered=decimal.Decimal(int(bet_amount)/100),
+                                                    currency=user.currency,
+                                                    amount_won=0.00,
+                                                    market=ibetCN,
+                                                    ref_no=ref_id,
+                                                    transaction_id=trans_id
+                                                    )
             
             if hash == MD5(user_id + bet + win + is_round_finished + round_id + game_id + key):
 
-                if win:
-                    win = win.split("|")
-                    win_amount = win[0]
-                    ref_id = win[1]
-                    with transaction.atomic():
-                        user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
-                        user.save()
-                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
-                                                        category=Category.objects.get(name='Slots'),
-                                                        username=user,
-                                                        amount_wagered=0.00,
-                                                        currency=user.currency,
-                                                        amount_won=decimal.Decimal(int(win_amount)/100),
-                                                        market=ibetCN,
-                                                        ref_no=ref_id,
-                                                        transaction_id=trans_id
-                                                        ) 
+                # if win:
+                #     win = win.split("|")
+                #     win_amount = win[0]
+                #     ref_id = win[1]
+                #     with transaction.atomic():
+                #         user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
+                #         user.save()
+                #         GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                #                                         category=Category.objects.get(name='Slots'),
+                #                                         username=user,
+                #                                         amount_wagered=0.00,
+                #                                         currency=user.currency,
+                #                                         amount_won=decimal.Decimal(int(win_amount)/100),
+                #                                         market=ibetCN,
+                #                                         ref_no=ref_id,
+                #                                         transaction_id=trans_id
+                #                                         ) 
 
 
-                if bet:
-                    bet = bet.split("|")
-                    bet_amount = bet[0]
-                    ref_id = bet[1]
-                    amount = bet_amount
-                    if decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
-                        response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-                        response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(300)
-                        return HttpResponse(response, content_type='text/xml')
+                # if bet:
+                #     bet = bet.split("|")
+                #     bet_amount = bet[0]
+                #     ref_id = bet[1]
+                #     amount = bet_amount
+                #     if decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
+                #         response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
+                #         response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(300)
+                #         return HttpResponse(response, content_type='text/xml')
 
-                    with transaction.atomic():
-                        user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
-                        user.save()
-                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
-                                                        category=Category.objects.get(name='Slots'),
-                                                        username=user,
-                                                        amount_wagered=decimal.Decimal(int(bet_amount)/100),
-                                                        currency=user.currency,
-                                                        amount_won=0.00,
-                                                        market=ibetCN,
-                                                        ref_no=ref_id,
-                                                        transaction_id=trans_id
-                                                        )
+                #     with transaction.atomic():
+                #         user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
+                #         user.save()
+                #         GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                #                                         category=Category.objects.get(name='Slots'),
+                #                                         username=user,
+                #                                         amount_wagered=decimal.Decimal(int(bet_amount)/100),
+                #                                         currency=user.currency,
+                #                                         amount_won=0.00,
+                #                                         market=ibetCN,
+                #                                         ref_no=ref_id,
+                #                                         transaction_id=trans_id
+                #                                         )
                 
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                 response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
@@ -282,7 +325,7 @@ class BetSoftBetRefund(View):
         response = {
             "EXTSYSTEM": {
                 "REQUEST": {
-                    "USERID": "",
+                    "USERID": user_id,
                     "CASINOTRANSACTIONID": casino_transaction_id,
                     "HASH": hash
                 },
@@ -295,10 +338,24 @@ class BetSoftBetRefund(View):
 
         try:
             user = CustomUser.objects.get(username=user_id)
+            prev_bet = GameBet.objects.get(ref_no=casino_transaction_id)
 
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+            # user.amount
+            # print(MD5(user_id + casino_transaction_id + key))
 
             if hash == MD5(user_id + casino_transaction_id + key):
+
+                GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                                                category=prev_bet.category,
+                                                username=user,
+                                                amount_wagered=0.00,
+                                                currency=user.currency,
+                                                amount_won=prev_bet.amount_wagered,
+                                                market=ibetCN,
+                                                ref_no=casino_transaction_id,
+                                                transaction_id=trans_id
+                                                )
         
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                 response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
@@ -444,124 +501,121 @@ class BetSoftGetInfo(View):
 
 
 
-class BonusRelease(View):
+# class BonusRelease(View):
 
-    def get(self, request, *args, **kwargs):
+#     def get(self, request, *args, **kwargs):
 
+#         user_id = request.GET.get('userId', '')
+#         bonus_id = request.GET.get('bonusId', '')
+#         amount = request.GET.get('amount', '')
+#         hash = request.GET.get('hash', '')
 
-        user_id = request.GET.get('userId', '')
-        bonus_id = request.GET.get('bonusId', '')
-        amount = request.GET.get('amount', '')
-        hash = request.GET.get('hash', '')
+#         # print(user_id, bonus_id, amount, hash)
 
-        response = {
-            "EXTSYSTEM": {
-                "REQUEST": {
-                    "USERID": user_id,
-                    "BONUSID": bonus_id,
-                    "AMOUNT": amount,
-                    "HASH": hash
-                },
-                "TIME": strftime("%d %b %Y %H:%M:%S"),
-                "RESPONSE": {
-                    "RESULT": ""
-                }
-            } 
-        }
+#         response = {
+#             "EXTSYSTEM": {
+#                 "REQUEST": {
+#                     "USERID": user_id,
+#                     "BONUSID": bonus_id,
+#                     "AMOUNT": amount,
+#                     "HASH": hash
+#                 },
+#                 "TIME": strftime("%d %b %Y %H:%M:%S"),
+#                 "RESPONSE": {
+#                     "RESULT": ""
+#                 }
+#             } 
+#         }
 
-        try:
-            user = CustomUser.objects.get(username=user_id)
-            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+#         try:
+#             user = CustomUser.objects.get(username=user_id)
+#             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-        
-            if hash == MD5(user_id + key):
-                response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
-            else:
+#             if hash == MD5(user_id + bonus_id + amount + key):
+#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
+#             else:
 
-                response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
+#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
+#                 response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
             
-            response = xmltodict.unparse(response, pretty=True)
-            return HttpResponse(response, content_type='text/xml')
+#             response = xmltodict.unparse(response, pretty=True)
+#             return HttpResponse(response, content_type='text/xml')
 
-        except ObjectDoesNotExist as e:
-            logger.info("Betsoft release bonus error invalid user: ", e)
-            response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
-            response = xmltodict.unparse(response, pretty=True)
-            return HttpResponse(response, content_type='text/xml')
+#         except ObjectDoesNotExist as e:
+#             logger.info("Betsoft release bonus error invalid user: ", e)
+#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
+#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
+#             response = xmltodict.unparse(response, pretty=True)
+#             return HttpResponse(response, content_type='text/xml')
 
-        except Exception as e:
-            logger.error("Betsoft release bonus error: ", e)
-            response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
-            response = xmltodict.unparse(response, pretty=True)
-            return HttpResponse(response, content_type='text/xml')
-
-
-
-class BonusWin(View):
-
-    def get(self, request, *args, **kwargs):
-
-        user_id = request.GET.get('userId', '')
-        bonus_id = request.GET.get('bonusId', '')
-        amount = request.GET.get('amount', '')
-        transaction_id = request.GET.get('transactionId', '')
-        hash = request.GET.get('hash', '')
-
-        # print("!!!!!!")
-
-        response = {
-            "EXTSYSTEM": {
-                "REQUEST": {
-                    "USERID": user_id,
-                    "BONUSID": bonus_id,
-                    "AMOUNT": amount,
-                    "TRANSACTIONID": transaction_id,
-                    "HASH": hash
-                },
-                "TIME": strftime("%d %b %Y %H:%M:%S"),
-                "RESPONSE": {
-                    "RESULT": ""
-                }
-            } 
-        }
+#         except Exception as e:
+#             logger.error("Betsoft release bonus error: ", e)
+#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
+#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
+#             response = xmltodict.unparse(response, pretty=True)
+#             return HttpResponse(response, content_type='text/xml')
 
 
-        try:
-            user = CustomUser.objects.get(username=user_id)
-            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-            if hash == MD5(user_id + key):
-                new_amount = user.main_wallet + amount
-                user.main_wallet = new_amount
-                user.save()
+# class BonusWin(View):
 
-                response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
-                response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = new_amount
+#     def get(self, request, *args, **kwargs):
 
-            else:
+#         user_id = request.GET.get('userId', '')
+#         bonus_id = request.GET.get('bonusId', '')
+#         amount = request.GET.get('amount', '')
+#         transaction_id = request.GET.get('transactionId', '')
+#         hash = request.GET.get('hash', '')
 
-                response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
+#         response = {
+#             "EXTSYSTEM": {
+#                 "REQUEST": {
+#                     "USERID": user_id,
+#                     "BONUSID": bonus_id,
+#                     "AMOUNT": amount,
+#                     "TRANSACTIONID": transaction_id,
+#                     "HASH": hash
+#                 },
+#                 "TIME": strftime("%d %b %Y %H:%M:%S"),
+#                 "RESPONSE": {
+#                     "RESULT": ""
+#                 }
+#             } 
+#         }
+
+#         try:
+#             user = CustomUser.objects.get(username=user_id)
+#             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+#             if hash == MD5(user_id + key):
+#                 new_amount = user.main_wallet + amount
+#                 user.main_wallet = new_amount
+#                 user.save()
+
+#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
+#                 response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = new_amount
+
+#             else:
+
+#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
+#                 response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
             
-            response = xmltodict.unparse(response, pretty=True)
-            return HttpResponse(response, content_type='text/xml')
+#             response = xmltodict.unparse(response, pretty=True)
+#             return HttpResponse(response, content_type='text/xml')
 
-        except ObjectDoesNotExist as e:
-            logger.info("Betsoft release bonus error invalid user: ", e)
-            response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
-            response = xmltodict.unparse(response, pretty=True)
-            return HttpResponse(response, content_type='text/xml')
+#         except ObjectDoesNotExist as e:
+#             logger.info("Betsoft release bonus error invalid user: ", e)
+#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
+#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
+#             response = xmltodict.unparse(response, pretty=True)
+#             return HttpResponse(response, content_type='text/xml')
 
-        except Exception as e:
-            logger.error("Betsoft release bonus error: ", e)
-            response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
-            response = xmltodict.unparse(response, pretty=True)
-            return HttpResponse(response, content_type='text/xml')
+#         except Exception as e:
+#             logger.error("Betsoft release bonus error: ", e)
+#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
+#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
+#             response = xmltodict.unparse(response, pretty=True)
+#             return HttpResponse(response, content_type='text/xml')
 
             
 
