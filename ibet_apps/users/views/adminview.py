@@ -1019,7 +1019,6 @@ class UserListView(CommAdminView):
             return HttpResponse(json.dumps(response), content_type="application/json")   
 
 
-
 class UserProfileView(CommAdminView):
 
     def get(self, request, *args, **kwargs):
