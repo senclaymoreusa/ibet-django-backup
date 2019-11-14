@@ -132,13 +132,12 @@ class BalanceView(View):
 
             sha1_key = "dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="
 
-            a = hmac.new(sha1_key.encode(), string_to_sign_encoded, sha1)
-            a_final = a.hexdigest()
+            a = hmac.new(base64.b64decode(sha1_key), string_to_sign_encoded, sha1)
+            a_final = a.digest()
 
             print("a_final: " + str(a_final))
 
-            byte_result = a_final.encode()
-            sign_bytes = base64.b64encode(byte_result)
+            sign_bytes = base64.b64encode(a_final)
             sign_string = sign_bytes.decode()
             print("sign_string: " + sign_string)
 
