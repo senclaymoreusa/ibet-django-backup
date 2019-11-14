@@ -1346,7 +1346,9 @@ def send_sms(content_text, notifier, phone_num):
             logger.error("Sending SMS Notification Data Format Incorrect Error!")
             return "Data Format Incorrect!"
 
-
+'''
+TODO: using AWS SES send email for ibet.com in the future. Currently not using this function
+'''
 @transaction.atomic
 def send_email(subject, content_text, notifier):
         data = {
@@ -1382,10 +1384,10 @@ def send_email(subject, content_text, notifier):
                 # )
 
                 response = client.send_email(
-                    Source='rundong@claymoreusa.com',
+                    Source='claymore@claymoreusa.com',
                     Destination={
                         'ToAddresses': [
-                            'samet@claymoreusa.com',
+                            email,
                         ],
                         'CcAddresses': [
                         ],
