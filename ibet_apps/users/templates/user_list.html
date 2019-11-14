@@ -5,6 +5,19 @@
 
 {% block content %} 
 <div class="row">
+
+    <div class="col-md-2">
+        <div style="font-size: 0.9em; padding-bottom:5px;padding-top:10px;">STATUS</div>
+        <select class="form-control" id="status-selection">
+            <option value="-1">ALL</option>
+            {% for key, value in status.items %}
+                <option value="{{ key }}">{{ value }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-6">&nbsp;
+    </div>
     <div class='col-md-3'>
         <!-- <div class='row'>
             <input id='search_input' class="form-control" type="text" placeholder="Search" aria-label="Search">
@@ -17,11 +30,6 @@
                 <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span class="glyphicon glyphicon-search"></span></span>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        {% if searchError %}
-            <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
-        {% endif %}
     </div>
     <!-- <div class='col-md-8'> -->
         <!-- {% block time_search %} -->
@@ -51,11 +59,20 @@
     <!-- </div> -->
 </div>
 
+<div class="row">
+    <div class="col-md-3">
+        {% if searchError %}
+            <div style="margin-top: 12%;color: red;">{{ searchError }}</div>
+        {% endif %}
+    </div>
+</div>
+
 <div style="margin-top:40px;">
-    <ul class="nav nav-tabs">
+    <!-- <ul class="nav nav-tabs">
         <li class="active" id="active-accounts"><a data-toggle="tab" class="tab-label" href="#active-account">ACTIVE ACCOUNTS</a></li>
         <li id="close-accounts"><a data-toggle="tab"  class="tab-label" href="#close-account">CLOSE ACCOUNTS</a></li>
-    </ul>
+    </ul> -->
+
     <div class="tab-content">
         <div id="active-account" class="tab-pane fade in active">
             <table class="custom-user">
@@ -197,7 +214,7 @@ $(document).ready(function() {
         'search': '',
         'pageSize': 20,
         'offset': 0,
-        'block': false
+        'status': -1
     };
     var parsedUrl = new URL(window.location.href);
     if (parsedUrl.searchParams.get("search") !== null) {
@@ -209,31 +226,38 @@ $(document).ready(function() {
     if (parsedUrl.searchParams.get("offset") !== null) {
         paramsMap['offset'] = Number(parsedUrl.searchParams.get("offset"));
     }
-    if (parsedUrl.searchParams.get("block") !== null) {
-        paramsMap['block'] = parsedUrl.searchParams.get("block");
+    if (parsedUrl.searchParams.get("status") !== null) {
+        paramsMap['status'] = parsedUrl.searchParams.get("status");
     }
 
-    if (parsedUrl.searchParams.get("block") == 'true') {
-        $("#close-accounts").addClass('active');
-        $("#active-accounts").removeClass('active');
+    if (parsedUrl.searchParams.get("status") == '' || !parsedUrl.searchParams.get("status")) {
+        $("#status-selection").val("-1");
     } else {
-        $("#active-accounts").addClass('active');
-        $("#close-accounts").removeClass('active');
+        $("#status-selection").val(parsedUrl.searchParams.get("status"));
     }
+    
+    // if (parsedUrl.searchParams.get("block") == 'true') {
+    //     $("#status-selection").val('1');
+    //     // $("#active-accounts").removeClass('active');
+    // } else {
+    //     $("#status-selection").val('0');
+    //     // $("#active-accounts").addClass('active');
+    //     // $("#close-accounts").removeClass('active');
+    // }
 
-    $("a[data-toggle='tab']").click(function() {
-        var active = $(this).attr("href");
-        if (active == "#active-account") {
-            paramsMap['block'] = false;
+    $("#status-selection").on('change', function() {
+        var active = $(this).val();
+        if (active == "-1") {
+            paramsMap['status'] = ""
         } else {
-            paramsMap['block'] = true;
+            paramsMap['status'] = active
         }
         var pageSize = paramsMap['pageSize'];
         // var oldFromItem = 0;
         // var newFromItem = Number(oldFromItem) + Number(pageSize);
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
         
-        window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, 0, status, "");
     });
 
     $('#pagination_value').val(paramsMap['pageSize']);
@@ -263,8 +287,8 @@ $(document).ready(function() {
 
     function searchOpen() {
         var search = $('#search').val();
-        var block = paramsMap['block'];
-        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search + "&block=" + block;
+        var status = paramsMap['status'];
+        var url = "{% url 'user_autocomplete_search' %}" + "?search=" + search + "&status=" + status;
         $.ajax({
             url: url,
             type: 'GET',
@@ -464,17 +488,17 @@ $(document).ready(function() {
     $('#pagination_value').on('change', function() {
         var pageSize = $("#pagination_value").val();;
         var oldFromItem = paramsMap['offset'];
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, 0, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, 0, status, "");
     });
 
     $("#search-btn").click(function(){
         var pageSize = $("#pagination_value").val();
         // var oldFromItem = paramsMap['offset'];
         var search = $('#search').val();
-        var block = paramsMap['block'];
-        window.location.href = getUserListRedirectUrl(pageSize, 0, block, search);
+        var status = paramsMap['status'];
+        window.location.href = getUserListRedirectUrl(pageSize, 0, status, search);
     });
 
     getNext = function() {
@@ -484,9 +508,9 @@ $(document).ready(function() {
         var pageSize = paramsMap['pageSize'];
         var oldFromItem = paramsMap['offset'];
         var newFromItem = Number(oldFromItem) + Number(pageSize);
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, status, "");
     }
 
     getPervious = function () {
@@ -496,9 +520,9 @@ $(document).ready(function() {
         var pageSize = paramsMap['pageSize'];
         var oldFromItem = paramsMap['offset'];
         var newFromItem = Number(oldFromItem) - Number(pageSize);
-        var block = paramsMap['block'];
+        var status = paramsMap['status'];
        
-        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, block, "");
+        window.location.href = getUserListRedirectUrl(pageSize, newFromItem, status, "");
     }
 
 });
@@ -514,7 +538,7 @@ function cleanFloatField(field) {
     return field.toFixed(2);
 }
 
-function getUserListRedirectUrl(pageSize, offset, block, search) {
+function getUserListRedirectUrl(pageSize, offset, status, search) {
     var curUrl = window.location.href;
     // console.log(curUrl);
     var parts = curUrl.split('?');
@@ -524,7 +548,7 @@ function getUserListRedirectUrl(pageSize, offset, block, search) {
     redirectUrl += '?search=' + search;
     redirectUrl += "&pageSize=" + pageSize;
     redirectUrl += '&offset=' + offset;
-    redirectUrl += '&block=' + block;
+    redirectUrl += '&status=' + status;
     // console.log(redirectUrl);
     return redirectUrl;
 }

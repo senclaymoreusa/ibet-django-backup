@@ -526,7 +526,7 @@ class Login(APIView):
                     lang = 'vn'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
-                return Response({"login url":loginUrl})
+                return Response({"login_url":loginUrl})
             except NameError as e:
                 logger.error(e)
                 return Response({"error": "Cannot find the code."})

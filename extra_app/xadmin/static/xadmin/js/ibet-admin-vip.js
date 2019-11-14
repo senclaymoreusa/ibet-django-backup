@@ -19,6 +19,7 @@ $(document).ready(function () {
         "serverSide": true,
         "searching": true,
         "ordering": false,
+        "dom": '<<t>Bpil>',
         "ajax": {
             type: 'GET',
             url: vip_url,
