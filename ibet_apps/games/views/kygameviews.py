@@ -195,14 +195,14 @@ def kyTransfer(user, amount, wallet, method):
 
 
 @background(schedule=10)
-def generateUrl(s, account, money, kind_id, order_id):
-    print("Hello World")
+def generateUrl():
     # Query Bet Order
-    '''
-    startTime = data["startTime"]
-    endTime = data["endTime"]
+    timestamp = get_timestamp()
 
-    param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
+    startTime = get_timestamp() - 300000 # five minutes before now
+    endTime = get_timestamp() - 60000 # one minute before now
+
+    param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
 
     param = aes_encode(KY_AES_KEY, param)
     param = base64.b64encode(param)
@@ -212,10 +212,10 @@ def generateUrl(s, account, money, kind_id, order_id):
     key = hashlib.md5(key.encode())
     key = key.hexdigest()
 
-    url = KY_API_URL if s != 6 else KY_RECORD_URL
+    url = KY_RECORD_URL
 
     req_param = {}
-    req_param["agent"] = agent
+    req_param["agent"] = KY_AGENT
     req_param["timestamp"] = str(timestamp)
     req_param["param"] = param
     req_param["key"] = key
@@ -223,7 +223,8 @@ def generateUrl(s, account, money, kind_id, order_id):
     req = urllib.parse.urlencode(req_param)
     url = url + '?' + req
     res = requests.get(url)
-    '''
+
+    # print(res.json)
 
 
 class TestTransferAPI(View):
@@ -261,7 +262,7 @@ class KaiyuanAPI(View):
 
             if s != 6:
                 account = data["account"]
-                user = CustomUser.objects.get(username=account)
+                # user = CustomUser.objects.get(username=account)
 
             # Login
             if s == 0:
@@ -272,7 +273,6 @@ class KaiyuanAPI(View):
                 kind_id = data["KindID"]
 
                 param = "s=" + str(s) + "&account=" + account + "&money=" + money + "&orderid=" + orderid + "&ip=" + ip + "&lineCode=" + linecode + "&KindID=" + kind_id + "&lang=zh-CN"
-                print(param)
             # Get Balance
             elif s == 1:
                 param = "s=" + str(s) + "&account=" + account
