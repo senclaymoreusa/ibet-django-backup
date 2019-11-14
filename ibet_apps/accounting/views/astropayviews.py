@@ -241,7 +241,7 @@ def checkUser(request):
         r = requests.post(url + 'cashOut/checkUser', data=params)
         rdata = r.json()
         logger.info(rdata)
-        if r.status_code == 200 :
+        if r.status_code == 200:
             break
         elif r.status_code == 500:
             logger.info("Request failed {} time(s)'.format(x+1)")

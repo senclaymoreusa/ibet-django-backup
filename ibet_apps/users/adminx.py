@@ -97,17 +97,17 @@ class GlobalSettings(object):
                 'menus': (
                     {
                         'title': _('Deposits'),
-                        'url': '/xadmin/deposit',
+                        'url': '/xadmin/deposit/0?show=20',
                         'icon': 'fa fa-arrow-right'
                     },
                     {
                         'title': _('Withdrawals'),
-                        'url': '/xadmin/withdrawal',
+                        'url': '/xadmin/withdraw/0?show=20',
                         'icon': 'fa fa-arrow-left'
                     },
                     {
-                        'title': _('Settings'),
-                        'url': '/xadmin/channel_list',
+                        'title': 'Payment Configuration',
+                        'url': '/xadmin/payment_config',
                         'icon': 'fa fa-cog'
                     },
                 )
