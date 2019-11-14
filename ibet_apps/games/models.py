@@ -1,4 +1,5 @@
 import uuid
+import random
 
 from django.db import models
 from django.utils import timezone
@@ -10,6 +11,10 @@ from users.models import CustomUser
 from utils.constants import *
 from django.utils import timezone
 import uuid
+
+
+def random_string():
+    return str(timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000)))
 
 
 # Create your models here.
@@ -107,7 +112,7 @@ class GameBet(models.Model):
     odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-    transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"))
+    transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
     ref_no = models.CharField(max_length=100, null=True, blank=True)

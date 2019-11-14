@@ -83,7 +83,7 @@ class BetSoftAuthenticate(View):
                     } 
                 }
                 response = xmltodict.unparse(response, pretty=True)
-
+                # print(response) 
                 return HttpResponse(response, content_type='text/xml')
 
             else:
@@ -104,7 +104,7 @@ class BetSoftAuthenticate(View):
                 return HttpResponse(response, content_type='text/xml')
 
         except ObjectDoesNotExist as e:
-            logger.info("Betsoft authenticate error: ", e)
+            logger.error("Betsoft authenticate error: ", e)
 
             response = {
                 "EXTSYSTEM": {
@@ -176,8 +176,8 @@ class BetSoftBetResult(View):
                 "TIME": strftime("%d %b %Y %H:%M:%S"),
                 "RESPONSE": {
                     "RESULT": "",
-                    "EXTSYSTEMTRANSACTIONID": "",
-                    "BALANCE": ""
+                    # "EXTSYSTEMTRANSACTIONID": "",
+                    # "BALANCE": ""
                     # "BONUSBET": "bonusbet",
                     # "BONUSWIN": "bonuswin",
                 }
@@ -194,9 +194,9 @@ class BetSoftBetResult(View):
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
             if win:
-                win = win.split("|")
-                win_amount = win[0]
-                ref_id = win[1]
+                win_list = win.split("|")
+                win_amount = win_list[0]
+                ref_id = win_list[1]
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
                     user.save()
@@ -213,9 +213,9 @@ class BetSoftBetResult(View):
 
 
             if bet:
-                bet = bet.split("|")
-                bet_amount = bet[0]
-                ref_id = bet[1]
+                bet_list = bet.split("|")
+                bet_amount = bet_list[0]
+                ref_id = bet_list[1]
                 amount = bet_amount
                 if decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
@@ -297,7 +297,7 @@ class BetSoftBetResult(View):
 
         
         except ObjectDoesNotExist as e:
-            logger.info("Betsoft bet/result error: ", e)
+            logger.error("Betsoft bet/result error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
             response = xmltodict.unparse(response, pretty=True)
@@ -345,7 +345,6 @@ class BetSoftBetRefund(View):
             # print(MD5(user_id + casino_transaction_id + key))
 
             if hash == MD5(user_id + casino_transaction_id + key):
-
                 GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
                                                 category=prev_bet.category,
                                                 username=user,
@@ -356,6 +355,8 @@ class BetSoftBetRefund(View):
                                                 ref_no=casino_transaction_id,
                                                 transaction_id=trans_id
                                                 )
+                user.main_wallet = decimal.Decimal(((user.main_wallet + prev_bet.amount_wagered) * 100) / 100)
+                user.save()
         
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                 response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
@@ -369,7 +370,7 @@ class BetSoftBetRefund(View):
             return HttpResponse(response, content_type='text/xml')
 
         except ObjectDoesNotExist as e:
-            logger.info("Betsoft refund bet error invalid user: ", e)
+            logger.error("Betsoft refund bet error invalid user: ", e)
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
@@ -486,7 +487,7 @@ class BetSoftGetInfo(View):
 
         
         except ObjectDoesNotExist as e:
-            logger.info("Betsoft get info error invalid user: ", e)
+            logger.error("Betsoft get info error invalid user: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
             response = xmltodict.unparse(response, pretty=True)
