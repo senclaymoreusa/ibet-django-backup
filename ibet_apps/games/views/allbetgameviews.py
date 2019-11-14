@@ -112,6 +112,9 @@ class EncryptionView(View):
             return HttpResponse("Error in encryption: " + str(e))
 
 
+import hmac
+from hashlib import sha1
+
 class BalanceView(View):
     """
     """
@@ -123,9 +126,21 @@ class BalanceView(View):
 
             # Check the provided auth header against generated signature
 
-            string_to_sign = "GET + \n "
+            string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + "Tue, 30 Apr 2019 16:08:01 UTC" + "\n" + "/get_balance/player001"
+            string_to_sign_encoded = string_to_sign.encode()
+            print(string_to_sign_encoded)
 
+            sha1_key = "dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="
 
+            a = hmac.new(sha1_key.encode(), string_to_sign_encoded, sha1)
+            a_final = a.hexdigest()
+
+            print("a_final: " + str(a_final))
+
+            byte_result = a_final.encode()
+            sign_bytes = base64.b64encode(byte_result)
+            sign_string = sign_bytes.decode()
+            print("sign_string: " + sign_string)
 
             user = CustomUser.objects.get(username=player_account_name)
             return HttpResponse(str(user.main_wallet))
