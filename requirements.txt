@@ -77,3 +77,4 @@ django-ckeditor==5.7.1
 pyDes==2.0.1
 redis==3.3.11
 spyne==2.13.2a0
+django-background-tasks==1.2.0

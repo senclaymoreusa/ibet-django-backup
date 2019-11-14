@@ -194,24 +194,15 @@ def kyTransfer(user, amount, wallet, method):
         return HttpResponse(status=400)
 
 
-
-
+@background(schedule=10)
 def generateUrl(s, account, money, kind_id, order_id):
+    print("Hello World")
     # Query Bet Order
-    elif s == 6:
-        startTime = data["startTime"]
-        endTime = data["endTime"]
+    '''
+    startTime = data["startTime"]
+    endTime = data["endTime"]
 
-        param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
-    # Query The Player's Total Points
-    elif s == 7:
-        param = "s=" + str(s) + "&account=" + account
-    # Kick Player off
-    elif s == 8:
-        param = "s=" + str(s) + "&account=" + account
-    else:
-        return HttpResponse("Undefined request type")
-
+    param = "s=" + str(s) + "&startTime=" + startTime + "&endTime=" + endTime
 
     param = aes_encode(KY_AES_KEY, param)
     param = base64.b64encode(param)
@@ -228,13 +219,11 @@ def generateUrl(s, account, money, kind_id, order_id):
     req_param["timestamp"] = str(timestamp)
     req_param["param"] = param
     req_param["key"] = key
-    # url += "?agent=" + agent
-    # url += "&timestamp=" + str(timestamp)
-    # url += "&param=" + param
-    # url += "&key=" + str(key)
+
     req = urllib.parse.urlencode(req_param)
     url = url + '?' + req
     res = requests.get(url)
+    '''
 
 
 class TestTransferAPI(View):
@@ -249,7 +238,7 @@ class TestTransferAPI(View):
             kyTransfer(user, amount, from_wallet, method)
             return HttpResponse(status=200)
         except Exception as e:
-            print("Error: {}".format(repr(e)))
+            logger.error("Error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -335,8 +324,6 @@ class KaiyuanAPI(View):
             param = base64.b64encode(param)
             param = str(param, "utf-8")
 
-            print(param)
-
             key = KY_AGENT + str(timestamp) + KY_MD5_KEY
             key = hashlib.md5(key.encode())
             key = key.hexdigest()
@@ -354,7 +341,7 @@ class KaiyuanAPI(View):
             # url += "&key=" + str(key)
             req = urllib.parse.urlencode(req_param)
             url = url + '?' + req
-            print(url)
+            
             res = requests.get(url)
             if res.status_code == 200:
                 res_data = res.json()
