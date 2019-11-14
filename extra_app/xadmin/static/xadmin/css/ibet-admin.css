@@ -63,14 +63,14 @@ hr {
    background-color: #f3f3f3;
 }
 
-table.table-bordered{
+table.table-bordered {
     border:2px solid white;
     margin-top:20px;
   }
-table.table-bordered > thead > tr > th{
+table.table-bordered > thead > tr > th {
     border:4px solid white;
 }
-table.table-bordered > tbody > tr > td{
+table.table-bordered > tbody > tr > td {
     border:4px solid white;
 }
 
