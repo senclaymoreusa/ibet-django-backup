@@ -1235,18 +1235,26 @@ class VerifyActivationCode(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        username = request.data['username']
-        code = request.data['code']
-        user = get_user_model().objects.filter(username=username)
-        
-        # last_verify_action = UserAction.objects.filter(Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)).order_by('-created_time')
+        data = json.loads(request.body)
+        postType = data['type']
+        username = data['username']
+        code = data['code']
 
-        # delta = timezone.now() - timedelta(seconds=180)
-        # if verification_time < last_verify_action[0].created_time:
-        if user[0].activation_code == code:
-            user.update(active=True)
-            user.update(activation_code='')
+        # user = get_user_model().objects.filter(username=username)
+        user = get_user_model().objects.get(username=username)
+        if user.activation_code == code:
+            user.active=True
+            user.activation_code=''
+            if postType == "change_member_phone_num":
+                user.phone = data['phone']
+            elif postType == "change_member_email":
+                user.email = data['email']
+            else:
+                return Response(ERROR_CODE_NOT_FOUND)
+
+            user.save()
             return Response(status=status.HTTP_200_OK)
+        
         return Response(status=status.HTTP_400_BAD_REQUEST)
         # else:
         #     return Response(ERROR_CODE_TIME_EXCEED)
