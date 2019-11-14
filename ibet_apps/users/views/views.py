@@ -1176,7 +1176,7 @@ class GenerateActivationCode(APIView):
                     with transaction.atomic():
                         user.update(activation_code=random_num)
 
-                        send_sms(str(random_num), user[0].pk)
+                        send_sms(str(random_num), user[0].pk, phone)
 
                         action = UserAction(
                             user=user[0],
