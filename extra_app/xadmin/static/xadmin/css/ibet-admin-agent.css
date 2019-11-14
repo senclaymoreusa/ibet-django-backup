@@ -401,3 +401,26 @@ ul.ui-autocomplete {
     overflow-y: auto; 
     height:807px;
 }
+
+/* Manager Select */
+
+.chosen-container .chosen-single{
+    width: 199px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+.chosen-container-single .chosen-drop{
+    width: 199px;
+    background-color: #ffffff;
+}
+
+.chosen-container-single .chosen-single div {
+    top: 4px;
+}
+
+#manager_assign_chosen .chosen-single span {
+    margin-top: 3px;
+}

@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 
@@ -9,6 +9,7 @@ from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet
+from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
 import logging
@@ -137,13 +138,6 @@ def calculateNGR(user, start_time, end_time):
     return 0
 
 
-current_tz = timezone.get_current_timezone()
-
-def convertToTimezone(input_time):
-    input_time = input_time.astimezone(current_tz)
-    return input_time
-
-
 # USER SYSTEM
 # create unique refer code for both user and affiliate
 limit_digit = 6
@@ -182,6 +176,29 @@ def decode_user_id_from_referral_code(code):
             user_id += (36 ** i * index)
             i += 1
         return user_id
+
+
+# Return a list of user in VIP Manager Group
+def getManagerList(list_type):
+    if list_type == "VIP":
+        group_name = "VIP Manager"
+    elif list_type == "Affiliate":
+        group_name = "Affiliate Manager"
+    else:
+        group_name = ""
+
+    try:
+        manager_group = UserGroup.objects.get(groupType=PERMISSION_GROUP, name=group_name)
+    except Exception as e:
+        logger.info("Error getting {} group ".format(group_name) + str(e))
+        return None
+
+    managers = []
+    manager_group = UserToUserGroup.objects.filter(group=manager_group).distinct()
+    if manager_group:
+        for manager in manager_group:
+            managers.append(manager.user.username)
+    return managers
 
 '''
 @param date: utc timezone datetime
