@@ -117,6 +117,7 @@ class GameBet(models.Model):
         editable=False,
     )
 
+    created_time = models.DateTimeField(auto_now_add=True)  # bet created timestamp 
     resolved_time = models.DateTimeField(null=True, blank=True)
     other_data = JSONField(null=True, default=dict)
 

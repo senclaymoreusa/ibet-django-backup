@@ -1,5 +1,6 @@
 import decimal
 import logging
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -40,7 +41,6 @@ def generateHash(message):
 
 
 def transferRequest(user, amount, from_wallet, to_wallet):
-    
     if from_wallet == "main":
         transfer_to = TransferDeposit(user, amount, from_wallet)
         function_name = to_wallet + 'Deposit'
@@ -112,3 +112,5 @@ def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
+def generateTxnId(provider):
+    return provider + "-" + str(uuid.uuid4())
