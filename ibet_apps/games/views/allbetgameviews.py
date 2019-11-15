@@ -16,6 +16,7 @@ import secrets
 import urllib
 import requests
 import pyDes
+import decimal
 import hmac
 from hashlib import sha1
 
@@ -146,10 +147,23 @@ class BalanceView(View):
 
             # Compare generated_header against auth_header
             if auth_header != generated_header:
-                return HttpResponse("Invalid authorization header")
+                json_to_return = {
+                                    "error_code": 10001,
+                                    "message": "signature invalid",
+                                    "balance": 0 # TODO: Clarify with provider.
+                                 }
+
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # What about status?
             else:
                 user = CustomUser.objects.get(username=player_account_name)
-                return HttpResponse(str(user.main_wallet))
+
+                json_to_return = {
+                                    "error_code": 0,
+                                    "message": "success",
+                                    "balance": float(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))) # Truncates 2nd decimal place
+                                 }
+
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # What about status?
 
         except Exception as e:
             logger.error("AllBet BalanceView Error: " + str(e))
