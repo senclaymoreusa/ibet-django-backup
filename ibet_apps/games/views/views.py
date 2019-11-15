@@ -3,8 +3,8 @@ import logging
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
-from games.models import Game, GameProvider
-from games.serializers import GameSerializer
+from games.models import Game, GameProvider, Category
+from games.serializers import GameSerializer, CategorySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
 
@@ -168,3 +168,8 @@ class GameDetailAPIListView(ListAPIView):
         data = Game.objects.filter(pk=id)
         # print(data) 
         return data
+
+
+class CategoryAPIListView(ListAPIView):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
