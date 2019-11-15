@@ -69,10 +69,8 @@ def kyTransfer(user, amount, wallet, method):
         trans_id = user.username + time.strftime("%Y%m%d%H%M%S") + str(random.randint(0,10000000))
         user_currency = int(user.currency)
 
-        s = 1
-
         if method == 0:
-            s = 2
+            operation_type = 2
             if user.currency == CURRENCY_CNY:
                 amount = amount
             elif user.currency == CURRENCY_USD:
@@ -93,7 +91,7 @@ def kyTransfer(user, amount, wallet, method):
                 amount = 10
 
         elif method == 1:
-            s = 3
+            operation_type = 3
             if user.currency == CURRENCY_CNY:
                 amount = amount
             elif user.currency == CURRENCY_USD:
@@ -133,7 +131,7 @@ def kyTransfer(user, amount, wallet, method):
 
         agent = KY_AGENT
         orderid = agent + str(order_time) + user.username
-        param = "s=" + str(s) + "&account=" + user.username + "&orderid=" + orderid + "&money=" + amount
+        param = "s=" + str(operation_type) + "&account=" + user.username + "&orderid=" + orderid + "&money=" + amount
 
         param = aes_encode(KY_AES_KEY, param)
         param = base64.b64encode(param)
