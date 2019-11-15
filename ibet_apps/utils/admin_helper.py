@@ -1,16 +1,21 @@
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
+from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 
+from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet
+from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
 import logging
 import uuid
+import csv
+
 
 logger = logging.getLogger('django')
 
@@ -172,6 +177,29 @@ def decode_user_id_from_referral_code(code):
             i += 1
         return user_id
 
+
+# Return a list of user in VIP Manager Group
+def getManagerList(list_type):
+    if list_type == "VIP":
+        group_name = "VIP Manager"
+    elif list_type == "Affiliate":
+        group_name = "Affiliate Manager"
+    else:
+        group_name = ""
+
+    try:
+        manager_group = UserGroup.objects.get(groupType=PERMISSION_GROUP, name=group_name)
+    except Exception as e:
+        logger.info("Error getting {} group ".format(group_name) + str(e))
+        return None
+
+    managers = []
+    manager_group = UserToUserGroup.objects.filter(group=manager_group).distinct()
+    if manager_group:
+        for manager in manager_group:
+            managers.append(manager.user.username)
+    return managers
+
 '''
 @param date: utc timezone datetime
 @return: local timezone datetime
@@ -181,3 +209,28 @@ def utcToLocalDatetime(date):
         current_tz = timezone.get_current_timezone()
         date = date.astimezone(current_tz)
     return date
+
+
+def displayChoiceValue(bonuses):
+    # display SmallIntegerField value for read
+    bonuses['status'] = BONUS_STATUS_CHOICES[bonuses['status']][1]
+    bonuses['type'] = BONUS_TYPE_CHOICES[bonuses['type']][1]
+    bonuses['campaign'] = Campaign.objects.get(pk=int(bonuses['campaign'])).name
+    return bonuses
+
+
+'''
+@param date: filename, table header, table body data
+@return: response
+'''
+def exportCSV(filename, row_title, data):
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=filename'
+
+    writer = csv.writer(response)
+    writer.writerow(row_title)
+    for i in data:
+        writer.writerow(i)
+
+    return response

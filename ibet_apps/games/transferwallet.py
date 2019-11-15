@@ -6,6 +6,7 @@ from users.views.helper import checkUserBlock
 from users.models import CustomUser
 import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw
+from games.views.onebookviews import fundTransfer
 
 
 logger = logging.getLogger('django')
@@ -24,9 +25,7 @@ class TransferDeposit():
         return requestEADeposit(self.user, self.amount, self.from_wallet)
 
     def onebookDeposit(self):
-        pass
-        # requestEADeposit(user, amount, from_wallet)
-        # print("request onbook deposit")
+        return fundTransfer(self.user, self.amount, self.from_wallet, 1, 1)
 
     
 class TransferWithdraw():
@@ -44,5 +43,5 @@ class TransferWithdraw():
         return requestEAWithdraw(self.user, self.amount, self.to_wallet)
 
     def onebookWithdraw(self):
-        pass
-        # print("request onbook withdraw")
+        return fundTransfer(self.user, self.amount, self.to_wallet, 0, 1)
+

@@ -1306,7 +1306,7 @@ class AWSTopicAPIView(GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def send_email(content_text, notifier):
+def send_sms(content_text, notifier, phone_num):
         data = {
             "content_text": content_text,
             "is_sms_message": True,
@@ -1333,8 +1333,8 @@ def send_email(content_text, notifier):
             client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
             try:
-                phone = str(notifier.phone)
-                client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # phone = str(notifier.phone)
+                client.publish(PhoneNumber=phone_num, Message=notification.content_text)
     
                 logger.info("Enabled SMS Notification")
             except Exception as e:
@@ -1346,11 +1346,15 @@ def send_email(content_text, notifier):
             logger.error("Sending SMS Notification Data Format Incorrect Error!")
             return "Data Format Incorrect!"
 
-
-def send_sms(content_text, notifier):
+'''
+TODO: using AWS SES send email for ibet.com in the future. Currently not using this function
+'''
+@transaction.atomic
+def send_email(subject, content_text, notifier):
         data = {
+            "subject": subject,
             "content_text": content_text,
-            "is_sms_message": True,
+            "is_email_message": True,
             "status": MESSAGE_APPROVED,
         }
 
@@ -1358,34 +1362,72 @@ def send_sms(content_text, notifier):
         
         if serializer.is_valid():
             notification = serializer.save()
-            logger.info("create a SMS notification")
+            # logger.info("create a Email notification")
 
-            notifier = CustomUser.objects.get(pk=notifier)
+            notifier = CustomUser.objects.get(username=notifier)
 
-            log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
-
-            logger.info("Save notification log")
-
-            # connect AWS S3
-            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-
-            # AWS SNS Client
-            sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
-            client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+            # logger.info("Save notification log")
 
             try:
-                phone = str(notifier.phone)
-                client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # connect AWS S3
+                third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+                # AWS SES Client
+                # ses = boto3.resource('ses', region_name=AWS_SES_REGION)
+                client = getAWSClient('ses', third_party_keys, AWS_SES_REGION)
+
+                email = str(notifier.email)
+                # client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # response = client.send_custom_verification_email(
+                #     EmailAddress=email,
+                #     TemplateName='EmailVerification'
+                # )
+
+                response = client.send_email(
+                    Source='claymore@claymoreusa.com',
+                    Destination={
+                        'ToAddresses': [
+                            email,
+                        ],
+                        'CcAddresses': [
+                        ],
+                        'BccAddresses': [
+                        ]
+                    },
+                    Message={
+                        'Subject': {
+                            'Data': subject,
+                            'Charset': 'utf-8'
+                        },
+                        'Body': {
+                            'Text': {
+                                'Data': content_text,
+                                'Charset': 'utf-8'
+                            },
+                        }
+                    }
+                )
+
     
-                logger.info("Enabled SMS Notification")
+                logger.info("Enabled SES Notification")
             except Exception as e:
-                logger.error("Unexpected error: %s" % e)
+                logger.error(repr(e))
                 return "AWS ERROR!"
 
             return "Success"
         else:
-            logger.error("Sending SMS Notification Data Format Incorrect Error!")
+            logger.error("Sending Email Notification Data Format Incorrect Error!")
             return "Data Format Incorrect!"
+
+
+class EmailNotificationTest(View):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        subject = data["subject"]
+        content_text = data["content_text"]
+        notifier = data["notifier"]
+        send_email(subject, content_text, notifier)
+        return HttpResponse(status=200)
 
 
 class NotificationUserIsReadAPI(View):
@@ -1411,7 +1453,7 @@ class NotificationUserIsReadAPI(View):
                 return HttpResponse(status=201)
 
         except Exception as e:
-            logger.error("reading message error:", e)
+            logger.error("reading message error:", repr(e))
             return HttpResponse(status=400)
 
 

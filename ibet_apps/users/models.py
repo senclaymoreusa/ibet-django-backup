@@ -82,12 +82,6 @@ class CustomUser(AbstractBaseUser):
         (2, _('Advertisements'))
     )
 
-    MEMBER_STATUS = (
-        (0, _('Active')),
-        (1, _('Inactive')),
-        (2, _('Blocked'))
-    )
-
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
@@ -113,8 +107,8 @@ class CustomUser(AbstractBaseUser):
         blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
-    user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
-    user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
+    # user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
+    # user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=25)
@@ -128,10 +122,10 @@ class CustomUser(AbstractBaseUser):
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
 
     # verification
-    email_verified = models.BooleanField(default=False)
-    phone_verified = models.BooleanField(default=False)
-    id_verified = models.BooleanField(default=False)
-    address_verified = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False, null=True, blank=True)
+    phone_verified = models.BooleanField(default=False, null=True, blank=True)
+    id_verified = models.BooleanField(default=False, null=True, blank=True)
+    address_verified = models.BooleanField(default=False, null=True, blank=True)
 
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
@@ -186,7 +180,10 @@ class CustomUser(AbstractBaseUser):
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                             related_name='AffiliateManager')
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                       related_name='VIPManager')
 
     #commission
     commission_status = models.BooleanField(default=False)               # for current month
@@ -218,6 +215,9 @@ class CustomUser(AbstractBaseUser):
     withdraw_password = models.CharField(_('withdraw password'), max_length=128, blank=True, null=True)
     security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
     security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
+
+    # favorite payment method
+    favorite_payment_method = models.CharField(max_length=128, blank=True, null=True)
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -584,8 +584,10 @@ class GameRequestsModel(models.Model):
 
 
 # Member VIP System
+
 class Segmentation(models.Model):
     name = models.CharField(max_length=50)
+    level = models.IntegerField()
     turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
@@ -595,7 +597,7 @@ class Segmentation(models.Model):
     product_turnover_bonuses = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.level)
 
 
 @receiver(post_save, sender=CustomUser)

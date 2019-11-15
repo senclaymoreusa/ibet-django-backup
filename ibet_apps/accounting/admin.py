@@ -5,4 +5,5 @@ from accounting.models import *
 admin.site.register(Transaction)
 admin.site.register(DepositChannel)
 admin.site.register(WithdrawChannel)
-
+admin.site.register(DepositAccessManagement)
+admin.site.register(WithdrawAccessManagement)

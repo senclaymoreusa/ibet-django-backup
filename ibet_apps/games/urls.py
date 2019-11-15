@@ -12,6 +12,7 @@ import games.views.gdcasinoviews as gdcasino
 import games.views.betsviews as bets
 from games.live_casino import *
 import games.views.onebookviews as onebookviews
+import games.views.sagameviews as sagameviews
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -54,16 +55,22 @@ urlpatterns = [
     # Play n Go
     path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
+    path('api/playngo/reserve/', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
+
+   
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
 
+    # fg
+    path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
-    path('api/fg/sessionCheck', fggameviews.SessionCheck.as_view(), name = 'fg_session_check'),
+    path('api/fg/getSessionKey', fggameviews.GetSessionKey.as_view(), name = 'fg_get_sessionkey' ),
     path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
+    
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
@@ -75,5 +82,9 @@ urlpatterns = [
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail.as_view(), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+
+    #sa
+    path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
+    path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
 
 ]
