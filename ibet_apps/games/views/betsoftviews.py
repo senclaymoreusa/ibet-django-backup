@@ -621,3 +621,43 @@ class BetSoftGetInfo(View):
             
 
             
+
+
+
+
+LAUNCH_URL = "https://claymoreasia-gp3.discreetgaming.com/cwstartgamev2.do?bankId={}&gameId={}&mode=real&token={}&lang=en"
+# LAUNCH_URL = "https://claymoreasia-gp3.discreetgaming.com/cwstartgamev2.do?bankId=4542&gameId=514&mode=real&token=4a898cf9e3715eb771f7542b61d03f05d18833b2&lang=en"
+BANKID="4542"
+# GAMEID = "514"
+# TOKEN = "4a898cf9e3715eb771f7542b61d03f05d18833b2"
+# print(LAUNCH_URL.format(BANKID, GAMEID, TOKEN))
+
+LAUNCH_GUST_URL = "https://claymoreasia-gp3.discreetgaming.com/cwguestlogin.do?bankId={}&gameId={}&lang=en"
+
+
+
+# called by frontend
+class BetsoftGameLaunch(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            gameId = request.GET.get('gameId', '')
+            token = request.GET.get('token', '')
+
+            if token:
+
+                url = LAUNCH_URL.format(BANKID, gameId, token)
+                rr = requests.get(url)
+            
+            else:
+
+                url = LAUNCH_GUST_URL.format(BANKID, gameId)
+                rr = requests.get(url)
+            
+            rr = rr.text    
+            return HttpResponse(rr)
+
+        except:
+            logger.error("There is something wrong when lunch the BETSOFT game")
+            return HttpResponse(status=400)
