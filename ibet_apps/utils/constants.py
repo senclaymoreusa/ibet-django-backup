@@ -1361,3 +1361,12 @@ SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
 SA_ENCRYPT_KEY = 'g9G16nTs'
 SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
+
+# QT
+QT_API_URL = 'https://api-int.qtplatform.com/'
+QT_PASS_KEY = ''
+if os.getenv("ENV") == "approd":
+    QT_PASS_KEY = 'czy2p6q2-gel8zm54-1sjp-tpls9iiw8m08'
+else:
+    QT_PASS_KEY = '8qzc27xd-a8c4poby-camg-6frm83qekyvq'
+    
