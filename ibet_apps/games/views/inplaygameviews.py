@@ -89,6 +89,8 @@ class ValidateTokenAPI(View):
 
 class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
+        return HttpResponse("I love you!")
+
         # data = requests.body
         data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
         # key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
