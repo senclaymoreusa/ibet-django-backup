@@ -16,6 +16,8 @@ import secrets
 import urllib
 import requests
 import pyDes
+import hmac
+from hashlib import sha1
 
 logger = logging.getLogger('django')
 
@@ -112,37 +114,42 @@ class EncryptionView(View):
             return HttpResponse("Error in encryption: " + str(e))
 
 
-import hmac
-from hashlib import sha1
-
 class BalanceView(View):
     """
     """
     def get(self, request, player_account_name):
         try:
-            # TODO: Check Authorization header
             auth_header = request.META['HTTP_AUTHORIZATION']
-            print(str(auth_header))
+            print("HTTP_AUTHORIZATION: " + str(auth_header))
+            date = request.META['HTTP_DATE']
+            print("HTTP_DATE: " + str(date))
+                        
+            third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+            AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
+            sha1_key = "dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="
 
-            # Check the provided auth header against generated signature
-
-            string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + "Tue, 30 Apr 2019 16:08:01 UTC" + "\n" + "/get_balance/player001"
+            # Generate signature
+            string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + date + "\n" + "/get_balance/player001"
             string_to_sign_encoded = string_to_sign.encode()
             print(string_to_sign_encoded)
 
-            sha1_key = "dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="
+            hmac_obj = hmac.new(base64.b64decode(sha1_key), string_to_sign_encoded, sha1)
+            digest_result = hmac_obj.digest()
+            print("digest_result: " + str(digest_result))
 
-            a = hmac.new(base64.b64decode(sha1_key), string_to_sign_encoded, sha1)
-            a_final = a.digest()
-
-            print("a_final: " + str(a_final))
-
-            sign_bytes = base64.b64encode(a_final)
+            sign_bytes = base64.b64encode(digest_result)
             sign_string = sign_bytes.decode()
             print("sign_string: " + sign_string)
 
-            user = CustomUser.objects.get(username=player_account_name)
-            return HttpResponse(str(user.main_wallet))
+            generated_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
+            print(generated_header)
+
+            # Compare generated_header against auth_header
+            if auth_header != generated_header:
+                return HttpResponse("Invalid authorization header")
+            else:
+                user = CustomUser.objects.get(username=player_account_name)
+                return HttpResponse(str(user.main_wallet))
 
         except Exception as e:
             logger.error("AllBet BalanceView Error: " + str(e))
