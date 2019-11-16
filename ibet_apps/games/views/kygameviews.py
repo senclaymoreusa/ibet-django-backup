@@ -65,8 +65,8 @@ def get_timestamp():
 
 def kyTransfer(user, amount, wallet, method):
     try:
-        # trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
-        trans_id = user.username + time.strftime("%Y%m%d%H%M%S") + str(random.randint(0,10000000))
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+        # trans_id = user.username + time.strftime("%Y%m%d%H%M%S") + str(random.randint(0,10000000))
         user_currency = int(user.currency)
 
         if method == 0:
