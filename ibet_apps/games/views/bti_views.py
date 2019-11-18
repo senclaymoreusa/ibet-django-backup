@@ -63,10 +63,10 @@ class Reserve(View):
         reserve_id = request.GET.get("reserve_id")
         amount = decimal.Decimal(request.GET.get("amount"))
         bet_xml = etree.fromstring(request.body)
-        print(username,reserve_id,amount)
+        
         txn_id = generateTxnId("BTi")
         user = findUser(username)
-        # user found, record reserve
+        # user found -> record reserve
         try:
             with transaction.atomic():
                 if amount < user.main_wallet:
@@ -91,7 +91,7 @@ class Reserve(View):
                     res += f"trx_id={txn_id}\r\n"
                     res += f"BonusUsed=0.00\r\n"
                     return HttpResponse(res, content_type='text/plain')
-            print("success")
+
             res = "error_code=0\r\n"
             res += "error_message=success\r\n"
             res += f"balance={ending_balance}\r\n"
@@ -118,11 +118,11 @@ class DebitReserve(View):
         req_id = request.GET.get("req_id") # unique req id on the URL, different than bet ID
 
         xmlData = etree.fromstring(request.body)
-        
+        bet = xmlData[0]
+
         txn_id = generateTxnId("BTi")
-        bet_id = xmlData[0].attrib['BetID']
-        user = findUser(username)
         try:
+            user = findUser(username)
             prev_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
         except ObjectDoesNotExist as e:
             # if prev reserve not found (the initial Reserve call) then throw error
@@ -170,8 +170,9 @@ class CommitReserve(View):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")  # the reserve id that this debit corresponds to
         
-        user = findUser(username)
+        txn_id = generateTxnId("BTi")
         try:
+            user = findUser(username)
             totalReserve = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
 
         except ObjectDoesNotExist as e:
@@ -200,6 +201,7 @@ class CommitReserve(View):
                         ref_no=reserve_id,
                         amount_wagered=amount,
                         market=0,
+                        # transaction_id=txn_id,
                         other_data={'is_committed': True}
                     )
                 totalReserveAmount = totalReserve.amount_wagered
@@ -215,6 +217,7 @@ class CommitReserve(View):
             res = "error_code=0\r\n"
             res += "error_message=success\r\n"
             res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
         except (DatabaseError, IntegrityError, Exception) as e:
@@ -222,6 +225,7 @@ class CommitReserve(View):
             res = "error_code=160\r\n"
             res += "error_message=SeamlessError160\r\n"
             res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
 
@@ -290,6 +294,37 @@ class CancelReserve(View):
             res += f"balance={user.main_wallet}\r\n"
             return HttpResponse(res, content_type='text/plain')
             
+class Add2Bet(View):
+    def post(self, request):
+        username = request.GET.get("cust_id")
+        reserve_id = request.GET.get("reserve_id")
+        txn_id = generateTxnId("BTi")
+        
+        xmlData = etree.fromstring(request.body)
+        bet = xmlData[0]
+        
+        try:
+            with transaction.atomic():
+                user = findUser(username)
+                open_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
+                new_bet = Bet(
+                    provider=PROVIDER,
+                    category=CATEGORY,
+                    user=user,
+                    ref_no=reserve_id,
+                    amount_wagered=amount,
+                    # transaction_id=txn_id,
+                    market=0,
+                    other_data=dict({'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
+                )
+        except (DatabaseError, IntegrityError, Exception) as e:
+            logger.error(repr(e))
+            res = "error_code=160\r\n"
+            res += "error_message=SeamlessError160\r\n"
+            res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
+            return HttpResponse(res, content_type='text/plain')
+
 
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
