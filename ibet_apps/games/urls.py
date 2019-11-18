@@ -77,8 +77,8 @@ urlpatterns = [
     path('api/bti/reserve', csrf_exempt(bti.Reserve.as_view()), name="bti_reserve_bet"),
     path('api/bti/debitreserve', csrf_exempt(bti.DebitReserve.as_view()), name="bti_debit_reserve"),
     path('api/bti/cancelreserve', bti.CancelReserve.as_view(), name="bti_cancel_reserve"),
-    # path('api/bti/commitreserve', bti.TestFunction.as_view(), name="Test Function"),
-    # path('api/bti/debitcustomer', bti.TestFunction.as_view(), name="Test Function"),
+    path('api/bti/commitreserve', bti.CommitReserve.as_view(), name="bti_commit_reserve"),
+    path('api/bti/add2bet', bti.Add2Bet.as_view(), name="bti_add2bet"),
     # path('api/bti/creditcustomer', bti.TestFunction.as_view(), name="Test Function"),
     
     #sa

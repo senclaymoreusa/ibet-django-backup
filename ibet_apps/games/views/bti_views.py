@@ -298,11 +298,11 @@ class Add2Bet(View):
     def post(self, request):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
+        amount = request.GET.get("amount")
         txn_id = generateTxnId("BTi")
         
         xmlData = etree.fromstring(request.body)
         bet = xmlData[0]
-        
         try:
             with transaction.atomic():
                 user = findUser(username)
@@ -315,8 +315,17 @@ class Add2Bet(View):
                     amount_wagered=amount,
                     # transaction_id=txn_id,
                     market=0,
-                    other_data=dict({'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
+                    other_data=dict({'is_add2bet': True, 'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
                 )
+                user.main_wallet = user.main_wallet - amount
+                user.save()
+                new_bet.save()
+
+                res = "error_code=0\r\n"
+                res += "error_message=success\r\n"
+                res += f"balance={user.main_wallet}\r\n"
+                res += f"trx_id={txn_id}\r\n"
+                return HttpResponse(res, content_type='text/plain')
         except (DatabaseError, IntegrityError, Exception) as e:
             logger.error(repr(e))
             res = "error_code=160\r\n"
@@ -325,7 +334,27 @@ class Add2Bet(View):
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
+class Add2BetConfirm(View):
+    def post(self, request):
+        username = request.GET.get("cust_id")
+        reserve_id = request.GET.get("reserve_id")
+        amount = request.GET.get("amount")
+        txn_id = generateTxnId("BTi")
 
+        try:
+            user = findUser(username)
+            bet_to_confirm = GameBet.objects.get(ref_no=reserve_id, other_data__is_add2bet=True)
+
+
+            return HttpResponse(res, content_type='text/plain')
+        except (DatabaseError, IntegrityError, Exception) as e:
+            logger.error("Add2BetConfirm::Error Occured::" + repr(e))
+            res = "error_code=160\r\n"
+            res += "error_message=SeamlessError160\r\n"
+            res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
+            return HttpResponse(res, content_type='text/plain')
+        
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
         user = CustomUser.objects.get(username=username)
