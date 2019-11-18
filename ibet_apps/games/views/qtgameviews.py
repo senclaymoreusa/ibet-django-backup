@@ -1,6 +1,9 @@
+from math import floor
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.http import HttpResponse
+from decimal import getcontext, Decimal
 
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -43,21 +46,24 @@ class VerifySession(APIView):
                     message = "The player account is blocked."
                     logger.info("Blocked user {} trying to access QT Game".format(username))
                 else:
-                    qt_session = QTSession.objects.get(Q(user=user)&Q(session_key=str(session)))
+                    qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
+
                     if qt_session.valid:
                         status_code = 200
                         response = {
-                            'balance': round(user.main_wallet, 2),
+                            'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
                             # TODO: needs to handle if user.currency is bitcoin
                             'currency': CURRENCY_CHOICES[user.currency][1],
                         }
-                        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json', status=status_code)
+                        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
+                                            content_type='application/json', status=status_code)
+                    else:
+                        status_code = 400
+                        code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
+                        message = "Missing, invalid or expired player (wallet) session token."
 
             except Exception as e:
-                status_code = 400
-                code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
-                message = "Missing, invalid or expired player (wallet) session token."
-                logger.info("Error getting user or user session " + str(e))
+                logger.error("Error getting user or user session " + str(e))
 
         response = {
             "code": code,
@@ -90,17 +96,18 @@ class GetBalance(APIView):
                 user = CustomUser.objects.get(username=username)
                 status_code = 200
                 response = {
-                    'balance': round(user.main_wallet, 2),
+                    'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
                     # TODO: needs to handle if user.currency is bitcoin
                     'currency': CURRENCY_CHOICES[user.currency][1],
                 }
-                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json', status=status_code)
+                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
+                                    status=status_code)
 
             except Exception as e:
                 status_code = 400
                 code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
                 message = "General error. If request could not be processed."
-                logger.info("Error getting user " + str(e))
+                logger.error("Error getting user " + str(e))
 
         response = {
             "code": code,
