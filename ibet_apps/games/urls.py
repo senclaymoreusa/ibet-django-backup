@@ -12,6 +12,8 @@ import games.views.betsviews as bets
 from games.live_casino import *
 import games.views.onebookviews as onebookviews
 import games.views.sagameviews as sagameviews
+import games.views.qtgameviews as qtgameviews
+
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -73,5 +75,9 @@ urlpatterns = [
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
     path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
+
+    # QT
+    path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
+    path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
 
 ]

@@ -1,64 +1,109 @@
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
-import simplejson as json
-from games.models import FGSession, Game, GameBet, GameProvider, Category
-from django.db import transaction
-import xmltodict
-import decimal,re, math
-import requests,json
-import logging
-import random
+from django.db.models import Q
+from django.http import HttpResponse
+
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+
 from utils.constants import *
+from users.models import CustomUser
+from games.models import *
+
+import logging
 
 logger = logging.getLogger("django")
 
 
-#path('api/qt/getBalance', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
+class VerifySession(APIView):
+    permission_classes = (AllowAny,)
 
-def verifySession(request, playerId, gameId=None):
-    
-    sessionid = request.META.get('Wallet-Session')
-    passkey = request.META.get('Pass-Key')
+    """
+    This API is to validate and verify the player session every time the player launches a game.
+    """
 
+    def get(self, request, *args, **kwargs):
+        session = request.META.get('HTTP_WALLET_SESSION')
+        pass_key = request.META.get('HTTP_PASS_KEY')
+        username = self.kwargs.get('playerId')
+        status_code = 500
+        code = QT_STATUS_CODE[QT_STATUS_UNKNOWN_ERROR][1]
+        message = ""
 
+        if pass_key != QT_PASS_KEY:
+            status_code = 401
+            code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
+            message = "The given pass-key is incorrect."
+            logger.info("Error given pass key from QT wallet!")
+        else:
+            try:
+                user = CustomUser.objects.get(username=username)
+                if user.block:
+                    status_code = 403
+                    code = QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1]
+                    message = "The player account is blocked."
+                    logger.info("Blocked user {} trying to access QT Game".format(username))
+                else:
+                    qt_session = QTSession.objects.get(Q(user=user)&Q(session_key=str(session)))
+                    if qt_session.valid:
+                        status_code = 200
+                        response = {
+                            'balance': round(user.main_wallet, 2),
+                            # TODO: needs to handle if user.currency is bitcoin
+                            'currency': CURRENCY_CHOICES[user.currency][1],
+                        }
+                        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json', status=status_code)
 
-def getBalance(request, playerid, gameid=None):
-    
-    sessionid = request.META.get('Wallet-Session')
-    passkey = request.META.get('Pass-Key')
-    
-    try:
-        qtuser = UserSession.objects.get(session_key=sessionid)
-        user = CustomUser.objects.get(username=playerid)
-        
+            except Exception as e:
+                status_code = 400
+                code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
+                message = "Missing, invalid or expired player (wallet) session token."
+                logger.info("Error getting user or user session " + str(e))
+
         response = {
-            "balance" : math.floor(float(user.main_wallet * 100)) / 100,
-            "currency" : user.currency,
+            "code": code,
+            "message": message,
         }
-        
-        code = 200
-    except Exception as e:
-        msg = ''
-        if passkey != QT_PASS_KEY:
-            code = 401
-            errcode = 'LOGIN_FAILED'
-            msg = 'The given pass-key is incorrect.'
-        else: 
-            code = 400
-            errcode = 'REQUEST_DECLINED'
-            msg = 'Request could not be processed'
-        
+        return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+
+
+class GetBalance(APIView):
+    permission_classes = (AllowAny,)
+
+    """
+    This API is for QT wallet to get user balance.
+    """
+
+    def get(self, request, *args, **kwargs):
+        pass_key = request.META.get('HTTP_PASS_KEY')
+        username = self.kwargs.get('playerId')
+        status_code = 500
+        code = QT_STATUS_CODE[QT_STATUS_UNKNOWN_ERROR][1]
+        message = ""
+
+        if pass_key != QT_PASS_KEY:
+            status_code = 401
+            code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
+            message = "The given pass-key is incorrect."
+            logger.info("Error given pass key from QT wallet!")
+        else:
+            try:
+                user = CustomUser.objects.get(username=username)
+                status_code = 200
+                response = {
+                    'balance': round(user.main_wallet, 2),
+                    # TODO: needs to handle if user.currency is bitcoin
+                    'currency': CURRENCY_CHOICES[user.currency][1],
+                }
+                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json', status=status_code)
+
+            except Exception as e:
+                status_code = 400
+                code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
+                message = "General error. If request could not be processed."
+                logger.info("Error getting user " + str(e))
+
         response = {
-            "code": errcode,
-            "message": msg
+            "code": code,
+            "message": message,
         }
-        
-        
-        logger.error("cannot find user", e)
-    
-    return HttpResponse(response, content_type='application/json', status=code)
+        return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)

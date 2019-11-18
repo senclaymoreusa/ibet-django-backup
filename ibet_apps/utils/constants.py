@@ -1368,8 +1368,32 @@ SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 # QT
 QT_API_URL = 'https://api-int.qtplatform.com/'
 QT_PASS_KEY = ''
-if os.getenv("ENV") == "approd":
+
+current_env = os.getenv("ENV")
+if current_env == 'local':
+    QT_PASS_KEY = 'test-local'
+elif current_env == "approd":
     QT_PASS_KEY = 'czy2p6q2-gel8zm54-1sjp-tpls9iiw8m08'
 else:
     QT_PASS_KEY = '8qzc27xd-a8c4poby-camg-6frm83qekyvq'
-    
+
+
+QT_STATUS_SUCCESS = 0
+QT_STATUS_UNKNOWN_ERROR = 1
+QT_STATUS_INVALID_TOKEN = 2
+QT_STATUS_LOGIN_FAILED = 3
+QT_STATUS_ACCOUNT_BLOCKED = 4
+QT_STATUS_REQUEST_DECLINED = 5
+QT_STATUS_SUCCESS = 0
+QT_STATUS_SUCCESS = 0
+
+
+QT_STATUS_CODE = (
+    (0, "SUCCESS"),
+    (1, "UNKNOWN_ERROR"),
+    (2, "INVALID_TOKEN"),
+    (3, "LOGIN_FAILED"),
+    (4, "ACCOUNT_BLOCKED"),
+    (5, "REQUEST_DECLINED"),
+    (6, "SUCCESS"),
+)
