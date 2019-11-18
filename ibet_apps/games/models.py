@@ -1,17 +1,13 @@
-import uuid
-
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import JSONField
-from datetime import timedelta
 
 from users.models import CustomUser
 
 from utils.constants import *
 from django.utils import timezone
 import uuid
-import datetime
 
 # Create your models here.
 class GameProvider(models.Model):
@@ -176,7 +172,6 @@ class FGSession(models.Model):
 class QTSession(models.Model):
 
     session_key = models.UUIDField(default=uuid.uuid4, editable=False)
-    pre_session_key = models.UUIDField(null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     valid = models.BooleanField(default=True)
 
