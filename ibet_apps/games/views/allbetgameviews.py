@@ -116,9 +116,14 @@ class EncryptionView(View):
 
 
 class BalanceView(View):
-    """
-    """
+    
     def get(self, request, player_account_name):
+        """
+        Partner Public Platform API that retrieves the wallet balance of a player. The AllBet property ID and SHA1 key 
+        are used along with the request DATE header to generate a signature, which is checked against the signature
+        provided in the request AUTHORIZATION header. If the signatures match, return the balance of the player; otherwise,
+        return an error code.
+        """
         try:
             auth_header = request.META['HTTP_AUTHORIZATION']
             # print("HTTP_AUTHORIZATION: " + str(auth_header))
@@ -127,14 +132,14 @@ class BalanceView(View):
                         
             third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
             AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-            sha1_key = "Ut24jMGD7e52n5acUasPpCFw7Tcara7nYptIH18Zja/A4AApM0hZxOXdfOXqtnDcSRUgwX0rPVXKRoQDxKjXmg==" # TODO: AWS
+            AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
 
             # Generate signature
             string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + date_header + "\n" + "/get_balance/" + player_account_name
             string_to_sign_encoded = string_to_sign.encode()
             # print(string_to_sign_encoded)
 
-            hmac_obj = hmac.new(base64.b64decode(sha1_key), string_to_sign_encoded, sha1)
+            hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
             digest_result = hmac_obj.digest()
             # print("digest_result: " + str(digest_result))
 
@@ -143,7 +148,7 @@ class BalanceView(View):
             # print("sign_string: " + sign_string)
 
             generated_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
-            print(generated_header)
+            print(generated_header) # Keeping this print statement for testing purposes.
 
             # Compare generated_header against auth_header
             if auth_header != generated_header:
@@ -152,18 +157,17 @@ class BalanceView(View):
                                     "message": "signature invalid",
                                     "balance": 0 # Provider's instructions
                                  }
-
-                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # TODO: What about status?
+                logger.error("AllBet BalanceView Error: Invalid sign")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
             else:
                 user = CustomUser.objects.get(username=player_account_name)
-
                 json_to_return = {
                                     "error_code": 0,
                                     "message": "success",
                                     "balance": float(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
                                  }
-
-                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # TODO: What about status?
+                logger.info("AllBet BalanceView Success")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         except Exception as e:
             logger.error("AllBet BalanceView Error: " + str(e))
