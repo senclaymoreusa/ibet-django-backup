@@ -121,20 +121,25 @@ class DebitReserve(View):
         
         txn_id = generateTxnId("BTi")
         bet_id = xmlData[0].attrib['BetID']
-
+        user = findUser(username)
         try:
             prev_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
         except ObjectDoesNotExist as e:
             # if prev reserve not found (the initial Reserve call) then throw error
             res = "error_code=-20\r\n"
             res += "error_message=ReserveNotFound\r\n"
-            res += f"balance=0.00\r\n"
+            res += f"balance={user.main_wallet}\r\n"
             res += f"trx_id={txn_id}\r\n"
-            res += f"BonusUsed=0.00\r\n"
             return HttpResponse(res, content_type='text/plain')
 
         try:
-            user = findUser(username)
+            if amount > prev_bet.amount_wagered:
+                res = "error_code=-21\r\n"
+                res += "error_message=TotalReserveAmountExceeded\r\n"
+                res += f"balance={user.main_wallet}\r\n"
+                res += f"trx_id={txn_id}\r\n"
+                return HttpResponse(res, content_type='text/plain')
+
             bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
@@ -172,7 +177,7 @@ class CommitReserve(View):
         except ObjectDoesNotExist as e:
             res = "error_code=-20\r\n"
             res += "error_message=ReserveNotFound\r\n"
-            res += f"balance=0.00\r\n"
+            res += f"balance={user.main_wallet}\r\n"
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
@@ -182,7 +187,7 @@ class CommitReserve(View):
         if not len(corresponding_reserves):
             res = "error_code=-20\r\n"
             res += "error_message=ReserveNotFound\r\n"
-            res += f"balance=0.00\r\n"
+            res += f"balance={user.main_wallet}\r\n"
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
@@ -195,7 +200,7 @@ class CommitReserve(View):
                         ref_no=reserve_id,
                         amount_wagered=amount,
                         market=0,
-                        other_data={'commit_reserve': True}
+                        other_data={'is_committed': True}
                     )
                 totalReserveAmount = totalReserve.amount_wagered
                 actualTotal = 0
@@ -220,51 +225,71 @@ class CommitReserve(View):
             return HttpResponse(res, content_type='text/plain')
 
 
+# should generate success even if reserve is not found
 class CancelReserve(View):
     def get(self, request):
+        VOID_OUTCOME=3
         username = request.GET.get("cust_id")
         bet_id = request.GET.get("reserve_id")
         try:
             with transaction.atomic():
-                user = CustomUser.objects.get(username=username)
+                user = findUser(username)                
+                prev_bet = GameBet.objects.filter(ref_no=bet_id)
 
-                try:
-                    prev_bet = GameBet.objects.get(ref_no=bet_id)
-                except ObjectDoesNotExist as e:
+                # bet has already been debited
+                if prev_bet.count() > 1: 
+                    res = "error_code=-190\r\n"
+                    res += "error_message=SeamlessError190\r\n"
+                    res += f"balance={user.main_wallet}\r\n"
+                    return HttpResponse(res, content_type='text/plain')
+                
+                # no Reserve was made, but cancel called anyways
+                if prev_bet.count() == 0:
+                    credit_amount = decimal.Decimal(0)
                     bet = GameBet(
                         ref_no=bet_id,
-                        amount_won=decimal.Decimal(0),
-                        outcome=3
-                        # provider=PROVIDER,
-                        # category=CATEGORY,
+                        amount_won=credit_amount,
+                        outcome=VOID_OUTCOME,
+                        provider=PROVIDER,
+                        category=CATEGORY,
+                        other_data={'is_cancel': True}
+                    )
+
+                    bet.save()
+                    res = "error_code=0\r\n"
+                    res += "error_message=ReserveNotFound\r\n"
+                    res += f"balance={user.main_wallet}\r\n"
+                    return HttpResponse(res, content_type='text/plain')
+                
+                # expected case, only Reserve was called -> okay to cancel
+                if prev_bet.count() == 1:
+                    credit_amount = prev_bet[0].amount_wagered
+                    bet = GameBet(
+                        ref_no=bet_id,
+                        amount_won=credit_amount,
+                        outcome=VOID_OUTCOME,
+                        provider=PROVIDER,
+                        category=CATEGORY,
+                        other_data={'is_cancel': True}
                     )
                     
-                bet = GameBet(
-                    ref_no=bet_id,
-                    amount_won=prev_bet.amount_wagered,
-                    # provider=PROVIDER,
-                    # category=CATEGORY,
-                )
-                new_balance = user.main_wallet + prev_bet.amount_wagered
-                user.main_wallet = new_balance
-                user.save()
-                bet.save()
-                
-            res = "error_code=-4\r\n"
-            res += "error_message=success\r\n"
-            # res += f"balance={user.main_wallet}\r\n"
-            res += f"balance=100\r\n"
-            return HttpResponse(res, content_type='text/plain')
-        except (ObjectDoesNotExist, DatabaseError, IntegrityError, Exception) as e:
+                    new_balance = user.main_wallet + credit_amount
+                    user.main_wallet = new_balance
+                    user.save()
+                    bet.save()
+
+                    res = "error_code=0\r\n"
+                    res += "error_message=success\r\n"
+                    res += f"balance={user.main_wallet}\r\n"
+                    return HttpResponse(res, content_type='text/plain')
+            
+        except (DatabaseError, IntegrityError, Exception) as e:
             logger.error(repr(e))
-            res = "error_code=-4\r\n"
-            res += "error_message=success\r\n"
+            res = "error_code=-170\r\n"
+            res += "error_message=SeamlessError170\r\n"
             res += f"balance={user.main_wallet}\r\n"
-            # res += f"balance=100\r\n"
             return HttpResponse(res, content_type='text/plain')
             
-
-
 
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
@@ -273,7 +298,7 @@ def findUser(username): # should only throw error in the Reserve call, if it is 
     except ObjectDoesNotExist as e:
         res = "error_code=-2\r\n"
         res += "error_message=CustomerNotFound\r\n"
-        res += f"balance=0.00\r\n"
+        res += f"balance={user.main_wallet}\r\n"
         res += f"trx_id={txn_id}\r\n"
         res += f"BonusUsed=0.00\r\n"
         return HttpResponse(res, content_type='text/plain')
