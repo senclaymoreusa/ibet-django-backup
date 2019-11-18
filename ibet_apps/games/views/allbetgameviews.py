@@ -121,26 +121,26 @@ class BalanceView(View):
     def get(self, request, player_account_name):
         try:
             auth_header = request.META['HTTP_AUTHORIZATION']
-            print("HTTP_AUTHORIZATION: " + str(auth_header))
-            date = request.META['HTTP_DATE']
-            print("HTTP_DATE: " + str(date))
+            # print("HTTP_AUTHORIZATION: " + str(auth_header))
+            date_header = request.META['HTTP_DATE']
+            # print("HTTP_DATE: " + str(date_header))
                         
             third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
             AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-            sha1_key = "dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="
+            sha1_key = "Ut24jMGD7e52n5acUasPpCFw7Tcara7nYptIH18Zja/A4AApM0hZxOXdfOXqtnDcSRUgwX0rPVXKRoQDxKjXmg==" # TODO: AWS
 
             # Generate signature
-            string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + date + "\n" + "/get_balance/player001"
+            string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + date_header + "\n" + "/get_balance/" + player_account_name
             string_to_sign_encoded = string_to_sign.encode()
-            print(string_to_sign_encoded)
+            # print(string_to_sign_encoded)
 
             hmac_obj = hmac.new(base64.b64decode(sha1_key), string_to_sign_encoded, sha1)
             digest_result = hmac_obj.digest()
-            print("digest_result: " + str(digest_result))
+            # print("digest_result: " + str(digest_result))
 
             sign_bytes = base64.b64encode(digest_result)
             sign_string = sign_bytes.decode()
-            print("sign_string: " + sign_string)
+            # print("sign_string: " + sign_string)
 
             generated_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
             print(generated_header)
@@ -150,20 +150,20 @@ class BalanceView(View):
                 json_to_return = {
                                     "error_code": 10001,
                                     "message": "signature invalid",
-                                    "balance": 0 # TODO: Clarify with provider.
+                                    "balance": 0 # Provider's instructions
                                  }
 
-                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # What about status?
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # TODO: What about status?
             else:
                 user = CustomUser.objects.get(username=player_account_name)
 
                 json_to_return = {
                                     "error_code": 0,
                                     "message": "success",
-                                    "balance": float(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))) # Truncates 2nd decimal place
+                                    "balance": float(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
                                  }
 
-                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # What about status?
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json') # TODO: What about status?
 
         except Exception as e:
             logger.error("AllBet BalanceView Error: " + str(e))
