@@ -314,10 +314,14 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
 class test(View):
     def get(self, request, *args, **kwargs):
         # response = fundTransfer("angela", 200, "main", '1', '1')
+        username = request.GET['username']
         response = createMember("angela05", "1")
         return HttpResponse(response)
 
     
+def test01(request, username):
+    #username = request.GET.get('username')
+    return HttpResponse(username)
 
 class FundTransfer(APIView):
     permission_classes = (AllowAny,)
