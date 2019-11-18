@@ -1,9 +1,6 @@
-from math import floor
-
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.http import HttpResponse
-from decimal import getcontext, Decimal
 
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
