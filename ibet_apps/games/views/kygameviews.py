@@ -47,11 +47,6 @@ KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 
-"""
-:param key: Http request in API views
-:param data: data needs to be encrypt
-:returns: IPv4 address
-"""
 def aes_encode(key, data):
     cipher = AES.new(key, AES.MODE_ECB)
     # cipher_chunks.append()
@@ -94,6 +89,46 @@ def generateUrl(param, is_api):
     return url
 
 
+@background(schedule=10)
+def getBets():
+    # Query Bet Order
+    timestamp = get_timestamp()
+
+    startTime = get_timestamp() - 300000 # five minutes before now
+    endTime = get_timestamp() - 60000 # one minute before now
+
+    param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
+
+    param = aes_encode(KY_AES_KEY, param)
+    param = base64.b64encode(param)
+    param = str(param, "utf-8")
+
+    key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+    key = hashlib.md5(key.encode())
+    key = key.hexdigest()
+
+    url = KY_RECORD_URL
+
+    req_param = {}
+    req_param["agent"] = KY_AGENT
+    req_param["timestamp"] = str(timestamp)
+    req_param["param"] = param
+    req_param["key"] = key
+
+    req = urllib.parse.urlencode(req_param)
+    url = url + '?' + req
+    res = requests.get(url)
+
+    # print(res.json)
+
+
+"""
+:param user: CustomUser object
+:param amount: amount of money to transfer
+:param wallet: wallet to deposit/withdraw
+:param method: 0 -> Deposit, 1 -> Withdraw
+:returns: IPv4 address
+"""
 def kyTransfer(user, amount, wallet, method):
     try:
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
@@ -164,59 +199,45 @@ def kyTransfer(user, amount, wallet, method):
 
         # agent = KY_AGENT
         orderid = KY_AGENT + str(order_time) + user.username
-        param = "s=" + str(operation_type) + "&account=" + user.username + "&orderid=" + orderid + "&money=" + amount
+        param = "s=" + str(operation_type) + "&account=" + user.username + "&orderid=" + orderid + "&money=" + str(amount)
 
-        # param = aes_encode(KY_AES_KEY, param)
-        # param = base64.b64encode(param)
-        # param = str(param, "utf-8")
-
-        # timestamp = get_timestamp()
-        # key = KY_AGENT + str(timestamp) + KY_MD5_KEY
-        # key = hashlib.md5(key.encode())
-        # key = key.hexdigest()
-
-        # url = KY_API_URL
-
-        req_param = {}
-        req_param["agent"] = agent
-        req_param["timestamp"] = str(timestamp)
-        req_param["param"] = param
-        req_param["key"] = key
-        req = urllib.parse.urlencode(req_param)
-        url = url + '?' + req
-
-        url = generateUrl(param)
-        print(url)
+        url = generateUrl(param, True)
+        
         res = requests.get(url)
-
+        res_data = res.json()
         if res.status_code == 200:
-            res_data = res.json()
             if res_data['s'] == 102:
-                Transaction.objects.create(
-                    transaction_id=trans_id,
-                    user_id=user,
-                    order_id=orderid,
-                    amount=amount,
-                    currency=user.currency,
-                    transfer_from=wallet,
-                    transfer_to='ky',
-                    product=1,
-                    transaction_type=TRANSACTION_DEPOSIT,
-                    status=TRAN_SUCCESS_TYPE
-                )
+                if res_data['d']['code'] == 0:
+                    Transaction.objects.create(
+                        transaction_id=trans_id,
+                        user_id=user,
+                        order_id=orderid,
+                        amount=amount,
+                        currency=user.currency,
+                        transfer_from=wallet,
+                        transfer_to='ky',
+                        product=1,
+                        transaction_type=TRANSACTION_DEPOSIT,
+                        status=TRAN_SUCCESS_TYPE
+                    )
+                else:
+                    logger.info("Deposit Not Success {}".format(res_data['d']))
             elif res_data['s'] == 103:
-                Transaction.objects.create(
-                    transaction_id=trans_id,
-                    user_id=user,
-                    order_id=orderid,
-                    amount=amount,
-                    currency=user.currency,
-                    transfer_from='ky',
-                    transfer_to=wallet,
-                    product=1,
-                    transaction_type=TRANSACTION_DEPOSIT,
-                    status=TRAN_SUCCESS_TYPE
-                )
+                if res_data['d']['code'] == 0:
+                    Transaction.objects.create(
+                        transaction_id=trans_id,
+                        user_id=user,
+                        order_id=orderid,
+                        amount=amount,
+                        currency=user.currency,
+                        transfer_from='ky',
+                        transfer_to=wallet,
+                        product=1,
+                        transaction_type=TRANSACTION_DEPOSIT,
+                        status=TRAN_SUCCESS_TYPE
+                    )
+                else:
+                    logger.info("Withdraw Not Success {}".format(res_data['d']))
             else:
                 logger.info("Wrong S type: {}".format(res_data['s']))
         else:
@@ -225,39 +246,6 @@ def kyTransfer(user, amount, wallet, method):
     except Exception as e:
         logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
         return HttpResponse(status=400)
-
-
-@background(schedule=10)
-def getBets():
-    # Query Bet Order
-    timestamp = get_timestamp()
-
-    startTime = get_timestamp() - 300000 # five minutes before now
-    endTime = get_timestamp() - 60000 # one minute before now
-
-    param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
-
-    param = aes_encode(KY_AES_KEY, param)
-    param = base64.b64encode(param)
-    param = str(param, "utf-8")
-
-    key = KY_AGENT + str(timestamp) + KY_MD5_KEY
-    key = hashlib.md5(key.encode())
-    key = key.hexdigest()
-
-    url = KY_RECORD_URL
-
-    req_param = {}
-    req_param["agent"] = KY_AGENT
-    req_param["timestamp"] = str(timestamp)
-    req_param["param"] = param
-    req_param["key"] = key
-
-    req = urllib.parse.urlencode(req_param)
-    url = url + '?' + req
-    res = requests.get(url)
-
-    # print(res.json)
 
 
 class TestTransferAPI(View):
@@ -310,13 +298,11 @@ class KaiyuanAPI(View):
                 param = "s=" + str(operation_type) + "&account=" + account
             # Change Balance
             elif operation_type == 2:
-                money = float(data["money"])
-                # money = self.fundTransfer(money)
+                money = data["money"]
                 order_time = time.strftime("%Y%m%d%H%M%S")
                 orderid = agent + str(order_time) + account
 
                 param = "s=" + str(operation_type) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
-
             # Refund
             elif operation_type == 3:
                 money = data["money"]
@@ -326,7 +312,7 @@ class KaiyuanAPI(View):
                 param = "s=" + str(operation_type) + "&account=" + account + "&orderid=" + orderid + "&money=" + money
             # Order Query
             elif operation_type == 4:
-                order_time = time.strftime("%Y%m%d%H%M%S")
+                # order_time = time.strftime("%Y%m%d%H%M%S")
                 # orderid = agent + str(order_time) + account
                 orderid = data["orderid"]
 
@@ -353,34 +339,10 @@ class KaiyuanAPI(View):
             # kind_id = '0' # game lobby
             # "&KindID=" + kind_id
 
-            print(param)
-
             if operation_type != 6:
                 url = generateUrl(param, True)
             else:
                 url = generateUrl(param, False)
-
-            # param = aes_encode(KY_AES_KEY, param)
-            # param = base64.b64encode(param)
-            # param = str(param, "utf-8")
-
-            # key = KY_AGENT + str(timestamp) + KY_MD5_KEY
-            # key = hashlib.md5(key.encode())
-            # key = key.hexdigest()
-
-            # url = KY_API_URL if s != 6 else KY_RECORD_URL
-
-            # req_param = {}
-            # req_param["agent"] = agent
-            # req_param["timestamp"] = str(timestamp)
-            # req_param["param"] = param
-            # req_param["key"] = key
-            # url += "?agent=" + agent
-            # url += "&timestamp=" + str(timestamp)
-            # url += "&param=" + param
-            # url += "&key=" + str(key)
-            # req = urllib.parse.urlencode(req_param)
-            # url = url + '?' + req
             
             res = requests.get(url)
             if res.status_code == 200:
