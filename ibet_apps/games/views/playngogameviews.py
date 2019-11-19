@@ -22,15 +22,16 @@ class AuthenticateView(View):
 
     def post(self, request, *args, **kwargs):
         """
-        The Authenticate call makes a request to the Operator Account System to validate the
-        user information upon the start of a new game. XML is the data format that this endpoint
-        receives and responds with.
+        When a PNG game is launched, a username (session token) is generated for the current user 
+        and sent to the provider via a launch URL. The Authenticate API receives this session token 
+        parameter and uses it to fetch the user associated with the session token. Next, a PNG 
+        session object is created for the specific user in order to store information about a player's 
+        game rounds.
         """
-
-        data = request.body
 
         try:
             # Extract data fields from request XML
+            data = request.body
             req_dict = xmltodict.parse(data)
 
             username = req_dict['authenticate']['username']
@@ -326,6 +327,8 @@ class ReleaseView(View):
             win_amount_decimal = decimal.Decimal(win_amount_str).quantize(decimal.Decimal('0.00'))
 
             status_code = PNG_STATUS_OK
+
+            # TODO: Check for invalid currency.
 
             balance_after_win = user_balance + win_amount_decimal
             user.main_wallet = balance_after_win
