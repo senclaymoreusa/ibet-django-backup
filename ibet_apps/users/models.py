@@ -182,7 +182,10 @@ class CustomUser(AbstractBaseUser):
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                             related_name='AffiliateManager')
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                       related_name='VIPManager')
 
     #commission
     commission_status = models.BooleanField(default=False)               # for current month
@@ -594,8 +597,10 @@ class GameRequestsModel(models.Model):
 
 
 # Member VIP System
+
 class Segmentation(models.Model):
     name = models.CharField(max_length=50)
+    level = models.IntegerField()
     turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
@@ -605,7 +610,7 @@ class Segmentation(models.Model):
     product_turnover_bonuses = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.level)
 
 
 @receiver(post_save, sender=CustomUser)

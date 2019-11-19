@@ -244,8 +244,9 @@
                     level_detail['downline_ftd'] = $(this).find('#downline_monthly_ftd').val();
                     level_details.push(level_detail);
                 });
+                var manager = $('#manager_assign_chosen a span').html()
                 var affiliate_detail = [];
-                affiliate_detail.push($('#affiliate-manager').val());
+                affiliate_detail.push(manager);
                 if ($('#affiliate-level-normal').is(':checked')) {
                     affiliate_detail.push("Normal");
                 } else {
@@ -266,7 +267,7 @@
                 } else {
                     affiliate_detail.push("No");
                 }
-                var manager = $('#affiliate-manager').val()
+
                 $.ajax({
                     type: 'POST',
                     url: agent_detail_url,
@@ -276,7 +277,7 @@
                         'affiliate_detail[]': affiliate_detail,
                         'level_details': JSON.stringify(level_details),
                         'affiliate_id': affiliate_id,
-                        'manager':manager
+                        'manager': manager,
                     },
                     success: function (data) {
                         location.reload();
@@ -302,36 +303,7 @@
             });
         }
 
-        $('#affiliate-manager').keyup(function () {
-            var text = $('#affiliate-manager').val();
-            $("#affiliate-manager").autocomplete({
-                source: function (request, response) {
-                    $.ajax({
-                        dataType: 'json',
-                        type: 'GET',
-                        url: agent_detail_url,
-                        data: {
-                            'type': 'search_affiliate_manager',
-                            'text': text
-                        },
-                        success: function (data) {
-                            response(data);
-                        }
-                    });
-                },
-                minLength: 1,
-                //select
-                select: function (e, ui) {
-                    // alert(ui.item.value);
-                },
-                open: function () {
-                    $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
-                },
-                close: function () {
-                    $(this).removeClass("ui-corner-top").addClass("ui-corner-all");
-                }
-            });
-        });
+        $('.manager-assign').chosen({ width: "70%" });
     });
     function copyToClipboard(value) {
         var aux = document.createElement("input");

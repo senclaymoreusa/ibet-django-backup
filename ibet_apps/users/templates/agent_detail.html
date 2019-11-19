@@ -9,6 +9,7 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" />
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
 </head>
@@ -417,11 +418,23 @@
                                     <!-- Affiliate Manager -->
                                     <div class="row" style="margin-bottom: 20px">
                                         <div class="col-md-4"><strong>Affiliate Manager</strong></div>
-                                        <div class="col-md-6">
-                                            <input autocomplete="block" disableautocomplete type="text"
-                                                id="affiliate-manager" name="affiliate-manager" value="{{ manager }}" />
-                                            <input disableautocomplete type="hidden" name="search-result"
-                                                id="search-result" />
+                                        <div class="col-md-4">
+
+                                            <select id="manager-assign" class="manager-assign">
+                                            {% if manager %}
+                                                <option value="" selected disabled style="display:None">{{ manager }}</option>
+                                            {% else %}
+                                                <option value="" selected disabled style="display:None">Select manager</option>
+                                            {% endif %}
+                                            {% for manager in managers %}
+                                                <option value="{{ manager }}">{{ manager }}</option>
+                                            {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            {% if managers == None %}
+                                            <p style="color:red">{{ empty_manager_group }}</p>
+                                            {% endif %}
                                         </div>
                                     </div>
 
@@ -789,6 +802,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 
 <script src="{% static 'xadmin/js/ibet-admin-agent-detail.js' %}"></script>
 

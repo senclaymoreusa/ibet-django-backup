@@ -23,6 +23,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 import xadmin
+
 xadmin.autodiscover()
 
 # from xadmin.plugins import xversion
@@ -47,6 +48,11 @@ urlpatterns = [
     path('rest-auth/', include('rest_auth.urls')),         # Stephen
     path('rest-auth/registration/', include('rest_auth.registration.urls'))    # Stephen
 ]
+
+
+import games.views.onebookviews as onebookviews
+
+onebookviews.getBetDetail(repeat=300,repeat_until=None)
 
 # Use static() to add url mapping to serve static files during development (only)
 from django.conf import settings

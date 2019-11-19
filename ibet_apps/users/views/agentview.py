@@ -5,8 +5,17 @@ from django.http import HttpResponse
 
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth, TruncYear, TruncDate, Coalesce
+from django.contrib import messages
 from django.shortcuts import render
+from django.template.defaulttags import register
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.conf import settings
+from dateutil.relativedelta import relativedelta
+from django.shortcuts import render_to_response
 from decimal import Decimal
 
 from xadmin.views import CommAdminView
@@ -14,9 +23,11 @@ from users.models import CustomUser, UserAction, Commission, UserActivity, Refer
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
 
+
 import logging
 import simplejson as json
 import datetime
+
 
 logger = logging.getLogger('django')
 
@@ -203,8 +214,8 @@ class AgentView(CommAdminView):
                     affiliates_dict = {}
                     affiliates_dict['id'] = affiliate.pk
                     affiliates_dict['manager'] = ""
-                    if affiliate.managed_by:
-                        affiliates_dict['manager'] = affiliate.managed_by.username
+                    if affiliate.affiliate_managed_by:
+                        affiliates_dict['manager'] = affiliate.affiliate_managed_by.username
                     # downline list
 
                     downlines = getDownline(affiliate)
@@ -464,7 +475,7 @@ class AgentDetailView(CommAdminView):
             except ObjectDoesNotExist:
                 context["commission_type"] = ""
 
-            manager = affiliate.managed_by
+            manager = affiliate.affiliate_managed_by
             if manager == None:
                 context["manager"] = ""
             else:
@@ -520,6 +531,8 @@ class AgentDetailView(CommAdminView):
             context["total_commission"] = commission_tran.aggregate(
                 total_commission=Coalesce(Sum('amount'), 0))['total_commission']
 
+            context["managers"] = getManagerList("Affiliate")
+            context["empty_manager_group"] = "Please create Affiliate Manager group in System Admin. "
             return render(request, "agent_detail.html", context)
 
     def post(self, request):
@@ -629,9 +642,9 @@ class AgentDetailView(CommAdminView):
 
             try:
                 manager = CustomUser.objects.get(username=manager)
-                affiliate.managed_by = manager
+                affiliate.affiliate_managed_by=manager
             except CustomUser.DoesNotExist:
-                manager = affiliate.managed_by
+                manager = affiliate.affiliate_managed_by
 
             commission_list = []
             # update commission levels
