@@ -30,7 +30,6 @@ import pytz
 
 logger = logging.getLogger('django')
 
-
 # def des_decrypt(s):
 #     encrypt_key = '9d25ee5d1ffa0e01'
 #     iv = encrypt_key
@@ -38,8 +37,25 @@ logger = logging.getLogger('django')
 #     de = k.decrypt(base64.b64decode(s), padmode=PAD_PKCS7)
 #     return de
 
+
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
+
+
+def des3Encryption(plain_text, key):
+    # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
+    cipher = DES3.new(key, DES3.MODE_ECB)
+    cipher_text = cipher.encrypt(pad(plain_text))
+
+    return str(base64.b64encode(cipher_text), "utf-8")
+
+
+def des3Decryption(cipher_text, key):
+    cipher_text = base64.b64decode(cipher_text)
+    cipher = DES3.new(key, DES3.MODE_ECB)
+    plain_text = cipher.decrypt(cipher_text)
+    return plain_text.decode()
+
 
 class InplayLoginAPI(View):
     def post(self, request, *arg, **kwargs):
@@ -107,8 +123,15 @@ class InplayGetBalanceAPI(View):
             print(e)
 
 
-# class InplayGetApprovalAPI(View):
-#     return HttpResponse(status=200)
+class InplayGetApprovalAPI(View):
+    def get(self, request, *arg, **kwargs):
+        balance_package = request.GET.get('balancePackage')
+        package_id = request.GET.get('balancePackage')
+        date_sent = request.GET.get('dateSent')
+
+        # try:
+
+        #     return HttpResponse(status=200)
 
 
 # class InplayDeductBalanceAPI(View):
@@ -117,3 +140,30 @@ class InplayGetBalanceAPI(View):
 
 # class InplayUpdateBalanceAPI(View):
 #     return HttpResponse(status=200)
+
+
+class TestDecryption(View):
+    def get(self, request, *arg, **kwargs):
+
+        event_type_id = request.GET.get('EventTypeId')  # "EventTypeId": 1001,
+        member_code = request.GET.get('MemberCode')  # "MemberCode": "bae02",
+        package_id = request.GET.get('TransactionAmt') # "TransactionAmt": 100.0
+        
+        plain_json = {}
+        plain_json["Account"] = "Bobby"
+        plain_json["Success"] = 0
+
+        plain_json = json.dumps(plain_json)
+        
+        key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
+
+        cipher_json = des3Encryption(plain_json, key)
+
+        print(cipher_json)
+
+        plain_json = des3Decryption(cipher_json, key)
+
+        # plain_json = json.loads(plain_json)
+        print(plain_json)
+
+        return HttpResponse(status=200)

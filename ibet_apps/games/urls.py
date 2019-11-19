@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/inplay/GetBalance/', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay_get_balance"),
     # path('api/inplay/get-approval', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay-get-approval"),
     # path('api/inplay/deduct-balance', csrf_exempt(inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
-    # path('api')
+    path('api/inplay/test-decryption/', inplayviews.TestDecryption.as_view(), name="inplay_test_decryption"),
 
     #ea live casino
     path('api/ea/login/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
