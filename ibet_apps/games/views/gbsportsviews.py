@@ -149,6 +149,7 @@ class WalletBetAPIURL(APIView):
                                 ref_no=BetID,
                                 amount_wagered=decimal.Decimal(RealBetAmt)/100,
                                 bet_type=TransType,
+                                other_data=data,
                             )
 
                     else:
@@ -233,6 +234,7 @@ class WalletBetAPIURL(APIView):
                                     ref_no=BetID,
                                     amount_wagered=decimal.Decimal(RealBetAmt/100),
                                     bet_type=bet_type,
+                                    other_data=data,
                                 )
                             user.main_wallet=current_balance
                             user.save()
@@ -363,7 +365,8 @@ class WalletSettleAPIURL(APIView):
                             bet_type=bet_type,
                             amount_won=decimal.Decimal(RefundBetAmt/100),
                             outcome=BetResult,
-                            resolved_time=timezone.now()
+                            resolved_time=timezone.now(),
+                            other_data=data,
                         )
                         
                         if RefundBetAmt != '0' :
@@ -462,7 +465,8 @@ class WalletSettleAPIURL(APIView):
                                 bet_type=bet_type,
                                 amount_won=decimal.Decimal(RefundBetAmt/100),
                                 outcome=BetResult,
-                                resolved_time=timezone.now()
+                                resolved_time=timezone.now(),
+                                other_data=data,
                             )
                             
                             if RefundBetAmt != '0' :
