@@ -39,7 +39,7 @@ class GameLaunchView(View):
             except:
                 PNGTicket.objects.create(png_ticket=png_ticket, user_obj=user_obj)
 
-            return HttpResponse("PNGTicket created")
+            return HttpResponse("PNGTicket created or updated")
 
         except Exception as e:
             logger.error("PLAY'nGO GameLaunchView Error: " + str(e))
@@ -71,71 +71,75 @@ class AuthenticateView(View):
             game_id = req_dict['authenticate']['gameId']
             channel = req_dict['authenticate']['channel']
 
-            # print(session_token, product_id, client_ip, context_id, access_token, language, game_id, channel)
+            try:
+                existing_ticket = PNGTicket.objects.get(png_ticket=session_token)
+                user_obj = existing_ticket.user_obj
+                # print("user_obj.username: " + user_obj.username)
 
-            # TODO: authentication logic. Using dummy data for now.
+                external_id = user_obj.username
+                status_code = 0 # Placeholder
+                status_message = "ok" # Placeholder
+                user_currency = CURRENCY_CHOICES[user_obj.currency][1]
+                nickname = "MaxPower" # Placeholder
+                country = "SE" # Placeholder
+                birthdate = "1970-01-01" # Placeholder
+                registration = "2010-05-05" # Placeholder
+                res_language = "EN" # Placeholder
+                affiliate_id = "" # Placeholder
+                real = decimal.Decimal(user_obj.main_wallet).quantize(decimal.Decimal('0.00'))
+                external_game_session_id = "" # Placeholder
+                region = 3 # Placeholder
 
-            external_id = 554433 # Placeholder
-            status_code = 0 # Placeholder
-            status_message = "ok" # Placeholder
-            user_currency = "EUR" # Placeholder
-            nickname = "MaxPower" # Placeholder
-            country = "SE" # Placeholder
-            birthdate = "1970-01-01" # Placeholder
-            registration = "2010-05-05" # Placeholder
-            res_language = "EN" # Placeholder
-            affiliate_id = "" # Placeholder
-            real = 1234.56 # Placeholder
-            external_game_session_id = "" # Placeholder
-            region = 3 # Placeholder
-
-            # Compose response dictionary and convert to response XML
-            res_dict = {
-                "authenticate": {
-                    "externalId": {
-                        "#text": str(external_id)
-                    },
-                    "statusCode": {
-                        "#text": str(status_code)
-                    },
-                    "statusMessage": {
-                        "#text": status_message
-                    },
-                    "userCurrency": {
-                        "#text": user_currency
-                    },
-                    "nickname": {
-                        "#text": nickname
-                    },
-                    "country": {
-                        "#text": country
-                    },
-                    "birthdate": {
-                        "#text": birthdate
-                    },
-                    "registration": {
-                        "#text": registration
-                    },
-                    "language": {
-                        "#text": res_language
-                    },
-                    "affiliateId": {
-                        "#text": affiliate_id
-                    },
-                    "real": {
-                        "#text": str(real)
-                    },
-                    "externalGameSessionId": {
-                        "#text": external_game_session_id
-                    },
-                    "region": {
-                        "#text": str(region)
-                    },
+                # Compose response dictionary and convert to response XML
+                res_dict = {
+                    "authenticate": {
+                        "externalId": {
+                            "#text": str(external_id)
+                        },
+                        "statusCode": {
+                            "#text": str(status_code)
+                        },
+                        "statusMessage": {
+                            "#text": status_message
+                        },
+                        "userCurrency": {
+                            "#text": str(user_currency)
+                        },
+                        "nickname": {
+                            "#text": nickname
+                        },
+                        "country": {
+                            "#text": country
+                        },
+                        "birthdate": {
+                            "#text": birthdate
+                        },
+                        "registration": {
+                            "#text": registration
+                        },
+                        "language": {
+                            "#text": res_language
+                        },
+                        "affiliateId": {
+                            "#text": affiliate_id
+                        },
+                        "real": {
+                            "#text": str(real)
+                        },
+                        "externalGameSessionId": {
+                            "#text": external_game_session_id
+                        },
+                        "region": {
+                            "#text": str(region)
+                        },
+                    }
                 }
-            }
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
-            return HttpResponse(res_msg, content_type='text/xml') # Successful response
+                res_msg = xmltodict.unparse(res_dict, pretty=True)
+                return HttpResponse(res_msg, content_type='text/xml') # Successful response
+
+            except Exception as e:
+                return HttpResponse(str(e))
 
         except:
             # Malformed xml, missing tags, or error parsing data
