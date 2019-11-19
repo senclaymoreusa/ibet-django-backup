@@ -166,8 +166,8 @@ class FGSession(models.Model):
     
     def __str__(self):
         return '{0}'.format(self.user)
-    
-    
+
+
 # QT game
 class QTSession(models.Model):
 
@@ -177,6 +177,13 @@ class QTSession(models.Model):
 
     def __str__(self):
         return '{0}'.format(self.user.username)
-    
 
 
+#MG token
+class MGToken(models.Model):
+
+    user=models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    token= models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return '{0}'.format(self.user)
