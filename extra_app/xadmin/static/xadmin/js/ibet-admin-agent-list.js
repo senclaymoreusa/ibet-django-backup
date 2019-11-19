@@ -314,7 +314,7 @@
 
             if (!valid) {
                 // has empty
-                $('#add-level-errorMessage').text("Please fill the empty input");
+                $('#add-level-errorMessage').text("Please fill out the empty input.");
                 $('#add-level-errorMessage').css('color', 'red');
                 return true;
             } else {
