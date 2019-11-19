@@ -27,6 +27,7 @@ from utils.constants import *
 logger = logging.getLogger('django')
 PROVIDER = GameProvider.objects.get(provider_name='BTi')
 CATEGORY = Category.objects.get(name='Sportsbook')
+MARKET_CN = 2
 
 # check if token exists for logged in user
 class ValidateToken(View):
@@ -78,8 +79,8 @@ class Reserve(View):
                         ref_no=reserve_id,
                         amount_wagered=amount,
                         # transaction_id=txn_id,
-                        market=0,
-                        other_data={'is_reserve': True}
+                        market=MARKET_CN,
+                        other_data={'is_reserve': True, 'bets_info': bet_xml.attrib, 'all_bet_info': [bet.attrib for bet in bet_xml.getchildren()]}
                     )
                     user.main_wallet = ending_balance
                     bet.save()
@@ -147,7 +148,7 @@ class DebitReserve(View):
                 ref_no=reserve_id,
                 amount_wagered=amount,
                 # transaction_id=txn_id,
-                market=0,
+                market=MARKET_CN,
                 other_data=dict({'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
             )
             bet.save()
@@ -200,7 +201,7 @@ class CommitReserve(View):
                         username=user,
                         ref_no=reserve_id,
                         amount_wagered=amount,
-                        market=0,
+                        market=MARKET_CN,
                         # transaction_id=txn_id,
                         other_data={'is_committed': True}
                     )
@@ -256,6 +257,7 @@ class CancelReserve(View):
                         outcome=VOID_OUTCOME,
                         provider=PROVIDER,
                         category=CATEGORY,
+                        resolved_time=timezone.now(),
                         other_data={'is_cancel': True}
                     )
 
@@ -274,6 +276,7 @@ class CancelReserve(View):
                         outcome=VOID_OUTCOME,
                         provider=PROVIDER,
                         category=CATEGORY,
+                        resolved_time=timezone.now(),
                         other_data={'is_cancel': True}
                     )
                     
@@ -314,7 +317,7 @@ class Add2Bet(View):
                     ref_no=reserve_id,
                     amount_wagered=amount,
                     # transaction_id=txn_id,
-                    market=0,
+                    market=MARKET_CN,
                     other_data=dict({'is_add2bet': True, 'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
                 )
                 user.main_wallet = user.main_wallet - amount
@@ -326,13 +329,15 @@ class Add2Bet(View):
                 res += f"balance={user.main_wallet}\r\n"
                 res += f"trx_id={txn_id}\r\n"
                 return HttpResponse(res, content_type='text/plain')
+
         except (DatabaseError, IntegrityError, Exception) as e:
-            logger.error(repr(e))
-            res = "error_code=160\r\n"
-            res += "error_message=SeamlessError160\r\n"
+            logger.error("Add2Bet::Error Occured::" + repr(e))
+            res = "error_code=-1\r\n"
+            res += "error_message=GeneralError\r\n"
             res += f"balance={user.main_wallet}\r\n"
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
+
 
 class Add2BetConfirm(View):
     def post(self, request):
@@ -340,21 +345,71 @@ class Add2BetConfirm(View):
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
         txn_id = generateTxnId("BTi")
-
+        xmlData = etree.fromstring(request.body)
+        bet = xmlData[0]
         try:
             user = findUser(username)
             bet_to_confirm = GameBet.objects.get(ref_no=reserve_id, other_data__is_add2bet=True)
+            confirm_bet = Bet(
+                provider=PROVIDER,
+                category=CATEGORY,
+                user=user,
+                ref_no=reserve_id,
+                amount_wagered=bet_to_confirm.amount_wagered,
+                # transaction_id=txn_id,
+                market=MARKET_CN,
+                other_data=dict({'add2bet_confirm': True, 'updated_bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
+            )
+            confirm_bet.save()
 
-
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
+            res += f"trx_id={txn_id}\r\n"
+            res += f"balance={user.main_wallet}\r\n"
             return HttpResponse(res, content_type='text/plain')
+
         except (DatabaseError, IntegrityError, Exception) as e:
             logger.error("Add2BetConfirm::Error Occured::" + repr(e))
-            res = "error_code=160\r\n"
-            res += "error_message=SeamlessError160\r\n"
-            res += f"balance={user.main_wallet}\r\n"
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
             res += f"trx_id={txn_id}\r\n"
+            res += f"balance={user.main_wallet}\r\n"
             return HttpResponse(res, content_type='text/plain')
+
+class DebitCustomer(View):
+    def post(self, request):
+        username = request.GET.get("cust_id")
+        reserve_id = request.GET.get("reserve_id")
+        amount = request.GET.get("amount")
+        txn_id = generateTxnId("BTi")
         
+        xmlData = etree.fromstring(request.body)
+        purchases = xmlData[0]
+        try:
+            with transaction.atomic():
+                user = findUser(username)    
+                resolvedBet = Bet(
+                    provider=PROVIDER,
+                    category=CATEGORY,
+                    user=user,
+                    ref_no=reserve_id,
+                    amount_wagered=bet_to_confirm.amount_wagered,
+                    # transaction_id=txn_id,
+                    market=MARKET_CN,
+                    resolved_time=timezone.now(),
+                    other_data=dict({
+                        'debit_data': xmlData.attrib, 
+                        'purchase_data': {
+                            'purchase': purchases.getchildren()[0],
+                        }, 
+                        'raw_xml': str(request.body, 'utf-8')
+                    })
+                )
+
+        except (DatabaseError, IntegrityError, Exception) as e:
+            logger.error("DebitCustomer::Error Occured::" + repr(e))
+            return
+
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
         user = CustomUser.objects.get(username=username)
