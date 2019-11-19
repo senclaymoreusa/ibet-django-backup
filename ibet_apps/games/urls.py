@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/gd/check_transaction_status', gdcasino.checkTransactionStatus.as_view(), name = 'GDCasino_check_Transaction_Status'),
 
     # Play n Go
+    path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
     path('api/playngo/login', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
     path('api/playngo/balance', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
     path('api/playngo/reserve', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),

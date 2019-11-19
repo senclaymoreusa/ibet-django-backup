@@ -18,6 +18,11 @@ import decimal
 
 logger = logging.getLogger('django')
 
+class GameLaunchView(View):
+    def get(self, request, *args, **kwargs):
+        return HttpResponse("GameLaunchView API")
+
+
 class AuthenticateView(View):
 
     def post(self, request, *args, **kwargs):
@@ -34,7 +39,7 @@ class AuthenticateView(View):
             data = request.body
             req_dict = xmltodict.parse(data)
 
-            username = req_dict['authenticate']['username']
+            session_token = req_dict['authenticate']['username']
             product_id = req_dict['authenticate']['productId']
             client_ip = req_dict['authenticate']['clientIP']
             context_id = req_dict['authenticate']['contextId']
@@ -43,7 +48,7 @@ class AuthenticateView(View):
             game_id = req_dict['authenticate']['gameId']
             channel = req_dict['authenticate']['channel']
 
-            # print(username, product_id, client_ip, context_id, access_token, language, game_id, channel)
+            # print(session_token, product_id, client_ip, context_id, access_token, language, game_id, channel)
 
             # TODO: authentication logic. Using dummy data for now.
 
