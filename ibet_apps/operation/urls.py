@@ -23,4 +23,6 @@ urlpatterns = [
     path('api/group-detail', views.MessageGroupDetailAPI.as_view(), name='group-detail'),
     path('api/group-update/', views.MessageGroupUpdateAPI.as_view(), name='group-update'),
     path('api/user-valid/', views.UserIsValidAPI.as_view(), name='user-valid'),
+    path('api/static-group-validation/', views.StaticGroupValidationAPI.as_view(), name='static-group-validation'),
+    path('api/email-test/', csrf_exempt(views.EmailNotificationTest.as_view()), name="email-test")
 ]

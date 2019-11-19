@@ -60,8 +60,8 @@ class AgentView(CommAdminView):
                 # query from bet history
                 tranDict['winorloss'] = 0
                 tranDict['commission'] = \
-                commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
-                    total_commission=Coalesce(Sum('amount'), 0))['total_commission']
+                    commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
+                        total_commission=Coalesce(Sum('amount'), 0))['total_commission']
                 if commission_transaction.status == TRAN_APPROVED_TYPE:
                     tranDict['status'] = "Released"
                 else:
@@ -72,6 +72,7 @@ class AgentView(CommAdminView):
                     tranDict['release_time'] = str(
                         commission_transaction.arrive_time)
                 tranDict['operator'] = ""
+
                 commission_this_month_record.append(tranDict)
             return HttpResponse(json.dumps(commission_this_month_record), content_type='application/json')
 
@@ -198,8 +199,8 @@ class AgentView(CommAdminView):
                     affiliates_dict = {}
                     affiliates_dict['id'] = affiliate.pk
                     affiliates_dict['manager'] = ""
-                    if affiliate.managed_by:
-                        affiliates_dict['manager'] = affiliate.managed_by.username
+                    if affiliate.affiliate_managed_by:
+                        affiliates_dict['manager'] = affiliate.affiliate_managed_by.username
                     # downline list
 
                     downlines = getDownline(affiliate)
@@ -365,7 +366,9 @@ class AgentDetailView(CommAdminView):
             context = super().get_context()
             affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
             title = "Affiliate " + affiliate.username
+
             downline = affiliate.referees.all()
+
             downline_deposit = deposit_tran.filter(user_id__in=downline).aggregate(
                 total_deposit=Coalesce(Sum('amount'), 0))
             user_transaction = Transaction.objects.filter(user_id=affiliate)
@@ -401,8 +404,6 @@ class AgentDetailView(CommAdminView):
             context["downline_number"] = getDownline(affiliate).count()
             context["active_users"] = calculateActiveDownlineNumber(affiliate)
             context["downline_deposit"] = downline_deposit
-            context['domain'] = LETOU_DOMAIN
-            context['referral_code'] = affiliate.referral_code
             try:
                 context["promotion_link"] = ReferChannel.objects.get(
                     user_id=affiliate, refer_channel_name="default").pk
@@ -417,17 +418,63 @@ class AgentDetailView(CommAdminView):
             affiliate_ip_list = UserAction.objects.filter(
                 user=affiliate.pk).values_list('ip_addr').distinct()
             related_affiliate_list = UserAction.objects.filter(
-                ip_addr__in=affiliate_ip_list).values_list('user', flat=True).exclude(user=affiliate.pk).distinct()
+                ip_addr__in=affiliate_ip_list).values('user').exclude(user=affiliate.pk).distinct()
 
             related_affiliates_data = []
             for related_affiliate in related_affiliate_list:
                 related_affiliates_info = {}
-                related_affiliate = CustomUser.objects.get(pk=related_affiliate)
-                related_affiliates_info['member_id'] = related_affiliate.pk
+                related_affiliates_info['member_id'] = related_affiliate['user']
                 related_affiliates_info['balance'] = related_affiliate.main_wallet
                 related_affiliates_data.append(related_affiliates_info)
             context["related_affiliates"] = related_affiliates_data
+            # commission
+            context["commission_this_month"] = affiliate_commission_tran.filter(request_time__gte=(
+                today.replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+            context["commission_last_month"] = affiliate_commission_tran.filter(
+                Q(request_time__lte=(today.replace(day=1))) & Q(
+                    request_time__gte=today.replace(day=1) + relativedelta(months=-1))).aggregate(
+                comm=Coalesce(Sum('amount'), 0))
+            context["commission_before_last"] = affiliate_commission_tran.filter(
+                Q(request_time__lte=(today.replace(day=1) + relativedelta(months=-1))) & Q(
+                    request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
+                comm=Coalesce(Sum('amount'), 0))
+            # downline status
+            context["downline_number"] = getDownline(affiliate).count()
+            context["active_users"] = calculateActiveDownlineNumber(affiliate)
+            context["downline_deposit"] = downline_deposit
+            context['domain'] = LETOU_DOMAIN
+            context['referral_code'] = affiliate.referral_code
+        try:
+            context["promotion_link"] = ReferChannel.objects.get(
+                user_id=affiliate, refer_channel_name="default").pk
+        except ObjectDoesNotExist:
+            context["promotion_link"] = ""
+        context["promotion_link_list"] = ReferChannel.objects.filter(
+            user_id=affiliate)
 
+        # related affiliates
+        # get this affiliate's all ip addresses
+        # filer other affiliate who have use these addresses before
+        affiliate_ip_list = UserAction.objects.filter(
+            user=affiliate.pk).values_list('ip_addr').distinct()
+        related_affiliate_list = UserAction.objects.filter(
+            ip_addr__in=affiliate_ip_list).values_list('user', flat=True).exclude(user=affiliate.pk).distinct()
+
+        related_affiliates_data = []
+        for related_affiliate in related_affiliate_list:
+            related_affiliates_info = {}
+            related_affiliate = CustomUser.objects.get(pk=related_affiliate)
+            related_affiliates_info['member_id'] = related_affiliate.pk
+            related_affiliates_info['balance'] = related_affiliate.main_wallet
+            related_affiliates_data.append(related_affiliates_info)
+        context["related_affiliates"] = related_affiliates_data
+
+        # edit detail bottom
+        try:
+            context["commission_type"] = Commission.objects.filter(
+                user_id=affiliate).order_by('commission_level')
+        except ObjectDoesNotExist:
+            context["commission_type"] = ""
             # edit detail bottom
             try:
                 context["commission_type"] = Commission.objects.filter(
@@ -435,199 +482,239 @@ class AgentDetailView(CommAdminView):
             except ObjectDoesNotExist:
                 context["commission_type"] = ""
 
-            manager = affiliate.managed_by
-            if manager == None:
-                context["manager"] = ""
+        manager = affiliate.affiliate_managed_by
+        if manager == None:
+            context["manager"] = ""
+        else:
+            context["manager"] = manager
+
+        # ACTIVITY
+        user_activities = UserActivity.objects.filter(user=affiliate)
+        user_activities_list = []
+        for key, value in ACTIVITY_TYPE:
+            user_activities_list.append(value)
+        context["user_activities"] = user_activities
+        context["user_activities_list"] = user_activities_list
+
+        # DOWNLINE LIST TABLE
+        downline_list_table = []
+        for i in affiliate.referees.all():
+            downline_info = {}
+            affiliate_tran = Transaction.objects.filter(user_id=i)
+            downline_info['affiliate_id'] = i.pk
+            downline_info['username'] = i.username
+            downline_info['time_of_registration'] = i.time_of_registration
+            if i.last_login_time is None:
+                downline_info['last_login_time'] = ""
             else:
-                context["manager"] = manager
+                downline_info['last_login_time'] = i.last_login_time
 
-            # ACTIVITY
-            user_activities = UserActivity.objects.filter(user=affiliate)
-            user_activities_list = []
-            for key, value in ACTIVITY_TYPE:
-                user_activities_list.append(value)
-            context["user_activities"] = user_activities
-            context["user_activities_list"] = user_activities_list
-
-            # DOWNLINE LIST - FILTER
-            context["account_types"] = CustomUser.MEMBER_STATUS
-            # TODO: needs to change to risk status
-            # affiliate refer channels
-            context["channel_list"] = ReferChannel.objects.filter(user_id=affiliate)\
-                .values_list('refer_channel_name', flat=True)
-
-            # Total commission
-            context["total_commission"] = commission_tran.aggregate(
-                total_commission=Coalesce(Sum('amount'), 0))['total_commission']
-
-            return render(request, "agent_detail.html", context)
-
-    def post(self, request):
-        post_type = request.POST.get("type")
-        affiliate_id = request.POST.get("affiliate_id")
-        admin_user = request.POST.get('admin_user')
-        if post_type == 'activity_filter':
-            activity_type = request.POST.get('activity_type')
-            for key, value in ACTIVITY_TYPE:
-                if value == activity_type:
-                    activity_type = key
-            if activity_type == 'All':
-                activities = UserActivity.objects.filter(
-                    user=affiliate_id).order_by('-created_time')
+            if i.ftd_time is None:
+                downline_info['ftd_time'] = ""
             else:
-                activities = UserActivity.objects.filter(Q(user=affiliate_id) & Q(
-                    activity_type=activity_type)).order_by('-created_time')
-            activities = serializers.serialize('json', activities)
-            activities = json.loads(activities)
-            response = []
-            for act in activities:
-                actDict = {}
-                try:
-                    time = datetime.datetime.strptime(
-                        act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                except:
-                    time = datetime.datetime.strptime(
-                        act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
-                actDict['time'] = time
-                adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
-                actDict['adminUser'] = str(adminUser.username)
-                actDict['message'] = act['fields']['message']
-                response.append(actDict)
+                downline_info['ftd_time'] = i.ftd_time
 
-            return HttpResponse(json.dumps(response), content_type='application/json')
+            downline_info['channel'] = ""
+            downline_info['deposit'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_DEPOSIT).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
+            downline_info['withdraw'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_WITHDRAWAL).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
+            downline_info['bouns'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
+            downline_info['adjustment'] = affiliate_tran.filter(
+                transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
+            downline_info['turnover'] = calculateTurnover(i)
+            downline_info['balance'] = i.main_wallet
+            downline_list_table.append(downline_info)
+        context["downline_list"] = downline_list_table
 
-        elif post_type == 'update_message':
-            message = request.POST.get('message')
+        # CHANNEL REPORT TABLE
+        channel_repost = []
+        user_channel = ReferChannel.objects.filter(
+            user_id=affiliate).values_list('pk').distinct()
+        user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
+        # DOWNLINE LIST - FILTER
+        context["account_types"] = MEMBER_STATUS
+        # TODO: needs to change to risk status
+        # affiliate refer channels
+        context["channel_list"] = ReferChannel.objects.filter(user_id=affiliate) \
+            .values_list('refer_channel_name', flat=True)
 
-            UserActivity.objects.create(
-                user=CustomUser.objects.filter(pk=affiliate_id).first(),
-                admin=CustomUser.objects.filter(username=admin_user).first(),
-                message=message,
-                activity_type=3,
-            )
-            logger.info('Finished create activity to DB')
-            return HttpResponse(status=200)
+        # Total commission
+        context["total_commission"] = commission_tran.aggregate(
+            total_commission=Coalesce(Sum('amount'), 0))['total_commission']
 
-        elif post_type == 'make_adjustment':
-            admin_user = CustomUser.objects.get(username=admin_user)
-            affiliate_id = CustomUser.objects.get(pk=affiliate_id)
-            remark = request.POST.get('remark')
-            amount = request.POST.get('amount')
-            amount = Decimal(amount)
-            send = request.POST.get('send')
-            subject = request.POST.get('subject')
-            text = request.POST.get('text')
-            new_adjustment = Transaction.objects.create(
-                user_id=affiliate_id,
-                amount=amount,
-                status=TRAN_SUCCESS_TYPE,
-                transaction_type=TRANSACTION_ADJUSTMENT,
-                remark=remark,
-                release_by=admin_user,
-            )
-            new_adjustment.save()
-            affiliate_id.main_wallet += amount
-            affiliate_id.save()
-            logger.info(admin_user.username + " creates a new adjustment for affiliate " +
-                        affiliate_id.username + " with the amount " + str(amount))
-            if send == "true":
-                # create a message
-                new_notication = Notification.objects.create(
-                    subject=subject,
-                    content_text=text,
-                    creator=admin_user,
-                )
-                new_notication.save()
-                # send it to affilite
-                new_log = NotificationToUsers.objects.create(
-                    notification_id=new_notication.pk,
-                    notifier_id=affiliate_id,
-                )
-                logger.info(admin_user.username + " send a message to affiliate " +
-                            affiliate_id.username + " with the subject " + subject)
-            return HttpResponse(status=200)
+        context["managers"] = getManagerList("Affiliate")
+        context["empty_manager_group"] = "Please create Affiliate Manager group in System Admin. "
+        return render(request, "agent_detail.html", context)
 
-        elif post_type == 'remove_refer_link':
-            link_id = request.POST.get('refer_link')
-            link_obj = ReferChannel.objects.get(pk=link_id)
-            if link_obj:
-                link_obj.delete()
-            logger.info(str(admin_user) + " delete channel " +
-                        str(link_obj.refer_channel_name) + " for affiliate " + str(affiliate_id))
 
-            return HttpResponse(status=200)
-
-        elif post_type == 'affiliate_audit':
-            affiliate_id = request.POST.get('affiliate_id')
-            affiliate_detail = request.POST.getlist('affiliate_detail[]')
-            admin_user = request.POST.get('admin_user')
-            level_detail = request.POST.get('level_details')
-            manager = request.POST.get('manager')
-            level_details = json.loads(level_detail)
-            affiliate = CustomUser.objects.get(pk=affiliate_id)
-
+def post(self, request):
+    post_type = request.POST.get("type")
+    affiliate_id = request.POST.get("affiliate_id")
+    admin_user = request.POST.get('admin_user')
+    if post_type == 'activity_filter':
+        activity_type = request.POST.get('activity_type')
+        for key, value in ACTIVITY_TYPE:
+            if value == activity_type:
+                activity_type = key
+        if activity_type == 'All':
+            activities = UserActivity.objects.filter(
+                user=affiliate_id).order_by('-created_time')
+        else:
+            activities = UserActivity.objects.filter(Q(user=affiliate_id) & Q(
+                activity_type=activity_type)).order_by('-created_time')
+        activities = serializers.serialize('json', activities)
+        activities = json.loads(activities)
+        response = []
+        for act in activities:
+            actDict = {}
             try:
-                manager = CustomUser.objects.get(username=manager)
-                affiliate.managed_by = manager
-            except CustomUser.DoesNotExist:
-                manager = affiliate.managed_by
+                time = datetime.datetime.strptime(
+                    act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            except:
+                time = datetime.datetime.strptime(
+                    act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
+            time = time.strftime("%B %d, %Y, %I:%M %p")
+            actDict['time'] = time
+            adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
+            actDict['adminUser'] = str(adminUser.username)
+            actDict['message'] = act['fields']['message']
+            response.append(actDict)
 
-            commission_list = []
-            # update commission levels
-            for i in level_details:
-                if i['pk'] == '':
-                    current_commission = Commission.objects.create(
-                        user_id=affiliate,
-                        commission_percentage=i['rate'],
-                        downline_commission_percentage=i['downline_rate'],
-                        commission_level=i['level'],
-                        active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd']
-                    )
-                    current_commission.save()
-                    commission_list.append(current_commission.pk)
-                    logger.info("Create new commission level " +
-                                i['level'] + " for affiliate " + affiliate.username)
-                else:
-                    current_commission = Commission.objects.filter(pk=i['pk'])
-                    current_commission.update(
-                        commission_percentage=i['rate'],
-                        downline_commission_percentage=i['downline_rate'],
-                        commission_level=i['level'],
-                        active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd']
-                    )
-                    logger.info("Update commission level " +
-                                i['level'] + " for affiliate " + affiliate.username)
-                    commission_list.append(i['pk'])
-            deleted_commission_levels = Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
-            deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
-            if deleted_list.count() > 0:
-                logger.info("Admin user " + admin_user + " delete commission level " + str(
-                    deleted_list) + " for affiliate " + str(affiliate.username))
-            deleted_commission_levels.delete()
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
-            # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
-            # update affilite attributes
-            manager = affiliate_detail[0]
-            affiliate.affiliate_level = affiliate_detail[1]
-            if affiliate_detail[2] == "Enable":
-                affiliate.affiliate_status = "Active"
+    elif post_type == 'update_message':
+        message = request.POST.get('message')
+
+        UserActivity.objects.create(
+            user=CustomUser.objects.filter(pk=affiliate_id).first(),
+            admin=CustomUser.objects.filter(username=admin_user).first(),
+            message=message,
+            activity_type=3,
+        )
+        logger.info('Finished create activity to DB')
+        return HttpResponse(status=200)
+
+    elif post_type == 'make_adjustment':
+        admin_user = CustomUser.objects.get(username=admin_user)
+        affiliate_id = CustomUser.objects.get(pk=affiliate_id)
+        remark = request.POST.get('remark')
+        amount = request.POST.get('amount')
+        amount = Decimal(amount)
+        send = request.POST.get('send')
+        subject = request.POST.get('subject')
+        text = request.POST.get('text')
+        new_adjustment = Transaction.objects.create(
+            user_id=affiliate_id,
+            amount=amount,
+            status=TRAN_SUCCESS_TYPE,
+            transaction_type=TRANSACTION_ADJUSTMENT,
+            remark=remark,
+            release_by=admin_user,
+        )
+        new_adjustment.save()
+        affiliate_id.main_wallet += amount
+        affiliate_id.save()
+        logger.info(admin_user.username + " creates a new adjustment for affiliate " +
+                    affiliate_id.username + " with the amount " + str(amount))
+        if send == "true":
+            # create a message
+            new_notication = Notification.objects.create(
+                subject=subject,
+                content_text=text,
+                creator=admin_user,
+            )
+            new_notication.save()
+            # send it to affilite
+            new_log = NotificationToUsers.objects.create(
+                notification_id=new_notication.pk,
+                notifier_id=affiliate_id,
+            )
+            logger.info(admin_user.username + " send a message to affiliate " +
+                        affiliate_id.username + " with the subject " + subject)
+        return HttpResponse(status=200)
+
+    elif post_type == 'remove_refer_link':
+        link_id = request.POST.get('refer_link')
+        link_obj = ReferChannel.objects.get(pk=link_id)
+        if link_obj:
+            link_obj.delete()
+        logger.info(str(admin_user) + " delete channel " +
+                    str(link_obj.refer_channel_name) + " for affiliate " + str(affiliate_id))
+
+        return HttpResponse(status=200)
+
+    elif post_type == 'affiliate_audit':
+        affiliate_id = request.POST.get('affiliate_id')
+        affiliate_detail = request.POST.getlist('affiliate_detail[]')
+        admin_user = request.POST.get('admin_user')
+        level_detail = request.POST.get('level_details')
+        manager = request.POST.get('manager')
+        level_details = json.loads(level_detail)
+        affiliate = CustomUser.objects.get(pk=affiliate_id)
+
+        try:
+            manager = CustomUser.objects.get(username=manager)
+            affiliate.affiliate_managed_by = manager
+        except CustomUser.DoesNotExist:
+            manager = affiliate.affiliate_managed_by
+
+        commission_list = []
+        # update commission levels
+        for i in level_details:
+            if i['pk'] == '':
+                current_commission = Commission.objects.create(
+                    user_id=affiliate,
+                    commission_percentage=i['rate'],
+                    downline_commission_percentage=i['downline_rate'],
+                    commission_level=i['level'],
+                    active_downline_needed=i['active_downline'],
+                    monthly_downline_ftd_needed=i['downline_ftd']
+                )
+                current_commission.save()
+                commission_list.append(current_commission.pk)
+                logger.info("Create new commission level " +
+                            i['level'] + " for affiliate " + affiliate.username)
             else:
-                affiliate.affiliate_status = "Deactivated"
-            affiliate.commission_setting = affiliate_detail[3]
-            if affiliate_detail[4] == "Yes":
-                affiliate.transerfer_between_levels = True
-            else:
-                affiliate.transerfer_between_levels = False
-            affiliate.save()
-            logger.info("Update info for affiliate " + affiliate.username)
-            return HttpResponse(status=200)
+                current_commission = Commission.objects.filter(pk=i['pk'])
+                current_commission.update(
+                    commission_percentage=i['rate'],
+                    downline_commission_percentage=i['downline_rate'],
+                    commission_level=i['level'],
+                    active_downline_needed=i['active_downline'],
+                    monthly_downline_ftd_needed=i['downline_ftd']
+                )
+                logger.info("Update commission level " +
+                            i['level'] + " for affiliate " + affiliate.username)
+                commission_list.append(i['pk'])
+        deleted_commission_levels = Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
+        deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
+        if deleted_list.count() > 0:
+            logger.info("Admin user " + admin_user + " delete commission level " + str(
+                deleted_list) + " for affiliate " + str(affiliate.username))
+        deleted_commission_levels.delete()
 
-        elif post_type == 'send_message':
-            admin_user = CustomUser.objects.get(username=admin_user)
-            affiliate_id = CustomUser.objects.get(pk=affiliate_id)
-            subject = request.POST.get('subject')
-            text = request.POST.get('text')
-            return HttpResponse(status=200)
+        # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
+        # update affilite attributes
+        manager = affiliate_detail[0]
+        affiliate.affiliate_level = affiliate_detail[1]
+        if affiliate_detail[2] == "Enable":
+            affiliate.affiliate_status = "Active"
+        else:
+            affiliate.affiliate_status = "Deactivated"
+        affiliate.commission_setting = affiliate_detail[3]
+        if affiliate_detail[4] == "Yes":
+            affiliate.transerfer_between_levels = True
+        else:
+            affiliate.transerfer_between_levels = False
+        affiliate.save()
+        logger.info("Update info for affiliate " + affiliate.username)
+        return HttpResponse(status=200)
+
+    elif post_type == 'send_message':
+        admin_user = CustomUser.objects.get(username=admin_user)
+        affiliate_id = CustomUser.objects.get(pk=affiliate_id)
+        subject = request.POST.get('subject')
+        text = request.POST.get('text')
+        return HttpResponse(status=200)
