@@ -143,7 +143,7 @@ class DebitReserve(View):
             bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
-                user=user,
+                username=user,
                 ref_no=reserve_id,
                 amount_wagered=amount,
                 # transaction_id=txn_id,
@@ -312,7 +312,7 @@ class Add2Bet(View):
                 new_bet = Bet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    user=user,
+                    username=user,
                     ref_no=reserve_id,
                     amount_wagered=amount,
                     # transaction_id=txn_id,
@@ -352,10 +352,11 @@ class Add2BetConfirm(View):
             confirm_bet = Bet(
                 provider=PROVIDER,
                 category=CATEGORY,
-                user=user,
+                username=user,
                 ref_no=reserve_id,
                 amount_wagered=bet_to_confirm.amount_wagered,
                 # transaction_id=txn_id,
+                currency=user.get_currency_display(),
                 market=MARKET_CN,
                 other_data=dict({'add2bet_confirm': True, 'updated_bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
             )
@@ -384,30 +385,106 @@ class DebitCustomer(View):
         
         xmlData = etree.fromstring(request.body)
         purchases = xmlData[0]
+        purchaseDict = dict()
+
+        for purchase in purchases.getchildren():
+            purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
+            selections = purchase[0]
+            purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))]["selections"] = [
+                selection.attrib for selection in selections.getchildren()
+            ]
+
+        xmlJson = {
+            'is_debit': True,
+            'is_outcome_correction': True,
+            'debit_data': xmlData.attrib, 
+            'bet_data': purchaseDict,
+            'raw_xml': str(request.body, 'utf-8')
+        }
         try:
             with transaction.atomic():
-                user = findUser(username)    
+                user = findUser(username)
+                user.main_wallet = user.main_wallet - amount
+
                 resolvedBet = Bet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    user=user,
+                    username=user,
                     ref_no=reserve_id,
-                    amount_wagered=bet_to_confirm.amount_wagered,
+                    amount_won=decimal.Decimal(amount) * -1,
                     # transaction_id=txn_id,
+                    currency=user.get_currency_display(),
                     market=MARKET_CN,
                     resolved_time=timezone.now(),
-                    other_data=dict({
-                        'debit_data': xmlData.attrib, 
-                        'purchase_data': {
-                            'purchase': purchases.getchildren()[0],
-                        }, 
-                        'raw_xml': str(request.body, 'utf-8')
-                    })
+                    other_data=xmlJson
                 )
 
+                resolvedBet.save()
+                user.save()
+
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
+            res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
+            return HttpResponse(res, content_type='text/plain')
         except (DatabaseError, IntegrityError, Exception) as e:
             logger.error("DebitCustomer::Error Occured::" + repr(e))
             return
+
+class CreditCustomer(View):
+    def post(self, request):
+        username = request.GET.get("cust_id")
+        reserve_id = request.GET.get("reserve_id")
+        amount = request.GET.get("amount")
+        txn_id = generateTxnId("BTi")
+        
+        xmlData = etree.fromstring(request.body)
+        purchases = xmlData[0]
+        purchaseDict = dict()
+
+        for purchase in purchases.getchildren():
+            purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
+            selections = purchase[0]
+            purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))]["selections"] = [
+                selection.attrib for selection in selections.getchildren()
+            ]
+
+        xmlJson = {
+            'is_credit': True,
+            'is_outcome_correction': False,
+            'credit_data': xmlData.attrib, 
+            'bet_data': purchaseDict,
+            'raw_xml': str(request.body, 'utf-8')
+        }
+        
+        try:
+            with transaction.atomic():
+                user = findUser(username)
+                user.main_wallet = user.main_wallet + amount
+                outcome = 0 if amount > 0 else 1
+                resolvedBet = Bet(
+                    provider=PROVIDER,
+                    category=CATEGORY,
+                    username=user,
+                    ref_no=reserve_id,
+                    amount_won=amount,
+                    # transaction_id=txn_id,
+                    currency=user.get_currency_display(),
+                    market=MARKET_CN,
+                    resolved_time=timezone.now(),
+                    other_data=xmlJson
+                )
+                user.save()
+                resolvedBet.save() 
+
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
+            res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
+            return HttpResponse(res, content_type='text/plain')
+        except (DatabaseError, IntegrityError, Exception) as e:
+            logger.error("CreditCustomer::Error Occured::" + repr(e))
+
 
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
