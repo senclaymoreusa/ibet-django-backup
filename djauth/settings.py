@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
     'bonus.apps.BonusConfig',
@@ -114,6 +115,7 @@ INSTALLED_APPS = [
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
     'django_user_agents',
+    'background_task',
 ]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor

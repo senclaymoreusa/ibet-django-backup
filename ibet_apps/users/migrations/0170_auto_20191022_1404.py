@@ -3,17 +3,6 @@
 from django.db import migrations, models
 
 
-def save_default_verification(apps, schema_editor):
-    users = apps.get_model("users", "CustomUser")
-
-    for user in users.objects.all():
-        user.address_verified = False
-        user.email_verified = False
-        user.id_verified = False
-        user.phone_verified = False
-        user.save()
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ('users', '0169_merge_20191021_1536'),
@@ -23,22 +12,21 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customuser',
             name='address_verified',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=False, null=True,  blank=True),
         ),
         migrations.AddField(
             model_name='customuser',
             name='email_verified',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=False, null=True,  blank=True),
         ),
         migrations.AddField(
             model_name='customuser',
             name='id_verified',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=False, null=True,  blank=True),
         ),
         migrations.AddField(
             model_name='customuser',
             name='phone_verified',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=False, null=True,  blank=True),
         ),
-        migrations.RunPython(save_default_verification)
     ]
