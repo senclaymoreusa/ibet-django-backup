@@ -1,8 +1,9 @@
-from django.db import models
+from django.db import models, DatabaseError
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse #Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
+from django.db import transaction
 import uuid
 from datetime import date
 from django.contrib.auth.models import User
@@ -64,7 +65,7 @@ class UserTag(models.Model):
 
     class Meta:
         verbose_name_plural = _('User Tag')
-    
+
     def __str__(self):
         return self.name
 
@@ -81,16 +82,11 @@ class CustomUser(AbstractBaseUser):
         (2, _('Advertisements'))
     )
 
-    MEMBER_STATUS = (
-        (0, _('Active')),
-        (1, _('Inactive')),
-        (2, _('Blocked'))
-    )
-
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
-        ('French', 'French')
+        ('Thai', 'Thai'),
+        ('Vietnamese', 'Vietnamese'),
     )
 
     # add additional fields in here
@@ -111,8 +107,8 @@ class CustomUser(AbstractBaseUser):
         blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
-    user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
-    user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
+    # user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
+    # user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=25)
@@ -124,9 +120,19 @@ class CustomUser(AbstractBaseUser):
     state = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=100)
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
-    # referral_id = models.CharField(max_length=300, blank=True, null=True)
-    reward_points = models.IntegerField(default=0)
+
+    # verification
+    email_verified = models.BooleanField(default=False, null=True, blank=True)
+    phone_verified = models.BooleanField(default=False, null=True, blank=True)
+    id_verified = models.BooleanField(default=False, null=True, blank=True)
+    address_verified = models.BooleanField(default=False, null=True, blank=True)
+
+    # referral program
+    referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
+    reward_points = models.IntegerField(default=0)
+    vip_level = models.ForeignKey('users.Segmentation', on_delete=models.CASCADE, null=True)
+
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
     active = models.BooleanField(default=False)
@@ -141,7 +147,7 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.CharField(max_length=30, choices=CURRENCY_TYPES, blank=True, default='USD')
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True,default=0)
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
@@ -150,7 +156,7 @@ class CustomUser(AbstractBaseUser):
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
     verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
-    id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='') 
+    id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='')
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
@@ -161,18 +167,23 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    
+    onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
+
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
-    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True)
-    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True)
+    user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
+    user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True, blank=True)
     user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
     affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                             related_name='AffiliateManager')
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                       related_name='VIPManager')
 
     #commission
     commission_status = models.BooleanField(default=False)               # for current month
@@ -199,7 +210,15 @@ class CustomUser(AbstractBaseUser):
     vipProgram = models.BooleanField(default=False)
 
     brand = models.CharField(choices=BRAND_OPTIONS, null=True, blank=True, max_length=50)
-    
+
+    # security question and answer and withdraw password
+    withdraw_password = models.CharField(_('withdraw password'), max_length=128, blank=True, null=True)
+    security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
+    security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
+
+    # favorite payment method
+    favorite_payment_method = models.CharField(max_length=128, blank=True, null=True)
+
     created_time = models.DateTimeField(
         _('Created Time'),
         auto_now_add=True,
@@ -221,6 +240,20 @@ class CustomUser(AbstractBaseUser):
 
     def get_absolute_url(self):
         return u'/profile/show/%d' % self.id
+
+    def get_user_address(self):
+        address = ''
+        if self.street_address_1:
+            address += str(self.street_address_1) + ', '
+        if self.street_address_2:
+            address += str(self.street_address_2) + ' '
+        if self.city:
+            address += str(self.city) + ' '
+        if self.state:
+            address += str(self.state) + ' '
+        if self.zipcode:
+            address += str(self.zipcode)
+        return address
 
     def __str__(self):
         return self.username
@@ -246,14 +279,14 @@ class CustomUser(AbstractBaseUser):
         return True
 
 class Commission(models.Model):
-    
+
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
     downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
     commission_level = models.IntegerField(default=1)
     active_downline_needed = models.IntegerField(default=6)
     monthly_downline_ftd_needed = models.IntegerField(default=6)
-    
+
     def save(self, *args, **kwargs):
         if self._state.adding:
             # Get the maximum display_id value from the database
@@ -266,20 +299,20 @@ class Commission(models.Model):
 
         super(Commission, self).save(*args, **kwargs)
 
-class ReferLink(models.Model):
-    
-    refer_link_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    refer_link_url = models.URLField(max_length=200, unique=True, null=True, blank=True)
-    refer_link_name = models.CharField(max_length=50, default="default")
-    ## time of this link was created
-    genarated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        if self.pk:
-            code = generate_unique_verification_code()
-            self.refer_link_url = code
-        return super(ReferLink, self).save(*args, **kwargs)
+# one user can have up to 10 referral channels
+class ReferChannel(models.Model):
+    # refer_channel_code is ReferChannel.pk
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    refer_channel_name = models.CharField(max_length=100)
+    # time of this channel was created
+    generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user_id', 'refer_channel_name',)
+
+    def __str__(self):
+        return self.refer_channel_name
 
 
 class UserWithTag(models.Model):
@@ -291,7 +324,7 @@ class UserWithTag(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     tag = models.ForeignKey(UserTag, on_delete=models.CASCADE, verbose_name=_('Tag'))
     status = models.SmallIntegerField(default=0, choices=STATUS_CHOICES, verbose_name=_('Status'))
-    
+
     def __str__(self):
         return '{0}'.format(self.tag)
     class Meta:
@@ -299,7 +332,7 @@ class UserWithTag(models.Model):
         verbose_name = "Tag"
         verbose_name_plural = _('Assign tag to user')
 
-    
+
 class Status(models.Model):
     status_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
@@ -340,7 +373,7 @@ class Game(models.Model):
     game_url = models.CharField(max_length=1000, null=True, blank=True)
     #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #category = models.CharField(max_length=20)
-    
+
     def __str__(self):
         return '{0}: {1}'.format(self.name, self.category_id)
 
@@ -363,7 +396,7 @@ class Language(models.Model):
         """
         return self.name
 
-class NoticeMessage(models.Model): 
+class NoticeMessage(models.Model):
 
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
@@ -387,9 +420,9 @@ class Config(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 class UserAction(models.Model):
-    
+
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
@@ -418,16 +451,6 @@ class UserActivity(models.Model):
         editable=False,
     )
 
-
-
-class LinkHistory(models.Model):
-
-    history_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    link = models.ForeignKey(ReferLink, on_delete=models.CASCADE, verbose_name=_('Link'))
-    ## time of this link was clicked
-    timestamp = models.DateTimeField(_('User Click Time'), auto_now_add=True)
-    ## click by ip
-    user_ip = models.GenericIPAddressField(_('Action Ip'), null=True)
 
 class Limitation(models.Model):
 
@@ -466,9 +489,9 @@ class GameRequestsModel(models.Model):
 
     # GB Sports only
 
-    Method         = models.CharField(max_length=30)                            
+    Method         = models.CharField(max_length=30)
     Success        = models.CharField(choices=Success_Status, max_length=1)
-                              
+
     ThirdPartyCode = models.CharField(max_length=30)
     BetTotalCnt    = models.CharField(max_length=30)
     BetTotalAmt    = models.CharField(max_length=30)
@@ -560,35 +583,38 @@ class GameRequestsModel(models.Model):
         return  self.MemberID + ' ' + self.TransType
 
 
+# Member VIP System
+
+class Segmentation(models.Model):
+    name = models.CharField(max_length=50)
+    level = models.IntegerField()
+    turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
+    annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
+    platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
+    deposit_amount_daily = models.DecimalField(max_digits=20, decimal_places=2)
+    deposit_amount_monthly = models.DecimalField(max_digits=20, decimal_places=2)
+    general_bonuses = models.BooleanField(default=False)
+    product_turnover_bonuses = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.level)
+
 
 @receiver(post_save, sender=CustomUser)
-def my_handler(sender, **kwargs):
+def new_user_handler(sender, **kwargs):
     if kwargs['created']:
-        user=kwargs['instance']
-        temp_refer_link_url = generate_unique_verification_code()
-        refer_link = ReferLink.objects.create(
-            user_id = user,
-        )
-        logger.info("Auto created a refer link for new user" + str(user.username))
-    
-
-def generate_verification_code():
-    return base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25]
-
-def generate_unique_verification_code():
-    temp_refer_link_url = str(generate_verification_code())[2:-1]
-    while ReferLink.objects.filter(refer_link_url=temp_refer_link_url):   # make sure no duplicates
-        temp_refer_link_url = str(generate_verification_code())[2:-1]
-    return temp_refer_link_url
-
-
-#  def save(self, *args, **kwargs):
-#         if self.pk:
-#             temp = str(self.generate_verification_code())[2:-1]
-#             while ReferLink.objects.filter(refer_link_url=temp):   # make sure no duplicates
-#                 temp = str(self.generate_verification_code())[2:-1]
-#             self.refer_link_url = temp
-
-#         return super(ReferLink, self).save(*args, **kwargs)
-
-    
+        user = kwargs['instance']
+        try:
+            with transaction.atomic():
+                # generate a referral code for new user
+                referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
+                user.referral_code = referral_code
+                user.save()
+                # generate a default referral link for new user
+                link = ReferChannel.objects.create(
+                    user_id=user,
+                    refer_channel_name='default'
+                )
+                logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
+        except DatabaseError as e:
+            logger.error("Error creating referral code and default referral channel for new user: ", e)

@@ -2,7 +2,12 @@
     font-size: 10px;
 }
 
-.date_range label {
+#date_range {
+    float: right;
+    margin-right: -330px;
+}
+
+label {
     font-family: Helvetica;
     font-size: 11px;
     font-weight: normal;
@@ -13,11 +18,124 @@
     color: #4a4a4a;
 }
 
-.date_range input {
+#date_range input {
     width: 165px;
     height: 33px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
 }
+
+table {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+table thead th {
+    font-weight: normal;
+}
+
+#vip_table {
+    margin-top: 30px;
+    margin-bottom: 90px;
+    width:100%;
+}
+
+#vip_table_paginate a button{
+    padding-left: 15px;
+}
+
+#filter {
+    width: 12%;
+}
+
+/* Edit VIP Detail Pop Up*/
+
+#edit-vip-pop-up {
+    width: 50%;
+    top: 20%;
+}
+
+#vip-player-details .row {
+    margin: 15px;
+}
+
+#vip-player-details br {
+    margin-bottom: 10px;
+}
+
+.verified-invalid {
+    color: #e2e2e2;
+}
+
+.verified-valid {
+    color: #509e2f;
+}
+
+.chosen-container .chosen-single{
+    width: 199px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+.chosen-container-single .chosen-drop{
+    width: 199px;
+    background-color: #ffffff;
+}
+
+.chosen-container-single .chosen-single div {
+    top: 4px;
+}
+
+#manager_assign_chosen .chosen-single span {
+    margin-top: 3px;
+}
+
+.reason-box, .vip-details-btn {
+    margin: 25px;
+}
+
+
+
+/* pop up header style */
+
+.modal-header {
+    border-radius: 4px;
+    height: 30px;
+    position: relative;
+}
+
+.modal-header .close {
+    margin-top: -12px;
+}
+
+.modal-header .model-header-text{
+    font-size: 18px;
+    position: absolute;
+    top: 10%;
+}
+
+.modal-header .model-header-time{
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #000000;
+    float: right;
+    position: absolute;
+    top: 30%;
+    right: 6%;
+}
+
 

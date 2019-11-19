@@ -3,12 +3,15 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views import View
+from django.db import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from django.db import transaction
+from users.views.helper import checkUserBlock
 from users.models import CustomUser
 import simplejson as json
 import xmltodict
-import decimal
+from decimal import Decimal
 import requests
 from utils.constants import *
 import random
@@ -18,7 +21,10 @@ import datetime
 from datetime import date
 from django.utils import timezone
 import uuid
-from  games.models import *
+from games.models import *
+from accounting.models import * 
+from utils.constants import *
+
 
 
 logger = logging.getLogger('django')
@@ -48,57 +54,65 @@ class EALiveCasinoClientLoginView(View):
 
         # data = str(request.body, 'utf-8')
         data = request.body
-        # print(data)
         dic = xmltodict.parse(data)
         # print(dic)
 
         action  = dic['request']['@action']
-        requestId = dic['request']['element']['@id']
+        request_id = dic['request']['element']['@id']
         for i in dic['request']['element']['properties']:
             if i['@name'] == 'userid':
-                propertiesUserId = i['#text']
+                properties_user_id = i['#text']
             else:
-                propertiesPassword = i['#text']
+                properties_password = i['#text']
 
-        # print(action, requestId, propertiesUserId, propertiesPassword)
+        # print(action, request_id, properties_user_id, properties_password)
 
-        statusCode = 0
-        currencyCode = ""
-        errorMessage = "Successfully login"
+        status_code = 0
+        currency_code = ""
+        error_message = "Successfully login"
         try: 
-            user = CustomUser.objects.get(username=propertiesUserId)
-            if user.check_password(propertiesPassword) is False:
-                statusCode = 101
-                errorMessage = "Invalid password"
+            user = CustomUser.objects.get(username=properties_user_id)
+            if user.check_password(properties_password) is False:
+                status_code = 101
+                error_message = "Invalid password"
 
             if user.block is True:
-                statusCode = 104
-                errorMessage = "User has been block"
+                status_code = 104
+                error_message = "User has been block"
 
-            if user.currency == "CNY":
-                currencyCode = "156"
-            elif user.currency == "THB":
-                currencyCode = "764"
-            elif user.currency == "VND":
-                currencyCode = "704"
+            if user.currency == CURRENCY_CNY:
+                currency = 156
+                vendor = 3
+            elif user.currency == CURRENCY_THB:
+                currency = 764
+                vendor = 4
+            elif user.currency == CURRENCY_VND:
+                currency = 704
+                vendor = 5
+            elif user.currency == CURRENCY_TTC:
+                currency = 1111
+                vendor = 2
+            else:
+                currency = 1111
+                vendor = 2
 
         except:
-            statusCode = 101
-            errorMessage = "Invalid user ID"
+            status_code = 101
+            error_message = "Invalid user ID"
 
         response = {
             "request": {
                 "@action": "clogin",
                 "element": {
-                    "@id": requestId,
+                    "@id": request_id,
                      "properties": [
                         {
                             "@name": "userid",
-                            "#text": propertiesUserId
+                            "#text": properties_user_id
                         },
                         {
                             "@name": "username",
-                            "#text": propertiesUserId
+                            "#text": properties_user_id
                         },
                         {
                             "@name": "acode",
@@ -106,333 +120,480 @@ class EALiveCasinoClientLoginView(View):
                         },
                         {
                             "@name": "vendorid",
-                            "#text": "null" # will provide by EA
+                            "#text": str(vendor) # will provide by EA
                         },
                         {
                             "@name": "currencyid",
-                            "#text": str(currencyCode)
+                            "#text": str(currency_code)
                         }, 
                         {
                             "@name": "status",
-                            "#text": str(statusCode)
+                            "#text": str(status_code)
 
                         },
                         {
                             "@name": "errdesc",
-                            "#text": str(errorMessage)
+                            "#text": str(error_message)
                             
                         }
                     ]
                 }
             } 
         }
+        logger.info("user success login to EA game: {}".format(str(properties_user_id)))
         response = xmltodict.unparse(response, pretty=True)
+        # print(response)
         return HttpResponse(response, content_type='text/xml')
 
-        
-
-# class EALiveCasinoDepositView(View):
-
-#     def post(self, request, *args, **kwargs):
-
-#         data = request.body
-#         dic = xmltodict.parse(data)
-
-#         action  = dic['request']['@action']
-#         requestId = dic['request']['element']['@id']
-#         for i in dic['request']['element']['properties']:
-#             if i['@name'] == 'userid':
-#                 propertiesUserId = i['#text']
-#             else:
-#                 propertiesPassword = i['#text']
-        
-
-#         response = xmltodict.unparse(response, pretty=True)
-#         return HttpResponse(response, content_type='text/xml')
 
 
-def requestEADeposit(transId, username, amount, currency):
-
-    if currency == CURRENCY_CNY:
-        currency = 156
-    elif currency == CURRENCY_THB:
-        currency = 764
-    elif currency == CURRENCY_VND:
-        currency = 704
-    
-    requestId = "D"
-    requestId = requestId + "%0.12d" % random.randint(0,999999999999)
-
-    url = EA_GAME_HOST_URL
-    headers = {'Content-Type': 'application/xml'}
-    data = {
-        "request": {
-            "@action": "cdeposit",
-            "element": {
-                "@id": requestId,
-                    "properties": [
-                    {
-                        "@name": "id",
-                        "#text": requestId
-                    },
-                    {
-                        "@name": "userid",
-                        "#text": username
-                    },
-                    {
-                        "@name": "acode",
-                        "#text": "null"
-                    },
-                    {
-                        "@name": "vendorid",
-                        "#text": "null" # will provide by EA
-                    },
-                    {
-                        "@name": "currencyid",
-                        "#text": str(currency)
-                    }, 
-                    {
-                        "@name": "amount",
-                        "#text": str(amount)
-
-                    },
-                    {
-                        "@name": "refno",
-                        "#text": transId
-                    }
-                ]
-            }
-        } 
-    }
-    requestData = xmltodict.unparse(data, pretty=True)
-
-    response = requests.post(url, data=requestData, headers=headers)
-
-    response = xmltodict.parse(response)
-    # print(response)
-    action  = dic['request']['@action']
-    # print(action)
-    requestId = dic['request']['element']['@id']
-    # print(requestId)
-
-    for i in dic['request']['element']['properties']:
-        if i['@name'] == 'acode':
-            propertiesAcode= i['#text']
-        elif i['@name'] == 'status':
-            propertiesStatus = i['#text']
-        elif i['@name'] == 'refno':
-            propertiesRefno = i['#text']
-        elif i['@name'] == 'paymentid':
-            propertiesPaymentId = i['#text']
-        elif i['@name'] == 'errdesc':
-            propertiesError = i['#text']
-        
-    # if got propertiesStatus == 0 => success
-    # update transaction database status
-    # after update transction status send request to EA Server using comfirmEADeposit function
-
-
-
-#input params
-#requestId => deposit request ID
-#propertiesStatus => response status
-#propertiesPaymentId => payment ID in EA game
-def comfirmEADeposit(requestId, propertiesStatus, propertiesPaymentId):
-
-    statusCode = "0"
-    errorMessage = "Successfully comfirm deposit"
-
-    if propertiesStatus == "003":
-        statusCode = propertiesStatus
-        errorMessage = "ERR_SYSTEM_OPR"
-    elif propertiesStatus == "201":
-        statusCode = propertiesStatus
-        errorMessage = "invalid request"
-    elif propertiesStatus == "202":
-        statusCode = propertiesStatus
-        errorMessage = "invalid request"
-        
-
-    url = EA_GAME_HOST_URL
-    headers = {'Content-Type': 'application/xml'}
-    data = {
-        "request": {
-            "@action": "cdeposit-confirm",
-            "element": {
-                "@id": requestId,
-                    "properties": [
-                    {
-                        "@name": "id",
-                        "#text": requestId
-                    },
-                    {
-                        "@name": "acode",
-                        "#text": "null"
-                    },
-                    {
-                        "@name": "status",
-                        "#text": str(statusCode)
-                    },
-                    {
-                        "@name": "paymentid",
-                        "#text": str(propertiesPaymentId)
-                    },
-                    {
-                        "@name": "errdesc",
-                        "#text": str(errorMessage)
-                    }
-                ]
-            }
-        } 
-    }
-
-    requestData = xmltodict.unparse(data, pretty=True)
-    response = requests.post(url, data=requestData, headers=headers)
-    
-
-
-
-def requestEAWithdraw(transId, username, amount, currency):
-
-    if currency == CURRENCY_CNY:
-        currency = 156
-    elif currency == CURRENCY_THB:
-        currency = 764
-    elif currency == CURRENCY_VND:
-        currency = 704
-    
-    requestId = "W"
-    requestId = requestId + "%0.12d" % random.randint(0,999999999999)
-
-    url = EA_GAME_HOST_URL
-    headers = {'Content-Type': 'application/xml'}
-    data = {
-        "request": {
-            "@action": "cwithdrawal",
-            "element": {
-                "@id": requestId,
-                    "properties": [
-                    {
-                        "@name": "id",
-                        "#text": requestId
-                    },
-                    {
-                        "@name": "userid",
-                        "#text": username
-                    },
-                    {
-                        "@name": "vendorid",
-                        "#text": "null" # will provide by EA
-                    },
-                    {
-                        "@name": "currencyid",
-                        "#text": str(currency)
-                    },
-                    {
-                        "@name": "amount",
-                        "#text": str(amount)
-
-                    },
-                    {
-                        "@name": "refno",
-                        "#text": transId
-                    }
-                ]
-            }
-        } 
-    }
-    requestData = xmltodict.unparse(data, pretty=True)
-    response = requests.post(url, data=requestData, headers=headers)
-
-    response = xmltodict.parse(response)
-    # print(response)
-    action  = dic['request']['@action']
-    # print(action)
-    requestId = dic['request']['element']['@id']
-    # print(requestId)
-
-    for i in dic['request']['element']['properties']:
-        if i['@name'] == 'acode':
-            propertiesAcode= i['#text']
-        elif i['@name'] == 'status':
-            propertiesStatus = i['#text']
-        elif i['@name'] == 'refno':
-            propertiesRefno = i['#text']
-        elif i['@name'] == 'paymentid':
-            propertiesPaymentId = i['#text']
-        elif i['@name'] == 'errdesc':
-            propertiesError = i['#text']
-        
-    # if got propertiesStatus == 0 => success
-    # update transaction database status
-    # after update transction status send request to EA Server using comfirmEADeposit function
-
-    errorMessage = "Successfully comfirm deposit"
-    if propertiesStatus == "201":
-        errorMessage = "Invalid request"
-        logger.error(errorMessage + "for EA game")
-    elif propertiesStatus == "204":
-        errorMessage = "Exceed amount"
-        logger.error(errorMessage + "for EA game")
-    elif propertiesStatus == "205":
-        errorMessage = "Invalid vendor"
-        logger.error(errorMessage + "for EA game")
-    
-    # handle more error response message
-    if propertiesStatus == "0":
-        # print("withdraw successed")
-        logger.info("sucessfully withdraw money from EA")
-        # update db status from pending to Approve and increase the balance
-
-
-
-
-class CheckEABalance(View):
+class DepositEAView(View):
 
     def post(self, request, *args, **kwargs):
         
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+            username = data["username"]
+            amount = data["amount"]
+            user = CustomUser.objects.get(username=username)
+            if requestEADeposit(user, amount, "main") == ERROR_CODE_FAIL:
+                return HttpResponse("Fail deposit money to EA")
 
-        userid = data['userId']
-        currency = data['currency']
+            return HttpResponse("Finished deposit money to EA")
+        except Exception as e:
+            logger.error("Error deposit money to EA wallet", e)
+            return HttpResponse(status=400)
+
+
         
-        # call getEAwalletBalance function to check the balance
-        response = getEAwalletBalance(userid, currency)
-        response = json.loads(response)
+
+def requestEADeposit(user, amount, from_wallet):
+
+    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+    # print(trans_id)
+    # print(user.currency)
+    user_currency = int(user.currency)
+    currency = 156
+    # add transaction history
+    try:
+        trans = Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=trans_id,
+                    amount=amount,
+                    currency=user_currency,
+                    transfer_from=from_wallet,
+                    transfer_to="EA",
+                    product=2,
+                    transaction_type=TRANSACTION_TRANSFER,
+                    status=TRAN_PENDING_TYPE
+                )
+        
+        if user_currency == CURRENCY_CNY:
+            currency = 156
+            vendor = 3
+        elif user_currency == CURRENCY_THB:
+            currency = 764
+            vendor = 4
+        elif user_currency == CURRENCY_VND:
+            currency = 704
+            vendor = 5
+        elif user_currency == CURRENCY_TTC:
+            currency = 1111
+            vendor = 2
+        else:
+            currency = 1111
+            vendor = 2
+
+
+        request_id = "D"
+        request_id = request_id + "%0.12d" % random.randint(0,999999999999)
+        # print(request_id)
+        url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
+
+        headers = {'Content-Type': 'application/xml'}
+        data = {
+            "request": {
+                "@action": "cdeposit",
+                "element": {
+                    "@id": request_id,
+                        "properties": [
+                        {
+                            "@name": "userid",
+                            "#text": str(user.username)
+                        },
+                        {
+                            "@name": "acode",
+                            "#text": "null"
+                        },
+                        {
+                            "@name": "vendorid",
+                            "#text": str(vendor) # will provide by EA
+                        },
+                        {
+                            "@name": "currencyid",
+                            "#text": str(currency)
+                        }, 
+                        {
+                            "@name": "amount",
+                            "#text": str(amount)
+
+                        },
+                        {
+                            "@name": "refno",
+                            "#text": str(trans_id)
+                        }
+                    ]
+                }
+            } 
+        }
+        requestData = xmltodict.unparse(data, pretty=True)
+        # print(requestData)
+        response = requests.post(url, data=requestData, headers=headers)
+        response = response.text.strip()
+        
+        response = xmltodict.parse(response)
+        action  = response['request']['@action']
+        request_id = response['request']['element']['@id']
+
+        properties_payment_id = ""
+        properties_acode = ""
+        properties_status = ""
+        properties_refno = ""
+        properties_error = ""
+
+        for i in response['request']['element']['properties']:
+            if i['@name'] == 'acode' and "#text" in i:
+                properties_acode= i["#text"]
+            elif i['@name'] == 'status' and "#text" in i:
+                properties_status = i["#text"]
+            elif i['@name'] == 'refno' and "#text" in i:
+                properties_refno = i["#text"]
+            elif i['@name'] == 'paymentid' and "#text" in i:
+                properties_payment_id = i["#text"]
+            elif i['@name'] == 'errdesc' and "#text" in i:
+                properties_error = i["#text"]
+
+        # print(properties_payment_id, properties_acode, properties_status, properties_refno, properties_error)
+
+        # if got properties_status == 0 => success
+        # update transaction database status
+        # after update transaction status send request to EA Server using comfirmEADeposit function
+        if properties_status == "0" and properties_payment_id:
+            status_code = "0"
+            with transaction.atomic():
+                trans.status = TRAN_APPROVED_TYPE
+                trans.save()
+            
+            if comfirmEADeposit(request_id, properties_payment_id, status_code):
+                # print("success")
+                return CODE_SUCCESS
+            else:
+                # print("fail")
+                return ERROR_CODE_FAIL
+
+                # user.ea_wallet = user.ea_wallet + Decimal(float(amount))
+                # user.save()
+
+        elif properties_status == "105":
+            logger.error("Invalid currency for user: {} play EA game".format(user.username))
+            return ERROR_CODE_FAIL
+
+        elif properties_status == "205":
+            logger.error("Invalid vendor for user: {} play EA game".format(user.username))
+            return ERROR_CODE_FAIL
+
+        else:
+            logger.error("There is something wrong when request EA deposit method {}".format(user.username))
+            return ERROR_CODE_FAIL
+
+    except Exception as e:
+        logger.error("request deposit from EA: ", e)
+        return ERROR_CODE_FAIL
+    
+
+    
+           
+
+
+#input params
+#request_id => deposit request ID
+#properties_status => response status
+#properties_payment_id => payment ID in EA game
+def comfirmEADeposit(request_id, properties_payment_id, status_code):
+    try:
+
+        if status_code == "0":
+            error_message = "SUCCESS"
+        elif status_code == "003":
+            error_message = "ERR_SYSTEM_OPR"
+        elif status_code == "201":
+            error_message = "ERR_INVALID_REQ"
+
+        url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
+        headers = {'Content-Type': 'application/xml'}
+        data = {
+            "request": {
+                "@action": "cdeposit-confirm",
+                "element": {
+                    "@id": request_id,
+                        "properties": [
+                        {
+                            "@name": "id",
+                            "#text": request_id
+                        },
+                        {
+                            "@name": "acode",
+                            "#text": "null"
+                        },
+                        {
+                            "@name": "status",
+                            "#text": str(status_code)
+                        },
+                        {
+                            "@name": "paymentid",
+                            "#text": str(properties_payment_id)
+                        },
+                        {
+                            "@name": "errdesc",
+                            "#text": str(error_message)
+                        }
+                    ]
+                }
+            } 
+        }
+        request_data = xmltodict.unparse(data, pretty=True)
+        # print(request_data)
+        response = requests.post(url, data=request_data, headers=headers)
+        if response.status_code == 200:
+            # print(response.status_code)
+            return True
+            logger.info("Finished deposit money to EA")
+        else:
+            # print(response.status_code)
+            return False
+            logger.error("The transaction is not comfirmed by EA")
+
+    except Exception as e:
+        return False
+        logger.error("There is something wrong when comfirm deposit request")
+
+
+
+class WithdrawEAView(View):
+
+    def post(self, request, *args, **kwargs):
+        
+        try:
+            data = json.loads(request.body)
+            username = data["username"]
+            amount = data["amount"]
+            user = CustomUser.objects.get(username=username)
+            if float(user.ea_wallet) < float(amount):
+                return HttpResponse("Balance not enough")
+
+            if requestEAWithdraw(user, amount, "main") == CODE_SUCCESS:
+                return HttpResponse("Successfully withdraw money from EA")
+            else:
+                return HttpResponse("There is something wrong")
+            
+            # return HttpResponse(obj, content_type="application/json")
+        
+        except Exception as e:
+            logger.error("Error withdraw money from EA wallet", e)
+            return HttpResponse(status=400)
+
+
+
+def requestEAWithdraw(user, amount, to_wallet):
+
+    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+    user_currency = user.currency
+
+    try: 
+        trans = Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=trans_id,
+                    amount=amount,
+                    currency=user_currency,
+                    transfer_from="EA",
+                    transfer_to=to_wallet,
+                    product=2,
+                    transaction_type=TRANSACTION_TRANSFER,
+                    status=TRAN_PENDING_TYPE
+                )
+
+        if user_currency == CURRENCY_CNY:
+            currency = 156
+            vendor = 3
+        elif user_currency == CURRENCY_THB:
+            currency = 764
+            vendor = 4
+        elif user_currency == CURRENCY_VND:
+            currency = 704
+            vendor = 5
+        elif user_currency == CURRENCY_TTC:
+            currency = 1111
+            vendor = 2
+        else:
+            currency = 1111
+            vendor = 2
+
+        request_id = "W"
+        request_id = request_id + "%0.12d" % random.randint(0,999999999999)
+        
+        url = "https://testmis.ea2-mission.com/configs/external/withdrawal/wkpibet/server.php"
+        headers = {'Content-Type': 'application/xml'}
+        data = {
+            "request": {
+                "@action": "cwithdrawal",
+                "element": {
+                    "@id": request_id,
+                        "properties": [
+                        {
+                            "@name": "userid",
+                            "#text": user.username
+                        },
+                        {
+                            "@name": "vendorid",
+                            "#text": str(vendor) # will provide by EA
+                        },
+                        {
+                            "@name": "currencyid",
+                            "#text": str(currency)
+                        },
+                        {
+                            "@name": "amount",
+                            "#text": str(amount)
+
+                        },
+                        {
+                            "@name": "refno",
+                            "#text": trans_id
+                        }
+                    ]
+                }
+            } 
+        }
+
+        requestData = xmltodict.unparse(data, pretty=True)
+        # print(requestData)
+        response = requests.post(url, data=requestData, headers=headers)
+        response = response.text.strip()
+        # print(response)
+        response = xmltodict.parse(response)
+        action  = response['request']['@action']
+        # print(action)
+        request_id = response['request']['element']['@id']
+        # print(request_id)
+
+        for i in response['request']['element']['properties']:
+            if i['@name'] == 'acode' and "#text" in i:
+                properties_acode= i['#text']
+            elif i['@name'] == 'status' and "#text" in i:
+                properties_status = i['#text']
+            elif i['@name'] == 'refno' and "#text" in i:
+                properties_refno = i['#text']
+            elif i['@name'] == 'paymentid' and "#text" in i:
+                properties_payment_id = i['#text']
+            elif i['@name'] == 'errdesc' and "#text" in i:
+                properties_error = i['#text']
+
+
+        if properties_status == "0":
+            error_message = "Successfully comfirm withdraw"
+            with transaction.atomic():
+                trans.status = TRAN_APPROVED_TYPE
+                trans.save()
+
+                # user.ea_wallet = user.ea_wallet - Decimal(float(amount))
+                # user.save()
+
+            logger.info("Finished withdraw from EA")
+            return CODE_SUCCESS
+            
+        elif properties_status == "204":
+            logger.info("Exceed amount from EA withdraw")
+            return ERROR_CODE_FAIL
+
+        elif properties_status == "205":
+            logger.error("Invalid vendor for user: {} play EA game".format(user.username))
+            return ERROR_CODE_FAIL
+
+        else:
+            logger.error("There is something wrong when request EA deposit method {}".format(user.username))
+            return ERROR_CODE_FAIL
+
+    except Exception as e:
+        logger.error("request withdraw from EA: ", e)
+        return ERROR_CODE_FAIL
+
+
+
+class GetEABalance(View):
+
+    def get(self, request, *args, **kwargs):
+        
+        user_id = request.GET.get('user_id')
+        user = CustomUser.objects.get(pk=user_id)
+        # call getEAWalletBalance function to check the balance
+        current_balance = getEAWalletBalance(user)
+        current_balance = json.loads(current_balance)
+        if "balance" in current_balance:
+            response = {
+                "current_balance": current_balance["balance"],
+                "status_code": CODE_SUCCESS
+            }
+        else:
+            response = {
+                "current_balance": 0,
+                "status_code": ERROR_CODE_NOT_FOUND
+            }
+
+        return HttpResponse(json.dumps(response), content_type="application/json")
+
+
 
 
 # get EA live casnio balance
-def getEAwalletBalance(userId, currency):
+def getEAWalletBalance(user):
 
-    if currency == CURRENCY_CNY:
+    user_currency = user.currency
+    if user_currency == CURRENCY_CNY:
         currency = 156
-    elif currency == CURRENCY_THB:
+        vendor = 3
+    elif user_currency == CURRENCY_THB:
         currency = 764
-    elif currency == CURRENCY_VND:
+        vendor = 4
+    elif user_currency == CURRENCY_VND:
         currency = 704
+        vendor = 5
+    elif user_currency == CURRENCY_TTC:
+        currency = 1111
+        vendor = 2
+    else:
+        currency = 1111
+        vendor = 2
     
-    requestId = "C"
-    requestId = requestId + "%0.12d" % random.randint(0,999999999999)
+    request_id = "C"
+    request_id = request_id + "%0.12d" % random.randint(0,999999999999)
 
-    url = EA_GAME_HOST_URL
+    url = "https://testmis.ea2-mission.com/configs/external/checkclient/wkpibet/server.php"
     headers = {'Content-Type': 'application/xml'}
     data = {
         "request": {
             "@action": "ccheckclient",
             "element": {
-                "@id": requestId,
+                "@id": request_id,
                     "properties": [
                     {
-                        "@name": "id",
-                        "#text": requestId
-                    },
-                    {
                         "@name": "userid",
-                        "#text": username
+                        "#text": str(user.username)
                     },
                     {
                         "@name": "vendorid",
-                        "#text": "null" # will provide by EA
+                        "#text": str(vendor) # will provide by EA
                     },
                     {
                         "@name": "currencyid",
@@ -445,32 +606,31 @@ def getEAwalletBalance(userId, currency):
 
     requestData = xmltodict.unparse(data, pretty=True)
     response = requests.post(url, data=requestData, headers=headers)
-
+    response = response.text.strip()
     response = xmltodict.parse(response)
 
-    action  = dic['request']['@action']
+    action  = response['request']['@action']
     # print(action)
-    requestId = dic['request']['element']['@id']
-    # print(requestId)
+    request_id = response['request']['element']['@id']
+    # print(request_id)
 
-    apiRespsonse = {}
+    api_response = {}
     
     try: 
-        for i in dic['request']['element']['properties']:
-            if i['@name'] == 'status':
-                propertiesStatus= i['#text']
-            elif i['@name'] == 'errdesc':
+        for i in response['request']['element']['properties']:
+            if i['@name'] == 'status' and "#text" in i:
+                properties_status= i['#text']
+            elif i['@name'] == 'errdesc' and "#text" in i:
                 propertiesMessage = i['#text']
-                logger.error(propertiesMessage)
-                # there are some error occur in check balance request
+                logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
         
-        apiRespsonse['statusCode'] = propertiesStatus
-        apiRespsonse['errorMessage'] = propertiesMessage
+        api_response['status_code'] = properties_status
+        api_response['error_message'] = propertiesMessage
 
     except:
-        for i in dic['request']['element']['properties']:
+        for i in response['request']['element']['properties']:
             if i['@name'] == 'userid':
-                propertiesUserId= i['#text']
+                properties_user_id= i['#text']
             elif i['@name'] == 'balance':
                 propertiesBalance = i['#text']
             elif i['@name'] == 'currencyid':
@@ -478,8 +638,8 @@ def getEAwalletBalance(userId, currency):
             elif i['@name'] == 'location':
                 propertiesLocation = i['#text']
     
-        apiRespsonse['userId'] = propertiesUserId
-        apiRespsonse['balance'] = propertiesBalance
+        api_response['userId'] = properties_user_id
+        api_response['balance'] = propertiesBalance
         if propertiesCurrency == "156":
             currency = CURRENCY_CNY
         elif propertiesCurrency == "764":
@@ -487,184 +647,193 @@ def getEAwalletBalance(userId, currency):
         elif currency == "704":
             currency = CURRENCY_VND
         
-        apiRespsonse['currency'] = currency
-        
-        
-    return json.dumps(apiRespsonse)
+        api_response['currency'] = currency
+    
+    logger.info("Successfully get the balance from EA and amount is: " + propertiesBalance)
+    return json.dumps(api_response)
 
 
 
 class EASingleLoginValidation(View):
 
+
     def post(self, request, *args, **kwargs):
 
         data = request.body
-        # sessionId = request.session.session_key
         # print(data)
-        # print(sessionId)
         dic = xmltodict.parse(data)
-        # print(dic)
         action  = dic['request']['@action']
-        requestId = dic['request']['element']['@id']
+        request_id = dic['request']['element']['@id']
+
+        properties_user_id = ""
+        properties_UUID = ""
+        properties_ip_address= ""
+
         for i in dic['request']['element']['properties']:
             if i['@name'] == 'userid':
-                propertiesUserId = i['#text']
+                properties_user_id = i['#text']
             elif i['@name'] == 'uuid':
-                propertiesUUID = i['#text']
+                properties_UUID = i['#text']
             elif i['@name'] == 'clientip':
-                propertiesIPaddress = i['#text']
+                properties_ip_address = i['#text']
 
-        # print(action, requestId, propertiesUserId, propertiesUUID, propertiesIPaddress)
+        # print(action, request_id, properties_user_id, properties_UUID, properties_ip_address)
 
-        statusCode = 0
-        currencyCode = "156" # change the default
-        errorMessage = "Successfully login"
+        status_code = 0
+        currency = "156" # change the default
+        vendor = 2
+        error_message = "Successfully login"
         try: 
-            user = CustomUser.objects.get(username=propertiesUserId)
-
+            user = CustomUser.objects.get(username=properties_user_id)
+            user_currency = user.currency
             if user.block is True:
-                statusCode = 104
-                errorMessage = "User has been block"
+                status_code = 104
+                error_message = "User has been block"
 
-            if user.currency == "CNY":
-                currencyCode = "156"
-            elif user.currency == "THB":
-                currencyCode = "764"
-            elif user.currency == "VND":
-                currencyCode = "704"
+            if user_currency == CURRENCY_CNY:
+                currency = 156
+                vendor = 3
+            elif user_currency == CURRENCY_THB:
+                currency = 764
+                vendor = 4
+            elif user_currency == CURRENCY_VND:
+                currency = 704
+                vendor = 5
+            elif user_currency == CURRENCY_TTC:
+                currency = 1111
+                vendor = 2
+            else:
+                currency = 1111
+                vendor = 2
+
+
         except:
-            statusCode = 101
-            errorMessage = "Invalid user ID"
+            status_code = 101
+            error_message = "Invalid user ID"
 
-        response = {
-            "request": {
-                "@action": action,
-                "element": {
-                    "@id": requestId,
-                     "properties": [
-                        {
-                            "@name": "userid",
-                            "#text": propertiesUserId
-                        },
-                        {
-                            "@name": "username",
-                            "#text": propertiesUserId
-                        },
-                        {
-                            "@name": "uuid",
-                            "#text": propertiesUUID
-                        },
-                        {
-                            "@name": "vendorid",
-                            "#text": "null"  # will provide by EA
-                        },
-                        {
-                            "@name": "currencyid",
-                            "#text": str(currencyCode)
-                        }, 
-                        {
-                            "@name": "status",
-                            "#text": str(statusCode)
+        finally:
+            response = {
+                "response": {
+                    "@action": action,
+                    "element": {
+                        "@id": request_id,
+                        "properties": [
+                            {
+                                "@name": "userid",
+                                "#text": str(properties_user_id)
+                            },
+                            {
+                                "@name": "username",
+                                "#text": str(properties_user_id)
+                            },
+                            {
+                                "@name": "uuid",
+                                "#text": str(properties_UUID)
+                            },
+                            {
+                                "@name": "vendorid",
+                                "#text": str(vendor)  # will provide by EA
+                            },
+                            {
+                                "@name": "clientip",
+                                "#text": str(properties_ip_address)
+                            },
+                            {
+                                "@name": "currencyid",
+                                "#text": str(currency)
+                            }, 
+                            {
+                                "@name": "acode",
+                                "#text": "null"
+                            }, 
+                            {
+                                "@name": "errdesc",
+                                "#text": str(error_message)
+                                
+                            },
+                            {
+                                "@name": "status",
+                                "#text": str(status_code)
 
-                        },
-                        {
-                            "@name": "errdesc",
-                            "#text": str(errorMessage)
-                            
-                        }
-                    ]
-                }
-            } 
-        }
-        response = xmltodict.unparse(response, pretty=True)
-        return HttpResponse(response, content_type='text/xml')
-
-
-class TestView(View):
-
-    def post(self, request, *args, **kwargs):
-        
-        # response = checkEAAffiliateRequest(1)
-        data = request.body
-        dic = xmltodict.parse(data)
-        response = json.dumps(dic)
-
-        return HttpResponse(response, content_type='text/xml')
-
-
-def checkEAAffiliateRequest(username, startTime, endTime):
-
-    url = EA_GAME_HOST_URL
-
-    requestId = "CF"
-    requestId = requestId + "%0.12d" % random.randint(0,999999999999)
-
-    user = CustomUser.objects.get(username=username)
-
-    startDate = "2015-03-15"
-    endDate = "2017-03-15"
-
-    headers = {'Content-Type': 'application/xml'}
-    data = {
-        "request": {
-            "@action": "ccheckaffiliate",
-            "element": {
-                "@id": requestId,
-                    "properties": [
-                    {
-                        "@name": "id",
-                        "#text": requestId
-                    },
-                    {
-                        "@name": "vendorid",
-                        "#text": "null" # will provide by EA
-                    },
-                    {
-                        "@name": "acode", # affiliate code element
-                        "acode": [   # can have mutiple affiliate code 
-                            {"#text": "123"},
-                            {"#text": "456"} 
+                            }
                         ]
-                    }, 
-                    {
-                        "@name": "begindate",
-                        "#text": startDate
-                    }, 
-                    {
-                        "@name": "enddate",
-                        "#text": endDate
                     }
-                ]
+                } 
             }
-        } 
-    }
+            response = xmltodict.unparse(response, pretty=True)
+            # print(response)
+            return HttpResponse(response, content_type='text/xml')
 
-    requestData = xmltodict.unparse(data, pretty=True)
-    response = requests.post(url, data=requestData, headers=headers)
 
-    dic = xmltodict.parse(response)
-    response = json.dumps(dic)
+# def checkEAAffiliateRequest(username, startTime, endTime):
 
-    properties = response["request"]["element"]["properties"]
-    startDate = ""
-    endDate = ""
-    statusCode = ""
-    messageStr = ""
+#     url = EA_GAME_HOST_URL
 
-    # store response data
-    # for i in properties:
-    #     if "@name" in i:
-    #         if i["@name"] == "datelist"
-    #             startDate = i["fromdate"]
-    #             endDate = i["todate"]
-    #         if i["@name"] == "status"
-    #             statusCode = i["text"]    #response status
-    #         if i["@name"] == "errdesc"
-    #             messageStr = i["text"]    #response message
-    #     if "@acode" in i:
-    #         for date in i['date']:
+#     request_id = "CF"
+#     request_id = request_id + "%0.12d" % random.randint(0,999999999999)
+
+#     user = CustomUser.objects.get(username=username)
+
+#     startDate = "2015-03-15"
+#     endDate = "2017-03-15"
+
+#     headers = {'Content-Type': 'application/xml'}
+#     data = {
+#         "request": {
+#             "@action": "ccheckaffiliate",
+#             "element": {
+#                 "@id": request_id,
+#                     "properties": [
+#                     {
+#                         "@name": "vendorid",
+#                         "#text": "null" # will provide by EA
+#                     },
+#                     {
+#                         "@name": "acode", # affiliate code element
+#                         "acode": [   # can have mutiple affiliate code 
+#                             {"#text": "123"},
+#                             {"#text": "456"} 
+#                         ]
+#                     }, 
+#                     {
+#                         "@name": "begindate",
+#                         "#text": startDate
+#                     }, 
+#                     {
+#                         "@name": "enddate",
+#                         "#text": endDate
+#                     }
+#                 ]
+#             }
+#         } 
+#     }
+
+#     requestData = xmltodict.unparse(data, pretty=True)
+#     response = requests.post(url, data=requestData, headers=headers)
+
+#     dic = xmltodict.parse(response)
+#     response = json.dumps(dic)
+
+#     properties = response["request"]["element"]["properties"]
+#     startDate = ""
+#     endDate = ""
+#     status_code = ""
+#     messageStr = ""
+
+#     # store response data
+#     # for i in properties:
+#     #     if "@name" in i:
+#     #         if i["@name"] == "datelist"
+#     #             startDate = i["fromdate"]
+#     #             endDate = i["todate"]
+#     #         if i["@name"] == "status"
+#     #             status_code = i["text"]    #response status
+#     #         if i["@name"] == "errdesc"
+#     #             messageStr = i["text"]    #response message
+#     #     if "@acode" in i:
+#     #         for date in i['date']:
         
-    return response
+#     return response
 
 
 
@@ -674,11 +843,11 @@ class AutoCashierLoginEA(View):
         
         data = request.body
         dic = xmltodict.parse(data)
-        # response = json.dumps(dic)
+        response = json.dumps(dic)
         # print(response)
 
         action = dic["request"]["@action"]
-        requestId = dic["request"]["element"]["@id"]
+        request_id = dic["request"]["element"]["@id"]
         properties = dic["request"]["element"]["properties"]
         
         username = ""
@@ -693,22 +862,22 @@ class AutoCashierLoginEA(View):
             elif i["@name"] == "sign":
                 sign = i["#text"]
 
-        statusCode = "0"
+        status_code = "0"
         today = datetime.date.today()
         today = today.strftime("%Y/%m/%d")
         # print(today)
-        signStr = username + today + KEY
-        result = hashlib.md5(signStr.encode()) 
+        signStr = username + today + EA_KEY
+        key_hash_result = hashlib.md5(signStr.encode()) 
         # print(result.hexdigest())
-        if sign != result.hexdigest():
-            statusCode = "614"
+        if sign != key_hash_result.hexdigest():
+            status_code = "614"
         else:
             try:
                 user = CustomUser.objects.get(username__iexact=username)
-                if user.block is True:
-                    statusCode = "612"
+                if checkUserBlock(user.pk):
+                    status_code = "612"
             except:
-                statusCode = "611"
+                status_code = "611"
 
         UUID = uuid.uuid4()
         EATicket.objects.create(ticket=UUID)
@@ -717,15 +886,11 @@ class AutoCashierLoginEA(View):
             "request": {
                 "@action": action,
                 "element": {
-                    "@id": requestId,
+                    "@id": request_id,
                         "properties": [
                         {
-                            "@name": "id",
-                            "#text": requestId
-                        },
-                        {
                             "@name": "status",
-                            "#text": str(statusCode)
+                            "#text": str(status_code)
                         },
                         {
                             "@name": "username",

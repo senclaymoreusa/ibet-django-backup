@@ -36,6 +36,7 @@ class ThirdParty(models.Model):
     )
     method = models.CharField(max_length=30, verbose_name=_("Method"))
     channel = models.CharField(max_length=30, verbose_name=_("Channel"))
+    supplier = models.CharField(max_length=50, verbose_name=_("Supplier"), null=True)
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
     )
@@ -68,7 +69,6 @@ class ThirdParty(models.Model):
 
     # market
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
-    supplier = models.CharField(max_length=200, null=True, blank=True)
 
     # the maximum number of money to be routed to this channel (%)
     volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
@@ -101,7 +101,13 @@ class DepositChannel(ThirdParty):
         verbose_name_plural = "Deposit Channels"
 
     def __str__(self):
-        return self.get_thirdParty_name_display()
+        return "PSP Name: {0}, \n \
+            Min Amount: {1}, \n \
+            Max Amount: {2}, \n \
+            Channel: {3}, \n \
+            Market: {4} \n \
+            ".format(self.get_thirdParty_name_display(), self.min_amount, self.max_amount, self.channel, self.get_market_display())
+
 
 
 class WithdrawChannel(ThirdParty):
@@ -141,6 +147,9 @@ class Transaction(models.Model):
         default=0, verbose_name=_("Depositor Tier")
     )
     method = models.CharField(max_length=200, blank=True, verbose_name=_("Method"))
+    channel = models.SmallIntegerField(
+        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
+    )
     last_updated = models.DateTimeField(
         default=timezone.now, verbose_name=_("Status Last Updated")
     )
@@ -153,15 +162,10 @@ class Transaction(models.Model):
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
-    channel = models.SmallIntegerField(
-        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
-    )
+    
     # Transaction types: Deposit, Withdrawal, Bet Placed, Bet Settled, etc.
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")
-    )
-    review_status = models.SmallIntegerField(
-        choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
     )
     # reviewer for withdraw transations
     remark = models.CharField(max_length=200, blank=True, verbose_name=_("Memo"))
@@ -174,9 +178,14 @@ class Transaction(models.Model):
     product = models.SmallIntegerField(
         choices=GAME_TYPE_CHOICES, default=4, verbose_name=_("Product")
     )
+
+    review_status = models.SmallIntegerField(
+        choices=REVIEW_STATE_CHOICES, default=1, verbose_name=_("Review status")
+    )
     # payer_id is Returned by Paypal
     # payer_id = models.CharField(max_length = 100, default=0)
 
+    # bank account details (used for offline local bank transfer)
     # The user Account
     user_bank_account = models.ForeignKey(
         BankAccount, on_delete=models.CASCADE, null=True, blank=True

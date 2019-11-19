@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models import Game, Category, CustomUser, NoticeMessage
+from accounting.models import DepositAccessManagement, DepositChannel
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)
 from allauth.account.adapter import get_adapter
@@ -19,6 +20,18 @@ from django.utils.functional import Promise
 from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
+
+class ChoicesSerializerField(serializers.SerializerMethodField):
+    """
+    A read-only field that return the representation of a model field with choices.
+    """
+    def to_representation(self, value):
+        # sample: 'get_XXXX_display'
+        method_name = 'get_{field_name}_display'.format(field_name=self.field_name)
+        # retrieve instance method
+        method = getattr(value, method_name)
+        # finally use instance method to return result of get_XXXX_display()
+        return method()
 
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,9 +54,18 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+    security_question = ChoicesSerializerField()
+    currency = ChoicesSerializerField()
+    # favorite_deposit_method = serializers.SerializerMethodField('favoriteDeposit')
+
+    # def favoriteDeposit(self, user):
+    #     deposit_method = DepositAccessManagement.objects.filter(user_id=user, deposit_favorite_method=True)
+    #     if len(deposit_method) > 0:
+    #         return str(DepositChannel.objects.get(thirdParty_id=deposit_method[0].deposit_channel_id))
+    #     return ""
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time', 'security_question', 'security_answer', 'withdraw_password', 'favorite_payment_method')
         read_only_fields = ('pk', )
 
 

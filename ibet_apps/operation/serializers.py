@@ -57,7 +57,7 @@ class UserToAWSTopicSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('pk', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date', 'campaign', 'bonus', 
+        fields = ('pk', 'subject', 'content_text', 'creator', 'create_on', 'auditor', 'audit_date', 'campaign',
         'is_direct_message','is_email_message', 'is_sms_message', 'is_push_message', 'publish_on', 'status')
         read_only_fields = ['pk', 'account_type', 'audit_date', 'create_on']
 
@@ -86,7 +86,7 @@ class MessageUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserGroup
         fields = ('pk', 'name', 'description', 'creator', 'groupType', 'created_time', 'approvals', 
-        'product', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
+        'product', 'is_static', 'is_player', 'is_range', 'active_from', 'active_to', 'register_from', 'register_to', 'is_deposit')
         read_only_fields = ['pk', 'created_time', 'approvals']
 
 
