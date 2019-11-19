@@ -37,13 +37,16 @@ logger = logging.getLogger('django')
 #     de = k.decrypt(base64.b64decode(s), padmode=PAD_PKCS7)
 #     return de
 
+IMES_KEY = "9d25ee5d1ffa0e01" 
+
 
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
 
 
-def des3Encryption(plain_text, key):
+def des3Encryption(plain_text):
     # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
+    key = hashlib.md5(IMES_KEY.encode()).digest()
     cipher = DES3.new(key, DES3.MODE_ECB)
     cipher_text = cipher.encrypt(pad(plain_text))
 
@@ -105,18 +108,34 @@ class ValidateTokenAPI(View):
 
 class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
-        return HttpResponse("I love you!")
+        
+        balance_package = request.GET.get("balancePackage")
+        dateSent = request.GET.GET("dateSent")
+        # data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
 
-        # data = requests.body
-        data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
-        # key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
-        key = "9d25ee5d1ffa0e01"
+        key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
+        # key = "9d25ee5d1ffa0e01"
 
         try:
-            cipher = DES3.new(key, DES3.MODE_ECB)
-            plain_text = cipher.decrypt(data)
-            print(plain_text)
-            print(str(plain_text, "utf-8"))
+            plain_json = des3Decryption(balance_package, key)
+
+            member_code = plain_json["MemberCode"]
+
+            user = CustomUser.objects.get(username=member_code)
+
+            response = {}
+            if user:
+                response["StatusCode"] = 100
+                response["StatusMessage"] = "Success"
+                response["PackageId"] = uuid.uuid1()
+                response["Balance"] = user.main_wallet
+
+                response = json.dumps(response)
+
+                ciphertext = des3Encryption(response)
+
+            else:
+                return HttpResponse(status=404)
 
             return HttpResponse(status=200)
         except Exception as e:
