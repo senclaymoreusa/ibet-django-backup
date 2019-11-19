@@ -34,14 +34,13 @@ class ValidateToken(View):
     def get(self, request):
         token = request.GET.get("auth_token")
         try:
-            userFromToken = (Token.objects.select_related('user').get(token=token)).user
-            userFromToken.country
+            userFromToken = (Token.objects.select_related('user').get(key=token)).user
             res = "error_code=0\r\n" # 0 = success
             res += "error_message=success\r\n"
             res += f"cust_id={userFromToken.username}\r\n"
             res += f"balance={str('%.2f' % userFromToken.main_wallet)}\r\n"
-            res += "cust_login=orion\r\n"
-            res += "city=Sunnyvale\r\n"
+            res += f"cust_login={userFromToken}\r\n"
+            res += "city=Shenzhen\r\n"
             res += "country=CN\r\n"
             res += "currency_code=CNY\r\n"
             return HttpResponse(res, content_type='text/plain')
