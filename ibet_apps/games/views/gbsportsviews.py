@@ -10,6 +10,11 @@ import requests
 import json
 import uuid
 from  games.models import *
+from django.core.exceptions import  ObjectDoesNotExist
+from time import gmtime, strftime, strptime
+from django.utils import timezone
+from datetime import datetime
+from django.db import transaction
 
 class WalletGeneralAPI(APIView):
 
@@ -76,7 +81,13 @@ class WalletBetAPIURL(APIView):
         error_code = -5
         error = 'Missing_Input_Parameter'
         game_type = None
-
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
+        except ObjectDoesNotExist:
+            GameProvider.objects.create(provider_name=GB_PROVIDER,
+                                        type=0,
+                                        market='China')
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
         if any(game in data['GB']['Result']['ReturnSet']['BettingList'] for game in game_list):
             game_type = 'dict'
@@ -116,35 +127,29 @@ class WalletBetAPIURL(APIView):
                     user = CustomUser.objects.get(username = MemberID)
                     temp = user[0].main_wallet
                     if temp >= decimal.Decimal(BetTotalAmt)/100:
-                        
-                        current_balance = temp-decimal.Decimal(BetTotalAmt)/100
-                        user.update(main_wallet=current_balance)
-                        error      =  'No_Error'
-                        error_code =  0
-                        success    =  1
-                        TransData  = current_balance
-                        try:
-                            PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
-                        except ObjectDoesNotExist:
-                            GameProvider.objects.create(provider_name=GB_PROVIDER,
-                                                        type=0,
-                                                        market='China')
-                            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
-                        if data['GB']['Result']['ReturnSet']['BettingList']['SportList'] != '':
-                            category = 'SPORTS'
-                        else:
-                            category = 'LOTTERY'
-                        cate = Category.objects.get(name=category)
-                        GameBet.objects.create(
-                            provider=PROVIDER,
-                            category=cate,
-                            username=user,
-                            currency=user.currency,
-                            market=ibetCN,
-                            ref_no=BetID,
-                            amount_wagered=decimal.Decimal(RealBetAmt)/100,
-                            bet_type=TransType,
-                        )
+                        with transaction.atomic():
+                            current_balance = temp-decimal.Decimal(BetTotalAmt)/100
+                            user.update(main_wallet=current_balance)
+                            error      =  'No_Error'
+                            error_code =  0
+                            success    =  1
+                            TransData  = current_balance
+                            
+                            if data['GB']['Result']['ReturnSet']['BettingList']['SportList'] != '':
+                                category = 'SPORTS'
+                            else:
+                                category = 'LOTTERY'
+                            cate = Category.objects.get(name=category)
+                            GameBet.objects.create(
+                                provider=PROVIDER,
+                                category=cate,
+                                username=user,
+                                currency=user.currency,
+                                market=ibetCN,
+                                ref_no=BetID,
+                                amount_wagered=decimal.Decimal(RealBetAmt)/100,
+                                bet_type=TransType,
+                            )
 
                     else:
                         error      =  'Insufficient_Balance'
@@ -186,59 +191,51 @@ class WalletBetAPIURL(APIView):
                         error_code =  0
                         success    =  1
                         TransData  = current_balance
-                        
-                        for x in range(len(data['GB']['Result']['ReturnSet']['BettingList'])):
-                           
-                            BetID         = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetID']
-                            BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetGrpNO']
-                            TPCode        = data['GB']['Result']['ReturnSet']['BettingList'][x]['TPCode']
-                            GBSN          = data['GB']['Result']['ReturnSet']['BettingList'][x]['GBSN']
-                            MemberID      = data['GB']['Result']['ReturnSet']['BettingList'][x]['MemberID']
-                            CurCode       = data['GB']['Result']['ReturnSet']['BettingList'][x]['CurCode']
-                            BetDT         = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetDT']
-                            BetType       = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetType']
-                            BetTypeParam1 = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetTypeParam1']
-                            BetTypeParam2 = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetTypeParam2']
-                            Wintype       = data['GB']['Result']['ReturnSet']['BettingList'][x]['Wintype']
-                            HxMGUID       = data['GB']['Result']['ReturnSet']['BettingList'][x]['HxMGUID']
-                            InitBetAmt    = data['GB']['Result']['ReturnSet']['BettingList'][x]['InitBetAmt']
-                            RealBetAmt    = data['GB']['Result']['ReturnSet']['BettingList'][x]['RealBetAmt']
-                            HoldingAmt    = data['GB']['Result']['ReturnSet']['BettingList'][x]['HoldingAmt']
-                            InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['InitBetRate']
-                            RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['RealBetRate']
-                            PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList'][x]['PreWinAmt']
-       
-                        
-                            try:
-                                PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
-                            except ObjectDoesNotExist:
-                                GameProvider.objects.create(provider_name=GB_PROVIDER,
-                                                            type=0,
-                                                            market='China')
-                                logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+                        with transaction.atomic():
+                            for x in range(len(data['GB']['Result']['ReturnSet']['BettingList'])):
                             
-                            if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
-                                category = 'SPORTS'
-                            else:
-                                category = 'LOTTERY'
+                                BetID         = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetID']
+                                BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetGrpNO']
+                                TPCode        = data['GB']['Result']['ReturnSet']['BettingList'][x]['TPCode']
+                                GBSN          = data['GB']['Result']['ReturnSet']['BettingList'][x]['GBSN']
+                                MemberID      = data['GB']['Result']['ReturnSet']['BettingList'][x]['MemberID']
+                                CurCode       = data['GB']['Result']['ReturnSet']['BettingList'][x]['CurCode']
+                                BetDT         = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetDT']
+                                BetType       = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetType']
+                                BetTypeParam1 = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetTypeParam1']
+                                BetTypeParam2 = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetTypeParam2']
+                                Wintype       = data['GB']['Result']['ReturnSet']['BettingList'][x]['Wintype']
+                                HxMGUID       = data['GB']['Result']['ReturnSet']['BettingList'][x]['HxMGUID']
+                                InitBetAmt    = data['GB']['Result']['ReturnSet']['BettingList'][x]['InitBetAmt']
+                                RealBetAmt    = data['GB']['Result']['ReturnSet']['BettingList'][x]['RealBetAmt']
+                                HoldingAmt    = data['GB']['Result']['ReturnSet']['BettingList'][x]['HoldingAmt']
+                                InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['InitBetRate']
+                                RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['RealBetRate']
+                                PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList'][x]['PreWinAmt']
+        
                             
-                            cate = Category.objects.get(name=category)
-                            if BetType == '1':
-                                bet_type = SINGLE
-                            else:
-                                bet_type = OTHER
-                            GameBet.objects.create(
-                                provider=PROVIDER,
-                                category=cate,
-                                username=user,
-                                currency=user.currency,
-                                market=ibetCN,
-                                ref_no=BetID,
-                                amount_wagered=decimal.Decimal(RealBetAmt/100),
-                                bet_type=bet_type,
-                            )
-                        user.main_wallet=current_balance
-                        user.save()
+                                if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
+                                    category = 'SPORTS'
+                                else:
+                                    category = 'LOTTERY'
+                            
+                                cate = Category.objects.get(name=category)
+                                if BetType == '1':
+                                    bet_type = SINGLE
+                                else:
+                                    bet_type = OTHER
+                                GameBet.objects.create(
+                                    provider=PROVIDER,
+                                    category=cate,
+                                    username=user,
+                                    currency=user.currency,
+                                    market=ibetCN,
+                                    ref_no=BetID,
+                                    amount_wagered=decimal.Decimal(RealBetAmt/100),
+                                    bet_type=bet_type,
+                                )
+                            user.main_wallet=current_balance
+                            user.save()
                     else:
                         error      =  'Insufficient_Balance'
                         error_code =  -4
@@ -279,12 +276,18 @@ class WalletSettleAPIURL(APIView):
         game_type = None
 
         game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
-
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
+        except ObjectDoesNotExist:
+            GameProvider.objects.create(provider_name=GB_PROVIDER,
+                                        type=0,
+                                        market='China')
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         if any(game in data['GB']['Result']['ReturnSet']['SettleList'] for game in game_list):
             game_type = 'dict'
         else:
             game_type = 'list'
-
+        
         if game_type == 'dict':
             try:
                 Method        = data['GB']['Result']['Method']
@@ -324,48 +327,52 @@ class WalletSettleAPIURL(APIView):
                 SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
                 try: 
                     user = CustomUser.objects.get(username = MemberID)
-
+                    if data['GB']['Result']['ReturnSet']['SettleList']['SportList'] != []:
+                        category = 'SPORTS'
+                    else:
+                        category = 'LOTTERY'
+                            
+                    cate = Category.objects.get(name=category)
+                        
+                    if BetType == '1':
+                        bet_type = SINGLE
+                    else:
+                        bet_type = OTHER
+                        
+                    if BetResult == '0':
+                        BetResult = 1 #lose
+                    elif BetResult == '1':
+                        BetResult = 0 #win
+                    elif BetResult == '2':
+                        BetResult = 2 #tie
+                    elif BetResult == '4':
+                        BetResult = 8 #cancel
+                    elif BetResult == '5':
+                        BetResult = 9 #兑现
+                    elif BetResult == 'R':
+                        BetResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                    with transaction.atomic():    
+                        GameBet.objects.create(
+                            provider=PROVIDER,
+                            category=cate,
+                            username=user,
+                            currency=user.currency,
+                            market=ibetCN,
+                            ref_no=BetID,
+                            amount_wagered=decimal.Decimal(RealBetAmt/100),
+                            bet_type=bet_type,
+                            amount_won=decimal.Decimal(RefundBetAmt/100),
+                            outcome=BetResult,
+                            resolved_time=timezone.now()
+                        )
+                        
+                        if RefundBetAmt != '0' :
+                            user.main_wallet += decimal.Decimal(RefundBetAmt/100)
+                            user.save()
                     error      =  'No_Error'
                     error_code =  0
                     success    =  1
                     TransData  = user.main_wallet
-
-                    # GameRequestsModel.objects.create(
-                    #     Method        = Method,
-                    #     Success       = Success,
-
-                    #     TransType     = TransType,
-                    #     BetTotalCnt   = BetTotalCnt,
-                    #     BetTotalAmt   = BetTotalAmt,
-
-                    #     SettleID      = SettleID,
-                    #     BetID         = BetID,
-                    #     BetGrpNO      = BetGrpNO,
-                    #     TPCode        = TPCode,
-                    #     GBSN          = GBSN,
-                    #     MemberID      = MemberID,
-                    #     CurCode       = CurCode,
-                    #     time          = BetDT,
-                    #     BetType       = BetType,
-                    #     BetTypeParam1 = BetTypeParam1,
-                    #     BetTypeParam2 = BetTypeParam2,
-                    #     Wintype       = Wintype,
-                    #     HxMGUID       = HxMGUID,
-                    #     InitBetAmt    = InitBetAmt,
-                    #     RealBetAmt    = RealBetAmt,
-                    #     HoldingAmt    = HoldingAmt,
-                    #     InitBetRate   = InitBetRate,
-                    #     RealBetRate   = RealBetRate,
-                    #     PreWinAmt     = PreWinAmt,
-
-                    #     BetResult     = BetResult,
-                    #     WLAmt         = WLAmt,
-                    #     RefundBetAmt  = RefundBetAmt,
-                    #     TicketBetAmt  = TicketBetAmt,
-                    #     TicketResult  = TicketResult,
-                    #     TicketWLAmt   = TicketWLAmt,
-                    #     SettleDT      = SettleDT
-                    # )
 
                 except: 
                     error = 'Member_Not_Found'
@@ -382,83 +389,93 @@ class WalletSettleAPIURL(APIView):
                 TransType     = data['GB']['Result']['ReturnSet']['TransType']
                 BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
                 BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
-            
-                SettleID      = data['GB']['Result']['ReturnSet']['SettleList'][0]['SettleID']
-                BetID         = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetID']
-                BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetGrpNO']
-                TPCode        = data['GB']['Result']['ReturnSet']['SettleList'][0]['TPCode']
-                GBSN          = data['GB']['Result']['ReturnSet']['SettleList'][0]['GBSN']
-                MemberID      = data['GB']['Result']['ReturnSet']['SettleList'][0]['MemberID']
-                CurCode       = data['GB']['Result']['ReturnSet']['SettleList'][0]['CurCode']
-                BetDT         = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetDT']
-                BetType       = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetType']
-                BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetTypeParam1']
-                BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetTypeParam2']
-                Wintype       = data['GB']['Result']['ReturnSet']['SettleList'][0]['Wintype']
-                HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList'][0]['HxMGUID']
-                InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList'][0]['InitBetAmt']
-                RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList'][0]['RealBetAmt']
-                HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList'][0]['HoldingAmt']
-                InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList'][0]['InitBetRate']
-                RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList'][0]['RealBetRate']
-                PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList'][0]['PreWinAmt']
-                BetResult     = data['GB']['Result']['ReturnSet']['SettleList'][0]['BetResult']
-                WLAmt         = data['GB']['Result']['ReturnSet']['SettleList'][0]['WLAmt']
+                username      = data['GB']['Result']['ReturnSet']['SettleList'][0]['MemberID']
+                
                 try:
-                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundAmt'] 
-                except:
-                    RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['RefundBetAmt'] 
-                TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketBetAmt']
-                TicketResult  = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketResult']
-                TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList'][0]['TicketWLAmt']
-                SettleDT      = data['GB']['Result']['ReturnSet']['SettleList'][0]['SettleDT']
-
-                try: 
-                    user = CustomUser.objects.get(username = MemberID)
+                    user = CustomUser.objects.get(username=username)
+                    
+                    for x in range(len(data['GB']['Result']['ReturnSet']['SettleList'])):
+                        
+                        SettleID      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleID']
+                        BetID         = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetID']
+                        BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetGrpNO']
+                        TPCode        = data['GB']['Result']['ReturnSet']['SettleList'][x]['TPCode']
+                        GBSN          = data['GB']['Result']['ReturnSet']['SettleList'][x]['GBSN']
+                        CurCode       = data['GB']['Result']['ReturnSet']['SettleList'][x]['CurCode']
+                        BetDT         = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetDT']
+                        BetType       = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetType']
+                        BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetTypeParam1']
+                        BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetTypeParam2']
+                        Wintype       = data['GB']['Result']['ReturnSet']['SettleList'][x]['Wintype']
+                        HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList'][x]['HxMGUID']
+                        InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList'][x]['InitBetAmt']
+                        RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList'][x]['RealBetAmt']
+                        HoldingAmt    = data['GB']['Result']['ReturnSet']['SettleList'][x]['HoldingAmt']
+                        InitBetRate   = data['GB']['Result']['ReturnSet']['SettleList'][x]['InitBetRate']
+                        RealBetRate   = data['GB']['Result']['ReturnSet']['SettleList'][x]['RealBetRate']
+                        PreWinAmt     = data['GB']['Result']['ReturnSet']['SettleList'][x]['PreWinAmt']
+                        BetResult     = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetResult']
+                        WLAmt         = data['GB']['Result']['ReturnSet']['SettleList'][x]['WLAmt']
+                
+                        RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][x]['RefundAmt'] 
+                
+                        TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketBetAmt']
+                        TicketResult  = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketResult']
+                        TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketWLAmt']
+                        SettleDT      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleDT']
+                        
+                        
+                            
+                        if data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList'] != []:
+                            category = 'SPORTS'
+                        else:
+                            category = 'LOTTERY'
+                            
+                        cate = Category.objects.get(name=category)
+                        
+                        if BetType == '1':
+                            bet_type = SINGLE
+                        else:
+                            bet_type = OTHER
+                        
+                        if BetResult == '0':
+                            BetResult = 1 #lose
+                        elif BetResult == '1':
+                            BetResult = 0 #win
+                        elif BetResult == '2':
+                            BetResult = 2 #tie
+                        elif BetResult == '4':
+                            BetResult = 8 #cancel
+                        elif BetResult == '5':
+                            BetResult = 9 #兑现
+                        elif BetResult == 'R':
+                            BetResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                        with transaction.atomic():
+                            GameBet.objects.create(
+                                provider=PROVIDER,
+                                category=cate,
+                                username=user,
+                                currency=user.currency,
+                                market=ibetCN,
+                                ref_no=BetID,
+                                amount_wagered=decimal.Decimal(RealBetAmt/100),
+                                bet_type=bet_type,
+                                amount_won=decimal.Decimal(RefundBetAmt/100),
+                                outcome=BetResult,
+                                resolved_time=timezone.now()
+                            )
+                            
+                            if RefundBetAmt != '0' :
+                                user.main_wallet += decimal.Decimal(RefundBetAmt/100)
+                                user.save()
 
                     error      =  'No_Error'
                     error_code =  0
                     success    =  1
                     TransData  = user.main_wallet
 
-                    # GameRequestsModel.objects.create(
-                    #     Method        = Method,
-                    #     Success       = Success,
-
-                    #     TransType     = TransType,
-                    #     BetTotalCnt   = BetTotalCnt,
-                    #     BetTotalAmt   = BetTotalAmt,
-
-                    #     SettleID      = SettleID,
-                    #     BetID         = BetID,
-                    #     BetGrpNO      = BetGrpNO,
-                    #     TPCode        = TPCode,
-                    #     GBSN          = GBSN,
-                    #     MemberID      = MemberID,
-                    #     CurCode       = CurCode,
-                    #     time          = BetDT,
-                    #     BetType       = BetType,
-                    #     BetTypeParam1 = BetTypeParam1,
-                    #     BetTypeParam2 = BetTypeParam2,
-                    #     Wintype       = Wintype,
-                    #     HxMGUID       = HxMGUID,
-                    #     InitBetAmt    = InitBetAmt,
-                    #     RealBetAmt    = RealBetAmt,
-                    #     HoldingAmt    = HoldingAmt,
-                    #     InitBetRate   = InitBetRate,
-                    #     RealBetRate   = RealBetRate,
-                    #     PreWinAmt     = PreWinAmt,
-
-                    #     BetResult     = BetResult,
-                    #     WLAmt         = WLAmt,
-                    #     RefundBetAmt  = RefundBetAmt,
-                    #     TicketBetAmt  = TicketBetAmt,
-                    #     TicketResult  = TicketResult,
-                    #     TicketWLAmt   = TicketWLAmt,
-                    #     SettleDT      = SettleDT
-                    # )
-
-                except: 
+                    
+                except ObjectDoesNotExist: 
                     error = 'Member_Not_Found'
                     error_code = -2
 

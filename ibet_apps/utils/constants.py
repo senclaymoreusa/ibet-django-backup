@@ -238,6 +238,9 @@ OUTCOME_CHOICES = [
     (4, 'Running'),
     (5, 'Draw'),
     (6, 'Half lose'),
+    (7, 'Rollback'),
+    (8, 'Cancel'),
+    (9, 'Cash'),
 ]
 
 ACTIVE_STATE = 0
