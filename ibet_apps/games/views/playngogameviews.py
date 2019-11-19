@@ -8,19 +8,42 @@ from django.db import transaction
 
 # iBet
 from users.models import CustomUser
-from games.models import GameBet, GameProvider, Category
+from games.models import GameBet, GameProvider, Category, PNGTicket
 from utils.constants import *
 
 # Libraries
 import xmltodict
 import logging
 import decimal
+import uuid
 
 logger = logging.getLogger('django')
 
+
 class GameLaunchView(View):
+    """
+    Test class to simulate a game launch
+    """
     def get(self, request, *args, **kwargs):
-        return HttpResponse("GameLaunchView API")
+        try:
+            png_ticket = uuid.uuid4()
+            user_obj = CustomUser.objects.get(username="kevin")
+
+            # Case where user's existing PNGTicket needs to be updated
+            try:
+                existing_ticket = PNGTicket.objects.get(user_obj=user_obj)
+                existing_ticket.png_ticket = png_ticket
+                existing_ticket.save()
+
+            # Case where user has never played PNG games before
+            except:
+                PNGTicket.objects.create(png_ticket=png_ticket, user_obj=user_obj)
+
+            return HttpResponse("PNGTicket created")
+
+        except Exception as e:
+            logger.error("PLAY'nGO GameLaunchView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
 class AuthenticateView(View):
