@@ -5,6 +5,7 @@ import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.allbetgameviews as allbetgameviews
 import games.views.fggameviews as fggameviews
+import games.views.mggameviews as mggameviews
 from django.views.decorators.csrf import csrf_exempt
 from games.views.views import *
 import games.views.gdcasinoviews as gdcasino
@@ -45,8 +46,6 @@ urlpatterns = [
     path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
     path('api/playngo/reserve/', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
 
-   
-
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
 
@@ -59,6 +58,15 @@ urlpatterns = [
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
     
+
+    #mg game
+    path('api/mg/login/', mggameviews.MGLogin.as_view(), name = 'mg_login'),
+    path('api/mg/getbalance/', mggameviews.GetBalance.as_view(), name = 'get_mg_balance'),
+    path('api/mg/play/', mggameviews.Play.as_view(), name = 'play'),
+    path('api/mg/awardbonus', mggameviews.AwardBonus.as_view(), name = 'award_bonus'),
+    path('api/mg/endgame/', mggameviews.EndGame.as_view(), name = 'end_game'),
+    path('api/mg/refreshtoken/', mggameviews.RefreshToken.as_view(), name = 'refresh_token'),
+
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
