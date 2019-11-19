@@ -1350,6 +1350,7 @@ KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
 
 #onebook
+ONEBOOK_PROVIDER = 'Onebook'
 ONEBOOK_VENDORID = "xmV64h8RULU"
 ONEBOOK_OPERATORID = "ibetclaymore"
 ONEBOOK_MAXTRANSFER = "50000"
