@@ -164,11 +164,16 @@ class BalanceView(View):
                 json_to_return = {
                                     "error_code": 0,
                                     "message": "success",
-                                    "balance": float(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
+                                    "balance": int(user.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
                                  }
                 logger.info("AllBet BalanceView Success")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         except Exception as e:
+            json_to_return = {
+                                "error_code": 50000,
+                                "message": "server error",
+                                "balance": 0
+                             }
             logger.error("AllBet BalanceView Error: " + str(e))
-            return HttpResponse("AllBet BalanceView Error: " + str(e))
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
