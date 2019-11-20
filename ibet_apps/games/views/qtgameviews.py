@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
+from utils.aws_helper import getThirdPartyKeys
 from utils.constants import *
 from users.models import CustomUser
 from games.models import *
@@ -12,6 +13,13 @@ from games.models import *
 import logging
 
 logger = logging.getLogger("django")
+
+# connect AWS S3
+bucket = 'ibet-admin-apdev'
+if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
+    bucket = 'ibet-admin-approd'
+third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
+QT_PASS_KEY = third_party_keys["QTGAMES"]["PASS_KEY"]
 
 
 class VerifySession(APIView):

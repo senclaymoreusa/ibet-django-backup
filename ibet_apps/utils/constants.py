@@ -1366,19 +1366,8 @@ SA_ENCRYPT_KEY = 'g9G16nTs'
 SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
+
 # QT
-QT_API_URL = 'https://api-int.qtplatform.com/'
-QT_PASS_KEY = ''
-
-current_env = os.getenv("ENV")
-if current_env == 'local':
-    QT_PASS_KEY = 'test-local'
-elif current_env == "approd":
-    QT_PASS_KEY = 'czy2p6q2-gel8zm54-1sjp-tpls9iiw8m08'
-else:
-    QT_PASS_KEY = '8qzc27xd-a8c4poby-camg-6frm83qekyvq'
-
-
 QT_STATUS_SUCCESS = 0
 QT_STATUS_UNKNOWN_ERROR = 1
 QT_STATUS_INVALID_TOKEN = 2
