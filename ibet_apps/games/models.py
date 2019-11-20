@@ -67,7 +67,7 @@ class Game(models.Model):
     # game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
     game_url = models.CharField(max_length=200, null=True, blank=True)
-    game_guest_url = models.CharField(max_length=200, null=True, blank=True)
+    # game_guest_url = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
