@@ -13,7 +13,12 @@ import games.views.betsviews as bets
 from games.live_casino import *
 import games.views.onebookviews as onebookviews
 import games.views.sagameviews as sagameviews
+<<<<<<< HEAD
 import games.views.gbsportsviews as gbsports
+=======
+import games.views.qtgameviews as qtgameviews
+
+>>>>>>> 6da1b78a14ded79cd2779fc175fc815b30594d3d
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -48,6 +53,7 @@ urlpatterns = [
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
+    path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
 
     # fg
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
@@ -92,6 +98,10 @@ urlpatterns = [
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
 
     # path('api/onebook/test/<username>', onebookviews.test01,name="test"),
+    # QT
+    path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
+    path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
+
 ]
 
 #onebookviews.getBetDetail(repeat=300,repeat_until=None)

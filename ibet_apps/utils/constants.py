@@ -1377,3 +1377,20 @@ GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
 GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
 GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
 GB_OTHER_URL = "http://163.claymoreusa.net"
+
+# QT
+QT_STATUS_SUCCESS = 0
+QT_STATUS_UNKNOWN_ERROR = 1
+QT_STATUS_INVALID_TOKEN = 2
+QT_STATUS_LOGIN_FAILED = 3
+QT_STATUS_ACCOUNT_BLOCKED = 4
+QT_STATUS_REQUEST_DECLINED = 5
+
+QT_STATUS_CODE = (
+    (0, "SUCCESS"),
+    (1, "UNKNOWN_ERROR"),
+    (2, "INVALID_TOKEN"),
+    (3, "LOGIN_FAILED"),
+    (4, "ACCOUNT_BLOCKED"),
+    (5, "REQUEST_DECLINED"),
+)
