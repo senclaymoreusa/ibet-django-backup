@@ -147,7 +147,7 @@ class CancelRequest(ComplexModel):
 class LiveDealerSoapService(ServiceBase):
     @rpc(GetUserBalanceRequest,  _body_style='bare', _returns=Container)
     def GetUserBalance(ctx,request):
-        print("hello")
+        
         userId = request.userId
         loginToken = request.loginToken
         currency = request.currency

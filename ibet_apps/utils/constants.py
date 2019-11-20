@@ -1373,3 +1373,7 @@ SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
 GB_PROVIDER = 'GB'
+GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
+GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
+GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
+GB_OTHER_URL = "http://163.claymoreusa.net"

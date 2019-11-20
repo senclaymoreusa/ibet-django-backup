@@ -47,7 +47,7 @@ class WalletGeneralAPI(APIView):
                 TransDataExists = 1
                 
 
-            except:
+            except ObjectDoesNotExist:
                 error      = 'Member_Not_Found'
                 error_code = -2
 
@@ -516,7 +516,7 @@ class GenerateGameURL(APIView):
 
         TPUniqueID = uuid.uuid4()
 
-        data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+        data = requests.post(GB_URL, json = {
             
         "GB": {
             "Method": "UpdateTPUniqueID",
@@ -544,7 +544,7 @@ class GenerateGameURL(APIView):
                 dob_fields[1]
             ])
             
-            create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+            create_user_data = requests.post(GB_URL, json = {
             
             "GB": {
                 "Method": "CreateMember",
@@ -572,16 +572,16 @@ class GenerateGameURL(APIView):
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
 
-        res = requests.get('http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
+        res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
         res = res[2:-2]
 
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
         
         if game == 'GB Sports':
-            url = 'http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res,language)
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res,language)
         else:
-            url = 'http://163.claymoreusa.net/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
+            url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
         return Response({'game_url': url})
 
@@ -595,7 +595,7 @@ class GenerateFakeUserGameURL(APIView):
 
         TPUniqueID = uuid.uuid4()
 
-        data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+        data = requests.post(GB_URL, json = {
             
         "GB": {
             "Method": "UpdateTPUniqueID",
@@ -612,7 +612,7 @@ class GenerateFakeUserGameURL(APIView):
 
         if 'Error' in dic['GB']['Result']['ReturnSet']:
              
-            create_user_data = requests.post("http://uatapi.gbb2b.com/GBGameAPI/API.aspx", json = {
+            create_user_data = requests.post(GB_URL, json = {
             
             "GB": {
                 "Method": "CreateMember",
@@ -640,16 +640,16 @@ class GenerateFakeUserGameURL(APIView):
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
 
-        res = requests.get('http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
+        res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
         res = res[2:-2]
        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 
         if game == 'GB Sports':
-            url = 'http://164.claymoreusa.net/sports/asia/index.aspx?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
         else:
-            url = 'http://163.claymoreusa.net/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
+            url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
 
         return Response({'game_url': url})
 
