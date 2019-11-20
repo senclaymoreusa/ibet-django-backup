@@ -65,14 +65,16 @@ class Reserve(View):
     def post(self, request):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
-        amount = decimal.Decimal(request.GET.get("amount"))
-        bet_xml = etree.fromstring(request.body)
-
-        if not (username and reserve_id and amount):
+        amount = request.GET.get("amount")
+        
+        if not (username and reserve_id and amount and request.body):
             res = "error_code=-10\r\n"
             res += "error_message=WrongRequest\r\n"
             return HttpResponse(res, content_type='text/plain')
         
+        bet_xml = etree.fromstring(request.body)
+        amount = decimal.Decimal(amount)
+
         txn_id = generateTxnId("BTi")
         user = findUser(username)
         # user found -> record reserve
@@ -88,7 +90,7 @@ class Reserve(View):
                         amount_wagered=amount,
                         # transaction_id=txn_id,
                         market=MARKET_CN,
-                        other_data={'is_reserve': True, 'bets_info': bet_xml.attrib, 'all_bet_info': [bet.attrib for bet in bet_xml.getchildren()]}
+                        other_data={'is_reserve': True, 'bets_info': dict(bet_xml.attrib), 'all_bet_info': [dict(bet.attrib) for bet in bet_xml.getchildren()]}
                     )
                     user.main_wallet = ending_balance
                     bet.save()
@@ -123,14 +125,15 @@ class DebitReserve(View):
     def post(self, request):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")  # the reserve id that this debit corresponds to
-        amount = decimal.Decimal(request.GET.get("amount"))
+        amount = request.GET.get("amount")
         req_id = request.GET.get("req_id") # unique req id on the URL, different than bet ID
 
-        if not (username and reserve_id and amount and req_id):
+        if not (username and reserve_id and amount and req_id and request.body):
             res = "error_code=-10\r\n"
             res += "error_message=WrongRequest\r\n"
             return HttpResponse(res, content_type='text/plain')
 
+        amount = decimal.Decimal(amount)
         xmlData = etree.fromstring(request.body)
         bet = xmlData[0]
 
@@ -162,7 +165,7 @@ class DebitReserve(View):
                 amount_wagered=amount,
                 # transaction_id=txn_id,
                 market=MARKET_CN,
-                other_data=dict({'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
+                other_data={'bet_data': dict(bet.attrib), 'line_data': [dict(line.attrib) for line in bet.getchildren()] }
             )
             bet.save()
             res = "error_code=0\r\n"
@@ -328,10 +331,13 @@ class Add2Bet(View):
         amount = request.GET.get("amount")
         txn_id = generateTxnId("BTi")
 
-        if not (username and reserve_id and amount):
+
+        if not (username and reserve_id and amount and request.body):
             res = "error_code=-10\r\n"
             res += "error_message=WrongRequest\r\n"
             return HttpResponse(res, content_type='text/plain')
+
+        amount = decimal.Decimal(amount)
 
         xmlData = etree.fromstring(request.body)
         bet = xmlData[0]
@@ -347,7 +353,7 @@ class Add2Bet(View):
                     amount_wagered=amount,
                     # transaction_id=txn_id,
                     market=MARKET_CN,
-                    other_data=dict({'is_add2bet': True, 'bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
+                    other_data=dict({'is_add2bet': True, 'bet_data': dict(bet.attrib), 'line_data': [dict(line.attrib) for line in bet.getchildren()] })
                 )
                 user.main_wallet = user.main_wallet - amount
                 user.save()
@@ -374,10 +380,12 @@ class Add2BetConfirm(View):
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
 
-        if not (username and reserve_id and amount):
+        if not (username and reserve_id and amount and request.body):
             res = "error_code=-10\r\n"
             res += "error_message=WrongRequest\r\n"
             return HttpResponse(res, content_type='text/plain')
+
+        amount = decimal.Decimal(amount)
 
         txn_id = generateTxnId("BTi")
         xmlData = etree.fromstring(request.body)
@@ -394,7 +402,7 @@ class Add2BetConfirm(View):
                 # transaction_id=txn_id,
                 currency=user.get_currency_display(),
                 market=MARKET_CN,
-                other_data=dict({'add2bet_confirm': True, 'updated_bet_data': bet.attrib, 'line_data': [line.attrib for line in bet.getchildren()] })
+                other_data={'add2bet_confirm': True, 'updated_bet_data': dict(bet.attrib), 'line_data': [dict(line.attrib) for line in bet.getchildren()] }
             )
             confirm_bet.save()
 
@@ -419,11 +427,13 @@ class DebitCustomer(View):
         amount = request.GET.get("amount")
         txn_id = generateTxnId("BTi")
         
-        if not (username and reserve_id and amount):
+        if not (username and reserve_id and amount and request.body):
             res = "error_code=-10\r\n"
             res += "error_message=WrongRequest\r\n"
             return HttpResponse(res, content_type='text/plain')
         
+        amount = decimal.Decimal(amount)
+
         xmlData = etree.fromstring(request.body)
         purchases = xmlData[0]
         purchaseDict = dict()
@@ -432,13 +442,13 @@ class DebitCustomer(View):
             purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
             selections = purchase[0]
             purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))]["selections"] = [
-                selection.attrib for selection in selections.getchildren()
+                dict(selection.attrib) for selection in selections.getchildren()
             ]
 
         xmlJson = {
             'is_debit': True,
             'is_outcome_correction': True,
-            'debit_data': xmlData.attrib, 
+            'debit_data': dict(xmlData.attrib), 
             'bet_data': purchaseDict,
             'raw_xml': str(request.body, 'utf-8')
         }
@@ -478,13 +488,15 @@ class CreditCustomer(View):
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
 
-        if not (username and reserve_id and amount):
+        if not (username and reserve_id and amount and request.body):
             res = "error_code=-10\r\n"
             res += "error_message=WrongRequest\r\n"
             return HttpResponse(res, content_type='text/plain')
         
+        amount = decimal.Decimal(amount)
+
         txn_id = generateTxnId("BTi")
-        
+
         xmlData = etree.fromstring(request.body)
         purchases = xmlData[0]
         purchaseDict = dict()
@@ -493,13 +505,13 @@ class CreditCustomer(View):
             purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
             selections = purchase[0]
             purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))]["selections"] = [
-                selection.attrib for selection in selections.getchildren()
+                dict(selection.attrib) for selection in selections.getchildren()
             ]
 
         xmlJson = {
             'is_credit': True,
             'is_outcome_correction': False,
-            'credit_data': xmlData.attrib, 
+            'credit_data': dict(xmlData.attrib), 
             'bet_data': purchaseDict,
             'raw_xml': str(request.body, 'utf-8')
         }

@@ -91,6 +91,7 @@ urlpatterns = [
     path('api/bti/cancelreserve', csrf_exempt(bti.CancelReserve.as_view()), name="bti_cancel_reserve"),
     path('api/bti/commitreserve', csrf_exempt(bti.CommitReserve.as_view()), name="bti_commit_reserve"),
     path('api/bti/add2bet', csrf_exempt(bti.Add2Bet.as_view()), name="bti_add2bet"),
+    path('api/bti/add2betconfirm', csrf_exempt(bti.Add2BetConfirm.as_view()), name="bti_add2bet_confirm"),
     path('api/bti/creditcustomer', csrf_exempt(bti.CreditCustomer.as_view()), name="bti_credit_customer"),
     path('api/bti/debitcustomer', csrf_exempt(bti.DebitCustomer.as_view()), name="bti_credit_customer"),
     
