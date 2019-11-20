@@ -1,5 +1,3 @@
-import uuid
-
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -10,7 +8,6 @@ from users.models import CustomUser
 from utils.constants import *
 from django.utils import timezone
 import uuid
-
 
 # Create your models here.
 class GameProvider(models.Model):
@@ -167,5 +164,26 @@ class FGSession(models.Model):
     party_id = models.IntegerField(default=0, null=True)
     uuid = models.CharField(max_length=50, null=True)
     
+    def __str__(self):
+        return '{0}'.format(self.user)
+
+
+# QT game
+class QTSession(models.Model):
+
+    session_key = models.UUIDField(default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '{0}'.format(self.user.username)
+
+
+#MG token
+class MGToken(models.Model):
+
+    user=models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    token= models.CharField(max_length=50, null=True)
+
     def __str__(self):
         return '{0}'.format(self.user)
