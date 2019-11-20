@@ -49,6 +49,7 @@ urlpatterns = [
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
+    path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
 
     # fg
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
