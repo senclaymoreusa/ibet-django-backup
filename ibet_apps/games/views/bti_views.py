@@ -33,6 +33,10 @@ MARKET_CN = 2
 class ValidateToken(View):
     def get(self, request):
         token = request.GET.get("auth_token")
+        if not token:
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
         try:
             userFromToken = (Token.objects.select_related('user').get(key=token)).user
             res = "error_code=0\r\n" # 0 = success
@@ -63,6 +67,11 @@ class Reserve(View):
         reserve_id = request.GET.get("reserve_id")
         amount = decimal.Decimal(request.GET.get("amount"))
         bet_xml = etree.fromstring(request.body)
+
+        if not (username and reserve_id and amount):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
         
         txn_id = generateTxnId("BTi")
         user = findUser(username)
@@ -117,6 +126,11 @@ class DebitReserve(View):
         amount = decimal.Decimal(request.GET.get("amount"))
         req_id = request.GET.get("req_id") # unique req id on the URL, different than bet ID
 
+        if not (username and reserve_id and amount and req_id):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
+
         xmlData = etree.fromstring(request.body)
         bet = xmlData[0]
 
@@ -169,7 +183,12 @@ class CommitReserve(View):
     def get(self, request):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")  # the reserve id that this debit corresponds to
-        
+
+        if not (username and reserve_id):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
+
         txn_id = generateTxnId("BTi")
         try:
             user = findUser(username)
@@ -234,11 +253,17 @@ class CancelReserve(View):
     def get(self, request):
         VOID_OUTCOME=3
         username = request.GET.get("cust_id")
-        bet_id = request.GET.get("reserve_id")
+        reserve_id = request.GET.get("reserve_id")
+
+        if not (username and reserve_id):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
+
         try:
             with transaction.atomic():
                 user = findUser(username)                
-                prev_bet = GameBet.objects.filter(ref_no=bet_id)
+                prev_bet = GameBet.objects.filter(ref_no=reserve_id)
 
                 # bet has already been debited
                 if prev_bet.count() > 1: 
@@ -251,7 +276,7 @@ class CancelReserve(View):
                 if prev_bet.count() == 0:
                     credit_amount = decimal.Decimal(0)
                     bet = GameBet(
-                        ref_no=bet_id,
+                        ref_no=reserve_id,
                         amount_won=credit_amount,
                         outcome=VOID_OUTCOME,
                         provider=PROVIDER,
@@ -270,7 +295,7 @@ class CancelReserve(View):
                 if prev_bet.count() == 1:
                     credit_amount = prev_bet[0].amount_wagered
                     bet = GameBet(
-                        ref_no=bet_id,
+                        ref_no=reserve_id,
                         amount_won=credit_amount,
                         outcome=VOID_OUTCOME,
                         provider=PROVIDER,
@@ -302,7 +327,12 @@ class Add2Bet(View):
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
         txn_id = generateTxnId("BTi")
-        
+
+        if not (username and reserve_id and amount):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
+
         xmlData = etree.fromstring(request.body)
         bet = xmlData[0]
         try:
@@ -343,6 +373,12 @@ class Add2BetConfirm(View):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
+
+        if not (username and reserve_id and amount):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
+
         txn_id = generateTxnId("BTi")
         xmlData = etree.fromstring(request.body)
         bet = xmlData[0]
@@ -382,6 +418,11 @@ class DebitCustomer(View):
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
         txn_id = generateTxnId("BTi")
+        
+        if not (username and reserve_id and amount):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
         
         xmlData = etree.fromstring(request.body)
         purchases = xmlData[0]
@@ -436,6 +477,12 @@ class CreditCustomer(View):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
+
+        if not (username and reserve_id and amount):
+            res = "error_code=-10\r\n"
+            res += "error_message=WrongRequest\r\n"
+            return HttpResponse(res, content_type='text/plain')
+        
         txn_id = generateTxnId("BTi")
         
         xmlData = etree.fromstring(request.body)
