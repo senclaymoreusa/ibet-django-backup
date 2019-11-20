@@ -88,11 +88,11 @@ urlpatterns = [
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
     path('api/bti/reserve', csrf_exempt(bti.Reserve.as_view()), name="bti_reserve_bet"),
     path('api/bti/debitreserve', csrf_exempt(bti.DebitReserve.as_view()), name="bti_debit_reserve"),
-    path('api/bti/cancelreserve', bti.CancelReserve.as_view(), name="bti_cancel_reserve"),
-    path('api/bti/commitreserve', bti.CommitReserve.as_view(), name="bti_commit_reserve"),
-    path('api/bti/add2bet', bti.Add2Bet.as_view(), name="bti_add2bet"),
-    path('api/bti/creditcustomer', bti.CreditCustomer.as_view(), name="bti_credit_customer"),
-    path('api/bti/debitcustomer', bti.DebitCustomer.as_view(), name="bti_credit_customer"),
+    path('api/bti/cancelreserve', csrf_exempt(bti.CancelReserve.as_view()), name="bti_cancel_reserve"),
+    path('api/bti/commitreserve', csrf_exempt(bti.CommitReserve.as_view()), name="bti_commit_reserve"),
+    path('api/bti/add2bet', csrf_exempt(bti.Add2Bet.as_view()), name="bti_add2bet"),
+    path('api/bti/creditcustomer', csrf_exempt(bti.CreditCustomer.as_view()), name="bti_credit_customer"),
+    path('api/bti/debitcustomer', csrf_exempt(bti.DebitCustomer.as_view()), name="bti_credit_customer"),
     
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
