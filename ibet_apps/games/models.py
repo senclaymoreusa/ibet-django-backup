@@ -176,6 +176,18 @@ class FGSession(models.Model):
     def __str__(self):
         return '{0}'.format(self.user)
 
+
+# QT game
+class QTSession(models.Model):
+
+    session_key = models.UUIDField(default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '{0}'.format(self.user.username)
+
+
 #MG token
 class MGToken(models.Model):
 

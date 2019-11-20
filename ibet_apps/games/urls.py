@@ -14,6 +14,8 @@ import games.views.betsviews as bets
 from games.live_casino import *
 import games.views.onebookviews as onebookviews
 import games.views.sagameviews as sagameviews
+import games.views.qtgameviews as qtgameviews
+
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),
@@ -49,6 +51,7 @@ urlpatterns = [
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
+    path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
 
     # fg
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
@@ -93,6 +96,10 @@ urlpatterns = [
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
     path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
+
+    # QT
+    path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
+    path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
 
 ]
 
