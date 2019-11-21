@@ -129,7 +129,10 @@ class CustomUser(AbstractBaseUser):
 
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
+    # referrer's path append user.pk/ generate a referral path
+    referral_path = models.CharField(max_length=1000, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
+    referred_by_channel = models.ForeignKey('users.ReferChannel', null=True, blank=True, on_delete=models.CASCADE)
     reward_points = models.IntegerField(default=0)
     vip_level = models.ForeignKey('users.Segmentation', on_delete=models.CASCADE, null=True)
 
@@ -278,6 +281,7 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+# User Personal Commission
 class Commission(models.Model):
 
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -300,10 +304,20 @@ class Commission(models.Model):
         super(Commission, self).save(*args, **kwargs)
 
 
+# System default Commission
+class SystemCommission(models.Model):
+    commission_level = models.IntegerField(unique=True)
+    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    active_downline_needed = models.IntegerField(default=0)
+    monthly_downline_ftd_needed = models.IntegerField(default=0)
+    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+
+
 # one user can have up to 10 referral channels
 class ReferChannel(models.Model):
     # refer_channel_code is ReferChannel.pk
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     refer_channel_name = models.CharField(max_length=100)
     # time of this channel was created
     generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
