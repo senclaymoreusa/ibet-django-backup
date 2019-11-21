@@ -158,7 +158,7 @@ class InplayGetApprovalAPI(View):
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0], "}"])
             data = json.loads(data)
-            print(data)
+            # print(data)
             response = {}
             if data["EventTypeId"] == '1001':
                 member_code = data["MemberCode"]
@@ -175,7 +175,7 @@ class InplayGetApprovalAPI(View):
                     response["StatusCode"] = -100
                     
                 response = json.dumps(response)
-                print(response)
+                # print(response)
                 cipher_text = des3Encryption(response)
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
             else:
@@ -192,48 +192,49 @@ class InplayDeductBalanceAPI(View):
         date_sent = request.GET.get('dateSent')
 
         try:
-            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
-            print(balance_package)
+            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
-            # print(data)
-            # print(data["EventTypeId"])
-            #  data = json.dumps(str(data))
             data = json.loads(data)
             print(data)
+            response = {}
             if data["EventTypeId"] == '1003':
                 user = data["MemberCode"]
                 amount = float(data["TransactionAmt"])
                 user = CustomUser.objects.get(username=user)
                 if user.main_wallet > amount:
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    trans = Transaction.objects.create(
-                        transaction_id=trans_id,
-                        user_id=user,
-                        order_id=trans_id,
-                        amount=amount,
-                        currency=user_currency,
-                        transfer_from="IMES",
-                        transfer_to="main",
-                        product=0,
-                        transaction_type=TRANSACTION_TRANSFER,
-                        status=TRAN_PENDING_TYPE
-                    )
+                    # trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    # trans = Transaction.objects.create(
+                    #     transaction_id=trans_id,
+                    #     user_id=user,
+                    #     order_id=package_id,
+                    #     amount=amount,
+                    #     currency=user_currency,
+                    #     transfer_from="IMES",
+                    #     transfer_to="main",
+                    #     product=0,
+                    #     transaction_type=TRANSACTION_TRANSFER,
+                    #     status=TRAN_PENDING_TYPE
+                    # )
+                    # res["DateReceived"] = str(timezone.now())
+                    # res["DateSent"] = str(timezone.now())
+                    response["StatusCode"] = 100
+                    response["StatusMessage"] = "Success"
+                    response["PackageId"] = package_id
+                    response["Balance"] = float(user.main_wallet)
+                else:
+                    response["StatusCode"] = -100
+                    response["StatusMessage"] = "Not enough balance"
 
-                    res = {}
-                    res["DateReceived"] = timezone.now()
-                    res["DateSent"] = timezone.now()
-                    res["StatusCode"] = 100
-                    res["StatusMessage"] = "Success"
-                    res["PackageId"] = 374
-                    res["Balance"] = 0.0
+                response = json.dumps(response)
+                cipher_text = des3Encryption(response)
 
-                    return HttpResponse(json.dumps(res), content_type='application/json', status=200)
-                print(amount)
+                return HttpResponse(cipher_text, content_type='text/plain', status=200)
+            else:
+                return HttpResponse("Wrong Event type")
         except Exception as e:
-            print("Error: {}".format(repr(e)))
-
-        return HttpResponse(status=200)
+            logger.error("Error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class InplayUpdateBalanceAPI(View):
