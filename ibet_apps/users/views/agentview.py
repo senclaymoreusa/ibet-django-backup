@@ -523,7 +523,7 @@ class AgentDetailView(CommAdminView):
                 transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
             downline_info['adjustment'] = affiliate_tran.filter(
                 transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-            downline_info['turnover'] = calculateTurnover(i)
+            downline_info['turnover'] = calculateTurnover(i, None, None)
             downline_info['balance'] = i.main_wallet
             downline_list_table.append(downline_info)
         context["downline_list"] = downline_list_table
