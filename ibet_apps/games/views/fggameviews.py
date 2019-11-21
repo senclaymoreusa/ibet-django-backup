@@ -14,6 +14,9 @@ import requests,json
 import logging
 import random
 from utils.constants import *
+import datetime
+from datetime import date
+from django.utils import timezone
 
 logger = logging.getLogger("django")
 
@@ -275,13 +278,16 @@ class ProcessTransaction(APIView):
                         user.main_wallet = wallet
                         user.save()
                         transactionId = re.sub("[^0-9]", "", timestamp)
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
                         GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
                                                         category=Category.objects.get(name='Slots'),
                                                         username=user,
                                                         amount_wagered=-float(amount),
-                                                        currency=currency,
+                                                        currency=user.currency,
                                                         market=ibetCN,
-                                                        ref_no=transactionId
+                                                        ref_no=transactionId,
+                                                        transaction_id=trans_id
                                                         )
                     response = {
                         "seq" : seq,
@@ -319,14 +325,17 @@ class ProcessTransaction(APIView):
                         user.main_wallet = user.main_wallet + decimal.Decimal(amount)
                         user.save()
                         transactionId = re.sub("[^0-9]", "", timestamp)
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
                         GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
                                                         category=Category.objects.get(name='Slots'),
                                                         username=user,
                                                         amount_wagered=0.00,
-                                                        currency=currency,
+                                                        currency=user.currency,
                                                         amount_won=float(amount),
                                                         market=ibetCN,
-                                                        ref_no=transactionId
+                                                        ref_no=transactionId,
+                                                        transaction_id=trans_id
                                                         )
                     response = {
                         "seq" : seq,
