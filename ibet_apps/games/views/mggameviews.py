@@ -231,6 +231,8 @@ class MGgame(APIView):
         
                 mguser = MGToken.objects.get(token=token)
                 user = CustomUser.objects.get(username=mguser.user)  
+                provider = GameProvider.objects.get(provider_name="MG")
+                category = Category.objects.get(name='Slots')
                 transactionId = re.sub("[^0-9]", "", timestamp)
             
                 if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
@@ -246,8 +248,8 @@ class MGgame(APIView):
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                         if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
-                                                            category=Category.objects.get(name='Slots'),
+                            GameBet.objects.get_or_create(provider=provider,
+                                                            category=category,
                                                             username=user,
                                                             amount_wagered=0.00,
                                                             currency=user.currency,
@@ -257,8 +259,8 @@ class MGgame(APIView):
                                                             transaction_id=trans_id
                                                             )
                         else :
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
-                                                            category=Category.objects.get(name='Slots'),
+                            GameBet.objects.get_or_create(provider=provider,
+                                                            category=category,
                                                             username=user,
                                                             amount_wagered=decimal.Decimal(amount)/100,
                                                             currency=user.currency,

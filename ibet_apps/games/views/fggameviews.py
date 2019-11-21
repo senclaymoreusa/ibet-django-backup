@@ -261,7 +261,8 @@ class ProcessTransaction(APIView):
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
-          
+            provider = GameProvider.objects.get(provider_name="FG")
+            category = Category.objects.get(name='Slots')
 
         except:
             response = {
@@ -280,8 +281,8 @@ class ProcessTransaction(APIView):
                         transactionId = re.sub("[^0-9]", "", timestamp)
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
-                                                        category=Category.objects.get(name='Slots'),
+                        GameBet.objects.get_or_create(provider=provider,
+                                                        category=category,
                                                         username=user,
                                                         amount_wagered=-float(amount),
                                                         currency=user.currency,
@@ -327,8 +328,8 @@ class ProcessTransaction(APIView):
                         transactionId = re.sub("[^0-9]", "", timestamp)
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
-                                                        category=Category.objects.get(name='Slots'),
+                        GameBet.objects.get_or_create(provider=provider,
+                                                        category=category,
                                                         username=user,
                                                         amount_wagered=0.00,
                                                         currency=user.currency,
