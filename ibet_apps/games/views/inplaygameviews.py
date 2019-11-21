@@ -27,6 +27,7 @@ from Crypto.Cipher import DES3
 # from pyDes import *
 import base64
 import pytz
+import urllib
 
 
 logger = logging.getLogger('django')
@@ -112,58 +113,54 @@ class ValidateTokenAPI(View):
 
 class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
-        
         balance_package = request.GET.get("balancePackage")
-        dateSent = request.GET.GET("dateSent")
+        date_sent = request.GET.get("dateSent")
         # data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
-
-        key = hashlib.md5('9d25ee5d1ffa0e01'.encode()).digest()
-        # key = "9d25ee5d1ffa0e01"
-
+        balance_package = "ZwgZhGFWmUv5vDi5q2ruVNc3lf+JmmxTctAdoxbVdOUeW+RbwyYE95B0M4EiVX/k"
         try:
-            plain_json = des3Decryption(balance_package, key)
-
-            member_code = plain_json["MemberCode"]
-
-            user = CustomUser.objects.get(username=member_code)
+            data = des3Decryption(balance_package)
+            data = "".join([data.rsplit("}" , 1)[0] , "}"])
+            data = json.loads(data)
+            # print(data)
 
             response = {}
-            if user:
+            if data["EventTypeId"] == '1000':
+                member_code = data["MemberCode"]
+                user = CustomUser.objects.get(username=member_code)
+
                 response["StatusCode"] = 100
                 response["StatusMessage"] = "Success"
-                response["PackageId"] = uuid.uuid1()
-                response["Balance"] = user.main_wallet
+                # response["PackageId"] = str(uuid.uuid1())
+                response["Balance"] = float(user.main_wallet)
 
                 response = json.dumps(response)
 
                 ciphertext = des3Encryption(response)
+                # print(ciphertext)
 
+                return HttpResponse(ciphertext, content_type='text/plain', status=200)
             else:
-                return HttpResponse(status=404)
-
-            return HttpResponse(status=200)
+                # response[]
+                return HttpResponse("Wrong Event Type")
         except Exception as e:
-            print("Error")
-            # print("Error:" + repr(e))
+            logger.error("Error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class InplayGetApprovalAPI(View):
     def get(self, request, *arg, **kwargs):
         balance_package = request.GET.get('balancePackage')
-        package_id = request.GET.get('balancePackage')
+        package_id = request.GET.get('packageid')
         date_sent = request.GET.get('dateSent')
 
         try:
             balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
             print(balance_package)
             data = des3Decryption(balance_package)
-            data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
-            # print(data)
-            # print(data["EventTypeId"])
-            #  data = json.dumps(str(data))
+            data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
             print(data)
-            if data["EventTypeId"] == '1003':
+            if data["EventTypeId"] == '1001':
                 user = data["MemberCode"]
                 amount = float(data["TransactionAmt"])
                 user = CustomUser.objects.get(username=user)
@@ -186,16 +183,14 @@ class InplayGetApprovalAPI(View):
                     res["DateReceived"] = timezone.now()
                     res["DateSent"] = timezone.now()
                     res["StatusCode"] = 100
-                    res["StatusMessage"] = "Success"
-                    res["PackageId"] = 374
+                    res["StatusMessage"] = "Balance is sufficient, go ahead"
+                    res["PackageId"] = package_id
                     res["Balance"] = 0.0
 
                     return HttpResponse(json.dumps(res), content_type='application/json', status=200)
                 print(amount)
         except Exception as e:
             print("Error: {}".format(repr(e)))
-
-        return HttpResponse(status=200):
 
         return HttpResponse(status=200)
 
@@ -251,13 +246,63 @@ class InplayDeductBalanceAPI(View):
         return HttpResponse(status=200)
 
 
-# class InplayUpdateBalanceAPI(View):
-#     return HttpResponse(status=200)
+class InplayUpdateBalanceAPI(View):
+     def get(self, request, *arg, **kwargs):
+        balance_package = request.GET.get('balancePackage')
+        package_id = request.GET.get('packageid')
+        date_sent = request.GET.get('dateSent')
+
+        try:
+            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
+            print(balance_package)
+            data = des3Decryption(balance_package)
+            data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
+            # print(data)
+            # print(data["EventTypeId"])
+            #  data = json.dumps(str(data))
+            data = json.loads(data)
+            print(data)
+            if data["EventTypeId"] == '4002':
+                user = data["MemberCode"]
+                # amount = float(data["TransactionAmt"])
+                # user = CustomUser.objects.get(username=user)
+                match_no = data["MatchNo"]
+                bet_detail_list = data["BetDetailList"]
+                if user.main_wallet > amount:
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    trans = Transaction.objects.create(
+                        transaction_id=trans_id,
+                        user_id=user,
+                        order_id=trans_id,
+                        amount=amount,
+                        currency=user_currency,
+                        transfer_from="IMES",
+                        transfer_to="main",
+                        product=0,
+                        transaction_type=TRANSACTION_TRANSFER,
+                        status=TRAN_PENDING_TYPE
+                    )
+
+                    res = {}
+                    res["DateReceived"] = timezone.now()
+                    res["DateSent"] = timezone.now()
+                    res["StatusCode"] = 100
+                    res["StatusMessage"] = "Success"
+                    res["PackageId"] = 374
+                    res["Balance"] = 0.0
+
+                    return HttpResponse(json.dumps(res), content_type='application/json', status=200)
+                print(amount)
+        except Exception as e:
+            print("Error: {}".format(repr(e)))
+
+        return HttpResponse(status=200)
 
 
 class TestDecryption(View):
     def get(self, request, *arg, **kwargs):
         try:
+            api_no = request.GET.get('api')
             event_type_id = request.GET.get('EventTypeId')  # "EventTypeId": 1001,
             member_code = request.GET.get('MemberCode')  # "MemberCode": "bae02",
             transaction_amt = request.GET.get('TransactionAmt') # "TransactionAmt": 100.0
@@ -265,7 +310,12 @@ class TestDecryption(View):
             plain_json = {}
             plain_json["EventTypeId"] = event_type_id
             plain_json["MemberCode"] = member_code
-            plain_json["TransactionAmt"] = transaction_amt
+
+            if api_no == '1':
+                pass
+                # plain_json = json.dumps(plain_json)
+            else:
+                plain_json["TransactionAmt"] = transaction_amt
 
             plain_json = json.dumps(plain_json)
             print(plain_json)
