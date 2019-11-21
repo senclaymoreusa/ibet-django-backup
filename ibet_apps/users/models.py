@@ -130,6 +130,7 @@ class CustomUser(AbstractBaseUser):
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
+    referred_by_channel = models.ForeignKey('users.ReferChannel', null=True, blank=True, on_delete=models.CASCADE)
     reward_points = models.IntegerField(default=0)
     vip_level = models.ForeignKey('users.Segmentation', on_delete=models.CASCADE, null=True)
 
@@ -303,7 +304,7 @@ class Commission(models.Model):
 # one user can have up to 10 referral channels
 class ReferChannel(models.Model):
     # refer_channel_code is ReferChannel.pk
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     refer_channel_name = models.CharField(max_length=100)
     # time of this channel was created
     generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
