@@ -90,8 +90,8 @@ class MGgame(APIView):
                                     "@currency" : CURRENCY_CHOICES[user.currency][1],
                                     "@country" : user.country,
                                     "@city" : user.city,
-                                    "@balance" : user.main_wallet,
-                                    "@bonusbalance" : user.bonus_wallet ,
+                                    "@balance" :  math.floor(float(user.main_wallet * 100)) ,
+                                    "@bonusbalance" :math.floor(float(user.bonus_wallet  * 100)) ,
                                     "@wallet" : "vanguard",
                                     "extinfo" : {}
                                 },
@@ -167,8 +167,8 @@ class MGgame(APIView):
                             "result" : {
                                 "@seq" : seq,
                                 "@token" : token,
-                                "@balance" : user.main_wallet,
-                                "@bonusbalance" : user.bonus_wallet,
+                                "@balance" : math.floor(float(user.main_wallet * 100)) ,
+                                "@bonusbalance" : math.floor(float(user.bonus_wallet  * 100)),
                                 "extinfo" : {}
                             },
                             
@@ -251,25 +251,25 @@ class MGgame(APIView):
                     with transaction.atomic():
                         user.main_wallet = wallet
                         user.save()
-                        if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
-                                                            category=Category.objects.get(name='Slots'),
-                                                            username=user,
-                                                            amount_wagered=0.00,
-                                                            currency=currency,
-                                                            amount_won=decimal.Decimal(amount)/100,
-                                                            market=ibetCN,
-                                                            ref_no=transactionId
-                                                            )
-                        else :
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
-                                                            category=Category.objects.get(name='Slots'),
-                                                            username=user,
-                                                            amount_wagered=decimal.Decimal(amount)/100,
-                                                            currency=currency,
-                                                            market=ibetCN,
-                                                            ref_no=transactionId
-                                                            )
+                        # if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
+                        #     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
+                        #                                     category=Category.objects.get(name='Slots'),
+                        #                                     username=user,
+                        #                                     amount_wagered=0.00,
+                        #                                     currency=currency,
+                        #                                     amount_won=decimal.Decimal(amount)/100,
+                        #                                     market=ibetCN,
+                        #                                     ref_no=transactionId
+                        #                                     )
+                        # else :
+                        #     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
+                        #                                     category=Category.objects.get(name='Slots'),
+                        #                                     username=user,
+                        #                                     amount_wagered=decimal.Decimal(amount)/100,
+                        #                                     currency=currency,
+                        #                                     market=ibetCN,
+                        #                                     ref_no=transactionId
+                        #                                     )
 
                     response = {
                     "pkt" : {
@@ -279,8 +279,8 @@ class MGgame(APIView):
                                 "result" : {
                                     "@seq" : seq,
                                     "@token" : token,
-                                    "@balance" : user.main_wallet,
-                                    "@bonusbalance" : user.bonus_wallet,
+                                    "@balance" : math.floor(float(user.main_wallet * 100)),
+                                    "@bonusbalance" : math.floor(float(user.bonus_wallet  * 100)),
                                     "@exttransactionid" : transactionId,
                                     "extinfo" : {}
                                 },
@@ -372,8 +372,8 @@ class MGgame(APIView):
                             "@timestamp" : timestamp,
                             "result" : {
                                 "@seq" : seq,
-                                "@balance" : user.main_wallet,
-                                "@bonusbalance" : user.bonus_wallet,
+                                "@balance" : math.floor(float(user.main_wallet * 100)) ,
+                                "@bonusbalance" : math.floor(float(user.bonus_wallet  * 100)),
                                 "@exttransactionid" : re.sub("[^0-9]", "", timestamp),
                                 "extinfo" : {}
                             },
@@ -445,8 +445,8 @@ class MGgame(APIView):
                             "result" : {
                                 "@seq" : seq,
                                 "@token" : token,
-                                "@balance" : user.main_wallet,
-                                "@bonusbalance" : user.bonus_wallet,
+                                "@balance" : math.floor(float(user.main_wallet * 100)) ,
+                                "@bonusbalance" : math.floor(float(user.bonus_wallet  * 100)),
                                 "extinfo" : {}
                             },
                             
