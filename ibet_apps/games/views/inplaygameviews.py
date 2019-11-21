@@ -154,45 +154,35 @@ class InplayGetApprovalAPI(View):
         date_sent = request.GET.get('dateSent')
 
         try:
-            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
-            print(balance_package)
+            balance_package = "ZwgZhGFWmUv5vDi5q2ruVAUij5STfGZ6ctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
             data = des3Decryption(balance_package)
-            data = "".join([data.rsplit("}" , 1)[0] , "}"])
+            data = "".join([data.rsplit("}" , 1)[0], "}"])
             data = json.loads(data)
             print(data)
+            response = {}
             if data["EventTypeId"] == '1001':
-                user = data["MemberCode"]
+                member_code = data["MemberCode"]
                 amount = float(data["TransactionAmt"])
-                user = CustomUser.objects.get(username=user)
-                if user.main_wallet > amount:
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    trans = Transaction.objects.create(
-                        transaction_id=trans_id,
-                        user_id=user,
-                        order_id=trans_id,
-                        amount=amount,
-                        currency=user_currency,
-                        transfer_from="IMES",
-                        transfer_to="main",
-                        product=0,
-                        transaction_type=TRANSACTION_TRANSFER,
-                        status=TRAN_PENDING_TYPE
-                    )
-
-                    res = {}
-                    res["DateReceived"] = timezone.now()
-                    res["DateSent"] = timezone.now()
-                    res["StatusCode"] = 100
-                    res["StatusMessage"] = "Balance is sufficient, go ahead"
-                    res["PackageId"] = package_id
-                    res["Balance"] = 0.0
-
-                    return HttpResponse(json.dumps(res), content_type='application/json', status=200)
-                print(amount)
+                user = CustomUser.objects.get(username=member_code)
+                if user.main_wallet >= amount:
+                    # response["DateReceived"] = timezone.now()
+                    # response["DateSent"] = timezone.now()
+                    response["StatusCode"] = 100
+                    response["StatusMessage"] = "Balance is sufficient, go ahead"
+                    response["PackageId"] = package_id
+                    response["Balance"] = float(user.main_wallet)
+                else:
+                    response["StatusCode"] = -100
+                    
+                response = json.dumps(response)
+                print(response)
+                cipher_text = des3Encryption(response)
+                return HttpResponse(cipher_text, content_type='text/plain', status=200)
+            else:
+                return HttpResponse("Wrong event type")
         except Exception as e:
-            print("Error: {}".format(repr(e)))
-
-        return HttpResponse(status=200)
+            logger.error("Error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class InplayDeductBalanceAPI(View):
@@ -314,7 +304,7 @@ class TestDecryption(View):
             if api_no == '1':
                 pass
                 # plain_json = json.dumps(plain_json)
-            else:
+            elif api_no == '2':
                 plain_json["TransactionAmt"] = transaction_amt
 
             plain_json = json.dumps(plain_json)
