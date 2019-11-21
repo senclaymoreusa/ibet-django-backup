@@ -218,6 +218,7 @@ TOTAL = 'OU'
 TIP = 'TIP'
 SINGLE = 'Single'
 PARLAY = 'Parlay'
+OTHER = 'Other'
 
 BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
@@ -226,6 +227,7 @@ BET_TYPES_CHOICES = [
     (TIP, 'Tip'),
     (SINGLE, 'Single'),
     (PARLAY,'Parlay'),
+    (OTHER, 'Other'),
 
 ]
 OUTCOME_CHOICES = [
@@ -236,6 +238,11 @@ OUTCOME_CHOICES = [
     (4, 'Running'),
     (5, 'Draw'),
     (6, 'Half lose'),
+    (7, 'Rollback'),
+    (8, 'Cancel'),
+    (9, 'Cash'),
+    (9, 'Cash'),
+    (10, 'Half won'),
 ]
 
 ACTIVE_STATE = 0
@@ -1366,6 +1373,12 @@ SA_ENCRYPT_KEY = 'g9G16nTs'
 SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
+#GB
+GB_PROVIDER = 'GB'
+GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
+GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
+GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
+GB_OTHER_URL = "http://163.claymoreusa.net"
 
 # QT
 QT_STATUS_SUCCESS = 0
