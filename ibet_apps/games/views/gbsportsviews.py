@@ -221,7 +221,7 @@ class WalletBetAPIURL(APIView):
                                     bet_type = SINGLE
                                 else:
                                     bet_type = OTHER
-                                print("hello")
+                                
                                 GameBet.objects.create(
                                     provider=PROVIDER,
                                     category=cate,

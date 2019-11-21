@@ -241,6 +241,8 @@ OUTCOME_CHOICES = [
     (7, 'Rollback'),
     (8, 'Cancel'),
     (9, 'Cash'),
+    (9, 'Cash'),
+    (10, 'Half won'),
 ]
 
 ACTIVE_STATE = 0

@@ -46,6 +46,7 @@ outcomeConversion = {
     "running": 4,
     "draw":5,
     "half lose":6,
+    "half won" : 10,
 }
 def createMember(username, oddsType):
     try:
@@ -478,7 +479,7 @@ def getBetDetail():
                     user = CustomUser.objects.get(username=username)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
-                        
+                        # print("onebook")
                         GameBet.objects.create(provider=PROVIDER,
                                                     category=cate,
                                                     username=user,
