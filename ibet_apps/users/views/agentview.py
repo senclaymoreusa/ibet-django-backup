@@ -404,6 +404,9 @@ class AgentDetailView(CommAdminView):
             context["downline_number"] = getDownline(affiliate).count()
             context["active_users"] = calculateActiveDownlineNumber(affiliate)
             context["downline_deposit"] = downline_deposit
+            context['domain'] = LETOU_DOMAIN
+            context['referral_code'] = affiliate.referral_code
+
             try:
                 context["promotion_link"] = ReferChannel.objects.get(
                     user_id=affiliate, refer_channel_name="default").pk
@@ -418,135 +421,95 @@ class AgentDetailView(CommAdminView):
             affiliate_ip_list = UserAction.objects.filter(
                 user=affiliate.pk).values_list('ip_addr').distinct()
             related_affiliate_list = UserAction.objects.filter(
-                ip_addr__in=affiliate_ip_list).values('user').exclude(user=affiliate.pk).distinct()
+                ip_addr__in=affiliate_ip_list).values_list('user', flat=True).exclude(user=affiliate.pk).distinct()
 
             related_affiliates_data = []
             for related_affiliate in related_affiliate_list:
                 related_affiliates_info = {}
-                related_affiliates_info['member_id'] = related_affiliate['user']
+                related_affiliate = CustomUser.objects.get(pk=related_affiliate)
+                related_affiliates_info['member_id'] = related_affiliate.pk
                 related_affiliates_info['balance'] = related_affiliate.main_wallet
                 related_affiliates_data.append(related_affiliates_info)
             context["related_affiliates"] = related_affiliates_data
-            # commission
-            context["commission_this_month"] = affiliate_commission_tran.filter(request_time__gte=(
-                today.replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
-            context["commission_last_month"] = affiliate_commission_tran.filter(
-                Q(request_time__lte=(today.replace(day=1))) & Q(
-                    request_time__gte=today.replace(day=1) + relativedelta(months=-1))).aggregate(
-                comm=Coalesce(Sum('amount'), 0))
-            context["commission_before_last"] = affiliate_commission_tran.filter(
-                Q(request_time__lte=(today.replace(day=1) + relativedelta(months=-1))) & Q(
-                    request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
-                comm=Coalesce(Sum('amount'), 0))
-            # downline status
-            context["downline_number"] = getDownline(affiliate).count()
-            context["active_users"] = calculateActiveDownlineNumber(affiliate)
-            context["downline_deposit"] = downline_deposit
-            context['domain'] = LETOU_DOMAIN
-            context['referral_code'] = affiliate.referral_code
-        try:
-            context["promotion_link"] = ReferChannel.objects.get(
-                user_id=affiliate, refer_channel_name="default").pk
-        except ObjectDoesNotExist:
-            context["promotion_link"] = ""
-        context["promotion_link_list"] = ReferChannel.objects.filter(
-            user_id=affiliate)
 
-        # related affiliates
-        # get this affiliate's all ip addresses
-        # filer other affiliate who have use these addresses before
-        affiliate_ip_list = UserAction.objects.filter(
-            user=affiliate.pk).values_list('ip_addr').distinct()
-        related_affiliate_list = UserAction.objects.filter(
-            ip_addr__in=affiliate_ip_list).values_list('user', flat=True).exclude(user=affiliate.pk).distinct()
-
-        related_affiliates_data = []
-        for related_affiliate in related_affiliate_list:
-            related_affiliates_info = {}
-            related_affiliate = CustomUser.objects.get(pk=related_affiliate)
-            related_affiliates_info['member_id'] = related_affiliate.pk
-            related_affiliates_info['balance'] = related_affiliate.main_wallet
-            related_affiliates_data.append(related_affiliates_info)
-        context["related_affiliates"] = related_affiliates_data
-
-        # edit detail bottom
-        try:
-            context["commission_type"] = Commission.objects.filter(
-                user_id=affiliate).order_by('commission_level')
-        except ObjectDoesNotExist:
-            context["commission_type"] = ""
             # edit detail bottom
             try:
                 context["commission_type"] = Commission.objects.filter(
                     user_id=affiliate).order_by('commission_level')
             except ObjectDoesNotExist:
                 context["commission_type"] = ""
+                # edit detail bottom
+                try:
+                    context["commission_type"] = Commission.objects.filter(
+                        user_id=affiliate).order_by('commission_level')
+                except ObjectDoesNotExist:
+                    context["commission_type"] = ""
 
-        manager = affiliate.affiliate_managed_by
-        if manager == None:
-            context["manager"] = ""
-        else:
-            context["manager"] = manager
-
-        # ACTIVITY
-        user_activities = UserActivity.objects.filter(user=affiliate)
-        user_activities_list = []
-        for key, value in ACTIVITY_TYPE:
-            user_activities_list.append(value)
-        context["user_activities"] = user_activities
-        context["user_activities_list"] = user_activities_list
-
-        # DOWNLINE LIST TABLE
-        downline_list_table = []
-        for i in affiliate.referees.all():
-            downline_info = {}
-            affiliate_tran = Transaction.objects.filter(user_id=i)
-            downline_info['affiliate_id'] = i.pk
-            downline_info['username'] = i.username
-            downline_info['time_of_registration'] = i.time_of_registration
-            if i.last_login_time is None:
-                downline_info['last_login_time'] = ""
+            manager = affiliate.affiliate_managed_by
+            if manager == None:
+                context["manager"] = ""
             else:
-                downline_info['last_login_time'] = i.last_login_time
+                context["manager"] = manager
 
-            if i.ftd_time is None:
-                downline_info['ftd_time'] = ""
-            else:
-                downline_info['ftd_time'] = i.ftd_time
+            # ACTIVITY
+            user_activities = UserActivity.objects.filter(user=affiliate)
+            user_activities_list = []
+            for key, value in ACTIVITY_TYPE:
+                user_activities_list.append(value)
+            context["user_activities"] = user_activities
+            context["user_activities_list"] = user_activities_list
 
-            downline_info['channel'] = ""
-            downline_info['deposit'] = affiliate_tran.filter(
-                transaction_type=TRANSACTION_DEPOSIT).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
-            downline_info['withdraw'] = affiliate_tran.filter(
-                transaction_type=TRANSACTION_WITHDRAWAL).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
-            downline_info['bouns'] = affiliate_tran.filter(
-                transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
-            downline_info['adjustment'] = affiliate_tran.filter(
-                transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-            downline_info['turnover'] = calculateTurnover(i, None, None)
-            downline_info['balance'] = i.main_wallet
-            downline_list_table.append(downline_info)
-        context["downline_list"] = downline_list_table
+            # DOWNLINE LIST TABLE
+            downline_list_table = []
+            for i in affiliate.referees.all():
+                downline_info = {}
+                affiliate_tran = Transaction.objects.filter(user_id=i)
+                downline_info['affiliate_id'] = i.pk
+                downline_info['username'] = i.username
+                downline_info['time_of_registration'] = i.time_of_registration
+                if i.last_login_time is None:
+                    downline_info['last_login_time'] = ""
+                else:
+                    downline_info['last_login_time'] = i.last_login_time
 
-        # CHANNEL REPORT TABLE
-        channel_repost = []
-        user_channel = ReferChannel.objects.filter(
-            user_id=affiliate).values_list('pk').distinct()
-        user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
-        # DOWNLINE LIST - FILTER
-        context["account_types"] = MEMBER_STATUS
-        # TODO: needs to change to risk status
-        # affiliate refer channels
-        context["channel_list"] = ReferChannel.objects.filter(user_id=affiliate) \
-            .values_list('refer_channel_name', flat=True)
+                if i.ftd_time is None:
+                    downline_info['ftd_time'] = ""
+                else:
+                    downline_info['ftd_time'] = i.ftd_time
 
-        # Total commission
-        context["total_commission"] = commission_tran.aggregate(
-            total_commission=Coalesce(Sum('amount'), 0))['total_commission']
+                downline_info['channel'] = ""
+                downline_info['deposit'] = affiliate_tran.filter(
+                    transaction_type=TRANSACTION_DEPOSIT).aggregate(sum_deposit=Coalesce(Sum('amount'), 0))
+                downline_info['withdraw'] = affiliate_tran.filter(
+                    transaction_type=TRANSACTION_WITHDRAWAL).aggregate(sum_withdraw=Coalesce(Sum('amount'), 0))
+                downline_info['bouns'] = affiliate_tran.filter(
+                    transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
+                downline_info['adjustment'] = affiliate_tran.filter(
+                    transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
+                downline_info['turnover'] = calculateTurnover(i, None, None)
+                downline_info['balance'] = i.main_wallet
+                downline_list_table.append(downline_info)
+            context["downline_list"] = downline_list_table
 
-        context["managers"] = getManagerList("Affiliate")
-        context["empty_manager_group"] = "Please create Affiliate Manager group in System Admin. "
-        return render(request, "agent_detail.html", context)
+            # CHANNEL REPORT TABLE
+            channel_repost = []
+            user_channel = ReferChannel.objects.filter(
+                user_id=affiliate).values_list('pk').distinct()
+            user_channel_list = ReferChannel.objects.filter(pk__in=user_channel)
+            # DOWNLINE LIST - FILTER
+            context["account_types"] = MEMBER_STATUS
+            # TODO: needs to change to risk status
+            # affiliate refer channels
+            context["channel_list"] = ReferChannel.objects.filter(user_id=affiliate) \
+                .values_list('refer_channel_name', flat=True)
+
+            # Total commission
+            context["total_commission"] = commission_tran.aggregate(
+                total_commission=Coalesce(Sum('amount'), 0))['total_commission']
+
+            context["managers"] = getManagerList("Affiliate")
+            context["empty_manager_group"] = "Please create Affiliate Manager group in System Admin. "
+            return render(request, "agent_detail.html", context)
 
 
 def post(self, request):
