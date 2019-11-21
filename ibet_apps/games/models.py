@@ -1,4 +1,5 @@
 import uuid
+import random
 
 from django.db import models
 from django.utils import timezone
@@ -10,6 +11,10 @@ from users.models import CustomUser
 from utils.constants import *
 from django.utils import timezone
 import uuid
+
+
+def random_string():
+    return str(timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000)))
 
 
 # Create your models here.
@@ -58,11 +63,12 @@ class Game(models.Model):
     description_zh = models.CharField(max_length=200, null=True, blank=True)
     description_fr = models.CharField(max_length=200, null=True, blank=True)
     # status_id = models.ForeignKey('users.Status', related_name="game_status", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='game_image', blank=True)
+    image = models.ImageField(upload_to='game_image', blank=True, null=True)
     # game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # category = models.CharField(max_length=20, null=True, blank=True, default="Slots")
-    gameURL = models.CharField(max_length=200, null=True, blank=True)
-    imageURL = models.CharField(max_length=200, null=True, blank=True)
+    game_url = models.CharField(max_length=200, null=True, blank=True)
+    # game_guest_url = models.CharField(max_length=200, null=True, blank=True)
+    image_url = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -107,8 +113,8 @@ class GameBet(models.Model):
     odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-    # transaction_id = models.CharField(max_length=50,null=True)
-    currency = models.CharField(max_length=3, verbose_name=_('Currency'))
+    transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
     ref_no = models.CharField(max_length=100, null=True, blank=True)
     bet_time = models.DateTimeField(
@@ -169,6 +175,18 @@ class FGSession(models.Model):
     
     def __str__(self):
         return '{0}'.format(self.user)
+
+
+# QT game
+class QTSession(models.Model):
+
+    session_key = models.UUIDField(default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '{0}'.format(self.user.username)
+
 
 #MG token
 class MGToken(models.Model):
