@@ -10,11 +10,14 @@ import simplejson as json
 from games.models import FGSession, MGToken, Game, GameBet, GameProvider, Category
 import xmltodict
 from django.db import transaction
-import decimal
+import decimal,random
 import requests,json
 import logging
 from utils.constants import *
 import decimal,re, math
+import datetime
+from datetime import date
+from django.utils import timezone
 
 logger = logging.getLogger("django")
 
@@ -142,13 +145,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
         elif name == "getbalance":
-       
-
-# class GetBalance(APIView):
-#     permission_classes = (AllowAny, )
-
-#     def post(self, request, *args, **kwargs):   
-#         data = request.body      
+            
             try:
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
@@ -218,11 +215,6 @@ class MGgame(APIView):
                 res = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(res, content_type='text/xml')
 
-# class Play(APIView):
-#     permission_classes = (AllowAny, )
-
-#     def post(self, request, *args, **kwargs):   
-#         data = request.body
         elif name == "play":
             try:
                 # dd = xmltodict.parse(data)
@@ -251,25 +243,29 @@ class MGgame(APIView):
                     with transaction.atomic():
                         user.main_wallet = wallet
                         user.save()
-                        # if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
-                        #     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
-                        #                                     category=Category.objects.get(name='Slots'),
-                        #                                     username=user,
-                        #                                     amount_wagered=0.00,
-                        #                                     currency=currency,
-                        #                                     amount_won=decimal.Decimal(amount)/100,
-                        #                                     market=ibetCN,
-                        #                                     ref_no=transactionId
-                        #                                     )
-                        # else :
-                        #     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
-                        #                                     category=Category.objects.get(name='Slots'),
-                        #                                     username=user,
-                        #                                     amount_wagered=decimal.Decimal(amount)/100,
-                        #                                     currency=currency,
-                        #                                     market=ibetCN,
-                        #                                     ref_no=transactionId
-                        #                                     )
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                        if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
+                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
+                                                            category=Category.objects.get(name='Slots'),
+                                                            username=user,
+                                                            amount_wagered=0.00,
+                                                            currency=user.currency,
+                                                            amount_won=decimal.Decimal(amount)/100,
+                                                            market=ibetCN,
+                                                            ref_no=transactionId,
+                                                            transaction_id=trans_id
+                                                            )
+                        else :
+                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="MG"),
+                                                            category=Category.objects.get(name='Slots'),
+                                                            username=user,
+                                                            amount_wagered=decimal.Decimal(amount)/100,
+                                                            currency=user.currency,
+                                                            market=ibetCN,
+                                                            ref_no=transactionId,
+                                                            transaction_id=trans_id
+                                                            )
 
                     response = {
                     "pkt" : {
@@ -348,11 +344,6 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
 
-# class AwardBonus(APIView):
-#     permission_classes = (AllowAny, )
-
-#     def post(self, request, *args, **kwargs):   
-#         data = request.body
         elif name == "awardbonus":
             try:
                 # dd = xmltodict.parse(data)
@@ -421,11 +412,6 @@ class MGgame(APIView):
                 res = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(res, content_type='text/xml')
 
-# class EndGame(APIView):
-#     permission_classes = (AllowAny, )
-
-#     def post(self, request, *args, **kwargs):   
-#         data = request.body
         elif name == "endgame":
             try:
                 # dd = xmltodict.parse(data)
@@ -496,11 +482,6 @@ class MGgame(APIView):
                 res = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(res, content_type='text/xml')
 
-# class RefreshToken(APIView):
-#     permission_classes = (AllowAny, )
-
-#     def post(self, request, *args, **kwargs):   
-#         data = request.body
         else :
             try:
                 # dd = xmltodict.parse(data)
