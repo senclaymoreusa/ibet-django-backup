@@ -75,7 +75,7 @@ class WalletBetAPIURL(APIView):
         try:
             PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
         except ObjectDoesNotExist:
-            GameProvider.objects.create(provider_name=GB_PROVIDER,
+            PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
                                         type=0,
                                         market='China')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
@@ -279,7 +279,7 @@ class WalletSettleAPIURL(APIView):
         try:
             PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
         except ObjectDoesNotExist:
-            GameProvider.objects.create(provider_name=GB_PROVIDER,
+            PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
                                         type=0,
                                         market='China')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
