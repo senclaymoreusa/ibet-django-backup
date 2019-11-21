@@ -68,7 +68,8 @@ class MGgame(APIView):
         data = request.body
         dd = xmltodict.parse(data)
         name = dd['pkt']['methodcall']['@name']
-
+        
+        
         if name == "login":
             try:            
                 timestamp = dd['pkt']['methodcall']['@timestamp']
@@ -217,6 +218,7 @@ class MGgame(APIView):
 
         elif name == "play":
             try:
+                other_data = dict(dd)
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
                 timestamp = dd['pkt']['methodcall']['@timestamp']
@@ -256,7 +258,8 @@ class MGgame(APIView):
                                                             amount_won=decimal.Decimal(amount)/100,
                                                             market=ibetCN,
                                                             ref_no=transactionId,
-                                                            transaction_id=trans_id
+                                                            transaction_id=trans_id,
+                                                            other_data=other_data
                                                             )
                         else :
                             GameBet.objects.get_or_create(provider=provider,
@@ -266,7 +269,8 @@ class MGgame(APIView):
                                                             currency=user.currency,
                                                             market=ibetCN,
                                                             ref_no=transactionId,
-                                                            transaction_id=trans_id
+                                                            transaction_id=trans_id,
+                                                            other_data=other_data
                                                             )
 
                     response = {
