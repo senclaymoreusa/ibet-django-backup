@@ -15,7 +15,7 @@ from time import gmtime, strftime, strptime
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
-
+import random
 class WalletGeneralAPI(APIView):
 
     permission_classes = (AllowAny, )
@@ -30,30 +30,21 @@ class WalletGeneralAPI(APIView):
         TransDataExists = 0
         error_code = -5
         error = 'Missing_Input_Parameter'
-
+        TransType      = data['ThirdParty']['TransType']
+        ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
+        MemberID       = data['ThirdParty']['MemberID']
         try:
-
-            TransType      = data['ThirdParty']['TransType']
-            ThirdPartyCode = data['ThirdParty']['ThirdPartyCode']
-            MemberID       = data['ThirdParty']['MemberID']
-
-
-            try:
-                user       =  CustomUser.objects.get(username = MemberID)
-                TransData  =  user.main_wallet
-                error      =  'No_Error'
-                error_code =  0
-                success    =  1
-                TransDataExists = 1
-                
-
-            except ObjectDoesNotExist:
-                error      = 'Member_Not_Found'
-                error_code = -2
-
-        except:
-
-            pass
+            user       =  CustomUser.objects.get(username = MemberID)   
+            TransData  =  user.main_wallet
+            error      =  'No_Error'
+            error_code =  0
+            success    =  1
+            TransDataExists = 1
+        
+        except ObjectDoesNotExist:
+            error      = 'Member_Not_Found'
+            error_code = -2
+            logger.error("Member_Not_Found")
 
         return Response({
             "ThirdParty": {
@@ -125,6 +116,7 @@ class WalletBetAPIURL(APIView):
 
                 try:
                     user = CustomUser.objects.get(username = MemberID)
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     temp = user[0].main_wallet
                     if temp >= decimal.Decimal(BetTotalAmt)/100:
                         with transaction.atomic():
@@ -142,6 +134,7 @@ class WalletBetAPIURL(APIView):
                             cate = Category.objects.get(name=category)
                             GameBet.objects.create(
                                 provider=PROVIDER,
+                                transaction_id=trans_id,
                                 category=cate,
                                 username=user,
                                 currency=user.currency,
@@ -192,9 +185,12 @@ class WalletBetAPIURL(APIView):
                         error_code =  0
                         success    =  1
                         TransData  = current_balance
+                        
                         with transaction.atomic():
+                            user.main_wallet=current_balance
+                            user.save()
                             for x in range(len(data['GB']['Result']['ReturnSet']['BettingList'])):
-                            
+                                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                                 BetID         = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetID']
                                 BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetGrpNO']
                                 TPCode        = data['GB']['Result']['ReturnSet']['BettingList'][x]['TPCode']
@@ -225,9 +221,11 @@ class WalletBetAPIURL(APIView):
                                     bet_type = SINGLE
                                 else:
                                     bet_type = OTHER
+                                print("hello")
                                 GameBet.objects.create(
                                     provider=PROVIDER,
                                     category=cate,
+                                    transaction_id=trans_id,
                                     username=user,
                                     currency=user.currency,
                                     market=ibetCN,
@@ -236,8 +234,8 @@ class WalletBetAPIURL(APIView):
                                     bet_type=bet_type,
                                     other_data=data,
                                 )
-                            user.main_wallet=current_balance
-                            user.save()
+
+                            
                     else:
                         error      =  'Insufficient_Balance'
                         error_code =  -4
@@ -329,6 +327,7 @@ class WalletSettleAPIURL(APIView):
                 SettleDT      = data['GB']['Result']['ReturnSet']['SettleList']['SettleDT']
                 try: 
                     user = CustomUser.objects.get(username = MemberID)
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if data['GB']['Result']['ReturnSet']['SettleList']['SportList'] != []:
                         category = 'SPORTS'
                     else:
@@ -357,6 +356,7 @@ class WalletSettleAPIURL(APIView):
                         GameBet.objects.create(
                             provider=PROVIDER,
                             category=cate,
+                            transaction_id=trans_id,
                             username=user,
                             currency=user.currency,
                             market=ibetCN,
@@ -398,7 +398,7 @@ class WalletSettleAPIURL(APIView):
                     user = CustomUser.objects.get(username=username)
                     
                     for x in range(len(data['GB']['Result']['ReturnSet']['SettleList'])):
-                        
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                         SettleID      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleID']
                         BetID         = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetID']
                         BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetGrpNO']
@@ -458,6 +458,7 @@ class WalletSettleAPIURL(APIView):
                                 provider=PROVIDER,
                                 category=cate,
                                 username=user,
+                                transaction_id=trans_id,
                                 currency=user.currency,
                                 market=ibetCN,
                                 ref_no=BetID,
