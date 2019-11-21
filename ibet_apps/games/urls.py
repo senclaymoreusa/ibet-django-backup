@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/inplay/login', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay_login"),
     path('api/inplay/GetBalance/', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay_get_balance"),
     # path('api/inplay/get-approval', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay-get-approval"),
-    # path('api/inplay/deduct-balance', csrf_exempt(inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
+    path('api/inplay/DeductBalance/', inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
     path('api/inplay/test-decryption/', inplayviews.TestDecryption.as_view(), name="inplay_test_decryption"),
 
     #ea live casino
@@ -95,7 +95,6 @@ urlpatterns = [
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
     path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
-
 ]
 
 #onebookviews.getBetDetail(repeat=300,repeat_until=None)
