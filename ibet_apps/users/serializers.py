@@ -33,26 +33,6 @@ class ChoicesSerializerField(serializers.SerializerMethodField):
         # finally use instance method to return result of get_XXXX_display()
         return method()
 
-class SubCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ('name', 'notes', 'category_id', 'parent_id')
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    parent_id = SubCategorySerializer(read_only=True)
-    class Meta:
-        model = Category
-        fields = ('parent_id', 'name', 'notes', 'category_id')
-        
-
-class GameSerializer(serializers.ModelSerializer):
-    category_id = CategorySerializer(read_only=True)
-    class Meta:
-        model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url', 'image_url')
-
-
 class UserDetailsSerializer(serializers.ModelSerializer):
     security_question = ChoicesSerializerField()
     currency = ChoicesSerializerField()
