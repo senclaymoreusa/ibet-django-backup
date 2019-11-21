@@ -153,7 +153,49 @@ class InplayGetApprovalAPI(View):
         package_id = request.GET.get('balancePackage')
         date_sent = request.GET.get('dateSent')
 
-        # try:
+        try:
+            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
+            print(balance_package)
+            data = des3Decryption(balance_package)
+            data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
+            # print(data)
+            # print(data["EventTypeId"])
+            #  data = json.dumps(str(data))
+            data = json.loads(data)
+            print(data)
+            if data["EventTypeId"] == '1003':
+                user = data["MemberCode"]
+                amount = float(data["TransactionAmt"])
+                user = CustomUser.objects.get(username=user)
+                if user.main_wallet > amount:
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    trans = Transaction.objects.create(
+                        transaction_id=trans_id,
+                        user_id=user,
+                        order_id=trans_id,
+                        amount=amount,
+                        currency=user_currency,
+                        transfer_from="IMES",
+                        transfer_to="main",
+                        product=0,
+                        transaction_type=TRANSACTION_TRANSFER,
+                        status=TRAN_PENDING_TYPE
+                    )
+
+                    res = {}
+                    res["DateReceived"] = timezone.now()
+                    res["DateSent"] = timezone.now()
+                    res["StatusCode"] = 100
+                    res["StatusMessage"] = "Success"
+                    res["PackageId"] = 374
+                    res["Balance"] = 0.0
+
+                    return HttpResponse(json.dumps(res), content_type='application/json', status=200)
+                print(amount)
+        except Exception as e:
+            print("Error: {}".format(repr(e)))
+
+        return HttpResponse(status=200):
 
         return HttpResponse(status=200)
 
