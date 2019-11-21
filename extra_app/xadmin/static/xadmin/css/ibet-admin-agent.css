@@ -255,6 +255,10 @@ ul.ui-autocomplete {
     float:left; 
 }
 
+#affiliate-details {
+    margin-right: 25px;
+}
+
 .affiliates_detail_commission {
     background-color: #f3f3f3;
     font-size: 13px;
@@ -400,6 +404,58 @@ ul.ui-autocomplete {
     border-top: 1px solid; 
     overflow-y: auto; 
     height:807px;
+}
+
+#date-range {
+    float: right;
+    margin-right: -340px;
+}
+
+#downline-list {
+    padding: 5px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#donwline-list-filter {
+    margin: 5px;
+}
+
+#downline-list-table {
+    margin-top: 0px;
+    margin-bottom: 100px;
+}
+
+label {
+    font-weight: normal;
+    font-size: 11px;
+}
+
+table thead tr th {
+    font-weight: normal;
+    font-size: 10px;
+}
+
+#downline-list-table_paginate a button {
+    padding-left: 15px;
+}
+
+#downline-list input{
+    width: 165px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+#performance-panel {
+    width: 100%;
 }
 
 /* Manager Select */
