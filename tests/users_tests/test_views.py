@@ -37,9 +37,9 @@ class ViewsTest(TestCase):
         response = self.client.get('/users/api/games/?term=')
         self.assertEqual(response.status_code, 200)
 
-    def test_view_url_accessible_by_name(self):
-        response = self.client.get(reverse('api_games') + '?term=')
-        self.assertEquals(response.status_code, 200)
+    # def test_view_url_accessible_by_name(self):
+    #     response = self.client.get(reverse('api_games') + '?term=')
+    #     self.assertEquals(response.status_code, 200)
     
     def test_lists_all_games(self):
         # Get all 12 items

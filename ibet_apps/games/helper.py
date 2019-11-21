@@ -11,7 +11,10 @@ from games.transferwallet import TransferDeposit, TransferWithdraw
 from utils.constants import *
 from decimal import Decimal
 from pyDes import des, CBC, PAD_PKCS5
+from datetime import datetime
+
 import base64, hashlib
+import random
 
 logger = logging.getLogger("django")
 
@@ -112,5 +115,6 @@ def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
-def generateTxnId(provider):
-    return provider + "-" + str(uuid.uuid4())
+def generateTxnId():
+    now = datetime.now()
+    return str(random.randint(0, 100)) + str(now.year) + str(now.month) + str(now.day) + str(now.second)

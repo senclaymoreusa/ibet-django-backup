@@ -34,9 +34,7 @@ class ValidateToken(View):
     def get(self, request):
         token = request.GET.get("auth_token")
         if not token:
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
         try:
             userFromToken = (Token.objects.select_related('user').get(key=token)).user
             res = "error_code=0\r\n" # 0 = success
@@ -66,58 +64,79 @@ class Reserve(View):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
-        
+        # data validation
         if not (username and reserve_id and amount and request.body):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
         
-        bet_xml = etree.fromstring(request.body)
         amount = decimal.Decimal(amount)
+        if amount < 0:
+            return wrongRequest()
 
-        txn_id = generateTxnId("BTi")
+        # data validation passed
+        bet_xml = etree.fromstring(request.body)
+        txn_id = generateTxnId()
+        
         user = findUser(username)
-        # user found -> record reserve
-        try:
-            with transaction.atomic():
-                if amount < user.main_wallet:
-                    ending_balance = user.main_wallet - amount
-                    bet = GameBet(
-                        provider=PROVIDER,
-                        category=CATEGORY,
-                        username=user,
-                        ref_no=reserve_id,
-                        amount_wagered=amount,
-                        # transaction_id=txn_id,
-                        market=MARKET_CN,
-                        other_data={'is_reserve': True, 'bets_info': dict(bet_xml.attrib), 'all_bet_info': [dict(bet.attrib) for bet in bet_xml.getchildren()]}
-                    )
-                    user.main_wallet = ending_balance
-                    bet.save()
-                    user.save()
-                else:
+        if not (isinstance(user, CustomUser)):
+            return user
+        prev_bets = GameBet.objects.filter(ref_no=reserve_id, other_data__is_reserve=True)
+        if prev_bets.count() == 0:
+            try:
+                with transaction.atomic():
+                    if amount < user.main_wallet:  # user has enough funds
+                        ending_balance = user.main_wallet - amount
+                        bet = GameBet(
+                            provider=PROVIDER,
+                            category=CATEGORY,
+                            username=user,
+                            ref_no=reserve_id,
+                            amount_wagered=amount,
+                            # transaction_id=txn_id,
+                            market=MARKET_CN,
+                            other_data={
+                                'is_reserve': True, 
+                                'bets_info': dict(bet_xml.attrib), 
+                                'all_bet_info': [dict(bet.attrib) for bet in bet_xml.getchildren()],
+                                'ending_balance': float(ending_balance),
+                                'txn_no': txn_id
+                            }
+                        )
+                        user.main_wallet = ending_balance
+                        bet.save()
+                        user.save()
+
+                        res = "error_code=0\r\n"
+                        res += "error_message=success\r\n"
+                        res += f"balance={ending_balance}\r\n"
+                        # res += f"balance={ending_balance.quantize(Decimal('1.00'))}\r\n"
+                        res += f"trx_id={txn_id}\r\n"
+                        res += f"BonusUsed=0.00\r\n"
+                        return HttpResponse(res, content_type='text/plain')
+
                     res = "error_code=-4\r\n"
                     res += "error_message=InsufficientFunds\r\n"
-                    res += f"balance={ending_balance}\r\n"
+                    res += f"balance={user.main_wallet}\r\n"
                     res += f"trx_id={txn_id}\r\n"
                     res += f"BonusUsed=0.00\r\n"
                     return HttpResponse(res, content_type='text/plain')
+            except (DatabaseError, IntegrityError) as e:
+                logger.error(repr(e))
+                res = "error_code=-160\r\n"
+                res += "error_message=SeamlessError160\r\n"
+                res += f"balance={ending_balance}\r\n"
+                res += f"trx_id={txn_id}\r\n"
+                res += f"BonusUsed=0.00\r\n"
+                return HttpResponse(res, content_type='text/plain')
+        
+        # call with same reserve_id was made
+        res = "error_code=0\r\n"
+        res += "error_message=success\r\n"
+        res += f"balance={prev_bets[0].other_data['ending_balance']}\r\n"
+        res += f"trx_id={prev_bets[0].other_data['txn_no']}\r\n"
+        res += f"BonusUsed=0.00\r\n"
+        return HttpResponse(res, content_type='text/plain')
 
-            res = "error_code=0\r\n"
-            res += "error_message=success\r\n"
-            res += f"balance={ending_balance}\r\n"
-            res += f"trx_id={txn_id}\r\n"
-            res += f"BonusUsed=0.00\rn"
-            return HttpResponse(res, content_type='text/plain')
-
-        except (DatabaseError, IntegrityError) as e:
-            logger.error(repr(e))
-            res = "error_code=-160\r\n"
-            res += "error_message=SeamlessError160\r\n"
-            res += f"balance={ending_balance}\r\n"
-            res += f"trx_id={txn_id}\r\n"
-            res += f"BonusUsed=0.00\r\n"
-            return HttpResponse(res, content_type='text/plain')
+      
                 
 
 # endpoint is called for every bet made in Reserve
@@ -129,17 +148,20 @@ class DebitReserve(View):
         req_id = request.GET.get("req_id") # unique req id on the URL, different than bet ID
 
         if not (username and reserve_id and amount and req_id and request.body):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
 
         amount = decimal.Decimal(amount)
-        xmlData = etree.fromstring(request.body)
-        bet = xmlData[0]
+        if amount < 0:
+            return wrongRequest()
 
-        txn_id = generateTxnId("BTi")
+        bet_xml = etree.fromstring(request.body)
+        bet = bet_xml[0]
+
+        txn_id = generateTxnId()
         try:
             user = findUser(username)
+            if not (isinstance(user, CustomUser)):
+                return user
             prev_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
         except ObjectDoesNotExist as e:
             # if prev reserve not found (the initial Reserve call) then throw error
@@ -188,13 +210,13 @@ class CommitReserve(View):
         reserve_id = request.GET.get("reserve_id")  # the reserve id that this debit corresponds to
 
         if not (username and reserve_id):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
 
-        txn_id = generateTxnId("BTi")
+        txn_id = generateTxnId()
         try:
             user = findUser(username)
+            if not (isinstance(user, CustomUser)):
+                return user
             totalReserve = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
 
         except ObjectDoesNotExist as e:
@@ -205,7 +227,7 @@ class CommitReserve(View):
             return HttpResponse(res, content_type='text/plain')
 
         # find debitReserves
-        corresponding_reserves = GameBet.objects.filter(ref_no=reserve_id, other_data__has_key='bet_data').order_by('-created_time')
+        corresponding_reserves = GameBet.objects.filter(ref_no=reserve_id, other_data__has_key='bet_data').order_by('-bet_time')
         # no debitReserves
         if not len(corresponding_reserves):
             res = "error_code=-20\r\n"
@@ -259,13 +281,13 @@ class CancelReserve(View):
         reserve_id = request.GET.get("reserve_id")
 
         if not (username and reserve_id):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
 
         try:
             with transaction.atomic():
-                user = findUser(username)                
+                user = findUser(username)
+                if (not isinstance(user, CustomUser))                :
+                    return user
                 prev_bet = GameBet.objects.filter(ref_no=reserve_id)
 
                 # bet has already been debited
@@ -329,21 +351,23 @@ class Add2Bet(View):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
-        txn_id = generateTxnId("BTi")
+        txn_id = generateTxnId()
 
 
         if not (username and reserve_id and amount and request.body):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
 
         amount = decimal.Decimal(amount)
+        if amount < 0:
+            return wrongRequest()
 
-        xmlData = etree.fromstring(request.body)
-        bet = xmlData[0]
+        bet_xml = etree.fromstring(request.body)
+        bet = bet_xml[0]
         try:
             with transaction.atomic():
                 user = findUser(username)
+                if not (isinstance(user, CustomUser)):
+                    return user
                 open_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
                 new_bet = Bet(
                     provider=PROVIDER,
@@ -381,17 +405,19 @@ class Add2BetConfirm(View):
         amount = request.GET.get("amount")
 
         if not (username and reserve_id and amount and request.body):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
 
         amount = decimal.Decimal(amount)
+        if amount < 0:
+            return wrongRequest()
 
-        txn_id = generateTxnId("BTi")
-        xmlData = etree.fromstring(request.body)
-        bet = xmlData[0]
+        txn_id = generateTxnId()
+        bet_xml = etree.fromstring(request.body)
+        bet = bet_xml[0]
         try:
             user = findUser(username)
+            if not (isinstance(user, CustomUser)):
+                return user
             bet_to_confirm = GameBet.objects.get(ref_no=reserve_id, other_data__is_add2bet=True)
             confirm_bet = Bet(
                 provider=PROVIDER,
@@ -425,17 +451,17 @@ class DebitCustomer(View):
         username = request.GET.get("cust_id")
         reserve_id = request.GET.get("reserve_id")
         amount = request.GET.get("amount")
-        txn_id = generateTxnId("BTi")
+        txn_id = generateTxnId()
         
         if not (username and reserve_id and amount and request.body):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
         
         amount = decimal.Decimal(amount)
+        if amount < 0:
+            return wrongRequest()
 
-        xmlData = etree.fromstring(request.body)
-        purchases = xmlData[0]
+        bet_xml = etree.fromstring(request.body)
+        purchases = bet_xml[0]
         purchaseDict = dict()
 
         for purchase in purchases.getchildren():
@@ -448,13 +474,15 @@ class DebitCustomer(View):
         xmlJson = {
             'is_debit': True,
             'is_outcome_correction': True,
-            'debit_data': dict(xmlData.attrib), 
+            'debit_data': dict(bet_xml.attrib), 
             'bet_data': purchaseDict,
             'raw_xml': str(request.body, 'utf-8')
         }
         try:
             with transaction.atomic():
                 user = findUser(username)
+                if not (isinstance(user, CustomUser)):
+                    return user
                 user.main_wallet = user.main_wallet - amount
 
                 resolvedBet = Bet(
@@ -489,16 +517,16 @@ class CreditCustomer(View):
         amount = request.GET.get("amount")
 
         if not (username and reserve_id and amount and request.body):
-            res = "error_code=-10\r\n"
-            res += "error_message=WrongRequest\r\n"
-            return HttpResponse(res, content_type='text/plain')
+            return wrongRequest()
         
         amount = decimal.Decimal(amount)
+        if amount < 0:
+            return wrongRequest()
 
-        txn_id = generateTxnId("BTi")
+        txn_id = generateTxnId()
 
-        xmlData = etree.fromstring(request.body)
-        purchases = xmlData[0]
+        bet_xml = etree.fromstring(request.body)
+        purchases = bet_xml[0]
         purchaseDict = dict()
 
         for purchase in purchases.getchildren():
@@ -511,7 +539,7 @@ class CreditCustomer(View):
         xmlJson = {
             'is_credit': True,
             'is_outcome_correction': False,
-            'credit_data': dict(xmlData.attrib), 
+            'credit_data': dict(bet_xml.attrib), 
             'bet_data': purchaseDict,
             'raw_xml': str(request.body, 'utf-8')
         }
@@ -519,6 +547,8 @@ class CreditCustomer(View):
         try:
             with transaction.atomic():
                 user = findUser(username)
+                if not (isinstance(user, CustomUser)):
+                    return user
                 user.main_wallet = user.main_wallet + amount
                 outcome = 0 if amount > 0 else 1
                 resolvedBet = Bet(
@@ -552,7 +582,9 @@ def findUser(username): # should only throw error in the Reserve call, if it is 
     except ObjectDoesNotExist as e:
         res = "error_code=-2\r\n"
         res += "error_message=CustomerNotFound\r\n"
-        res += f"balance={user.main_wallet}\r\n"
-        res += f"trx_id={txn_id}\r\n"
-        res += f"BonusUsed=0.00\r\n"
         return HttpResponse(res, content_type='text/plain')
+
+def wrongRequest():
+    res = "error_code=-10\r\n"
+    res += "error_message=WrongRequest\r\n"
+    return HttpResponse(res, content_type='text/plain')
