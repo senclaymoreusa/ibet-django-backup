@@ -251,6 +251,8 @@ class CommitReserve(View):
 
         try:
             totalReserve = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
+            print("total reserve")
+            print(totalReserve)
         except ObjectDoesNotExist as e:
             res = "error_code=-20\r\n"
             res += "error_message=ReserveNotFound\r\n"
@@ -271,17 +273,17 @@ class CommitReserve(View):
 
         try:
             with transaction.atomic():
+                totalReserveAmount = totalReserve.amount_wagered
                 bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
                         username=user,
                         ref_no=reserve_id,
-                        amount_wagered=amount,
+                        amount_wagered=totalReserveAmount,
                         market=MARKET_CN,
                         transaction_id=txn_id,
                         other_data={'is_committed': True}
                     )
-                totalReserveAmount = totalReserve.amount_wagered
                 actualTotal = 0
                 for bet in corresponding_reserves:
                     actualTotal += bet.amount_wagered
@@ -322,7 +324,7 @@ class CancelReserve(View):
                 if (not isinstance(user, CustomUser))                :
                     return user
                 prev_bet = GameBet.objects.filter(ref_no=reserve_id)
-
+                
                 # bet has already been debited
                 if prev_bet.count() > 1:
                     prev_debits = prev_bet.objects.filter(other_data__is_debit=True)
