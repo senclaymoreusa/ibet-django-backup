@@ -178,7 +178,7 @@ class GetAccountDetail(APIView):
             "loginName" : user.username,
             "firstName" :  user.first_name ,
             "lastName" : user.last_name,
-            "currency" : user.currency,
+            "currency" : CURRENCY_CHOICES[user.currency][1],
             "email" : user.email,
             "country" : user.country,
             "city": user.city,
