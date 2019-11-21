@@ -13,12 +13,9 @@ import games.views.betsviews as bets
 from games.live_casino import *
 import games.views.onebookviews as onebookviews
 import games.views.sagameviews as sagameviews
-<<<<<<< HEAD
 import games.views.gbsportsviews as gbsports
-=======
 import games.views.qtgameviews as qtgameviews
 
->>>>>>> 6da1b78a14ded79cd2779fc175fc815b30594d3d
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
