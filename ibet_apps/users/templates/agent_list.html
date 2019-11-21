@@ -84,30 +84,28 @@
         <div>
             <table id="commission" class="table-striped table-bordered table-title" style="margin-bottom: 100px">
                 <thead>
-                <tr>
-                    <th scope="col">MONTH</th>
-                    <th scope="col">AFFILIATE COUNT</th>
-                    <th scope="col">ACTIVE DOWNLINE</th>
-                    <th scope="col">COMMISSION</th>
-                    <th scope="col">STATUS</th>
-                    <th></th>
-                </tr>
+                    <tr>
+                        <th scope="col">MONTH</th>
+                        <th scope="col">AFFILIATE COUNT</th>
+                        <th scope="col">ACTIVE DOWNLINE</th>
+                        <th scope="col">COMMISSION</th>
+                        <th scope="col">STATUS</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody style="font-size: 13px">
-                {% for tran in commission_transaction %}
-                <tr>
-                    <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}
-                    </td>
-                    <td>{{ tran.affiliate_number }}</td>
-                    <td>{{ tran.active_downline }}</td>
-                    <td>{{ tran.total_commission }}</td>
-                    <td>{{ tran.commission_status }}</td>
-                    <td>
-                        <button id="audit-commission-btn" type="button" data-toggle="modal"
-                                data-target="#audit_commission"><i class="fa fa-search"></i></button>
-                    </td>
-                </tr>
-                {% endfor %}
+                    {% for tran in commission_transaction %}
+                    <tr>
+                        <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}
+                        </td>
+                        <td>{{ tran.affiliate_number }}</td>
+                        <td>{{ tran.active_downline }}</td>
+                        <td>{{ tran.total_commission }}</td>
+                        <td>{{ tran.commission_status }}</td>
+                        <td><button id="audit-commission-btn" type="button" data-toggle="modal"
+                                data-target="#audit_commission"><i class="fa fa-search"></i></button></td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <label class="show-rows">SHOW ROWS</label>
