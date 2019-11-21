@@ -86,7 +86,7 @@ class AuthenticateView(View):
                 registration = "2010-05-05" # Placeholder
                 res_language = "EN" # Placeholder
                 affiliate_id = "" # Placeholder
-                real = decimal.Decimal(user_obj.main_wallet).quantize(decimal.Decimal('0.00'))
+                real = int(user_obj.main_wallet * 100) / 100.0
                 external_game_session_id = "" # Placeholder
                 region = 3 # Placeholder
 
@@ -179,7 +179,7 @@ class BalanceView(View):
                 # print("PLAY'nGO BalanceView: User " + username + " not found!")
                 logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
 
-            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
+            user_balance = int(user.main_wallet * 100) / 100.0
             user_currency = CURRENCY_CHOICES[user.currency][1]
             status_code = PNG_STATUS_OK # Default case is 0 (request successful)
 
@@ -242,8 +242,8 @@ class ReserveView(View):
             actual_value = req_dict['reserve']['actualValue']
             
             user = CustomUser.objects.get(username=username)
-            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
-            bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
+            user_balance = int(user.main_wallet * 100) / 100.0
+            bet_amount_decimal = float(bet_amount_str)
             user_currency_text = CURRENCY_CHOICES[user.currency][1]
 
             status_code = PNG_STATUS_OK
@@ -285,7 +285,7 @@ class ReserveView(View):
                         #odds = None,
                         #bet_type = None,
                         #line = None,
-                        currency = user_currency_text,
+                        currency = user.currency,
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
@@ -355,8 +355,8 @@ class ReleaseView(View):
 
 
             user = CustomUser.objects.get(username=username)
-            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
-            win_amount_decimal = decimal.Decimal(win_amount_str).quantize(decimal.Decimal('0.00'))
+            user_balance = int(user.main_wallet * 100) / 100.0
+            win_amount_decimal = float(win_amount_str)
 
             status_code = PNG_STATUS_OK
 
