@@ -1184,7 +1184,7 @@ AFFILIATE_LEVEL = (
     ('VIP', 'VIP'),
 )
 
-LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+LETOU_DOMAIN = "https://www.letou.com/cn/a/"   # for affiliate refer link
 
 MONTHLY_COMMISSION_SETTLE_DATE = "05"
 
