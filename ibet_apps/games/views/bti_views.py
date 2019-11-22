@@ -513,12 +513,14 @@ class DebitCustomer(View):
         txn_id = generateTxnId()
         
         if not (username and request_id and amount and request.body):
+            logger.error(f"Debit Customer sent incorrect request params;\ncust_id={username}, request_id={req_id}, amount={amount}")
             res = "error_code=0\r\n"
             res += "error_message=MissingParameters\r\n"
             return HttpResponse(res, content_type='text/plain')
         
         amount = decimal.Decimal(amount)
         if amount < 0:
+            logger.error(f"Debit Customer sent a negative amount; amount={amount}")
             res = "error_code=0\r\n"
             res += "error_message=NegativeAmount\r\n"
             return HttpResponse(res, content_type='text/plain')
@@ -580,12 +582,14 @@ class CreditCustomer(View):
         amount = request.GET.get("amount")
 
         if not (username and request_id and amount and request.body):
+            logger.error(f"Credit Customer sent incorrect request params;\ncust_id={username}, request_id={req_id}, amount={amount}")
             res = "error_code=0\r\n"
             res += "error_message=MissingParameters\r\n"
             return HttpResponse(res, content_type='text/plain')
         
         amount = decimal.Decimal(amount)
         if amount < 0:
+            logger.error(f"Credit Customer sent a negative amount; amount={amount}")
             res = "error_code=0\r\n"
             res += "error_message=NegativeAmount\r\n"
             return HttpResponse(res, content_type='text/plain')
