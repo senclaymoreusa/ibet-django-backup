@@ -457,7 +457,6 @@ class Add2Bet(View):
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
-
 class Add2BetConfirm(View):
     def post(self, request):
         username = request.GET.get("cust_id")
@@ -509,16 +508,20 @@ class Add2BetConfirm(View):
 class DebitCustomer(View):
     def post(self, request):
         username = request.GET.get("cust_id")
-        reserve_id = request.GET.get("reserve_id")
+        request_id = request.GET.get("req_id")
         amount = request.GET.get("amount")
         txn_id = generateTxnId()
         
-        if not (username and reserve_id and amount and request.body):
-            return wrongRequest()
+        if not (username and request_id and amount and request.body):
+            res = "error_code=0\r\n"
+            res += "error_message=MissingParameters\r\n"
+            return HttpResponse(res, content_type='text/plain')
         
         amount = decimal.Decimal(amount)
         if amount < 0:
-            return wrongRequest()
+            res = "error_code=0\r\n"
+            res += "error_message=NegativeAmount\r\n"
+            return HttpResponse(res, content_type='text/plain')
 
         bet_xml = etree.fromstring(request.body)
         purchases = bet_xml[0]
@@ -573,15 +576,19 @@ class DebitCustomer(View):
 class CreditCustomer(View):
     def post(self, request):
         username = request.GET.get("cust_id")
-        reserve_id = request.GET.get("reserve_id")
+        request_id = request.GET.get("req_id")
         amount = request.GET.get("amount")
 
-        if not (username and reserve_id and amount and request.body):
-            return wrongRequest()
+        if not (username and request_id and amount and request.body):
+            res = "error_code=0\r\n"
+            res += "error_message=MissingParameters\r\n"
+            return HttpResponse(res, content_type='text/plain')
         
         amount = decimal.Decimal(amount)
         if amount < 0:
-            return wrongRequest()
+            res = "error_code=0\r\n"
+            res += "error_message=NegativeAmount\r\n"
+            return HttpResponse(res, content_type='text/plain')
 
         txn_id = generateTxnId()
 
@@ -633,7 +640,6 @@ class CreditCustomer(View):
             return HttpResponse(res, content_type='text/plain')
         except (DatabaseError, IntegrityError, Exception) as e:
             logger.error("CreditCustomer::Error Occured::" + repr(e))
-
 
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
