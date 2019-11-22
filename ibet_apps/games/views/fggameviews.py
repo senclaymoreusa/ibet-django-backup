@@ -24,11 +24,18 @@ class GetAllGame(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
         prov = request.GET['provider']
-        provider = GameProvider.objects.get(provider_name=prov)
-        game = Game.objects.filter(provider=provider)     
-        return JsonResponse({
-        'game': list(game.values())
-    })
+        try:
+            provider = GameProvider.objects.get(provider_name=prov)
+            game = Game.objects.filter(provider=provider)     
+            return JsonResponse({
+            'game': list(game.values())
+            })
+
+        except Exception as e:
+            logger.error("provider does not exist", e)
+            return JsonResponse({
+            'game': None
+            })
         #return JsonResponse(json.dumps(data),content_type='application/json',status=200)
 
 
