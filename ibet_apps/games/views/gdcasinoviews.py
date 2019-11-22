@@ -151,7 +151,7 @@ class CancelRequest(ComplexModel):
 class LiveDealerSoapService(ServiceBase):
     @rpc(GetUserBalanceRequest,  _body_style='bare', _returns=Container)
     def GetUserBalance(ctx,request):
-        
+        print("balance:"+ request)
         userId = request.userId
         loginToken = request.loginToken
         currency = request.currency
@@ -175,7 +175,7 @@ class LiveDealerSoapService(ServiceBase):
     
     @rpc(DebitRequest, _body_style='bare', _returns=Container)
     def Debit(crx, request):
-        
+        print(request)
         try:
             PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
         except ObjectDoesNotExist:
@@ -240,21 +240,21 @@ class LiveDealerSoapService(ServiceBase):
                         else:
                             print(token)
                             print(request.loginToken)
-                            if str(token) == request.loginToken:
+                            # if str(token) == request.loginToken:
                                 
-                                res.StatusCode = 0
-                                GameBet.objects.create(provider=PROVIDER, 
-                                                    game_name=request.gameId,  
-                                                    transaction_id=trans_id,
-                                                    category=cate,
-                                                    username=user, 
-                                                    currency=request.currency, 
-                                                    market=ibetCN,
-                                                    ref_no=request.transactionId,
-                                                    amount_wagered=request.amount,
-                                                    )
-                            else:
-                                res.StatusCode = 2
+                            res.StatusCode = 0
+                            GameBet.objects.create(provider=PROVIDER, 
+                                                game_name=request.gameId,  
+                                                transaction_id=trans_id,
+                                                category=cate,
+                                                username=user, 
+                                                currency=request.currency, 
+                                                market=ibetCN,
+                                                ref_no=request.transactionId,
+                                                amount_wagered=request.amount,
+                                                )
+                            # else:
+                            #     res.StatusCode = 2
                         user.main_wallet = userBalance
                         user.save()
                     res.UserBalance = userBalance
