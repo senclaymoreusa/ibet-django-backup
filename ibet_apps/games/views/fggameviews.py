@@ -23,11 +23,19 @@ logger = logging.getLogger("django")
 class GetAllGame(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        provider = request.GET['provider']
-        game = Game.objects.filter(provider=provider)     
-        return JsonResponse({
-        'game': list(game.values())
-    })
+        prov = request.GET['provider']
+        try:
+            provider = GameProvider.objects.get(provider_name=prov)
+            game = Game.objects.filter(provider=provider)     
+            return JsonResponse({
+            'game': list(game.values())
+            })
+
+        except Exception as e:
+            logger.error("provider does not exist", e)
+            return JsonResponse({
+            'game': None
+            })
         #return JsonResponse(json.dumps(data),content_type='application/json',status=200)
 
 
