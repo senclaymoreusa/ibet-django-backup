@@ -271,9 +271,28 @@ class CommitReserve(View):
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
 
+        # handle repeat request
+        try:
+            duplicate = GameBet.objects.filter(ref_no=reserve_id, other_data__is_committed=True)
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
+            res += f"balance={duplicate.other_data['ending_balance']}\r\n"
+            res += f"trx_id={duplicate.transaction_id}\r\n"
+            return HttpResponse(res, content_type='text/plain')
+        except ObjectDoesNotExist:
+            pass
+        
         try:
             with transaction.atomic():
+
                 totalReserveAmount = totalReserve.amount_wagered
+                actualTotal = 0
+                for bet in corresponding_reserves:
+                    actualTotal += bet.amount_wagered
+                
+                refundAmount = totalReserveAmount - actualTotal
+                user.main_wallet += refundAmount
+
                 bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
@@ -282,14 +301,12 @@ class CommitReserve(View):
                         amount_wagered=totalReserveAmount,
                         market=MARKET_CN,
                         transaction_id=txn_id,
-                        other_data={'is_committed': True}
+                        other_data={
+                            'is_committed': True,
+                            'ending_balance': user.main_wallet
+                        }
                     )
-                actualTotal = 0
-                for bet in corresponding_reserves:
-                    actualTotal += bet.amount_wagered
-                
-                refundAmount = totalReserveAmount - actualTotal
-                user.main_wallet += refundAmount
+
                 bet.save()
                 user.save()
 
@@ -324,7 +341,7 @@ class CancelReserve(View):
                 if (not isinstance(user, CustomUser))                :
                     return user
                 prev_bet = GameBet.objects.filter(ref_no=reserve_id)
-                
+
                 # bet has already been debited
                 if prev_bet.count() > 1:
                     prev_debits = prev_bet.objects.filter(other_data__is_debit=True)
