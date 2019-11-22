@@ -482,13 +482,13 @@ def getBetDetail():
                     cate = Category.objects.get(name='SPORTS')
                     trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                     user = CustomUser.objects.get(username=username)
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
                         # print("onebook")
                         GameBet.objects.create(provider=PROVIDER,
                                                     category=cate,
                                                     username=user,
-                                                    transaction_id=trans_id,
+                                                    transaction_id=transid,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -505,7 +505,7 @@ def getBetDetail():
                             
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
-                                                    transaction_id=trans_id,
+                                                    transaction_id=transid,
                                                     username=user,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
