@@ -215,7 +215,7 @@ class DebitReserve(View):
                 other_data={
                     'bet_data': dict(bet.attrib), 
                     'line_data': [dict(line.attrib) for line in bet.getchildren()],
-                    'ending_balance': initial_reserve.other_data["ending_balance"],
+                    'ending_balance': float(initial_reserve.other_data["ending_balance"]),
                     'request_id': req_id,
                     'is_debit': True
                 }
@@ -251,8 +251,6 @@ class CommitReserve(View):
 
         try:
             totalReserve = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
-            print("total reserve")
-            print(totalReserve)
         except ObjectDoesNotExist as e:
             res = "error_code=-20\r\n"
             res += "error_message=ReserveNotFound\r\n"
@@ -273,7 +271,7 @@ class CommitReserve(View):
 
         # handle repeat request
         try:
-            duplicate = GameBet.objects.filter(ref_no=reserve_id, other_data__is_committed=True)
+            duplicate = GameBet.objects.get(ref_no=reserve_id, other_data__is_committed=True)
             res = "error_code=0\r\n"
             res += "error_message=success\r\n"
             res += f"balance={duplicate.other_data['ending_balance']}\r\n"
@@ -303,7 +301,7 @@ class CommitReserve(View):
                         transaction_id=txn_id,
                         other_data={
                             'is_committed': True,
-                            'ending_balance': user.main_wallet
+                            'ending_balance': float(user.main_wallet)
                         }
                     )
 
@@ -365,7 +363,9 @@ class CancelReserve(View):
                         market=MARKET_CN,
                         outcome=VOID_OUTCOME,
                         resolved_time=timezone.now(),
-                        other_data={'is_cancel': True}
+                        other_data={
+                            'is_cancel': True
+                        }
                     )
 
                     bet.save()
@@ -386,7 +386,9 @@ class CancelReserve(View):
                         market=MARKET_CN,
                         outcome=VOID_OUTCOME,
                         resolved_time=timezone.now(),
-                        other_data={'is_cancel': True}
+                        other_data={
+                            'is_cancel': True
+                        }
                     )
                     
                     new_balance = user.main_wallet + credit_amount
@@ -429,7 +431,7 @@ class Add2Bet(View):
                 if not (isinstance(user, CustomUser)):
                     return user
                 open_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
-                new_bet = Bet(
+                new_bet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
                     username=user,
@@ -478,7 +480,7 @@ class Add2BetConfirm(View):
             return user
         try:
             bet_to_confirm = GameBet.objects.get(ref_no=reserve_id, other_data__is_add2bet=True)
-            confirm_bet = Bet(
+            confirm_bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
                 username=user,
@@ -487,7 +489,11 @@ class Add2BetConfirm(View):
                 transaction_id=txn_id,
                 currency=user.get_currency_display(),
                 market=MARKET_CN,
-                other_data={'add2bet_confirm': True, 'updated_bet_data': dict(bet.attrib), 'line_data': [dict(line.attrib) for line in bet.getchildren()] }
+                other_data={
+                    'add2bet_confirm': True, 
+                    'updated_bet_data': dict(bet.attrib), 
+                    'line_data': [dict(line.attrib) for line in bet.getchildren()] 
+                }
             )
             confirm_bet.save()
 
@@ -527,8 +533,9 @@ class DebitCustomer(View):
 
         bet_xml = etree.fromstring(request.body)
         purchases = bet_xml[0]
+        purchase = purchases[0]
+        reserve_id = purchase.attrib.get('ReserveID')
         purchaseDict = dict()
-
         for purchase in purchases.getchildren():
             purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
             selections = purchase[0]
@@ -541,7 +548,8 @@ class DebitCustomer(View):
             'is_outcome_correction': True,
             'debit_data': dict(bet_xml.attrib), 
             'bet_data': purchaseDict,
-            'raw_xml': str(request.body, 'utf-8')
+            'raw_xml': str(request.body, 'utf-8'),
+            'request_id': request_id
         }
         try:
             with transaction.atomic():
@@ -550,7 +558,7 @@ class DebitCustomer(View):
                     return user
                 user.main_wallet = user.main_wallet - amount
 
-                resolvedBet = Bet(
+                resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
                     username=user,
@@ -598,6 +606,9 @@ class CreditCustomer(View):
 
         bet_xml = etree.fromstring(request.body)
         purchases = bet_xml[0]
+        purchase = purchases[0]
+        reserve_id = purchase.attrib.get('ReserveID')
+        
         purchaseDict = dict()
 
         for purchase in purchases.getchildren():
@@ -612,7 +623,8 @@ class CreditCustomer(View):
             'is_outcome_correction': False,
             'credit_data': dict(bet_xml.attrib), 
             'bet_data': purchaseDict,
-            'raw_xml': str(request.body, 'utf-8')
+            'raw_xml': str(request.body, 'utf-8'),
+            'request_id': request_id
         }
         
         try:
@@ -622,7 +634,7 @@ class CreditCustomer(View):
                     return user
                 user.main_wallet = user.main_wallet + amount
                 outcome = 0 if amount > 0 else 1
-                resolvedBet = Bet(
+                resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
                     username=user,
