@@ -217,8 +217,9 @@ class WalletBetAPIURL(APIView):
                                 
                                 try:
                                     cate = Category.objects.get(name=category)
-                                except ObjectDoesNotExist:
-                                    logger.error("category is not existed.")
+                                except:
+                                    cate = Category.objects.create(name=category)
+                                    logger.info("Create new category.")
                                 if BetType == '1':
                                     bet_type = SINGLE
                                 else:
