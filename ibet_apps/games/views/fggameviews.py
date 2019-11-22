@@ -23,7 +23,8 @@ logger = logging.getLogger("django")
 class GetAllGame(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        provider = request.GET['provider']
+        prov = request.GET['provider']
+        provider = GameProvider.objects.get(provider_name=prov)
         game = Game.objects.filter(provider=provider)     
         return JsonResponse({
         'game': list(game.values())
