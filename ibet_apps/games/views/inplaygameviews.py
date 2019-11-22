@@ -238,11 +238,12 @@ class InplayDeductBalanceAPI(View):
 
 
 class InplayUpdateBalanceAPI(View):
-     def get(self, request, *arg, **kwargs):
-        balance_package = request.GET.get('balancePackage')
-        package_id = request.GET.get('packageid')
-        date_sent = request.GET.get('dateSent')
+    def post(self, request, *arg, **kwargs):
+        data = json.loads(request.body)
 
+        # balance_package = request.GET.get('balancePackage')
+        # package_id = request.GET.get('packageid')
+        # date_sent = request.GET.get('dateSent')
         try:
             balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
             print(balance_package)
