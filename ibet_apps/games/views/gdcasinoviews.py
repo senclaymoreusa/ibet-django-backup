@@ -220,8 +220,7 @@ class LiveDealerSoapService(ServiceBase):
             else:
                 if userBalance >= 0:
                     with transaction.atomic():
-                        user.main_wallet = userBalance
-                        user.save()
+                        
                     
                         if CATEGORY == '100': #slot
                             res.StatusCode = 0
@@ -235,7 +234,10 @@ class LiveDealerSoapService(ServiceBase):
                                         amount_wagered=request.amount,
                                         )
                         else:
+                            print(token)
+                            print(request.loginToken)
                             if str(token) == request.loginToken:
+                                
                                 res.StatusCode = 0
                                 GameBet.objects.create(provider=PROVIDER, 
                                                     game_name=request.gameId,  
@@ -249,6 +251,8 @@ class LiveDealerSoapService(ServiceBase):
                                                     )
                             else:
                                 res.StatusCode = 2
+                        user.main_wallet = userBalance
+                        user.save()
                     res.UserBalance = userBalance
                     return res
                 else:
