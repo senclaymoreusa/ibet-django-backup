@@ -151,22 +151,32 @@ class GameLaunch(APIView):
                 
                 gameId = request.GET.get('gameId')
                 username = request.GET.get('playerId')
+                mode = request.GET.get('mode')
                 
-                user = CustomUser.objects.get(username=username)
-                session = QTSession.objects.get(user=user)
+                try: 
+                    user = CustomUser.objects.get(username=username)
+                    session = QTSession.objects.get(user=user)
+                except Exception as e: 
+                    logger.error("Failed in getting user/session " + str(e))
+                    mode = 'demo'
                 
-                body = {
-                    "playerId": username,
-                    "currency": CURRENCY_CHOICES[user.currency][1],
-                    "walletSessionId": str(session.session_key),
-                    #
-                    # need to format country
-                    #
-                    "country": "CN", # user.country
-                    "lang": "zh_CN", # user.language,
-                    "mode": "real",
-                    "device": "desktop", 
-                }
+                if mode == 'real':
+                    body = {
+                        "playerId": username,
+                        "currency": CURRENCY_CHOICES[user.currency][1],
+                        "walletSessionId": str(session.session_key),
+                        "country": "CN", # user.country
+                        "lang": "zh_CN", # user.language,
+                        "mode": mode,
+                        "device": "desktop", 
+                    }
+                else: 
+                    body = {
+                        "country": "CN", 
+                        "lang": "zh_CN",
+                        "mode": mode,
+                        "device": "desktop", 
+                    }
                 
                 url = apiUrl + "v1/games/" + gameId + "/launch-url"
                 #url = apiUrl + "v1/games/TK-froggrog/launch-url"
