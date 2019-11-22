@@ -132,7 +132,10 @@ class WalletBetAPIURL(APIView):
                                 category = 'SPORTS'
                             else:
                                 category = 'LOTTERY'
-                            cate = Category.objects.get(name=category)
+                            try:    
+                                cate = Category.objects.get(name=category)
+                            except ObjectDoesNotExist:
+                                logger.error("Category is not existed.")
                             GameBet.objects.create(
                                 provider=PROVIDER,
                                 transaction_id=trans_id,
