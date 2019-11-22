@@ -177,3 +177,48 @@ class BalanceView(View):
                              }
             logger.error("AllBet BalanceView Error: " + str(e))
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+class TransferView(View):
+    """
+    """
+    def post(self, request, *args, **kwargs):
+
+        json_data = json.loads(request.body)
+
+        client = json_data["client"]
+        transaction_id = json_data["tranId"]
+        amount = json_data["amount"]
+        currency = json_data["currency"]
+        transfer_type = json_data["transferType"]
+
+        print(client)
+        print(transaction_id)
+        print(amount)
+        print(currency)
+        print(transfer_type)
+
+        if transfer_type == "10":
+            print("Attempting to place bet...")
+
+            try:
+                user_obj = CustomUser.objects.get(username=client)
+
+                user_balance = int(user_obj.main_wallet * 100) / 100.0
+                print("User balance before placing bet: " + str(user_balance))
+
+                bet_amount = float(amount)
+                print("bet_amount: " + str(bet_amount))
+
+                balance_after_bet = user_balance - bet_amount
+                user_obj.main_wallet = balance_after_bet
+                user_obj.save()
+
+
+
+                return HttpResponse("main_wallet after placing bet: " + str(user_obj.main_wallet))
+
+            except Exception as e:
+                return HttpResponse("reached exception block of place bet: " + str(e))
+
+        return HttpResponse("TransferView response")
