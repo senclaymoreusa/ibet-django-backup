@@ -47,6 +47,11 @@ outcomeConversion = {
     "draw":5,
     "half lose":6,
     "half won" : 10,
+    "reject": 11,
+    "waiting":12,
+    "waiting running": 13,
+    "void": 3,
+    "refund": 14
 }
 def createMember(username, oddsType):
     try:
