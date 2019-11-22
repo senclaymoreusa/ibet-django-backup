@@ -132,10 +132,12 @@ class WalletBetAPIURL(APIView):
                                 category = 'SPORTS'
                             else:
                                 category = 'LOTTERY'
-                            try:    
+                            try:
                                 cate = Category.objects.get(name=category)
-                            except ObjectDoesNotExist:
-                                logger.error("Category is not existed.")
+                            except:
+                                cate = Category.objects.create(name=category)
+                                logger.info("Create new category.")
+
                             GameBet.objects.create(
                                 provider=PROVIDER,
                                 transaction_id=trans_id,
@@ -341,7 +343,11 @@ class WalletSettleAPIURL(APIView):
                     else:
                         category = 'LOTTERY'
                             
-                    cate = Category.objects.get(name=category)
+                    try:
+                        cate = Category.objects.get(name=category)
+                    except:
+                        cate = Category.objects.create(name=category)
+                        logger.info("Create new category.")
                         
                     if BetType == '1':
                         bet_type = SINGLE
@@ -442,7 +448,11 @@ class WalletSettleAPIURL(APIView):
                         else:
                             category = 'LOTTERY'
                             
-                        cate = Category.objects.get(name=category)
+                        try:
+                            cate = Category.objects.get(name=category)
+                        except:
+                            cate = Category.objects.create(name=category)
+                            logger.info("Create new category.")
                         
                         if BetType == '1':
                             bet_type = SINGLE

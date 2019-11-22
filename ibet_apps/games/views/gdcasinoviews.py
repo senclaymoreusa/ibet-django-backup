@@ -195,7 +195,11 @@ class LiveDealerSoapService(ServiceBase):
                 category = 'Sicbo'
             elif CATEGORY == '100':
                 category = 'Slots'
-            cate = Category.objects.get(name=category)
+            try:
+                cate = Category.objects.get(name='LIVE-CASINO')
+            except:
+                cate = Category.objects.create(name='LIVE-CASINO')
+                logger.info("create new game category")
             token = Token.objects.get(user=user)
             
             if request.gameId == GDCASINO_FISHING_GAMEID:
@@ -293,7 +297,11 @@ class LiveDealerSoapService(ServiceBase):
                     category = 'Sicbo'
                 elif CATEGORY == '100':
                     category = 'Slots'
-                cate = Category.objects.get(name=category)
+                try:
+                    cate = Category.objects.get(name='LIVE-CASINO')
+                except:
+                    cate = Category.objects.create(name='LIVE-CASINO')
+                    logger.info("create new game category")
                 if CATEGORY == '100':
                 
                     if request.gameId == GDCASINO_FISHING_GAMEID:
@@ -425,8 +433,11 @@ class LiveDealerSoapService(ServiceBase):
             if userBalance > 0:
                 token = Token.objects.get(user=user)
                 
-                
-                cate = Category.objects.get(name='LIVE-CASINO')
+                try:
+                    cate = Category.objects.get(name='LIVE-CASINO')
+                except:
+                    cate = Category.objects.create(name='LIVE-CASINO')
+                    logger.info("create new game category")
                 with transaction.atomic():
                     # if str(token) == request.loginToken:
                     GameBet.objects.create(provider=PROVIDER,   
@@ -468,7 +479,11 @@ class LiveDealerSoapService(ServiceBase):
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
-            cate = Category.objects.get(name='LIVE-CASINO')
+            try:
+                cate = Category.objects.get(name='LIVE-CASINO')
+            except:
+                cate = Category.objects.create(name='LIVE-CASINO')
+                logger.info("create new game category")
             with transaction.atomic():
                 GameBet.objects.create(provider=PROVIDER,   
                                         category=cate,
