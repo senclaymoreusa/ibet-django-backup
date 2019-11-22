@@ -197,6 +197,9 @@ class LiveDealerSoapService(ServiceBase):
                 category = 'Slots'
             cate = Category.objects.get(name=category)
             token = Token.objects.get(user=user)
+            print(token)
+            print(request.loginToken)
+            print(request)
             if request.gameId == GDCASINO_FISHING_GAMEID:
                 if CATEGORY == '100': #fishing
                     if str(token) == request.loginToken:
@@ -218,6 +221,7 @@ class LiveDealerSoapService(ServiceBase):
                     user.save()
                     return res
             else:
+                print("hello")
                 if userBalance >= 0:
                     with transaction.atomic():
                         
