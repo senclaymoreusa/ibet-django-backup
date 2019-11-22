@@ -10,7 +10,10 @@ from utils.constants import *
 from users.models import CustomUser
 from games.models import *
 
-import logging, os, requests, json
+import os
+import json
+import logging
+import requests
 
 logger = logging.getLogger("django")
 
