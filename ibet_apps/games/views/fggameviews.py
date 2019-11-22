@@ -14,6 +14,9 @@ import requests,json
 import logging
 import random
 from utils.constants import *
+import datetime
+from datetime import date
+from django.utils import timezone
 
 logger = logging.getLogger("django")
 
@@ -175,7 +178,7 @@ class GetAccountDetail(APIView):
             "loginName" : user.username,
             "firstName" :  user.first_name ,
             "lastName" : user.last_name,
-            "currency" : user.currency,
+            "currency" : CURRENCY_CHOICES[user.currency][1],
             "email" : user.email,
             "country" : user.country,
             "city": user.city,
@@ -258,7 +261,8 @@ class ProcessTransaction(APIView):
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
-          
+            provider = GameProvider.objects.get(provider_name="FG")
+            category = Category.objects.get(name='Slots')
 
         except:
             response = {
@@ -275,13 +279,16 @@ class ProcessTransaction(APIView):
                         user.main_wallet = wallet
                         user.save()
                         transactionId = re.sub("[^0-9]", "", timestamp)
-                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
-                                                        category=Category.objects.get(name='Slots'),
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                        GameBet.objects.get_or_create(provider=provider,
+                                                        category=category,
                                                         username=user,
                                                         amount_wagered=-float(amount),
-                                                        currency=currency,
+                                                        currency=user.currency,
                                                         market=ibetCN,
-                                                        ref_no=transactionId
+                                                        ref_no=transactionId,
+                                                        transaction_id=trans_id
                                                         )
                     response = {
                         "seq" : seq,
@@ -319,14 +326,17 @@ class ProcessTransaction(APIView):
                         user.main_wallet = user.main_wallet + decimal.Decimal(amount)
                         user.save()
                         transactionId = re.sub("[^0-9]", "", timestamp)
-                        GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="FG"),
-                                                        category=Category.objects.get(name='Slots'),
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                        GameBet.objects.get_or_create(provider=provider,
+                                                        category=category,
                                                         username=user,
                                                         amount_wagered=0.00,
-                                                        currency=currency,
+                                                        currency=user.currency,
                                                         amount_won=float(amount),
                                                         market=ibetCN,
-                                                        ref_no=transactionId
+                                                        ref_no=transactionId,
+                                                        transaction_id=trans_id
                                                         )
                     response = {
                         "seq" : seq,
