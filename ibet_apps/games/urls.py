@@ -87,7 +87,7 @@ urlpatterns = [
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail, name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
-    # bti
+    # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
     path('api/bti/reserve', csrf_exempt(bti.Reserve.as_view()), name="bti_reserve_bet"),
     path('api/bti/debitreserve', csrf_exempt(bti.DebitReserve.as_view()), name="bti_debit_reserve"),
@@ -97,6 +97,11 @@ urlpatterns = [
     path('api/bti/add2betconfirm', csrf_exempt(bti.Add2BetConfirm.as_view()), name="bti_add2bet_confirm"),
     path('api/bti/creditcustomer', csrf_exempt(bti.CreditCustomer.as_view()), name="bti_credit_customer"),
     path('api/bti/debitcustomer', csrf_exempt(bti.DebitCustomer.as_view()), name="bti_credit_customer"),
+
+    # bti client-to-server endpoints
+    path('api/bti/status', csrf_exempt(bti.status), name="bti_status"),
+    path('api/bti/refresh', csrf_exempt(bti.Refresh.as_view()), name="bti_refresh"),
+    path('api/bti/login', csrf_exempt(bti.Login.as_view()), name="bti_login"),
     
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),

@@ -139,9 +139,6 @@ class Reserve(View):
         res += f"BonusUsed=0.00\r\n"
         return HttpResponse(res, content_type='text/plain')
 
-      
-                
-
 # endpoint is called for every bet made in Reserve
 class DebitReserve(View):
     def post(self, request):
@@ -321,7 +318,6 @@ class CommitReserve(View):
             res += f"balance={user.main_wallet}\r\n"
             res += f"trx_id={txn_id}\r\n"
             return HttpResponse(res, content_type='text/plain')
-
 
 # should generate success even if reserve is not found
 class CancelReserve(View):
@@ -608,7 +604,7 @@ class CreditCustomer(View):
         purchases = bet_xml[0]
         purchase = purchases[0]
         reserve_id = purchase.attrib.get('ReserveID')
-        
+
         purchaseDict = dict()
 
         for purchase in purchases.getchildren():
@@ -670,3 +666,54 @@ def wrongRequest():
     res = "error_code=-10\r\n"
     res += "error_message=WrongRequest\r\n"
     return HttpResponse(res, content_type='text/plain')
+
+###########################################################################################
+# begin FE calls
+###########################################################################################
+
+
+def status(request):
+    # print("HI")
+    print(request.POST)
+    token = request.POST.get("token")
+    try:
+        userFromToken = (Token.objects.select_related('user').get(key=token)).user
+        return JsonResponse({
+            'token': token,
+            'status': 'real',
+            'message': '',
+            'balance': str(float(userFromToken.main_wallet)) + " " + userFromToken.get_currency_display()
+        })
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'token': token,
+            'status': 'anon',
+            'message': '',
+            'balance': '$0.00'
+        })
+
+class Refresh(View):
+    def get(self, request):
+        print(request.POST)
+        token = request.POST.get("token")
+        try:
+            userFromToken = (Token.objects.select_related('user').get(key=token)).user
+            return JsonResponse({
+                'status': 'success',
+                'message': '',
+                'balance': str(float(userFromToken.main_wallet)) + " " + userFromToken.get_currency_display()
+            })
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 'failure',
+                'message': '',
+                'balance': '$0.00'
+            })
+
+class Login(View):
+    def post(self, request):
+        print(request.POST)
+        return JsonResponse({
+            'key': 'dj khaled',
+            'balance': 1234.56
+        })
