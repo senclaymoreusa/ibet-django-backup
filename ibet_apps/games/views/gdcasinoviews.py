@@ -179,6 +179,10 @@ class LiveDealerSoapService(ServiceBase):
         try:
             PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
         except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
+                                        type=0,
+                                        market='China'
+                                        )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
         res = Container()
@@ -276,6 +280,10 @@ class LiveDealerSoapService(ServiceBase):
         try:
             PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
         except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
+                                        type=0,
+                                        market='China'
+                                        )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
         res = Container()
@@ -422,6 +430,10 @@ class LiveDealerSoapService(ServiceBase):
         try:
             PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
         except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
+                                        type=0,
+                                        market='China'
+                                        )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
  
         res = Container()
@@ -472,6 +484,10 @@ class LiveDealerSoapService(ServiceBase):
         try:
             PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
         except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
+                                        type=0,
+                                        market='China'
+                                        )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         res = Container() 
         try:
