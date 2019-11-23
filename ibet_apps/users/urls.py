@@ -26,8 +26,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path('api/games/', views.GameAPIListView.as_view(), name='api_games'),
-    path('api/games-detail/', views.GameDetailAPIListView.as_view(), name='games_detail'),
     path('api/user/', views.UserDetailsView.as_view(), name='rest_user_details'),
     path('api/signup/', views.RegisterView.as_view(), name='api_register'),
     path('api/login/', views.LoginView.as_view(), name='api_login'),

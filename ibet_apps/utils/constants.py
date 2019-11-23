@@ -218,6 +218,7 @@ TOTAL = 'OU'
 TIP = 'TIP'
 SINGLE = 'Single'
 PARLAY = 'Parlay'
+OTHER = 'Other'
 
 BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
@@ -226,6 +227,7 @@ BET_TYPES_CHOICES = [
     (TIP, 'Tip'),
     (SINGLE, 'Single'),
     (PARLAY,'Parlay'),
+    (OTHER, 'Other'),
 
 ]
 OUTCOME_CHOICES = [
@@ -236,6 +238,14 @@ OUTCOME_CHOICES = [
     (4, 'Running'),
     (5, 'Draw'),
     (6, 'Half lose'),
+    (7, 'Rollback'),
+    (8, 'Cancel'),
+    (9, 'Cash'),
+    (10, 'Half won'),
+    (11, 'reject'),
+    (12, 'waiting'),
+    (13, 'waiting running'),
+    (14, 'refund'),
 ]
 
 ACTIVE_STATE = 0
@@ -1184,7 +1194,7 @@ AFFILIATE_LEVEL = (
     ('VIP', 'VIP'),
 )
 
-LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+LETOU_DOMAIN = "https://www.letou.com/cn/a/"   # for affiliate refer link
 
 MONTHLY_COMMISSION_SETTLE_DATE = "05"
 
@@ -1365,3 +1375,27 @@ SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
 SA_ENCRYPT_KEY = 'g9G16nTs'
 SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
+
+#GB
+GB_PROVIDER = 'GB'
+GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
+GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
+GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
+GB_OTHER_URL = "http://163.claymoreusa.net"
+
+# QT
+QT_STATUS_SUCCESS = 0
+QT_STATUS_UNKNOWN_ERROR = 1
+QT_STATUS_INVALID_TOKEN = 2
+QT_STATUS_LOGIN_FAILED = 3
+QT_STATUS_ACCOUNT_BLOCKED = 4
+QT_STATUS_REQUEST_DECLINED = 5
+
+QT_STATUS_CODE = (
+    (0, "SUCCESS"),
+    (1, "UNKNOWN_ERROR"),
+    (2, "INVALID_TOKEN"),
+    (3, "LOGIN_FAILED"),
+    (4, "ACCOUNT_BLOCKED"),
+    (5, "REQUEST_DECLINED"),
+)

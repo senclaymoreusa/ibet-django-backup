@@ -215,7 +215,7 @@ elif "ENV" in os.environ:
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     
     print("DB HOST: " + db_data['RDS_HOSTNAME'])
-    
+    # print(db_data)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
