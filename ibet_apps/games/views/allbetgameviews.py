@@ -1,6 +1,7 @@
 # Django
 from django.views import View
 from django.http import HttpResponse
+from django.db import transaction
 
 # iBet
 from users.models import CustomUser
@@ -183,7 +184,6 @@ class TransferView(View):
     """
     """
     def post(self, request, *args, **kwargs):
-
         json_data = json.loads(request.body)
 
         client = json_data["client"]
@@ -202,23 +202,100 @@ class TransferView(View):
             print("Attempting to place bet...")
 
             try:
-                user_obj = CustomUser.objects.get(username=client)
+                third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+                AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
 
-                user_balance = int(user_obj.main_wallet * 100) / 100.0
-                print("User balance before placing bet: " + str(user_balance))
+                auth_header = request.META['HTTP_AUTHORIZATION']
+                print("HTTP_AUTHORIZATION: " + str(auth_header))
 
-                bet_amount = float(amount)
-                print("bet_amount: " + str(bet_amount))
+                date_header = request.META['HTTP_DATE']
+                print("HTTP_DATE: " + str(date_header))
 
-                balance_after_bet = user_balance - bet_amount
-                user_obj.main_wallet = balance_after_bet
-                user_obj.save()
+                content_md5_header = request.META['HTTP_CONTENT_MD5']
+                print("HTTP_CONTENT_MD5: " + str(content_md5_header))
 
+                # Construct string for signing
+                string_to_sign = "POST" + "\n" + content_md5_header + "\n" + "application/json; charset=UTF-8" + "\n" + date_header + "\n" + "/transfer"
+                string_to_sign_encoded = string_to_sign.encode()
 
+                # Generate signature
+                hmac_obj = hmac.new(base64.b64decode("dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="), string_to_sign_encoded, sha1)
+                digest_result = hmac_obj.digest()
+                print("digest_result: " + str(digest_result))
 
-                return HttpResponse("main_wallet after placing bet: " + str(user_obj.main_wallet))
+                sign_bytes = base64.b64encode(digest_result)
+                sign_string = sign_bytes.decode()
+                print("sign_string: " + sign_string)
 
+                generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
+                print("generated_auth_header: " + generated_auth_header)
+
+                if generated_auth_header == auth_header:
+                    user_obj = CustomUser.objects.get(username=client)
+
+                    user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
+                    print("User balance before placing bet: " + str(user_balance))
+
+                    bet_amount = float(amount)
+                    print("bet_amount: " + str(bet_amount))
+
+                    # Bet can go through.
+                    if user_balance >= bet_amount:
+                        with transaction.atomic():
+                            balance_after_bet = user_balance - bet_amount
+                            user_obj.main_wallet = balance_after_bet
+                            user_obj.save()
+
+                            # TODO: Create GameBet object
+
+                        json_to_return = {
+                                            "error_code": 0,
+                                            "message": "success",
+                                            "balance": int(user_obj.main_wallet * 100) / 100.0
+                                         }
+                        logger.info("AllBet TransferView Success: Bet placed")
+                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                    # Not enough money to make the bet.
+                    else:
+                        json_to_return = {
+                                            "error_code": 10101,
+                                            "message": "Not enough credits",
+                                            "balance": int(user_obj.main_wallet * 100) / 100.0
+                                         }
+                        logger.error("AllBet TransferView Error: Not enough credit to place bet")
+                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                else:
+                    json_to_return = {
+                                        "error_code": 50000,
+                                        "message": "invalid authorization header",
+                                        "balance": 0
+                                     }
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+                
             except Exception as e:
-                return HttpResponse("reached exception block of place bet: " + str(e))
+                if str(e) == "CustomUser matching query does not exist.":
+                    json_to_return = {
+                                        "error_code": 10003,
+                                        "message": "client does not exist",
+                                        "balance": 0
+                                     }
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                return HttpResponse("Reached exception block of place bet: " + str(e))
+
+        # TODO: Other wallet operations (cancel, settle, etc.)
+        elif transfer_type == "11":
+            # Cancel
+            pass
+        elif transfer_type == "20":
+            # Settle
+            pass
+        elif transfer_type == "21":
+            # Re-settle
+            pass
+        else:
+            return HttpResponse("Invalid transfer type")
 
         return HttpResponse("TransferView response")
