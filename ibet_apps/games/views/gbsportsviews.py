@@ -65,6 +65,7 @@ class WalletBetAPIURL(APIView):
     def post(self, request, *args, **kwargs):
 
         data = json.loads(request.body)
+        
         success = 0
         TransType = None
         TransData = None
@@ -131,7 +132,12 @@ class WalletBetAPIURL(APIView):
                                 category = 'SPORTS'
                             else:
                                 category = 'LOTTERY'
-                            cate = Category.objects.get(name=category)
+                            try:
+                                cate = Category.objects.get(name=category)
+                            except:
+                                cate = Category.objects.create(name=category)
+                                logger.info("Create new category.")
+
                             GameBet.objects.create(
                                 provider=PROVIDER,
                                 transaction_id=trans_id,
@@ -180,16 +186,11 @@ class WalletBetAPIURL(APIView):
                     
                     if temp >= total_amount:
                         current_balance = temp-total_amount
-                        
-                        error      =  'No_Error'
-                        error_code =  0
-                        success    =  1
-                        TransData  = current_balance
-                        
+              
                         with transaction.atomic():
-                            user.main_wallet=current_balance
-                            user.save()
+                            
                             for x in range(len(data['GB']['Result']['ReturnSet']['BettingList'])):
+                                
                                 trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                                 BetID         = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetID']
                                 BetGrpNO      = data['GB']['Result']['ReturnSet']['BettingList'][x]['BetGrpNO']
@@ -209,14 +210,18 @@ class WalletBetAPIURL(APIView):
                                 InitBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['InitBetRate']
                                 RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['RealBetRate']
                                 PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList'][x]['PreWinAmt']
-        
+                                
                             
                                 if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
                                     category = 'SPORTS'
                                 else:
                                     category = 'LOTTERY'
-                            
-                                cate = Category.objects.get(name=category)
+                                
+                                try:
+                                    cate = Category.objects.get(name=category)
+                                except:
+                                    cate = Category.objects.create(name=category)
+                                    logger.info("Create new category.")
                                 if BetType == '1':
                                     bet_type = SINGLE
                                 else:
@@ -234,7 +239,12 @@ class WalletBetAPIURL(APIView):
                                     bet_type=bet_type,
                                     other_data=data,
                                 )
-
+                            user.main_wallet=current_balance
+                            user.save()    
+                            error      =  'No_Error'
+                            error_code =  0
+                            success    =  1    
+                            TransData  = user.main_wallet
                             
                     else:
                         error      =  'Insufficient_Balance'
@@ -333,7 +343,11 @@ class WalletSettleAPIURL(APIView):
                     else:
                         category = 'LOTTERY'
                             
-                    cate = Category.objects.get(name=category)
+                    try:
+                        cate = Category.objects.get(name=category)
+                    except:
+                        cate = Category.objects.create(name=category)
+                        logger.info("Create new category.")
                         
                     if BetType == '1':
                         bet_type = SINGLE
@@ -434,7 +448,11 @@ class WalletSettleAPIURL(APIView):
                         else:
                             category = 'LOTTERY'
                             
-                        cate = Category.objects.get(name=category)
+                        try:
+                            cate = Category.objects.get(name=category)
+                        except:
+                            cate = Category.objects.create(name=category)
+                            logger.info("Create new category.")
                         
                         if BetType == '1':
                             bet_type = SINGLE
@@ -577,10 +595,12 @@ class GenerateGameURL(APIView):
         res = res.content.decode('utf-8')
         res = res[2:-2]
 
-        dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
+        dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto' }
         
         if game == 'GB Sports':
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res,language)
+        elif game == 'GB ESports':
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
@@ -649,6 +669,8 @@ class GenerateFakeUserGameURL(APIView):
 
         if game == 'GB Sports':
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+        elif game == 'GB ESports':
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001&sc=00111'.format(res)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
 

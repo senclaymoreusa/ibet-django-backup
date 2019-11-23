@@ -241,8 +241,11 @@ OUTCOME_CHOICES = [
     (7, 'Rollback'),
     (8, 'Cancel'),
     (9, 'Cash'),
-    (9, 'Cash'),
     (10, 'Half won'),
+    (11, 'reject'),
+    (12, 'waiting'),
+    (13, 'waiting running'),
+    (14, 'refund'),
 ]
 
 ACTIVE_STATE = 0
