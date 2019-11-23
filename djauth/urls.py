@@ -52,12 +52,10 @@ urlpatterns = [
 import games.views.kygameviews as kyviews
 
 kyviews.getBets(repeat=300, repeat_until=None)
-# onebookviews.getBetDetail(repeat=300, repeat_until=None)
-kyviews.getBets(repeat=300, repeat_until=None)
 
-import games.views.onebookviews as onebookviews
+# import games.views.onebookviews as onebookviews
 
-onebookviews.getBetDetail(repeat=300,repeat_until=None)
+# onebookviews.getBetDetail(repeat=300,repeat_until=None)
 
 # Use static() to add url mapping to serve static files during development (only)
 from django.conf import settings

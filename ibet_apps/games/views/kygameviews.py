@@ -119,6 +119,42 @@ def getBets():
     url = url + '?' + req
     res = requests.get(url)
 
+    data = res.json()
+
+    if data['d']['code'] == 0:
+        count = int(data['d']['count'])
+        record_list = data['d']['list']
+
+        provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
+        category = Category.objects.get_or_create(name='Chess', notes="Kaiyuan Chess")
+
+        game_id = record_list['GameID']
+        accounts = record_list['Accounts']
+        # server_id = record_list['ServerID']
+        # kind_id = record_list['KindID']
+        # table_id = record_list['TableID']
+        cell_score = record_list['CellScore']
+        profit = record_list['Profit']
+        revenue = record_list['Revenue']
+
+        for i in range(0, count):
+            username = accounts[i][6:]
+            user = CustomUser.objects.get(username=username)
+
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+            GameBet.objects.create(
+                provider=provider[0],
+                category=category[0],
+                username=user,
+                amount_wagered=decimal.Decimal(cell_score[i]),
+                amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
+                transaction_id=trans_id,
+                market=ibetCN,
+                ref_no=game_id[i]
+            )
+    else:
+        pass
     # print(res.json)
 
 
@@ -273,85 +309,40 @@ class TestGetRecord(View):
                 count = int(data['d']['count'])
                 record_list = data['d']['list']
 
-                print(record_list)
+                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
+                category = Category.objects.get_or_create(name='Chess', notes="Kaiyuan Chess")
 
-                # provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER)
-                # category = Category.objects.get(name='GAMES')
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
-                kind_id = record_list['KindID']
+                # server_id = record_list['ServerID']
+                # kind_id = record_list['KindID']
+                # table_id = record_list['TableID']
                 cell_score = record_list['CellScore']
                 profit = record_list['Profit']
                 revenue = record_list['Revenue']
-                '''
-                GameBet.objects.get_or_create(provider=PROVIDER,
-                                                    category=cate,
-                                                    transaction_id=trans_id,
-                                                    username=user,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    market=ibetCN,
-                                                    )
-
-
-                class GameBet(models.Model):
-                    provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE) # sportsbook/game provider
-                    category = models.ForeignKey('Category', on_delete=models.CASCADE) # category within sportsbook/game provider (e.g basketball, soccer, blackjack)
-
-                    game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
-                    # expect game to be mostly used for small flash games that providers give
-
-                    game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
-                    # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
-
-                    username = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-                    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
-                    amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
-                    # outcome = models.BooleanField() # true = win, false = lost
-                    outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-                    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
-                    bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
-                    line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-                    transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)
-                    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
-                    market = models.SmallIntegerField(choices=MARKET_CHOICES)
-                    ref_no = models.CharField(max_length=100, null=True, blank=True)
-                    bet_time = models.DateTimeField(
-                        _('Time Bet was Placed'),
-                        auto_now_add=True,
-                        editable=False,
-                    )
-
-                    resolved_time = models.DateTimeField(null=True, blank=True)
-                    other_data = JSONField(null=True, default=dict)
-
-                '''
 
                 for i in range(0, count):
-                    print(game_id[i])
-                    print(accounts[i])
                     username = accounts[i][6:]
-                    print(username)
-                    
-                    print(kind_id[i])
-                    print(cell_score[i])
-                    print(profit[i])
-                    # GameBet.objects.get_or_create(
-                    #     provider=provider,
-                    #     category=category,
-                    #     username=user,
-                    #     amount_wagered=cell_score[i],
-                    #     amount_won=profit[i],
-                    #     market=iBetCN
-                    # )
+                    user = CustomUser.objects.get(username=username)
+
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    GameBet.objects.create(
+                        provider=provider[0],
+                        category=category[0],
+                        username=user,
+                        amount_wagered=decimal.Decimal(cell_score[i]),
+                        amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
+                        transaction_id=trans_id,
+                        market=ibetCN,
+                        ref_no=game_id[i]
+                    )
             
             return HttpResponse(status=200)
         except Exception as e:
-            print(e)
+            logger.error("KY Scheduled Task Error: {}".format(repr(e)))
+            return HttpResponse(status=400)
+            
 
 
 class KaiyuanAPI(View):
