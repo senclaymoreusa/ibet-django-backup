@@ -5,6 +5,7 @@ from django.db import transaction
 
 # iBet
 from users.models import CustomUser
+from games.models import GameBet, GameProvider, Category
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys
 
@@ -192,52 +193,35 @@ class TransferView(View):
         currency = json_data["currency"]
         transfer_type = json_data["transferType"]
 
-        print(client)
-        print(transaction_id)
-        print(amount)
-        print(currency)
-        print(transfer_type)
-
+        # Bet
         if transfer_type == "10":
-            print("Attempting to place bet...")
-
             try:
                 third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
                 AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
+                AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
 
                 auth_header = request.META['HTTP_AUTHORIZATION']
-                print("HTTP_AUTHORIZATION: " + str(auth_header))
-
                 date_header = request.META['HTTP_DATE']
-                print("HTTP_DATE: " + str(date_header))
-
                 content_md5_header = request.META['HTTP_CONTENT_MD5']
-                print("HTTP_CONTENT_MD5: " + str(content_md5_header))
 
                 # Construct string for signing
                 string_to_sign = "POST" + "\n" + content_md5_header + "\n" + "application/json; charset=UTF-8" + "\n" + date_header + "\n" + "/transfer"
                 string_to_sign_encoded = string_to_sign.encode()
 
                 # Generate signature
-                hmac_obj = hmac.new(base64.b64decode("dyLMTVzuBp1wWgqq8yyNabBL9tHMLpuk3cIJ5MkG3juqUsNTstrRTLabLz=="), string_to_sign_encoded, sha1)
+                hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
                 digest_result = hmac_obj.digest()
-                print("digest_result: " + str(digest_result))
 
                 sign_bytes = base64.b64encode(digest_result)
                 sign_string = sign_bytes.decode()
-                print("sign_string: " + sign_string)
 
                 generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
-                print("generated_auth_header: " + generated_auth_header)
+                print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
                 if generated_auth_header == auth_header:
                     user_obj = CustomUser.objects.get(username=client)
-
                     user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
-                    print("User balance before placing bet: " + str(user_balance))
-
                     bet_amount = float(amount)
-                    print("bet_amount: " + str(bet_amount))
 
                     # Bet can go through.
                     if user_balance >= bet_amount:
@@ -246,7 +230,25 @@ class TransferView(View):
                             user_obj.main_wallet = balance_after_bet
                             user_obj.save()
 
-                            # TODO: Create GameBet object
+                            GameBet.objects.create(
+                                provider = GameProvider.objects.get(provider_name="ALLBET"),
+                                category = Category.objects.get(name="SLOTS"),
+                                #game = None,
+                                #game_name = None,
+                                username = user_obj,
+                                amount_wagered = bet_amount,
+                                amount_won = 0.00,
+                                #outcome = None,
+                                #odds = None,
+                                #bet_type = None,
+                                #line = None,
+                                currency = user_obj.currency,
+                                market = ibetCN,
+                                ref_no = transaction_id,
+                                #bet_time = None,
+                                #resolved_time = None,
+                                #other_data = {}
+                            )
 
                         json_to_return = {
                                             "error_code": 0,
@@ -272,6 +274,7 @@ class TransferView(View):
                                         "message": "invalid authorization header",
                                         "balance": 0
                                      }
+                    logger.error("AllBet TransferView Error: Invalid authorization header")
                     return HttpResponse(json.dumps(json_to_return), content_type='application/json')
                 
             except Exception as e:
@@ -281,11 +284,12 @@ class TransferView(View):
                                         "message": "client does not exist",
                                         "balance": 0
                                      }
+                    logger.error("AllBet TransferView Error: Client does not exist")
                     return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
                 return HttpResponse("Reached exception block of place bet: " + str(e))
 
-        # TODO: Other wallet operations (cancel, settle, etc.)
+        # TODO: Other wallet operations
         elif transfer_type == "11":
             # Cancel
             pass
