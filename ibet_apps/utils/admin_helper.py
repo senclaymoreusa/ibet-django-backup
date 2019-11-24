@@ -5,6 +5,7 @@ from django.db.models.query import QuerySet
 from django.db.models import Q, ObjectDoesNotExist
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
+from datetime import date
 
 from users.models import CustomUser, UserAction
 from operation.models import Campaign
@@ -24,7 +25,7 @@ logger = logging.getLogger('django')
 users = CustomUser.objects.all()
 
 # date
-today = timezone.now()
+today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
 last_month = this_month + relativedelta(months=-1)
@@ -39,6 +40,8 @@ bonus_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_BONUS)
 commission_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_COMMISSION)
+bet_tran = Transaction.objects.filter(
+    transaction_type=TRANSACTION_BET_PLACED)
 
 
 # get downline list for affiliate or affiliates
@@ -138,6 +141,17 @@ def calculateBonus(user, start_time, end_time):
 
 def calculateNGR(user, start_time, end_time):
     return 0
+
+
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
 
 
 def calculateAdjustment(user, start_time, end_time):
