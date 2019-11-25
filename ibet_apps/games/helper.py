@@ -20,12 +20,15 @@ logger = logging.getLogger("django")
 :returns: IPv4 address
 """
 def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    except Exception as e:
+        print(repr(e))
 
 
 def des_encode(key, data):
@@ -38,9 +41,7 @@ def generateHash(message):
     return hash
 
 
-
 def transferRequest(user, amount, from_wallet, to_wallet):
-    
     if from_wallet == "main":
         transfer_to = TransferDeposit(user, amount, from_wallet)
         function_name = to_wallet + 'Deposit'
