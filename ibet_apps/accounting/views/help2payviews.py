@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.signals import request_finished
 from django.dispatch import receiver
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.db import IntegrityError, DatabaseError
+from django.db import IntegrityError, DatabaseError, transaction
 
 from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
@@ -253,7 +253,6 @@ class SubmitPayout(View):
                 can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
         except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-            print(repr(e))
             logger.error(repr(e))
             traceback.print_exc(file=sys.stdout)
             return HttpResponse(status=500)
@@ -275,9 +274,14 @@ class SubmitPayout(View):
             }
         
             r = requests.post("http://app.besthappylife.biz/MerchantPayout/M0513", data=data)
-            print(r.content)
-        
-            return HttpResponse(r.content)
+            if r.status_code == 200:
+                return HttpResponse(r.content)
+            else:
+                return JsonResponse({
+                    'status_code': ERROR_CODE_FAIL,
+                    'message': 'Payment service unavailable'
+
+                })
         else:
             return JsonResponse({
                 'status_code': ERROR_CODE_FAIL,

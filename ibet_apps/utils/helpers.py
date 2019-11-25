@@ -3,6 +3,7 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.db import DatabaseError, transaction
 from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 
@@ -12,37 +13,38 @@ logger = logging.getLogger("django")
 def addOrWithdrawBalance(username, balance, type_balance):
     try:
         user = CustomUser.objects.get(username=username)
-        print(user)
+
         logger.info("Updating " + user.username + " balance (" + type_balance + " " + str(balance) + ")")
         current_balance = user.main_wallet
 
         logger.info(current_balance)
-        if type_balance == 'add':
-            if user.ftd_time is None:
-                user.update(ftd_time=timezone.now(), modified_time=timezone.now())
-            logger.info("User's current balance is: " + str(current_balance))
-            new_balance = current_balance + decimal.Decimal(balance)
-            user.update(main_wallet=new_balance, modified_time=timezone.now())
-            logger.info("User's new balance is: " + str(new_balance))
-            referrer = user.referred_by
+        with transaction.atomic():
+            if type_balance == 'add':
+                if user.ftd_time is None:
+                    user.update(ftd_time=timezone.now(), modified_time=timezone.now())
+                logger.info("User's current balance is: " + str(current_balance))
+                new_balance = current_balance + decimal.Decimal(balance)
+                user.update(main_wallet=new_balance, modified_time=timezone.now())
+                logger.info("User's new balance is: " + str(new_balance))
+                referrer = user.referred_by
 
-            if referrer:
-                referr_object = get_user_model().objects.filter(username=referrer.username)
-                data = Config.objects.all()[0]
-                reward_points = referr_object[0].reward_points
-                current_points = reward_points + data.Referee_add_balance_reward
-                referr_object.update(reward_points=current_points, modified_time=timezone.now())
+                if referrer:
+                    referr_object = get_user_model().objects.filter(username=referrer.username)
+                    data = Config.objects.all()[0]
+                    reward_points = referr_object[0].reward_points
+                    current_points = reward_points + data.Referee_add_balance_reward
+                    referr_object.update(reward_points=current_points, modified_time=timezone.now())
 
-            return True
-        else:
-            if decimal.Decimal(balance) > current_balance:
-                return False
+                return True
+            else:
+                if decimal.Decimal(balance) > current_balance:
+                    return False
 
-            new_balance = current_balance - decimal.Decimal(balance)
-            user.main_wallet=new_balance
-            user.modified_time=timezone.now()
-            user.save()
-            return True
+                new_balance = current_balance - decimal.Decimal(balance)
+                user.main_wallet=new_balance
+                user.modified_time=timezone.now()
+                user.save()
+                return True
 
     except (Exception, ObjectDoesNotExist) as e:
         print(repr(e))
