@@ -174,7 +174,15 @@ class DebitReserve(View):
 
         # reserve was already canceled
         try:
-            transaction_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
+            transaction_canceled = GameBet.objects.filter(ref_no=reserve_id, other_data__is_cancel=True)
+            res = "error_code=-22"
+            res += "error_message=ReserveClosed\r\n"
+        except ObjectDoesNotExist as e:
+            pass
+
+        # reserve was already committed
+        try:
+            transaction_committed = GameBet.objects.filter(ref_no=reserve_id, other_data__is_committed=True)
             res = "error_code=-22"
             res += "error_message=ReserveClosed\r\n"
         except ObjectDoesNotExist as e:
@@ -334,8 +342,17 @@ class CancelReserve(View):
                 user = findUser(username)
                 if (not isinstance(user, CustomUser))                :
                     return user
-                prev_bet = GameBet.objects.filter(ref_no=reserve_id)
 
+                # check for repeat call
+                try:
+                    already_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
+                    res = "error_code=0\r\n"
+                    res += "error_message=success\r\n"
+                    res += f"balance={already_canceled.other_data['ending_balance']}\r\n"
+                except ObjectDoesNotExist:
+                    pass
+
+                prev_bet = GameBet.objects.filter(ref_no=reserve_id)
                 # bet has already been debited
                 if prev_bet.count() > 1:
                     prev_debits = prev_bet.objects.filter(other_data__is_debit=True)
@@ -373,6 +390,8 @@ class CancelReserve(View):
                 # expected case, only Reserve was called -> okay to cancel
                 if prev_bet.count() == 1:
                     credit_amount = prev_bet[0].amount_wagered
+                    new_balance = user.main_wallet + credit_amount
+                    user.main_wallet = new_balance
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
@@ -383,12 +402,10 @@ class CancelReserve(View):
                         outcome=VOID_OUTCOME,
                         resolved_time=timezone.now(),
                         other_data={
-                            'is_cancel': True
+                            'is_cancel': True,
+                            'ending_balance': float(new_balance)
                         }
                     )
-                    
-                    new_balance = user.main_wallet + credit_amount
-                    user.main_wallet = new_balance
                     user.save()
                     bet.save()
 
@@ -528,6 +545,7 @@ class DebitCustomer(View):
             return HttpResponse(res, content_type='text/plain')
 
         bet_xml = etree.fromstring(request.body)
+        
         purchases = bet_xml[0]
         purchase = purchases[0]
         reserve_id = purchase.attrib.get('ReserveID')
@@ -561,7 +579,7 @@ class DebitCustomer(View):
                     ref_no=reserve_id,
                     amount_won=decimal.Decimal(amount) * -1,
                     transaction_id=txn_id,
-                    currency=user.get_currency_display(),
+                    currency=user.currency,
                     market=MARKET_CN,
                     resolved_time=timezone.now(),
                     other_data=xmlJson
@@ -637,7 +655,7 @@ class CreditCustomer(View):
                     ref_no=reserve_id,
                     amount_won=amount,
                     transaction_id=txn_id,
-                    currency=user.get_currency_display(),
+                    currency=user.currency,
                     market=MARKET_CN,
                     resolved_time=timezone.now(),
                     other_data=xmlJson
@@ -674,7 +692,7 @@ def wrongRequest():
 
 def status(request):
     # print("HI")
-    print(request.POST)
+    # print(request.POST)
     token = request.POST.get("token")
     try:
         userFromToken = (Token.objects.select_related('user').get(key=token)).user
