@@ -108,8 +108,6 @@ urlpatterns = [
     #sa
     path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
     path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
-<<<<<<< HEAD
-=======
 
     #gb
     path('api/gb/walletgeneral/', gbsports.WalletGeneralAPI.as_view(), name='wallet_general'),
@@ -124,7 +122,6 @@ urlpatterns = [
     path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
 
->>>>>>> cfe6d8f0fa8122a3ba1491c6175902d5a776aee4
 ]
 
 #onebookviews.getBetDetail(repeat=300,repeat_until=None)

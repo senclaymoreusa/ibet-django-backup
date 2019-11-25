@@ -70,22 +70,22 @@ class InplayLoginAPI(View):
         try:
             data = request.body
 
-            user = CustomUser.objects.get(username='Bobby')
-            if user:
-                # sessionToken = Token.objects.get(user_id=user)
-                # print(sessionToken)
-                token = {}
-                token["agent"] = agent
-                req_param["timestamp"] = str(timestamp)
-                req_param["param"] = param
-                req_param["key"] = key
-                # url += "?agent=" + agent
-                # url += "&timestamp=" + str(timestamp)
-                # url += "&param=" + param
-                # url += "&key=" + str(key)
-                req = urllib.parse.urlencode(req_param)
-            else:
-                print("User not exist")
+            # user = CustomUser.objects.get(username='Bobby')
+            # if user:
+            #     # sessionToken = Token.objects.get(user_id=user)
+            #     # print(sessionToken)
+            #     # token = {}
+            #     # token["agent"] = agent
+            #     req_param["timestamp"] = str(timestamp)
+            #     req_param["param"] = param
+            #     req_param["key"] = key
+            #     # url += "?agent=" + agent
+            #     # url += "&timestamp=" + str(timestamp)
+            #     # url += "&param=" + param
+            #     # url += "&key=" + str(key)
+            #     req = urllib.parse.urlencode(req_param)
+            # else:
+            #     print("User not exist")
 
 
             key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
@@ -107,8 +107,17 @@ class InplayLoginAPI(View):
 class ValidateTokenAPI(View):
     def get(self, request, *arg, **kwargs):
         data = request.body
+        token = data["Token"]
         print(data)
-        return HttpResponse(status=400)
+
+        res = {}
+        res["memberCode"] = "Bobby"
+        res["CurrencyCode"] = "RMB"
+        res["IPAddress"] = "127.0.0.1"
+        res["statusCode"] = 100
+        res["statusDesc"] = "Success"
+
+        return HttpResponse(json.dumps(res), content_type="application/json", status=200)
 
 
 class InplayGetBalanceAPI(View):
