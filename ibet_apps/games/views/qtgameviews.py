@@ -153,31 +153,32 @@ class GameLaunch(APIView):
                 }
                 
                 gameId = request.GET.get('gameId')
-                username = request.GET.get('playerId')
                 mode = request.GET.get('mode')
                 
-                try: 
-                    user = CustomUser.objects.get(username=username)
-                    session = QTSession.objects.get(user=user)
-                except Exception as e: 
-                    logger.error("Failed in getting user/session " + str(e))
-                    mode = 'demo'
-                
                 if mode == 'real':
+                    username = request.GET.get('playerId')
+                    
+                    try: 
+                        user = CustomUser.objects.get(username=username)
+                        session = QTSession.objects.get(user=user)
+                    except Exception as e: 
+                        logger.error("Failed in getting user/session " + str(e))
+                        
                     body = {
                         "playerId": username,
                         "currency": CURRENCY_CHOICES[user.currency][1],
                         "walletSessionId": str(session.session_key),
                         "country": "CN", # user.country
                         "lang": "zh_CN", # user.language,
-                        "mode": mode,
+                        "mode": 'real',
                         "device": "desktop", 
                     }
                 else: 
                     body = {
                         "country": "CN", 
                         "lang": "zh_CN",
-                        "mode": mode,
+                        "mode": 'demo',
+                        "currency": 'CNY',
                         "device": "desktop", 
                     }
                 
