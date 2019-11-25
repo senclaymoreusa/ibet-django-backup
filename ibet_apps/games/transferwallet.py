@@ -7,6 +7,7 @@ from users.models import CustomUser
 import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw
 from games.views.onebookviews import fundTransfer
+from games.views.kygameviews import kyTransfer
 
 
 logger = logging.getLogger('django')
@@ -27,6 +28,9 @@ class TransferDeposit():
     def onebookDeposit(self):
         return fundTransfer(self.user, self.amount, self.from_wallet, 1, 1)
 
+    def kaiyuanDeposit(self):
+        return kyTransfer(self.user, self.amount, self.from_wallet, 0)
+
     
 class TransferWithdraw():
 
@@ -45,3 +49,5 @@ class TransferWithdraw():
     def onebookWithdraw(self):
         return fundTransfer(self.user, self.amount, self.to_wallet, 0, 1)
 
+    def kaiyuanWithdraw(self):
+        return kyTransfer(self.user, self.amount, self.to_wallet, 1)
