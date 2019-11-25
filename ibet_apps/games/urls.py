@@ -99,8 +99,8 @@ urlpatterns = [
     path('api/bti/debitcustomer', csrf_exempt(bti.DebitCustomer.as_view()), name="bti_credit_customer"),
 
     # bti client-to-server endpoints
-    path('api/bti/status', csrf_exempt(bti.status), name="bti_status"),
-    path('api/bti/refresh', csrf_exempt(bti.refresh), name="bti_refresh"),
+    path('api/bti/status', csrf_exempt(bti.Status.as_view()), name="bti_status"),
+    path('api/bti/refresh', csrf_exempt(bti.Refresh.as_view()), name="bti_refresh"),
     path('api/bti/login', csrf_exempt(bti.Login.as_view()), name="bti_login"),
     
     #sa
