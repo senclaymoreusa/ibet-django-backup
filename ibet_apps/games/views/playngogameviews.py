@@ -323,70 +323,70 @@ class ReserveView(View):
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-class ReleaseView(View):
+# class ReleaseView(View):
 
-    def post(self, request, *args, **kwargs):
-        """
-        """
-        data = request.body
+#     def post(self, request, *args, **kwargs):
+#         """
+#         """
+#         data = request.body
 
-        try:
-            req_dict = xmltodict.parse(data)
+#         try:
+#             req_dict = xmltodict.parse(data)
 
-            username = req_dict['release']['externalId']
-            product_id = req_dict['release']['productId']
-            transaction_id = req_dict['release']['transactionId']
-            win_amount_str = req_dict['release']['real']
-            currency = req_dict['release']['currency']
-            game_session_id = req_dict['release']['gameSessionId']
-            state = req_dict['release']['state']
-            req_type = req_dict['release']['type']
-            game_id = req_dict['release']['gameId']
-            access_token = req_dict['release']['accessToken']
-            round_id = req_dict['release']['roundId']
-            jackpot_gain = req_dict['release']['jackpotGain']
-            jackpot_loss = req_dict['release']['jackpotLoss']
-            jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
-            jackpot_gain_id = req_dict['release']['jackpotGainId']
-            channel = req_dict['release']['channel']
-            free_game_external_id = req_dict['release']['freegameExternalId']
-            free_game_total_gain = req_dict['release']['freegameTotalGain']
-
-
-
-            user = CustomUser.objects.get(username=username)
-            user_balance = int(user.main_wallet * 100) / 100.0
-            win_amount_decimal = float(win_amount_str)
-
-            status_code = PNG_STATUS_OK
-
-            # TODO: Check for invalid currency.
-
-            balance_after_win = user_balance + win_amount_decimal
-            user.main_wallet = balance_after_win
-            user.save()
+#             username = req_dict['release']['externalId']
+#             product_id = req_dict['release']['productId']
+#             transaction_id = req_dict['release']['transactionId']
+#             win_amount_str = req_dict['release']['real']
+#             currency = req_dict['release']['currency']
+#             game_session_id = req_dict['release']['gameSessionId']
+#             state = req_dict['release']['state']
+#             req_type = req_dict['release']['type']
+#             game_id = req_dict['release']['gameId']
+#             access_token = req_dict['release']['accessToken']
+#             round_id = req_dict['release']['roundId']
+#             jackpot_gain = req_dict['release']['jackpotGain']
+#             jackpot_loss = req_dict['release']['jackpotLoss']
+#             jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
+#             jackpot_gain_id = req_dict['release']['jackpotGainId']
+#             channel = req_dict['release']['channel']
+#             free_game_external_id = req_dict['release']['freegameExternalId']
+#             free_game_total_gain = req_dict['release']['freegameTotalGain']
 
 
 
-            res_dict = {
-                "release": {
-                    "real": {
-                        "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
-                    },
-                    "currency": {
-                        "#text": ""
-                    },
-                    "statusCode": {
-                        "#text": str(status_code)
-                    },
-                }
-            }
+#             user = CustomUser.objects.get(username=username)
+#             user_balance = int(user.main_wallet * 100) / 100.0
+#             win_amount_decimal = float(win_amount_str)
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
-            return HttpResponse(res_msg, content_type='text/xml')
+#             status_code = PNG_STATUS_OK
+
+#             # TODO: Check for invalid currency.
+
+#             balance_after_win = user_balance + win_amount_decimal
+#             user.main_wallet = balance_after_win
+#             user.save()
 
 
 
-        except Exception as e:
-            logger.error("PLAY'nGO ReleaseView Error: " + str(e))
-            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+#             res_dict = {
+#                 "release": {
+#                     "real": {
+#                         "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
+#                     },
+#                     "currency": {
+#                         "#text": ""
+#                     },
+#                     "statusCode": {
+#                         "#text": str(status_code)
+#                     },
+#                 }
+#             }
+
+#             res_msg = xmltodict.unparse(res_dict, pretty=True)
+#             return HttpResponse(res_msg, content_type='text/xml')
+
+
+
+#         except Exception as e:
+#             logger.error("PLAY'nGO ReleaseView Error: " + str(e))
+#             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
