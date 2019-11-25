@@ -193,6 +193,11 @@ class TransferView(View):
         currency = json_data["currency"]
         transfer_type = json_data["transferType"]
 
+        # JSON Response fields
+        res_error_code = 50000
+        res_message = "server error"
+        res_balance = 0
+
         # Bet
         if transfer_type == "10":
             try:
@@ -250,44 +255,41 @@ class TransferView(View):
                                 #other_data = {}
                             )
 
-                        json_to_return = {
-                                            "error_code": 0,
-                                            "message": "success",
-                                            "balance": int(user_obj.main_wallet * 100) / 100.0
-                                         }
+                        res_error_code = 0
+                        res_message = "success"
+                        res_balance = int(user_obj.main_wallet * 100) / 100.0
+
                         logger.info("AllBet TransferView Success: Bet placed")
-                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
                     # Not enough money to make the bet.
                     else:
-                        json_to_return = {
-                                            "error_code": 10101,
-                                            "message": "Not enough credits",
-                                            "balance": int(user_obj.main_wallet * 100) / 100.0
-                                         }
+                        res_error_code = 10101
+                        res_message = "not enough credits"
+                        res_balance = int(user_obj.main_wallet * 100) / 100.0
+
                         logger.error("AllBet TransferView Error: Not enough credit to place bet")
-                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
                 else:
-                    json_to_return = {
-                                        "error_code": 50000,
-                                        "message": "invalid authorization header",
-                                        "balance": 0
-                                     }
+                    res_error_code = 5000
+                    res_message = "invalid authorization header"
+                    res_balance = 0
+
                     logger.error("AllBet TransferView Error: Invalid authorization header")
-                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
                 
             except Exception as e:
                 if str(e) == "CustomUser matching query does not exist.":
-                    json_to_return = {
-                                        "error_code": 10003,
-                                        "message": "client does not exist",
-                                        "balance": 0
-                                     }
-                    logger.error("AllBet TransferView Error: Client does not exist")
-                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+                    res_error_code = 10003
+                    res_message = "client does not exist"
+                    res_balance = 0
 
-                return HttpResponse("Reached exception block of place bet: " + str(e))
+                    logger.error("AllBet TransferView Error: Client does not exist")
+
+                json_to_return = {
+                                    "error_code": res_error_code,
+                                    "message": res_message,
+                                    "balance": res_balance
+                                 }
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         # TODO: Other wallet operations
         elif transfer_type == "11":
@@ -299,7 +301,10 @@ class TransferView(View):
         elif transfer_type == "21":
             # Re-settle
             pass
-        else:
-            return HttpResponse("Invalid transfer type")
 
-        return HttpResponse("TransferView response")
+        json_to_return = {
+                            "error_code": res_error_code,
+                            "message": res_message,
+                            "balance": res_balance
+                         }
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
