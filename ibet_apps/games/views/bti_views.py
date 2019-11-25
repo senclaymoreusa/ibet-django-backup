@@ -697,6 +697,7 @@ def status(request):
     try:
         userFromToken = (Token.objects.select_related('user').get(key=token)).user
         return JsonResponse({
+            'uid': datetime.datetime.now(),
             'token': token,
             'status': 'real',
             'message': '',
@@ -704,29 +705,28 @@ def status(request):
         })
     except ObjectDoesNotExist:
         return JsonResponse({
+            'uid': datetime.datetime.now(),
             'token': token,
             'status': 'anon',
             'message': '',
             'balance': '$0.00'
         })
 
-class Refresh(View):
-    def get(self, request):
-        print(request.POST)
-        token = request.POST.get("token")
-        try:
-            userFromToken = (Token.objects.select_related('user').get(key=token)).user
-            return JsonResponse({
-                'status': 'success',
-                'message': '',
-                'balance': str(float(userFromToken.main_wallet)) + " " + userFromToken.get_currency_display()
-            })
-        except ObjectDoesNotExist:
-            return JsonResponse({
-                'status': 'failure',
-                'message': '',
-                'balance': '$0.00'
-            })
+def refresh(request):
+    token = request.POST.get("token")
+    try:
+        userFromToken = (Token.objects.select_related('user').get(key=token)).user
+        return JsonResponse({
+            'status': 'success',
+            'message': '',
+            'balance': str(float(userFromToken.main_wallet)) + " " + userFromToken.get_currency_display()
+        })
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'status': 'failure',
+            'message': '',
+            'balance': '$0.00'
+        })
 
 class Login(View):
     def post(self, request):
