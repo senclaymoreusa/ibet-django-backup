@@ -1145,7 +1145,7 @@ function getCreator(username) {
 
 function getMessage(msgId) {
   $('#view-modal').modal({'show' : true});
-  {% comment %} $('#view-modal .modal-title').text("Edit Group"); {% endcomment %}
+  // $('#view-modal .modal-title').text("Edit Group");
   
   $.ajax({
       type: "GET",

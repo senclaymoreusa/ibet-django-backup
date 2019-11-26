@@ -304,7 +304,7 @@ class NotificationView(CommAdminView):
         #     except Exception as e:
         #         logger.error(e)
 
-        queryset = Notification.objects.filter(msg_filter)
+        queryset = Notification.objects.filter(msg_filter).order_by('-publish_on')
 
         notification_list = []
 
@@ -1297,44 +1297,59 @@ class AWSTopicAPIView(GenericAPIView):
 
 
 def send_sms(content_text, notifier, phone_num):
-        data = {
-            "content_text": content_text,
-            "is_sms_message": True,
-            "status": MESSAGE_APPROVED,
-        }
+    # connect AWS S3
+    third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
-        serializer = NotificationSerializer(data=data)
+    # AWS SNS Client
+    sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
+    client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+
+    try:
+        # phone = str(notifier.phone)
+        client.publish(PhoneNumber=phone_num, Message=content_text)
+
+        logger.info("Enabled SMS Notification to: {}".format(phone_num))
+    except Exception as e:
+        logger.error("Unexpected error: %s" % e)
+
+        # data = {
+        #     "content_text": content_text,
+        #     "is_sms_message": True,
+        #     "status": MESSAGE_APPROVED,
+        # }
+
+        # serializer = NotificationSerializer(data=data)
         
-        if serializer.is_valid():
-            notification = serializer.save()
-            logger.info("create a SMS notification")
+        # if serializer.is_valid():
+        #     notification = serializer.save()
+        #     logger.info("create a SMS notification")
 
-            notifier = CustomUser.objects.get(pk=notifier)
+        #     notifier = CustomUser.objects.get(pk=notifier)
 
-            log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
+        #     log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
 
-            logger.info("Save notification log")
+        #     logger.info("Save notification log")
 
-            # connect AWS S3
-            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+        #     # connect AWS S3
+        #     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
 
-            # AWS SNS Client
-            sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
-            client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+        #     # AWS SNS Client
+        #     sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
+        #     client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
 
-            try:
-                # phone = str(notifier.phone)
-                client.publish(PhoneNumber=phone_num, Message=notification.content_text)
+        #     try:
+        #         # phone = str(notifier.phone)
+        #         client.publish(PhoneNumber=phone_num, Message=notification.content_text)
     
-                logger.info("Enabled SMS Notification")
-            except Exception as e:
-                logger.error("Unexpected error: %s" % e)
-                return "AWS ERROR!"
+        #         logger.info("Enabled SMS Notification")
+        #     except Exception as e:
+        #         logger.error("Unexpected error: %s" % e)
+        #         return "AWS ERROR!"
 
-            return "Success"
-        else:
-            logger.error("Sending SMS Notification Data Format Incorrect Error!")
-            return "Data Format Incorrect!"
+        #     return "Success"
+        # else:
+        #     logger.error("Sending SMS Notification Data Format Incorrect Error!")
+        #     return "Data Format Incorrect!"
 
 '''
 TODO: using AWS SES send email for ibet.com in the future. Currently not using this function
