@@ -462,6 +462,17 @@
             })
             .on("change", function() {
                 dateFrom.datepicker( "option", "maxDate", getDate( this ) );
+                if ($("#min").val() != "") {
+                    let searchTerm = document.getElementById('search').value;
+                    let fromDate = document.getElementById('min').value;
+                    let toDate = document.getElementById('max').value;
+
+                    let queryString = new URLSearchParams(window.location.search);
+                    if (searchTerm) queryString.set('search_params', searchTerm);
+                    if (fromDate) queryString.set('from', fromDate);
+                    if (toDate) queryString.set('to', toDate);
+                    window.location = BASEURL + queryString.toString();
+                }
             });
 
         function getDate( element ) {
