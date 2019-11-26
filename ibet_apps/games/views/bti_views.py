@@ -78,7 +78,6 @@ class Reserve(View):
         if not (isinstance(user, CustomUser)):
             return user
 
-
         bet_xml = etree.fromstring(request.body)
         txn_id = generateTxnId()
         
@@ -154,14 +153,14 @@ class DebitReserve(View):
         if amount < 0:
             return wrongRequest()
 
+        user = findUser(username)
+        if not (isinstance(user, CustomUser)):
+            return user
+
         bet_xml = etree.fromstring(request.body)
         bet = bet_xml[0]
 
         txn_id = generateTxnId()
-
-        user = findUser(username)
-        if not (isinstance(user, CustomUser)):
-            return user
         
         try:
             initial_reserve = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
@@ -174,7 +173,7 @@ class DebitReserve(View):
 
         # reserve was already canceled
         try:
-            transaction_canceled = GameBet.objects.filter(ref_no=reserve_id, other_data__is_cancel=True)
+            transaction_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
             res = "error_code=-22"
             res += "error_message=ReserveClosed\r\n"
         except ObjectDoesNotExist as e:
@@ -182,7 +181,7 @@ class DebitReserve(View):
 
         # reserve was already committed
         try:
-            transaction_committed = GameBet.objects.filter(ref_no=reserve_id, other_data__is_committed=True)
+            transaction_committed = GameBet.objects.get(ref_no=reserve_id, other_data__is_committed=True)
             res = "error_code=-22"
             res += "error_message=ReserveClosed\r\n"
         except ObjectDoesNotExist as e:
@@ -253,21 +252,10 @@ class CommitReserve(View):
             return user
 
         txn_id = generateTxnId()
-
+        # find reserve
         try:
             totalReserve = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
         except ObjectDoesNotExist as e:
-            res = "error_code=-20\r\n"
-            res += "error_message=ReserveNotFound\r\n"
-            res += f"balance={user.main_wallet}\r\n"
-            res += f"trx_id={txn_id}\r\n"
-            return HttpResponse(res, content_type='text/plain')
-
-        # find debitReserves
-        corresponding_reserves = GameBet.objects.filter(ref_no=reserve_id, other_data__has_key='bet_data').order_by('-bet_time')
-
-        # no debitReserves
-        if not len(corresponding_reserves):
             res = "error_code=-20\r\n"
             res += "error_message=ReserveNotFound\r\n"
             res += f"balance={user.main_wallet}\r\n"
@@ -284,24 +272,31 @@ class CommitReserve(View):
             return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist:
             pass
+
+        # find debitReserves
+        corresponding_reserves = GameBet.objects.filter(ref_no=reserve_id, other_data__is_debit=True).order_by('-bet_time')
+
+        # no debitReserves
+        if not corresponding_reserves:
+            res = "error_code=-20\r\n"
+            res += "error_message=ReserveNotFound\r\n"
+            res += f"balance={user.main_wallet}\r\n"
+            res += f"trx_id={txn_id}\r\n"
+            return HttpResponse(res, content_type='text/plain')
         
         try:
             with transaction.atomic():
-
                 totalReserveAmount = totalReserve.amount_wagered
-                actualTotal = 0
-                for bet in corresponding_reserves:
-                    actualTotal += bet.amount_wagered
+                actualTotal = sum([bet.amount_wagered for bet in corresponding_reserves])
                 
                 refundAmount = totalReserveAmount - actualTotal
                 user.main_wallet += refundAmount
-
                 bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
                         username=user,
                         ref_no=reserve_id,
-                        amount_wagered=totalReserveAmount,
+                        amount_wagered=actualTotal,
                         market=MARKET_CN,
                         transaction_id=txn_id,
                         other_data={
@@ -337,12 +332,12 @@ class CancelReserve(View):
         if not (username and reserve_id):
             return wrongRequest()
 
+        user = findUser(username)
+        if (not isinstance(user, CustomUser)):
+            return user
+
         try:
             with transaction.atomic():
-                user = findUser(username)
-                if (not isinstance(user, CustomUser))                :
-                    return user
-
                 # check for repeat call
                 try:
                     already_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
@@ -358,6 +353,22 @@ class CancelReserve(View):
                     prev_debits = prev_bet.objects.filter(other_data__is_debit=True)
                     refund = prev_debits.aggregate(Sum('amount_wagered'))['amount_wagered__sum'] or 0
                     user.main_wallet = user.main_wallet + refund
+
+                    bet = GameBet(
+                        provider=PROVIDER,
+                        category=CATEGORY,
+                        username=user,
+                        ref_no=reserve_id,
+                        amount_won=refund,
+                        market=MARKET_CN,
+                        outcome=VOID_OUTCOME,
+                        resolved_time=timezone.now(),
+                        other_data={
+                            'is_cancel': True,
+                            'ending_balance': float(user.main_wallet)
+                        }
+                    )
+                    bet.save()
                     user.save()
                     res = "error_code=0\r\n"
                     res += "error_message=RefundDebitedReserve\r\n"
@@ -377,7 +388,8 @@ class CancelReserve(View):
                         outcome=VOID_OUTCOME,
                         resolved_time=timezone.now(),
                         other_data={
-                            'is_cancel': True
+                            'is_cancel': True,
+                            'ending_balance': float(user.main_wallet)
                         }
                     )
 
@@ -403,7 +415,7 @@ class CancelReserve(View):
                         resolved_time=timezone.now(),
                         other_data={
                             'is_cancel': True,
-                            'ending_balance': float(new_balance)
+                            'ending_balance': float(user.main_wallet)
                         }
                     )
                     user.save()
@@ -443,7 +455,7 @@ class Add2Bet(View):
                 user = findUser(username)
                 if not (isinstance(user, CustomUser)):
                     return user
-                open_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True)
+                open_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True, other_data__is_committed__isnull=True, other_data__is_cancel__isnull=True)
                 new_bet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
@@ -485,12 +497,14 @@ class Add2BetConfirm(View):
         if amount < 0:
             return wrongRequest()
 
-        txn_id = generateTxnId()
-        bet_xml = etree.fromstring(request.body)
-        bet = bet_xml[0]
         user = findUser(username)
         if not (isinstance(user, CustomUser)):
             return user
+
+        txn_id = generateTxnId()
+        bet_xml = etree.fromstring(request.body)
+        bet = bet_xml[0]
+        
         try:
             bet_to_confirm = GameBet.objects.get(ref_no=reserve_id, other_data__is_add2bet=True)
             confirm_bet = GameBet(
@@ -503,7 +517,7 @@ class Add2BetConfirm(View):
                 currency=user.get_currency_display(),
                 market=MARKET_CN,
                 other_data={
-                    'add2bet_confirm': True, 
+                    'is_add2bet_confirm': True, 
                     'updated_bet_data': dict(bet.attrib), 
                     'line_data': [dict(line.attrib) for line in bet.getchildren()] 
                 }
@@ -544,6 +558,21 @@ class DebitCustomer(View):
             res += "error_message=NegativeAmount\r\n"
             return HttpResponse(res, content_type='text/plain')
 
+        user = findUser(username)
+        if not (isinstance(user, CustomUser)):
+            return user
+        
+        # check for repeat request
+        try:
+            repeat_debit = GameBet.objects.get(other_data__request_id=request_id, other_data__is_debit=True)
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
+            res += f"balance={repeat_debit.other_data['ending_balance']}\r\n"
+            res += f"trx_id={repeat_debit.other_data['txn_id']}\r\n"
+            return HttpResponse(res, content_type='text/plain')
+        except ObjectDoesNotExist:
+            pass
+        
         bet_xml = etree.fromstring(request.body)
         
         purchases = bet_xml[0]
@@ -557,21 +586,20 @@ class DebitCustomer(View):
                 dict(selection.attrib) for selection in selections.getchildren()
             ]
 
-        xmlJson = {
-            'is_debit': True,
-            'is_outcome_correction': True,
-            'debit_data': dict(bet_xml.attrib), 
-            'bet_data': purchaseDict,
-            'raw_xml': str(request.body, 'utf-8'),
-            'request_id': request_id
-        }
+
         try:
             with transaction.atomic():
-                user = findUser(username)
-                if not (isinstance(user, CustomUser)):
-                    return user
                 user.main_wallet = user.main_wallet - amount
-
+                xmlJson = {
+                    'is_debit': True,
+                    'is_outcome_correction': True,
+                    'debit_data': dict(bet_xml.attrib), 
+                    'bet_data': purchaseDict,
+                    'raw_xml': str(request.body, 'utf-8'),
+                    'request_id': request_id,
+                    'ending_balance': float(user.main_wallet),
+                    'txn_id': txn_id
+                }
                 resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
@@ -616,6 +644,20 @@ class CreditCustomer(View):
             res += "error_message=NegativeAmount\r\n"
             return HttpResponse(res, content_type='text/plain')
 
+        user = findUser(username)
+        if not (isinstance(user, CustomUser)):
+            return user
+
+        try:
+            repeat_credit = GameBet.objects.get(other_data__request_id=request_id, other_data__is_credit=True)
+            res = "error_code=0\r\n"
+            res += "error_message=success\r\n"
+            res += f"balance={repeat_credit.other_data['ending_balance']}\r\n"
+            res += f"trx_id={repeat_credit.other_data['txn_id']}\r\n"
+            return HttpResponse(res, content_type='text/plain')
+        except ObjectDoesNotExist:
+            pass
+
         txn_id = generateTxnId()
 
         bet_xml = etree.fromstring(request.body)
@@ -632,22 +674,25 @@ class CreditCustomer(View):
                 dict(selection.attrib) for selection in selections.getchildren()
             ]
 
-        xmlJson = {
-            'is_credit': True,
-            'is_outcome_correction': False,
-            'credit_data': dict(bet_xml.attrib), 
-            'bet_data': purchaseDict,
-            'raw_xml': str(request.body, 'utf-8'),
-            'request_id': request_id
-        }
         
         try:
             with transaction.atomic():
-                user = findUser(username)
-                if not (isinstance(user, CustomUser)):
-                    return user
-                user.main_wallet = user.main_wallet + amount
+                if amount > 0:
+                    user.main_wallet = user.main_wallet + amount
+                
                 outcome = 0 if amount > 0 else 1
+
+                xmlJson = {
+                    'is_credit': True,
+                    'is_outcome_correction': False,
+                    'credit_data': dict(bet_xml.attrib), 
+                    'bet_data': purchaseDict,
+                    'raw_xml': str(request.body, 'utf-8'),
+                    'request_id': request_id,
+                    'ending_balance': float(user.main_wallet),
+                    'txn_id': txn_id
+                }
+
                 resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
@@ -685,11 +730,10 @@ def wrongRequest():
     res += "error_message=WrongRequest\r\n"
     return HttpResponse(res, content_type='text/plain')
 
+
 ###########################################################################################
 # begin FE calls
 ###########################################################################################
-
-
 class Status(View):
     def post(self, request):
         token = request.POST.get("token")
