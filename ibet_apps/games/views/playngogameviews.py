@@ -77,18 +77,16 @@ class AuthenticateView(View):
                 # print("user_obj.username: " + user_obj.username)
 
                 external_id = user_obj.username
-                status_code = 0 # Placeholder
-                status_message = "ok" # Placeholder
+                status_code = PNG_STATUS_OK 
+                status_message = "ok"
                 user_currency = CURRENCY_CHOICES[user_obj.currency][1]
-                nickname = "MaxPower" # Placeholder
-                country = "SE" # Placeholder
-                birthdate = "1970-01-01" # Placeholder
-                registration = "2010-05-05" # Placeholder
-                res_language = "EN" # Placeholder
+                country = user_obj.country
+                birthdate = user_obj.date_of_birth
+                registration = user_obj.time_of_registration
+                res_language = user_obj.language
                 affiliate_id = "" # Placeholder
                 real = int(user_obj.main_wallet * 100) / 100.0
                 external_game_session_id = "" # Placeholder
-                region = 3 # Placeholder
 
                 # Compose response dictionary and convert to response XML
                 res_dict = {
@@ -105,20 +103,17 @@ class AuthenticateView(View):
                         "userCurrency": {
                             "#text": str(user_currency)
                         },
-                        "nickname": {
-                            "#text": nickname
-                        },
                         "country": {
-                            "#text": country
+                            "#text": str(country)
                         },
                         "birthdate": {
-                            "#text": birthdate
+                            "#text": str(birthdate)
                         },
                         "registration": {
-                            "#text": registration
+                            "#text": str(registration)
                         },
                         "language": {
-                            "#text": res_language
+                            "#text": str(res_language)
                         },
                         "affiliateId": {
                             "#text": affiliate_id
@@ -128,9 +123,6 @@ class AuthenticateView(View):
                         },
                         "externalGameSessionId": {
                             "#text": external_game_session_id
-                        },
-                        "region": {
-                            "#text": str(region)
                         },
                     }
                 }
