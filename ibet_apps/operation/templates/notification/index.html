@@ -1146,38 +1146,17 @@ function getCreator(username) {
 function getMessage(msgId) {
   $('#view-modal').modal({'show' : true});
   {% comment %} $('#view-modal .modal-title').text("Edit Group"); {% endcomment %}
-  $('#message_text').html("<h1>Hello</h1>");
-  /*
+  {% comment %} $('#message_text').html("<h1>Hello</h1>"); {% endcomment %}
+
   $.ajax({
       type: "GET",
-      url: "{% url 'group-detail' %}",
+      url: "{% url 'xadmin:notification_detail' %}",
       data: {
         'groupId': groupId
       },
       success: function(data)
       {
-        if ( $.fn.dataTable.isDataTable('#player-table')) {
-          $("#player-table").DataTable().destroy();
-        }
-
-        var fields = JSON.parse(data["group"])[0]["fields"];
-
-        $("#static-modal").find('input[name="group-name"]').val(fields["name"]);
-
-        user_list = data["user_list"];
-        $("#player-table").DataTable({
-            data: user_list,
-            columns: [
-                { data: "pk" },
-                { data: "username" }
-            ]
-        });
-
-        $("#delete").css("display", "");
-        $("#notes").css("display", "");
-        $("#export-csv").css("display", "");
-        $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")');
-        $('#playergroup').attr('action', "{% url 'group-update'%}" + "?" + groupId);
+        console.log("Hello");
           /*
           var fields = JSON.parse(data["group"])[0]["fields"];
           user_list = data["user_list"];
@@ -1200,9 +1179,9 @@ function getMessage(msgId) {
           $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
           $("#delete").css("display", "");
           $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")')
-          
+          */
       }
-  });*/
+  });
 }
 </script>
 {% endblock %}
