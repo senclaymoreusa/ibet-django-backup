@@ -103,6 +103,44 @@ tbody>tr:nth-child(odd)>th {
     Notifications <span class="badge badge-light">{{ waiting_list }}</span>
   </a>
 
+  <div class="modal fade bd-example-modal-lg" id="view-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="width:48%;">
+      <div class="modal-content">
+        <div class="modal-header">
+        <h3 class="modal-title">Message details</h3>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <table class="table table-bordered table-striped table-hover">
+            <tr>
+              <td>Campaign</td>
+              <td>{{ queryset.campaign.name }}</td>
+            </tr>
+            <tr>
+              <td>Subject</td>
+              <td>{{ queryset.subject }}</td>
+            </tr>
+            <tr>
+              <td>Author</td>
+              <td>{{ queryset.creator }}</td>
+            </tr>
+            <tr>
+              <td>Sent at</td>
+              <td>{{ queryset.publish_on }}</td>
+            </tr>
+            <tr>
+              <td>Sent to</td>
+              <td>{% for notifier in notifiers %}
+                {{notifier.notifier_id}}
+                {% endfor %}
+              </td>
+            </tr>
+          </table>
+        </div>
+    </div>
+  </div>
+</div>
+
   <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div id="mydialog" class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -114,18 +152,15 @@ tbody>tr:nth-child(odd)>th {
         </div>
         <form action="{% url 'xadmin:notification' %}" method="post" id="newmsg">
         {% csrf_token %}
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
             <select name="campaign" class="form-control">
               <option value="-1">SELECT CAMPAIGN...</option>
               {% for campaign in campaignOpt %}
                 <option value="{{ campaign.id }}">{{ campaign.name }}</option>
               {% endfor %}
-              <!-- <option value="CAMPAIGN1">CAMPAIGN1</option>
-              <option value="CAMPAIGN2">CAMPAIGN2</option>
-              <option value="CAMPAIGN3">CAMPAIGN3</option> -->
             </select>
-          </div>
+          </div> -->
           <div class="form-group">
             <label for="notifiers">SEND TO</label>
             <div class="input-group" >
@@ -145,7 +180,7 @@ tbody>tr:nth-child(odd)>th {
             <label for="content">MESSAGE BODY</label>
             <div name="content_text" id="content_text" class="row" contenteditable="true">
             </div>
-            <div class="row" style="border: 1px solid #bdbdbd; background-color: #f4f4f4">
+            <div class="row" style="border: 1px solid #bdbdbd; background-color: #f4f4f4; margin-top:16px">
               <button type="button" class="btn btn-secondary" id="italic"><i class="fa fa-italic"></i></button>
               <button type="button" class="btn btn-secondary" id="bold"><i class="fa fa-bold"></i></button>
               <button type="button" class="btn btn-secondary" id="underline"><i class="fa fa-underline"></i></button>
@@ -153,7 +188,7 @@ tbody>tr:nth-child(odd)>th {
               <button type="button" class="btn btn-secondary" id="" disabled><i class="fas fa-percentage"></i></button>
             </div>
           </div>
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
             <div class="form-check row">
               <input class="form-check-input" type="checkbox" name="direct_check">
@@ -173,7 +208,7 @@ tbody>tr:nth-child(odd)>th {
                   Push Notification
               </label>
             </div>
-          </div>
+          </div> -->
           <button type="button" id="send" class="btn btn-success">Send</button>
           <button type="button" class="btn btn-primary" disabled>Automate</button>
           <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
@@ -1098,6 +1133,66 @@ function getCreator(username) {
             }
         }
     });
+}
+
+function getMessage(msgId) {
+  $('#static-modal').modal({'show' : true});
+  $('#static-modal .modal-title').text("Edit Group");
+  $.ajax({
+      type: "GET",
+      url: "{% url 'group-detail' %}",
+      data: {
+        'groupId': groupId
+      },
+      success: function(data)
+      {
+        if ( $.fn.dataTable.isDataTable('#player-table')) {
+          $("#player-table").DataTable().destroy();
+        }
+
+        var fields = JSON.parse(data["group"])[0]["fields"];
+
+        $("#static-modal").find('input[name="group-name"]').val(fields["name"]);
+
+        user_list = data["user_list"];
+        $("#player-table").DataTable({
+            data: user_list,
+            columns: [
+                { data: "pk" },
+                { data: "username" }
+            ]
+        });
+
+        $("#delete").css("display", "");
+        $("#notes").css("display", "");
+        $("#export-csv").css("display", "");
+        $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")');
+        $('#playergroup').attr('action', "{% url 'group-update'%}" + "?" + groupId);
+          /*
+          var fields = JSON.parse(data["group"])[0]["fields"];
+          user_list = data["user_list"];
+          
+          $("#newgroup").trigger("reset");
+
+          $("#newgroup").find('input[name="group_name"]').val(fields["name"]);
+          $("#product").val(fields["product"]);
+          $('#range').prop("checked", fields["is_range"]);
+          $("#from_date").val(fields["active_from"]);
+          $("#to_date").val(fields["active_to"]);
+          $("#reg-from").val(fields["register_from"]);
+          $("#reg-to").val(fields["register_to"]);
+          $('#onlydeposited').prop("checked", fields["is_deposit"]);
+          
+
+          $('#member_count').html("&nbsp;" + user_list.length);
+          
+          createTable(user_list);
+          $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
+          $("#delete").css("display", "");
+          $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")')
+          */
+      }
+  });
 }
 </script>
 {% endblock %}
