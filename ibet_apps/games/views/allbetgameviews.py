@@ -322,6 +322,7 @@ class TransferView(View):
 
         except Exception as e:
             # Malformed request body
+            logger.error("AllBet TransferView Error: Invalid request body")
             json_to_return = {
                                 "error_code": 50000,
                                 "message": "server error - invalid request body",
