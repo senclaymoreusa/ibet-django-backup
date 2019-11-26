@@ -1146,17 +1146,19 @@ function getCreator(username) {
 function getMessage(msgId) {
   $('#view-modal').modal({'show' : true});
   {% comment %} $('#view-modal .modal-title').text("Edit Group"); {% endcomment %}
-  {% comment %} $('#message_text').html("<h1>Hello</h1>"); {% endcomment %}
-
+  
   $.ajax({
       type: "GET",
       url: "{% url 'xadmin:notification_detail' %}",
       data: {
-        'groupId': groupId
+        'msgId': msgId
       },
       success: function(data)
       {
-        console.log("Hello");
+        console.log(data);
+
+        $('#message_text').html(data["content_text"]);
+
           /*
           var fields = JSON.parse(data["group"])[0]["fields"];
           user_list = data["user_list"];

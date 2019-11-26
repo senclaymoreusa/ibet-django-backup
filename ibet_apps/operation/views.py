@@ -420,29 +420,19 @@ class NotificationView(CommAdminView):
 
 class NotificationDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
-        notification_id = self.kwargs.get('pk')
-        context = super().get_context()
-        title = 'message'
-        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
-        context["title"] = title
-        context['time'] = timezone.now()
-        context['current_user'] = self.user
-        context['all_user'] = CustomUser.objects.all()
-        # context['auditors'] = CustomUser.objects.filter(is_admin=True)
-        # context['topics'] = AWSTopic.objects.all()
-        
-        queryset = Notification.objects.get(pk=notification_id)
-        serializer = NotificationSerializer(queryset, many=False)
-        context["queryset"] = queryset
-
-        notifiers = NotificationToUsers.objects.filter(notification_id=queryset)
-        context["notifiers"] = notifiers
-
         try:
-            logger.info("GET NotificationDetailView")
-            return render(request, 'notification/detail.html', context)
-        except:
-            logger.error("can not reach notification detail")
+            notification_id = request.GET.get('msgId')
+            
+            notification = Notification.objects.get(pk=notification_id)
+
+            response = {}
+            response["subject"] = notification.subject
+            response["content_text"] = notification.content_text
+
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+        except Exception as e:
+            logger.error(repr(e))
+            return HttpResponse(status=400)
 
 
 class AuditNotificationView(CommAdminView):
