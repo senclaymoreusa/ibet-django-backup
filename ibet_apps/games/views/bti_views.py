@@ -25,11 +25,25 @@ from accounting.models import *
 from games.helper import *
 from utils.constants import *
 
-
-logger = logging.getLogger('django')
-PROVIDER = GameProvider.objects.get(provider_name='BTi')
-CATEGORY = Category.objects.get(name='Sportsbook')
 MARKET_CN = 2
+logger = logging.getLogger('django')
+
+try:
+    PROVIDER = GameProvider.objects.get(provider_name='BTi')
+except ObjectDoesNotExist:
+    PROVIDER = GameProvider(
+        provider_name='BTi',
+        type=0,
+        market=MARKET_CN,
+    )
+    PROVIDER.save()
+
+try:
+    CATEGORY = Category.objects.get(name='Sportsbook')
+except ObjectDoesNotExist:
+    CATEGORY = Category(name='Sportsbook')
+    CATEGORY.save()
+
 
 # check if token exists for logged in user
 class ValidateToken(View):
@@ -772,10 +786,9 @@ class Refresh(View):
                 'balance': '$0.00'
             })
 
-class Login(View):
-    def post(self, request):
-        print(request.POST)
-        return JsonResponse({
-            'key': 'dj khaled',
-            'balance': 1234.56
-        })
+# class Login(View):
+#     def post(self, request):
+#         return JsonResponse({
+#             'key': 'testing_key',
+#             'balance': 1234.56
+#         })
