@@ -155,6 +155,10 @@ class GameBet(models.Model):
 #     def __str__(self):
 #         return '{0}: {1}'.format(self.name, self.get_category_display())
 
+class PNGTicket(models.Model):
+    png_ticket = models.UUIDField()
+    user_obj = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_time = models.DateTimeField(default=timezone.now)
 
 # create a ticket per user per session to ensure valid request
 class EATicket(models.Model):
