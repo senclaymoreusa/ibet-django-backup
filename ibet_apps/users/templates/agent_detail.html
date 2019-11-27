@@ -9,765 +9,773 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
 </head>
 
 <body>
-<input type="hidden" id="admin_user" value={{ user.username }}>
-<div class="row ">
-    <!-- AFFILIATE DETAILS -->
-    <div class="panel panel-default panel-style">
-        <div class="panel-heading panel-affiliate-heading">
-            <h2 class="panel-title">
-                <strong>Affiliate Detail</strong>
-            </h2>
-        </div>
-        <div class="panel-body">
-            <div class="row">
-                <div class="col-md-5" style="width: 47%">
-                    <label class="affiliate_details_title">AFFILIATE DETAILS</label>
-                    <div class="affiliates_detail_commission">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Affiliate ID</strong>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="hidden" id="affiliate-id" value="{{ id }}">
-                                {{ id }}
-                            </div>
+<!-- AFFILIATE DETAILS -->
+<div class="panel panel-default panel-style" id="affiliate-details">
+    <div class="panel-heading panel-affiliate-heading">
+        <h2 class="panel-title">
+            <strong>Affiliate Detail</strong>
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-5" style="width: 50%">
+                <label class="affiliate_details_title">AFFILIATE DETAILS</label>
+                <div class="affiliates_detail_commission">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Affiliate ID</strong>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Username</strong>
-                            </div>
-                            <div class="col-md-6">
-                                <a href="{% url 'xadmin:user_detail' id %}">{{ name }}</a>
-                            </div>
+                        <div class="col-md-6">
+                            <input type="hidden" id="affiliate-id" value="{{ id }}">
+                            {{ id }}
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Manager</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ manager }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Status</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ affiliate_status }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Level</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ affiliate_level }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Balance</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{  balance }}
-                            </div>
-                        </div>
-
                     </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Username</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'xadmin:user_detail' id %}">{{ name }}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Manager</strong>
+                        </div>
+                        <div class="col-md-6">
+                            {{ manager }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Status</strong>
+                        </div>
+                        <div class="col-md-6">
+                            {{ affiliate_status }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Level</strong>
+                        </div>
+                        <div class="col-md-6">
+                            {{ affiliate_level }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Balance</strong>
+                        </div>
+                        <div class="col-md-6">
+                            {{ balance }}
+                        </div>
+                    </div>
+
                 </div>
-                <div class="col-md-5" style="width: 47%">
-                    <label class="affiliate_details_title">COMMISSION</label>
-                    <div class="affiliates_detail_commission">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>This month</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ commission_this_month.comm }}
-                            </div>
+            </div>
+            <div class="col-md-5" style="width: 50%">
+                <label class="affiliate_details_title">COMMISSION</label>
+                <div class="affiliates_detail_commission">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>This month</strong>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Last month</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ commission_last_month.comm }}
-                            </div>
+                        <div class="col-md-6">
+                            {{ commission_this_month.comm }}
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Month before last</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ commission_before_last.comm  }}
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Last month</strong>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Commssion set</strong>
-                            </div>
-                            <div class="col-md-6">
-                                {{ status }}
-                            </div>
+                        <div class="col-md-6">
+                            {{ commission_last_month.comm }}
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Transfer between levels</strong>
-                            </div>
-                            <div class="col-md-4">
-                                {{ balance }}
-                            </div>
-                            <div style="float: right;">
-                                <br>
-                                <button id="commission-detail-btn" type="button" data-toggle="modal"
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Month before last</strong>
+                        </div>
+                        <div class="col-md-6">
+                            {{ commission_before_last.comm }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Commssion set</strong>
+                        </div>
+                        <div class="col-md-6">
+                            {{ status }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Transfer between levels</strong>
+                        </div>
+                        <div class="col-md-4">
+                            {{ balance }}
+                        </div>
+                        <div style="float: right;">
+                            <br>
+                            <button id="commission-detail-btn" type="button" data-toggle="modal"
                                     data-target="#affiliate_commission_detail"
                                     style="background-color: #428bca; color:white; float:right; margin-right: 3px;"><i
-                                        class="fa fa-search"></i></button>
-                            </div>
+                                    class="fa fa-search"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Commission pop up -->
-            <div class="modal fade" id="affiliate_commission_detail" role="dialog">
-                <div id="audit_affiliate_commission_pop" class="modal-dialog">
-                    <!-- Modal content-->
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            Commission history
+        <!-- Commission pop up -->
+        <div class="modal fade" id="affiliate_commission_detail" role="dialog">
+            <div id="audit_affiliate_commission_pop" class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Commission history
+                    </div>
+                    <div class="commission-info">
+                        <div class="row">
+                            <div class="col-md-2"><strong>Affiliate ID</strong></div>
+                            <div class="col-md-6">{{ id }}</div>
                         </div>
-                        <div class="commission-info">
-                            <div class="row">
-                                <div class="col-md-2"><strong>Affiliate ID</strong></div>
-                                <div class="col-md-6">{{ id }}</div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-2"><strong>Total commission</strong></div>
-                                <div class="col-md-6">{{ total_commission }}</div>
-                            </div>
+                        <div class="row">
+                            <div class="col-md-2"><strong>Total commission</strong></div>
+                            <div class="col-md-6">{{ total_commission }}</div>
                         </div>
+                    </div>
 
-                        <div class="modal-body">
-                            <div style="margin-bottom: 50px">
-                                <table class="table-striped" id="affiliate-monthly-commission-table"
-                                    style="width: 100%">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">MONTH</th>
-                                            <th scope="col">ACTIVE PLAYERS</th>
-                                            <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
-                                            <th scope="col">COMMISSION RATE</th>
-                                            <th scope="col">DEPOSIT</th>
-                                            <th scope="col">WITHDRAWAL</th>
-                                            <th scope="col">SYSTEM BONUS</th>
-                                            <th scope="col">TOTAL WINLOSS</th>
-                                            <th scope="col">COMMISSION</th>
-                                            <th scope="col">TIME OF RELEASE</th>
-                                            <th scope="col">OPERATOR</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for afffiliate in related_affiliates %}
-                                        <tr>
-                                            <td style="margin-right: 2px;">{{ afffiliate.member_id }}</td>
-                                            <td>{{ afffiliate.balance }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 50px">
+                            <table class="table-striped" id="affiliate-monthly-commission-table"
+                                   style="width: 100%">
+                                <thead>
+                                <tr>
+                                    <th scope="col">MONTH</th>
+                                    <th scope="col">ACTIVE PLAYERS</th>
+                                    <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
+                                    <th scope="col">COMMISSION RATE</th>
+                                    <th scope="col">DEPOSIT</th>
+                                    <th scope="col">WITHDRAWAL</th>
+                                    <th scope="col">SYSTEM BONUS</th>
+                                    <th scope="col">TOTAL WINLOSS</th>
+                                    <th scope="col">COMMISSION</th>
+                                    <th scope="col">TIME OF RELEASE</th>
+                                    <th scope="col">OPERATOR</th>
+                                </tr>
+                                </thead>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="affiliate_details_commission_levels">
-                <strong>
-                    <p style="font-size: 13px; margin-top: 20px">COMMISSION LEVELS</p>
-                </strong>
+        <div class="affiliate_details_commission_levels">
+            <strong>
+                <p style="font-size: 13px; margin-top: 20px">COMMISSION LEVELS</p>
+            </strong>
 
-                <div class="row" style="margin-top: 20px">
-                    <div class="col-md-1">
-                        LEVEL
-                    </div>
-                    <div class="col-md-2">
-                        COMMISSION RATE
-                    </div>
-                    <div class="col-md-2">
-                        DOWNLINE COMMISSION RATE
-                    </div>
-                    <div class="col-md-2">
-                        ACTIVE DOWNLINE
-                    </div>
-                    <div class="col-md-2">
-                        DOWNLINE MONTHLY FIRST DEPOSIT COUNTS
-                    </div>
-                    <div class="col-md-2">
-                        NET PROFIT
-                    </div>
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-1">
+                    LEVEL
                 </div>
-
-                {% for c in commission_type%}
-                <div class="row " style="margin-top: 10px; font-size: 12px;">
-                    <div class="col-md-1">
-                        {{ c.commission_level }}
-                    </div>
-                    <div class="col-md-2">
-                        {{ c.commission_percentage }}
-                    </div>
-                    <div class="col-md-2">
-                        {{ c.downline_commission_percentage }}
-                    </div>
-                    <div class="col-md-2">
-                        {{ c.active_downline_needed }}
-                    </div>
-                    <div class="col-md-2">
-                        {{ c.monthly_downline_ftd_needed }}
-                    </div>
-                    <div class="col-md-2">
-
-                    </div>
+                <div class="col-md-2">
+                    COMMISSION RATE
                 </div>
+                <div class="col-md-2">
+                    DOWNLINE COMMISSION RATE
+                </div>
+                <div class="col-md-2">
+                    ACTIVE DOWNLINE
+                </div>
+                <div class="col-md-2">
+                    DOWNLINE MONTHLY FIRST DEPOSIT COUNTS
+                </div>
+                <div class="col-md-2">
+                    NET PROFIT
+                </div>
+            </div>
+
+            {% for c in commission_type%}
+            <div class="row " style="margin-top: 10px; font-size: 12px;">
+                <div class="col-md-1">
+                    {{ c.commission_level }}
+                </div>
+                <div class="col-md-2">
+                    {{ c.commission_percentage }}
+                </div>
+                <div class="col-md-2">
+                    {{ c.downline_commission_percentage }}
+                </div>
+                <div class="col-md-2">
+                    {{ c.active_downline_needed }}
+                </div>
+                <div class="col-md-2">
+                    {{ c.monthly_downline_ftd_needed }}
+                </div>
+                <div class="col-md-2">
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="line"></div>
+
+        <div class="affiliate_details_downline_status">
+            <strong>
+                <p style="font-size: 13px; margin-top: 20px">DOWNLINE STATUS</p>
+            </strong>
+
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    <strong>Total users</strong>
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    <strong>Active users</strong>
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    <strong>Downline deposit</strong>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    {{ downline_number }}
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    {{ active_users }}
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    {{ downline_deposit.total_deposit }}
+                </div>
+            </div>
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    <strong>Turnover</strong>
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    <strong>Current click number</strong>
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    <strong>Downline GGR</strong>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    0
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    0
+                </div>
+                <div class="col-md-2  dowline_col_style" style="width: 32%">
+                    0
+                </div>
+            </div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="affiliate_details_related_affiliates">
+            <strong>
+                <p style="font-size: 13px; margin-top: 20px;">RELATED AFFILIATES</p>
+            </strong>
+
+            <table class="table-striped" style="width: 100%">
+                <thead>
+                <tr>
+                    <th scope="col" style="width: 48%; font-weight: normal; font-size: 11px">MEMBER ID</th>
+                    <th scope="col" style="width: 48%; font-weight: normal; font-size: 11px">BALANCE</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for affiliate in related_affiliates %}
+                <tr>
+                    <td style="margin-right: 2px;">{{ affiliate.member_id }}</td>
+                    <td>{{ affiliate.balance }}</td>
+                </tr>
                 {% endfor %}
-            </div>
+                </tbody>
+            </table>
 
-            <div class="line"></div>
-
-            <div class="affiliate_details_downline_status">
-                <strong>
-                    <p style="font-size: 13px; margin-top: 20px">DOWNLINE STATUS</p>
-                </strong>
-
-                <div class="row" style="margin-top: 20px">
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        <strong>Total users</strong>
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        <strong>Active users</strong>
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        <strong>Downline deposit</strong>
-                    </div>
+            <p style="margin-top: 20px;">Promotion link</p>
+            <div class="row promotion-link">
+                <div class="col-md-5" id='promotion-link' style="margin-top: 4px; float: left; font-size: 13px;">
+                    {{ domain }}{{ referral_code }}/{{ promotion_link }}
                 </div>
-                <div class="row">
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        {{ downline_number }}
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        {{ active_users }}
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        {{ downline_deposit.total_deposit }}
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 20px">
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        <strong>Turnover</strong>
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        <strong>Current click number</strong>
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        <strong>Downline GGR</strong>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        0
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        0
-                    </div>
-                    <div class="col-md-2  dowline_col_style" style="width: 32%">
-                        0
-                    </div>
+                <div class="col-md-5" style="float:right">
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#affiliate_channels">View
+                        all
+                    </button>
+                    <button class="btn btn-primary" id="copy-link">Copy link</button>
                 </div>
             </div>
+        </div>
 
-            <div class="line"></div>
+        <div class="modal fade" id="affiliate_channels" role="dialog">
+            <div class="modal-dialog" id="affiliate_channels_details" style="width: 40%;">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <!-- header and close button -->
+                    <div class="modal-header">
+                        <div class="model-text-style">
+                            <button type="button" class="close" data-dismiss="modal"
+                                    style="color: white">&times;
+                            </button>
+                            <h4 class="modal-title">Affiliate promotion links</h4>
+                        </div>
+                    </div>
 
-            <div class="affiliate_details_related_affiliates">
-                <strong>
-                    <p style="font-size: 13px; margin-top: 20px;">RELATED AFFILIATES</p>
-                </strong>
-
-                <table class="table-striped" style="width: 100%">
-                    <thead>
-                        <tr>
-                            <th scope="col" style="width: 48%; font-weight: normal; font-size: 11px">MEMBER ID</th>
-                            <th scope="col" style="width: 48%; font-weight: normal; font-size: 11px">BALANCE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for afffiliate in related_affiliates %}
-                        <tr>
-                            <td style="margin-right: 2px;">{{ afffiliate.member_id }}</td>
-                            <td>{{ afffiliate.balance }}</td>
-                        </tr>
+                    <div class="modal-body" style="font-size: 12px;">
+                        <div class="row">
+                            <div class="col-md-2">
+                                CHANNEL NAME
+                            </div>
+                            <div class="col-md-5">
+                                PROMOTION LINK
+                            </div>
+                            <div class="col-md-3">
+                                CREATED
+                            </div>
+                        </div>
+                        {% for link in promotion_link_list %}
+                        <div class="row" style="margin-bottom: 2px;" id="refer_link_row">
+                            <input type="hidden" value="{{ link.pk }}" id="refer_link_id">
+                            <div class="col-md-2">
+                                {{ link.refer_channel_name }}
+                            </div>
+                            <div class="col-md-4" id="promotion-link-list">
+                                {{ domain }}{{ referral_code }}/{{ link.pk }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ link.genarated_time|date:'d/m/y H:i:s' }}
+                            </div>
+                            <div class="col-md-1" style="margin-right: 2px;">
+                                <button class="btn btn-primary btn-sm" id="copy-link-list">
+                                    Copy
+                                </button>
+                            </div>
+                            <div class="col-md-1">
+                                <button class="btn btn-danger btn-sm" id="refer_link_remove">Remove</button>
+                            </div>
+                        </div>
                         {% endfor %}
-                    </tbody>
-                </table>
+                        <br>
+                        <button type="button" class="btn btn-primary" id="add_refer_channel"><i
+                                class="fa fa-plus"></i></button>
+                        <br>
 
-                <p style="margin-top: 20px;">Promotion link</p>
-                <div class="row promotion-link">
-                    <div class="col-md-5" id='promotion_link' style="margin-top: 4px; float: left; font-size: 13px;">
-                        {{ promotion_link }}
-                    </div>
-                    <div class="col-md-5" style="float:right">
-                        <button class="btn btn-primary" data-toggle="modal" data-target="#affiliate_channels">View
-                            all</button>
-                        <button class="btn btn-primary" onclick="copyToClipboard('{{ promotion_link }}')">Copy
-                            link</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="modal fade" id="affiliate_channels" role="dialog">
-                <div class="modal-dialog" id="affiliate_channels_details" style="width: 40%;">
-                    <!-- Modal content-->
-                    <div class="modal-content">
-                        <!-- header and close button -->
-                        <div class="modal-header">
-                            <div class="model-text-style">
-                                <button type="button" class="close" data-dismiss="modal"
-                                    style="color: white">&times;</button>
-                                <h4 class="modal-title">Affiliate promotion links</h4>
-                            </div>
-                        </div>
+        <!-- Affiliate detail buttons -->
+        <div class='row' style="margin-top: 25px; margin-left: 0px;">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#view_as_affiliate">View
+                as affiliate
+            </button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit
+                details
+            </button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#make_adjustment">Make
+                adjustment
+            </button>
+        </div>
 
-                        <div class="modal-body" style="font-size: 12px;">
-                            <div class="row">
-                                <div class="col-md-2">
-                                    CHANNEL NAME
-                                </div>
-                                <div class="col-md-4">
-                                    PROMOTION LINK
-                                </div>
-                                <div class="col-md-3">
-                                    CREATED
-                                </div>
-                            </div>
-                            {% for link in promotion_link_list %}
-                            <div class="row" style="margin-bottom: 2px;" id="refer_link_row">
-                                <input type="hidden" value="{{ link.pk }}" id="refer_link_id">
-                                <div class="col-md-2">
-                                    {{ link.refer_channel_name }}
-                                </div>
-                                <div class="col-md-4" id="refer_link">
-                                    {{ link.pk }}
-                                </div>
-                                <div class="col-md-3">
-                                    {{ link.genarated_time|date:'d/m/y H:i:s' }}
-                                </div>
-                                <div class="col-md-1" style="margin-right: 2px;">
-                                    <button class="btn btn-primary btn-sm" id="refer_link_copy"
-                                        onclick="copyToClipboard('{{ link.pk }}')">Copy</button>
-                                </div>
-                                <div class="col-md-1">
-                                    <button class="btn btn-danger btn-sm" id="refer_link_remove">Remove</button>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            <br>
-                            <button type="button" class="btn btn-primary" id="add_refer_channel"><i
-                                    class="fa fa-plus"></i></button>
-                            <br>
-
+        <!-- EDIT DETAILS -->
+        <div class="modal fade" id="edit_details" role="dialog">
+            <div class="modal-dialog" id="edit_affiliate_details">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <!-- header and close button -->
+                    <div class="modal-header edit-affiliate-detail-title">
+                        <div class="model-text-style">
+                            <button type="button" class="close" data-dismiss="modal"
+                                    style="color: white">&times;
+                            </button>
+                            <h4 class="modal-title">Edit affiliate details</h4>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Affiliate detail buttons -->
-            <div class='row' style="margin-top: 25px; margin-left: 0px;">
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#view_as_affiliate">View
-                    as affiliate</button>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit
-                    details</button>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#make_adjustment">Make
-                    adjustment</button>
-            </div>
-
-            <!-- EDIT DETAILS -->
-            <div class="modal fade" id="edit_details" role="dialog">
-                <div class="modal-dialog" id="edit_affiliate_details">
-                    <!-- Modal content-->
-                    <div class="modal-content">
-                        <!-- header and close button -->
-                        <div class="modal-header edit-affiliate-detail-title">
-                            <div class="model-text-style">
-                                <button type="button" class="close" data-dismiss="modal"
-                                    style="color: white">&times;</button>
-                                <h4 class="modal-title">Edit affiliate details</h4>
-                            </div>
-                        </div>
 
 
-                        <div class="modal-body">
-                            <form action="{% url 'xadmin:agent_detail' %}" method="POST" autocomplete="off">
-                                {% csrf_token %}
+                    <div class="modal-body">
+                        <form action="{% url 'xadmin:agent_detail' %}" method="POST" autocomplete="off">
+                            {% csrf_token %}
 
+                            <fieldset>
+                                <!-- Affiliate Manager -->
+                                <div class="row" style="margin-bottom: 20px">
+                                    <div class="col-md-4"><strong>Affiliate Manager</strong></div>
+                                    <div class="col-md-6">
+                                        <input autocomplete="block" disableautocomplete type="text"
+                                               id="affiliate-manager" name="affiliate-manager" value="{{ manager }}"/>
+                                        <input disableautocomplete type="hidden" name="search-result"
+                                               id="search-result"/>
+                                    </div>
+                                </div>
                                 <fieldset>
                                     <!-- Affiliate Manager -->
                                     <div class="row" style="margin-bottom: 20px">
                                         <div class="col-md-4"><strong>Affiliate Manager</strong></div>
-                                        <div class="col-md-6">
-                                            <input autocomplete="block" disableautocomplete type="text"
-                                                id="affiliate-manager" name="affiliate-manager" value="{{ manager }}" />
-                                            <input disableautocomplete type="hidden" name="search-result"
-                                                id="search-result" />
+                                        <div class="col-md-4">
+
+                                            <select id="manager-assign" class="manager-assign">
+                                            {% if manager %}
+                                                <option value="" selected disabled style="display:None">{{ manager }}</option>
+                                            {% else %}
+                                                <option value="" selected disabled style="display:None">Select manager</option>
+                                            {% endif %}
+                                            {% for manager in managers %}
+                                                <option value="{{ manager }}">{{ manager }}</option>
+                                            {% endfor %}
+                                            </select>
                                         </div>
-                                    </div>
-
-                                    <!-- Affiliate Level -->
-                                    <div class='row'>
-                                        <div class="col-md-4"><strong>Affiliate Level</strong></div>
-                                        <div class="col-md-3">
-
-                                            <input class="form-check-input" type="radio" name="affiliate-level"
-                                                id="affiliate-level-normal" value="{{ affiliate.affiliate_level }}"
-                                                {% if affiliate.affiliate_level == "Normal" %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="affiliate-level">Normal</label>
-                                        </div>
-                                        <div class="col-md-3">
-
-                                            <input class="form-check-input" type="radio" name="affiliate-level"
-                                                id="affiliate-level-vip" value="{{ affiliate.affiliate_level }}"
-                                                {% if affiliate.affiliate_level == "VIP" %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="affiliate-level">VIP</label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Affiliate Status -->
-                                    <div class='row'>
-                                        <div class="col-md-4"><strong>Affiliate Status</strong></div>
-                                        <div class="col-md-3">
-                                            <input class="form-check-input" type="radio" name="affiliate-status"
-                                                id="affiliate-status-normal" value="{{ affiliate.affiliate_status }}"
-                                                {% if affiliate.affiliate_status != "Deactivated" %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="affiliate-status">Enabled</label>
-
-                                        </div>
-                                        <div class="col-md-3">
-                                            <input class="form-check-input" type="radio" name="affiliate-status"
-                                                id="affiliate-status-vip" value="{{ affiliate.affiliate_status }}"
-                                                {% if affiliate.affiliate_status == "Deactivated" %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="affiliate-status">Disabled</label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Commission Set -->
-                                    <div class='row'>
-                                        <div class="col-md-4"><strong>Commission Set</strong></div>
-                                        <div class="col-md-3">
-                                            <input class="form-check-input" type="radio" name="commission-set"
-                                                id="commission-set-system" value="{{ affiliate.commission_setting }}"
-                                                {% if affiliate.commission_setting == 'System' %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="commission-set">System</label>
-
-                                        </div>
-                                        <div class="col-md-3">
-                                            <input class="form-check-input" type="radio" name="commission-set"
-                                                id="commission-set-personal" value="{{ affiliate.commission_setting }}"
-                                                {% if affiliate.commission_setting == 'Personal' %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="commission-set">Personal</label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Transfer commissions between levels -->
-                                    <div class='row'>
-                                        <div class="col-md-4"><strong>Transfer Commission Between Levels</strong></div>
-                                        <div class="col-md-3">
-                                            <input class="form-check-input" type="radio" name="commission-transfer"
-                                                id="commission-transfer-system"
-                                                value="{{ affiliate.transerfer_between_levels }}"
-                                                {% if affiliate.transerfer_between_levels == True %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="commission-transfer">Yes</label>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <input class="form-check-input" type="radio" name="commission-transfer"
-                                                id="commission-transfer-personal"
-                                                value="{{ affiliate.transerfer_between_levels }}"
-                                                {% if affiliate.transerfer_between_levels == False %}checked="checked"
-                                                {% endif %}>
-                                            <label class="form-check-label" for="commission-transfer">No</label>
-                                        </div>
-                                    </div>
-                                </fieldset>
-
-                                <!-- Commission levels -->
-                                <fieldset>
-                                    <p style="margin-top:20px;"><strong>COMMISSION LEVELS</strong></p>
-
-                                    <div class="commission_levels">
-                                        {% for i in commission_type %}
-                                        <div class="row " style="width: 95%;" id="commission_level_details">
-                                            <input type="hidden" value="{{ i.pk }}" id="commission_id">
-                                            <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">
-                                                <label id="commission_level_label"
-                                                    class="commission_level">{{ i.commission_level }}</label>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label><br>COMMISSION RATE</label>
-                                                <input type="number" class="form-control" id='commission_rate'
-                                                    name="commission_rate" value="{{ i.commission_percentage }}"
-                                                    required="required">
-                                            </div>
-                                            <div class="col-md-2" style="width:20%">
-                                                <label>DOWNLINE COMMISSION RATE</label>
-                                                <input type="number" class="form-control" id='downline_commission_rate'
-                                                    name="downline_commission_rate"
-                                                    value="{{ i.downline_commission_percentage }}" required="required">
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label><br>ACTIVE DOWNLINE</label>
-                                                <input type="number" class="form-control" id='active_downline'
-                                                    name="active_downline" value="{{ i.active_downline_needed }}"
-                                                    required="required">
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label>DOWNLINE MONTHLY FTD</label>
-                                                <input type="number" class="form-control" id='downline_monthly_ftd'
-                                                    name="downline_monthly_ftd"
-                                                    value="{{ i.monthly_downline_ftd_needed }}" required="required">
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label><br>NET PROFIT</label>
-                                                <input type="number" class="form-control" id='downline_monthly_ftd'
-                                                    name="downline_monthly_ftd"
-                                                    value="{{ i.monthly_downline_ftd_needed }}" required="required">
-                                            </div>
-                                            {% if forloop.last %}
-                                            <div class="col-md-1" style="width:5%" id="delete_commission_level">
-                                                <label><br><br></label>
-                                                <button type="button" class="btn btn-danger delete"
-                                                    data-toggle="tooltip" id="delete_commission_level_btn">
-                                                    <i class="glyphicon glyphicon-trash"></i>
-                                                </button>
-                                            </div>
+                                        <div class="col-md-4">
+                                            {% if managers == None %}
+                                            <p style="color:red">{{ empty_manager_group }}</p>
                                             {% endif %}
                                         </div>
-                                        {% endfor %}
                                     </div>
-                                    <div class="row" style="margin-left: 0px; margin-bottom: 10px">
-                                        <p id='add_level_errorMessage'>&nbsp;</p>
-                                        <button type="button" class="btn btn-info add-new" id="add_commission_level"><i
-                                                class="fa fa-plus"></i>
-                                            Add</button>
-                                        <br>
+
+                                <!-- Affiliate Level -->
+                                <div class='row'>
+                                    <div class="col-md-4"><strong>Affiliate Level</strong></div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="affiliate-level"
+                                               id="affiliate-level-normal" value="{{ affiliate.affiliate_level }}"
+                                               {% if affiliate.affiliate_level == "Normal" %} checked="checked"
+                                               {% endif %}>
+                                        <label class="form-check-label">Normal</label>
                                     </div>
-                                </fieldset>
+                                    <div class="col-md-3">
 
-                                <!-- Comments -->
-                                <fieldset>
-                                    <p>REASON FOR CHANGES</p>
-                                    <textarea type='text' id="affiliate_application_remark" class="form-control"
-                                        placeholder="Please provide a brief explaination."></textarea>
-                                </fieldset>
-
-                                <div class='row affiliate-audit-btn-group'>
-                                    <button type="button" class="btn btn-primary"
-                                        id="affiliate_audit_save_btn">Save</button>
-                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                        <input class="form-check-input" type="radio" name="affiliate-level"
+                                               id="affiliate-level-vip" value="{{ affiliate.affiliate_level }}"
+                                               {% if affiliate.affiliate_level == 'VIP' %}checked="checked" {% endif %}>
+                                        <label class="form-check-label">VIP</label>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
+
+                                <!-- Affiliate Status -->
+                                <div class='row'>
+                                    <div class="col-md-4"><strong>Affiliate Status</strong></div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="affiliate-status"
+                                               id="affiliate-status-normal" value="{{ affiliate.affiliate_status }}"
+                                               {% if affiliate.affiliate_status != "Deactivated" %} checked="checked"
+                                               {% endif %}>
+                                        <label class="form-check-label">Enabled</label>
+
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="affiliate-status"
+                                               id="affiliate-status-vip" value="{{ affiliate.affiliate_status }}"
+                                               {% if affiliate.affiliate_status == "Deactivated" %} checked="checked"
+                                        {% endif %}>
+                                        <label class="form-check-label">Disabled</label>
+                                    </div>
+                                </div>
+
+                                <!-- Commission Set -->
+                                <div class='row'>
+                                    <div class="col-md-4"><strong>Commission Set</strong></div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="commission-set"
+                                               id="commission-set-system" value="{{ affiliate.commission_setting }}"
+                                               {% if affiliate.commission_setting == 'System' %}checked="checked"
+                                        {% endif %}>
+                                        <label class="form-check-label">System</label>
+
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="commission-set"
+                                               id="commission-set-personal" value="{{ affiliate.commission_setting }}"
+                                               {% if affiliate.commission_setting == 'Personal' %}checked="checked"
+                                        {% endif %}>
+                                        <label class="form-check-label">Personal</label>
+                                    </div>
+                                </div>
+
+                                <!-- Transfer commissions between levels -->
+                                <div class='row'>
+                                    <div class="col-md-4"><strong>Transfer Commission Between Levels</strong></div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="commission-transfer"
+                                               id="commission-transfer-system"
+                                               value="{{ affiliate.transerfer_between_levels }}"
+                                               {% if affiliate.transerfer_between_levels == True %}checked="checked"
+                                               {% endif %}>
+                                        <label class="form-check-label">Yes</label>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input class="form-check-input" type="radio" name="commission-transfer"
+                                               id="commission-transfer-personal"
+                                               value="{{ affiliate.transerfer_between_levels }}"
+                                               {% if affiliate.transerfer_between_levels == False %}checked="checked"
+                                               {% endif %}>
+                                        <label class="form-check-label">No</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Commission levels -->
+                            <fieldset>
+                                <p style="margin-top:20px;"><strong>COMMISSION LEVELS</strong></p>
+
+                                <div class="commission_levels">
+                                    {% for i in commission_type %}
+                                    <div class="row " style="width: 95%;" id="commission_level_details">
+                                        <input type="hidden" value="{{ i.pk }}" id="commission_id">
+                                        <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">
+                                            <label id="commission_level_label"
+                                                   class="commission_level">{{ i.commission_level }}</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label><br>COMMISSION RATE</label>
+                                            <input type="number" class="form-control" id='commission_rate'
+                                                   name="commission_rate" value="{{ i.commission_percentage }}"
+                                                   required="required">
+                                        </div>
+                                        <div class="col-md-2" style="width:20%">
+                                            <label>DOWNLINE COMMISSION RATE</label>
+                                            <input type="number" class="form-control" id='downline_commission_rate'
+                                                   name="downline_commission_rate"
+                                                   value="{{ i.downline_commission_percentage }}" required="required">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label><br>ACTIVE DOWNLINE</label>
+                                            <input type="number" class="form-control" id='active_downline'
+                                                   name="active_downline" value="{{ i.active_downline_needed }}"
+                                                   required="required">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>DOWNLINE MONTHLY FTD</label>
+                                            <input type="number" class="form-control" id='downline_monthly_ftd'
+                                                   name="downline_monthly_ftd"
+                                                   value="{{ i.monthly_downline_ftd_needed }}" required="required">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label><br>NET PROFIT</label>
+                                            <input type="number" class="form-control" id='downline_net_profit'
+                                                   name="downline_net_profit"
+                                                   value="{{ i.monthly_downline_ftd_needed }}" required="required">
+                                        </div>
+                                        {% if forloop.last %}
+                                        <div class="col-md-1" style="width:5%" id="delete_commission_level">
+                                            <label><br><br></label>
+                                            <button type="button" class="btn btn-danger delete"
+                                                    data-toggle="tooltip" id="delete_commission_level_btn">
+                                                <i class="glyphicon glyphicon-trash"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="row" style="margin-left: 0px; margin-bottom: 10px">
+                                    <p id='add_level_errorMessage'>&nbsp;</p>
+                                    <button type="button" class="btn btn-info add-new" id="add_commission_level"><i
+                                            class="fa fa-plus"></i>
+                                        Add
+                                    </button>
+                                    <br>
+                                </div>
+                            </fieldset>
+
+                            <!-- Comments -->
+                            <fieldset>
+                                <p>REASON FOR CHANGES</p>
+                                <textarea type='text' id="affiliate_application_remark" class="form-control"
+                                          placeholder="Please provide a brief explaination."></textarea>
+                            </fieldset>
+
+                            <div class='row affiliate-audit-btn-group'>
+                                <button type="button" class="btn btn-primary"
+                                        id="affiliate_audit_save_btn">Save
+                                </button>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-            <!-- MAKE ADJUSTMENTS -->
-            <div class="modal fade" id="make_adjustment" role="dialog">
-                <div class="modal-dialog" id="make_adjustment_details">
-                    <!-- Modal content-->
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            Affiliate adjustment
+        </div>
+        <!-- MAKE ADJUSTMENTS -->
+        <div class="modal fade" id="make_adjustment" role="dialog">
+            <div class="modal-dialog" id="make_adjustment_details">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Affiliate adjustment
+                    </div>
+                    <div class="modal-body">
+                        <div class="affiliate-adjustment-details">
+                            <div class="row">
+                                <div class="col-md-4"><strong>Affiliate ID</strong></div>
+                                <div class="col-md-6">{{ id }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Username</strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{% url 'xadmin:user_detail' id %}">{{ name }}</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Balance</strong>
+                                </div>
+                                <div class="col-md-6">
+                                    $ {{ balance }}
+                                </div>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                            <div class="affiliate-adjustment-details">
-                                <div class="row">
-                                    <div class="col-md-4"><strong>Affiliate ID</strong></div>
-                                    <div class="col-md-6">{{ id }}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <strong>Username</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <a href="{% url 'xadmin:user_detail' id %}">{{ name }}</a>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <strong>Balance</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        $ {{  balance }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="adjustment_amount">
-                                <p>AMOUNT</p>
-                                <input type="number" id="adjustment_amount_input" style="width: 40%">
-                            </div>
-                            <div class="adjustment_message">
-                                <input id="adjustment_message_checkbox" type="checkbox" style="margin-top: 20px;">
-                                Notify affiliate of adjustment
-                                <p>MESSAGE SUBJECT</p>
-                                <input type="text" id="adjustment_message_subject" style="width: 100%">
-                                <p>MESSAGE TO AFFILIATE</p>
-                                <textarea type="text" id="adjustment_message_text" placeholder="Compose your message"
-                                    class="form-control"></textarea>
-                            </div>
-                            <p>REASON FOR CHANGES</p>
-                            <textarea type='text' id="reason_for_adjustment_changes" class="form-control"
-                                placeholder="Please provide a brief explaination."></textarea>
-                            <div class="adjustment_btn">
-                                <p id='errorMessage'>&nbsp;</p>
-                                <button type="submit" class="btn btn-success" id="adjustment_submit">Submit</button>
-                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
-                            </div>
+                        <div class="adjustment_amount">
+                            <p>AMOUNT</p>
+                            <input type="number" id="adjustment_amount_input" style="width: 40%">
+                        </div>
+                        <div class="adjustment_message">
+                            <input id="adjustment_message_checkbox" type="checkbox" style="margin-top: 20px;">
+                            Notify affiliate of adjustment
+                            <p>MESSAGE SUBJECT</p>
+                            <input type="text" id="adjustment_message_subject" style="width: 100%">
+                            <p>MESSAGE TO AFFILIATE</p>
+                            <textarea type="text" id="adjustment_message_text" placeholder="Compose your message"
+                                      class="form-control"></textarea>
+                        </div>
+                        <p>REASON FOR CHANGES</p>
+                        <textarea type='text' id="reason_for_adjustment_changes" class="form-control"
+                                  placeholder="Please provide a brief explaination."></textarea>
+                        <div class="adjustment_btn">
+                            <p id='errorMessage'>&nbsp;</p>
+                            <button type="submit" class="btn btn-success" id="adjustment_submit">Submit</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- ACTIVITY -->
-    <div class="panel panel-default panel-style">
-        <div class="panel-heading panel-heading-custom_activity">
-            <h2 class="panel-title">
-                <strong>Activity</strong>
-            </h2>
+<!-- ACTIVITY -->
+<div class="panel panel-default panel-style">
+    <div class="panel-heading panel-heading-custom_activity">
+        <h2 class="panel-title">
+            <strong>Activity</strong>
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div class="activity_type" style="display: block">
+            <p style="font-size: 11px">ACTIVITY TYPE</p>
+            <div style="width: 40%">
+                <select class="form-control" id="activity-type">
+                    <option value="All">All activity</option>
+                    {% for choice in user_activities_list %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="panel-body">
-            <div class="activity_type" style="display: block">
-                <p style="font-size: 11px">ACTIVITY TYPE</p>
-                <div style="width: 40%">
-                    <select class="form-control" id="activity-type">
-                        <option value="All">All activity</option>
-                        {% for choice in user_activities_list %}
-                        <option value="{{ choice }}">{{ choice }}</option>
+
+        <div id="select-filter" class="activity_detail">
+            {% for act in user_activities %}
+            <div class="note-author">{{ act.admin }}</div>
+            <div class="note-block">{{ act.message }}</div>
+            {% endfor %}
+        </div>
+
+        <div id="note-input-container">
+            <button id="note-btn" class="btn btn-primary blockDisable"><i class="fa fa-paperclip"
+                                                                          aria-hidden="true"></i></button>
+            <input type="text" class="form-control" id="notes-input" placeholder="Write a new note...">
+            <button class="btn btn-primary blockDisable" id="post-btn">Post</button>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- PERFORMANCE -->
+<div class="panel panel-default panel-style" id="performance-panel">
+    <div class="panel-heading panel-heading-custom_perfomance">
+        <h2 class="panel-title">
+            <strong>Performance</strong>
+        </h2>
+    </div>
+
+    <div id="downline-list" style="margin-top: 10px">
+        <ul class="nav nav-tabs" style="padding-left: 10px">
+            <li class="active"><a data-toggle="tab" href="#home">DOWNLINE LIST</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- time filter -->
+            <div id="donwline-list-filter" class="row">
+                <div class="col-md-2">
+                    <label for="account_type_filter">ACCOUNT TYPE</label><br>
+                    <select id="account_type_filter" class="form-control">
+                        <option value="-1">ALL</option>
+                        {% for type in account_types %}
+                        <option value="{{ type.0 }}">{{ type.1 }}</option>
                         {% endfor %}
                     </select>
                 </div>
+
+                <div class="col-md-2">
+                    <label for="channel_filter">CHANNEL</label><br>
+                    <select id="channel_filter" class="form-control">
+                        <option value="-1">ALL</option>
+                        {% for channel in channel_list %}
+                        <option value="{{ channel }}">{{ channel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-5">
+                    <div id="date-range">
+                        <label>ACTIVE DATE RANGE</label>
+                        <br>
+                        <input name="min_date" id="min_date" type="text" placeholder="From">
+                        <input name="max_date" id="max_date" type="text" placeholder="To">
+                    </div>
+                </div>
             </div>
 
-            <div id="select-filter" class="activity_detail">
-                {% for act in user_activities %}
-                <div class="note-author">{{ act.admin }}</div>
-                <div class="note-block">{{ act.message }}</div>
-                {% endfor %}
+            <!-- DOWNLINE LIST -->
+            <div id="home" class="tab-pane fade in active">
+                <table id="downline-list-table" class="table-striped table-bordered hover" width="100%">
+                    <thead>
+                    <tr>
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">REGISTRATION DATE</th>
+                        <th scope="col">LAST LOGIN</th>
+                        <th scope="col">CHANNEL</th>
+                        <th scope="col">FTD</th>
+                        <th scope="col">TOTAL DEPOSIT</th>
+                        <th scope="col">TOTAL WITHDRAWAL</th>
+                        <th scope="col">TOTAL BOUNS</th>
+                        <th scope="col">ADJUSTMENT</th>
+                        <th scope="col">BALANCE</th>
+                        <th scope="col">TURNOVER</th>
+                    </tr>
+                    </thead>
+                </table>
+                <label class="show-rows">SHOW ROWS</label>
             </div>
-
-            <div id="note-input-container">
-                <button id="note-btn" class="btn btn-primary blockDisable"><i class="fa fa-paperclip"
-                        aria-hidden="true"></i></button>
-                <input type="text" class="form-control" id="notes-input" placeholder="Write a new note...">
-                <button class="btn btn-primary blockDisable" id="post-btn">Post</button>
-            </div>
-
 
         </div>
     </div>
-
-    <!-- PERFORMANCE -->
-    <div class="panel panel-default panel-style" style="width: 100%">
-        <div class="panel-heading panel-heading-custom_perfomance">
-            <h2 class="panel-title">
-                <strong>Performance</strong>
-            </h2>
-        </div>
-
-        <div style="margin-top: 10px">
-            <ul class="nav nav-tabs" style="padding-left: 10px">
-                <li class="active"><a data-toggle="tab" href="#home">DOWNLINE LIST</a></li>
-            </ul>
-
-            <div class="tab-content">
-                <!-- time filter -->
-                <div class="row">
-                    <div class='col-md-2' style="float: right">
-                        <div class='input-group date' id='deposit_time_to'>
-                            <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class='col-md-2' style="float: right">
-                        <div class='input-group date' id='deposit_time_from'>
-                            <input type='text' class="form-control" placeholder="From" id='min' autocomplete="off" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- DOWNLINE LIST -->
-                <div id="home" class="tab-pane fade in active">
-                    <div style="margin-bottom: 50px;">
-                        <table id="downline_list_table" class="table-striped table-bordered hover compact">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">MEMBER ID</th>
-                                    <th scope="col">REGISTRATION DATE</th>
-                                    <th scope="col">LAST LOGIN</th>
-                                    <th scope="col">CHANNEL</th>
-                                    <th scope="col">FTD</th>
-                                    <th scope="col">TOTAL DEPOSIT</th>
-                                    <th scope="col">TOTAL WITHDRAWAL</th>
-                                    <th scope="col">TOTAL BOUNS</th>
-                                    <th scope="col">ADJUSTMENT</th>
-                                    <th scope="col">BALANCE</th>
-                                    <th scope="col">TURNOVER</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for downline in downline_list %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td><a href="{% url 'xadmin:agent_detail' downline.affiliate_id %}">
-                                            {{ downline.affiliate_id }}</a>
-                                    </td>
-                                    <td>{{ downline.time_of_registration|date:'d/m/y H:i:s' }}</td>
-                                    <td>{{ downline.last_login_time }}</td>
-                                    <td>{{ downline.channel }}</td>
-                                    <td>{{ downline.ftd_time }}</td>
-                                    <td>{{ downline.deposit.sum_deposit }}</td>
-                                    <td>{{ downline.withdraw.sum_withdraw }}</td>
-                                    <td>{{ downline.bouns.sum_bouns }}</td>
-                                    <td>{{ downline.adjustment.sum_adjustment }}</td>
-                                    <td>{{ downline.balance }}</td>
-                                    <td>{{ downline.turnover }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <label class="show-rows">SHOW ROWS</label>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
+</div>
 </div>
 
 <!-- datatables -->
@@ -775,25 +783,30 @@
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
 
 <!-- datepicker -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
-    type="text/css" />
+      type="text/css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 
 <script src="{% static 'xadmin/js/ibet-admin-agent-detail.js' %}"></script>
 
 <script>
 var agent_detail_url = "{% url 'xadmin:agent_detail' %}";
+var admin_user = "{{ user.username }}"
+
+
+
 </script>
 </body>
 </html>

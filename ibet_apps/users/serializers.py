@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models import Game, Category, CustomUser, NoticeMessage
+from accounting.models import DepositAccessManagement, DepositChannel
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)
 from allauth.account.adapter import get_adapter
@@ -32,32 +33,19 @@ class ChoicesSerializerField(serializers.SerializerMethodField):
         # finally use instance method to return result of get_XXXX_display()
         return method()
 
-class SubCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ('name', 'notes', 'category_id', 'parent_id')
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    parent_id = SubCategorySerializer(read_only=True)
-    class Meta:
-        model = Category
-        fields = ('parent_id', 'name', 'notes', 'category_id')
-        
-
-class GameSerializer(serializers.ModelSerializer):
-    category_id = CategorySerializer(read_only=True)
-    class Meta:
-        model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url', 'image_url')
-
-
 class UserDetailsSerializer(serializers.ModelSerializer):
     security_question = ChoicesSerializerField()
+    currency = ChoicesSerializerField()
+    # favorite_deposit_method = serializers.SerializerMethodField('favoriteDeposit')
 
+    # def favoriteDeposit(self, user):
+    #     deposit_method = DepositAccessManagement.objects.filter(user_id=user, deposit_favorite_method=True)
+    #     if len(deposit_method) > 0:
+    #         return str(DepositChannel.objects.get(thirdParty_id=deposit_method[0].deposit_channel_id))
+    #     return ""
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time', 'security_question', 'security_answer', 'withdraw_password')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time', 'security_question', 'security_answer', 'withdraw_password', 'favorite_payment_method')
         read_only_fields = ('pk', )
 
 

@@ -45,4 +45,5 @@ class CacheHelperTest(View):
 
             return HttpResponse(json.dumps(data), content_type='application/json', status=200)
         except Exception as e:
+            logger.error("Error connect to AWS redis: ", e)
             return HttpResponse(status=400)

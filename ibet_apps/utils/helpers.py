@@ -3,7 +3,7 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from users.models import CustomUser, Config
+from users.models import CustomUser
 
 logger = logging.getLogger("django")
 

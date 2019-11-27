@@ -90,6 +90,8 @@ CURRENCY_XBT = 9
 CURRENCY_EUR = 10
 CURRENCY_NOK = 11
 CURRENCY_GBP = 12
+CURRENCY_TEST = 20
+CURRENCY_TTC = 13
 
 CURRENCY_CHOICES = (
     (CURRENCY_CNY, 'CNY'),
@@ -104,32 +106,44 @@ CURRENCY_CHOICES = (
     (CURRENCY_XBT, 'XBT'),
     (CURRENCY_EUR, 'EUR'),
     (CURRENCY_NOK, 'NOK'),
-    (CURRENCY_GBP, 'GBP')
+    (CURRENCY_GBP, 'GBP'),
+    (CURRENCY_TEST, 'UUD'),
+    (CURRENCY_TTC, 'TTC')
 )
 
-TRAN_SUCCESS_TYPE = 0
-TRAN_FAIL_TYPE = 1
-TRAN_CREATE_TYPE = 2
-TRAN_PENDING_TYPE = 3
-TRAN_APPROVED_TYPE = 4
-TRAN_CANCEL_TYPE = 5
-TRAN_COMPLETED_TYPE = 6
-TRAN_RESEND_TYPE = 7
-TRAN_REJECTED_TYPE = 8
-TRAN_HELD_TYPE = 9
+TRAN_SUCCESS_TYPE = 0  # deposit / withdraw
+TRAN_FAIL_TYPE = 1  # deposit / withdraw
+TRAN_CREATE_TYPE = 2  # deposit / withdraw
+TRAN_PENDING_TYPE = 3  # deposit / withdraw
+TRAN_APPROVED_TYPE = 4  # not being used 
+TRAN_CANCEL_TYPE = 5  # deposit / withdraw
+TRAN_COMPLETED_TYPE = 6  
+TRAN_RESEND_TYPE = 7    
+TRAN_REJECTED_TYPE = 8  # withdraw
+TRAN_RISK_REVIEW = 9  # withdraw
 
 STATE_CHOICES = (
-    (TRAN_SUCCESS_TYPE, 'SUCCESS'), 
-    (TRAN_FAIL_TYPE, 'FAILED'),
-    (TRAN_CREATE_TYPE, 'CREATED'),
-    (TRAN_PENDING_TYPE, 'PENDING'),
-    (TRAN_APPROVED_TYPE, 'APPROVED'),
-    (TRAN_CANCEL_TYPE, 'CANCELED'),
-    (TRAN_COMPLETED_TYPE, 'COMPLETED'),
-    (TRAN_RESEND_TYPE, 'RESEND'),
-    (TRAN_REJECTED_TYPE, 'REJECTED'),
-    (TRAN_HELD_TYPE, 'HELD'),
+    (TRAN_SUCCESS_TYPE, 'Success'),
+    (TRAN_FAIL_TYPE, 'Failed'),
+    (TRAN_CREATE_TYPE, 'Created'),
+    (TRAN_PENDING_TYPE, 'Pending'),
+    (TRAN_APPROVED_TYPE, 'Approved'),
+    (TRAN_CANCEL_TYPE, 'Canceled'),
+    (TRAN_COMPLETED_TYPE, 'Completed'),
+    (TRAN_RESEND_TYPE, 'Resent'),
+    (TRAN_REJECTED_TYPE, 'Rejected'),
+    (TRAN_RISK_REVIEW, 'Review'),
 )
+
+TRAN_STATUS_DICT = {
+    'success': 0,
+    'failed': 1,
+    'created': 2,
+    'pending': 3,
+    'canceled': 5,
+    'rejected': 8,
+    'review': 9
+}
 
 REVIEW_APP = 0
 REVIEW_PEND = 1
@@ -165,19 +179,17 @@ TRANSACTION_DEPOSIT = 0
 TRANSACTION_WITHDRAWAL = 1
 TRANSACTION_BET_PLACED = 2
 TRANSACTION_SETTLED = 3
-TRANSACTION_TRANSFER_IN = 4
-TRANSACTION_TRANSFER_OUT = 5
-TRANSACTION_BONUS = 6
-TRANSACTION_ADJUSTMENT = 7
-TRANSACTION_COMMISSION = 8
+TRANSACTION_TRANSFER = 4
+TRANSACTION_BONUS = 5
+TRANSACTION_ADJUSTMENT = 6
+TRANSACTION_COMMISSION = 7
 
 TRANSACTION_TYPE_CHOICES = (
     (TRANSACTION_DEPOSIT, 'Deposit'),
     (TRANSACTION_WITHDRAWAL, 'Withdrawal'),
     (TRANSACTION_BET_PLACED, 'Bet Placed'),
     (TRANSACTION_SETTLED, 'Bet Settled'),
-    (TRANSACTION_TRANSFER_IN, 'Transfer in'),
-    (TRANSACTION_TRANSFER_OUT, 'Transfer out'),
+    (TRANSACTION_TRANSFER, 'Transfer'),
     (TRANSACTION_BONUS, 'Bonus'),
     (TRANSACTION_ADJUSTMENT, 'Adjustment'),
     (TRANSACTION_COMMISSION, 'Commission')
@@ -206,6 +218,7 @@ TOTAL = 'OU'
 TIP = 'TIP'
 SINGLE = 'Single'
 PARLAY = 'Parlay'
+OTHER = 'Other'
 
 BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
@@ -214,6 +227,7 @@ BET_TYPES_CHOICES = [
     (TIP, 'Tip'),
     (SINGLE, 'Single'),
     (PARLAY,'Parlay'),
+    (OTHER, 'Other'),
 
 ]
 OUTCOME_CHOICES = [
@@ -221,6 +235,17 @@ OUTCOME_CHOICES = [
     (1, 'Lose'),
     (2, 'Tie/Push'),
     (3, 'Void'),
+    (4, 'Running'),
+    (5, 'Draw'),
+    (6, 'Half lose'),
+    (7, 'Rollback'),
+    (8, 'Cancel'),
+    (9, 'Cash'),
+    (10, 'Half won'),
+    (11, 'reject'),
+    (12, 'waiting'),
+    (13, 'waiting running'),
+    (14, 'refund'),
 ]
 
 ACTIVE_STATE = 0
@@ -275,6 +300,23 @@ ACTIVITY_TYPE = (
     (3, 'Note'),
 )
 
+
+MEMBER_STATUS_NORMAL = 0
+MEMBER_STATUS_SUSPICIOUS = 1
+MEMBER_STATUS_RESTRICTED = 2
+MEMBER_STATUS_CLOSED = 3
+MEMBER_STATUS_BLACKLISTED = 4
+
+
+MEMBER_STATUS = (
+    (MEMBER_STATUS_NORMAL, _('Normal')),
+    (MEMBER_STATUS_SUSPICIOUS, _('Suspicious')),
+    (MEMBER_STATUS_RESTRICTED, _('Restricted')),
+    (MEMBER_STATUS_CLOSED, _('Closed')),
+    (MEMBER_STATUS_BLACKLISTED, _('Blacklisted'))
+)
+
+
 AFFILIATE_STATUS = (
     ('Active', 'Active'),
     ('VIP', 'VIP'),
@@ -290,10 +332,11 @@ AGENT_STATUS = (
 PERMISSION_GROUP = 0
 OTHER_GROUP = 1
 MESSAGE_GROUP = 2
+MESSAGE_DYNAMIC_GROUP = 3
 
 GROUP_TYPE = (
     (PERMISSION_GROUP, 'Permission'),
-    (MESSAGE_GROUP, 'message'),
+    (MESSAGE_GROUP, 'Static'),
     (OTHER_GROUP, 'other')
 )
 
@@ -628,11 +671,13 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
 else:
     API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -696,6 +741,7 @@ SYSTEM_USER = 1
 
 NOTIFICATION_CONSTRAINTS_QUANTITY = 1000
 
+AWS_SES_REGION = 'us-west-2'
 AWS_SMS_REGION = 'eu-west-1'
 AWS_SQS_REGION = 'eu-west-2'
 
@@ -1148,7 +1194,7 @@ AFFILIATE_LEVEL = (
     ('VIP', 'VIP'),
 )
 
-LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+LETOU_DOMAIN = "https://www.letou.com/cn/a/"   # for affiliate refer link
 
 MONTHLY_COMMISSION_SETTLE_DATE = "05"
 
@@ -1166,8 +1212,11 @@ ERROR_CODE_INACTIVE = 102
 ERROR_CODE_NOT_FOUND = 103
 ERROR_CODE_MAX_EXCEED = 104
 ERROR_CODE_EMPTY_RESULT = 105
-ERROR_CODE_DATABASE = 106
+ERROR_CODE_TIME_EXCEED = 106
 
+ERROR_CODE_DATABASE = 106
+ERROR_CODE_FAIL = 107
+ERROR_CODE_DUPE = 108
 
 BONUS_TYPE_VERIFICATION = 0
 BONUS_TYPE_DEPOSIT = 1
@@ -1221,10 +1270,11 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
 
 #GD CASINO
 
-GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
-GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
-GDCASINO_MERCHANT_CODE = 'IBPHtest'
-GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
+GDCASINO_URL = keys["GD_CASINO"]["URL"]
+GDCASINO_API_URL = keys["GD_CASINO"]["API_URL"]
+GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["MERCHANT_CODE"]
+GDCASINO_MERCHANT_ACCESS_KEY = keys["GD_CASINO"]["MERCHANT_ACCESS_KEY"]
+GDCASINO_FISHING_GAMEID = keys["GD_CASINO"]["FISHING_GAMEID"]
 
 GDCASINO_STATUS_CODE =(
     (-1, 'UNKNOWN_ERROR'),
@@ -1286,11 +1336,67 @@ SECURITY_QUESTION = (
 )
 # Games
 
+# Playngo
+PNG_STATUS_OK = 0
+PNG_STATUS_NOUSER = 1
+PNG_STATUS_INTERNAL = 2
+PNG_STATUS_INVALIDCURRENCY = 3
+PNG_STATUS_WRONGUSERNAMEPASSWORD = 4
+PNG_STATUS_ACCOUNTLOCKED = 5
+PNG_STATUS_ACCOUNTDISABLED = 6
+PNG_STATUS_NOTENOUGHMONEY = 7
+PNG_STATUS_MAXCONCURRENTCALLS = 8
+PNG_STATUS_SPENDINGBUDGETEXCEEDED = 9
+PNG_STATUS_SESSIONEXPIRED = 10
+PNG_STATUS_TIMEBUDGETEXCEEDED = 11
+PNG_STATUS_SERVICEUNAVAILABLE = 12
+
 # Kaiyuan Gaming
+KY_PROVIDER = "Kaiyuan"
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
-KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
+#onebook
+ONEBOOK_PROVIDER = 'Onebook'
+ONEBOOK_VENDORID = "xmV64h8RULU"
+ONEBOOK_OPERATORID = "ibetclaymore"
+ONEBOOK_MAXTRANSFER = "50000"
+ONEBOOK_MINTRANSFER = "10"
+ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
+ONEBOOK_DIRECTION_withdraw = 0
+ONEBOOK_DIRECTION_deposit = 1
+ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
+
+# SA
+SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
+SA_ENCRYPT_KEY = 'g9G16nTs'
+SA_MD5KEY = 'GgaIMaiNNtg'
+SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
+
+#GB
+GB_PROVIDER = 'GB'
+GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
+GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
+GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
+GB_OTHER_URL = "http://163.claymoreusa.net"
+
+# QT
+QT_STATUS_SUCCESS = 0
+QT_STATUS_UNKNOWN_ERROR = 1
+QT_STATUS_INVALID_TOKEN = 2
+QT_STATUS_LOGIN_FAILED = 3
+QT_STATUS_ACCOUNT_BLOCKED = 4
+QT_STATUS_REQUEST_DECLINED = 5
+
+QT_STATUS_CODE = (
+    (0, "SUCCESS"),
+    (1, "UNKNOWN_ERROR"),
+    (2, "INVALID_TOKEN"),
+    (3, "LOGIN_FAILED"),
+    (4, "ACCOUNT_BLOCKED"),
+    (5, "REQUEST_DECLINED"),
+)
