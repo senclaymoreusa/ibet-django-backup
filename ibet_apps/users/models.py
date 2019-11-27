@@ -37,9 +37,10 @@ class MyUserManager(BaseUserManager):
         user = self.model(
 					username = username,
 					email = self.normalize_email(email),
-                    phone = phone
+                    phone = phone,
 				)
         user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
+        user.active = True # Add this only to fix Letou registeration bug, will remove later
         user.save(using=self._db)
         return user
 
