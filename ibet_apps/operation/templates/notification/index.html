@@ -557,10 +557,65 @@ $( function() {
 */
 
 $.ajax({
-    type:'GET',
-    url:"{% url 'notifier-tags' %}",
-    success:function(data) {
-    //   console.log(data);
+    type: 'GET',
+    url: "{% url 'notifier-tags' %}",
+    success: function(data) {
+      var message = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["message"]
+      });
+
+      var member = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["member"]
+      });
+
+      var member = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["member"]
+      });
+
+      group.initialize();
+      member.initialize();
+
+      $('#sendto').tagsinput({
+          itemValue: "name",
+          itemText: "name",
+          typeaheadjs: [{
+            highlight: false
+          },[{
+              name: 'member',
+              display: 'name',
+              source: member,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">MEMBER RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          },{
+              name: 'group',
+              display: 'name',
+              source: group,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">GROUP RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user-friends" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          }]],
+          freeInput: true
+      });
+    }
+});
+
+$.ajax({
+    type: 'GET',
+    url: "{% url 'notifier-tags' %}",
+    success: function(data) {
       var group = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
         queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -576,6 +631,31 @@ $.ajax({
       group.initialize();
       member.initialize();
 
+      $('#search').typeahead({
+        highlight: false
+      },
+      {
+        name: 'notification',
+        display: 'name',
+        source: notification,
+        templates: {
+          header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">MEMBER RESULTS</li>',
+          suggestion: function(data) {
+                        return '<div style="margin: 0px 13px;"><i class="fas fa-user" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                      }
+        }
+      },
+      {
+        name: 'group',
+        display: 'name',
+        source: group,
+        templates: {
+          header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">GROUP RESULTS</li>',
+          suggestion: function(data) {
+                        return '<div style="margin: 0px 13px;"><i class="fas fa-user-friends" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                      }
+        }
+      });
       $('#sendto').tagsinput({
           itemValue: "name",
           itemText: "name",

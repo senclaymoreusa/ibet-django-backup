@@ -168,51 +168,52 @@ class NotifierSearchAutocomplete(View):
 
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
-        search = request.GET.get('search')
-        tab = request.GET.get('tab')
-
-        logger.info('Search notification, key: ' + search)
-
-        search_subject = Notification.objects.filter(Q(subject__icontains=search)&Q(status=tab))
-        search_campaign = Notification.objects.filter(Q(campaign__icontains=search))
-
-        search_subject = serializers.serialize('json', search_subject)
-        # search_body = serializers.serialize('json', search_body)
-
-        search_subject = json.loads(search_subject)
-        # search_body = json.loads(search_body)
-
-        response = {}
-
-        subject_data = []
-        for notification in search_subject:
-            notificationMap = {}
-            notificationMap["subject"] = notification["fields"]["subject"]
-            notificationMap["id"] = notification["pk"]
-            subject_data.append(notificationMap)
-        response["subject"] = subject_data
-
-        campaign_data = []
-        for campaign in search_campaign:
-            campaignMap = {}
-            campaignMap["campaign"] = campaign.campaign
-            campaignMap["id"] = campaign.pk
-            campaign_data.append(campaignMap)
-        response["campaign"] = campaign_data
-
-
-
-        # body_data = []
-        # for notification in search_body:
-        #     notificationMap = {}
-        #     notificationMap['body'] = notification['body']
-        #     body_data.append(notificationMap)
-        # response['body'] = body_data
-
-        logger.info('Search response: ' + json.dumps(response))
         try:
+            search = request.GET.get('search')
+            tab = request.GET.get('tab')
+
+            print(search)
+
+            logger.info('Search notification, key: ' + search)
+
+            search_subject = Notification.objects.filter(Q(subject__icontains=search)&Q(status=tab))
+            search_campaign = Notification.objects.filter(Q(campaign__icontains=search))
+
+            search_subject = serializers.serialize('json', search_subject)
+            # search_body = serializers.serialize('json', search_body)
+
+            search_subject = json.loads(search_subject)
+            # search_body = json.loads(search_body)
+
+            response = {}
+
+            subject_data = []
+            for notification in search_subject:
+                notificationMap = {}
+                notificationMap["subject"] = notification["fields"]["subject"]
+                notificationMap["id"] = notification["pk"]
+                subject_data.append(notificationMap)
+            response["subject"] = subject_data
+
+            campaign_data = []
+            for campaign in search_campaign:
+                campaignMap = {}
+                campaignMap["campaign"] = campaign.campaign
+                campaignMap["id"] = campaign.pk
+                campaign_data.append(campaignMap)
+            response["campaign"] = campaign_data
+
+            # body_data = []
+            # for notification in search_body:
+            #     notificationMap = {}
+            #     notificationMap['body'] = notification['body']
+            #     body_data.append(notificationMap)
+            # response['body'] = body_data
+
+            logger.info('Search response: ' + json.dumps(response))
             return HttpResponse(json.dumps(response), content_type='application/json')
         except Exception as e:
+            print(repr(e))
             logger.error(e)
 
 
