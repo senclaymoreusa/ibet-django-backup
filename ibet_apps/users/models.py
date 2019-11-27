@@ -40,7 +40,7 @@ class MyUserManager(BaseUserManager):
                     phone = phone,
 				)
         user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
-        user.active = True # Add this only to fix Letou registeration bug, will remove later
+        # user.active = True # Add this only to fix Letou registeration bug, will remove later
         user.save(using=self._db)
         return user
 
@@ -139,7 +139,7 @@ class CustomUser(AbstractBaseUser):
 
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
