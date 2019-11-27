@@ -19,6 +19,23 @@ import uuid
 
 logger = logging.getLogger('django')
 
+try:
+    PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+except ObjectDoesNotExist:
+    PROVIDER = GameProvider.objects.create(
+                                            provider_name="PLAYNGO",
+                                            type=2,
+                                            market="ibetCN"
+                                          )
+
+try:
+    CATEGORY = Category.objects.get(name="SLOTS")
+except ObjectDoesNotExist:
+    CATEGORY = Category.objects.create(
+                                        name="SLOTS",
+                                        notes="None"
+                                      )
+
 
 class GameLaunchView(View):
     """
@@ -239,8 +256,6 @@ class ReserveView(View):
             user_currency_text = CURRENCY_CHOICES[user.currency][1]
 
             status_code = PNG_STATUS_OK
-            PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
-            CATEGORY = Category.objects.get(name="SLOTS")
 
             #print("")
             #print(type(user_balance))
