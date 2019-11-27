@@ -50,6 +50,10 @@ urlpatterns = [
 ]
 
 
+import games.views.kygameviews as kyviews
+
+kyviews.getBets(repeat=300, repeat_until=None)
+
 import games.views.onebookviews as onebookviews
 
 onebookviews.getBetDetail(repeat=300,repeat_until=None)
