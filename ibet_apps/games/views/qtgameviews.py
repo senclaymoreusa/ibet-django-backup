@@ -10,7 +10,10 @@ from utils.constants import *
 from users.models import CustomUser
 from games.models import *
 
+import os
+import json
 import logging
+import requests
 
 logger = logging.getLogger("django")
 
@@ -21,6 +24,8 @@ if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
 third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
 QT_PASS_KEY = third_party_keys["QTGAMES"]["PASS_KEY"]
 
+qt = third_party_keys["QTGAMES"]
+apiUrl = qt["API"]["url"]
 
 class VerifySession(APIView):
     permission_classes = (AllowAny,)
@@ -119,3 +124,89 @@ class GetBalance(APIView):
             "message": message,
         }
         return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+
+class GameLaunch(APIView):
+
+    permission_classes = (AllowAny, )
+    
+    
+    def post(self, request, *args, **kwargs):
+        # headers = {'Content-Type': 'x-www-form-urlencoded'}
+        
+        try:
+            tr = requests.post(apiUrl + "v1/auth/token", params={
+                'grant_type': 'password',
+                'response_type': 'token',
+                'username': qt['API']['username'],
+                'password': qt['API']['password'],
+            })
+            
+            authData = tr.json()
+            
+            if tr.status_code == 200:
+                logger.info("Authentication granted!")
+                access_token = authData['access_token']
+                 
+                headers = {
+                    'Authorization': 'Bearer ' + access_token,
+                    'Content-Type': 'application/json'   
+                }
+                
+                gameId = request.GET.get('gameId')
+                mode = request.GET.get('mode')
+                
+                if mode == 'real':
+                    username = request.GET.get('playerId')
+                    
+                    try: 
+                        user = CustomUser.objects.get(username=username)
+                        session = QTSession.objects.get(user=user)
+                    except Exception as e: 
+                        logger.error("Failed in getting user/session " + str(e))
+                        
+                    body = {
+                        "playerId": username,
+                        "currency": CURRENCY_CHOICES[user.currency][1],
+                        "walletSessionId": str(session.session_key),
+                        "country": "CN", # user.country
+                        "lang": "zh_CN", # user.language,
+                        "mode": 'real',
+                        "device": "desktop", 
+                    }
+                else: 
+                    body = {
+                        "country": "CN", 
+                        "lang": "zh_CN",
+                        "mode": 'demo',
+                        "currency": 'CNY',
+                        "device": "desktop", 
+                    }
+                
+                url = apiUrl + "v1/games/" + gameId + "/launch-url"
+                #url = apiUrl + "v1/games/TK-froggrog/launch-url"
+                r = requests.post( url, headers=headers, data=json.dumps(body) )
+                launchData = r.json()
+                
+                if r.status_code != 200:
+                    logger.error(launchData)
+                  
+                return HttpResponse(r, content_type='application/json', status=r.status_code)
+                    
+            else:
+                logger.error(authData)
+                return Response(tr)
+            
+        except Exception as e:
+            logger.error("Error: " + str(e))
+            return Response(tr)
+            
+#         except requests.exceptions.HTTPError as he:
+#             logger.error("HTTP Error: " + str(he))
+#         except requests.exceptions.ConnectionError as ce:
+#             logger.error("Connection Error: " + str(ce))
+#         except requests.exceptions.Timeout as te:
+#             logger.error("Timeout: " + str(te))
+#         except requests.exceptions.RequestException as err:
+#             logger.error("Oops: " + str(err))
+    
+     
