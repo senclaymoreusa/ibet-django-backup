@@ -22,7 +22,6 @@ phases:
       - echo This always runs after unit tests
   post_build:
     commands:
-      - python manager.py process_tasks
       - echo Build completed on `date`
 artifacts:
   files:
