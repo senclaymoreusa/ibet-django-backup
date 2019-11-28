@@ -201,7 +201,7 @@ class NotificationSearchAutocomplete(View):
                 contentMap["content"] = content["fields"]["content_text"]
                 contentMap["id"] = content['pk']
                 content_data.append(contentMap)
-            response["campaign"] = content_data
+            response["content"] = content_data
 
             # campaign_data = []
             # for campaign in search_campaign:

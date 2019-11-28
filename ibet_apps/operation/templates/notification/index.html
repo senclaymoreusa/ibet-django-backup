@@ -98,7 +98,7 @@ tbody>tr:nth-child(odd)>th {
 </style>
 
 <div class="row">
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New message</button>
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newmsg-modal">New message</button>
   <!--<a role="button" class="btn btn-primary" href="/xadmin/audit">
     Notifications <span class="badge badge-light">{{ waiting_list }}</span>
   </a>-->
@@ -148,8 +148,8 @@ tbody>tr:nth-child(odd)>th {
     </div>
   </div>
 
-  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div id="mydialog" class="modal-dialog modal-lg">
+  <div class="modal fade bd-example-modal-lg" id="newmsg-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title">New Message</h3>
@@ -1013,7 +1013,7 @@ $(document).ready(function() {
 
   function searchResult(data, term) {
     var subject = data['subject'];
-    var campaign = data['campaign'];
+    var content = data['content'];
     // var content = data['body'];
 
     var sourceList = [];
@@ -1033,18 +1033,18 @@ $(document).ready(function() {
         });
       }
     }
-    if (campaign.length > 0) {
+    if (content.length > 0) {
       sourceList.push({
         'type': 'category',
         'label': term,
-        'value': 'CAMPAIGN RESULTS'
+        'value': 'CONTENT RESULTS'
       });
-      for (var i = 0; i < campaign.length; i++) {
+      for (var i = 0; i < content.length; i++) {
         sourceList.push({
-          'type': 'campaign',
+          'type': 'content',
           'label': term,
-          'value': campaign[i]['campaign'],
-          'id': campaign[i]['id'],
+          'value': content[i]['content'],
+          'id': content[i]['id'],
         });
       }
     }
@@ -1074,13 +1074,13 @@ $(document).ready(function() {
             .appendTo(ul);
             // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
           } else {
-            var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
-            // var url = ""
+            // var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
+            var url = "#"
             if (item.type == 'subject') {
               return $('<li>')
               .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
-            } else if (item.type == 'campaign') {
+            } else if (item.type == 'content') {
               return $('<li>')
               .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
