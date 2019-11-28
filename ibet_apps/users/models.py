@@ -37,9 +37,10 @@ class MyUserManager(BaseUserManager):
         user = self.model(
 					username = username,
 					email = self.normalize_email(email),
-                    phone = phone
+                    phone = phone,
 				)
         user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
+        # user.active = True # Add this only to fix Letou registeration bug, will remove later
         user.save(using=self._db)
         return user
 
@@ -129,13 +130,16 @@ class CustomUser(AbstractBaseUser):
 
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
+    # referrer's path append user.pk/ generate a referral path
+    referral_path = models.CharField(max_length=1000, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
+    referred_by_channel = models.ForeignKey('users.ReferChannel', null=True, blank=True, on_delete=models.CASCADE)
     reward_points = models.IntegerField(default=0)
     vip_level = models.ForeignKey('users.Segmentation', on_delete=models.CASCADE, null=True)
 
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
@@ -169,6 +173,7 @@ class CustomUser(AbstractBaseUser):
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
+    ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=2, default=0)
 
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
@@ -180,7 +185,10 @@ class CustomUser(AbstractBaseUser):
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                             related_name='AffiliateManager')
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+                                       related_name='VIPManager')
 
     #commission
     commission_status = models.BooleanField(default=False)               # for current month
@@ -275,6 +283,7 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+# User Personal Commission
 class Commission(models.Model):
 
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -297,10 +306,20 @@ class Commission(models.Model):
         super(Commission, self).save(*args, **kwargs)
 
 
+# System default Commission
+class SystemCommission(models.Model):
+    commission_level = models.IntegerField(unique=True)
+    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    active_downline_needed = models.IntegerField(default=0)
+    monthly_downline_ftd_needed = models.IntegerField(default=0)
+    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+
+
 # one user can have up to 10 referral channels
 class ReferChannel(models.Model):
     # refer_channel_code is ReferChannel.pk
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     refer_channel_name = models.CharField(max_length=100)
     # time of this channel was created
     generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
@@ -581,8 +600,10 @@ class GameRequestsModel(models.Model):
 
 
 # Member VIP System
+
 class Segmentation(models.Model):
     name = models.CharField(max_length=50)
+    level = models.IntegerField()
     turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
@@ -592,7 +613,7 @@ class Segmentation(models.Model):
     product_turnover_bonuses = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.level)
 
 
 @receiver(post_save, sender=CustomUser)

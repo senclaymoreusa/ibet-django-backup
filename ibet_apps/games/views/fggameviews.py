@@ -6,25 +6,36 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 import simplejson as json
-from games.models import FGSession, Game
+from games.models import FGSession, Game, GameBet, GameProvider, Category
+from django.db import transaction
 import xmltodict
 import decimal,re, math
 import requests,json
 import logging
 import random
 from utils.constants import *
+import datetime
+from datetime import date
+from django.utils import timezone
 
 logger = logging.getLogger("django")
 
 class GetAllGame(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        provider = request.GET['provider']
-        game = Game.objects.filter(provider=provider)
-        
-        return JsonResponse({
-        'game': list(game.values())
-    })
+        prov = request.GET['provider']
+        try:
+            provider = GameProvider.objects.get(provider_name=prov)
+            game = Game.objects.filter(provider=provider)     
+            return JsonResponse({
+            'game': list(game.values())
+            })
+
+        except Exception as e:
+            logger.error("provider does not exist", e)
+            return JsonResponse({
+            'game': None
+            })
         #return JsonResponse(json.dumps(data),content_type='application/json',status=200)
 
 
@@ -159,7 +170,6 @@ class GetAccountDetail(APIView):
         callerPassword = request.GET['callerPassword']
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
-
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
@@ -176,7 +186,7 @@ class GetAccountDetail(APIView):
             "loginName" : user.username,
             "firstName" :  user.first_name ,
             "lastName" : user.last_name,
-            "currency" : user.currency,
+            "currency" : CURRENCY_CHOICES[user.currency][1],
             "email" : user.email,
             "country" : user.country,
             "city": user.city,
@@ -207,17 +217,20 @@ class GetBalance(APIView):
         uuid = request.GET['uuid']
         omegaSessionKey = request.GET['omegaSessionKey']
         currency = request.GET["currency"]
+       
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
 
             response = {
+               
                 "seq" : seq,
                 "partyId" : fguser.party_id ,
                 "omegaSessionKey" : omegaSessionKey,
                 "message" : None,
                 "errorCode" : None,
                 "realBalance" : math.floor(float(user.main_wallet * 100)) / 100,
+               
                 "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
             
             }
@@ -256,7 +269,8 @@ class ProcessTransaction(APIView):
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
-          
+            provider = GameProvider.objects.get(provider_name="FG")
+            category = Category.objects.get(name='Slots')
 
         except:
             response = {
@@ -269,20 +283,33 @@ class ProcessTransaction(APIView):
                 gameInfoId = request.GET["gameInfoId"]
                 wallet = user.main_wallet + decimal.Decimal(amount)
                 if (wallet > 0):
-                    user.main_wallet = wallet
-                    user.save()
+                    with transaction.atomic():
+                        user.main_wallet = wallet
+                        user.save()
+                        transactionId = re.sub("[^0-9]", "", timestamp)
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                        GameBet.objects.get_or_create(provider=provider,
+                                                        category=category,
+                                                        username=user,
+                                                        amount_wagered=-float(amount),
+                                                        currency=user.currency,
+                                                        market=ibetCN,
+                                                        ref_no=transactionId,
+                                                        transaction_id=trans_id
+                                                        )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
                         "partyId" : fguser.party_id ,
                         "currency" : currency,
-                        "transactionId" : re.sub("[^0-9]", "", timestamp),
+                        "transactionId" : transactionId,
                         "tranType" : tranType,
                         "gameInfoId" : gameInfoId,
                         "alreadyProcessed" : False,
                         "realBalance" : math.floor(float(user.main_wallet * 100)) / 100 ,
                         "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100, 
-                        "realAmount" : amount,
+                        "realAmount" : float(amount),
                         "bonusAmount" : 0.00,
                         "errorCode" : None,
                         "message" : None
@@ -303,15 +330,29 @@ class ProcessTransaction(APIView):
                 #isFinal = request.GET["isFinal"]
                 wallet = user.main_wallet + decimal.Decimal(amount)
                 if (wallet > 0):
-                    user.main_wallet = user.main_wallet + decimal.Decimal(amount)
-                    user.save()
+                    with transaction.atomic():
+                        user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                        user.save()
+                        transactionId = re.sub("[^0-9]", "", timestamp)
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                        GameBet.objects.get_or_create(provider=provider,
+                                                        category=category,
+                                                        username=user,
+                                                        amount_wagered=0.00,
+                                                        currency=user.currency,
+                                                        amount_won=float(amount),
+                                                        market=ibetCN,
+                                                        ref_no=transactionId,
+                                                        transaction_id=trans_id
+                                                        )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
                         "partyId" : fguser.party_id ,
                         "gameInfoId" : gameInfoId,
                         "currency" : currency,
-                        "transactionId" : re.sub("[^0-9]", "", timestamp),
+                        "transactionId" : transactionId,
                         "tranType" : tranType,
                         "alreadyProcessed" : False,
                         "realBalance" :  math.floor(float(user.main_wallet * 100)) / 100, 

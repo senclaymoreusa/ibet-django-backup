@@ -8,32 +8,78 @@ from django.db import transaction
 
 # iBet
 from users.models import CustomUser
-from games.models import GameBet, GameProvider, Category
+from games.models import GameBet, GameProvider, Category, PNGTicket
 from utils.constants import *
 
 # Libraries
 import xmltodict
 import logging
 import decimal
+import uuid
 
 logger = logging.getLogger('django')
+
+try:
+    PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+except ObjectDoesNotExist:
+    PROVIDER = GameProvider.objects.create(
+                                            provider_name="PLAYNGO",
+                                            type=2,
+                                            market="ibetCN"
+                                          )
+
+try:
+    CATEGORY = Category.objects.get(name="SLOTS")
+except ObjectDoesNotExist:
+    CATEGORY = Category.objects.create(
+                                        name="SLOTS",
+                                        notes="None"
+                                      )
+
+
+class GameLaunchView(View):
+    """
+    Test class to simulate a game launch
+    """
+    def get(self, request, *args, **kwargs):
+        try:
+            png_ticket = uuid.uuid4()
+            user_obj = CustomUser.objects.get(username="kevin")
+
+            # Case where user's existing PNGTicket needs to be updated
+            try:
+                existing_ticket = PNGTicket.objects.get(user_obj=user_obj)
+                existing_ticket.png_ticket = png_ticket
+                existing_ticket.save()
+
+            # Case where user has never played PNG games before
+            except:
+                PNGTicket.objects.create(png_ticket=png_ticket, user_obj=user_obj)
+
+            return HttpResponse("PNGTicket created or updated")
+
+        except Exception as e:
+            logger.error("PLAY'nGO GameLaunchView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+
 
 class AuthenticateView(View):
 
     def post(self, request, *args, **kwargs):
         """
-        The Authenticate call makes a request to the Operator Account System to validate the
-        user information upon the start of a new game. XML is the data format that this endpoint
-        receives and responds with.
+        When a PNG game is launched, a username (session token) is generated for the current user 
+        and sent to the provider via a launch URL. The Authenticate API receives this session token 
+        parameter and uses it to fetch the user associated with the session token. Next, a PNG 
+        session object is created for the specific user in order to store information about a player's 
+        game rounds.
         """
-
-        data = request.body
 
         try:
             # Extract data fields from request XML
+            data = request.body
             req_dict = xmltodict.parse(data)
 
-            username = req_dict['authenticate']['username']
+            session_token = req_dict['authenticate']['username']
             product_id = req_dict['authenticate']['productId']
             client_ip = req_dict['authenticate']['clientIP']
             context_id = req_dict['authenticate']['contextId']
@@ -42,71 +88,67 @@ class AuthenticateView(View):
             game_id = req_dict['authenticate']['gameId']
             channel = req_dict['authenticate']['channel']
 
-            # print(username, product_id, client_ip, context_id, access_token, language, game_id, channel)
+            try:
+                existing_ticket = PNGTicket.objects.get(png_ticket=session_token)
+                user_obj = existing_ticket.user_obj
+                # print("user_obj.username: " + user_obj.username)
 
-            # TODO: authentication logic. Using dummy data for now.
+                external_id = user_obj.username
+                status_code = PNG_STATUS_OK 
+                status_message = "ok"
+                user_currency = CURRENCY_CHOICES[user_obj.currency][1]
+                country = user_obj.country
+                birthdate = user_obj.date_of_birth
+                registration = user_obj.time_of_registration
+                res_language = user_obj.language
+                affiliate_id = "" # Placeholder
+                real = int(user_obj.main_wallet * 100) / 100.0
+                external_game_session_id = "" # Placeholder
 
-            external_id = 554433 # Placeholder
-            status_code = 0 # Placeholder
-            status_message = "ok" # Placeholder
-            user_currency = "EUR" # Placeholder
-            nickname = "MaxPower" # Placeholder
-            country = "SE" # Placeholder
-            birthdate = "1970-01-01" # Placeholder
-            registration = "2010-05-05" # Placeholder
-            res_language = "EN" # Placeholder
-            affiliate_id = "" # Placeholder
-            real = 1234.56 # Placeholder
-            external_game_session_id = "" # Placeholder
-            region = 3 # Placeholder
-
-            # Compose response dictionary and convert to response XML
-            res_dict = {
-                "authenticate": {
-                    "externalId": {
-                        "#text": str(external_id)
-                    },
-                    "statusCode": {
-                        "#text": str(status_code)
-                    },
-                    "statusMessage": {
-                        "#text": status_message
-                    },
-                    "userCurrency": {
-                        "#text": user_currency
-                    },
-                    "nickname": {
-                        "#text": nickname
-                    },
-                    "country": {
-                        "#text": country
-                    },
-                    "birthdate": {
-                        "#text": birthdate
-                    },
-                    "registration": {
-                        "#text": registration
-                    },
-                    "language": {
-                        "#text": res_language
-                    },
-                    "affiliateId": {
-                        "#text": affiliate_id
-                    },
-                    "real": {
-                        "#text": str(real)
-                    },
-                    "externalGameSessionId": {
-                        "#text": external_game_session_id
-                    },
-                    "region": {
-                        "#text": str(region)
-                    },
+                # Compose response dictionary and convert to response XML
+                res_dict = {
+                    "authenticate": {
+                        "externalId": {
+                            "#text": str(external_id)
+                        },
+                        "statusCode": {
+                            "#text": str(status_code)
+                        },
+                        "statusMessage": {
+                            "#text": status_message
+                        },
+                        "userCurrency": {
+                            "#text": str(user_currency)
+                        },
+                        "country": {
+                            "#text": str(country)
+                        },
+                        "birthdate": {
+                            "#text": str(birthdate)
+                        },
+                        "registration": {
+                            "#text": str(registration)
+                        },
+                        "language": {
+                            "#text": str(res_language)
+                        },
+                        "affiliateId": {
+                            "#text": affiliate_id
+                        },
+                        "real": {
+                            "#text": str(real)
+                        },
+                        "externalGameSessionId": {
+                            "#text": external_game_session_id
+                        },
+                    }
                 }
-            }
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
-            return HttpResponse(res_msg, content_type='text/xml') # Successful response
+                res_msg = xmltodict.unparse(res_dict, pretty=True)
+                return HttpResponse(res_msg, content_type='text/xml') # Successful response
+
+            except Exception as e:
+                return HttpResponse(str(e))
 
         except:
             # Malformed xml, missing tags, or error parsing data
@@ -146,7 +188,7 @@ class BalanceView(View):
                 # print("PLAY'nGO BalanceView: User " + username + " not found!")
                 logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
 
-            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
+            user_balance = int(user.main_wallet * 100) / 100.0
             user_currency = CURRENCY_CHOICES[user.currency][1]
             status_code = PNG_STATUS_OK # Default case is 0 (request successful)
 
@@ -209,13 +251,11 @@ class ReserveView(View):
             actual_value = req_dict['reserve']['actualValue']
             
             user = CustomUser.objects.get(username=username)
-            user_balance = decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00'))
-            bet_amount_decimal = decimal.Decimal(bet_amount_str).quantize(decimal.Decimal('0.00'))
+            user_balance = int(user.main_wallet * 100) / 100.0
+            bet_amount_decimal = float(bet_amount_str)
             user_currency_text = CURRENCY_CHOICES[user.currency][1]
 
             status_code = PNG_STATUS_OK
-            PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
-            CATEGORY = Category.objects.get(name="SLOTS")
 
             #print("")
             #print(type(user_balance))
@@ -252,7 +292,7 @@ class ReserveView(View):
                         #odds = None,
                         #bet_type = None,
                         #line = None,
-                        currency = user_currency_text,
+                        currency = user.currency,
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
@@ -288,3 +328,72 @@ class ReserveView(View):
         except Exception as e:
             logger.error("PLAY'nGO ReserveView Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+# class ReleaseView(View):
+
+#     def post(self, request, *args, **kwargs):
+#         """
+#         """
+#         data = request.body
+
+#         try:
+#             req_dict = xmltodict.parse(data)
+
+#             username = req_dict['release']['externalId']
+#             product_id = req_dict['release']['productId']
+#             transaction_id = req_dict['release']['transactionId']
+#             win_amount_str = req_dict['release']['real']
+#             currency = req_dict['release']['currency']
+#             game_session_id = req_dict['release']['gameSessionId']
+#             state = req_dict['release']['state']
+#             req_type = req_dict['release']['type']
+#             game_id = req_dict['release']['gameId']
+#             access_token = req_dict['release']['accessToken']
+#             round_id = req_dict['release']['roundId']
+#             jackpot_gain = req_dict['release']['jackpotGain']
+#             jackpot_loss = req_dict['release']['jackpotLoss']
+#             jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
+#             jackpot_gain_id = req_dict['release']['jackpotGainId']
+#             channel = req_dict['release']['channel']
+#             free_game_external_id = req_dict['release']['freegameExternalId']
+#             free_game_total_gain = req_dict['release']['freegameTotalGain']
+
+
+
+#             user = CustomUser.objects.get(username=username)
+#             user_balance = int(user.main_wallet * 100) / 100.0
+#             win_amount_decimal = float(win_amount_str)
+
+#             status_code = PNG_STATUS_OK
+
+#             # TODO: Check for invalid currency.
+
+#             balance_after_win = user_balance + win_amount_decimal
+#             user.main_wallet = balance_after_win
+#             user.save()
+
+
+
+#             res_dict = {
+#                 "release": {
+#                     "real": {
+#                         "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
+#                     },
+#                     "currency": {
+#                         "#text": ""
+#                     },
+#                     "statusCode": {
+#                         "#text": str(status_code)
+#                     },
+#                 }
+#             }
+
+#             res_msg = xmltodict.unparse(res_dict, pretty=True)
+#             return HttpResponse(res_msg, content_type='text/xml')
+
+
+
+#         except Exception as e:
+#             logger.error("PLAY'nGO ReleaseView Error: " + str(e))
+#             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)

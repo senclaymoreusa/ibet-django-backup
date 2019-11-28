@@ -1,14 +1,18 @@
+from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
+from datetime import date
 
+from users.models import CustomUser, UserAction
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet
+from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
 import logging
@@ -21,7 +25,7 @@ logger = logging.getLogger('django')
 users = CustomUser.objects.all()
 
 # date
-today = timezone.now()
+today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
 last_month = this_month + relativedelta(months=-1)
@@ -49,21 +53,22 @@ def getDownline(affiliates):
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
-            downline = users.filter(referred_by=affiliate)
+            downline = affiliate.referees.all()
             if downline:
-                downline_list.append(users.filter(referred_by=affiliate))
+                downline_list.append(downline)
     else:
-        downline_list = users.filter(referred_by=affiliates)
+        downline_list = affiliates.referees.all()
     return downline_list
 
 
 def calculateActiveDownlineNumber(affiliate_id):
     # check affiliate_id first
     downlines = affiliate_id.referees.all()
+    active_user_list = GameBet.objects.values_list('username', flat=True).distinct()
     affiliate_active_users = 0
-    if downlines is not None:
-        for tran in bet_tran:
-            if tran.user_id in downlines:
+    if downlines:
+        for downline in downlines:
+            if downline.pk in active_user_list:
                 affiliate_active_users += 1
     return affiliate_active_users
 
@@ -109,6 +114,7 @@ def calculateFTD(user_group, start_time, end_time):
     return ftd
 
 
+# TODO: functions need to be updated
 def calculateTurnover(user, start_time, end_time):
     return 0
 
@@ -137,11 +143,23 @@ def calculateNGR(user, start_time, end_time):
     return 0
 
 
-current_tz = timezone.get_current_timezone()
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
 
-def convertToTimezone(input_time):
-    input_time = input_time.astimezone(current_tz)
-    return input_time
+
+def calculateAdjustment(user, start_time, end_time):
+    return 0
+
+
+def getUserBalance(user):
+    return user.main_wallet
 
 
 # USER SYSTEM
@@ -182,6 +200,83 @@ def decode_user_id_from_referral_code(code):
             user_id += (36 ** i * index)
             i += 1
         return user_id
+
+
+# get user last login time
+def last_login(user):
+    action = UserAction.objects.filter(Q(user=user) &
+                                       Q(event_type=EVENT_CHOICES_LOGIN)).order_by('-created_time')
+    if action:
+        return action[0].created_time
+    return None
+
+
+'''
+@param date: mm/dd/yyyy
+@return: timezone datetime
+'''
+def dateToDatetime(date):
+    if date:
+        date = date.split('/')
+        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
+
+
+'''
+@param queryset: users
+@return: queryset of active users between start_time and end_time
+'''
+def filterActiveUser(queryset, start_time, end_time):
+    # get bet transaction in this period
+    if start_time and end_time:
+        game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
+    elif start_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__gte=start_time)
+    elif end_time:
+        game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
+    else:
+        game_bet_tran = GameBet.objects.all()
+
+    active_user_list = game_bet_tran.values_list('username', flat=True)
+    if queryset:
+        queryset = queryset.filter(pk__in=active_user_list)
+    return queryset
+
+
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
+def utcToLocalDatetime(date):
+    if date:
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
+
+
+# Return a list of user in VIP Manager Group
+def getManagerList(list_type):
+    if list_type == "VIP":
+        group_name = "VIP Manager"
+    elif list_type == "Affiliate":
+        group_name = "Affiliate Manager"
+    else:
+        group_name = ""
+
+    try:
+        manager_group = UserGroup.objects.get(groupType=PERMISSION_GROUP, name=group_name)
+    except Exception as e:
+        logger.info("Error getting {} group ".format(group_name) + str(e))
+        return None
+
+    managers = []
+    manager_group = UserToUserGroup.objects.filter(group=manager_group).distinct()
+    if manager_group:
+        for manager in manager_group:
+            managers.append(manager.user.username)
+    return managers
 
 '''
 @param date: utc timezone datetime

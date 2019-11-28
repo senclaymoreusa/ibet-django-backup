@@ -1,5 +1,6 @@
 import decimal
 import logging
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -9,6 +10,11 @@ from users.models import CustomUser
 from games.transferwallet import TransferDeposit, TransferWithdraw
 from utils.constants import *
 from decimal import Decimal
+from pyDes import des, CBC, PAD_PKCS5
+from datetime import datetime
+
+import base64, hashlib
+import random
 
 logger = logging.getLogger("django")
 
@@ -18,12 +24,15 @@ logger = logging.getLogger("django")
 :returns: IPv4 address
 """
 def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    except Exception as e:
+        print(repr(e))
 
 
 def des_encode(key, data):
@@ -36,9 +45,7 @@ def generateHash(message):
     return hash
 
 
-
 def transferRequest(user, amount, from_wallet, to_wallet):
-    
     if from_wallet == "main":
         transfer_to = TransferDeposit(user, amount, from_wallet)
         function_name = to_wallet + 'Deposit'
@@ -98,3 +105,18 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                         return False
         user.save()
         return False
+
+def des_decrypt(s):
+    encrypt_key = SA_ENCRYPT_KEY
+    iv = encrypt_key
+    k = des(encrypt_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
+    de = k.decrypt(base64.b64decode(s), padmode=PAD_PKCS5)
+    return de
+
+def MD5(code):
+    res = hashlib.md5(code.encode()).hexdigest()
+    return res
+
+def generateTxnId():
+    now = datetime.now()
+    return str(random.randint(0, 100)) + str(now.year) + str(now.month) + str(now.day) + str(now.second)
