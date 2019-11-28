@@ -16,7 +16,7 @@ from decimal import Decimal
 from time import sleep
 from datetime import datetime
 from utils.admin_helper import *
-from background_task import background
+# from background_task import background
 import redis
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
@@ -442,7 +442,7 @@ class FundTransfer(APIView):
 
 
 @transaction.atomic
-@background(schedule=5) 
+# @background(schedule=5) 
 def getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
