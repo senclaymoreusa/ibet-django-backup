@@ -134,7 +134,7 @@ class NotifierSearchAutocomplete(View):
     
         logger.info('Search notification, key: ' + search)
     
-        search_member = CustomUser.objects.filter(Q(username__contains=search))
+        search_member = CustomUser.objects.filter(Q(username__icontains=search))
         # search_body = Notification.objects.filter(content_text__contains=search)
 
         search_member = serializers.serialize('json', search_member)
@@ -172,18 +172,18 @@ class NotificationSearchAutocomplete(View):
             search = request.GET.get('search')
             tab = request.GET.get('tab')
 
-            print(search)
-
             logger.info('Search notification, key: ' + search)
 
-            search_subject = Notification.objects.filter(Q(subject__icontains=search)&Q(status=tab))
-            search_campaign = Notification.objects.filter(Q(campaign__icontains=search))
+            search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
+            search_content = Notification.objects.filter(Q(content_text__contains=search)&Q(status=tab))
+            # search_campaign = Notification.objects.filter(Q(campaign__name__icontains=search))
 
             search_subject = serializers.serialize('json', search_subject)
+            search_content = serializers.serialize('json', search_content)
             # search_body = serializers.serialize('json', search_body)
 
             search_subject = json.loads(search_subject)
-            # search_body = json.loads(search_body)
+            search_content = json.loads(search_content)
 
             response = {}
 
@@ -195,13 +195,21 @@ class NotificationSearchAutocomplete(View):
                 subject_data.append(notificationMap)
             response["subject"] = subject_data
 
-            campaign_data = []
-            for campaign in search_campaign:
-                campaignMap = {}
-                campaignMap["campaign"] = campaign.campaign
-                campaignMap["id"] = campaign.pk
-                campaign_data.append(campaignMap)
-            response["campaign"] = campaign_data
+            content_data = []
+            for content in search_content:
+                contentMap = {}
+                contentMap["content"] = content["fields"]["content_text"]
+                contentMap["id"] = content['pk']
+                content_data.append(contentMap)
+            response["campaign"] = content_data
+
+            # campaign_data = []
+            # for campaign in search_campaign:
+            #     campaignMap = {}
+            #     campaignMap["campaign"] = campaign.name
+            #     campaignMap["id"] = campaign.pk
+            #     campaign_data.append(campaignMap)
+            # response["campaign"] = campaign_data
 
             # body_data = []
             # for notification in search_body:

@@ -555,7 +555,7 @@ $( function() {
     appendTo: "#mydialog"
   });
 */
-
+/*
 $.ajax({
     type: 'GET',
     url: "{% url 'notifier-tags' %}",
@@ -610,7 +610,7 @@ $.ajax({
           freeInput: true
       });
     }
-});
+});*/
 
 $.ajax({
     type: 'GET',
@@ -631,31 +631,6 @@ $.ajax({
       group.initialize();
       member.initialize();
 
-      $('#search').typeahead({
-        highlight: false
-      },
-      {
-        name: 'notification',
-        display: 'name',
-        source: notification,
-        templates: {
-          header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">MEMBER RESULTS</li>',
-          suggestion: function(data) {
-                        return '<div style="margin: 0px 13px;"><i class="fas fa-user" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
-                      }
-        }
-      },
-      {
-        name: 'group',
-        display: 'name',
-        source: group,
-        templates: {
-          header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">GROUP RESULTS</li>',
-          suggestion: function(data) {
-                        return '<div style="margin: 0px 13px;"><i class="fas fa-user-friends" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
-                      }
-        }
-      });
       $('#sendto').tagsinput({
           itemValue: "name",
           itemText: "name",
