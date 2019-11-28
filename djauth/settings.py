@@ -115,7 +115,7 @@ INSTALLED_APPS = [
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
     'django_user_agents',
-    'background_task',
+    # 'background_task',
 ]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
