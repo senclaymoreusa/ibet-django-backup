@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ParseError
 from rest_framework import status
 from django.db import transaction
+from django.utils import timezone
 
 # iBet
 from users.models import CustomUser
@@ -17,6 +18,8 @@ import xmltodict
 import logging
 import decimal
 import uuid
+import random
+
 
 logger = logging.getLogger('django')
 
@@ -238,12 +241,11 @@ class ReserveView(View):
         The Reserve call makes a request to the Operator Account System to deduct a bet amount from
         the user's wallet. XML is the data format that this endpoint receives and responds with.
         """
-        # TODO: Follow up with provider about special case where a bet amount of 0.00 is allowed.
 
         data = request.body
 
         try:
-            # Extract data fields from request XML
+            # Extract data fields from request XML.
             req_dict = xmltodict.parse(data)
 
             username = req_dict['reserve']['externalId']
@@ -259,25 +261,29 @@ class ReserveView(View):
             free_game_external_id = req_dict['reserve']['freegameExternalId']
             actual_value = req_dict['reserve']['actualValue']
             
-            user = CustomUser.objects.get(username=username)
-            user_balance = int(user.main_wallet * 100) / 100.0
+            user_obj = CustomUser.objects.get(username=username)
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
             bet_amount_decimal = float(bet_amount_str)
-            user_currency_text = CURRENCY_CHOICES[user.currency][1]
+            user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
             status_code = PNG_STATUS_OK
+            bet_already_placed = False
 
-            #print("")
-            #print(type(user_balance))
-            #print(str(user_balance))
-            #print(type(bet_amount_decimal))
-            #print(str(bet_amount_decimal))
-            #print("req_currency: " + req_currency)
-            #print("user.currency: " + str(user.currency))
-            #print("user_currency_text: " + user_currency_text)
-            #print("")
+            # Idempotence - check if bet with transaction_id was already successfully placed.
+            try:
+                existing_bet = GameBet.objects.get(ref_no=transaction_id)
+                logger.error("Bet with transaction_id already exists.")
+                bet_already_placed = True
+            except ObjectDoesNotExist:
+                logger.info("Bet with transaction_id does not exist yet.")
+                pass
 
-            # Checking currency type takes priority over making a bet.
-            if user_currency_text != req_currency:
+            if bet_already_placed:
+                # Skip over all the other possible bet outcomes (elif/else clauses).
+                pass
+
+            # Check currency types.
+            elif user_currency_text != req_currency:
                 status_code = PNG_STATUS_INVALIDCURRENCY
                 logger.error("PLAY'nGO ReserveView Error: Currency mismatch.")
 
@@ -285,8 +291,10 @@ class ReserveView(View):
             elif user_balance >= bet_amount_decimal:
                 with transaction.atomic():
                     balance_after_bet = user_balance - bet_amount_decimal
-                    user.main_wallet = balance_after_bet
-                    user.save()
+                    user_obj.main_wallet = balance_after_bet
+                    user_obj.save()
+
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                     # Create a GameBet entry upon successful placement of a bet.
                     GameBet.objects.create(
@@ -294,14 +302,15 @@ class ReserveView(View):
                         category = CATEGORY,
                         #game = None,
                         #game_name = None,
-                        username = user,
+                        username = user_obj,
                         amount_wagered = bet_amount_decimal,
                         amount_won = 0.00,
                         #outcome = None,
                         #odds = None,
                         #bet_type = None,
                         #line = None,
-                        currency = user.currency,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
@@ -309,8 +318,9 @@ class ReserveView(View):
                         #other_data = {}
                     )
 
-                    logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user.username)
-
+                    logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user_obj.username)
+            
+            # Bet amount is bigger than user balance.
             else:
                 status_code = PNG_STATUS_NOTENOUGHMONEY
                 logger.error("PLAY'nGO ReserveView Error: Not enough money to place bet.")
@@ -320,7 +330,7 @@ class ReserveView(View):
                 "reserve": {
                     "real": {
                         # Cannot use balance_after_bet in case bet did not go through
-                        "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
+                        "#text": str(int(user_obj.main_wallet * 100) / 100.0)
                     },
                     "currency": {
                         "#text": str(user_currency_text)
