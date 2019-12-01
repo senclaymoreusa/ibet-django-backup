@@ -10,6 +10,7 @@ from django.db import transaction
 from users.models import CustomUser
 from games.models import GameBet, GameProvider, Category, PNGTicket
 from utils.constants import *
+from utils.aws_helper import getThirdPartyKeys
 
 # Libraries
 import xmltodict
@@ -167,7 +168,7 @@ class BalanceView(View):
         data = request.body
 
         try:
-            # Extract data fields from request XML
+            # Extract data fields from request XML.
             req_dict = xmltodict.parse(data)
 
             username = req_dict['balance']['externalId']
@@ -176,30 +177,38 @@ class BalanceView(View):
             game_id = req_dict['balance']['gameId']
             access_token = req_dict['balance']['accessToken']
 
-            # TODO: Verify accessToken after it is provided by PLAY'nGO
-            
-            # Retrieve balance of specified user and set status code based on user account status
-            user = CustomUser.objects.get(username=username)
+            # Verify accessToken.
+            third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+            PNG_ACCESS_TOKEN = third_party_keys["PLAYNGO"]["ACCESSTOKEN"]
 
-            if user:
-                # print("PLAY'nGO BalanceView: User " + username + " found!")
-                logger.info("PLAY'nGO BalanceView: User " + username + " found!")
-            else:
-                # print("PLAY'nGO BalanceView: User " + username + " not found!")
-                logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
+            if PNG_ACCESS_TOKEN != access_token:
+                res_dict = {
+                    "balance": {
+                        "real": {
+                            "#text": str(0.00)
+                        },
+                        "currency": {
+                            "#text": "N/A"
+                        },
+                        "statusCode": {
+                            "#text": str(PNG_STATUS_WRONGUSERNAMEPASSWORD)
+                        },
+                    }
+                }
 
-            user_balance = int(user.main_wallet * 100) / 100.0
-            user_currency = CURRENCY_CHOICES[user.currency][1]
-            status_code = PNG_STATUS_OK # Default case is 0 (request successful)
+                res_msg = xmltodict.unparse(res_dict, pretty=True)
+                return HttpResponse(res_msg, content_type='text/xml')
 
-            if user.block is True:
-                status_code = PNG_STATUS_ACCOUNTLOCKED
-            elif user.active is False:
+            # Retrieve balance of specified user and set status code based on user account status.
+            user_obj = CustomUser.objects.get(username=username)
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
+            user_currency = CURRENCY_CHOICES[user_obj.currency][1]
+            status_code = PNG_STATUS_OK # Default case is 0 (request successful).
+
+            if user_obj.block is True:
                 status_code = PNG_STATUS_ACCOUNTDISABLED
-            elif user_currency != currency:
-                status_code = PNG_STATUS_INVALIDCURRENCY
 
-            # Compose response dictionary and convert to response XML
+            # Compose response dictionary and convert to response XML.
             res_dict = {
                 "balance": {
                     "real": {
