@@ -18,14 +18,23 @@ from rest_framework.views import APIView
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+import time
+import urllib
+import requests
+from utils.aws_helper import getThirdPartyKeys
+from Crypto.Cipher import AES
+from games.helper import *
 
 logger = logging.getLogger('django')
 
-@background(schedule=10)
-def demo_task():
-    print ('THIS IS ONLY A TEST')
+# @background(schedule=10)
+# def demo_task():
+#     print ('THIS IS ONLY A TEST')
 
-
+# connect AWS S3
+third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
+KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
 
 @transaction.atomic
 @background(schedule=5) 
@@ -126,9 +135,20 @@ def onebook_getBetDetail():
     except:
         logger.error("There is something woring with Redis connection.")
 
+
+
+BS = 16
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+
+def aes_encode(key, data):
+    cipher = AES.new(key, AES.MODE_ECB)
+    # cipher_chunks.append()
+    cipher_text = cipher.encrypt(pad(data))
+    return cipher_text
+
 def get_timestamp():
     return int(round(time.time() * 1000))    
-    
+
 @background(schedule=10)
 def kaiyuan_getBets():
     # Query Bet Order
