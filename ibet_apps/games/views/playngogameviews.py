@@ -416,3 +416,102 @@ class ReserveView(View):
 #         except Exception as e:
 #             logger.error("PLAY'nGO ReleaseView Error: " + str(e))
 #             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class CancelReserveView(View):
+    
+    def post(self, request, *args, **kwargs):
+        """
+        The CancelReserve call makes a request to the Operator Account System to refund the user the amount that
+        a previous Reserve call deducted from the user's wallet. XML is the data format that this endpoint receives 
+        and responds with.
+        """
+
+        data = request.body
+
+        try:
+            # Extract data fields from request XML.
+            req_dict = xmltodict.parse(data)
+
+            username = req_dict['cancelReserve']['externalId']
+            product_id = req_dict['cancelReserve']['productId']
+            transaction_id = req_dict['cancelReserve']['transactionId']
+            real = req_dict['cancelReserve']['real']
+            currency = req_dict['cancelReserve']['currency']
+            game_session_id = req_dict['cancelReserve']['gameSessionId']
+            access_token = req_dict['cancelReserve']['accessToken']
+            round_id = req_dict['cancelReserve']['roundId']
+            game_id = req_dict['cancelReserve']['gameId']
+            channel = req_dict['cancelReserve']['channel']
+            free_game_external_id = req_dict['cancelReserve']['freegameExternalId']
+            actual_value = req_dict['cancelReserve']['actualValue']
+
+            status_code = PNG_STATUS_OK
+            ext_trans_id = None
+            
+            user_obj = CustomUser.objects.get(username=username)
+
+            if user_obj.block:
+                # Clarify with provider.
+                pass
+
+            # Attempt to look up previous bet and cancel.
+            try:
+                with transaction.atomic():
+                    existing_bet = GameBet.objects.get(ref_no=transaction_id) # Provider will not send multiple CancelReserve requests with same id.
+                    
+                    user_balance = user_obj.main_wallet
+                    amount_to_refund = existing_bet.amount_wagered
+
+                    balance_after_refund = user_balance + amount_to_refund
+                    user_obj.main_wallet = balance_after_refund
+                    user_obj.save()
+
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    GameBet.objects.create(
+                        provider = PROVIDER,
+                        category = CATEGORY,
+                        #game = None,
+                        #game_name = None,
+                        username = user_obj,
+                        amount_wagered = 0.00,
+                        amount_won = amount_to_refund,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
+                        market = ibetVN, # Need to clarify with provider
+                        ref_no = transaction_id,
+                        #bet_time = None,
+                        #resolved_time = None,
+                        #other_data = {}
+                    )
+
+            # Specified bet does not exist.
+            except ObjectDoesNotExist:
+                ext_trans_id = ""
+
+            # Compose response dictionary and convert to response XML.
+            res_dict = {
+                "cancelReserve": {
+                    "transactionId": {
+                        "#text": str(transaction_id)
+                    },
+                    "externalTransactionId": {
+                        "#text": str(ext_trans_id)
+                    },
+                    "statusCode": {
+                        "#text": str(status_code)
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            return HttpResponse(res_msg, content_type='text/xml')
+
+        except Exception as e:
+            logger.error("PLAY'nGO CancelReserveView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
