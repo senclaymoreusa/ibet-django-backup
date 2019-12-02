@@ -2,10 +2,6 @@ from system.views import permissionviews, logstreamview, cachehelperview
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
-# import games.views.kygameviews as kyviews
-
-# kyviews.getBets(repeat=300, repeat_until=None)
-
 from background.tasks import onebook_getBetDetail, kaiyuan_getBets
 
 urlpatterns = [
