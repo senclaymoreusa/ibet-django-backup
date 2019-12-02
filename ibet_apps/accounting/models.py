@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -46,7 +47,10 @@ class ThirdParty(models.Model):
     max_amount = models.DecimalField(
         max_digits=20, decimal_places=2, default=0, verbose_name=_("Max Amount")
     )
-    switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+
+    # switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+    status = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+
     # flat fee for each transaction
     transaction_fee = models.DecimalField(
         max_digits=20,
@@ -79,6 +83,14 @@ class ThirdParty(models.Model):
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
     vip_level = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
 
+    # # white/blacklist
+    whitelist = JSONField(default=dict)
+    blacklist = JSONField(default=dict)
+
+    # # scheduled downtime
+    downtime_start = models.DateTimeField(null=True, blank=True)
+    downtime_end = models.DateTimeField(null=True, blank=True)
+    
     class Meta:
         abstract = True
 
