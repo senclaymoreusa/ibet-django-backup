@@ -125,6 +125,75 @@ def onebook_getBetDetail():
             logger.info("skip running this time.")
     except:
         logger.error("There is something woring with Redis connection.")
+
+def get_timestamp():
+    return int(round(time.time() * 1000))    
     
-    
+@background(schedule=10)
+def kaiyuan_getBets():
+    # Query Bet Order
+    timestamp = get_timestamp()
+
+    startTime = get_timestamp() - 300000 # five minutes before now
+    endTime = get_timestamp() - 60000 # one minute before now
+
+    param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
+
+    param = aes_encode(KY_AES_KEY, param)
+    param = base64.b64encode(param)
+    param = str(param, "utf-8")
+
+    key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+    key = hashlib.md5(key.encode())
+    key = key.hexdigest()
+
+    url = KY_RECORD_URL
+
+    req_param = {}
+    req_param["agent"] = KY_AGENT
+    req_param["timestamp"] = str(timestamp)
+    req_param["param"] = param
+    req_param["key"] = key
+
+    req = urllib.parse.urlencode(req_param)
+    url = url + '?' + req
+    res = requests.get(url)
+
+    data = res.json()
+
+    if data['d']['code'] == 0:
+        count = int(data['d']['count'])
+        record_list = data['d']['list']
+
+        provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
+        category = Category.objects.get_or_create(name='Chess', notes="Kaiyuan Chess")
+
+        game_id = record_list['GameID']
+        accounts = record_list['Accounts']
+        # server_id = record_list['ServerID']
+        # kind_id = record_list['KindID']
+        # table_id = record_list['TableID']
+        cell_score = record_list['CellScore']
+        profit = record_list['Profit']
+        revenue = record_list['Revenue']
+
+        for i in range(0, count):
+            username = accounts[i][6:]
+            user = CustomUser.objects.get(username=username)
+
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+            GameBet.objects.create(
+                provider=provider[0],
+                category=category[0],
+                username=user,
+                amount_wagered=decimal.Decimal(cell_score[i]),
+                amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
+                transaction_id=trans_id,
+                market=ibetCN,
+                ref_no=game_id[i]
+            )
+    else:
+        pass
+    # print(res.json)
  
