@@ -442,7 +442,7 @@ class FundTransfer(APIView):
 
 
 @transaction.atomic
-@background(schedule=5) 
+# @background(schedule=5) 
 def getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
