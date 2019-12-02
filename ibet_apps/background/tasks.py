@@ -8,7 +8,7 @@ import datetime
 from datetime import date
 from django.utils import timezone
 from time import gmtime, strftime, strptime
-import random
+import random, logging
 from django.core.exceptions import  ObjectDoesNotExist
 from users.models import CustomUser
 from rest_framework import status
@@ -18,6 +18,8 @@ from rest_framework.views import APIView
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+
+logger = logging.getLogger('django')
 
 @background(schedule=10)
 def demo_task():
