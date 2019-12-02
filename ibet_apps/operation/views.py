@@ -176,14 +176,18 @@ class NotificationSearchAutocomplete(View):
 
             search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
             search_content = Notification.objects.filter(Q(content_text__contains=search)&Q(status=tab))
+            search_member = Notification.objects.filter(Q(creator_icontains=search))
+
             # search_campaign = Notification.objects.filter(Q(campaign__name__icontains=search))
 
             search_subject = serializers.serialize('json', search_subject)
             search_content = serializers.serialize('json', search_content)
+            search_member = serializers.serialize('json', search_member)
             # search_body = serializers.serialize('json', search_body)
 
             search_subject = json.loads(search_subject)
             search_content = json.loads(search_content)
+            search_member = json.loads(search_member)
 
             response = {}
 
