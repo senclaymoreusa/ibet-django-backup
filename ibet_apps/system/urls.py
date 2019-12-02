@@ -2,6 +2,13 @@ from system.views import permissionviews, logstreamview, cachehelperview
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
+# import games.views.kygameviews as kyviews
+
+# kyviews.getBets(repeat=300, repeat_until=None)
+
+import games.views.onebookviews as onebookviews
+
+onebookviews.getBetDetail(repeat=300,repeat_until=None)
 
 urlpatterns = [
     path('api/getadminuser/', permissionviews.GetAdminUser.as_view(), name='get_admin_user'),
