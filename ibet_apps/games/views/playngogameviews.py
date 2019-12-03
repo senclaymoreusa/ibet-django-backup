@@ -23,22 +23,28 @@ import random
 
 logger = logging.getLogger('django')
 
-try:
-    PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
-except ObjectDoesNotExist:
-    PROVIDER = GameProvider.objects.create(
-                                            provider_name="PLAYNGO",
-                                            type=2,
-                                            market="ibetCN"
-                                          )
+def setup_models():
+    PROVIDER = None
+    CATEGORY = None 
 
-try:
-    CATEGORY = Category.objects.get(name="SLOTS")
-except ObjectDoesNotExist:
-    CATEGORY = Category.objects.create(
-                                        name="SLOTS",
-                                        notes="None"
-                                      )
+    try:
+        PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+    except ObjectDoesNotExist:
+        PROVIDER = GameProvider.objects.create(
+                                                provider_name="PLAYNGO",
+                                                type=2,
+                                                market="ibetCN"
+                                              )
+
+    try:
+        CATEGORY = Category.objects.get(name="SLOTS")
+    except ObjectDoesNotExist:
+        CATEGORY = Category.objects.create(
+                                            name="SLOTS",
+                                            notes="None"
+                                          )
+    
+    return (PROVIDER, CATEGORY)
 
 
 class GameLaunchView(View):
@@ -242,6 +248,8 @@ class ReserveView(View):
         the user's wallet. XML is the data format that this endpoint receives and responds with.
         """
 
+        PROVIDER, CATEGORY = setup_models()
+
         data = request.body
 
         try:
@@ -358,6 +366,8 @@ class CancelReserveView(View):
         and responds with.
         """
 
+        PROVIDER, CATEGORY = setup_models()
+
         data = request.body
 
         try:
@@ -460,6 +470,9 @@ class ReleaseView(View):
     def post(self, request, *args, **kwargs):
         """
         """
+
+        PROVIDER, CATEGORY = setup_models()
+
         data = request.body
 
         try:
