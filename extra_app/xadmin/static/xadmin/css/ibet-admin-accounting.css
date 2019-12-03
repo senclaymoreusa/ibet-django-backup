@@ -44,7 +44,20 @@
     color: #ffffff;
 }
 
+label {
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
 
+.data-section {
+    padding-top: 20px;
+}
 
 .btn-note {
     background-color: #72befb;
@@ -55,7 +68,8 @@
 
 #deposits-section table thead tr th,
 #latest_deposit table thead tr th,
-#latest_withdraw table thead tr th {
+#latest_withdraw table thead tr th,
+#supplier-table table thead tr th {
     font-family: Helvetica;
     font-size: 11px;
     font-weight: normal;
@@ -65,10 +79,12 @@
     letter-spacing: normal;
     color: #4a4a4a;
 }
+
 /*datatable table tbody tr td {*/
 #deposits-section table tbody tr td,
 #latest_deposit table tbody tr td,
-#latest_withdraw table thead tr td {
+#latest_withdraw table body tr td,
+#supplier-table table tbody tr td {
     font-family: Helvetica;
     font-size: 14px;
     font-weight: normal;
@@ -308,40 +324,24 @@
     margin-left: 3%;
 }
 
-#supplier-table {
-    width: 95%;
-}
 
-#suppliers.datatable thead tr th {
-    font-family: Helvetica;
-    font-size: 10px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
-
-#suppliers.datatable tbody tr td {
-    font-family: Helvetica;
-    font-size: 13px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-}
 
 /*#suppliers.datatable tbody tr:nth-of-type(even) {*/
 /*    background-color: rgba(0,0,0,0.5);*/
 /*}*/
 
-.supplier-table {
+/* .supplier-table {
     color: #00a281;
-}
+} */
 
+.row {
+    margin-left: 0px;
+}
 .row .per-page {
     margin: 20px 0 20px 0;
 }
+.col-md-1 {
+    padding: 10px 0 0 0px; 
+    width: 120px;
+}
+

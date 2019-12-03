@@ -17,18 +17,58 @@ import logging
 
 logger = logging.getLogger("django")
 
+convStatus = {
+    'active': 0,
+    'disabled': 1
+}
+convMarket = {
+    'ibet-vn': 0,
+    'ibet-th': 1,
+    'ibet-cn': 2,
+    'letou-vn': 3,
+    'letou-th': 4,
+    'letou-cn': 5
+}
 
-class PaymentConfig(CommAdminView):
+class GetPaymentChannels(CommAdminView):
     def get(self, request):
         context = super().get_context()
         title = "Payment Configuration"
+        psp_type = request.GET.get('type')
+        market = request.GET.get('market')
+        status = request.GET.get('status')
+        deposit_psp = []
+        withdraw_psp = []
+        
+        if not psp_type:
+            deposit_psp = DepositChannel.objects.all()
+            withdraw_psp = WithdrawChannel.objects.all()
+        if psp_type == "deposit":
+            deposit_psp = DepositChannel.objects.all()
+        if psp_type == "withdraw":
+            withdraw_psp = WithdrawChannel.objects.all()
+
+        if market and market != "all":
+            market = convMarket[market]
+            marketQ = Q(market=market)
+            if withdraw_psp:
+                withdraw_psp = withdraw_psp.filter(marketQ)
+            if deposit_psp:
+                deposit_psp = deposit_psp.filter(marketQ)
+        if status:
+            status = convStatus[status]
+            statusQ = Q(status=status)
+            if withdraw_psp:
+                withdraw_psp = withdraw_psp.filter(statusQ)
+            if deposit_psp:
+                deposit_psp = deposit_psp.filter(statusQ)
+
         context["breadcrumbs"].append({"title": title})
         context["title"] = title
         context["time"] = timezone.now()
-
-        deposit_psp = DepositChannel.objects.all()
-        # withdraw_psp = WithdrawChannel.objects.all()
-        context["suppliers"] = deposit_psp
-        # print(context["suppliers"])
+        
+        
+        context["deposits"] = deposit_psp
+        context["withdraws"] = withdraw_psp
 
         return render(request, "channels.html", context)
