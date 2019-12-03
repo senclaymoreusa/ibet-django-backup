@@ -2,7 +2,7 @@ from system.views import permissionviews, logstreamview, cachehelperview
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
-from background.tasks import onebook_getBetDetail, kaiyuan_getBets
+from background.tasks import demo_task, onebook_getBetDetail, kaiyuan_getBets
 
 urlpatterns = [
     path('api/getadminuser/', permissionviews.GetAdminUser.as_view(), name='get_admin_user'),
@@ -11,7 +11,6 @@ urlpatterns = [
     path('api/cachehelper/', csrf_exempt(cachehelperview.CacheHelperTest.as_view()), name='cache_helper')
 ]
 
-# demo_task(repeat=5)
-onebook_getBetDetail(repeat=300,repeat_until=None)
-kaiyuan_getBets(repeat=300, repeat_until=None)
+demo_task(repeat=5)
+
 

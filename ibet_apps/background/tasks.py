@@ -25,11 +25,12 @@ from utils.aws_helper import getThirdPartyKeys
 from Crypto.Cipher import AES
 from games.helper import *
 
+
 logger = logging.getLogger('django')
 
-# @background(schedule=10)
-# def demo_task():
-#     print ('THIS IS ONLY A TEST')
+@background(schedule=10)
+def demo_task():
+    print ('THIS IS ONLY A TEST')
 
 # connect AWS S3
 third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
@@ -132,8 +133,8 @@ def onebook_getBetDetail():
             return rdata
         else:
             logger.info("skip running this time.")
-    except:
-        logger.error("There is something woring with Redis connection.")
+    except redis.ConnectionError: 
+        logger.error("Could not connect to redis.")
 
 
 

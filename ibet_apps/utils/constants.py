@@ -204,6 +204,12 @@ LANGUAGE_CHOICES = (
     ('ja', 'Japanese'),
 )
 
+GAME_TYPE_SPORTS = 0
+GAME_TYPE_GAMES = 1
+GAME_TYPE_LIVE_CASINO = 2
+GAME_TYPE_FINANCIAL = 3
+GAME_TYPE_GENERAL = 4
+
 GAME_TYPE_CHOICES = (
     (0, 'Sports'),
     (1, 'Games'),
@@ -275,11 +281,15 @@ VIP_CHOICES = (
 ibetVN = 0
 ibetTH = 1
 ibetCN = 2
+ibetAS = 3
+
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
+    (ibetAS, "ibet-AS"),
     (ibetCN, "ibet-CN"),
 )
+
 
 COUNTRY_CHOICES = (
     ('US', 'United States'),
