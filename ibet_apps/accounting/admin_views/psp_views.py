@@ -40,7 +40,7 @@ class GetPaymentChannels(CommAdminView):
         deposit_psp = []
         withdraw_psp = []
         
-        if not psp_type:
+        if not psp_type or psp_type == "all":
             deposit_psp = DepositChannel.objects.all()
             withdraw_psp = WithdrawChannel.objects.all()
         if psp_type == "deposit":
@@ -55,7 +55,7 @@ class GetPaymentChannels(CommAdminView):
                 withdraw_psp = withdraw_psp.filter(marketQ)
             if deposit_psp:
                 deposit_psp = deposit_psp.filter(marketQ)
-        if status:
+        if status and status != "all":
             status = convStatus[status]
             statusQ = Q(status=status)
             if withdraw_psp:
