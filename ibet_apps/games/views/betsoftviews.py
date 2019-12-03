@@ -217,9 +217,16 @@ class BetSoftBetResult(View):
                 bet_amount = bet_list[0]
                 ref_id = bet_list[1]
                 amount = bet_amount
+                if int(bet_amount) > 1000000:
+                    response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
+                    response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(501)
+                    response = xmltodict.unparse(response, pretty=True)
+                    return HttpResponse(response, content_type='text/xml')
+
                 if decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
                     response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(300)
+                    response = xmltodict.unparse(response, pretty=True)
                     return HttpResponse(response, content_type='text/xml')
 
                 with transaction.atomic():
