@@ -81,23 +81,27 @@ class ThirdParty(models.Model):
     # control new users volume
     limit_access = models.BooleanField(default=False)
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
-    vip_level = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
+    player_segment = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
 
-    # # white/blacklist
+
+    # white/blacklist
     whitelist = JSONField(default=dict)
     blacklist = JSONField(default=dict)
 
-    # # scheduled downtime
+    # scheduled downtime
     downtime_start = models.DateTimeField(null=True, blank=True)
     downtime_end = models.DateTimeField(null=True, blank=True)
     
+    # changelog ? 
+    changelog = JSONField(default=dict)
+
     class Meta:
         abstract = True
 
     def __str__(self):
         return "{0}".format(self.thirdParty_name)
 
-
+    
 class DepositChannel(ThirdParty):
     priority = models.IntegerField(default=0, verbose_name=_("Priority"))
     deposit_channel = models.ManyToManyField(
@@ -112,6 +116,10 @@ class DepositChannel(ThirdParty):
         verbose_name = "Deposit Channel"
         verbose_name_plural = "Deposit Channels"
 
+    @property
+    def type(self):
+        return "Deposit"
+
     def __str__(self):
         return "PSP Name: {0}, \n \
             Min Amount: {1}, \n \
@@ -120,16 +128,17 @@ class DepositChannel(ThirdParty):
             Market: {4} \n \
             ".format(self.get_thirdParty_name_display(), self.min_amount, self.max_amount, self.channel, self.get_market_display())
 
-
-
 class WithdrawChannel(ThirdParty):
     class Meta:
         verbose_name = "Withdraw Channel"
         verbose_name_plural = "Withdraw Channels"
 
+    @property
+    def type(self):
+        return "Withdraw"
+    
     def __str__(self):
         return self.get_thirdParty_name_display()
-
 
 class Transaction(models.Model):
     """
@@ -199,10 +208,7 @@ class Transaction(models.Model):
 
     # bank account details (used for offline local bank transfer)
     # The user Account
-    user_bank_account = models.ForeignKey(
-        BankAccount, on_delete=models.CASCADE, null=True, blank=True
-    )
-
+    bank_info = JSONField(null=True, default=dict)
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
