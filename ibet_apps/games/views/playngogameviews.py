@@ -350,8 +350,6 @@ class ReserveView(View):
 
 
 class CancelReserveView(View):
-
-    # TODO: Clarify with provider about case where user is blocked.
     
     def post(self, request, *args, **kwargs):
         """
@@ -385,7 +383,9 @@ class CancelReserveView(View):
             user_obj = CustomUser.objects.get(username=username)
 
             if user_obj.block:
-                # Clarify with provider.
+                # Even if the user is blocked, the refund should still go through. No further action is 
+                # necessary for this case. This is to explicitly inform the reader that this case is
+                # already handled.
                 pass
 
             # Attempt to look up previous bet and cancel.
