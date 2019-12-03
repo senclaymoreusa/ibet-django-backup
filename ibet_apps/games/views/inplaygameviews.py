@@ -40,6 +40,7 @@ logger = logging.getLogger('django')
 #     return de
 
 IMES_KEY = "9d25ee5d1ffa0e01" 
+IMES_URL = "http://ibet.esapi.test.imapi.net/"
 
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
@@ -68,38 +69,28 @@ def des3Decryption(cipher_text):
 class InplayLoginAPI(View):
     def post(self, request, *arg, **kwargs):
         try:
-            data = request.body
+            data = json.loads(request.body)
 
-            # user = CustomUser.objects.get(username='Bobby')
-            # if user:
-            #     # sessionToken = Token.objects.get(user_id=user)
-            #     # print(sessionToken)
-            #     # token = {}
-            #     # token["agent"] = agent
-            #     req_param["timestamp"] = str(timestamp)
-            #     req_param["param"] = param
-            #     req_param["key"] = key
-            #     # url += "?agent=" + agent
-            #     # url += "&timestamp=" + str(timestamp)
-            #     # url += "&param=" + param
-            #     # url += "&key=" + str(key)
-            #     req = urllib.parse.urlencode(req_param)
-            # else:
-            #     print("User not exist")
+            username = data['username']
+            user = CustomUser.objects.get(username=username)
 
+            post_data = {}
+            sessionToken = Token.objects.get(user_id=user)
+            post_data['Token'] = str(sessionToken)
 
-            key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
-
-            cipher = DES3.new(key, DES3.MODE_ECB)
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
-            print(time_stamp)
+            time_stamp = des3Encryption(time_stamp)
+            post_data['TimeStamp'] = str(time_stamp)
+            
+            url = IMES_URL + "api/login"
+            
+            res = requests.post(url, data=post_data)
+            res = res.json()
 
-            time_stamp = cipher.encrypt(pad(time_stamp))
-            time_stamp = base64.b64encode(time_stamp)
-            time_stamp = str(time_stamp, "utf-8")
-            print(time_stamp)
-
-            return HttpResponse(status=200)
+            if res['StatusCode'] == 0:
+                return HttpResponse(status=200)
+            else:
+                return HttpResponse(status=400)
         except Exception as e:
             print("Error:", repr(e))
 
@@ -107,8 +98,8 @@ class InplayLoginAPI(View):
 class ValidateTokenAPI(View):
     def get(self, request, *arg, **kwargs):
         data = request.body
-        token = data["Token"]
-        print(data)
+        # token = data["Token"]
+        # print(data)
 
         res = {}
         res["memberCode"] = "Bobby"
