@@ -349,76 +349,9 @@ class ReserveView(View):
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-# class ReleaseView(View):
-
-#     def post(self, request, *args, **kwargs):
-#         """
-#         """
-#         data = request.body
-
-#         try:
-#             req_dict = xmltodict.parse(data)
-
-#             username = req_dict['release']['externalId']
-#             product_id = req_dict['release']['productId']
-#             transaction_id = req_dict['release']['transactionId']
-#             win_amount_str = req_dict['release']['real']
-#             currency = req_dict['release']['currency']
-#             game_session_id = req_dict['release']['gameSessionId']
-#             state = req_dict['release']['state']
-#             req_type = req_dict['release']['type']
-#             game_id = req_dict['release']['gameId']
-#             access_token = req_dict['release']['accessToken']
-#             round_id = req_dict['release']['roundId']
-#             jackpot_gain = req_dict['release']['jackpotGain']
-#             jackpot_loss = req_dict['release']['jackpotLoss']
-#             jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
-#             jackpot_gain_id = req_dict['release']['jackpotGainId']
-#             channel = req_dict['release']['channel']
-#             free_game_external_id = req_dict['release']['freegameExternalId']
-#             free_game_total_gain = req_dict['release']['freegameTotalGain']
-
-
-
-#             user = CustomUser.objects.get(username=username)
-#             user_balance = int(user.main_wallet * 100) / 100.0
-#             win_amount_decimal = float(win_amount_str)
-
-#             status_code = PNG_STATUS_OK
-
-#             # TODO: Check for invalid currency.
-
-#             balance_after_win = user_balance + win_amount_decimal
-#             user.main_wallet = balance_after_win
-#             user.save()
-
-
-
-#             res_dict = {
-#                 "release": {
-#                     "real": {
-#                         "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
-#                     },
-#                     "currency": {
-#                         "#text": ""
-#                     },
-#                     "statusCode": {
-#                         "#text": str(status_code)
-#                     },
-#                 }
-#             }
-
-#             res_msg = xmltodict.unparse(res_dict, pretty=True)
-#             return HttpResponse(res_msg, content_type='text/xml')
-
-
-
-#         except Exception as e:
-#             logger.error("PLAY'nGO ReleaseView Error: " + str(e))
-#             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
-
-
 class CancelReserveView(View):
+
+    # TODO: Clarify with provider about case where user is blocked.
     
     def post(self, request, *args, **kwargs):
         """
@@ -489,10 +422,13 @@ class CancelReserveView(View):
                         #resolved_time = None,
                         #other_data = {}
                     )
+                    
+                    logger.info("PLAY'nGO CancelReserveView Success: Bet successfully refunded.")
 
             # Specified bet does not exist.
             except ObjectDoesNotExist:
                 ext_trans_id = ""
+                logger.error("PLAY'nGO CancelReserveView Error: Specified bet does not exist.")
 
             # Compose response dictionary and convert to response XML.
             res_dict = {
@@ -514,4 +450,109 @@ class CancelReserveView(View):
 
         except Exception as e:
             logger.error("PLAY'nGO CancelReserveView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReleaseView(View):
+
+    # TODO: Session handling
+
+    def post(self, request, *args, **kwargs):
+        """
+        """
+        data = request.body
+
+        try:
+            req_dict = xmltodict.parse(data)
+
+            username = req_dict['release']['externalId']
+            product_id = req_dict['release']['productId']
+            transaction_id = req_dict['release']['transactionId']
+            win_amount_str = req_dict['release']['real']
+            currency = req_dict['release']['currency']
+            game_session_id = req_dict['release']['gameSessionId']
+            state = req_dict['release']['state']
+            req_type = req_dict['release']['type']
+            game_id = req_dict['release']['gameId']
+            access_token = req_dict['release']['accessToken']
+            round_id = req_dict['release']['roundId']
+            jackpot_gain = req_dict['release']['jackpotGain']
+            jackpot_loss = req_dict['release']['jackpotLoss']
+            jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
+            jackpot_gain_id = req_dict['release']['jackpotGainId']
+            channel = req_dict['release']['channel']
+            free_game_external_id = req_dict['release']['freegameExternalId']
+            free_game_total_gain = req_dict['release']['freegameTotalGain']
+
+            user_obj = CustomUser.objects.get(username=username)
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
+            win_amount_decimal = float(win_amount_str)
+            user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
+
+            status_code = PNG_STATUS_OK
+            release_already_resolved = False
+
+            # Idempotence - check if release with transaction_id was already successfully resolved.
+            try:
+                existing_release = GameBet.objects.get(ref_no=transaction_id)
+                logger.error("Release with transaction_id already exists.")
+                release_already_resolved = True
+            except ObjectDoesNotExist:
+                pass
+
+            # Release not resolved yet; issue the refund.
+            if not release_already_resolved:
+                with transaction.atomic():
+                    balance_after_win = user_balance + win_amount_decimal
+                    user_obj.main_wallet = balance_after_win
+                    user_obj.save()
+
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    GameBet.objects.create(
+                        provider = PROVIDER,
+                        category = CATEGORY,
+                        #game = None,
+                        #game_name = None,
+                        username = user_obj,
+                        amount_wagered = 0.00,
+                        amount_won = win_amount_decimal,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
+                        market = ibetVN, # Need to clarify with provider
+                        ref_no = transaction_id,
+                        #bet_time = None,
+                        #resolved_time = None,
+                        #other_data = {}
+                    )
+
+                    logger.info("PLAY'nGO ReleaseView Success: Winnings sent to user's wallet.")
+
+            else:
+                logger.error("PLAY'nGO ReleaseView Error: Transaction already resolved.")
+                pass
+
+            res_dict = {
+                "release": {
+                    "real": {
+                        "#text": str(int(user_obj.main_wallet * 100) / 100.0)
+                    },
+                    "currency": {
+                        "#text": str(user_currency_text)
+                    },
+                    "statusCode": {
+                        "#text": str(status_code)
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            return HttpResponse(res_msg, content_type='text/xml')
+
+        except Exception as e:
+            logger.error("PLAY'nGO ReleaseView Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
