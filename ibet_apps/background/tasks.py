@@ -133,7 +133,7 @@ def onebook_getBetDetail():
             return rdata
         else:
             logger.info("skip running this time.")
-    except redis.ConnectionError: 
+    except: 
         logger.error("Could not connect to redis.")
 
 
