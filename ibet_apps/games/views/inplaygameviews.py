@@ -86,29 +86,37 @@ class InplayLoginAPI(View):
             
             res = requests.post(url, data=post_data)
             res = res.json()
+            print(res)
 
-            if res['StatusCode'] == 0:
-                return HttpResponse(status=200)
-            else:
-                return HttpResponse(status=400)
+            return HttpResponse(json.dumps(res), content_type='application/json')
+
+            # if res['StatusCode'] == 0:
+            #     return HttpResponse(status=200)
+            # else:
+            #     return HttpResponse(status=400)
         except Exception as e:
-            print("Error:", repr(e))
+            logger.error("Inplay Matrix validation error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class ValidateTokenAPI(View):
     def get(self, request, *arg, **kwargs):
-        data = request.body
-        # token = data["Token"]
-        # print(data)
+        try:
+            # data = json(request.body)
+            # print(data)
+            token = request.GET.get("token")
+            user = Token.objects.get(key=token).user
 
-        res = {}
-        res["memberCode"] = "Bobby"
-        res["CurrencyCode"] = "RMB"
-        res["IPAddress"] = "127.0.0.1"
-        res["statusCode"] = 100
-        res["statusDesc"] = "Success"
+            res = {}
+            res["memberCode"] = user.username
+            res["CurrencyCode"] = "RMB"
+            # res["IPAddress"] = "127.0.0.1"
+            res["statusCode"] = 100
+            res["statusDesc"] = "Success"
 
-        return HttpResponse(json.dumps(res), content_type="application/json", status=200)
+            return HttpResponse(json.dumps(res), content_type="application/json", status=200)
+        except Exception as e:
+            print("Error: {}".format(repr(e)))
 
 
 class InplayGetBalanceAPI(View):
