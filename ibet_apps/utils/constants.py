@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
+print("env:" +os.getenv("ENV"))
+print("datetime:" + str(datetime.datetime.now()))
 print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
