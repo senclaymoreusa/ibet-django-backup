@@ -1022,7 +1022,7 @@ $(document).ready(function() {
       sourceList.push({
         'type': 'category',
         'label': term,
-        'value': 'MESSAGE RESULTS'
+        'value': 'SUBJECT RESULTS'
       });
       for (var i = 0; i < subject.length; i++) {
         sourceList.push({
@@ -1075,14 +1075,13 @@ $(document).ready(function() {
             // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
           } else {
             // var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
-            var url = "#"
             if (item.type == 'subject') {
               return $('<li>')
-              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a onclick="return getMessage(' + item.id + ')"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
             } else if (item.type == 'content') {
               return $('<li>')
-              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a onclick="return getMessage(' + item.id + ')"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
             }
           }

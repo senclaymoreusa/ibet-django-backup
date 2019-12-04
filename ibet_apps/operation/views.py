@@ -176,18 +176,15 @@ class NotificationSearchAutocomplete(View):
 
             search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
             search_content = Notification.objects.filter(Q(content_text__contains=search)&Q(status=tab))
-            search_member = Notification.objects.filter(Q(creator_icontains=search))
 
             # search_campaign = Notification.objects.filter(Q(campaign__name__icontains=search))
 
             search_subject = serializers.serialize('json', search_subject)
             search_content = serializers.serialize('json', search_content)
-            search_member = serializers.serialize('json', search_member)
             # search_body = serializers.serialize('json', search_body)
 
             search_subject = json.loads(search_subject)
             search_content = json.loads(search_content)
-            search_member = json.loads(search_member)
 
             response = {}
 
@@ -225,8 +222,8 @@ class NotificationSearchAutocomplete(View):
             logger.info('Search response: ' + json.dumps(response))
             return HttpResponse(json.dumps(response), content_type='application/json')
         except Exception as e:
-            print(repr(e))
-            logger.error(e)
+            logger.error("Autocomplete Search Error: {}".format(repr(e)))
+            return HttpResponse(repr(e), status=400)
 
 
 def isTimeFormat(time_str):
