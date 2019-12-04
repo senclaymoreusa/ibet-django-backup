@@ -231,8 +231,10 @@ elif "ENV" in os.environ:
     REDIS = {
         # "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
         "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
+        
         "PORT": 6379
     }
+    print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
 
 
 # Password validation
