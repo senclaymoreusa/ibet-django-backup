@@ -230,7 +230,7 @@ elif "ENV" in os.environ:
     print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
     REDIS = {
         # "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
-        "HOST": 'letou-staging-redis-ro.hivulc.ng.0001.apne1.cache.amazonaws.com',
+        "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
         "PORT": 6379
     }
 
