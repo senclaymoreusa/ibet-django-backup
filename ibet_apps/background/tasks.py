@@ -53,9 +53,10 @@ def onebook_getBetDetail():
     success = False
     version_key = PROVIDER.notes
     onebook_run = "run"
+    redis = RedisHelper()
     try:
         r = RedisClient().connect()
-        redis = RedisHelper()
+        
         # print(redis.check_onebook_bet_details(onebook_run))
         if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
