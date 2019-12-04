@@ -5,7 +5,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import JSONField
-
 from users.models import CustomUser
 
 from utils.constants import *
