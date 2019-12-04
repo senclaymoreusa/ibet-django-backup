@@ -3,6 +3,8 @@ from games.helper import transferRequest
 from django.views import View
 from django.db import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder  
 from django.conf import settings
 from django.db import transaction
 from users.views.helper import checkUserBlock
@@ -72,3 +74,40 @@ class Transfer(View):
         except Exception as e:
             logger.error("Request transfer error: ", e)
             return HttpResponse(status=400)
+
+
+
+
+class EachWalletAmount(View):
+
+    def get(self, request, *args, **kwargs):
+
+        response = {}
+        
+        try:
+            user_id = request.GET.get('user_id')
+            user = CustomUser.objects.get(pk=user_id)
+            response["ea"] = "%.2f" % user.ea_wallet
+            response["onebook"] = "%.2f" % user.onebook_wallet
+            response["ky"] = "%.2f" % user.ky_wallet
+            # response["ag"] = user.ag_wallet
+            # response["opus"] = user.opus_wallet
+            # response["gpi"] = user.gpi_wallet
+            # response["bbin"] = user.bbin_wallet
+            # response["pt"] = user.pt_wallet
+
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        
+        except ObjectDoesNotExist as e:
+            logger.error("The user does not exist ", e)
+            response["error_code"] = ERROR_CODE_INVALID_INFO
+            response["error_msg"] = "Cannot find the user"
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+
+        
+        except Exception as e:
+            logger.error("Get amount of each wallet by a user error: ", e)
+            return HttpResponse(status=400)
+
+
+        
