@@ -5,10 +5,10 @@ from rest_framework.views import APIView
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from django.db import transaction
 from users.models import CustomUser
 from accounting.models import *
 import simplejson as json
-import xmltodict
 import decimal
 import requests
 from utils.constants import *
@@ -16,7 +16,6 @@ import random
 import hashlib 
 import logging
 import datetime
-from datetime import date
 from django.utils import timezone
 import uuid
 from  games.models import *
@@ -66,6 +65,17 @@ def des3Decryption(cipher_text):
         print("Decrypt Error: {}".format(repr(e)))
 
 
+def isLessThanFiveMin(req_time):
+    try:
+        print(req_time)
+        req_time = datetime.datetime.strptime(req_time, '%b/%d/%Y %I:%M:%S %p')
+        print(req_time)
+        return True
+    except Exception as e:
+        print(repr(e))
+        return False
+
+
 class InplayLoginAPI(View):
     def post(self, request, *arg, **kwargs):
         try:
@@ -95,7 +105,7 @@ class InplayLoginAPI(View):
             # else:
             #     return HttpResponse(status=400)
         except Exception as e:
-            logger.error("Inplay Matrix validation error: {}".format(repr(e)))
+            logger.error("Inplay Matrix login error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -116,7 +126,8 @@ class ValidateTokenAPI(View):
 
             return HttpResponse(json.dumps(res), content_type="application/json", status=200)
         except Exception as e:
-            print("Error: {}".format(repr(e)))
+            logger.error("Inplay Matrix validation error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class InplayGetBalanceAPI(View):
@@ -124,28 +135,27 @@ class InplayGetBalanceAPI(View):
         balance_package = request.GET.get("balancePackage")
         date_sent = request.GET.get("dateSent")
         # data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
-        balance_package = "ZwgZhGFWmUv5vDi5q2ruVNc3lf+JmmxTctAdoxbVdOUeW+RbwyYE95B0M4EiVX/k"
+        # balance_package = "ZwgZhGFWmUv5vDi5q2ruVNc3lf+JmmxTctAdoxbVdOUeW+RbwyYE95B0M4EiVX/k"
         try:
+            balance_package = balance_package.replace(' ', '+')
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
-            # print(data)
 
             response = {}
             if data["EventTypeId"] == '1000':
                 member_code = data["MemberCode"]
+                member_code = member_code.strip('\"')
                 user = CustomUser.objects.get(username=member_code)
 
                 response["StatusCode"] = 100
                 response["StatusMessage"] = "Success"
-                # response["PackageId"] = str(uuid.uuid1())
+                response["PackageId"] = str(uuid.uuid1())
                 response["Balance"] = float(user.main_wallet)
 
                 response = json.dumps(response)
 
                 ciphertext = des3Encryption(response)
-                # print(ciphertext)
-
                 return HttpResponse(ciphertext, content_type='text/plain', status=200)
             else:
                 # response[]
@@ -162,11 +172,11 @@ class InplayGetApprovalAPI(View):
         date_sent = request.GET.get('dateSent')
 
         try:
-            balance_package = "ZwgZhGFWmUv5vDi5q2ruVAUij5STfGZ6ctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
+            # balance_package = "ZwgZhGFWmUv5vDi5q2ruVAUij5STfGZ6ctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
+            balance_package = balance_package.replace(' ', '+')
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0], "}"])
             data = json.loads(data)
-            # print(data)
             response = {}
             if data["EventTypeId"] == '1001':
                 member_code = data["MemberCode"]
@@ -183,7 +193,6 @@ class InplayGetApprovalAPI(View):
                     response["StatusCode"] = -100
                     
                 response = json.dumps(response)
-                # print(response)
                 cipher_text = des3Encryption(response)
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
             else:
@@ -200,7 +209,8 @@ class InplayDeductBalanceAPI(View):
         date_sent = request.GET.get('dateSent')
 
         try:
-            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
+            # balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
+            balance_package = balance_package.replace(' ', '+')
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
             data = json.loads(data)
@@ -248,10 +258,6 @@ class InplayDeductBalanceAPI(View):
 class InplayUpdateBalanceAPI(View):
     def post(self, request, *arg, **kwargs):
         data = json.loads(request.body)
-
-        # balance_package = request.GET.get('balancePackage')
-        # package_id = request.GET.get('packageid')
-        # date_sent = request.GET.get('dateSent')
         try:
             balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
             print(balance_package)
@@ -261,27 +267,34 @@ class InplayUpdateBalanceAPI(View):
             # print(data["EventTypeId"])
             #  data = json.dumps(str(data))
             data = json.loads(data)
-            print(data)
             if data["EventTypeId"] == '4002':
                 user = data["MemberCode"]
                 # amount = float(data["TransactionAmt"])
                 # user = CustomUser.objects.get(username=user)
                 match_no = data["MatchNo"]
                 bet_detail_list = data["BetDetailList"]
-                if user.main_wallet > amount:
+                for bet in bet_detail_list:
+                    member_code = bet["MemberCode"]
+                    bet_no = bet["BetNo"]
+                    amount = bet["TransactionAmt"]
+
+                    user = CustomUser.objects.get(user)
+
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    trans = Transaction.objects.create(
-                        transaction_id=trans_id,
-                        user_id=user,
-                        order_id=trans_id,
-                        amount=amount,
-                        currency=user_currency,
-                        transfer_from="IMES",
-                        transfer_to="main",
-                        product=0,
-                        transaction_type=TRANSACTION_TRANSFER,
-                        status=TRAN_PENDING_TYPE
-                    )
+
+                    with transaction.atomic():
+                        trans = Transaction.objects.create(
+                            transaction_id=trans_id,
+                            user_id=user,
+                            order_id=trans_id,
+                            amount=amount,
+                            currency=user_currency,
+                            transfer_from="IMES",
+                            transfer_to="main",
+                            product=0,
+                            transaction_type=TRANSACTION_TRANSFER,
+                            status=TRAN_PENDING_TYPE
+                        )
 
                     res = {}
                     res["DateReceived"] = timezone.now()
