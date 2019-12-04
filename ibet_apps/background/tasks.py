@@ -28,9 +28,9 @@ from games.helper import *
 
 logger = logging.getLogger('django')
 
-@background(schedule=10)
-def demo_task():
-    print ('THIS IS ONLY A TEST')
+# @background(schedule=10)
+# def demo_task():
+#     print ('THIS IS ONLY A TEST')
 
 # connect AWS S3
 third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
