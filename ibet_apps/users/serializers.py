@@ -20,6 +20,7 @@ from django.utils.functional import Promise
 from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
+from django.contrib.postgres.fields import JSONField
 
 class ChoicesSerializerField(serializers.SerializerMethodField):
     """
@@ -182,6 +183,8 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)
     password = serializers.CharField(style={'input_type': 'password'})
+    iovationData = serializers.JSONField(required=False)
+
 
     def authenticate(self, **kwargs):
         return authenticate(self.context['request'], **kwargs)
@@ -250,7 +253,7 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         email = attrs.get('email')
         password = attrs.get('password')
-
+        iovationData = attrs.get('iovationData')
         user = None
 
         if 'allauth' in settings.INSTALLED_APPS:

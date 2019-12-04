@@ -13,6 +13,7 @@ from accounting.models import DepositChannel, DepositAccessManagement, WithdrawC
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
+from django.contrib.postgres.fields import JSONField
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -427,10 +428,13 @@ class UserAction(models.Model):
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
-    browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
+    browser = models.CharField(_('Browser'), max_length=200, blank=True, null=True)
     refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
     # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
+    result = models.CharField(max_length=10, null=True, blank=True)
+    ip_location = JSONField(null=True, default=dict)                     
+    other_info = JSONField(null=True, default=dict)
     created_time = models.DateTimeField(
         _('Created Time'),
         default=timezone.now,

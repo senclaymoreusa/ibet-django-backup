@@ -334,8 +334,10 @@ class LoginView(GenericAPIView):
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
         # print('login language code: ' + languageCode)
-        
+       
         self.user = self.serializer.validated_data['user']
+        self.iovationData = self.serializer.validated_data['iovationData']
+        
         if checkUserBlock(self.user):
             errorMessage = _('The current user is blocked!')
             data = {
@@ -355,21 +357,41 @@ class LoginView(GenericAPIView):
                 }
             }
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
-
+      
+      
         if getattr(settings, 'REST_USE_JWT', False):
-            
+           
             self.token = jwt_encode(self.user)
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
+        
 
         customUser = CustomUser.objects.filter(username=self.user)
-        action = UserAction(
-            user= customUser.first(),
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=0,
-            created_time=timezone.now()
-        )
-        action.save()
+
+        try:
+            statedIp = self.iovationData['statedIp']
+            result = self.iovationData['result']
+            device = self.iovationData['details']['device']['os']
+            browser = self.iovationData['details']['device']['browser']
+            ipLocation = self.iovationData['details']['realIp']['ipLocation']
+            otherData = self.iovationData
+            action = UserAction(
+                user= customUser.first(),
+                ip_addr=statedIp,
+                result=result,
+                device=device,
+                browser=str(browser),
+                ip_location=ipLocation,
+                other_info=otherData,
+                event_type=0,
+                created_time=timezone.now()
+            )
+            action.save()
+
+        except Exception as e:
+            logger.error("cannot get users device info in iovation", e)
+
+       
         customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
         loginUser = CustomUser.objects.filter(username=self.user)
         loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
@@ -397,13 +419,17 @@ class LoginView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):        
         self.request = request
+        
         try:
             self.serializer = self.get_serializer(data=self.request.data,
                                               context={'request': request})
-
+            
             if self.serializer.is_valid(raise_exception=True):
+
+                
                 return self.login()
         except Exception as e:
+            # print(e)
             errorMessage = _('Invalid username/ passowrd')
             data = {}
             data["errorCode"] = ERROR_CODE_INVALID_INFO
