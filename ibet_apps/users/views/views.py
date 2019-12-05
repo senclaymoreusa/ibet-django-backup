@@ -54,7 +54,7 @@ from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
 from dateutil.relativedelta import relativedelta
-from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
 from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GameRequestsModel
@@ -147,35 +147,22 @@ class AllSearchListView(generic.ListView):
         return Game.objects.filter(name__contains=self.request.GET.get('q'))
 
 
-class GameAPIListView(ListAPIView):
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        term = self.request.GET['term']
-        # print("term:" + term)
-        data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+# class GameAPIListView(ListAPIView):
+#     serializer_class = GameSerializer
+#     def get_queryset(self):
+#         term = self.request.GET['term']
+#         # print("term:" + term)
+#         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
 
-        if not data:
-            data = Game.objects.filter(category_id__name__icontains=term)
+#         if not data:
+#             data = Game.objects.filter(category_id__name__icontains=term)
 
-        if not data:
-            data = Game.objects.filter(name__icontains=term)
+#         if not data:
+#             data = Game.objects.filter(name__icontains=term)
 
-        if not data:
-            logger.error('Search term did not match any categories or token')
-        return data
-
-class GameDetailAPIListView(ListAPIView):
-    
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        id = self.request.GET['id']
-        data = NewGame.objects.filter(pk=id)
-        return data
-
-
-class CategoryAPIListView(ListAPIView):
-    serializer_class = CategorySerializer
-    queryset = Category.objects.all()
+#         if not data:
+#             logger.error('Search term did not match any categories or token')
+#         return data
 
 
 class UserDetailsView(RetrieveUpdateAPIView):

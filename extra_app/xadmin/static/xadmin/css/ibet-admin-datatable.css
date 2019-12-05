@@ -1,14 +1,68 @@
+table.dataTable {
+    border-spacing: 0;
+}
+
+.dataTables_paginate {
+    float: right;
+}
+
+.dataTables_info {
+    float: right;
+    margin: 10px;
+}
+
+.dataTables_length {
+    float: right;
+}
+
+.paginate_button.previous {
+    position:relative;
+    left: 1px;
+}
+
+.paginate_button.next {
+    position:relative;
+}
+
+.show-rows {
+    width: 82px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    position: relative;
+    float: right;
+    bottom: 20px;
+    left: 86px;
+}
+
 .dataTables_filter input {
+    float: right;
     width: 350px;
     height: 33px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
 }
 
-table.dataTable {
-    border-spacing: 0;
+.dataTables_length label select{
+    width: 82px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    position: relative;
 }
 
+.dataTables_paginate.paging_simple_numbers span{
+    display: none
+}
+
+/* remove the search box */
 .dataTables_filter {
     display: none;
 }
@@ -23,6 +77,7 @@ table.dataTable {
     letter-spacing: normal;
     color: #4a4a4a;
 }
+
 .datatable table tbody tr td {
     font-family: Helvetica;
     font-size: 13px;
@@ -34,55 +89,16 @@ table.dataTable {
     color: #4a4a4a;
 }
 
-.dataTables_paginate {
-    float: right;
-}
-
-
-.dataTables_paginate.paging_simple_numbers span{
-    display: none
-}
-
-.paginate_button.previous {
-    position:absolute;
-    bottom: 28px;
-    right: 49px;
-}
-
-.paginate_button.next {
-    position:absolute;
-    bottom: 28px;
-    right: 16px;
-}
-
-.dataTables_info {
-    position:absolute;
-    bottom: 34.9px;
-    right: 118px;
-}
-
-
-.dataTables_length label select{
-    width: 82px;
-    height: 33px;
-    border-radius: 4px;
-    border: solid 1px #bdbdbd;
-    background-color: #ffffff;
-    position: absolute;
-    bottom: 28px;
-    right: 201px;
-}
-
 .dt-buttons{
-    width: 159px;
-    height: 32px;
+    width: 131px;
+    height: 34px;
     border-radius: 4px;
     text-align: center;
     line-height: 30px;
     border: solid 1px #357ebd;
     background-color: #428bca;
-    position: absolute;
-    bottom: 25px;
+    position: relative;
+    top: 33px;
 }
 
 .dt-buttons .dt-button.buttons-csv.buttons-html5{
@@ -96,27 +112,11 @@ table.dataTable {
     color: #ffffff;
 }
 
-.show-rows {
-    width: 82px;
-    height: 13px;
-    font-family: Helvetica;
-    font-size: 11px;
-    font-weight: normal;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #4a4a4a;
-    position: absolute;
-    bottom: 63px;
-    right: 201px;
-}
-
-.paginate_button {
-    margin-right: 15px;
-}
-
 .table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(0,0,0,.05);
+}
+
+table.table-bordered {
+    margin-top: 0px;
 }
 

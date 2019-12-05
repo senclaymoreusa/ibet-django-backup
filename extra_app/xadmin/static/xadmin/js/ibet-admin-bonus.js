@@ -71,6 +71,29 @@ $(document).ready(function() {
         }
         return data;
     }
+
+    // New bonus 01
+    $("#bonus-start-time").datepicker();
+    $("#bonus-end-time").datepicker();
+
+
+    $("#bonus-trigger-type input:checkbox").on('click', function() {
+      var $box = $(this);
+      if ($box.is(":checked")) {
+        var group = "input:checkbox[name='" + $box.attr("name") + "']";
+        $(group).prop("checked", false);
+        $box.prop("checked", true);
+        $('#bonus-trigger-type input:radio').prop("checked", false);
+      } else {
+        $box.prop("checked", false);
+      }
+    });
+
+    $('.next, .previous').on('click', function(){
+           $('.modal').modal('hide');
+    });
+
+
 });
 
 

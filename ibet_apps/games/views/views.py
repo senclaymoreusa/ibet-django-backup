@@ -3,8 +3,8 @@ import logging
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
-from games.models import Game, GameProvider
-from users.serializers import GameSerializer
+from games.models import Game, GameProvider, Category
+from games.serializers import GameSerializer, CategorySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
 
@@ -158,3 +158,18 @@ class FilterAPI(View):
         
         logger.info("Sending filter options response......... ")
         return HttpResponse(json.dumps(GAME_FILTER_OPTION), content_type='application/json')
+
+
+class GameDetailAPIListView(ListAPIView):
+    
+    serializer_class = GameSerializer
+    def get_queryset(self):
+        id = self.request.GET['id']
+        data = Game.objects.filter(pk=id)
+        # print(data) 
+        return data
+
+
+class CategoryAPIListView(ListAPIView):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()

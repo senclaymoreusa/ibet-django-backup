@@ -218,6 +218,7 @@ TOTAL = 'OU'
 TIP = 'TIP'
 SINGLE = 'Single'
 PARLAY = 'Parlay'
+OTHER = 'Other'
 
 BET_TYPES_CHOICES = [
     (SPREAD, 'Spread'),
@@ -226,6 +227,7 @@ BET_TYPES_CHOICES = [
     (TIP, 'Tip'),
     (SINGLE, 'Single'),
     (PARLAY,'Parlay'),
+    (OTHER, 'Other'),
 
 ]
 OUTCOME_CHOICES = [
@@ -236,6 +238,14 @@ OUTCOME_CHOICES = [
     (4, 'Running'),
     (5, 'Draw'),
     (6, 'Half lose'),
+    (7, 'Rollback'),
+    (8, 'Cancel'),
+    (9, 'Cash'),
+    (10, 'Half won'),
+    (11, 'reject'),
+    (12, 'waiting'),
+    (13, 'waiting running'),
+    (14, 'refund'),
 ]
 
 ACTIVE_STATE = 0
@@ -1190,7 +1200,7 @@ AFFILIATE_LEVEL = (
     ('VIP', 'VIP'),
 )
 
-LETOU_DOMAIN="https://www.letou.com/"   # for affiliate refer link
+LETOU_DOMAIN = "https://www.letou.com/cn/a/"   # for affiliate refer link
 
 MONTHLY_COMMISSION_SETTLE_DATE = "05"
 
@@ -1266,11 +1276,11 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
 
 #GD CASINO
 
-GDCASINO_URL = 'https://gdcasino.claymoreasia.com/main.php'
-GDCASINO_API_URL = 'http://wsgd.gdsecure88.com/MerchantAPI/ewallet.php'
-GDCASINO_MERCHANT_CODE = 'IBPHtest'
-GDCASINO_MERCHANT_ACCESS_KEY = 'f66e9c36-22a0-4f0a-9521-c8d3ca4f021a'
-GDCASINO_FISHING_GAMEID = '81297'
+GDCASINO_URL = keys["GD_CASINO"]["URL"]
+GDCASINO_API_URL = keys["GD_CASINO"]["API_URL"]
+GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["MERCHANT_CODE"]
+GDCASINO_MERCHANT_ACCESS_KEY = keys["GD_CASINO"]["MERCHANT_ACCESS_KEY"]
+GDCASINO_FISHING_GAMEID = keys["GD_CASINO"]["FISHING_GAMEID"]
 
 GDCASINO_STATUS_CODE =(
     (-1, 'UNKNOWN_ERROR'),
@@ -1348,12 +1358,14 @@ PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
 
 # Kaiyuan Gaming
+KY_PROVIDER = "Kaiyuan"
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
-KY_RECORD_URL = "https://kyapi.ky206.com:189/getRecordHandle"
+KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
 #onebook
+ONEBOOK_PROVIDER = 'Onebook'
 ONEBOOK_VENDORID = "xmV64h8RULU"
 ONEBOOK_OPERATORID = "ibetclaymore"
 ONEBOOK_MAXTRANSFER = "50000"
@@ -1370,3 +1382,27 @@ SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
 SA_ENCRYPT_KEY = 'g9G16nTs'
 SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
+
+#GB
+GB_PROVIDER = 'GB'
+GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
+GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
+GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
+GB_OTHER_URL = "http://163.claymoreusa.net"
+
+# QT
+QT_STATUS_SUCCESS = 0
+QT_STATUS_UNKNOWN_ERROR = 1
+QT_STATUS_INVALID_TOKEN = 2
+QT_STATUS_LOGIN_FAILED = 3
+QT_STATUS_ACCOUNT_BLOCKED = 4
+QT_STATUS_REQUEST_DECLINED = 5
+
+QT_STATUS_CODE = (
+    (0, "SUCCESS"),
+    (1, "UNKNOWN_ERROR"),
+    (2, "INVALID_TOKEN"),
+    (3, "LOGIN_FAILED"),
+    (4, "ACCOUNT_BLOCKED"),
+    (5, "REQUEST_DECLINED"),
+)

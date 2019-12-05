@@ -115,6 +115,7 @@ INSTALLED_APPS = [
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
     'django_user_agents',
+    'background_task',
 ]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
@@ -214,7 +215,7 @@ elif "ENV" in os.environ:
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     
     print("DB HOST: " + db_data['RDS_HOSTNAME'])
-    
+    # print(db_data)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -228,7 +229,8 @@ elif "ENV" in os.environ:
 
     print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
     REDIS = {
-        "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
+        # "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
+        "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
         "PORT": 6379
     }
 
