@@ -72,6 +72,8 @@ class Game(models.Model):
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
+    game_id = models.CharField(max_length=100, null=True, blank=True)
+    is_free = models.NullBooleanField(default=None)
 
     created_time = models.DateTimeField(
         _('Created Time'),
