@@ -190,14 +190,16 @@ class DebitReserve(View):
             transaction_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
             res = "error_code=-22"
             res += "error_message=ReserveClosed\r\n"
+            return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist as e:
             pass
-
+        
         # reserve was already committed
         try:
             transaction_committed = GameBet.objects.get(ref_no=reserve_id, other_data__is_committed=True)
             res = "error_code=-22"
             res += "error_message=ReserveClosed\r\n"
+            return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist as e:
             pass
 
@@ -349,7 +351,7 @@ class CancelReserve(View):
         user = findUser(username)
         if (not isinstance(user, CustomUser)):
             return user
-
+        
         try:
             with transaction.atomic():
                 # check for repeat call
@@ -358,6 +360,7 @@ class CancelReserve(View):
                     res = "error_code=0\r\n"
                     res += "error_message=success\r\n"
                     res += f"balance={already_canceled.other_data['ending_balance']}\r\n"
+                    return HttpResponse(res, content_type='text/plain')
                 except ObjectDoesNotExist:
                     pass
 
