@@ -1,6 +1,5 @@
 import sys
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
@@ -215,8 +214,8 @@ class BonusView(View):
             return response
 
         try:
-            with transaction.atomic():
-                if bonus is None:
+            if bonus is None:
+                with transaction.atomic():
                     type = req_data.get('type')
                     type = BONUS_TYPE_VALUE_DICT.get(type)
 
@@ -338,7 +337,6 @@ class BonusView(View):
 
 
                     # add target user group
-
         except Exception as e:
             logger.error("Error creating new bonus details " + str(e))
             response = JsonResponse({"error": "Error creating new bonus, please try again!"})

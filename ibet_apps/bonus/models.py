@@ -19,7 +19,7 @@ from operation.models import Campaign
 
 class Bonus(models.Model):
     bonus_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     description = models.TextField(null=True)
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
