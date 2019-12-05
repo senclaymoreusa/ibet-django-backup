@@ -84,14 +84,13 @@ $(document).ready(function() {
     var dataTarget;
 
     // bonus 01
-    var bonusName;
     var bonusStartTime;
     var bonusEndTime;
 
     //bonus 02
     var masterType = [];
     var bonusCategory;
-    var issued;
+    var issued = false;
 
     //manual bonus
     //bonus 03
@@ -103,7 +102,7 @@ $(document).ready(function() {
     //bonus 05
     var targetAll;
     var targetAudience;
-    var bonusRequirements;
+    var wagerRequirements;
     var excludedGroups;
 
     // triggered bonus
@@ -147,8 +146,10 @@ $(document).ready(function() {
         bonusCategory = $(this).val();
         if(bonusCategory === "triggered"){
             $('#bonus-next-02').attr('data-target', '#bonus-03');
+            $('#bonus-prev-04').attr('data-target', '#bonus-03');
         }else{
             $('#bonus-next-02').attr('data-target', '#bonus-04');
+            $('#bonus-prev-04').attr('data-target', '#bonus-02');
         }
     });
 
@@ -217,10 +218,6 @@ $(document).ready(function() {
         wagerChange(this, "lottery");
     });
 
-    $('#time-period').on('change', function(){
-        timeLimit = $(this).val();
-    });
-
     $('#wager-casino').on('change', function(){
         wagerSelect(this, "casino");
     });
@@ -235,10 +232,18 @@ $(document).ready(function() {
     });
 
     $("#all-product").on('change', function () {
-        if($(this).is(':checked')){
-            $(".wager-product").prop("checked", "checked");
+       if($("#all-product").is(':checked')){
+            $.each($(".wager-product"), function(){
+                $(".wager-product").prop("checked", "checked");
+            })
         }else{
-            $(".wager-product").prop("checked", "");
+            $.each($(".wager-product"), function(){
+                if($(this).is(':disabled')){
+                    return;
+                }else{
+                    $(this).prop("checked", "");
+                }
+            })
         }
         for(var i = 0; i < productList.length; i++){
             var curProduct = productList[i];
@@ -285,7 +290,7 @@ $(document).ready(function() {
     });
 
     $('#bonus-requirements').chosen({width: "242px"}).change(function(){
-        bonusRequirements = $(this).chosen().val();
+        wagerRequirements = $(this).chosen().val();
     });
 
     $('#group-unassigned').chosen({width: "242px"}).change(function(){
@@ -343,11 +348,8 @@ $(document).ready(function() {
         bonusName = $('#bonus-name').val();
         bonusStartTime = $('#bonus-start-time').val();
         bonusEndTime = $('#bonus-end-time').val();
-
-        bonusEndTime = new Date(bonusEndTime);
-	    bonusEndTime.setDate(bonusEndTime.getDate() + 1);
-
         checkEmpty(this);
+        console.log(bonus_create)
     });
 
     $('#bonus-next-02').on('click', function(){
@@ -372,15 +374,12 @@ $(document).ready(function() {
                 $('#wager-sports-times').prop('required', true);
                 $('#sports-unselected').css("display", "none");
                 $('#sports-selected').css("display", "");
-            }else{
-
             }
-
         });
         if($('#bonus-issue').is(":checked")){
-            issued = "checked";
+            issued = true;
         }else{
-            issued = "unchecked";
+            issued = false;
         }
         updateDataTarget(this);
 
@@ -414,30 +413,47 @@ $(document).ready(function() {
     });
 
     $('#bonus-next-04').on('click', function(){
+        timeLimit = $('#time-period').val()
         if(checkEmpty(this) == true){
             for(var i = 0; i < productList.length; i++){
             var curBox = $('#wager-' + productList[i]);
                 if(curBox.is(':checked')){
                     if(curBox.is(':disabled')){
-                        wagerList[i] = $('#wager-' + productList[i] + '-times').val();
+                      wagerList.push({
+                            "product": productList[i],
+                            "multiple": $('#wager-' + productList[i] + '-times').val(),
+                            "time_limit": timeLimit,
+                            "aggregate_method": 0 //sum
+                        });
                     }else{
                         var subWager = $('#wager-' + productList[i] + '-total').val().split(' ');
-                        wagerList[i] = subWager[3].substring(0, subWager[3].length - 1);
+                        wagerList.push({
+                            "product": productList[i],
+                            "multiple": subWager[3].substring(0, subWager[3].length - 1),
+                            "time_limit": timeLimit,
+                            "aggregate_method": 0 //sum
+                        });
                     }
                 }else{
-                    wagerList[i] = -1;
+                    wagerList.push({
+                        "product": productList[i],
+                        "multiple": "-1",
+                        "time_limit": timeLimit,
+                        "aggregate_method": 0 //sum
+                    });
                 }
             }
         }
-        console.log(wagerList)
     });
 
     $('#bonus-next-05').on('click', function(){
-
         updateDataTarget(this);
-
         // check empty, either openAll or selectGroup should be true, selectMustHave must be true
-        targetAll = $('#open-to-all').is(':checked');
+        if ($('#open-to-all').is(':checked')){
+            targetAll = true
+        }else{
+            targetAll = false
+        }
         var selectGroup = $('#specific-accounts').is(':checked') && $('#group-assigned').val() !== null;
         var selectMustHave = $('#bonus-requirements').val() !== null;
         if((!targetAll && !selectGroup) || !selectMustHave){
@@ -463,41 +479,51 @@ $(document).ready(function() {
         $('#publish').html('Click to Publish');
         $('#publish').attr('id', 'publish-confirm');
         $('#publish-confirm').on('click', function(){
+            var reqDict = {
+                "wager_multiple": wagerList,
+                "time_limit": timeLimit,
+                "must_have": wagerRequirements,
+            }
+
+            var playersDict = {
+                "target_all": targetAll,
+                "target_player": targetAudience,
+                "excluded_player": excludedGroups,
+            }
+
             var bonusDict = {
+                // bonus
                 "name": bonusName,
-                "startTime": formatDatetime(bonusStartTime),
-                "endTime": formatDatetime(bonusEndTime.getDate() + 1),
-                "masterType": masterType,       // wager master type list
-                "category": bonusCategory,      // "manual" or "triggered"
+                "start_time": bonusStartTime,
+                "end_time": bonusEndTime,
                 "issued": issued,
                 "amount": bonusAmount,
-                "wagerMultiple": wagerList,     // wager product multiple
-                "timeLimit": timeLimit,
-                "target": targetAll,
-                "targetPlayer": targetAudience,
-                "requirements": bonusRequirements,
-                "excludedPlayer": excludedGroups,
-                "maxDailyTimes": maxDailyTimes,
-                "maxTotalTimes": maxTotalTimes,
-                "maxAssociatedAccounts": maxAssociatedAccounts,
-                "maxUser": maxUser,
-                "maxUserAmount": maxUserAmount,
-                "maxTargetUserAmount": maxTargetUserAmount,
-                "deliveryMethod": $("input[name='delivery']").val()
+                "max_daily_times": maxDailyTimes,
+                "max_total_times": maxTotalTimes,
+                "max_associated_accounts": maxAssociatedAccounts,
+                "max_user": maxUser,
+                "max_user_amount": maxUserAmount,
+                "max_target_user_amount": maxTargetUserAmount,
+                "delivery_method": $("input[name='delivery']").val(),
+                "status": 1,                // active
+                "type": "manual",           // active
+                "players": playersDict,     // players
+                "requirements": reqDict     // requirements
             };
-
-            console.log(bonusDict)
 
             $.ajax({
                 type: 'POST',
-                url: bonus_admin,
+                url: bonus_create,
                 data: {
-                    'type': 'newBonus',
                     'bonusDict': JSON.stringify(bonusDict),
                 },
                 success: function (data) {
                     window.location.reload();
                 },
+                error: function(data){
+                   alert(data.status); // the status code
+                   alert(data.responseJSON.error); // the message
+                }
             });
 
         });

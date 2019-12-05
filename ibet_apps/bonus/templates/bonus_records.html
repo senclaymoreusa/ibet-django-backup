@@ -327,7 +327,7 @@
                     </div>
                     <div class="new-bonus-btn-group">
                         <p class='errorMessage'>&nbsp;</p>
-                        <button type="button" class="btn btn-primary previous" data-toggle="modal"
+                        <button id="bonus-prev-04" type="button" class="btn btn-primary previous" data-toggle="modal"
                                 data-target="#bonus-02">Previous
                         </button>
                         <button id="bonus-next-04" type="button" class="btn btn-primary next" data-toggle="modal"
@@ -364,7 +364,7 @@
                             <select id="group-assigned" class="bonus-input"
                                     data-placeholder="Select player groups" multiple class="chosen-select">
                                 {% for group in groups %}
-                                <option value="{{ group.name }}">{{ group.name }}</option>
+                                <option value="{{ group.pk }}">{{ group.name }}</option>
                                 {% endfor %}
                             </select>
                             <!--                                {% if groups == None %}-->
@@ -379,12 +379,9 @@
                         <br>
                         <select id="bonus-requirements" class="group-assign bonus-input"
                                 data-placeholder="Select requirements" multiple class="chosen-select">
-                            <option value="id"> ID verified</option>
-                            <option value="email"> Email verified</option>
-                            <option value="phone"> Phone verified</option>
-                            <option value="deposit"> A successful deposit</option>
-                            <option value="withdrawal"> A successful withdrawal</option>
-                            <option value="manual-withdrawal"> Manual audit for first withdrawal</option>
+                            {% for i in must_have %}
+                            <option value="{{ i.0 }}">{{ i.1 }}</option>
+                            {% endfor %}
                         </select>
                     </div>
 
@@ -396,7 +393,7 @@
                         <select id="group-unassigned" class="bonus-input" style="margin: 10px;"
                                 data-placeholder="Select player groups" multiple class="chosen-select">
                             {% for group in groups %}
-                            <option value="{{ group.name }}">{{ group.name }}</option>
+                            <option value="{{ group.pk }}">{{ group.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -500,7 +497,7 @@
                             <input type="radio" name="delivery" value="push" checked> Push to player's account
                         </div>
                         <div class="col-md-4" style="padding-left: 0px;">
-                            <input type="radio" name="delivery" value="activation"> Site activation(from site)
+                            <input type="radio" name="delivery" value="site"> Site activation(from site)
                         </div>
                     </div>
                     <div class="new-bonus-btn-group">
@@ -532,8 +529,9 @@
 </body>
 </html>
 <script>
+    var bonusName;
     var bonus_url = '{% url "bonus_search" %}';
-    var bonus_admin = "{% url 'xadmin:bonus_records' %}";
+    var bonus_create = "{% url "bonus_name" name="new_bonus" %}";
 
     function multiProductSelect() {
       var checkBox = document.getElementById("multi-product");
