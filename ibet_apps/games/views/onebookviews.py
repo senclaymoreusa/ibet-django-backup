@@ -127,7 +127,7 @@ class testing(APIView):
             if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
                 redis.set_onebook_bet_details(onebook_run)
                 
-                redis.remove_onebook_bet_details(onebook_run) 
+                
                 return HttpResponse("redis is working")
         except:
             return HttpResponse("redis is not working")

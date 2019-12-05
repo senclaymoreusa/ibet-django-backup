@@ -137,5 +137,5 @@ urlpatterns = [
 
 ]
 
-onebook_getBetDetail(repeat=30,repeat_until=None)
+# onebook_getBetDetail(repeat=30,repeat_until=None)
 kaiyuan_getBets(repeat=30, repeat_until=None)
