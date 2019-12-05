@@ -13,13 +13,17 @@ from utils.constants import *
 from ipware.ip import get_real_ip
 import base64, datetime
 import socket
+from utils.aws_helper import getThirdPartyKeys
 
 class LoginDeviceInfo(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
         blackbox = request.GET['bb']
-        print(IOVATION_SUBSCRIBERID)
-        authcode = IOVATION_SUBSCRIBERID + "/" + ACCOUNT + ":" + PASSWORD
+        bucket = 'ibet-admin-apdev'
+        if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
+            bucket = 'ibet-admin-approd'
+        third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
+        authcode = third_party_keys["IOVATION"]["SUBSCRIBERID"] + "/" + third_party_keys["IOVATION"]["ACCOUNT"] + ":" + third_party_keys["IOVATION"]["PASSWORD"]
         enc = base64.encodestring(bytes(authcode, encoding='ascii'))
         encc = str(enc)[2:len(str(enc)) - 3]
         # print(socket.gethostname())
@@ -39,7 +43,7 @@ class LoginDeviceInfo(APIView):
             "type": "login"
             }
 
-        r = requests.post(IOVATION_CHECK, data=json.dumps(data), headers=headers)
+        r = requests.post(third_party_keys["IOVATION"]["URL"], data=json.dumps(data), headers=headers)
         rr = r.text
 
         return HttpResponse(rr,content_type='application/json',status=200)
