@@ -25,10 +25,3 @@ class BonusRecordsView(CommAdminView):
         context['groups'] = UserGroup.objects.all()
         context['must_have'] = BONUS_MUST_HAVE
         return render(request, "bonus_records.html", context)
-
-
-
-
-
-
-
