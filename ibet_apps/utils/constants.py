@@ -674,28 +674,30 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
+    PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
+    QT_PASS_KEY = keys["QTGAMES"]["PRODUCTION"]["PASS_KEY"]
+    qt = keys["QTGAMES"]["PRODUCTION"]
+
+
 else:
     API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
-
-BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
-
-# payzod production
-# TODO: Will need to update Production credentials because these credentials are temporary
-if os.getenv("ENV") != "local":  # fetch prod credentials from s3
-    PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
-    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
-    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
-    PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
-else:  # payzod sandbox
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
     PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
+    QT_PASS_KEY = keys["QTGAMES"]["SANDBOX"]["PASS_KEY"]
+    qt = keys["QTGAMES"]["SANDBOX"]
+
+BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
+
 
 
 GAME_FILTER_OPTION = [
@@ -1361,15 +1363,15 @@ KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
 #onebook
-ONEBOOK_PROVIDER = 'Onebook'
-ONEBOOK_VENDORID = "xmV64h8RULU"
-ONEBOOK_OPERATORID = "ibetclaymore"
-ONEBOOK_MAXTRANSFER = "50000"
-ONEBOOK_MINTRANSFER = "10"
-ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
-ONEBOOK_DIRECTION_withdraw = 0
-ONEBOOK_DIRECTION_deposit = 1
-ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
+ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
+ONEBOOK_VENDORID = keys["ONEBOOK"]["VENDORID"]
+ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
+ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
+ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
+ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
+ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
+ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
+ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
 
@@ -1380,11 +1382,11 @@ SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
-GB_PROVIDER = 'GB'
-GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
-GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
-GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
-GB_OTHER_URL = "http://163.claymoreusa.net"
+GB_PROVIDER = keys["GB"]["PROVIDER"]
+GB_URL = keys["GB"]["URL"]
+GB_API_URL = keys["GB"]["API_URL"]
+GB_SPORT_URL = keys["GB"]["SPORT_URL"]
+GB_OTHER_URL = keys["GB"]["OTHER_URL"]
 
 # QT
 QT_STATUS_SUCCESS = 0
