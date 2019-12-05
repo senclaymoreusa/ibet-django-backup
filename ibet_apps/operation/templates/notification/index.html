@@ -77,7 +77,7 @@ tbody>tr:nth-child(odd)>th {
   margin: 10px 10px 10px 10px;
 }
 
-#content_text {
+.wysiwyg {
   height: 393px;
   border: solid 1px #bdbdbd;
 }
@@ -98,13 +98,58 @@ tbody>tr:nth-child(odd)>th {
 </style>
 
 <div class="row">
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">New message</button>
-  <a role="button" class="btn btn-primary" href="/xadmin/audit">
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newmsg-modal">New message</button>
+  <!--<a role="button" class="btn btn-primary" href="/xadmin/audit">
     Notifications <span class="badge badge-light">{{ waiting_list }}</span>
-  </a>
+  </a>-->
 
-  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div id="mydialog" class="modal-dialog modal-lg">
+  <div class="modal fade bd-example-modal-lg" id="view-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="width:48%;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Message details</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          <!--<table class="table table-bordered table-striped table-hover">
+            <tr>
+              <td>Campaign</td>
+              <td>{{ queryset.campaign.name }}</td>
+            </tr>
+            <tr>
+              <td>Subject</td>
+              <td>{{ queryset.subject }}</td>
+            </tr>
+            <tr>
+              <td>Author</td>
+              <td>{{ queryset.creator }}</td>
+            </tr>
+            <tr>
+              <td>Sent at</td>
+              <td>{{ queryset.publish_on }}</td>
+            </tr>
+            <tr>
+              <td>Sent to</td>
+              <td>{% for notifier in notifiers %}
+                {{notifier.notifier_id}}
+                {% endfor %}
+              </td>
+            </tr>
+          </table>-->
+        </div>
+        <form>
+          <div class="form-group">
+            <label for="content">MESSAGE BODY</label>
+            <div name="message_text" id="message_text" class="wysiwyg" contenteditable="false">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade bd-example-modal-lg" id="newmsg-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title">New Message</h3>
@@ -114,18 +159,15 @@ tbody>tr:nth-child(odd)>th {
         </div>
         <form action="{% url 'xadmin:notification' %}" method="post" id="newmsg">
         {% csrf_token %}
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label for="campaign">CAMPAIGN</label>
             <select name="campaign" class="form-control">
               <option value="-1">SELECT CAMPAIGN...</option>
               {% for campaign in campaignOpt %}
                 <option value="{{ campaign.id }}">{{ campaign.name }}</option>
               {% endfor %}
-              <!-- <option value="CAMPAIGN1">CAMPAIGN1</option>
-              <option value="CAMPAIGN2">CAMPAIGN2</option>
-              <option value="CAMPAIGN3">CAMPAIGN3</option> -->
             </select>
-          </div>
+          </div> -->
           <div class="form-group">
             <label for="notifiers">SEND TO</label>
             <div class="input-group" >
@@ -143,9 +185,9 @@ tbody>tr:nth-child(odd)>th {
           </div> {% endcomment %}
           <div class="form-group">
             <label for="content">MESSAGE BODY</label>
-            <div name="content_text" id="content_text" class="row" contenteditable="true">
+            <div name="content_text" id="content_text" class="wysiwyg" contenteditable="true">
             </div>
-            <div class="row" style="border: 1px solid #bdbdbd; background-color: #f4f4f4">
+            <div class="row" style="border: 1px solid #bdbdbd; background-color: #f4f4f4; margin-top:16px">
               <button type="button" class="btn btn-secondary" id="italic"><i class="fa fa-italic"></i></button>
               <button type="button" class="btn btn-secondary" id="bold"><i class="fa fa-bold"></i></button>
               <button type="button" class="btn btn-secondary" id="underline"><i class="fa fa-underline"></i></button>
@@ -153,7 +195,7 @@ tbody>tr:nth-child(odd)>th {
               <button type="button" class="btn btn-secondary" id="" disabled><i class="fas fa-percentage"></i></button>
             </div>
           </div>
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label for="notification_method" class="col-2 col-form-label">Notification Methods</label>
             <div class="form-check row">
               <input class="form-check-input" type="checkbox" name="direct_check">
@@ -173,7 +215,7 @@ tbody>tr:nth-child(odd)>th {
                   Push Notification
               </label>
             </div>
-          </div>
+          </div> -->
           <button type="button" id="send" class="btn btn-success">Send</button>
           <button type="button" class="btn btn-primary" disabled>Automate</button>
           <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Cancel</button>
@@ -262,7 +304,8 @@ tbody>tr:nth-child(odd)>th {
               <td>{{ notification.open }}</td>
               <td>{{ notification.rate }}</td>
               <td></td>
-              <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td>
+              {% comment %} <td><a class="btn btn-primary" href="{% url 'xadmin:notification_detail' notification.pk %}" role="button"><i class="fa fa-search"></i></a></td> {% endcomment %}
+              <td><button class="btn btn-primary" onclick="return getMessage('{{ notification.pk}}')"><i class="fa fa-search"></i></button></td> 
             </tr>
           {% endfor %}
         </tbody>
@@ -512,12 +555,67 @@ $( function() {
     appendTo: "#mydialog"
   });
 */
+/*
+$.ajax({
+    type: 'GET',
+    url: "{% url 'notifier-tags' %}",
+    success: function(data) {
+      var message = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["message"]
+      });
+
+      var member = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["member"]
+      });
+
+      var member = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: data["member"]
+      });
+
+      group.initialize();
+      member.initialize();
+
+      $('#sendto').tagsinput({
+          itemValue: "name",
+          itemText: "name",
+          typeaheadjs: [{
+            highlight: false
+          },[{
+              name: 'member',
+              display: 'name',
+              source: member,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">MEMBER RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          },{
+              name: 'group',
+              display: 'name',
+              source: group,
+              templates: {
+                header: '<li class="ui-state-disabled search-result" style="margin: 0px 13px;">GROUP RESULTS</li>',
+                suggestion: function(data) {
+                              return '<div style="margin: 0px 13px;"><i class="fas fa-user-friends" style="padding: 7px; font-size: 0.83em;"></i>' + data.name + '</div>'
+                            }
+              }
+          }]],
+          freeInput: true
+      });
+    }
+});*/
 
 $.ajax({
-    type:'GET',
-    url:"{% url 'notifier-tags' %}",
-    success:function(data) {
-    //   console.log(data);
+    type: 'GET',
+    url: "{% url 'notifier-tags' %}",
+    success: function(data) {
       var group = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
         queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -915,7 +1013,7 @@ $(document).ready(function() {
 
   function searchResult(data, term) {
     var subject = data['subject'];
-    var campaign = data['campaign'];
+    var content = data['content'];
     // var content = data['body'];
 
     var sourceList = [];
@@ -924,7 +1022,7 @@ $(document).ready(function() {
       sourceList.push({
         'type': 'category',
         'label': term,
-        'value': 'MESSAGE RESULTS'
+        'value': 'SUBJECT RESULTS'
       });
       for (var i = 0; i < subject.length; i++) {
         sourceList.push({
@@ -935,18 +1033,18 @@ $(document).ready(function() {
         });
       }
     }
-    if (campaign.length > 0) {
+    if (content.length > 0) {
       sourceList.push({
         'type': 'category',
         'label': term,
-        'value': 'CAMPAIGN RESULTS'
+        'value': 'CONTENT RESULTS'
       });
-      for (var i = 0; i < campaign.length; i++) {
+      for (var i = 0; i < content.length; i++) {
         sourceList.push({
-          'type': 'campaign',
+          'type': 'content',
           'label': term,
-          'value': campaign[i]['campaign'],
-          'id': campaign[i]['id'],
+          'value': content[i]['content'],
+          'id': content[i]['id'],
         });
       }
     }
@@ -976,15 +1074,14 @@ $(document).ready(function() {
             .appendTo(ul);
             // ul.append("<li class='ui-autocomplete-group'>" + item.value + "</li>");
           } else {
-            var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
-            // var url = ""
+            // var url = "{% url 'xadmin:notification_detail' 123 %}".replace('123', item.id);
             if (item.type == 'subject') {
               return $('<li>')
-              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a onclick="return getMessage(' + item.id + ')"><i class="fa fa-envelope" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
-            } else if (item.type == 'campaign') {
+            } else if (item.type == 'content') {
               return $('<li>')
-              .append('<div style="margin: 0px 13px; color:blue;"><a href="' + url + '"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
+              .append('<div style="margin: 0px 13px; color:blue;"><a onclick="return getMessage(' + item.id + ')"><i class="fas fa-bullhorn" style="padding: 7px; font-size: 0.83em;" aria-hidden="true"></i>' + item.value + '</a></div>')
               .appendTo(ul);
             }
           }
@@ -1098,6 +1195,47 @@ function getCreator(username) {
             }
         }
     });
+}
+
+function getMessage(msgId) {
+  $('#view-modal').modal({'show' : true});
+  // $('#view-modal .modal-title').text("Edit Group");
+  
+  $.ajax({
+      type: "GET",
+      url: "{% url 'xadmin:notification_detail' %}",
+      data: {
+        'msgId': msgId
+      },
+      success: function(data)
+      {
+        $('#message_text').html(data["content_text"]);
+
+          /*
+          var fields = JSON.parse(data["group"])[0]["fields"];
+          user_list = data["user_list"];
+          
+          $("#newgroup").trigger("reset");
+
+          $("#newgroup").find('input[name="group_name"]').val(fields["name"]);
+          $("#product").val(fields["product"]);
+          $('#range').prop("checked", fields["is_range"]);
+          $("#from_date").val(fields["active_from"]);
+          $("#to_date").val(fields["active_to"]);
+          $("#reg-from").val(fields["register_from"]);
+          $("#reg-to").val(fields["register_to"]);
+          $('#onlydeposited').prop("checked", fields["is_deposit"]);
+          
+
+          $('#member_count').html("&nbsp;" + user_list.length);
+          
+          createTable(user_list);
+          $('#newgroup').attr('action', "{% url 'group-update'%}" + "?groupId=" + groupId);
+          $("#delete").css("display", "");
+          $("#delete").attr('onClick','deleteGroup("' + fields["name"] + '")')
+          */
+      }
+  });
 }
 </script>
 {% endblock %}

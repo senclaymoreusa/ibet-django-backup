@@ -89,7 +89,7 @@ def generateUrl(param, is_api):
     return url
 
 
-@background(schedule=10)
+# @background(schedule=10)
 def getBets():
     # Query Bet Order
     timestamp = get_timestamp()
