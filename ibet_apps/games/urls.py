@@ -19,9 +19,9 @@ import games.views.qtgameviews as qtgameviews
 
 from games.views.views import *
 
-from background.tasks import  onebook_getBetDetail, kaiyuan_getBets
+from background.tasks import   kaiyuan_getBets
 
-
+# onebook_getBetDetail,
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),

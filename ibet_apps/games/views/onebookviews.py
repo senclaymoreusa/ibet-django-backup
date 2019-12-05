@@ -128,7 +128,7 @@ class testing(APIView):
                 redis.set_onebook_bet_details(onebook_run)
                 
                 
-                return HttpResponse("redis is working")
+                return HttpResponse("redis is working" + redis.check_onebook_bet_details(onebook_run))
         except:
             return HttpResponse("redis is not working")
         return HttpResponse("redis")

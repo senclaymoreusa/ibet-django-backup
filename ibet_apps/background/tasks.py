@@ -38,7 +38,7 @@ KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
 KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
 
 @transaction.atomic
-@background(schedule=5) 
+# @background(schedule=5) 
 def onebook_getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
