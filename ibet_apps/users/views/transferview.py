@@ -141,7 +141,6 @@ class EachWalletAmount(View):
             # response["bbin"] = user.bbin_wallet
             # response["pt"] = user.pt_wallet
 
-            print(response)
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
         
         except ObjectDoesNotExist as e:
