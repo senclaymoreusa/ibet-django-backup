@@ -54,7 +54,7 @@ from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
 from dateutil.relativedelta import relativedelta
-from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
 from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GameRequestsModel
@@ -147,35 +147,22 @@ class AllSearchListView(generic.ListView):
         return Game.objects.filter(name__contains=self.request.GET.get('q'))
 
 
-class GameAPIListView(ListAPIView):
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        term = self.request.GET['term']
-        # print("term:" + term)
-        data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+# class GameAPIListView(ListAPIView):
+#     serializer_class = GameSerializer
+#     def get_queryset(self):
+#         term = self.request.GET['term']
+#         # print("term:" + term)
+#         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
 
-        if not data:
-            data = Game.objects.filter(category_id__name__icontains=term)
+#         if not data:
+#             data = Game.objects.filter(category_id__name__icontains=term)
 
-        if not data:
-            data = Game.objects.filter(name__icontains=term)
+#         if not data:
+#             data = Game.objects.filter(name__icontains=term)
 
-        if not data:
-            logger.error('Search term did not match any categories or token')
-        return data
-
-class GameDetailAPIListView(ListAPIView):
-    
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        id = self.request.GET['id']
-        data = NewGame.objects.filter(pk=id)
-        return data
-
-
-class CategoryAPIListView(ListAPIView):
-    serializer_class = CategorySerializer
-    queryset = Category.objects.all()
+#         if not data:
+#             logger.error('Search term did not match any categories or token')
+#         return data
 
 
 class UserDetailsView(RetrieveUpdateAPIView):
@@ -1165,17 +1152,18 @@ class GenerateActivationCode(APIView):
         try:
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
+                phone = data['phone']
                 time = timezone.now() - datetime.timedelta(days=1)
                 event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
                 count = UserAction.objects.filter(event_filter).count()
-                if count <= 3:
+                if count <= 300:
                     random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
 
                     # DB transaction atomic as a context manager:
                     with transaction.atomic():
                         user.update(activation_code=random_num)
 
-                        send_sms(str(random_num), user[0].pk)
+                        send_sms(str(random_num), user[0].pk, phone)
 
                         action = UserAction(
                             user=user[0],
@@ -1187,30 +1175,76 @@ class GenerateActivationCode(APIView):
                         return Response(status=status.HTTP_201_CREATED)
 
                 return Response(ERROR_CODE_MAX_EXCEED)
+            elif postType == "change_member_email":
+                email = data['email']
+                random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+
+                # DB transaction atomic as a context manager:
+                with transaction.atomic():
+                    user.update(activation_code=random_num)
+
+                    from_email_address = 'claymore@claymoreusa.com'
+                    # to_email_address = user[0].email
+                    to_email_address = email
+                    email_subject = str(_('Activation Code')) + ' '
+                    email_content = str(_('Your activation code is ')) + str(random_num)
+
+                    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+                    from_email = Email(from_email_address)
+                    to_email = Email(to_email_address)
+                    subject = email_subject
+                    content = Content("text/plain", email_content)
+                    mail = Mail(from_email, subject, to_email, content)
+                    response = sg.client.mail.send.post(request_body=mail.get())
+
+                    action = UserAction(
+                        user=user[0],
+                        event_type=EVENT_CHOICES_SMS_CODE,
+                        created_time=timezone.now()
+                    )
+                    action.save()
+
+                    return Response(status=status.HTTP_201_CREATED)
             else:
                 # leave this for active code, currently no SMS system available
                 random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
                 user.update(activation_code=random_num)
-                send_sms(str(random_num), user[0].pk) 
+                send_sms(str(random_num), user[0].pk)
         except Exception as e:
             logger.error("Error Generating Activation Code: ", e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
 
+
 class VerifyActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        username = request.data['username']
-        code = request.data['code']
-        user = get_user_model().objects.filter(username=username)
-        if user[0].activation_code == code:
-            user.update(active=True)
-            user.update(activation_code='')
+        data = json.loads(request.body)
+        postType = data['type']
+        username = data['username']
+        code = data['code']
+
+        # user = get_user_model().objects.filter(username=username)
+        user = get_user_model().objects.get(username=username)
+        if user.activation_code == code:
+            user.active=True
+            user.activation_code=''
+            if postType == "change_member_phone_num":
+                user.phone = data['phone']
+            elif postType == "change_member_email":
+                user.email = data['email']
+            else:
+                return Response(ERROR_CODE_NOT_FOUND)
+
+            user.save()
             return Response(status=status.HTTP_200_OK)
+        
         return Response(status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response(ERROR_CODE_TIME_EXCEED)
 
 
 class UserSearchAutocomplete(View):

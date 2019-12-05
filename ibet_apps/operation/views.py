@@ -134,7 +134,7 @@ class NotifierSearchAutocomplete(View):
     
         logger.info('Search notification, key: ' + search)
     
-        search_member = CustomUser.objects.filter(Q(username__contains=search))
+        search_member = CustomUser.objects.filter(Q(username__icontains=search))
         # search_body = Notification.objects.filter(content_text__contains=search)
 
         search_member = serializers.serialize('json', search_member)
@@ -168,52 +168,62 @@ class NotifierSearchAutocomplete(View):
 
 class NotificationSearchAutocomplete(View):
     def get(self, request, *args, **kwargs):
-        search = request.GET.get('search')
-        tab = request.GET.get('tab')
-
-        logger.info('Search notification, key: ' + search)
-
-        search_subject = Notification.objects.filter(Q(subject__icontains=search)&Q(status=tab))
-        search_campaign = Notification.objects.filter(Q(campaign__icontains=search))
-
-        search_subject = serializers.serialize('json', search_subject)
-        # search_body = serializers.serialize('json', search_body)
-
-        search_subject = json.loads(search_subject)
-        # search_body = json.loads(search_body)
-
-        response = {}
-
-        subject_data = []
-        for notification in search_subject:
-            notificationMap = {}
-            notificationMap["subject"] = notification["fields"]["subject"]
-            notificationMap["id"] = notification["pk"]
-            subject_data.append(notificationMap)
-        response["subject"] = subject_data
-
-        campaign_data = []
-        for campaign in search_campaign:
-            campaignMap = {}
-            campaignMap["campaign"] = campaign.campaign
-            campaignMap["id"] = campaign.pk
-            campaign_data.append(campaignMap)
-        response["campaign"] = campaign_data
-
-
-
-        # body_data = []
-        # for notification in search_body:
-        #     notificationMap = {}
-        #     notificationMap['body'] = notification['body']
-        #     body_data.append(notificationMap)
-        # response['body'] = body_data
-
-        logger.info('Search response: ' + json.dumps(response))
         try:
+            search = request.GET.get('search')
+            tab = request.GET.get('tab')
+
+            logger.info('Search notification, key: ' + search)
+
+            search_subject = Notification.objects.filter(Q(subject__contains=search)&Q(status=tab))
+            search_content = Notification.objects.filter(Q(content_text__contains=search)&Q(status=tab))
+
+            # search_campaign = Notification.objects.filter(Q(campaign__name__icontains=search))
+
+            search_subject = serializers.serialize('json', search_subject)
+            search_content = serializers.serialize('json', search_content)
+            # search_body = serializers.serialize('json', search_body)
+
+            search_subject = json.loads(search_subject)
+            search_content = json.loads(search_content)
+
+            response = {}
+
+            subject_data = []
+            for notification in search_subject:
+                notificationMap = {}
+                notificationMap["subject"] = notification["fields"]["subject"]
+                notificationMap["id"] = notification["pk"]
+                subject_data.append(notificationMap)
+            response["subject"] = subject_data
+
+            content_data = []
+            for content in search_content:
+                contentMap = {}
+                contentMap["content"] = content["fields"]["content_text"]
+                contentMap["id"] = content['pk']
+                content_data.append(contentMap)
+            response["content"] = content_data
+
+            # campaign_data = []
+            # for campaign in search_campaign:
+            #     campaignMap = {}
+            #     campaignMap["campaign"] = campaign.name
+            #     campaignMap["id"] = campaign.pk
+            #     campaign_data.append(campaignMap)
+            # response["campaign"] = campaign_data
+
+            # body_data = []
+            # for notification in search_body:
+            #     notificationMap = {}
+            #     notificationMap['body'] = notification['body']
+            #     body_data.append(notificationMap)
+            # response['body'] = body_data
+
+            logger.info('Search response: ' + json.dumps(response))
             return HttpResponse(json.dumps(response), content_type='application/json')
         except Exception as e:
-            logger.error(e)
+            logger.error("Autocomplete Search Error: {}".format(repr(e)))
+            return HttpResponse(repr(e), status=400)
 
 
 def isTimeFormat(time_str):
@@ -304,7 +314,7 @@ class NotificationView(CommAdminView):
         #     except Exception as e:
         #         logger.error(e)
 
-        queryset = Notification.objects.filter(msg_filter)
+        queryset = Notification.objects.filter(msg_filter).order_by('-publish_on')
 
         notification_list = []
 
@@ -420,29 +430,19 @@ class NotificationView(CommAdminView):
 
 class NotificationDetailView(CommAdminView):
     def get(self, request, *args, **kwargs):
-        notification_id = self.kwargs.get('pk')
-        context = super().get_context()
-        title = 'message'
-        context['breadcrumbs'].append({'url': '/cwyadmin/', 'title': title})
-        context["title"] = title
-        context['time'] = timezone.now()
-        context['current_user'] = self.user
-        context['all_user'] = CustomUser.objects.all()
-        # context['auditors'] = CustomUser.objects.filter(is_admin=True)
-        # context['topics'] = AWSTopic.objects.all()
-        
-        queryset = Notification.objects.get(pk=notification_id)
-        serializer = NotificationSerializer(queryset, many=False)
-        context["queryset"] = queryset
-
-        notifiers = NotificationToUsers.objects.filter(notification_id=queryset)
-        context["notifiers"] = notifiers
-
         try:
-            logger.info("GET NotificationDetailView")
-            return render(request, 'notification/detail.html', context)
-        except:
-            logger.error("can not reach notification detail")
+            notification_id = request.GET.get('msgId')
+            
+            notification = Notification.objects.get(pk=notification_id)
+
+            response = {}
+            response["subject"] = notification.subject
+            response["content_text"] = notification.content_text
+
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+        except Exception as e:
+            logger.error(repr(e))
+            return HttpResponse(status=400)
 
 
 class AuditNotificationView(CommAdminView):
@@ -1306,10 +1306,70 @@ class AWSTopicAPIView(GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def send_sms(content_text, notifier):
+def send_sms(content_text, notifier, phone_num):
+    # connect AWS S3
+    third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+    # AWS SNS Client
+    sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
+    client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+
+    try:
+        # phone = str(notifier.phone)
+        client.publish(PhoneNumber=phone_num, Message=content_text)
+
+        logger.info("Enabled SMS Notification to: {}".format(phone_num))
+    except Exception as e:
+        logger.error("Unexpected error: %s" % e)
+
+        # data = {
+        #     "content_text": content_text,
+        #     "is_sms_message": True,
+        #     "status": MESSAGE_APPROVED,
+        # }
+
+        # serializer = NotificationSerializer(data=data)
+        
+        # if serializer.is_valid():
+        #     notification = serializer.save()
+        #     logger.info("create a SMS notification")
+
+        #     notifier = CustomUser.objects.get(pk=notifier)
+
+        #     log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
+
+        #     logger.info("Save notification log")
+
+        #     # connect AWS S3
+        #     third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+        #     # AWS SNS Client
+        #     sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
+        #     client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+
+        #     try:
+        #         # phone = str(notifier.phone)
+        #         client.publish(PhoneNumber=phone_num, Message=notification.content_text)
+    
+        #         logger.info("Enabled SMS Notification")
+        #     except Exception as e:
+        #         logger.error("Unexpected error: %s" % e)
+        #         return "AWS ERROR!"
+
+        #     return "Success"
+        # else:
+        #     logger.error("Sending SMS Notification Data Format Incorrect Error!")
+        #     return "Data Format Incorrect!"
+
+'''
+TODO: using AWS SES send email for ibet.com in the future. Currently not using this function
+'''
+@transaction.atomic
+def send_email(subject, content_text, notifier):
         data = {
+            "subject": subject,
             "content_text": content_text,
-            "is_sms_message": True,
+            "is_email_message": True,
             "status": MESSAGE_APPROVED,
         }
 
@@ -1317,34 +1377,72 @@ def send_sms(content_text, notifier):
         
         if serializer.is_valid():
             notification = serializer.save()
-            logger.info("create a SMS notification")
+            # logger.info("create a Email notification")
 
-            notifier = CustomUser.objects.get(pk=notifier)
+            notifier = CustomUser.objects.get(username=notifier)
 
-            log = NotificationToUsers(notification_id=notification, notifier_id=CustomUser.objects.get(pk=notifier.pk))
-
-            logger.info("Save notification log")
-
-            # connect AWS S3
-            third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
-
-            # AWS SNS Client
-            sns = boto3.resource('sns', region_name=AWS_SMS_REGION)
-            client = getAWSClient('sns', third_party_keys, AWS_SMS_REGION)
+            # logger.info("Save notification log")
 
             try:
-                phone = str(notifier.phone)
-                client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # connect AWS S3
+                third_party_keys = getThirdPartyKeys("ibet-admin-dev", "config/sns.json")
+
+                # AWS SES Client
+                # ses = boto3.resource('ses', region_name=AWS_SES_REGION)
+                client = getAWSClient('ses', third_party_keys, AWS_SES_REGION)
+
+                email = str(notifier.email)
+                # client.publish(PhoneNumber=phone, Message=notification.content_text)
+                # response = client.send_custom_verification_email(
+                #     EmailAddress=email,
+                #     TemplateName='EmailVerification'
+                # )
+
+                response = client.send_email(
+                    Source='claymore@claymoreusa.com',
+                    Destination={
+                        'ToAddresses': [
+                            email,
+                        ],
+                        'CcAddresses': [
+                        ],
+                        'BccAddresses': [
+                        ]
+                    },
+                    Message={
+                        'Subject': {
+                            'Data': subject,
+                            'Charset': 'utf-8'
+                        },
+                        'Body': {
+                            'Text': {
+                                'Data': content_text,
+                                'Charset': 'utf-8'
+                            },
+                        }
+                    }
+                )
+
     
-                logger.info("Enabled SMS Notification")
+                logger.info("Enabled SES Notification")
             except Exception as e:
-                logger.error("Unexpected error: %s" % e)
+                logger.error(repr(e))
                 return "AWS ERROR!"
 
             return "Success"
         else:
-            logger.error("Sending SMS Notification Data Format Incorrect Error!")
+            logger.error("Sending Email Notification Data Format Incorrect Error!")
             return "Data Format Incorrect!"
+
+
+class EmailNotificationTest(View):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        subject = data["subject"]
+        content_text = data["content_text"]
+        notifier = data["notifier"]
+        send_email(subject, content_text, notifier)
+        return HttpResponse(status=200)
 
 
 class NotificationUserIsReadAPI(View):
@@ -1370,7 +1468,7 @@ class NotificationUserIsReadAPI(View):
                 return HttpResponse(status=201)
 
         except Exception as e:
-            logger.error("reading message error:", e)
+            logger.error("reading message error:", repr(e))
             return HttpResponse(status=400)
 
 

@@ -9,4 +9,7 @@ admin.site.register(GameProviderWithCategory)
 admin.site.register(GameBet)
 # admin.site.register(GameAttribute)
 admin.site.register(FGSession)
+admin.site.register(PNGTicket)
+admin.site.register(QTSession)
+admin.site.register(MGToken)
 
