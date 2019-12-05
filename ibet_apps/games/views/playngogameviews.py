@@ -12,6 +12,7 @@ from users.models import CustomUser
 from games.models import GameBet, GameProvider, Category, PNGTicket
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys
+from users.views.helper import checkUserBlock
 
 # Libraries
 import xmltodict
@@ -214,7 +215,7 @@ class BalanceView(View):
             user_currency = CURRENCY_CHOICES[user_obj.currency][1]
             status_code = PNG_STATUS_OK # Default case is 0 (request successful).
 
-            if user_obj.block is True:
+            if checkUserBlock(user_obj):
                 status_code = PNG_STATUS_ACCOUNTDISABLED
 
             # Compose response dictionary and convert to response XML.
@@ -387,7 +388,7 @@ class CancelReserveView(View):
             
             user_obj = CustomUser.objects.get(username=username)
 
-            if user_obj.block:
+            if checkUserBlock(user_obj):
                 # Even if the user is blocked, the refund should still go through. No further action is 
                 # necessary for this case. This is to explicitly inform the reader that this case is
                 # already handled.
