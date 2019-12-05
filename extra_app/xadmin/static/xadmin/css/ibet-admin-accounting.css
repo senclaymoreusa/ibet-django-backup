@@ -345,3 +345,7 @@ label {
     width: 120px;
 }
 
+.modal-header {
+    font-size: 20px;
+    font-weight: bold;
+}

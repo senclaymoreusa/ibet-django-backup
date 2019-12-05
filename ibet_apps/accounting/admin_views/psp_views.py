@@ -37,6 +37,7 @@ class GetPaymentChannels(CommAdminView):
         psp_type = request.GET.get('type')
         market = request.GET.get('market')
         status = request.GET.get('status')
+        search = request.GET.get('search')
         deposit_psp = []
         withdraw_psp = []
         
@@ -47,6 +48,15 @@ class GetPaymentChannels(CommAdminView):
             deposit_psp = DepositChannel.objects.all()
         if psp_type == "withdraw":
             withdraw_psp = WithdrawChannel.objects.all()
+
+        if search:
+            methodQ = Q(method__icontains=search)
+            channelQ = Q(channel__icontains=search)
+            supplierQ = Q(supplier__icontains=search)
+            if deposit_psp: 
+                deposit_psp = deposit_psp.filter(methodQ | channelQ | supplierQ)
+            if withdraw_psp: 
+                withdraw_psp = withdraw_psp.filter(methodQ | channelQ | supplierQ)
 
         if market and market != "all":
             market = convMarket[market]
@@ -62,7 +72,8 @@ class GetPaymentChannels(CommAdminView):
                 withdraw_psp = withdraw_psp.filter(statusQ)
             if deposit_psp:
                 deposit_psp = deposit_psp.filter(statusQ)
-
+        
+        
         context["breadcrumbs"].append({"title": title})
         context["title"] = title
         context["time"] = timezone.now()

@@ -74,8 +74,8 @@
             <div class='col-md-2' style="padding: 10px 30px 0 15px; float: right;">
                 <label for="search">FIND A PAYMENT METHOD</label>
                 <div class='input-group date' id='deposit_time_from'>
-                    <input type='text' class="form-control" placeholder="To" id='search'/>
-                    <span class="input-group-addon" style="background-color: #428bca; color: white">
+                    <input type='text' class="form-control" placeholder="Enter method, channel, or supplier" id='search'/>
+                    <span id='search-btn' class="input-group-addon" style="background-color: #428bca; color: white">
                         <span class="glyphicon glyphicon-search"></span>
                     </span>
                 </div>
@@ -98,6 +98,7 @@
                         <th scope="col">REQUIRED VERIFICATIONS</th>
                         <th scope="col">SCHEDULED DOWNTIME</th>
                         <th scope="col">STATUS</th>
+                        <th scope="col">CONFIG</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,6 +120,12 @@
                         <td></td> 
                         {% endif %}
                         <td>{{ psp.get_status_display }}</td>
+                        <td>                            
+                            <button id="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
+                                <!-- <span class="glyphicon glyphicon-search"></span> -->
+                                Edit
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                     {% for psp in withdraws %}
@@ -139,17 +146,56 @@
                         <td></td> 
                         {% endif %}
                         <td>{{ psp.get_status_display }}</td>
+                        <td>                            
+                            <button id="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
+                                <!-- <span class="glyphicon glyphicon-search"></span> -->
+                                Edit
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         <div class="row" style="margin-left: 0px">
-            <button type="button" class="btn btn-primary" id="white-black-list" onclick="alert('applying black/whitelist')">Apply white/black list to all payments</button>
+            <!-- <button type="button" class="btn btn-primary" id="white-black-list" onclick="alert('applying black/whitelist')">Apply white/black list to all payments</button> -->
             <button type="button" class="btn btn-primary" id="white-black-list" onclick="alert('this is the changelog')">View change log</button>
         </div>
     </div>
 
+    <!-- PSP config modal -->
+    <div class="modal fade" id="edit-psp" role="dialog">
+        <div id="override" class="modal-dialog">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    Edit payment method
+                </div>
+                <div class="modal-body">
+                    <div id="psp-details">
+                        <table>
+                            <tr>
+                                <td>Method</td>
+                                <td id="psp-method">VISA</td>
+                                <td>Type</td>
+                                <td id="psp-type">Deposit</td>
+                            </tr>
+                            <tr>
+                                <td>Channel</td>
+                                <td id="psp-channel">Devcode</td>
+                                <td>Type</td>
+                                <td id="psp-type">Deposit</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div>
+                        stuff
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </div>
         
 
@@ -234,26 +280,21 @@
         // for submitting a search
         $('#search-btn').on('click', function () {
             let searchTerm = document.getElementById('search').value;
-            let fromDate = document.getElementById('min').value;
-            let toDate = document.getElementById('max').value;
 
             console.log("searching for: " + searchTerm);
-            console.log("date range: " + fromDate + ", " + toDate);
-
             let queryString = new URLSearchParams(window.location.search);
-            if (searchTerm) queryString.set('search_params', searchTerm);
-            if (fromDate) queryString.set('from', fromDate);
-            if (toDate) queryString.set('to', toDate);
-            // fetch data and redraw rows
-            if (searchTerm || fromDate || toDate) window.location = BASEURL+queryString.toString();
+
+            // search by payment provider
+            if (searchTerm) {
+                queryString.set('search', searchTerm);
+                console.log(queryString.toString());
+                window.location = BASEURL+queryString.toString();
+            }
             else window.location = BASEURL;
         });
 
         $('#clear-search-btn').on('click', function() {
             document.getElementById('search').value = '';
-            document.getElementById('min').value = '';
-            document.getElementById('max').value = '';
-            document.getElementById('status-filter').selectedIndex = 0;
         });
     }
     
