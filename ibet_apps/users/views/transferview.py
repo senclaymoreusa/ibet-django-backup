@@ -82,20 +82,66 @@ class EachWalletAmount(View):
 
     def get(self, request, *args, **kwargs):
 
-        response = {}
+        response = []
         
         try:
             user_id = request.GET.get('user_id')
             user = CustomUser.objects.get(pk=user_id)
-            response["ea"] = "%.2f" % user.ea_wallet
-            response["onebook"] = "%.2f" % user.onebook_wallet
-            response["ky"] = "%.2f" % user.ky_wallet
+            response = [
+                {
+                    "code": "main",
+                    "amount":  "%.2f" % user.main_wallet,
+                    "isMain": "true"
+                },
+                {
+                    "code": "ea",
+                    "amount":  "%.2f" % user.ea_wallet,
+                    "isMain": "false"
+                },
+                {
+                    "code": "onebook",
+                    "amount":  "%.2f" % user.onebook_wallet,
+                    "isMain": "false"
+                },
+                {
+                    "code": "ky",
+                    "amount":  "%.2f" % user.ky_wallet,
+                    "isMain": "false"
+                },
+                # {
+                #     "code": "ag",
+                #     "amount":  "%.2f" % user.ag_wallet,
+                #     "isMain": "false"
+                # },
+                # {
+                #     "code": "opus",
+                #     "amount":  "%.2f" % user.opus_wallet,
+                #     "isMain": "false"
+                # },
+                # {
+                #     "code": "gpi",
+                #     "amount":  "%.2f" % user.gpi_wallet,
+                #     "isMain": "false"
+                # },
+                # {
+                #     "code": "bbin",
+                #     "amount":  "%.2f" % user.bbin_wallet,
+                #     "isMain": "false"
+                # },
+                # {
+                #     "code": "pt",
+                #     "amount":  "%.2f" % user.pt_wallet,
+                #     "isMain": "false"
+                # }
+            ]
+
             # response["ag"] = user.ag_wallet
             # response["opus"] = user.opus_wallet
             # response["gpi"] = user.gpi_wallet
             # response["bbin"] = user.bbin_wallet
             # response["pt"] = user.pt_wallet
 
+            print(response)
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
         
         except ObjectDoesNotExist as e:
