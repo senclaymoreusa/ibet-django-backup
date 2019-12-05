@@ -18,7 +18,8 @@ class LoginDeviceInfo(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
         blackbox = request.GET['bb']
-        authcode = SUBSCRIBERID + "/" + ACCOUNT + ":" + PASSWORD
+        print(IOVATION_SUBSCRIBERID)
+        authcode = IOVATION_SUBSCRIBERID + "/" + ACCOUNT + ":" + PASSWORD
         enc = base64.encodestring(bytes(authcode, encoding='ascii'))
         encc = str(enc)[2:len(str(enc)) - 3]
         # print(socket.gethostname())
@@ -37,6 +38,7 @@ class LoginDeviceInfo(APIView):
             "blackbox": blackbox,
             "type": "login"
             }
+
         r = requests.post(IOVATION_CHECK, data=json.dumps(data), headers=headers)
         rr = r.text
 

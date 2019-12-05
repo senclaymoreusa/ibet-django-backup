@@ -567,10 +567,10 @@ FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
 LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 #Iovation
-IOVATION_CHECK = 'https://ci-api.iovation.com/fraud/v1/subs/752702/checks'
-SUBSCRIBERID = '752702'
-ACCOUNT = 'OLTP'
-PASSWORD = 'FPUSW3Q1'
+# IOVATION_CHECK = 'https://ci-api.iovation.com/fraud/v1/subs/752702/checks'
+# SUBSCRIBERID = '752702'
+# ACCOUNT = 'OLTP'
+# PASSWORD = 'FPUSW3Q1'
 
 
 ASIAPAY_CMDTYPE = (
