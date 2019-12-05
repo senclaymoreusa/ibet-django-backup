@@ -215,7 +215,7 @@ elif "ENV" in os.environ:
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     
     print("DB HOST: " + db_data['RDS_HOSTNAME'])
-    print(db_data)
+    # print(db_data)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -234,7 +234,7 @@ elif "ENV" in os.environ:
         
         "PORT": 6379
     }
-    print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
+    # print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
 
 
 # Password validation
