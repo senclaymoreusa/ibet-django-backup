@@ -290,11 +290,6 @@ class ReserveView(View):
                 # Skip over all the other possible bet outcomes (elif/else clauses).
                 pass
 
-            # Check currency types.
-            elif user_currency_text != req_currency:
-                status_code = PNG_STATUS_INVALIDCURRENCY
-                logger.error("PLAY'nGO ReserveView Error: Currency mismatch.")
-
             # Bet can go through. 
             elif user_balance >= bet_amount_decimal:
                 with transaction.atomic():
@@ -543,7 +538,7 @@ class ReleaseView(View):
                         #other_data = {}
                     )
 
-                    logger.info("PLAY'nGO ReleaseView Success: Winnings sent to user's wallet.")
+                    logger.info("PLAY'nGO ReleaseView Success: Winnings sent to user " + str(user_obj.username))
 
             else:
                 logger.error("PLAY'nGO ReleaseView Error: Transaction already resolved.")
