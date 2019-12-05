@@ -296,6 +296,9 @@ class InplayUpdateBalanceAPI(View):
                             status=TRAN_PENDING_TYPE
                         )
 
+                        user.imes_wallet += amount
+                        user.save()
+
                     res = {}
                     res["DateReceived"] = timezone.now()
                     res["DateSent"] = timezone.now()
