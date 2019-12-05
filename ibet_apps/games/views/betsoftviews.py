@@ -27,7 +27,7 @@ import xmltodict
 
 logger = logging.getLogger("django")
 
-key = "7HaBRQrlV8WqTmKJ"
+key = BETSOFT_KEY
 
 gameId = 256
 free_game_API: "https://claymoreasia-gp3.discreetgaming.com/free/en/launch.jsp?gameId={}&GAMESERVERURL=games-gp3.discreetgaming.com&autoplayAllowed=true&ShellPath=%252Ffree%252Fflash%252Fdefault%252Ftemplate.jsp&GAMESERVERID=1&LANG=en&BANKID=4542&SID=1_73d53af63e7b452140660000016ea4b2_VlAXUABRXl1VUEZRX1MLCQMCWFkcQ1lFVV5fSxdRAFwaBgYNCg".format(gameId)
@@ -320,7 +320,7 @@ class BetSoftBetRefund(View):
             check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
             if check_duplicate_trans:
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
-                response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = casino_transaction_id
+                response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = prev_bet.trans_id
                 response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
                 response = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(response, content_type='text/xml')

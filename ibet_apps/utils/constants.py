@@ -1400,3 +1400,6 @@ QT_STATUS_CODE = (
     (4, "ACCOUNT_BLOCKED"),
     (5, "REQUEST_DECLINED"),
 )
+
+# Betsoft
+BETSOFT_KEY = keys["BETSOFT"]["KEY"]
