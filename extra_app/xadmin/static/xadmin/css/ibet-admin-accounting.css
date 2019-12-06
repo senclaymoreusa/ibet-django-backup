@@ -30,7 +30,7 @@
     color: #ffffff;
 }
 
-#confirm-settlement-btn {
+.confirm-settlement-btn {
     height: 100%;
     width: 100%;
     background-color: #428bca;

@@ -20,11 +20,6 @@ from itertools import chain
 
 logger = logging.getLogger("django")
 
-class GetPSP(CommAdminView):
-    def get(self, request):
-        deposits = DepositChannel.objects.all()
-        withdraws = WithdrawChannel.objects.all()
-        return render(request, 'channels.html', )
 
 class ChannelListView(CommAdminView):
     def get(self, request):

@@ -136,7 +136,7 @@
 
                         {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
                         <td class="manual-override">
-                            <button id="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                            <button id="{{ tran.pk }}"class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
                                 <!-- <span class="glyphicon glyphicon-search"></span> -->
                                 Confirm
                             </button>

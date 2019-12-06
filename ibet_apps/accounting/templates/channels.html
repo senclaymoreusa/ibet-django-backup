@@ -71,7 +71,7 @@
                     </select>
                 </div>
             </div>
-            <div class='col-md-2' style="padding: 10px 30px 0 15px; float: right;">
+            <div class='col-md-2' style="width: 25%; padding: 10px 30px 0 15px; float: right;">
                 <label for="search">FIND A PAYMENT METHOD</label>
                 <div class='input-group date' id='deposit_time_from'>
                     <input type='text' class="form-control" placeholder="Enter method, channel, or supplier" id='search'/>
@@ -121,7 +121,7 @@
                         {% endif %}
                         <td>{{ psp.get_status_display }}</td>
                         <td>                            
-                            <button id="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
+                            <button id="{{ psp.pk }}" data-psp="deposit" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
                                 <!-- <span class="glyphicon glyphicon-search"></span> -->
                                 Edit
                             </button>
@@ -147,7 +147,7 @@
                         {% endif %}
                         <td>{{ psp.get_status_display }}</td>
                         <td>                            
-                            <button id="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
+                            <button id="{{ psp.pk }}" data-psp="withdraw" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
                                 <!-- <span class="glyphicon glyphicon-search"></span> -->
                                 Edit
                             </button>
@@ -167,32 +167,7 @@
     <div class="modal fade" id="edit-psp" role="dialog">
         <div id="override" class="modal-dialog">
             <!-- Modal content -->
-            <div class="modal-content">
-                <div class="modal-header">
-                    Edit payment method
-                </div>
-                <div class="modal-body">
-                    <div id="psp-details">
-                        <table>
-                            <tr>
-                                <td>Method</td>
-                                <td id="psp-method">VISA</td>
-                                <td>Type</td>
-                                <td id="psp-type">Deposit</td>
-                            </tr>
-                            <tr>
-                                <td>Channel</td>
-                                <td id="psp-channel">Devcode</td>
-                                <td>Type</td>
-                                <td id="psp-type">Deposit</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div>
-                        stuff
-                    </div>
-                </div>
-            </div>
+            {% include "payment_modal.html" %}
         </div>
     </div>
     
@@ -297,10 +272,45 @@
             document.getElementById('search').value = '';
         });
     }
-    
+
+    function initCSRF() {
+         let csrftoken = $.cookie("csrftoken");
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+    }
+    function setProviderFields(data, psp_type) {
+        convMarket = {
+            0:'ibet-vn',
+            1:'ibet-th',
+            2:'ibet-cn',
+            3:'letou-vn',
+            4:'letou-th',
+            5:'letou-cn'
+        }
+
+        market = convMarket[data.fields.market]
+        document.getElementById('psp-method').innerHTML = data.fields.method;
+        document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1);
+        document.getElementById('psp-channel').innerHTML = data.fields.channel;
+        document.getElementById('psp-market').innerHTML = market;
+        document.getElementById('psp-supplier').innerHTML = data.fields.supplier;
+    }
+
     $(document).ready(function () {
+        initCSRF();
         initSearchParams();
         initEventHandlers();
+
         var csrftoken = $.cookie("csrftoken")
         function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
@@ -314,6 +324,25 @@
                 }
             }
         });
+
+        $(".confirm-settlement-btn").on('click', function(event) {
+            var psp_id = event.target.id;
+            console.log(psp_id);
+            console.log('{% url "xadmin:get_psp" %}')
+
+            $.ajax({
+                type: 'GET',
+                url: '{% url "xadmin:get_psp" %}',
+                data: {
+                    'pk': psp_id,
+                    'type': $(this).data('psp')
+                },
+                success: (data) => {
+                    console.log(typeof data);
+                    setProviderFields(data[0], $(this).data('psp'));
+                }
+            })
+        })
     })
 </script>
 

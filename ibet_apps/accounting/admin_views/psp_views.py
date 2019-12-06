@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from xadmin.views import CommAdminView
+from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
@@ -83,3 +84,17 @@ class GetPaymentChannels(CommAdminView):
         context["withdraws"] = withdraw_psp
 
         return render(request, "channels.html", context)
+
+class GetPSP(CommAdminView):
+    def get(self, request):
+        psp_type = request.GET.get('type')
+        pk = request.GET.get('pk')
+        
+        if psp_type == "deposit":
+            provider = DepositChannel.objects.filter(pk=pk)
+        else:
+            provider = WithdrawChannel.objects.filter(pk=pk)
+            
+        provider = serializers.serialize('json', provider)
+        print(provider)
+        return HttpResponse(provider, content_type='application/json')
