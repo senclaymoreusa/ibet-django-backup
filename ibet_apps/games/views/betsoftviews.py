@@ -320,7 +320,7 @@ class BetSoftBetRefund(View):
             check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
             if check_duplicate_trans:
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
-                response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = prev_bet.trans_id
+                response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = prev_bet.transaction_id
                 response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
                 response = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(response, content_type='text/xml')
