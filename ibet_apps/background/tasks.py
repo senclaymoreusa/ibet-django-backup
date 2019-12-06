@@ -82,8 +82,11 @@ def onebook_getBetDetail():
     redis_connect = RedisClient().connect()
     # print(redis.check_onebook_bet_details(onebook_run))
     if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
+        print("redis is false")
         redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
+        print("redis insert key")
         while(True):
+            
             r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
                 "vendor_id": ONEBOOK_VENDORID,
                 "version_key": version_key,
@@ -153,6 +156,7 @@ def onebook_getBetDetail():
                 logger.info("BetDetails is not existed.")
                 break
         redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
+        print("redis remove key")
         # print(redis.check_onebook_bet_details(onebook_run))        
         return rdata
     else:
