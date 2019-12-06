@@ -86,7 +86,8 @@ urlpatterns += [
     path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw_password"),
     path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset_withdraw_password"),
     path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view"),
-    path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting")
+    path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting"),
+    path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount")
 
     
 ]
