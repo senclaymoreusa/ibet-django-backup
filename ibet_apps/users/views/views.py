@@ -67,6 +67,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
 
+
 import datetime
 import logging
 import os
@@ -362,18 +363,19 @@ class LoginView(GenericAPIView):
             browser = self.iovationData['details']['device']['browser']
             ipLocation = self.iovationData['details']['realIp']['ipLocation']
             otherData = self.iovationData
-            action = UserAction(
-                user= customUser.first(),
-                ip_addr=statedIp,
-                result=result,
-                device=device,
-                browser=str(browser),
-                ip_location=ipLocation,
-                other_info=otherData,
-                event_type=0,
-                created_time=timezone.now()
-            )
-            action.save()
+            with transaction.atomic():
+                action = UserAction(
+                    user= customUser.first(),
+                    ip_addr=statedIp,
+                    result=result,
+                    device=device,
+                    browser=str(browser),
+                    ip_location=ipLocation,
+                    other_info=otherData,
+                    event_type=0,
+                    created_time=timezone.now()
+                )
+                action.save()
 
         except Exception as e:
             logger.error("cannot get users device info in iovation", e)

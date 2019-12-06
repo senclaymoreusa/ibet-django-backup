@@ -18,14 +18,20 @@ from utils.aws_helper import getThirdPartyKeys
 class LoginDeviceInfo(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        blackbox = request.GET['bb']
+        try:
+            blackbox = request.GET['bb']
+        except Exception as e:
+            logger.error("cannot get blackbox", e)
+           
         bucket = 'ibet-admin-apdev'
         if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
             bucket = 'ibet-admin-approd'
         third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
         authcode = third_party_keys["IOVATION"]["SUBSCRIBERID"] + "/" + third_party_keys["IOVATION"]["ACCOUNT"] + ":" + third_party_keys["IOVATION"]["PASSWORD"]
         enc = base64.encodestring(bytes(authcode, encoding='ascii'))
+      
         encc = str(enc)[2:len(str(enc)) - 3]
+       
         # print(socket.gethostname())
         # print(socket.gethostbyname(socket.getfqdn()))
         # print(encc)

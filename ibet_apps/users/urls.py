@@ -89,7 +89,7 @@ urlpatterns += [
     path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view"),
     path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting"),
 
-    path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info")
+    path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info"),
 
     path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount")
 
