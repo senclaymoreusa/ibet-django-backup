@@ -260,7 +260,6 @@ class InplayDeductBalanceAPI(View):
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
             data = json.loads(data)
-            print(data)
             response = {}
             if data["EventTypeId"] == '1003':
                 user = data["MemberCode"]
@@ -302,16 +301,14 @@ class InplayDeductBalanceAPI(View):
 
 
 class InplayUpdateBalanceAPI(View):
-    def post(self, request, *arg, **kwargs):
-        data = json.loads(request.body)
+    def get(self, request, *arg, **kwargs):
+        balance_package = request.GET.get('balancePackage')
+        package_id = request.GET.get('packageid')
+        date_sent = request.GET.get('dateSent')
         try:
-            balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfTnRLW6RazhbRYyB4Fk76mo="
-            print(balance_package)
+            balance_package = balance_package.replace(' ', '+')
             data = des3Decryption(balance_package)
-            data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
-            # print(data)
-            # print(data["EventTypeId"])
-            #  data = json.dumps(str(data))
+            data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
             if data["EventTypeId"] == '4002':
                 user = data["MemberCode"]
@@ -319,43 +316,51 @@ class InplayUpdateBalanceAPI(View):
                 # user = CustomUser.objects.get(username=user)
                 match_no = data["MatchNo"]
                 bet_detail_list = data["BetDetailList"]
+                bet_detail_list = json.loads(bet_detail_list)
+                print(bet_detail_list)
                 for bet in bet_detail_list:
+                    print(bet)
                     member_code = bet["MemberCode"]
                     bet_no = bet["BetNo"]
                     amount = bet["TransactionAmt"]
 
-                    user = CustomUser.objects.get(user)
+                    print(member_code)
+                    print(bet_no)
+                    print(amount)
+                    print("--------------")
 
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    # user = CustomUser.objects.get(user)
 
-                    with transaction.atomic():
-                        trans = Transaction.objects.create(
-                            transaction_id=trans_id,
-                            user_id=user,
-                            order_id=trans_id,
-                            amount=amount,
-                            currency=user_currency,
-                            transfer_from="IMES",
-                            transfer_to="main",
-                            product=0,
-                            transaction_type=TRANSACTION_TRANSFER,
-                            status=TRAN_PENDING_TYPE
-                        )
+                    # trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    # with transaction.atomic():
+                    #     trans = Transaction.objects.create(
+                    #         transaction_id=trans_id,
+                    #         user_id=user,
+                    #         order_id=trans_id,
+                    #         amount=amount,
+                    #         currency=user_currency,
+                    #         transfer_from="IMES",
+                    #         transfer_to="main",
+                    #         product=0,
+                    #         transaction_type=TRANSACTION_TRANSFER,
+                    #         status=TRAN_PENDING_TYPE
+                    #     )
 
 
 
-                        user.imes_wallet += amount
-                        user.save()
+                    #     user.imes_wallet += amount
+                    #     user.save()
 
-                    res = {}
-                    res["DateReceived"] = timezone.now()
-                    res["DateSent"] = timezone.now()
-                    res["StatusCode"] = 100
-                    res["StatusMessage"] = "Success"
-                    res["PackageId"] = 374
-                    res["Balance"] = 0.0
+                res = {}
+                # res["DateReceived"] = timezone.now()
+                # res["DateSent"] = timezone.now()
+                res["StatusCode"] = 100
+                res["StatusMessage"] = "Success"
+                res["PackageId"] = 374
+                res["Balance"] = 0.0
 
-                    return HttpResponse(json.dumps(res), content_type='application/json', status=200)
+                return HttpResponse(json.dumps(res), content_type='application/json', status=200)
                 print(amount)
         except Exception as e:
             print("Error: {}".format(repr(e)))
@@ -370,7 +375,9 @@ class TestDecryption(View):
             event_type_id = request.GET.get('EventTypeId')  # "EventTypeId": 1001,
             member_code = request.GET.get('MemberCode')  # "MemberCode": "bae02",
             transaction_amt = request.GET.get('TransactionAmt') # "TransactionAmt": 100.0
-        
+            match_no = request.GET.get('MatchNo') # "MatchNo": 1688512
+            bet_detail_list = request.GET.get('BetDetailList')
+
             plain_json = {}
             plain_json["EventTypeId"] = event_type_id
             plain_json["MemberCode"] = member_code
@@ -380,10 +387,12 @@ class TestDecryption(View):
                 # plain_json = json.dumps(plain_json)
             elif api_no == '2':
                 plain_json["TransactionAmt"] = transaction_amt
+            elif api_no == '6':
+                plain_json["MatchNo"] = match_no
+                plain_json["BetDetailList"] = bet_detail_list
 
             plain_json = json.dumps(plain_json)
             print(plain_json)
-            print(type(plain_json))
         
             # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
 
