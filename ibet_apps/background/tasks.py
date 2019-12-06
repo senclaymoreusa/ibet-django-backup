@@ -4,6 +4,7 @@ from django.db import DatabaseError, transaction
 import redis
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+from datetime import datetime
 import datetime
 from datetime import date
 from django.utils import timezone
@@ -24,7 +25,7 @@ import requests
 from utils.aws_helper import getThirdPartyKeys
 from Crypto.Cipher import AES
 from games.helper import *
-
+from utils.admin_helper import *
 
 logger = logging.getLogger('django')
 
@@ -37,6 +38,30 @@ third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json"
 KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
 KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
 
+
+convertCurrency = {
+    3:CURRENCY_USD,
+    4:CURRENCY_THB,
+    6:CURRENCY_EUR,
+    13:CURRENCY_CNY,
+    15:CURRENCY_IDR,
+    20:CURRENCY_TEST,
+    51:CURRENCY_VND,
+}
+
+outcomeConversion = {
+    "won": 0,
+    "lose": 1,
+    "running": 4,
+    "draw":5,
+    "half lose":6,
+    "half won" : 10,
+    "reject": 11,
+    "waiting":12,
+    "waiting running": 13,
+    "void": 3,
+    "refund": 14
+}
 @transaction.atomic
 @background(schedule=5) 
 def onebook_getBetDetail():
@@ -65,7 +90,7 @@ def onebook_getBetDetail():
             })
             rdata = r.json()
             logger.info(rdata)
-            # print(rdata)
+            print(rdata)
             version_key = rdata["Data"]["last_version_key"]        
             
             updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
