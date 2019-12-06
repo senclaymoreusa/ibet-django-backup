@@ -72,6 +72,8 @@ class Game(models.Model):
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
+    smallgame_id = models.CharField(max_length=200, null=True, blank=True)
+    is_free = models.NullBooleanField(default=None)
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -193,11 +195,4 @@ class QTSession(models.Model):
         return '{0}'.format(self.user.username)
 
 
-#MG token
-class MGToken(models.Model):
 
-    user=models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    token= models.CharField(max_length=50, null=True)
-
-    def __str__(self):
-        return '{0}'.format(self.user)

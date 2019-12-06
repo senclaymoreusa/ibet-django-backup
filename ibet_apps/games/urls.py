@@ -74,7 +74,7 @@ urlpatterns = [
 
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
-    path('api/mg/token_save', mggameviews.MGtoken.as_view(), name = 'mg_token'),
+   
 
 
     # kaiyuan gaming

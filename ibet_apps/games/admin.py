@@ -11,5 +11,5 @@ admin.site.register(GameBet)
 admin.site.register(FGSession)
 admin.site.register(PNGTicket)
 admin.site.register(QTSession)
-admin.site.register(MGToken)
+
 
