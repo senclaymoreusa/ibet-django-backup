@@ -24,15 +24,15 @@ try:
 except ObjectDoesNotExist:
     PROVIDER = GameProvider.objects.create(
                                             provider_name="PLAYNGO",
-                                            type=2,
-                                            market="ibetCN"
+                                            type=GAME_TYPE_GAMES,
+                                            market="letouCN, letouTH, letouVN"
                                           )
 
 try:
-    CATEGORY = Category.objects.get(name="SLOTS")
+    CATEGORY = Category.objects.get(name="Slots")
 except ObjectDoesNotExist:
     CATEGORY = Category.objects.create(
-                                        name="SLOTS",
+                                        name="Slots",
                                         notes="None"
                                       )
 

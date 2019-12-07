@@ -8,7 +8,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.db import transaction
 from users.views.helper import checkUserBlock
-from users.models import CustomUser
+from users.models import CustomUser, UserWallet
 import simplejson as json
 import xmltodict
 from decimal import Decimal
@@ -39,8 +39,19 @@ class Transfer(View):
 
             user = CustomUser.objects.get(pk=user_id)
 
-            from_wallet_field_name = from_wallet + '_wallet'
-            current_from_wallet_amount = getattr(user, from_wallet_field_name)
+            if from_wallet == "main":
+                current_from_wallet_amount = user.main_wallet
+            else:
+                from_provider = GameProvider.objects.get(provider_name=from_wallet)
+                current_from_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=from_provider)
+                current_from_wallet_amount = current_from_wallet_obj.wallet_amount
+                # print(current_from_wallet_obj.wallet_amount)
+                # current_from_wallet_amount = current_from_wallet_obj.wallet_amount
+                # current_from_wallet_amount = user.main_wallet
+                # wallet = UserWallet.objects.get_or_create(user=user, provider=GameProvider(provider_name=to_wallet))
+
+            # from_wallet_field_name = from_wallet + '_wallet'
+            # current_from_wallet_amount = getattr(user, from_wallet_field_name)
 
             if float(current_from_wallet_amount) < float(amount):
 
