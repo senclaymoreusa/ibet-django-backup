@@ -46,12 +46,14 @@ def pad(m):
 
 
 def des3Encryption(plain_text):
-    # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
-    key = hashlib.md5(IMES_KEY.encode()).digest()
-    cipher = DES3.new(key, DES3.MODE_ECB)
-    cipher_text = cipher.encrypt(pad(plain_text))
+    try:
+        key = hashlib.md5(IMES_KEY.encode()).digest()
+        cipher = DES3.new(key, DES3.MODE_ECB)
+        cipher_text = cipher.encrypt(pad(plain_text))
 
-    return str(base64.b64encode(cipher_text), "utf-8")
+        return str(base64.b64encode(cipher_text), "utf-8")
+    except Exception as e:
+        logger.error("IMES Encrypt Error: {}".format(repr(e)))
 
 
 def des3Decryption(cipher_text):
@@ -62,18 +64,7 @@ def des3Decryption(cipher_text):
         plain_text = cipher.decrypt(cipher_text)
         return plain_text.decode()
     except Exception as e:
-        print("Decrypt Error: {}".format(repr(e)))
-
-
-def isLessThanFiveMin(req_time):
-    try:
-        print(req_time)
-        req_time = datetime.datetime.strptime(req_time, '%b/%d/%Y %I:%M:%S %p')
-        print(req_time)
-        return True
-    except Exception as e:
-        print(repr(e))
-        return False
+        logger.error("IMES Decrypt Error: {}".format(repr(e)))
 
 
 class InplayLoginAPI(View):
@@ -96,7 +87,6 @@ class InplayLoginAPI(View):
             
             res = requests.post(url, data=post_data)
             res = res.json()
-            print(res)
 
             return HttpResponse(json.dumps(res), content_type='application/json')
 
@@ -105,15 +95,13 @@ class InplayLoginAPI(View):
             # else:
             #     return HttpResponse(status=400)
         except Exception as e:
-            logger.error("Inplay Matrix login error: {}".format(repr(e)))
+            logger.error("IMES Login Error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
 class ValidateTokenAPI(View):
     def get(self, request, *arg, **kwargs):
         try:
-            # data = json(request.body)
-            # print(data)
             token = request.GET.get("token")
             user = Token.objects.get(key=token).user
 
@@ -126,7 +114,7 @@ class ValidateTokenAPI(View):
 
             return HttpResponse(json.dumps(res), content_type="application/json", status=200)
         except Exception as e:
-            logger.error("Inplay Matrix validation error: {}".format(repr(e)))
+            logger.error("IMES Validation Error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -161,39 +149,6 @@ class InplayGetBalanceAPI(View):
                 )
                 '''
 
-                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
-                category = Category.objects.get_or_create(name='SPORTS')
-
-                GameBet.objects.get_or_create(
-                    provider = provider[0],
-                    category = category[0],
-
-                    # game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
-                    # game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
-                    # # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
-
-                    username = user,
-                    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
-                    # amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
-                    # # outcome = models.BooleanField() # true = win, false = lost
-                    # outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-                    # odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
-                    # bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
-                    # line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-                    # transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)
-                    # currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
-                    # market = models.SmallIntegerField(choices=MARKET_CHOICES)
-                    # ref_no = models.CharField(max_length=100, null=True, blank=True)
-                    # bet_time = models.DateTimeField(
-                    #     _('Time Bet was Placed'),
-                    #     auto_now_add=True,
-                    #     editable=False,
-                    # )
-
-                    # resolved_time = models.DateTimeField(null=True, blank=True)
-                    # other_data = JSONField(null=True, default=dict)
-                )
-
                 response["StatusCode"] = 100
                 response["StatusMessage"] = "Success"
                 response["PackageId"] = str(uuid.uuid1())
@@ -207,7 +162,7 @@ class InplayGetBalanceAPI(View):
                 # response[]
                 return HttpResponse("Wrong Event Type")
         except Exception as e:
-            logger.error("Error: {}".format(repr(e)))
+            logger.error("IMES GET Balance Error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -244,7 +199,7 @@ class InplayGetApprovalAPI(View):
             else:
                 return HttpResponse("Wrong event type")
         except Exception as e:
-            logger.error("Error: {}".format(repr(e)))
+            logger.error("IMES Get Approval Error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -296,7 +251,7 @@ class InplayDeductBalanceAPI(View):
             else:
                 return HttpResponse("Wrong Event type")
         except Exception as e:
-            logger.error("Error: {}".format(repr(e)))
+            logger.error("IMES Deduct Balance Error: {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -350,19 +305,14 @@ class InplayUpdateBalanceAPI(View):
                     )
 
                 res = {}
-                # res["DateReceived"] = timezone.now()
-                # res["DateSent"] = timezone.now()
+
                 res["StatusCode"] = 100
-                res["StatusMessage"] = "Success"
-                res["PackageId"] = 374
-                res["Balance"] = 0.0
+                res["StatusMessage"] = "Acknowledged"
 
                 return HttpResponse(json.dumps(res), content_type='application/json', status=200)
-                print(amount)
         except Exception as e:
-            print("Error: {}".format(repr(e)))
-
-        return HttpResponse(status=200)
+            logger.error("IMES Update Balance Error: {}".format(repr(e)))
+            return HttpResponse(status=400)
 
 
 class TestDecryption(View):
@@ -389,21 +339,17 @@ class TestDecryption(View):
                 plain_json["BetDetailList"] = bet_detail_list
 
             plain_json = json.dumps(plain_json)
-            print(plain_json)
         
             # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
 
             cipher_json = des3Encryption(plain_json)
 
-            print(cipher_json)
-
             plain_json = des3Decryption(cipher_json)
 
             plain_json = "".join([plain_json.rsplit("}" , 1)[0] , "}"]) 
-            print(plain_json)
 
             plain_json = json.loads(plain_json)
 
             return HttpResponse(cipher_json)
         except Exception as e:
-            print(e)
+            print(repr(e))
