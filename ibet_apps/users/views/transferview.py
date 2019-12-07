@@ -93,66 +93,42 @@ class EachWalletAmount(View):
 
     def get(self, request, *args, **kwargs):
 
-        response = []
+        response = {}
         
-        try:
+        try:   
+
             user_id = request.GET.get('user_id')
             user = CustomUser.objects.get(pk=user_id)
-            response = [
-                {
-                    "code": "main",
-                    "amount":  "%.2f" % user.main_wallet,
-                    "isMain": "true"
-                },
-                {
-                    "code": "ea",
-                    "amount":  "%.2f" % user.ea_wallet,
-                    "isMain": "false"
-                },
-                {
-                    "code": "onebook",
-                    "amount":  "%.2f" % user.onebook_wallet,
-                    "isMain": "false"
-                },
-                {
-                    "code": "ky",
-                    "amount":  "%.2f" % user.ky_wallet,
-                    "isMain": "false"
-                },
-                # {
-                #     "code": "ag",
-                #     "amount":  "%.2f" % user.ag_wallet,
-                #     "isMain": "false"
-                # },
-                # {
-                #     "code": "opus",
-                #     "amount":  "%.2f" % user.opus_wallet,
-                #     "isMain": "false"
-                # },
-                # {
-                #     "code": "gpi",
-                #     "amount":  "%.2f" % user.gpi_wallet,
-                #     "isMain": "false"
-                # },
-                # {
-                #     "code": "bbin",
-                #     "amount":  "%.2f" % user.bbin_wallet,
-                #     "isMain": "false"
-                # },
-                # {
-                #     "code": "pt",
-                #     "amount":  "%.2f" % user.pt_wallet,
-                #     "isMain": "false"
-                # }
-            ]
 
-            # response["ag"] = user.ag_wallet
-            # response["opus"] = user.opus_wallet
-            # response["gpi"] = user.gpi_wallet
-            # response["bbin"] = user.bbin_wallet
-            # response["pt"] = user.pt_wallet
+            all_providers = GameProvider.objects.all()
+            for provider in all_providers:
 
-            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+                if provider.is_transfer_wallet:
+                    provider_name = str(provider.provider_name)
+                    response[provider_name] = Decimal('0.00')
+
+            # print(response)
+
+            all_wallets = UserWallet.objects.filter(user=user)
+            for wallet in all_wallets:
+                response[wallet.provider.provider_name] =  "%.2f" % wallet.wallet_amount
+            
+
+            data = []
+            data.append({
+                "code": "main",
+                "amount":  "%.2f" % user.main_wallet,
+                "isMain": True
+            })
+
+            for code, amount in response.items(): 
+                data.append({
+                    "code": code,
+                    "amount": amount,
+                    "isMain": False
+                })
+
+            return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
         
         except ObjectDoesNotExist as e:
             logger.error("The user does not exist ", e)
