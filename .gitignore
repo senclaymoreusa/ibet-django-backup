@@ -6,7 +6,6 @@ __pycache__/
 djauth/.DS_Store
 /.pydevproject
 logs/
-.env
 .idea/
 # test socket server
 Server.py
