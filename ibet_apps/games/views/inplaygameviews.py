@@ -311,46 +311,43 @@ class InplayUpdateBalanceAPI(View):
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
             if data["EventTypeId"] == '4002':
+                provider = GameProvider.objects.get_or_create(provider_name=IMES_PROVIDER, type=0, market=ibetCN)
+                category = Category.objects.get_or_create(name='SPORTS')
+
                 user = data["MemberCode"]
-                # amount = float(data["TransactionAmt"])
-                # user = CustomUser.objects.get(username=user)
+
                 match_no = data["MatchNo"]
                 bet_detail_list = data["BetDetailList"]
                 bet_detail_list = json.loads(bet_detail_list)
-                print(bet_detail_list)
                 for bet in bet_detail_list:
-                    print(bet)
                     member_code = bet["MemberCode"]
                     bet_no = bet["BetNo"]
                     amount = bet["TransactionAmt"]
 
-                    print(member_code)
-                    print(bet_no)
-                    print(amount)
-                    print("--------------")
+                    user = CustomUser.objects.get(user)
 
-                    # user = CustomUser.objects.get(user)
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                    # trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                    # with transaction.atomic():
-                    #     trans = Transaction.objects.create(
-                    #         transaction_id=trans_id,
-                    #         user_id=user,
-                    #         order_id=trans_id,
-                    #         amount=amount,
-                    #         currency=user_currency,
-                    #         transfer_from="IMES",
-                    #         transfer_to="main",
-                    #         product=0,
-                    #         transaction_type=TRANSACTION_TRANSFER,
-                    #         status=TRAN_PENDING_TYPE
-                    #     )
-
-
-
-                    #     user.imes_wallet += amount
-                    #     user.save()
+                    GameBet.objects.get_or_create(
+                        provider = provider[0],
+                        category = category[0],
+                        # game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
+                        # game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
+                        username = user,
+                        amount_wagered = decimal.Decimal(amount),
+                        # amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
+                        # # outcome = models.BooleanField() # true = win, false = lost
+                        # outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
+                        # odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
+                        # bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
+                        # line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
+                        transaction_id = trans_id,
+                        # currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
+                        market = ibetCN,
+                        ref_no = bet_no
+                        # resolved_time = models.DateTimeField(null=True, blank=True)
+                        # other_data = JSONField(null=True, default=dict)
+                    )
 
                 res = {}
                 # res["DateReceived"] = timezone.now()
