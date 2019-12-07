@@ -1239,6 +1239,7 @@ BONUS_TYPE_DEPOSIT = 1
 BONUS_TYPE_TURNOVER = 2
 BONUS_TYPE_STANDARD = 3
 BONUS_TYPE_FREESPINS = 4
+BONUS_TYPE_MANUAL = 5
 
 BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_VERIFICATION, 'VERIFICATION'),
@@ -1246,6 +1247,7 @@ BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_TURNOVER, 'TURNOVER'),
     (BONUS_TYPE_STANDARD, 'STANDARD'),
     (BONUS_TYPE_FREESPINS, 'FREE SPINS'),
+    (BONUS_TYPE_MANUAL, 'MANUAL')
 )
 
 BONUS_STATUS_CHOICES = (
@@ -1275,6 +1277,12 @@ BONUS_RELEASE_TYPE_CHOICES = (
     (0, 'Pre-wager'),
     (1, 'Post-wager'),
 )
+
+BONUS_AGGREGATE_SUM = 0
+BONUS_AGGREGATE_COUNT = 1
+BONUS_AGGREGATE_AVERAGE = 2
+BONUS_AGGREGATE_MAX = 3
+BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
     (0, 'SUM'),
@@ -1350,6 +1358,31 @@ SECURITY_QUESTION = (
     (6, _('What is the name of the person that influenced you the most?'))
     
 )
+
+# Bonus
+BONUS_MANUAL = 0
+BONUS_TRIGGERED = 1
+BONUS_CATEGORY = (
+    (0, 'Manual'),
+    (1, 'Triggered'),
+)
+
+BONUS_MUST_HAVE = (
+    (0, 'ID verified'),
+    (1, 'Phone verified'),
+    (2, 'Email verified'),
+    (3, 'A successful deposit'),
+    (4, 'A successful withdrawal'),
+    (5, 'Manual audit for first withdrawal'),
+)
+
+BONUS_DELIVERY_PUSH = 0
+BONUS_DELIVERY_SITE = 1
+DELIVERY_CHOICES = (
+    (0, 'Push'),
+    (1, 'Site activation'),
+)
+
 # Games
 
 # Playngo
@@ -1416,3 +1449,6 @@ QT_STATUS_CODE = (
     (4, "ACCOUNT_BLOCKED"),
     (5, "REQUEST_DECLINED"),
 )
+
+# Betsoft
+BETSOFT_KEY = keys["BETSOFT"]["KEY"]
