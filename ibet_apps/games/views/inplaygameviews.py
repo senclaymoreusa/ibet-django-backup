@@ -28,18 +28,14 @@ import base64
 import pytz
 import urllib
 
+from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
 
-# def des_decrypt(s):
-#     encrypt_key = '9d25ee5d1ffa0e01'
-#     iv = encrypt_key
-#     k = des(encrypt_key, ECB, iv, pad=None, padmode=PAD_PKCS7)
-#     de = k.decrypt(base64.b64decode(s), padmode=PAD_PKCS7)
-#     return de
-
-IMES_KEY = "9d25ee5d1ffa0e01" 
-IMES_URL = "http://ibet.esapi.test.imapi.net/"
+# connect AWS S3
+third_party_keys = getThirdPartyKeys("ibet-admin-apdev", "config/thirdPartyKeys.json")
+IMES_URL = third_party_keys["IMES"]["URL"]
+IMES_KEY = third_party_keys["IMES"]["DESKEY"]
 
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
@@ -269,8 +265,6 @@ class InplayUpdateBalanceAPI(View):
                 provider = GameProvider.objects.get_or_create(provider_name=IMES_PROVIDER, type=0, market=ibetCN)
                 category = Category.objects.get_or_create(name='SPORTS')
 
-                user = data["MemberCode"]
-
                 match_no = data["MatchNo"]
                 bet_detail_list = data["BetDetailList"]
                 bet_detail_list = json.loads(bet_detail_list)
@@ -279,7 +273,7 @@ class InplayUpdateBalanceAPI(View):
                     bet_no = bet["BetNo"]
                     amount = bet["TransactionAmt"]
 
-                    user = CustomUser.objects.get(user)
+                    user = CustomUser.objects.get(username=member_code)
 
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -312,7 +306,7 @@ class InplayUpdateBalanceAPI(View):
                 return HttpResponse(json.dumps(res), content_type='application/json', status=200)
         except Exception as e:
             logger.error("IMES Update Balance Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse(repr(e), status=400)
 
 
 class TestDecryption(View):
