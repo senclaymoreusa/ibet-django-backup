@@ -672,28 +672,30 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
+    PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
+    QT_PASS_KEY = keys["QTGAMES"]["PRODUCTION"]["PASS_KEY"]
+    qt = keys["QTGAMES"]["PRODUCTION"]
+
+
 else:
     API_DOMAIN = "https://754dc8ae.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
-
-BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
-
-# payzod production
-# TODO: Will need to update Production credentials because these credentials are temporary
-if os.getenv("ENV") != "local":  # fetch prod credentials from s3
-    PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
-    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
-    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
-    PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
-else:  # payzod sandbox
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
     PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
+    QT_PASS_KEY = keys["QTGAMES"]["SANDBOX"]["PASS_KEY"]
+    qt = keys["QTGAMES"]["SANDBOX"]
+
+BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
+
 
 
 GAME_FILTER_OPTION = [
@@ -1223,6 +1225,7 @@ BONUS_TYPE_DEPOSIT = 1
 BONUS_TYPE_TURNOVER = 2
 BONUS_TYPE_STANDARD = 3
 BONUS_TYPE_FREESPINS = 4
+BONUS_TYPE_MANUAL = 5
 
 BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_VERIFICATION, 'VERIFICATION'),
@@ -1230,6 +1233,7 @@ BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_TURNOVER, 'TURNOVER'),
     (BONUS_TYPE_STANDARD, 'STANDARD'),
     (BONUS_TYPE_FREESPINS, 'FREE SPINS'),
+    (BONUS_TYPE_MANUAL, 'MANUAL')
 )
 
 BONUS_STATUS_CHOICES = (
@@ -1259,6 +1263,12 @@ BONUS_RELEASE_TYPE_CHOICES = (
     (0, 'Pre-wager'),
     (1, 'Post-wager'),
 )
+
+BONUS_AGGREGATE_SUM = 0
+BONUS_AGGREGATE_COUNT = 1
+BONUS_AGGREGATE_AVERAGE = 2
+BONUS_AGGREGATE_MAX = 3
+BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
     (0, 'SUM'),
@@ -1334,6 +1344,31 @@ SECURITY_QUESTION = (
     (6, _('What is the name of the person that influenced you the most?'))
     
 )
+
+# Bonus
+BONUS_MANUAL = 0
+BONUS_TRIGGERED = 1
+BONUS_CATEGORY = (
+    (0, 'Manual'),
+    (1, 'Triggered'),
+)
+
+BONUS_MUST_HAVE = (
+    (0, 'ID verified'),
+    (1, 'Phone verified'),
+    (2, 'Email verified'),
+    (3, 'A successful deposit'),
+    (4, 'A successful withdrawal'),
+    (5, 'Manual audit for first withdrawal'),
+)
+
+BONUS_DELIVERY_PUSH = 0
+BONUS_DELIVERY_SITE = 1
+DELIVERY_CHOICES = (
+    (0, 'Push'),
+    (1, 'Site activation'),
+)
+
 # Games
 
 # Playngo
@@ -1359,15 +1394,15 @@ KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
 #onebook
-ONEBOOK_PROVIDER = 'Onebook'
-ONEBOOK_VENDORID = "xmV64h8RULU"
-ONEBOOK_OPERATORID = "ibetclaymore"
-ONEBOOK_MAXTRANSFER = "50000"
-ONEBOOK_MINTRANSFER = "10"
-ONEBOOK_API_URL = "http://tsa.claymoreasia.com/api/"
-ONEBOOK_DIRECTION_withdraw = 0
-ONEBOOK_DIRECTION_deposit = 1
-ONEBOOK_IFRAME_URL = 'http://sbtest.claymoreasia.com/Deposit_ProcessLogin.aspx?'
+ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
+ONEBOOK_VENDORID = keys["ONEBOOK"]["VENDORID"]
+ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
+ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
+ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
+ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
+ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
+ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
+ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
 
@@ -1378,11 +1413,11 @@ SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
-GB_PROVIDER = 'GB'
-GB_URL = "http://uatapi.gbb2b.com/GBGameAPI/API.aspx"
-GB_API_URL = "http://ibetapiscsharp-env.us-west-2.elasticbeanstalk.com/api/values/"
-GB_SPORT_URL = "http://164.claymoreusa.net/sports/asia/index.aspx"
-GB_OTHER_URL = "http://163.claymoreusa.net"
+GB_PROVIDER = keys["GB"]["PROVIDER"]
+GB_URL = keys["GB"]["URL"]
+GB_API_URL = keys["GB"]["API_URL"]
+GB_SPORT_URL = keys["GB"]["SPORT_URL"]
+GB_OTHER_URL = keys["GB"]["OTHER_URL"]
 
 # QT
 QT_STATUS_SUCCESS = 0
@@ -1400,3 +1435,6 @@ QT_STATUS_CODE = (
     (4, "ACCOUNT_BLOCKED"),
     (5, "REQUEST_DECLINED"),
 )
+
+# Betsoft
+BETSOFT_KEY = keys["BETSOFT"]["KEY"]

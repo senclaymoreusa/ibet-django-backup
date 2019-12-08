@@ -18,13 +18,13 @@ import requests
 logger = logging.getLogger("django")
 
 # connect AWS S3
-bucket = 'ibet-admin-apdev'
-if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
-    bucket = 'ibet-admin-approd'
-third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
-QT_PASS_KEY = third_party_keys["QTGAMES"]["PASS_KEY"]
+# bucket = 'ibet-admin-apdev'
+# if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
+#     bucket = 'ibet-admin-approd'
+# third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
+# QT_PASS_KEY = third_party_keys["QTGAMES"]["PASS_KEY"]
 
-qt = third_party_keys["QTGAMES"]
+# qt = third_party_keys["QTGAMES"]
 apiUrl = qt["API"]["url"]
 
 class VerifySession(APIView):
