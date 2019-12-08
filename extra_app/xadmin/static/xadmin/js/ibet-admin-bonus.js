@@ -349,7 +349,6 @@ $(document).ready(function() {
         bonusStartTime = $('#bonus-start-time').val();
         bonusEndTime = $('#bonus-end-time').val();
         checkEmpty(this);
-        console.log(bonus_create)
     });
 
     $('#bonus-next-02').on('click', function(){

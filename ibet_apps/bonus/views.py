@@ -157,8 +157,8 @@ class BonusView(View):
     def get(self, request, *arg, **kwargs):
 
         try:
-            bonus_pk = self.kwargs.get('pk')
-            bonus = Bonus.objects.get(pk=bonus_pk)
+            bonus_name = self.kwargs.get('name')
+            bonus = Bonus.objects.get(name=bonus_name)
             bonus_data = serializers.serialize('json', {bonus})
             bonus_data = json.loads(bonus_data)[0]['fields']
 
@@ -262,9 +262,13 @@ class BonusView(View):
                             if int(wager['multiple']) == -1:
                                 continue
 
+                            time_limit = None
+                            if wager['time_limit']:
+                                time_limit = int(wager['time_limit'])
+
                             wager_req = Requirement(
                                 aggregate_method=int(wager['aggregate_method']),
-                                time_limit=int(wager['time_limit']),
+                                time_limit=time_limit,
                                 turnover_multiplier=int(wager['multiple']),
                                 bonus=bonus_obj,
                             )
