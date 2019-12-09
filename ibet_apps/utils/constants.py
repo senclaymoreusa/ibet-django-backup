@@ -603,6 +603,7 @@ if os.getenv("ENV") == "local" or "dev" in os.getenv("ENV"):
     APIVERSION = keys["QAICASH"]["STAGING"]["APIVERSION"]
     DEPOSIT_URL = keys["QAICASH"]["STAGING"]["DEPOSIT_URL"]
     PAYOUT_URL = keys["QAICASH"]["STAGING"]["PAYOUT_URL"]
+    CALLBACK_URL = keys["QAICASH"]["STAGING"]["CALLBACK_URL"]
 
 elif "prod" in os.getenv("ENV"):
      # qaicash-payment production
@@ -612,6 +613,7 @@ elif "prod" in os.getenv("ENV"):
     APIVERSION = keys["QAICASH"]["PRODUCTION"]["APIVERSION"]
     DEPOSIT_URL = keys["QAICASH"]["PRODUCTION"]["DEPOSIT_URL"]
     PAYOUT_URL = keys["QAICASH"]["PRODUCTION"]["PAYOUT_URL"]
+    CALLBACK_URL = keys["QAICASH"]["PRODUCTION"]["CALLBACK_URL"]
 
 # paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
