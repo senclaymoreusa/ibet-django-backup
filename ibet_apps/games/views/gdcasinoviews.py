@@ -200,9 +200,9 @@ class LiveDealerSoapService(ServiceBase):
             elif CATEGORY == '100':
                 category = 'Games'
             try:
-                cate = Category.objects.get(name='LIVE-CASINO')
+                cate = Category.objects.get(name='Live Casino')
             except:
-                cate = Category.objects.create(name='LIVE-CASINO')
+                cate = Category.objects.create(name='Live Casino')
                 logger.info("create new game category")
             token = Token.objects.get(user=user)
             
@@ -306,9 +306,9 @@ class LiveDealerSoapService(ServiceBase):
                 elif CATEGORY == '100':
                     category = 'Games'
                 try:
-                    cate = Category.objects.get(name='LIVE-CASINO')
+                    cate = Category.objects.get(name='Live Casino')
                 except:
-                    cate = Category.objects.create(name='LIVE-CASINO')
+                    cate = Category.objects.create(name='Live Casino')
                     logger.info("create new game category")
                 if CATEGORY == '100':
                 
@@ -446,9 +446,9 @@ class LiveDealerSoapService(ServiceBase):
                 token = Token.objects.get(user=user)
                 
                 try:
-                    cate = Category.objects.get(name='LIVE-CASINO')
+                    cate = Category.objects.get(name='Live Casino')
                 except:
-                    cate = Category.objects.create(name='LIVE-CASINO')
+                    cate = Category.objects.create(name='Live Casino')
                     logger.info("create new game category")
                 with transaction.atomic():
                     # if str(token) == request.loginToken:
@@ -496,9 +496,9 @@ class LiveDealerSoapService(ServiceBase):
             userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
             try:
-                cate = Category.objects.get(name='LIVE-CASINO')
+                cate = Category.objects.get(name='Live Casino')
             except:
-                cate = Category.objects.create(name='LIVE-CASINO')
+                cate = Category.objects.create(name='Live Casino')
                 logger.info("create new game category")
             with transaction.atomic():
                 GameBet.objects.create(provider=PROVIDER,   

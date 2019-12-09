@@ -753,7 +753,7 @@ def getProviderCategory():
     except ObjectDoesNotExist:
         PROVIDER = GameProvider(
             provider_name=BTI_PROVIDER,
-            type=0,
+            type=GAME_TYPE_SPORTS,
             market="letouCN, letouTH, letouVN",
         )
         PROVIDER.save()
