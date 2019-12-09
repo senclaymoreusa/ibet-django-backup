@@ -376,7 +376,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorBank':depositorBank,
             'depositorPhone':depositorPhone,
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
+            'callbackUrl': CALLBACK_URL,
             'messageAuthenticationCode': my_hmac,
         })
         rdata = r.json()
@@ -480,7 +480,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
+            'callbackUrl':CALLBACK_URL,
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -779,7 +779,6 @@ class getDepositTransaction(generics.GenericAPIView):
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
 def transactionConfirm(request):
     body = json.loads(request.body)
-    #print(body)
     orderId = body.get('orderId')
     Status = body.get('status') 
     cur_status = statusConversion[Status]
