@@ -173,7 +173,7 @@ class DebitReserve(View):
         # reserve was already canceled
         try:
             transaction_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
-            res = "error_code=-22"
+            res = "error_code=-22\r\n"
             res += "error_message=ReserveClosed\r\n"
             return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist as e:
@@ -182,7 +182,7 @@ class DebitReserve(View):
         # reserve was already committed
         try:
             transaction_committed = GameBet.objects.get(ref_no=reserve_id, other_data__is_committed=True)
-            res = "error_code=-22"
+            res = "error_code=-22\r\n"
             res += "error_message=ReserveClosed\r\n"
             return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist as e:
