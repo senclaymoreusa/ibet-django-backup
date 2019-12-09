@@ -25,12 +25,22 @@
                 </tr>
             </table>
         </div>
-        <div id="radio-buttons">
-            <div style="display: inline-block">
-                <p class="text-label">Payment Method Status</p>
-                <input type="radio" name="gender" value="male">Male<br>
-                <input type="radio" name="gender" value="female">Female<br>
-            </div>
+        <!-- <div id="radio-buttons-labels">
+            
+        </div> -->
+        <div class="col-md-4">
+            <p style="display: inline-block;" class="text-label">Payment Method Status</p>
+            <p class="text-label">Risk Review Required</p>
+            <p class="text-label">Settlement Confirmation Required</p>
+            <p class="text-label">Result override allowed</p>
+        </div>
+        <div id="radio-buttons" class="col-md-6">
+            <input style="display: inline-block;" type="radio" name="status" value="male">Active</input>
+            <input type="radio" name="risk" value="female">Yes</input>
+        </div>
+        <div id="radio-buttons" class="col-md-6">
+                <input style="display: inline-block;" type="radio" name="status" value="male">Disabled</input>
+            <input type="radio" name="risk" value="female">No</input>
         </div>
     </div>
 </div>
