@@ -593,13 +593,25 @@ DEV_URL = "https://ibet-web-dev.claymoreusa.net"
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
 
-# qaicash-payment
-QAICASH_URL = keys["QAICASH"]["URL"]
-MERCHANTID = keys["QAICASH"]["MERCHANTID"]
-MERCHANTAPIKEY = keys["QAICASH"]["MERCHANTAPIKEY"]
-APIVERSION = keys["QAICASH"]["APIVERSION"]
-DEPOSIT_URL = keys["QAICASH"]["DEPOSIT_URL"]
-PAYOUT_URL = keys["QAICASH"]["PAYOUT_URL"]
+
+
+if os.getenv("ENV") == "local" or "dev" in os.getenv("ENV"):
+    # qaicash-payment staging
+    QAICASH_URL = keys["QAICASH"]["STAGING"]["URL"]
+    MERCHANTID = keys["QAICASH"]["STAGING"]["MERCHANTID"]
+    MERCHANTAPIKEY = keys["QAICASH"]["STAGING"]["MERCHANTAPIKEY"]
+    APIVERSION = keys["QAICASH"]["STAGING"]["APIVERSION"]
+    DEPOSIT_URL = keys["QAICASH"]["STAGING"]["DEPOSIT_URL"]
+    PAYOUT_URL = keys["QAICASH"]["STAGING"]["PAYOUT_URL"]
+
+elif "prod" in os.getenv("ENV"):
+     # qaicash-payment production
+    QAICASH_URL = keys["QAICASH"]["PRODUCTION"]["URL"]
+    MERCHANTID = keys["QAICASH"]["PRODUCTION"]["MERCHANTID"]
+    MERCHANTAPIKEY = keys["QAICASH"]["PRODUCTION"]["MERCHANTAPIKEY"]
+    APIVERSION = keys["QAICASH"]["PRODUCTION"]["APIVERSION"]
+    DEPOSIT_URL = keys["QAICASH"]["PRODUCTION"]["DEPOSIT_URL"]
+    PAYOUT_URL = keys["QAICASH"]["PRODUCTION"]["PAYOUT_URL"]
 
 # paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
