@@ -221,7 +221,7 @@ class BetSoftBetResult(View):
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
                     user.save()
                     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
-                                                    category=Category.objects.get(name='Slots'),
+                                                    category=Category.objects.get(name='Games'),
                                                     username=user,
                                                     amount_wagered=0.00,
                                                     currency=user.currency,
@@ -257,7 +257,7 @@ class BetSoftBetResult(View):
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
                     user.save()
                     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
-                                                    category=Category.objects.get(name='Slots'),
+                                                    category=Category.objects.get(name='Games'),
                                                     username=user,
                                                     amount_wagered=decimal.Decimal(int(bet_amount)/100),
                                                     currency=user.currency,

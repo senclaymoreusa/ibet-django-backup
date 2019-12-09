@@ -445,11 +445,11 @@ class FundTransfer(APIView):
 # @background(schedule=5) 
 def getBetDetail():
     try:
-        PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+        PROVIDER = GameProvider.objects.get(provider_name='Onebook')
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
+        PROVIDER = GameProvider.objects.create(provider_name='Onebook',
                                         type=0,
-                                        market='China',
+                                        market='letouCN, letouTH, letouVN',
                                         notes='2004')
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -472,7 +472,7 @@ def getBetDetail():
             # print(rdata)
             version_key = rdata["Data"]["last_version_key"]        
             
-            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+            updates = GameProvider.objects.get(provider_name='Onebook')
             
             updates.notes = version_key
             updates.save()
@@ -484,9 +484,9 @@ def getBetDetail():
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     #print(username)
                     try:
-                        cate = Category.objects.get(name='SPORTS')
+                        cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='SPORTS')
+                        cate = Category.objects.create(name='Sports')
                         logger.info("create new game category.")
                     trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                     user = CustomUser.objects.get(username=username)
@@ -543,17 +543,17 @@ class GetBetDetail(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         try:
-            PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+            PROVIDER = GameProvider.objects.get(provider_name='Onebook')
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
+            PROVIDER = GameProvider.objects.create(provider_name='Onebook',
                                         type=0,
-                                        market='China',
+                                        market='letouCN, letouTH, letouVN',
                                         notes='2004')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
         delay = kwargs.get("delay", 2)
         success = False
-        version_key = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER).notes
+        version_key = GameProvider.objects.get(provider_name='Onebook').notes
         
         for x in range(0,3000):
             r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
@@ -563,7 +563,7 @@ class GetBetDetail(APIView):
             rdata = r.json()
             logger.info(rdata)
             version_key = rdata["Data"]["last_version_key"]
-            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+            updates = GameProvider.objects.get(provider_name='Onebook')
             
             updates.notes = version_key
             updates.save()
@@ -575,9 +575,9 @@ class GetBetDetail(APIView):
                 for i in range(len(rdata["Data"]["BetDetails"])):
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     try:
-                        cate = Category.objects.get(name='SPORTS')
+                        cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='SPORTS')
+                        cate = Category.objects.create(name='Sports')
                         logger.info("create new game category.")
                     user = CustomUser.objects.get(username=username)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))

@@ -270,7 +270,7 @@ class ProcessTransaction(APIView):
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
             provider = GameProvider.objects.get(provider_name="FG")
-            category = Category.objects.get(name='Slots')
+            category = Category.objects.get(name='Games')
 
         except:
             response = {

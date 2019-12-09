@@ -206,7 +206,7 @@ class MGgame(APIView):
                 user = Token.objects.get(key=token).user
                
                 provider = GameProvider.objects.get(provider_name="MG")
-                category = Category.objects.get(name='Slots')
+                category = Category.objects.get(name='Games')
                 transactionId = re.sub("[^0-9]", "", timestamp)
             
                 if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :

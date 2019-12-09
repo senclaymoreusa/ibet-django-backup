@@ -134,20 +134,28 @@ class ProvidersSearchView(View):
     def get(self, request,  *args, **kwargs):
 
         try:
-            q = request.GET.get('q').lower()
+            q = request.GET.get('q')
             logger.info("Search providers by keyword: " + str(q))
             res = []
             # print(str(q))
-            providers = GameProvider.objects.all()
-            for provider in providers:
-                name = provider.name
-                if q in name.lower():
-                    res.append(name)
+            if not q:
+                # category = Category.objects.get(name='Games')
+                providers = GameProvider.objects.filter(type=1)
+                for provider in providers:
+                    res.append(provider.provider_name)
+            
+            else:
+                q = q.lower()
+                providers = GameProvider.objects.all()
+                for provider in providers:
+                    name = provider.provider_name
+                    if q in name.lower():
+                        res.append(name)
 
             logger.info("Sending game providers response......... ")
             return HttpResponse(json.dumps(res), content_type='application/json')
 
-        except:
+        except Exception as e:
             logger.error("Error getting GameProvider objects: ", e)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
@@ -166,7 +174,6 @@ class GameDetailAPIListView(ListAPIView):
     def get_queryset(self):
         id = self.request.GET['id']
         data = Game.objects.filter(pk=id)
-        # print(data) 
         return data
 
 

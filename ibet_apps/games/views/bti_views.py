@@ -39,9 +39,9 @@ except ObjectDoesNotExist:
     PROVIDER.save()
 
 try:
-    CATEGORY = Category.objects.get(name='Sportsbook')
+    CATEGORY = Category.objects.get(name='Sports')
 except ObjectDoesNotExist:
-    CATEGORY = Category(name='Sportsbook')
+    CATEGORY = Category(name='Sports')
     CATEGORY.save()
 
 
