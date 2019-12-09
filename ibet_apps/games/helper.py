@@ -55,7 +55,6 @@ def transferRequest(user, amount, from_wallet, to_wallet):
             with transaction.atomic():
                 user.main_wallet -= Decimal(float(amount))
                 user.save()
-                print("main wallet transfer to " + str(to_wallet))
                 logger.info("main wallet transfer to " + str(to_wallet))
                 to_provider = GameProvider.objects.get(provider_name=to_wallet)
                 wallet, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
@@ -64,8 +63,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                 success = True
         
         except IntegrityError:
-            print("Save data to database error when transfer money from main wallet to " + str(to_wallet))
-            logger.error("Save data to database error when transfer money from main wallet to " + str(to_wallet))
+            logger.error("transfer_money() transfer failed. There was an database error with transfer the amount from main_wallet to " + str(to_wallet))
             success = False
         
         if success:
@@ -86,18 +84,15 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                         to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
                         to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount - Decimal(float(amount))
                         to_wallet_obj.save()
-                        logger.info("Rollback database because fail to transfer money from main wallet to " + str(to_wallet))
+                        logger.info("Refund" + str(amount) + " to " + str(to_wallet) + " from main_wallet because transfer_money() request failed")
                         return False
                 except IntegrityError:
-                    logger.error("Save data to database error when transfer money from main wallet to " + str(to_wallet))
+                    logger.error("transfer_money() refund failed. There was an database error with refund the amount from main_wallet to " + str(to_wallet))
                     return False
             else:
                 return True
         else:
             return False
-
-        # logger.info("Fail transfer money from main to " + str(to_wallet))
-        # return False
 
     else:
         
@@ -115,7 +110,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                     success = True
 
             except IntegrityError:
-                    logger.error("Save data to database error when transfer money from " + str(from_wallet) + "to main wallet" )
+                    logger.error("transfer_money() transfer failed. There was an database error with transfer the amount from " + str(from_wallet) + " to main wallet")
                     success = False
             
             if success:
@@ -132,10 +127,10 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                             from_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=from_provider)
                             from_wallet_obj.wallet_amount = from_wallet_obj.wallet_amount + Decimal(float(amount))
                             from_wallet_obj.save()
-                            logger.info("Rollback database because fail to transfer money from " + str(from_wallet) + "to main wallet")
+                            logger.info("Refund" + str(amount) + " to " + str(from_wallet) + " from main_wallet because transfer_money() request failed")
                             return False
                     except IntegrityError:
-                        logger.error("Save data to database error when transfer money from " + str(to_wallet) + "to main wallet")
+                        logger.error("transfer_money() refund failed. There was an database error with refund the amount from " + str(from_wallet) + " to main wallet")
                         return False
                 return True
             else:
@@ -157,7 +152,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                     success = True
                     
             except IntegrityError:
-                logger.error("Save data to database error when transfer money from " + str(from_wallet) + "to "  + str(from_wallet))
+                logger.error("transfer_money() transfer failed. There was an database error with transfer the amount from " + str(from_wallet) + " to " + str(to_wallet))
                 return False
                     
             if success:
@@ -179,11 +174,11 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                             to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
                             to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount - Decimal(float(amount))
                             to_wallet_obj.save()
-                            logger.error("Withdraw request: Fail to transfer money from " + str(from_wallet) + " to "  + str(to_wallet) + ", and wallets already rollback")
+                            logger.info("Withdraw request: Refund" + str(amount) + " to " + str(from_wallet) + " from " + + str(to_wallet) + " because transfer_money() request failed")
                             return False
                     
                     except IntegrityError:
-                        logger.error("Rollback database because fail to transfer money from " + str(from_wallet) + "to "  + str(to_wallet))
+                        logger.error("transfer_money() refund failed. There was an database error with refund the amount from " + str(from_wallet) + " to " + str(to_wallet))
                         return False
                     
                 else:
@@ -198,18 +193,17 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                             with transaction.atomic():
 
                                 user.main_wallet += Decimal(float(amount))
-                                logger.info("Fail to request deposit " + str(to_wallet) + " , and save the amount to main wallet")
                                 user.save()
 
                                 to_provider = GameProvider.objects.get(provider_name=to_wallet)
                                 to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
                                 to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount - Decimal(float(amount))
                                 to_wallet_obj.save()
-                                logger.error("Deposit request: Fail to transfer money from " + str(from_wallet) + " to "  + str(to_wallet) + ", and wallets already rollback")
+                                logger.info("Deposit request: Refund" + str(amount) + " to main_wallet from " + + str(to_wallet) + " because transfer_money() request failed")
                                 return False
                         
                         except IntegrityError:
-                            logger.error("Rollback database because fail to transfer money from " + str(from_wallet) + " to "  + str(to_wallet))
+                            logger.error("transfer_money() refund failed. There was an database error with refund the amount from " + str(to_wallet) + " to main_wallet")
                             return False
                     
                     return True
