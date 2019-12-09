@@ -177,11 +177,11 @@ class LiveDealerSoapService(ServiceBase):
     def Debit(crx, request):
         
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name="GD")
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name="GD",
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market="letouCN, letouTH, letouVN"
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
@@ -278,11 +278,11 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name="GD")
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name="GD",
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market="letouCN, letouTH, letouVN"
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
@@ -428,11 +428,11 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(TipRequest,_body_style='bare', _returns=Container)
     def Tip(crx, request): 
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name="GD")
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name="GD",
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market="letouCN, letouTH, letouVN"
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
  
@@ -482,11 +482,11 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(CancelRequest,_body_style='bare', _returns=Container)
     def Cancel(crx, request): 
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name="GD")
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name="GD",
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market="letouCN, letouTH, letouVN"
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         res = Container() 

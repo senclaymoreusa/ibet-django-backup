@@ -77,8 +77,8 @@ class WalletBetAPIURL(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
-                                        type=0,
-                                        market='China')
+                                        type=GAME_TYPE_SPORTS,
+                                        market="letouCN, letouTH, letouVN")
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
         if any(game in data['GB']['Result']['ReturnSet']['BettingList'] for game in game_list):
@@ -290,8 +290,8 @@ class WalletSettleAPIURL(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
-                                        type=0,
-                                        market='China')
+                                        type=GAME_TYPE_SPORTS,
+                                        market="letouCN, letouTH, letouVN")
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         if any(game in data['GB']['Result']['ReturnSet']['SettleList'] for game in game_list):
             game_type = 'dict'

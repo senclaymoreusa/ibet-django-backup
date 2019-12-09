@@ -17,7 +17,7 @@ from rest_framework.decorators import api_view, permission_classes,renderer_clas
 from django.core.exceptions import ObjectDoesNotExist
 from utils.constants import *
 from users.serializers import LazyEncoder
-from users.models import Game, CustomUser, Category, Config, NoticeMessage
+from users.models import CustomUser, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from utils.helpers import addOrWithdrawBalance

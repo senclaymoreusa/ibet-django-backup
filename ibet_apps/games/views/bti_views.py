@@ -33,15 +33,15 @@ try:
 except ObjectDoesNotExist:
     PROVIDER = GameProvider(
         provider_name='BTi',
-        type=0,
-        market=MARKET_CN,
+        type=GAME_TYPE_SPORTS,
+        market="letouCN, letouTH, letouVN",
     )
     PROVIDER.save()
 
 try:
-    CATEGORY = Category.objects.get(name='Sportsbook')
+    CATEGORY = Category.objects.get(name='Sports')
 except ObjectDoesNotExist:
-    CATEGORY = Category(name='Sportsbook')
+    CATEGORY = Category(name='Sports')
     CATEGORY.save()
 
 
