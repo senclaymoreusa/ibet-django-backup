@@ -398,12 +398,14 @@ class ProcessTransaction(APIView):
         elif tranType == "ROLLBACK" :
                 gameInfoId = request.GET["gameInfoId"]
                 omegaSessionKey = request.GET['omegaSessionKey']
+                transactionId = re.sub("[^0-9]", "", timestamp)
+                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                 response = {
                     "seq" : seq,
                     "tranType" : tranType,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : re.sub("[^0-9]", "", timestamp) ,
+                    "transactionId" : transactionId ,
                     "omegaSessionKey" : omegaSessionKey,
                     "alreadyProcessed" : True,
                     "realBalance" : math.floor(float(user.main_wallet * 100)) / 100  ,
@@ -413,6 +415,16 @@ class ProcessTransaction(APIView):
                     "errorCode" : None,
                     "message" : None
                 }  
+                GameBet.objects.get_or_create(provider=provider,
+                                                category=category,
+                                                username=user,
+                                                amount_wagered=0.00,
+                                                currency=user.currency,
+                                                amount_won=float(amount),
+                                                market=ibetCN,
+                                                ref_no=transactionId,
+                                                transaction_id=trans_id
+                                                )
 
         elif tranType == "END_GAME" :
                 omegaSessionKey = request.GET['omegaSessionKey']

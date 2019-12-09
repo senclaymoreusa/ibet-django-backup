@@ -7,7 +7,7 @@ from users.models import  CustomUser
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ObjectDoesNotExist
 import simplejson as json
-from games.models import FGSession, MGToken, Game, GameBet, GameProvider, Category
+from games.models import FGSession, Game, GameBet, GameProvider, Category
 import xmltodict
 from django.db import transaction
 import decimal,random
@@ -18,6 +18,7 @@ import decimal,re, math
 import datetime
 from datetime import date
 from django.utils import timezone
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger("django")
 
@@ -33,33 +34,6 @@ MG_RESPONSE_ERROR = {
    
 }
 
-# def parse_data(data):
-#     try: 
-#         dd = xmltodict.parse(data)
-#         return dd
-#     except Exception as e:
-#         logger.error("MG parse data Error: " + str(e))
-#         return None
-class MGtoken(APIView):
-    permission_classes = (AllowAny, )
-    def get(self, request, *args, **kwargs):   
-        pk = request.GET['pk']
-        token = request.GET['token']  
-       
-        user = CustomUser.objects.get(pk=pk)
-        try:
-            mguser = MGToken.objects.get(user=user)
-            mguser.token = token
-            mguser.save()
-            response = {
-                "user token updated."
-            }
-        except:       
-            MGToken.objects.create(user=user,token=token)  
-            response = {
-                "user token created."
-            }     
-        return HttpResponse(response,content_type='application/json',status=200)
 
 class MGgame(APIView):
 
@@ -76,11 +50,9 @@ class MGgame(APIView):
                 loginname = dd['pkt']['methodcall']['auth']['@login']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
-            
-        
-                mguser = MGToken.objects.get(token=token)
-                user = CustomUser.objects.get(username=mguser.user)   
-            
+               
+                user = Token.objects.get(key=token).user
+                
             
                 response = {
                         "pkt" : {
@@ -155,8 +127,8 @@ class MGgame(APIView):
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
             
-                mguser = MGToken.objects.get(token=token)
-                user = CustomUser.objects.get(username=mguser.user)   
+                user = Token.objects.get(key=token).user
+                # user = CustomUser.objects.get(username=mguser.user)   
                 response = {
                     "pkt" : {
                         "methodresponse" : {
@@ -231,8 +203,8 @@ class MGgame(APIView):
             
                 # here should judge the currency later...
         
-                mguser = MGToken.objects.get(token=token)
-                user = CustomUser.objects.get(username=mguser.user)  
+                user = Token.objects.get(key=token).user
+               
                 provider = GameProvider.objects.get(provider_name="MG")
                 category = Category.objects.get(name='Slots')
                 transactionId = re.sub("[^0-9]", "", timestamp)
@@ -360,8 +332,8 @@ class MGgame(APIView):
                 token = dd['pkt']['methodcall']['call']['@token']
                 # bonus here should add more work later...
         
-                mguser = MGToken.objects.get(token=token)
-                user = CustomUser.objects.get(username=mguser.user)   
+                user = Token.objects.get(key=token).user
+                 
                 response = {
                     "pkt" : {
                         "methodresponse" : {
@@ -427,8 +399,8 @@ class MGgame(APIView):
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
         
-                mguser = MGToken.objects.get(token=token)
-                user = CustomUser.objects.get(username=mguser.user)  
+                user = Token.objects.get(key=token).user
+                
                 response = {
                     "pkt" : {
                         "methodresponse" : {
