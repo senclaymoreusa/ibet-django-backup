@@ -220,7 +220,7 @@ class BetSoftBetResult(View):
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
                     user.save()
-                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
                                                     username=user,
                                                     amount_wagered=0.00,
@@ -256,7 +256,7 @@ class BetSoftBetResult(View):
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
                     user.save()
-                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
                                                     username=user,
                                                     amount_wagered=decimal.Decimal(int(bet_amount)/100),
@@ -330,7 +330,7 @@ class BetSoftBetRefund(View):
             # print(MD5(user_id + casino_transaction_id + key))
 
             if hash == MD5(user_id + casino_transaction_id + key):
-                GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name="Betsoft"),
+                GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                 category=prev_bet.category,
                                                 username=user,
                                                 amount_wagered=0.00,

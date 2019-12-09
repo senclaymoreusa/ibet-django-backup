@@ -177,9 +177,9 @@ class LiveDealerSoapService(ServiceBase):
     def Debit(crx, request):
         
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD",
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
                                         type=0,
                                         market='letouCN, letouTH, letouVN'
                                         )
@@ -278,9 +278,9 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD",
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
                                         type=0,
                                         market='letouCN, letouTH, letouVN'
                                         )
@@ -428,9 +428,9 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(TipRequest,_body_style='bare', _returns=Container)
     def Tip(crx, request): 
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD",
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
                                         type=0,
                                         market='letouCN, letouTH, letouVN'
                                         )
@@ -482,9 +482,9 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(CancelRequest,_body_style='bare', _returns=Container)
     def Cancel(crx, request): 
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD",
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
                                         type=0,
                                         market='letouCN, letouTH, letouVN'
                                         )

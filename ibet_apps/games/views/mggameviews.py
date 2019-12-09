@@ -205,7 +205,7 @@ class MGgame(APIView):
         
                 user = Token.objects.get(key=token).user
                
-                provider = GameProvider.objects.get(provider_name="MG")
+                provider = GameProvider.objects.get(provider_name=MG_PROVIDER)
                 category = Category.objects.get(name='Games')
                 transactionId = re.sub("[^0-9]", "", timestamp)
             

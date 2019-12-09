@@ -749,7 +749,7 @@ def wrongRequest():
 
 def getProviderCategory():
     try:
-        PROVIDER = GameProvider.objects.get(provider_name='BTi')
+        PROVIDER = GameProvider.objects.get(provider_name=BTI_PROVIDER)
     except ObjectDoesNotExist:
         PROVIDER = GameProvider(
             provider_name='BTi',

@@ -29,10 +29,10 @@ def setup_models():
     CATEGORY = None 
 
     try:
-        PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
+        PROVIDER = GameProvider.objects.get(provider_name=PLAYNGO_PROVIDER)
     except ObjectDoesNotExist:
         PROVIDER = GameProvider.objects.create(
-                                                provider_name="PLAYNGO",
+                                                provider_name=PLAYNGO_PROVIDER,
                                                 type=2,
                                                 market="letouCN, letouTH, letouVN"
                                               )

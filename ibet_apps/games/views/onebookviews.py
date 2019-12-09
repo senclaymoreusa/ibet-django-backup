@@ -445,9 +445,9 @@ class FundTransfer(APIView):
 # @background(schedule=5) 
 def getBetDetail():
     try:
-        PROVIDER = GameProvider.objects.get(provider_name='Onebook')
+        PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(provider_name='Onebook',
+        PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
                                         type=0,
                                         market='letouCN, letouTH, letouVN',
                                         notes='2004')
@@ -472,7 +472,7 @@ def getBetDetail():
             # print(rdata)
             version_key = rdata["Data"]["last_version_key"]        
             
-            updates = GameProvider.objects.get(provider_name='Onebook')
+            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
             
             updates.notes = version_key
             updates.save()
@@ -543,9 +543,9 @@ class GetBetDetail(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         try:
-            PROVIDER = GameProvider.objects.get(provider_name='Onebook')
+            PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name='Onebook',
+            PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
                                         type=0,
                                         market='letouCN, letouTH, letouVN',
                                         notes='2004')
@@ -553,7 +553,7 @@ class GetBetDetail(APIView):
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
         delay = kwargs.get("delay", 2)
         success = False
-        version_key = GameProvider.objects.get(provider_name='Onebook').notes
+        version_key = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER).notes
         
         for x in range(0,3000):
             r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
@@ -563,7 +563,7 @@ class GetBetDetail(APIView):
             rdata = r.json()
             logger.info(rdata)
             version_key = rdata["Data"]["last_version_key"]
-            updates = GameProvider.objects.get(provider_name='Onebook')
+            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
             
             updates.notes = version_key
             updates.save()
