@@ -153,11 +153,12 @@ class ProvidersSearchView(View):
                         res.append(name)
 
             logger.info("Sending game providers response......... ")
+            # print(res)
             return HttpResponse(json.dumps(res), content_type='application/json')
 
         except Exception as e:
             logger.error("Error getting GameProvider objects: ", e)
-            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse(status=400)
 
 
 class FilterAPI(View):

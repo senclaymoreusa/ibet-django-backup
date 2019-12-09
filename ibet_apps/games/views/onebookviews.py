@@ -448,7 +448,7 @@ def getBetDetail():
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
         PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
+                                        type=GAME_TYPE_SPORTS,
                                         market='letouCN, letouTH, letouVN',
                                         notes='2004')
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
@@ -546,7 +546,7 @@ class GetBetDetail(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
+                                        type=GAME_TYPE_SPORTS,
                                         market='letouCN, letouTH, letouVN',
                                         notes='2004')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")

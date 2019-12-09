@@ -180,7 +180,7 @@ class LiveDealerSoapService(ServiceBase):
             PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
-                                        type=0,
+                                        type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
@@ -281,7 +281,7 @@ class LiveDealerSoapService(ServiceBase):
             PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
-                                        type=0,
+                                        type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
@@ -431,7 +431,7 @@ class LiveDealerSoapService(ServiceBase):
             PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
-                                        type=0,
+                                        type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
@@ -485,7 +485,7 @@ class LiveDealerSoapService(ServiceBase):
             PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
-                                        type=0,
+                                        type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")

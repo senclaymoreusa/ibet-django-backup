@@ -752,7 +752,7 @@ def getProviderCategory():
         PROVIDER = GameProvider.objects.get(provider_name=BTI_PROVIDER)
     except ObjectDoesNotExist:
         PROVIDER = GameProvider(
-            provider_name='BTi',
+            provider_name=BTI_PROVIDER,
             type=0,
             market="letouCN, letouTH, letouVN",
         )

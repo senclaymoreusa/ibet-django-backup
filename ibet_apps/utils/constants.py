@@ -204,12 +204,18 @@ LANGUAGE_CHOICES = (
     ('ja', 'Japanese'),
 )
 
+GAME_TYPE_SPORTS = 0
+GAME_TYPE_GAMES = 1
+GAME_TYPE_LIVE_CASINO = 2
+GAME_TYPE_TABLE_GAMES = 3
+GAME_TYPE_GENERAL = 4
+
 GAME_TYPE_CHOICES = (
-    (0, 'Sports'),
-    (1, 'Games'),
-    (2, 'Live Casino'),
-    (3, 'Financial'),
-    (4, 'General'),
+    (GAME_TYPE_SPORTS, 'Sports'),
+    (GAME_TYPE_GAMES, 'Games'),
+    (GAME_TYPE_LIVE_CASINO, 'Live Casino'),
+    (GAME_TYPE_TABLE_GAMES, 'Table Games'),
+    (GAME_TYPE_GENERAL, 'General'),
 )
 
 SPREAD = 'SPREAD'
@@ -275,10 +281,18 @@ VIP_CHOICES = (
 ibetVN = 0
 ibetTH = 1
 ibetCN = 2
+
+letouVN = 10
+letouTH = 11
+letouCN = 12
+
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
     (ibetCN, "ibet-CN"),
+    (letouVN, "letou-VN"),
+    (letouTH, "letou-TH"),
+    (letouCN, "letou-CN"),
 )
 
 COUNTRY_CHOICES = (
