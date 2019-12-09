@@ -23,11 +23,12 @@ class LoginDeviceInfo(APIView):
         except Exception as e:
             logger.error("cannot get blackbox", e)
            
-        bucket = 'ibet-admin-apdev'
-        if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
-            bucket = 'ibet-admin-approd'
-        third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
-        authcode = third_party_keys["IOVATION"]["SUBSCRIBERID"] + "/" + third_party_keys["IOVATION"]["ACCOUNT"] + ":" + third_party_keys["IOVATION"]["PASSWORD"]
+        # bucket = 'ibet-admin-apdev'
+        # if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
+        #     bucket = 'ibet-admin-approd'
+        # third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
+
+        authcode = IOVATION_SUBSCRIBERID + "/" + IOVATION_ACCOUNT + ":" + IOVATION_PASSWORD
         enc = base64.encodestring(bytes(authcode, encoding='ascii'))
       
         encc = str(enc)[2:len(str(enc)) - 3]
@@ -49,7 +50,7 @@ class LoginDeviceInfo(APIView):
             "type": "login"
             }
 
-        r = requests.post(third_party_keys["IOVATION"]["URL"], data=json.dumps(data), headers=headers)
+        r = requests.post(IOVATION_URL, data=json.dumps(data), headers=headers)
         rr = r.text
 
         return HttpResponse(rr,content_type='application/json',status=200)

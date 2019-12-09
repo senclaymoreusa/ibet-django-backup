@@ -325,7 +325,7 @@ class LoginView(GenericAPIView):
        
         self.user = self.serializer.validated_data['user']
         self.iovationData = self.serializer.validated_data['iovationData']
-        
+       
         if checkUserBlock(self.user):
             errorMessage = _('The current user is blocked!')
             data = {
@@ -353,9 +353,9 @@ class LoginView(GenericAPIView):
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
         
-
+       
         customUser = CustomUser.objects.filter(username=self.user)
-
+       
         try:
             statedIp = self.iovationData['statedIp']
             result = self.iovationData['result']
@@ -363,6 +363,7 @@ class LoginView(GenericAPIView):
             browser = self.iovationData['details']['device']['browser']
             ipLocation = self.iovationData['details']['realIp']['ipLocation']
             otherData = self.iovationData
+           
             with transaction.atomic():
                 action = UserAction(
                     user= customUser.first(),
@@ -376,15 +377,13 @@ class LoginView(GenericAPIView):
                     created_time=timezone.now()
                 )
                 action.save()
+                customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
+                loginUser = CustomUser.objects.filter(username=self.user)
+                loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
+                loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
             logger.error("cannot get users device info in iovation", e)
-
-       
-        customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
-        loginUser = CustomUser.objects.filter(username=self.user)
-        loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
-        loginUser.update(login_times=loginTimes+1)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -408,14 +407,14 @@ class LoginView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):        
         self.request = request
-        
+       
         try:
             self.serializer = self.get_serializer(data=self.request.data,
                                               context={'request': request})
             
             if self.serializer.is_valid(raise_exception=True):
 
-                
+               
                 return self.login()
         except Exception as e:
             # print(e)
