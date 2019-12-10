@@ -3,7 +3,7 @@ import xadmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
+from .models import  CustomUser, UserTag, UserWithTag, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
 from users.views.adminview import *
 from users.views.views import *

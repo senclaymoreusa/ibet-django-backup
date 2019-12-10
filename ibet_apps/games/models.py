@@ -20,8 +20,9 @@ def random_string():
 class GameProvider(models.Model):
     provider_name = models.CharField(max_length=100)
     type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
-    market = models.CharField(max_length=50,null=True)
+    market = models.CharField(max_length=50, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
+    is_transfer_wallet = models.BooleanField(default=False)
 
     def __str__(self):
         return self.provider_name

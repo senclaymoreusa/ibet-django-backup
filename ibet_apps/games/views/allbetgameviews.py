@@ -246,7 +246,7 @@ class TransferView(View):
 
                                 GameBet.objects.create(
                                     provider = GameProvider.objects.get(provider_name="ALLBET"),
-                                    category = Category.objects.get(name="SLOTS"),
+                                    category = Category.objects.get(name="Games"),
                                     #game = None,
                                     #game_name = None,
                                     username = user_obj,

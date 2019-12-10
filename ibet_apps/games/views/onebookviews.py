@@ -448,8 +448,8 @@ def getBetDetail():
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
         PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
-                                        market='China',
+                                        type=GAME_TYPE_SPORTS,
+                                        market='letouCN, letouTH, letouVN',
                                         notes='2004')
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -484,9 +484,9 @@ def getBetDetail():
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     #print(username)
                     try:
-                        cate = Category.objects.get(name='SPORTS')
+                        cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='SPORTS')
+                        cate = Category.objects.create(name='Sports')
                         logger.info("create new game category.")
                     trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                     user = CustomUser.objects.get(username=username)
@@ -546,8 +546,8 @@ class GetBetDetail(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
-                                        market='China',
+                                        type=GAME_TYPE_SPORTS,
+                                        market='letouCN, letouTH, letouVN',
                                         notes='2004')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -575,9 +575,9 @@ class GetBetDetail(APIView):
                 for i in range(len(rdata["Data"]["BetDetails"])):
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     try:
-                        cate = Category.objects.get(name='SPORTS')
+                        cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='SPORTS')
+                        cate = Category.objects.create(name='Sports')
                         logger.info("create new game category.")
                     user = CustomUser.objects.get(username=username)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))

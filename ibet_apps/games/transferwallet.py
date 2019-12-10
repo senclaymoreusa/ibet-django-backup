@@ -3,7 +3,8 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 import simplejson as json
 from django.db import transaction
 from users.views.helper import checkUserBlock
-from users.models import CustomUser
+from users.models import CustomUser, UserWallet
+from games.models import GameProvider
 import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw
 from games.views.onebookviews import fundTransfer
@@ -22,13 +23,13 @@ class TransferDeposit():
         #                           'onebookWithdraw': self.onebookWithdraw,
         #                          }
 
-    def eaDeposit(self):
+    def EADeposit(self):
         return requestEADeposit(self.user, self.amount, self.from_wallet)
 
-    def onebookDeposit(self):
+    def OnebookDeposit(self):
         return fundTransfer(self.user, self.amount, self.from_wallet, 1, 1)
 
-    def kaiyuanDeposit(self):
+    def KYDeposit(self):
         return kyTransfer(self.user, self.amount, self.from_wallet, 0)
 
     
@@ -43,11 +44,11 @@ class TransferWithdraw():
 
         #                          }
 
-    def eaWithdraw(self):
+    def EAWithdraw(self):
         return requestEAWithdraw(self.user, self.amount, self.to_wallet)
 
-    def onebookWithdraw(self):
+    def OnebookWithdraw(self):
         return fundTransfer(self.user, self.amount, self.to_wallet, 0, 1)
 
-    def kaiyuanWithdraw(self):
+    def KYWithdraw(self):
         return kyTransfer(self.user, self.amount, self.to_wallet, 1)
