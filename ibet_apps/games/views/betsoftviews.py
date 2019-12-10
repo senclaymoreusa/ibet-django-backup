@@ -228,7 +228,8 @@ class BetSoftBetResult(View):
                                                     amount_won=decimal.Decimal(int(win_amount)/100),
                                                     market=ibetCN,
                                                     ref_no=ref_id,
-                                                    transaction_id=trans_id
+                                                    transaction_id=trans_id,
+                                                    resolved_time=timezone.now(),
                                                     ) 
 
 
