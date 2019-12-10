@@ -348,7 +348,7 @@ class ProcessTransaction(APIView):
                                                         market=ibetCN,
                                                         ref_no=transactionId,
                                                         transaction_id=trans_id,
-                                                        resolved_time=timezone.now(),
+                                                        resolved_time=timezone.now()
                                                         )
                     response = {
                         "seq" : seq,
@@ -429,7 +429,7 @@ class ProcessTransaction(APIView):
                                                 amount_won=float(amount),
                                                 market=ibetCN,
                                                 ref_no=transactionId,
-                                                transaction_id=trans_id,
+                                                transaction_id=trans_id
                                           
                                                 )
 
