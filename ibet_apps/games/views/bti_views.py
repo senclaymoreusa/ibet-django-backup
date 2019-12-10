@@ -89,7 +89,7 @@ class Reserve(View):
                         bet = GameBet(
                             provider=PROVIDER,
                             category=CATEGORY,
-                            username=user,
+                            user=user,
                             ref_no=reserve_id,
                             amount_wagered=amount,
                             user_name=user.username,
@@ -214,7 +214,7 @@ class DebitReserve(View):
             bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
-                username=user,
+                user=user,
                 user_name=user.username,
                 ref_no=reserve_id,
                 amount_wagered=amount,
@@ -299,7 +299,7 @@ class CommitReserve(View):
                 bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
                         user_name=user.username,
                         ref_no=reserve_id,
                         amount_wagered=actualTotal,
@@ -365,7 +365,7 @@ class CancelReserve(View):
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
                         user_name=user.username,
                         ref_no=reserve_id,
                         amount_won=refund,
@@ -392,7 +392,7 @@ class CancelReserve(View):
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
                         user_name=user.username,
                         ref_no=reserve_id,
                         amount_won=credit_amount,
@@ -421,7 +421,7 @@ class CancelReserve(View):
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
                         user_name=user.username,
                         ref_no=reserve_id,
                         amount_won=credit_amount,
@@ -476,7 +476,7 @@ class Add2Bet(View):
                 new_bet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    username=user,
+                    user=user,
                     user_name=user.username,
                     ref_no=reserve_id,
                     amount_wagered=amount,
@@ -530,7 +530,7 @@ class Add2BetConfirm(View):
             confirm_bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
-                username=user,
+                user=user,
                 user_name=user.username,
                 ref_no=reserve_id,
                 amount_wagered=bet_to_confirm.amount_wagered,
@@ -626,7 +626,7 @@ class DebitCustomer(View):
                 resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    username=user,
+                    user=user,
                     user_name=user.username,
                     ref_no=reserve_id,
                     amount_won=decimal.Decimal(amount) * -1,
@@ -722,7 +722,7 @@ class CreditCustomer(View):
                 resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    username=user,
+                    user=user,
                     user_name=user.username,
                     ref_no=reserve_id,
                     amount_won=amount,

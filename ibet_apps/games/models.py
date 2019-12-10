@@ -107,7 +107,7 @@ class GameBet(models.Model):
     game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
-    username = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
     amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
     user_name = models.CharField(max_length=255, blank=True, null=True)
 
