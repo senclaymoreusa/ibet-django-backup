@@ -219,7 +219,8 @@ class BetSoftBetResult(View):
                     user.save()
                     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
-                                                    username=user,
+                                                    user=user,
+                                                    user_name=user.username,
                                                     amount_wagered=0.00,
                                                     currency=user.currency,
                                                     amount_won=decimal.Decimal(int(win_amount)/100),
@@ -255,7 +256,8 @@ class BetSoftBetResult(View):
                     user.save()
                     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
-                                                    username=user,
+                                                    user=user,
+                                                    user_name=user.username,
                                                     amount_wagered=decimal.Decimal(int(bet_amount)/100),
                                                     currency=user.currency,
                                                     amount_won=0.00,
@@ -329,7 +331,8 @@ class BetSoftBetRefund(View):
             if hash == MD5(user_id + casino_transaction_id + key):
                 GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                 category=prev_bet.category,
-                                                username=user,
+                                                user=user,
+                                                user_name=user.username,
                                                 amount_wagered=0.00,
                                                 currency=user.currency,
                                                 amount_won=prev_bet.amount_wagered,
