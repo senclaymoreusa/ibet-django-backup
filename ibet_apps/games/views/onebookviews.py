@@ -447,11 +447,9 @@ def getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=GAME_TYPE_SPORTS,
-                                        market='letouCN, letouTH, letouVN',
-                                        notes='2004')
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+        raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+        
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     delay = 2
     success = False
