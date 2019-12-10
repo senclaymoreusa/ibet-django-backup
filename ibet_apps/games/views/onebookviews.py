@@ -486,8 +486,7 @@ def getBetDetail():
                     try:
                         cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='Sports')
-                        logger.info("create new game category.")
+                        logger.error("missing sports game category.")
                     trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                     user = CustomUser.objects.get(username=username)
                     transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
@@ -579,8 +578,7 @@ class GetBetDetail(APIView):
                     try:
                         cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='Sports')
-                        logger.info("create new game category.")
+                        logger.error("missing sports game category.")
                     user = CustomUser.objects.get(username=username)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:

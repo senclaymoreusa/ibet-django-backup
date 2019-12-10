@@ -202,8 +202,8 @@ class LiveDealerSoapService(ServiceBase):
             try:
                 cate = Category.objects.get(name='Live Casino')
             except:
-                cate = Category.objects.create(name='Live Casino')
-                logger.info("create new game category")
+                logger.error("missing category.")
+
             token = Token.objects.get(user=user)
             
             if request.gameId == GDCASINO_FISHING_GAMEID:
@@ -308,8 +308,8 @@ class LiveDealerSoapService(ServiceBase):
                 try:
                     cate = Category.objects.get(name='Live Casino')
                 except:
-                    cate = Category.objects.create(name='Live Casino')
-                    logger.info("create new game category")
+                    logger.error("missing category.")
+
                 if CATEGORY == '100':
                 
                     if request.gameId == GDCASINO_FISHING_GAMEID:
@@ -448,8 +448,8 @@ class LiveDealerSoapService(ServiceBase):
                 try:
                     cate = Category.objects.get(name='Live Casino')
                 except:
-                    cate = Category.objects.create(name='Live Casino')
-                    logger.info("create new game category")
+                   logger.error("missing category.")
+
                 with transaction.atomic():
                     # if str(token) == request.loginToken:
                     GameBet.objects.create(provider=PROVIDER,   
@@ -498,8 +498,8 @@ class LiveDealerSoapService(ServiceBase):
             try:
                 cate = Category.objects.get(name='Live Casino')
             except:
-                cate = Category.objects.create(name='Live Casino')
-                logger.info("create new game category")
+                logger.error("missing category.")
+                
             with transaction.atomic():
                 GameBet.objects.create(provider=PROVIDER,   
                                         category=cate,

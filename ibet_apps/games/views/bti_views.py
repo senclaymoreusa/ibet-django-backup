@@ -761,18 +761,12 @@ def getProviderCategory():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=BTI_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider(
-            provider_name=BTI_PROVIDER,
-            type=GAME_TYPE_SPORTS,
-            market="letouCN, letouTH, letouVN",
-        )
-        PROVIDER.save()
+        logger.error("missing bti provider")
 
     try:
         CATEGORY = Category.objects.get(name='Sports')
     except ObjectDoesNotExist:
-        CATEGORY = Category(name='Sports')
-        CATEGORY.save()
+        logger.error("missing sport category")
 
     return (PROVIDER, CATEGORY)
 
