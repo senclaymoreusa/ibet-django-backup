@@ -495,7 +495,7 @@ def getBetDetail():
                         GameBet.objects.create(provider=PROVIDER,
                                                     category=cate,
                                                     user=user,
-                                                    username=user.username
+                                                    username=user.username,
                                                     transaction_id=transid,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
@@ -515,7 +515,7 @@ def getBetDetail():
                                                     category=cate,
                                                     transaction_id=transid,
                                                     user=user,
-                                                    username=user.username
+                                                    username=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
