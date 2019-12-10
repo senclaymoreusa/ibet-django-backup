@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from django.views import View
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from users.models import CustomUser
 from accounting.models import *
@@ -94,19 +95,28 @@ class ValidateTokenAPI(View):
     def get(self, request, *arg, **kwargs):
         try:
             token = request.GET.get("token")
-            user = Token.objects.get(key=token).user
-
             res = {}
-            res["memberCode"] = user.username
-            res["CurrencyCode"] = "RMB"
-            # res["IPAddress"] = "127.0.0.1"
-            res["statusCode"] = 100
-            res["statusDesc"] = "Success"
+            try:
+                user = Token.objects.get(key=token).user
+
+                res["memberCode"] = user.username
+                res["CurrencyCode"] = "RMB"
+                # res["IPAddress"] = "127.0.0.1"
+                res["statusCode"] = 100
+                res["statusDesc"] = "Success"
+            except ObjectDoesNotExist:
+                res["statusCode"] = 101 # Invalid User
+                res["statusDesc"] = "Invalid User"
 
             return HttpResponse(json.dumps(res), content_type="application/json", status=200)
         except Exception as e:
             logger.error("IMES Validation Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+
+            res = {}
+            res["statusCode"] = 301 # Internal Error
+            res["statusDesc"] = "Internal Error"
+            
+            return HttpResponse(json.dumps(res), content_type="application/json", status=400)
 
 
 class InplayGetBalanceAPI(View):
@@ -191,7 +201,14 @@ class InplayGetApprovalAPI(View):
                 return HttpResponse("Wrong event type")
         except Exception as e:
             logger.error("IMES Get Approval Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            
+            response["StatusCode"] = -100
+            response["StatusMessage"] = "Internal Error"
+
+            response = json.dumps(response)
+            cipher_text = des3Encryption(response)
+
+            return HttpResponse(cipher_text, content_type='text/plain', status=400)
 
 
 class InplayDeductBalanceAPI(View):
@@ -211,19 +228,19 @@ class InplayDeductBalanceAPI(View):
                 amount = float(data["TransactionAmt"])
                 user = CustomUser.objects.get(username=user)
                 if user.main_wallet > amount:
-                    # trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    # trans = Transaction.objects.create(
-                    #     transaction_id=trans_id,
-                    #     user_id=user,
-                    #     order_id=package_id,
-                    #     amount=amount,
-                    #     currency=user_currency,
-                    #     transfer_from="IMES",
-                    #     transfer_to="main",
-                    #     product=0,
-                    #     transaction_type=TRANSACTION_TRANSFER,
-                    #     status=TRAN_PENDING_TYPE
-                    # )
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    trans = Transaction.objects.create(
+                        transaction_id=trans_id,
+                        user_id=user,
+                        order_id=package_id,
+                        amount=amount,
+                        currency=user_currency,
+                        transfer_from="main",
+                        transfer_to="IMES",
+                        product=0,
+                        transaction_type=TRANSACTION_TRANSFER,
+                        status=TRAN_PENDING_TYPE
+                    )
                     # res["DateReceived"] = str(timezone.now())
                     # res["DateSent"] = str(timezone.now())
                     response["StatusCode"] = 100
@@ -242,7 +259,14 @@ class InplayDeductBalanceAPI(View):
                 return HttpResponse("Wrong Event type")
         except Exception as e:
             logger.error("IMES Deduct Balance Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+
+            response["StatusCode"] = -100
+            response["StatusMessage"] = "Internal Error"
+
+            response = json.dumps(response)
+            cipher_text = des3Encryption(response)
+
+            return HttpResponse(cipher_text, content_type='text/plain', status=400)
 
 
 class InplayUpdateBalanceAPI(View):
