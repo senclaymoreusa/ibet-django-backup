@@ -418,7 +418,7 @@ class CancelReserveView(View):
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
-                        #resolved_time = None,
+                        # resolved_time = timezone.now(),
                         #other_data = {}
                     )
                     
@@ -528,7 +528,7 @@ class ReleaseView(View):
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
-                        #resolved_time = None,
+                        resolved_time = timezone.now(),
                         #other_data = {}
                     )
 
