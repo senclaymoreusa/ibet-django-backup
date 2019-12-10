@@ -32,11 +32,6 @@ from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
 
-# connect AWS S3
-third_party_keys = getThirdPartyKeys("ibet-admin-apdev", "config/thirdPartyKeys.json")
-IMES_URL = third_party_keys["IMES"]["URL"]
-IMES_KEY = third_party_keys["IMES"]["DESKEY"]
-
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
 
@@ -206,7 +201,6 @@ class InplayDeductBalanceAPI(View):
         date_sent = request.GET.get('dateSent')
 
         try:
-            # balance_package = "ZwgZhGFWmUv5vDi5q2ruVNNlKC+WU/nkctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
             balance_package = balance_package.replace(' ', '+')
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
