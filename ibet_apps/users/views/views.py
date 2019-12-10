@@ -57,8 +57,8 @@ from dateutil.relativedelta import relativedelta
 from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
-from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GameRequestsModel
-from games.models import Game as NewGame
+from users.models import CustomUser, Config, NoticeMessage, UserAction, UserActivity, Limitation
+from games.models import Game
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
