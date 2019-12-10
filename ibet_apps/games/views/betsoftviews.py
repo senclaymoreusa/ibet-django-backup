@@ -317,6 +317,8 @@ class BetSoftBetRefund(View):
         try:
             user = CustomUser.objects.get(username=user_id)
             prev_bet = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered__gt=Decimal('0.00'))
+            prev_bet = prev_bet[0]
+
             check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
             if check_duplicate_trans:
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
