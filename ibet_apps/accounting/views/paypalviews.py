@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views import View, generic
 from django.utils import timezone
 from django.db import IntegrityError
-from users.models import Game, CustomUser, Category, Config, NoticeMessage
+from users.models import CustomUser, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response

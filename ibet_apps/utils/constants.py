@@ -204,12 +204,18 @@ LANGUAGE_CHOICES = (
     ('ja', 'Japanese'),
 )
 
+GAME_TYPE_SPORTS = 0
+GAME_TYPE_GAMES = 1
+GAME_TYPE_LIVE_CASINO = 2
+GAME_TYPE_TABLE_GAMES = 3
+GAME_TYPE_GENERAL = 4
+
 GAME_TYPE_CHOICES = (
-    (0, 'Sports'),
-    (1, 'Games'),
-    (2, 'Live Casino'),
-    (3, 'Financial'),
-    (4, 'General'),
+    (GAME_TYPE_SPORTS, 'Sports'),
+    (GAME_TYPE_GAMES, 'Games'),
+    (GAME_TYPE_LIVE_CASINO, 'Live Casino'),
+    (GAME_TYPE_TABLE_GAMES, 'Table Games'),
+    (GAME_TYPE_GENERAL, 'General'),
 )
 
 SPREAD = 'SPREAD'
@@ -275,10 +281,18 @@ VIP_CHOICES = (
 ibetVN = 0
 ibetTH = 1
 ibetCN = 2
+
+letouVN = 10
+letouTH = 11
+letouCN = 12
+
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
     (ibetCN, "ibet-CN"),
+    (letouVN, "letou-VN"),
+    (letouTH, "letou-TH"),
+    (letouCN, "letou-CN"),
 )
 
 COUNTRY_CHOICES = (
@@ -593,13 +607,27 @@ DEV_URL = "https://ibet-web-dev.claymoreusa.net"
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
 
-# qaicash-payment
-QAICASH_URL = keys["QAICASH"]["URL"]
-MERCHANTID = keys["QAICASH"]["MERCHANTID"]
-MERCHANTAPIKEY = keys["QAICASH"]["MERCHANTAPIKEY"]
-APIVERSION = keys["QAICASH"]["APIVERSION"]
-DEPOSIT_URL = keys["QAICASH"]["DEPOSIT_URL"]
-PAYOUT_URL = keys["QAICASH"]["PAYOUT_URL"]
+
+
+if os.getenv("ENV") == "local" or "dev" in os.getenv("ENV"):
+    # qaicash-payment staging
+    QAICASH_URL = keys["QAICASH"]["STAGING"]["URL"]
+    MERCHANTID = keys["QAICASH"]["STAGING"]["MERCHANTID"]
+    MERCHANTAPIKEY = keys["QAICASH"]["STAGING"]["MERCHANTAPIKEY"]
+    APIVERSION = keys["QAICASH"]["STAGING"]["APIVERSION"]
+    DEPOSIT_URL = keys["QAICASH"]["STAGING"]["DEPOSIT_URL"]
+    PAYOUT_URL = keys["QAICASH"]["STAGING"]["PAYOUT_URL"]
+    CALLBACK_URL = keys["QAICASH"]["STAGING"]["CALLBACK_URL"]
+
+elif "prod" in os.getenv("ENV"):
+     # qaicash-payment production
+    QAICASH_URL = keys["QAICASH"]["PRODUCTION"]["URL"]
+    MERCHANTID = keys["QAICASH"]["PRODUCTION"]["MERCHANTID"]
+    MERCHANTAPIKEY = keys["QAICASH"]["PRODUCTION"]["MERCHANTAPIKEY"]
+    APIVERSION = keys["QAICASH"]["PRODUCTION"]["APIVERSION"]
+    DEPOSIT_URL = keys["QAICASH"]["PRODUCTION"]["DEPOSIT_URL"]
+    PAYOUT_URL = keys["QAICASH"]["PRODUCTION"]["PAYOUT_URL"]
+    CALLBACK_URL = keys["QAICASH"]["PRODUCTION"]["CALLBACK_URL"]
 
 # paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
@@ -1225,6 +1253,7 @@ BONUS_TYPE_DEPOSIT = 1
 BONUS_TYPE_TURNOVER = 2
 BONUS_TYPE_STANDARD = 3
 BONUS_TYPE_FREESPINS = 4
+BONUS_TYPE_MANUAL = 5
 
 BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_VERIFICATION, 'VERIFICATION'),
@@ -1232,6 +1261,7 @@ BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_TURNOVER, 'TURNOVER'),
     (BONUS_TYPE_STANDARD, 'STANDARD'),
     (BONUS_TYPE_FREESPINS, 'FREE SPINS'),
+    (BONUS_TYPE_MANUAL, 'MANUAL')
 )
 
 BONUS_STATUS_CHOICES = (
@@ -1261,6 +1291,12 @@ BONUS_RELEASE_TYPE_CHOICES = (
     (0, 'Pre-wager'),
     (1, 'Post-wager'),
 )
+
+BONUS_AGGREGATE_SUM = 0
+BONUS_AGGREGATE_COUNT = 1
+BONUS_AGGREGATE_AVERAGE = 2
+BONUS_AGGREGATE_MAX = 3
+BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
     (0, 'SUM'),
@@ -1336,7 +1372,55 @@ SECURITY_QUESTION = (
     (6, _('What is the name of the person that influenced you the most?'))
     
 )
+
+# Bonus
+BONUS_MANUAL = 0
+BONUS_TRIGGERED = 1
+BONUS_CATEGORY = (
+    (0, 'Manual'),
+    (1, 'Triggered'),
+)
+
+BONUS_MUST_HAVE = (
+    (0, 'ID verified'),
+    (1, 'Phone verified'),
+    (2, 'Email verified'),
+    (3, 'A successful deposit'),
+    (4, 'A successful withdrawal'),
+    (5, 'Manual audit for first withdrawal'),
+)
+
+BONUS_DELIVERY_PUSH = 0
+BONUS_DELIVERY_SITE = 1
+DELIVERY_CHOICES = (
+    (0, 'Push'),
+    (1, 'Site activation'),
+)
+
 # Games
+# All provider
+KY_PROVIDER = "KY"
+BETSOFT_PROVIDER = "Betsoft"
+AG_PROVIDER = "AG"
+FG_PROVIDER = "FG"
+MG_PROVIDER = "MG"
+ONEBOOK_PROVIDER = "Onebook"
+GB_PROVIDER = "GB"
+GD_PROVIDER = "GD"
+N2_PROVIDER = "N2"
+BTI_PROVIDER = "BTi"
+PLAYNGO_PROVIDER = "PLAYNGO"
+IMES_PROVIDER = "IMES"
+QTECH_PROVIDER = "QTech"
+
+# Taiwan team
+GPT_PROVIDER = "GPT"
+OPUS_PROVIDER = "OPUS"
+BBIN_PROVIDER = "BBIN"
+PT_PROVIDER = "PT"
+
+
+
 
 # Playngo
 PNG_STATUS_OK = 0
@@ -1354,14 +1438,13 @@ PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
 
 # Kaiyuan Gaming
-KY_PROVIDER = "Kaiyuan"
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
 #onebook
-ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
+# ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
 ONEBOOK_VENDORID = keys["ONEBOOK"]["VENDORID"]
 ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
 ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
@@ -1380,7 +1463,7 @@ SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
-GB_PROVIDER = keys["GB"]["PROVIDER"]
+# GB_PROVIDER = keys["GB"]["PROVIDER"]
 GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
@@ -1402,3 +1485,6 @@ QT_STATUS_CODE = (
     (4, "ACCOUNT_BLOCKED"),
     (5, "REQUEST_DECLINED"),
 )
+
+# Betsoft
+BETSOFT_KEY = keys["BETSOFT"]["KEY"]

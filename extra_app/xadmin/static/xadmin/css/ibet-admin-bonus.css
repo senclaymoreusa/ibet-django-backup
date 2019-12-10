@@ -142,7 +142,7 @@ table {
     margin: 20px 0 20px 0;
 }
 
-.eligibility-select-box, .excluded-select-box {
+.eligibility-select-box, .excluded-select-box, .bonus-input {
     width: 242px;
     height: 32px;
     border-radius: 4px;
@@ -197,4 +197,39 @@ table {
 
 .new-bonus-btn-group button {
     margin-right: 10px;
+}
+
+.bonus-type {
+    display: none;
+    margin-left: 20px;
+}
+
+#provider_selector_chosen {
+    margin: 10px;
+}
+
+#provider_selector_chosen ul{
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+#provider_selector_chosen .chosen-drop {
+    border: #cccccc;
+    border-radius: 4px;
+}
+
+.chosen-choices {
+    border-radius: 4px;
+}
+
+.wager-unselected {
+    width:172px;
+    font-size: 9px;
+    border: none;
+    margin: 4px 0 0 -30px;
+    background-color: #f3f3f3;
+}
+
+.delivery-choice input {
+    margin-right: 5px;
 }

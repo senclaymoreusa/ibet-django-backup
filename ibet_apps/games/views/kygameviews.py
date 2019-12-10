@@ -125,8 +125,8 @@ def getBets():
         count = int(data['d']['count'])
         record_list = data['d']['list']
 
-        provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
-        category = Category.objects.get_or_create(name='Chess', notes="Kaiyuan Chess")
+        provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=GAME_TYPE_TABLE_GAMES, market='letouCN, letouTH, letouVN')
+        category = Category.objects.get_or_create(name='Table Games', notes="Kaiyuan Chess")
 
         game_id = record_list['GameID']
         accounts = record_list['Accounts']
@@ -309,8 +309,8 @@ class TestGetRecord(View):
                 count = int(data['d']['count'])
                 record_list = data['d']['list']
 
-                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
-                category = Category.objects.get_or_create(name='Chess', notes="Kaiyuan Chess")
+                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=GAME_TYPE_TABLE_GAMES, market='letouCN, letouTH, letouVN')
+                category = Category.objects.get_or_create(name='Table Games', notes="Kaiyuan Chess")
 
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
