@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from users.views.helper import checkUserBlock
 from users.models import CustomUser
 import simplejson as json
@@ -187,6 +188,7 @@ class BetSoftBetResult(View):
 
         try:
             
+            print(MD5(user_id + bet + win + is_round_finished + round_id + game_id + key))
             if hash != MD5(user_id + bet + win + is_round_finished + round_id + game_id + key):
                 logger.info("Betsoft bet/result error with wrong hash validation")
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
@@ -212,7 +214,8 @@ class BetSoftBetResult(View):
                     return HttpResponse(response, content_type='text/xml')
 
                 if negative_bet:
-                    win_amount = win_amount + negative_bet
+                    win_amount = int(win_amount) + int(negative_bet)
+                
 
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
@@ -314,8 +317,7 @@ class BetSoftBetRefund(View):
 
         try:
             user = CustomUser.objects.get(username=user_id)
-            prev_bet = GameBet.objects.get(ref_no=casino_transaction_id)
-
+            prev_bet = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered__gt=Decimal('0.00'))
             check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
             if check_duplicate_trans:
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
@@ -326,8 +328,7 @@ class BetSoftBetRefund(View):
 
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             # user.amount
-            # print(MD5(user_id + casino_transaction_id + key))
-
+            
             if hash == MD5(user_id + casino_transaction_id + key):
                 GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                 category=prev_bet.category,
