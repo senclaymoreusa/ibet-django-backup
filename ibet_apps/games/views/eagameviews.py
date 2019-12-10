@@ -26,7 +26,6 @@ from accounting.models import *
 from utils.constants import *
 
 
-
 logger = logging.getLogger('django')
 
 EA_GAME_HOST_URL = ""

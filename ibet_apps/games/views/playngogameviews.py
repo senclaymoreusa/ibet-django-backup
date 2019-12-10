@@ -5,36 +5,40 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ParseError
 from rest_framework import status
 from django.db import transaction
+from django.utils import timezone
 
 # iBet
 from users.models import CustomUser
 from games.models import GameBet, GameProvider, Category, PNGTicket
 from utils.constants import *
+from utils.aws_helper import getThirdPartyKeys
+from users.views.helper import checkUserBlock
 
 # Libraries
 import xmltodict
 import logging
 import decimal
 import uuid
+import random
+
 
 logger = logging.getLogger('django')
 
-try:
-    PROVIDER = GameProvider.objects.get(provider_name="PLAYNGO")
-except ObjectDoesNotExist:
-    PROVIDER = GameProvider.objects.create(
-                                            provider_name="PLAYNGO",
-                                            type=2,
-                                            market="ibetCN"
-                                          )
+def setup_models():
+    PROVIDER = None
+    CATEGORY = None 
 
-try:
-    CATEGORY = Category.objects.get(name="SLOTS")
-except ObjectDoesNotExist:
-    CATEGORY = Category.objects.create(
-                                        name="SLOTS",
-                                        notes="None"
-                                      )
+    try:
+        PROVIDER = GameProvider.objects.get(provider_name=PLAYNGO_PROVIDER)
+    except ObjectDoesNotExist:
+        logger.error("missing playngo provider.")
+
+    try:
+        CATEGORY = Category.objects.get(name="Games")
+    except ObjectDoesNotExist:
+        logger.error("missing category.")
+    
+    return (PROVIDER, CATEGORY)
 
 
 class GameLaunchView(View):
@@ -167,7 +171,7 @@ class BalanceView(View):
         data = request.body
 
         try:
-            # Extract data fields from request XML
+            # Extract data fields from request XML.
             req_dict = xmltodict.parse(data)
 
             username = req_dict['balance']['externalId']
@@ -176,30 +180,38 @@ class BalanceView(View):
             game_id = req_dict['balance']['gameId']
             access_token = req_dict['balance']['accessToken']
 
-            # TODO: Verify accessToken after it is provided by PLAY'nGO
-            
-            # Retrieve balance of specified user and set status code based on user account status
-            user = CustomUser.objects.get(username=username)
+            # Verify accessToken.
+            third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+            PNG_ACCESS_TOKEN = third_party_keys["PLAYNGO"]["ACCESSTOKEN"]
 
-            if user:
-                # print("PLAY'nGO BalanceView: User " + username + " found!")
-                logger.info("PLAY'nGO BalanceView: User " + username + " found!")
-            else:
-                # print("PLAY'nGO BalanceView: User " + username + " not found!")
-                logger.error("PLAY'nGO BalanceView: User " + username + " not found!")
+            if PNG_ACCESS_TOKEN != access_token:
+                res_dict = {
+                    "balance": {
+                        "real": {
+                            "#text": str(0.00)
+                        },
+                        "currency": {
+                            "#text": "N/A"
+                        },
+                        "statusCode": {
+                            "#text": str(PNG_STATUS_WRONGUSERNAMEPASSWORD)
+                        },
+                    }
+                }
 
-            user_balance = int(user.main_wallet * 100) / 100.0
-            user_currency = CURRENCY_CHOICES[user.currency][1]
-            status_code = PNG_STATUS_OK # Default case is 0 (request successful)
+                res_msg = xmltodict.unparse(res_dict, pretty=True)
+                return HttpResponse(res_msg, content_type='text/xml')
 
-            if user.block is True:
-                status_code = PNG_STATUS_ACCOUNTLOCKED
-            elif user.active is False:
+            # Retrieve balance of specified user and set status code based on user account status.
+            user_obj = CustomUser.objects.get(username=username)
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
+            user_currency = CURRENCY_CHOICES[user_obj.currency][1]
+            status_code = PNG_STATUS_OK # Default case is 0 (request successful).
+
+            if checkUserBlock(user_obj):
                 status_code = PNG_STATUS_ACCOUNTDISABLED
-            elif user_currency != currency:
-                status_code = PNG_STATUS_INVALIDCURRENCY
 
-            # Compose response dictionary and convert to response XML
+            # Compose response dictionary and convert to response XML.
             res_dict = {
                 "balance": {
                     "real": {
@@ -229,12 +241,13 @@ class ReserveView(View):
         The Reserve call makes a request to the Operator Account System to deduct a bet amount from
         the user's wallet. XML is the data format that this endpoint receives and responds with.
         """
-        # TODO: Follow up with provider about special case where a bet amount of 0.00 is allowed.
+
+        PROVIDER, CATEGORY = setup_models()
 
         data = request.body
 
         try:
-            # Extract data fields from request XML
+            # Extract data fields from request XML.
             req_dict = xmltodict.parse(data)
 
             username = req_dict['reserve']['externalId']
@@ -250,34 +263,35 @@ class ReserveView(View):
             free_game_external_id = req_dict['reserve']['freegameExternalId']
             actual_value = req_dict['reserve']['actualValue']
             
-            user = CustomUser.objects.get(username=username)
-            user_balance = int(user.main_wallet * 100) / 100.0
+            user_obj = CustomUser.objects.get(username=username)
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
             bet_amount_decimal = float(bet_amount_str)
-            user_currency_text = CURRENCY_CHOICES[user.currency][1]
+            user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
             status_code = PNG_STATUS_OK
+            bet_already_placed = False
 
-            #print("")
-            #print(type(user_balance))
-            #print(str(user_balance))
-            #print(type(bet_amount_decimal))
-            #print(str(bet_amount_decimal))
-            #print("req_currency: " + req_currency)
-            #print("user.currency: " + str(user.currency))
-            #print("user_currency_text: " + user_currency_text)
-            #print("")
+            # Idempotence - check if bet with transaction_id was already successfully placed.
+            try:
+                existing_bet = GameBet.objects.get(ref_no=transaction_id)
+                logger.error("Bet with transaction_id already exists.")
+                bet_already_placed = True
+            except ObjectDoesNotExist:
+                logger.info("Bet with transaction_id does not exist yet.")
+                pass
 
-            # Checking currency type takes priority over making a bet.
-            if user_currency_text != req_currency:
-                status_code = PNG_STATUS_INVALIDCURRENCY
-                logger.error("PLAY'nGO ReserveView Error: Currency mismatch.")
+            if bet_already_placed:
+                # Skip over all the other possible bet outcomes (elif/else clauses).
+                pass
 
             # Bet can go through. 
             elif user_balance >= bet_amount_decimal:
                 with transaction.atomic():
                     balance_after_bet = user_balance - bet_amount_decimal
-                    user.main_wallet = balance_after_bet
-                    user.save()
+                    user_obj.main_wallet = balance_after_bet
+                    user_obj.save()
+
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                     # Create a GameBet entry upon successful placement of a bet.
                     GameBet.objects.create(
@@ -285,14 +299,15 @@ class ReserveView(View):
                         category = CATEGORY,
                         #game = None,
                         #game_name = None,
-                        username = user,
+                        username = user_obj,
                         amount_wagered = bet_amount_decimal,
                         amount_won = 0.00,
                         #outcome = None,
                         #odds = None,
                         #bet_type = None,
                         #line = None,
-                        currency = user.currency,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
@@ -300,8 +315,9 @@ class ReserveView(View):
                         #other_data = {}
                     )
 
-                    logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user.username)
-
+                    logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user_obj.username)
+            
+            # Bet amount is bigger than user balance.
             else:
                 status_code = PNG_STATUS_NOTENOUGHMONEY
                 logger.error("PLAY'nGO ReserveView Error: Not enough money to place bet.")
@@ -311,7 +327,7 @@ class ReserveView(View):
                 "reserve": {
                     "real": {
                         # Cannot use balance_after_bet in case bet did not go through
-                        "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
+                        "#text": str(int(user_obj.main_wallet * 100) / 100.0)
                     },
                     "currency": {
                         "#text": str(user_currency_text)
@@ -330,70 +346,215 @@ class ReserveView(View):
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-# class ReleaseView(View):
+class CancelReserveView(View):
+    
+    def post(self, request, *args, **kwargs):
+        """
+        The CancelReserve call makes a request to the Operator Account System to refund the user the amount that
+        a previous Reserve call deducted from the user's wallet. XML is the data format that this endpoint receives 
+        and responds with.
+        """
 
-#     def post(self, request, *args, **kwargs):
-#         """
-#         """
-#         data = request.body
+        PROVIDER, CATEGORY = setup_models()
 
-#         try:
-#             req_dict = xmltodict.parse(data)
+        data = request.body
 
-#             username = req_dict['release']['externalId']
-#             product_id = req_dict['release']['productId']
-#             transaction_id = req_dict['release']['transactionId']
-#             win_amount_str = req_dict['release']['real']
-#             currency = req_dict['release']['currency']
-#             game_session_id = req_dict['release']['gameSessionId']
-#             state = req_dict['release']['state']
-#             req_type = req_dict['release']['type']
-#             game_id = req_dict['release']['gameId']
-#             access_token = req_dict['release']['accessToken']
-#             round_id = req_dict['release']['roundId']
-#             jackpot_gain = req_dict['release']['jackpotGain']
-#             jackpot_loss = req_dict['release']['jackpotLoss']
-#             jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
-#             jackpot_gain_id = req_dict['release']['jackpotGainId']
-#             channel = req_dict['release']['channel']
-#             free_game_external_id = req_dict['release']['freegameExternalId']
-#             free_game_total_gain = req_dict['release']['freegameTotalGain']
+        try:
+            # Extract data fields from request XML.
+            req_dict = xmltodict.parse(data)
+
+            username = req_dict['cancelReserve']['externalId']
+            product_id = req_dict['cancelReserve']['productId']
+            transaction_id = req_dict['cancelReserve']['transactionId']
+            real = req_dict['cancelReserve']['real']
+            currency = req_dict['cancelReserve']['currency']
+            game_session_id = req_dict['cancelReserve']['gameSessionId']
+            access_token = req_dict['cancelReserve']['accessToken']
+            round_id = req_dict['cancelReserve']['roundId']
+            game_id = req_dict['cancelReserve']['gameId']
+            channel = req_dict['cancelReserve']['channel']
+            free_game_external_id = req_dict['cancelReserve']['freegameExternalId']
+            actual_value = req_dict['cancelReserve']['actualValue']
+
+            status_code = PNG_STATUS_OK
+            ext_trans_id = None
+            
+            user_obj = CustomUser.objects.get(username=username)
+
+            if checkUserBlock(user_obj):
+                # Even if the user is blocked, the refund should still go through. No further action is 
+                # necessary for this case. This is to explicitly inform the reader that this case is
+                # already handled.
+                pass
+
+            # Attempt to look up previous bet and cancel.
+            try:
+                with transaction.atomic():
+                    existing_bet = GameBet.objects.get(ref_no=transaction_id) # Provider will not send multiple CancelReserve requests with same id.
+                    
+                    user_balance = user_obj.main_wallet
+                    amount_to_refund = existing_bet.amount_wagered
+
+                    balance_after_refund = user_balance + amount_to_refund
+                    user_obj.main_wallet = balance_after_refund
+                    user_obj.save()
+
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    GameBet.objects.create(
+                        provider = PROVIDER,
+                        category = CATEGORY,
+                        #game = None,
+                        #game_name = None,
+                        username = user_obj,
+                        amount_wagered = 0.00,
+                        amount_won = amount_to_refund,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
+                        market = ibetVN, # Need to clarify with provider
+                        ref_no = transaction_id,
+                        #bet_time = None,
+                        #resolved_time = None,
+                        #other_data = {}
+                    )
+                    
+                    logger.info("PLAY'nGO CancelReserveView Success: Bet successfully refunded.")
+
+            # Specified bet does not exist.
+            except ObjectDoesNotExist:
+                ext_trans_id = ""
+                logger.error("PLAY'nGO CancelReserveView Error: Specified bet does not exist.")
+
+            # Compose response dictionary and convert to response XML.
+            res_dict = {
+                "cancelReserve": {
+                    "transactionId": {
+                        "#text": str(transaction_id)
+                    },
+                    "externalTransactionId": {
+                        "#text": str(ext_trans_id)
+                    },
+                    "statusCode": {
+                        "#text": str(status_code)
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            return HttpResponse(res_msg, content_type='text/xml')
+
+        except Exception as e:
+            logger.error("PLAY'nGO CancelReserveView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
+class ReleaseView(View):
 
-#             user = CustomUser.objects.get(username=username)
-#             user_balance = int(user.main_wallet * 100) / 100.0
-#             win_amount_decimal = float(win_amount_str)
+    # TODO: Session handling
 
-#             status_code = PNG_STATUS_OK
+    def post(self, request, *args, **kwargs):
+        """
+        """
 
-#             # TODO: Check for invalid currency.
+        PROVIDER, CATEGORY = setup_models()
 
-#             balance_after_win = user_balance + win_amount_decimal
-#             user.main_wallet = balance_after_win
-#             user.save()
+        data = request.body
 
+        try:
+            req_dict = xmltodict.parse(data)
 
+            username = req_dict['release']['externalId']
+            product_id = req_dict['release']['productId']
+            transaction_id = req_dict['release']['transactionId']
+            win_amount_str = req_dict['release']['real']
+            currency = req_dict['release']['currency']
+            game_session_id = req_dict['release']['gameSessionId']
+            state = req_dict['release']['state']
+            req_type = req_dict['release']['type']
+            game_id = req_dict['release']['gameId']
+            access_token = req_dict['release']['accessToken']
+            round_id = req_dict['release']['roundId']
+            jackpot_gain = req_dict['release']['jackpotGain']
+            jackpot_loss = req_dict['release']['jackpotLoss']
+            jackpot_gain_seed = req_dict['release']['jackpotGainSeed']
+            jackpot_gain_id = req_dict['release']['jackpotGainId']
+            channel = req_dict['release']['channel']
+            free_game_external_id = req_dict['release']['freegameExternalId']
+            free_game_total_gain = req_dict['release']['freegameTotalGain']
 
-#             res_dict = {
-#                 "release": {
-#                     "real": {
-#                         "#text": str(decimal.Decimal(user.main_wallet).quantize(decimal.Decimal('0.00')))
-#                     },
-#                     "currency": {
-#                         "#text": ""
-#                     },
-#                     "statusCode": {
-#                         "#text": str(status_code)
-#                     },
-#                 }
-#             }
+            user_obj = CustomUser.objects.get(username=username)
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
+            win_amount_decimal = float(win_amount_str)
+            user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
-#             res_msg = xmltodict.unparse(res_dict, pretty=True)
-#             return HttpResponse(res_msg, content_type='text/xml')
+            status_code = PNG_STATUS_OK
+            release_already_resolved = False
 
+            # Idempotence - check if release with transaction_id was already successfully resolved.
+            try:
+                existing_release = GameBet.objects.get(ref_no=transaction_id)
+                logger.error("Release with transaction_id already exists.")
+                release_already_resolved = True
+            except ObjectDoesNotExist:
+                pass
 
+            # Release not resolved yet; issue the refund.
+            if not release_already_resolved:
+                with transaction.atomic():
+                    balance_after_win = user_balance + win_amount_decimal
+                    user_obj.main_wallet = balance_after_win
+                    user_obj.save()
 
-#         except Exception as e:
-#             logger.error("PLAY'nGO ReleaseView Error: " + str(e))
-#             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    GameBet.objects.create(
+                        provider = PROVIDER,
+                        category = CATEGORY,
+                        #game = None,
+                        #game_name = None,
+                        username = user_obj,
+                        amount_wagered = 0.00,
+                        amount_won = win_amount_decimal,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
+                        market = ibetVN, # Need to clarify with provider
+                        ref_no = transaction_id,
+                        #bet_time = None,
+                        #resolved_time = None,
+                        #other_data = {}
+                    )
+
+                    logger.info("PLAY'nGO ReleaseView Success: Winnings sent to user " + str(user_obj.username))
+
+            else:
+                logger.error("PLAY'nGO ReleaseView Error: Transaction already resolved.")
+                pass
+
+            res_dict = {
+                "release": {
+                    "real": {
+                        "#text": str(int(user_obj.main_wallet * 100) / 100.0)
+                    },
+                    "currency": {
+                        "#text": str(user_currency_text)
+                    },
+                    "statusCode": {
+                        "#text": str(status_code)
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            return HttpResponse(res_msg, content_type='text/xml')
+
+        except Exception as e:
+            logger.error("PLAY'nGO ReleaseView Error: " + str(e))
+            return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
