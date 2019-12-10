@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ..models import CustomUser, GameRequestsModel
+from ..models import CustomUser
 from django.utils import timezone
 import decimal
 import xmltodict
@@ -37,10 +37,10 @@ class SAGetUserBalance(APIView):
         currency = dic['currency']
 
 
-        GameRequestsModel.objects.create(
-            MemberID        = username,
-            currency        = currency
-        )
+        # GameRequestsModel.objects.create(
+        #     MemberID        = username,
+        #     currency        = currency
+        # )
 
         try:
 
@@ -87,17 +87,17 @@ class SAPlaceBet(APIView):
         hostid   = dic['hostid']
         gameid   = dic['gameid']
 
-        GameRequestsModel.objects.create(
-            MemberID        = username,
-            currency        = currency,
-            amount          = amount,
-            txnid           = txnid,
-            gametype        = gametype,
-            platformType    = platform,
-            gameCode        = gamecode,
-            hostid          = hostid,
-            gameId          = gameid    
-        )
+        # GameRequestsModel.objects.create(
+        #     MemberID        = username,
+        #     currency        = currency,
+        #     amount          = amount,
+        #     txnid           = txnid,
+        #     gametype        = gametype,
+        #     platformType    = platform,
+        #     gameCode        = gamecode,
+        #     hostid          = hostid,
+        #     gameId          = gameid    
+        # )
 
         try:
 
@@ -152,17 +152,17 @@ class SAPlayerWin(APIView):
         hostid     = dic['hostid']
         gameid     = dic['gameid']
 
-        GameRequestsModel.objects.create(
-            MemberID        = username,
-            currency        = currency,
-            amount          = amount,
-            txnid           = txnid,
-            gametype        = gametype,
-            gameCode        = gamecode,
-            time            = Payouttime,
-            hostid          = hostid,
-            gameId          = gameid    
-        )
+        # GameRequestsModel.objects.create(
+        #     MemberID        = username,
+        #     currency        = currency,
+        #     amount          = amount,
+        #     txnid           = txnid,
+        #     gametype        = gametype,
+        #     gameCode        = gamecode,
+        #     time            = Payouttime,
+        #     hostid          = hostid,
+        #     gameId          = gameid    
+        # )
 
         try:
 
@@ -212,16 +212,16 @@ class SAPlayerLost(APIView):
         hostid   = dic['hostid']
         gameid   = dic['gameid']
 
-        GameRequestsModel.objects.create(
-            MemberID        = username,
-            currency        = currency,
-            txnid           = txnid,
-            gametype        = gametype,
-            gameCode        = gamecode,
-            time            = Payouttime,
-            hostid          = hostid,
-            gameId          = gameid    
-        )
+        # GameRequestsModel.objects.create(
+        #     MemberID        = username,
+        #     currency        = currency,
+        #     txnid           = txnid,
+        #     gametype        = gametype,
+        #     gameCode        = gamecode,
+        #     time            = Payouttime,
+        #     hostid          = hostid,
+        #     gameId          = gameid    
+        # )
 
         try:
 
@@ -270,17 +270,17 @@ class SAPlaceBetCancel(APIView):
         gameid         = dic['gameid']
         txn_reverse_id = dic['txn_reverse_id']
 
-        GameRequestsModel.objects.create(
-            MemberID        = username,
-            currency        = currency,
-            txnid           = txnid,
-            gametype        = gametype,
-            gameCode        = gamecode,
-            time            = Payouttime,
-            hostid          = hostid,
-            gameId          = gameid,
-            txn_reverse_id  = txn_reverse_id
-        )
+        # GameRequestsModel.objects.create(
+        #     MemberID        = username,
+        #     currency        = currency,
+        #     txnid           = txnid,
+        #     gametype        = gametype,
+        #     gameCode        = gamecode,
+        #     time            = Payouttime,
+        #     hostid          = hostid,
+        #     gameId          = gameid,
+        #     txn_reverse_id  = txn_reverse_id
+        # )
 
         try:
 
