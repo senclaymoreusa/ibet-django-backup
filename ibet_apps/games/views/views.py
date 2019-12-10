@@ -138,20 +138,19 @@ class ProvidersSearchView(View):
             logger.info("Search providers by keyword: " + str(q))
             res = []
             # print(str(q))
-            providers = GameProvider.objects.filter(type=1)
-            
             if not q:
+                # category = Category.objects.get(name='Games')
+                providers = GameProvider.objects.filter(type=1)
                 for provider in providers:
                     res.append(provider.provider_name)
-                    # print(res)
-                return HttpResponse(json.dumps(res), content_type='application/json')
-
-            q = q.lower()
-            for provider in providers:
-                name = str(provider.provider_name)
-                # print(name)
-                if q in name.lower():
-                    res.append(name)
+            
+            else:
+                q = q.lower()
+                providers = GameProvider.objects.all()
+                for provider in providers:
+                    name = provider.provider_name
+                    if q in name.lower():
+                        res.append(name)
 
             logger.info("Sending game providers response......... ")
             # print(res)
@@ -176,7 +175,6 @@ class GameDetailAPIListView(ListAPIView):
     def get_queryset(self):
         id = self.request.GET['id']
         data = Game.objects.filter(pk=id)
-        # print(data) 
         return data
 
 

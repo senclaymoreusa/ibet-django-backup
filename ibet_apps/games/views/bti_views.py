@@ -28,22 +28,6 @@ from utils.constants import *
 MARKET_CN = 2
 logger = logging.getLogger('django')
 
-try:
-    PROVIDER = GameProvider.objects.get(provider_name='BTi')
-except ObjectDoesNotExist:
-    PROVIDER = GameProvider(
-        provider_name='BTi',
-        type=GAME_TYPE_SPORTS,
-        market="letouCN, letouTH, letouVN",
-    )
-    PROVIDER.save()
-
-try:
-    CATEGORY = Category.objects.get(name='Sports')
-except ObjectDoesNotExist:
-    CATEGORY = Category(name='Sports')
-    CATEGORY.save()
-
 
 # check if token exists for logged in user
 class ValidateToken(View):
@@ -100,6 +84,7 @@ class Reserve(View):
             try:
                 with transaction.atomic():
                     if amount < user.main_wallet:  # user has enough funds
+                        PROVIDER, CATEGORY = getProviderCategory()
                         ending_balance = user.main_wallet - amount
                         bet = GameBet(
                             provider=PROVIDER,
@@ -189,7 +174,7 @@ class DebitReserve(View):
         # reserve was already canceled
         try:
             transaction_canceled = GameBet.objects.get(ref_no=reserve_id, other_data__is_cancel=True)
-            res = "error_code=-22"
+            res = "error_code=-22\r\n"
             res += "error_message=ReserveClosed\r\n"
             return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist as e:
@@ -198,7 +183,7 @@ class DebitReserve(View):
         # reserve was already committed
         try:
             transaction_committed = GameBet.objects.get(ref_no=reserve_id, other_data__is_committed=True)
-            res = "error_code=-22"
+            res = "error_code=-22\r\n"
             res += "error_message=ReserveClosed\r\n"
             return HttpResponse(res, content_type='text/plain')
         except ObjectDoesNotExist as e:
@@ -225,6 +210,7 @@ class DebitReserve(View):
             return HttpResponse(res, content_type='text/plain')        
 
         try:
+            PROVIDER, CATEGORY = getProviderCategory()
             bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
@@ -309,6 +295,7 @@ class CommitReserve(View):
                 
                 refundAmount = totalReserveAmount - actualTotal
                 user.main_wallet += refundAmount
+                PROVIDER, CATEGORY = getProviderCategory()
                 bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
@@ -373,6 +360,7 @@ class CancelReserve(View):
                     prev_debits = prev_bet.objects.filter(other_data__is_debit=True)
                     refund = prev_debits.aggregate(Sum('amount_wagered'))['amount_wagered__sum'] or 0
                     user.main_wallet = user.main_wallet + refund
+                    PROVIDER, CATEGORY = getProviderCategory()
 
                     bet = GameBet(
                         provider=PROVIDER,
@@ -399,6 +387,8 @@ class CancelReserve(View):
                 # no Reserve was made, but cancel called anyways
                 if prev_bet.count() == 0:
                     credit_amount = decimal.Decimal(0)
+                    PROVIDER, CATEGORY = getProviderCategory()
+
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
@@ -426,6 +416,8 @@ class CancelReserve(View):
                     credit_amount = prev_bet[0].amount_wagered
                     new_balance = user.main_wallet + credit_amount
                     user.main_wallet = new_balance
+                    PROVIDER, CATEGORY = getProviderCategory()
+
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
@@ -479,6 +471,8 @@ class Add2Bet(View):
                 if not (isinstance(user, CustomUser)):
                     return user
                 open_bet = GameBet.objects.get(ref_no=reserve_id, other_data__is_reserve=True, other_data__is_committed__isnull=True, other_data__is_cancel__isnull=True)
+                PROVIDER, CATEGORY = getProviderCategory()
+
                 new_bet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
@@ -531,6 +525,8 @@ class Add2BetConfirm(View):
         
         try:
             bet_to_confirm = GameBet.objects.get(ref_no=reserve_id, other_data__is_add2bet=True)
+            PROVIDER, CATEGORY = getProviderCategory()
+
             confirm_bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
@@ -614,6 +610,8 @@ class DebitCustomer(View):
 
         try:
             with transaction.atomic():
+                PROVIDER, CATEGORY = getProviderCategory()
+
                 user.main_wallet = user.main_wallet - amount
                 xmlJson = {
                     'is_debit': True,
@@ -706,6 +704,8 @@ class CreditCustomer(View):
                 if amount > 0:
                     user.main_wallet = user.main_wallet + amount
                 
+                PROVIDER, CATEGORY = getProviderCategory()
+                
                 outcome = 0 if amount > 0 else 1
 
                 xmlJson = {
@@ -757,6 +757,24 @@ def wrongRequest():
     res += "error_message=WrongRequest\r\n"
     return HttpResponse(res, content_type='text/plain')
 
+def getProviderCategory():
+    try:
+        PROVIDER = GameProvider.objects.get(provider_name=BTI_PROVIDER)
+    except ObjectDoesNotExist:
+        PROVIDER = GameProvider(
+            provider_name=BTI_PROVIDER,
+            type=GAME_TYPE_SPORTS,
+            market="letouCN, letouTH, letouVN",
+        )
+        PROVIDER.save()
+
+    try:
+        CATEGORY = Category.objects.get(name='Sports')
+    except ObjectDoesNotExist:
+        CATEGORY = Category(name='Sports')
+        CATEGORY.save()
+
+    return (PROVIDER, CATEGORY)
 
 ###########################################################################################
 # begin FE calls
