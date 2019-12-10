@@ -188,7 +188,6 @@ class BetSoftBetResult(View):
 
         try:
             
-            print(MD5(user_id + bet + win + is_round_finished + round_id + game_id + key))
             if hash != MD5(user_id + bet + win + is_round_finished + round_id + game_id + key):
                 logger.info("Betsoft bet/result error with wrong hash validation")
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
