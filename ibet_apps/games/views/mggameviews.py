@@ -224,7 +224,8 @@ class MGgame(APIView):
                         if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
                             GameBet.objects.get_or_create(provider=provider,
                                                             category=category,
-                                                            username=user,
+                                                            user=user,
+                                                            user_name=user.username,
                                                             amount_wagered=0.00,
                                                             currency=user.currency,
                                                             amount_won=decimal.Decimal(amount)/100,
@@ -236,7 +237,8 @@ class MGgame(APIView):
                         else :
                             GameBet.objects.get_or_create(provider=provider,
                                                             category=category,
-                                                            username=user,
+                                                            user=user,
+                                                            user_name=user.username,
                                                             amount_wagered=decimal.Decimal(amount)/100,
                                                             currency=user.currency,
                                                             market=ibetCN,

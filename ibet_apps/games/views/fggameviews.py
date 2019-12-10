@@ -291,7 +291,8 @@ class ProcessTransaction(APIView):
 
                         GameBet.objects.get_or_create(provider=provider,
                                                         category=category,
-                                                        username=user,
+                                                        user=user,
+                                                        user_name=user.username,
                                                         amount_wagered=-float(amount),
                                                         currency=user.currency,
                                                         market=ibetCN,
@@ -338,7 +339,8 @@ class ProcessTransaction(APIView):
 
                         GameBet.objects.get_or_create(provider=provider,
                                                         category=category,
-                                                        username=user,
+                                                        user=user,
+                                                        user_name=user.username,
                                                         amount_wagered=0.00,
                                                         currency=user.currency,
                                                         amount_won=float(amount),
@@ -417,7 +419,8 @@ class ProcessTransaction(APIView):
                 }  
                 GameBet.objects.get_or_create(provider=provider,
                                                 category=category,
-                                                username=user,
+                                                user=user,
+                                                user_name=user,
                                                 amount_wagered=0.00,
                                                 currency=user.currency,
                                                 amount_won=float(amount),
