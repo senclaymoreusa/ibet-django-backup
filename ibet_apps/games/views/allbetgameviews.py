@@ -237,8 +237,11 @@ def place_bet(client, transaction_id, amount, bet_details):
         print("place_bet OK: Existing transaction does not exist.")
         pass
 
-
-
+    #################################################################################################################################
+    # TODO: Check bet_details for single bet that is zero or negative 
+    # TODO: Check that total bet amount equals sum of individual bets
+    # TODO: Batch bets should work
+    #################################################################################################################################
 
 
     try:
@@ -323,6 +326,71 @@ def place_bet(client, transaction_id, amount, bet_details):
         return HttpResponse(str(e))
 
 
+def settle_bet(client, transaction_id, amount, bet_details):
+    """
+    Helper method for the settle bet transfer type.
+    """
+    try:
+        user_obj = CustomUser.objects.get(username=client)
+        user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
+        settle_amount = float(amount)
+
+        print("settle_amount: " + str(settle_amount))
+
+
+        with transaction.atomic():
+            # TODO: Check assumptions - amount may be pos/neg based on win/loss and ints/floats are treated the same.
+            balance_after_settling = user_balance + settle_amount # ALWAYS ADD???
+            user_obj.main_wallet = balance_after_settling
+            user_obj.save()
+
+            ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+
+            GameBet.objects.create(
+                provider = GameProvider.objects.get(provider_name="ALLBET"),
+                category = Category.objects.get(name="Poker"),
+                #game = None,
+                #game_name = None,
+                username = user_obj,
+                amount_wagered = 0.00,
+                amount_won = settle_amount,
+                #outcome = None,
+                #odds = None,
+                #bet_type = None,
+                #line = None,
+                transaction_id = ibet_trans_id,
+                currency = user_obj.currency,
+                market = ibetCN,
+                ref_no = transaction_id,
+                #bet_time = None,
+                #resolved_time = None,
+                #other_data = {}
+            )
+
+
+            # Return user balance after settling.
+            json_to_return = {
+                                "error_code": 0,
+                                "balance": int(user_obj.main_wallet * 100) / 100.0
+                             }
+
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+
+
+
+    except Exception as e:
+        print("settle_bet error: " + str(e))
+        pass
+
+
+
+
+
+
+
 class TransferView(View):
 
     def post(self, request, *args, **kwargs):
@@ -401,9 +469,14 @@ class TransferView(View):
             elif transfer_type == "11":
                 # Cancel
                 pass
+
+
+            # Settle
             elif transfer_type == "20":
-                # Settle
-                pass
+                return settle_bet(client, transaction_id, amount, bet_details)
+
+
+
             elif transfer_type == "21":
                 # Re-settle
                 pass
