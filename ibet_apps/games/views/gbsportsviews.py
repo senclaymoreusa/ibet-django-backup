@@ -77,8 +77,8 @@ class WalletBetAPIURL(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
-                                        type=0,
-                                        market='China')
+                                        type=GAME_TYPE_SPORTS,
+                                        market='letouCN, letouTH, letouVN')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
         if any(game in data['GB']['Result']['ReturnSet']['BettingList'] for game in game_list):
@@ -129,14 +129,13 @@ class WalletBetAPIURL(APIView):
                             TransData  = current_balance
                             
                             if data['GB']['Result']['ReturnSet']['BettingList']['SportList'] != '':
-                                category = 'SPORTS'
+                                category = 'Sports'
                             else:
-                                category = 'LOTTERY'
+                                category = 'Lotteries'
                             try:
                                 cate = Category.objects.get(name=category)
                             except:
-                                cate = Category.objects.create(name=category)
-                                logger.info("Create new category.")
+                                logger.error("missing category.")
 
                             GameBet.objects.create(
                                 provider=PROVIDER,
@@ -213,15 +212,14 @@ class WalletBetAPIURL(APIView):
                                 
                             
                                 if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
-                                    category = 'SPORTS'
+                                    category = 'Sports'
                                 else:
-                                    category = 'LOTTERY'
+                                    category = 'Lotteries'
                                 
                                 try:
                                     cate = Category.objects.get(name=category)
                                 except:
-                                    cate = Category.objects.create(name=category)
-                                    logger.info("Create new category.")
+                                    logger.error("missing category.")
                                 if BetType == '1':
                                     bet_type = SINGLE
                                 else:
@@ -290,8 +288,8 @@ class WalletSettleAPIURL(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=GB_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
-                                        type=0,
-                                        market='China')
+                                        type=GAME_TYPE_SPORTS,
+                                        market='letouCN, letouTH, letouVN')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         if any(game in data['GB']['Result']['ReturnSet']['SettleList'] for game in game_list):
             game_type = 'dict'
@@ -339,15 +337,14 @@ class WalletSettleAPIURL(APIView):
                     user = CustomUser.objects.get(username = MemberID)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if data['GB']['Result']['ReturnSet']['SettleList']['SportList'] != []:
-                        category = 'SPORTS'
+                        category = 'Sports'
                     else:
-                        category = 'LOTTERY'
+                        category = 'Lotteries'
                             
                     try:
                         cate = Category.objects.get(name=category)
                     except:
-                        cate = Category.objects.create(name=category)
-                        logger.info("Create new category.")
+                        logger.error("missing category.")
                         
                     if BetType == '1':
                         bet_type = SINGLE
@@ -444,15 +441,14 @@ class WalletSettleAPIURL(APIView):
                         
                             
                         if data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList'] != []:
-                            category = 'SPORTS'
+                            category = 'Sports'
                         else:
-                            category = 'LOTTERY'
+                            category = 'Lotteries'
                             
                         try:
                             cate = Category.objects.get(name=category)
                         except:
-                            cate = Category.objects.create(name=category)
-                            logger.info("Create new category.")
+                            logger.error("missing category.")
                         
                         if BetType == '1':
                             bet_type = SINGLE

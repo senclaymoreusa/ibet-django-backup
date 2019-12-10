@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from games.models import Game, Category
+from games.models import Game, Category, GameProvider
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -13,9 +13,15 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('parent_id', 'name', 'notes', 'category_id')
 
+class ProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameProvider
+        fields = ('provider_name', 'type', 'market')
+
 class GameSerializer(serializers.ModelSerializer):
     category_id = CategorySerializer(read_only=True)
+    provider = ProviderSerializer(read_only=True)
+
     class Meta:
         model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'game_url', 'image_url', 'game_guest_url')
-
+        fields = ('pk','category_id', 'provider', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'game_url', 'image_url', 'smallgame_id')
