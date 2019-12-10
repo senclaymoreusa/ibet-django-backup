@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Game, Category, CustomUser, NoticeMessage
+from users.models import CustomUser, NoticeMessage
 from accounting.models import DepositAccessManagement, DepositChannel
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)

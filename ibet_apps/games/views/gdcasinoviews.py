@@ -177,11 +177,11 @@ class LiveDealerSoapService(ServiceBase):
     def Debit(crx, request):
         
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
@@ -198,12 +198,12 @@ class LiveDealerSoapService(ServiceBase):
             elif CATEGORY == '29':
                 category = 'Sicbo'
             elif CATEGORY == '100':
-                category = 'Slots'
+                category = 'Games'
             try:
-                cate = Category.objects.get(name='LIVE-CASINO')
+                cate = Category.objects.get(name='Live Casino')
             except:
-                cate = Category.objects.create(name='LIVE-CASINO')
-                logger.info("create new game category")
+                logger.error("missing category.")
+
             token = Token.objects.get(user=user)
             
             if request.gameId == GDCASINO_FISHING_GAMEID:
@@ -278,11 +278,11 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
@@ -304,12 +304,12 @@ class LiveDealerSoapService(ServiceBase):
                 elif CATEGORY == '29':
                     category = 'Sicbo'
                 elif CATEGORY == '100':
-                    category = 'Slots'
+                    category = 'Games'
                 try:
-                    cate = Category.objects.get(name='LIVE-CASINO')
+                    cate = Category.objects.get(name='Live Casino')
                 except:
-                    cate = Category.objects.create(name='LIVE-CASINO')
-                    logger.info("create new game category")
+                    logger.error("missing category.")
+
                 if CATEGORY == '100':
                 
                     if request.gameId == GDCASINO_FISHING_GAMEID:
@@ -428,11 +428,11 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(TipRequest,_body_style='bare', _returns=Container)
     def Tip(crx, request): 
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
  
@@ -446,10 +446,10 @@ class LiveDealerSoapService(ServiceBase):
                 token = Token.objects.get(user=user)
                 
                 try:
-                    cate = Category.objects.get(name='LIVE-CASINO')
+                    cate = Category.objects.get(name='Live Casino')
                 except:
-                    cate = Category.objects.create(name='LIVE-CASINO')
-                    logger.info("create new game category")
+                   logger.error("missing category.")
+
                 with transaction.atomic():
                     # if str(token) == request.loginToken:
                     GameBet.objects.create(provider=PROVIDER,   
@@ -482,11 +482,11 @@ class LiveDealerSoapService(ServiceBase):
     @rpc(CancelRequest,_body_style='bare', _returns=Container)
     def Cancel(crx, request): 
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
         except ObjectDoesNotExist:
-            PROVIDER = GameProvider.objects.create(provider_name="GD Casino",
-                                        type=0,
-                                        market='China'
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
                                         )
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         res = Container() 
@@ -496,10 +496,10 @@ class LiveDealerSoapService(ServiceBase):
             userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
             try:
-                cate = Category.objects.get(name='LIVE-CASINO')
+                cate = Category.objects.get(name='Live Casino')
             except:
-                cate = Category.objects.create(name='LIVE-CASINO')
-                logger.info("create new game category")
+                logger.error("missing category.")
+                
             with transaction.atomic():
                 GameBet.objects.create(provider=PROVIDER,   
                                         category=cate,
