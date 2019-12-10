@@ -420,7 +420,7 @@ class ProcessTransaction(APIView):
                 GameBet.objects.get_or_create(provider=provider,
                                                 category=category,
                                                 user=user,
-                                                user_name=user,
+                                                user_name=user.username,
                                                 amount_wagered=0.00,
                                                 currency=user.currency,
                                                 amount_won=float(amount),
