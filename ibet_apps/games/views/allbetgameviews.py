@@ -121,6 +121,20 @@ class EncryptionView(View):
             return HttpResponse("Error in encryption: " + str(e))
 
 
+def prop_id_is_invalid(test_id):
+    """
+    Helper method to check provided property ID field against actual ID stored in AWS.
+    """
+
+    third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+    AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
+    
+    if AB_PROPERTY_ID != test_id:
+        return True 
+        
+    return False
+
+
 class BalanceView(View):
     
     def get(self, request, player_account_name):
@@ -153,13 +167,14 @@ class BalanceView(View):
             # Check Property ID
             ab_with_prop_id = str(auth_header).split(":")[0]
             prop_id = ab_with_prop_id[3:]
-
-            if prop_id != AB_PROPERTY_ID:
+            
+            # Exit and return JSON if property ID is invalid.
+            if prop_id_is_invalid(prop_id):
                 json_to_return = {
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
                                  }
-                logger.error("AllBet BalanceView Error: Invalid authorization property ID")
+                logger.error("AllBet Game Error: Invalid authorization property ID")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             # Generate signature
@@ -203,157 +218,217 @@ class BalanceView(View):
             return HttpResponse(str(e))
 
 
-# class TransferView(View):
+def place_bet(client, transaction_id, amount, bet_details):
+    """
+    Helper method for the place bet transfer type.
+    """
 
-#     def post(self, request, *args, **kwargs):
-#         """
-#         Partner Public Platform API that handles different wallet transfer types such as bet, cancel, settle,
-#         and re-settle. JSON is the data format that this endpoint receives and responds with.
-#         """
-#         try:
-#             json_data = json.loads(request.body)
+    # Check if transaction ID already used
+    try:
+        existing_transaction = GameBet.objects.get(ref_no=transaction_id)
 
-#             client = json_data["client"]
-#             transaction_id = json_data["tranId"]
-#             amount = json_data["amount"]
-#             currency = json_data["currency"]
-#             transfer_type = json_data["transferType"]
+        json_to_return = {
+                            "error_code": 10007,
+                            "message": "Error: transaction ID already used."
+                         }
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-
-#             third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-#             AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-#             AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
-
-#             auth_header = request.META['HTTP_AUTHORIZATION']
-#             date_header = request.META['HTTP_DATE']
-#             content_md5_header = request.META['HTTP_CONTENT_MD5']
-
-
-#             # Construct string for signing
-#             string_to_sign = "POST" + "\n" + content_md5_header + "\n" + "application/json; charset=UTF-8" + "\n" + date_header + "\n" + "/transfer"
-#             string_to_sign_encoded = string_to_sign.encode()
-
-#             # Generate signature
-#             hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
-#             digest_result = hmac_obj.digest()
-
-#             sign_bytes = base64.b64encode(digest_result)
-#             sign_string = sign_bytes.decode()
-
-#             generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
-#             print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
+    except ObjectDoesNotExist:
+        print("place_bet OK: Existing transaction does not exist.")
+        pass
 
 
 
 
 
+    try:
+        user_obj = CustomUser.objects.get(username=client)
+        user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
+        bet_amount = float(amount)
 
-#             # Default JSON Response fields
-#             res_error_code = 50000
-#             res_message = "server error"
-#             res_balance = 0
+
+        print("bet_amount: " + str(bet_amount))
+        # Illegal operation: total bet amount is 0 or negative.
+        if bet_amount <= 0.0:
+            json_to_return = {
+                                "error_code": 40000,
+                                "message": "Error: Total bet amount cannot be less than or equal to 0."
+                             }
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
-#             # Bet
-#             if transfer_type == "10":
-#                 try:
-                    
-#                     if generated_auth_header == auth_header:
-#                         user_obj = CustomUser.objects.get(username=client)
-#                         user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
-#                         bet_amount = float(amount)
 
-#                         # Bet can go through.
-#                         if user_balance >= bet_amount:
-#                             with transaction.atomic():
-#                                 balance_after_bet = user_balance - bet_amount
-#                                 user_obj.main_wallet = balance_after_bet
-#                                 user_obj.save()
+        # Bet can go through.
+        if user_balance >= bet_amount:
+            with transaction.atomic():
+                balance_after_bet = user_balance - bet_amount
+                user_obj.main_wallet = balance_after_bet
+                user_obj.save()
 
-#                                 ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-#                                 GameBet.objects.create(
-#                                     provider = GameProvider.objects.get(provider_name="ALLBET"),
-#                                     category = Category.objects.get(name="SLOTS"),
-#                                     #game = None,
-#                                     #game_name = None,
-#                                     username = user_obj,
-#                                     amount_wagered = bet_amount,
-#                                     amount_won = 0.00,
-#                                     #outcome = None,
-#                                     #odds = None,
-#                                     #bet_type = None,
-#                                     #line = None,
-#                                     transaction_id = ibet_trans_id,
-#                                     currency = user_obj.currency,
-#                                     market = ibetCN,
-#                                     ref_no = transaction_id,
-#                                     #bet_time = None,
-#                                     #resolved_time = None,
-#                                     #other_data = {}
-#                                 )
 
-#                             res_error_code = 0
-#                             res_message = "success"
-#                             res_balance = int(user_obj.main_wallet * 100) / 100.0
+                GameBet.objects.create(
+                    provider = GameProvider.objects.get(provider_name="ALLBET"),
+                    category = Category.objects.get(name="Poker"),
+                    #game = None,
+                    #game_name = None,
+                    username = user_obj,
+                    amount_wagered = bet_amount,
+                    amount_won = 0.00,
+                    #outcome = None,
+                    #odds = None,
+                    #bet_type = None,
+                    #line = None,
+                    transaction_id = ibet_trans_id,
+                    currency = user_obj.currency,
+                    market = ibetCN,
+                    ref_no = transaction_id,
+                    #bet_time = None,
+                    #resolved_time = None,
+                    #other_data = {}
+                )
 
-#                             logger.info("AllBet TransferView Success: Bet placed")
+                json_to_return = {
+                                    "error_code": 0,
+                                    "balance": int(user_obj.main_wallet * 100) / 100.0
+                                 }
 
-#                         # Not enough money to make the bet.
-#                         else:
-#                             res_error_code = 10101
-#                             res_message = "not enough credits"
-#                             res_balance = int(user_obj.main_wallet * 100) / 100.0
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-#                             logger.error("AllBet TransferView Error: Not enough credit to place bet")
 
-#                     else:
-#                         res_error_code = 5000
-#                         res_message = "invalid authorization header"
-#                         res_balance = 0
 
-#                         logger.error("AllBet TransferView Error: Invalid authorization header")
-                    
-#                 except Exception as e:
-#                     if str(e) == "CustomUser matching query does not exist.":
-#                         res_error_code = 10003
-#                         res_message = "client does not exist"
-#                         res_balance = 0
+        # User does not have enough money.
+        else:
+            json_to_return = {
+                                "error_code": 10101,
+                                "message": "User does not have enough money to place bet."
+                             }
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-#                         logger.error("AllBet TransferView Error: Client does not exist")
 
-#                     json_to_return = {
-#                                         "error_code": res_error_code,
-#                                         "message": res_message,
-#                                         "balance": res_balance
-#                                     }
-#                     return JsonResponse(json_to_return)
 
-#             # TODO: Other wallet operations
-#             elif transfer_type == "11":
-#                 # Cancel
-#                 pass
-#             elif transfer_type == "20":
-#                 # Settle
-#                 pass
-#             elif transfer_type == "21":
-#                 # Re-settle
-#                 pass
+    except Exception as e:
+        print(str(e))
 
-#             # After res_error_code, res_message, res_balance are finalized, return JSON response.
-#             json_to_return = {
-#                                 "error_code": res_error_code,
-#                                 "message": res_message,
-#                                 "balance": res_balance
-#                             }
-#             return JsonResponse(json_to_return)
+        if str(e) == "CustomUser matching query does not exist.": # TODO: find a better way to do this...
+            json_to_return = {
+                                "error_code": 10003,
+                                "message": "Specified user does not exist."
+                             }
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-#         except Exception as e:
-#             # Malformed request body
-#             logger.error("AllBet TransferView Error: Invalid request body")
-#             json_to_return = {
-#                                 "error_code": 50000,
-#                                 "message": "server error - invalid request body",
-#                                 "balance": 0
-#                              }
-#             return JsonResponse(json_to_return)
+
+
+        return HttpResponse(str(e))
+
+
+class TransferView(View):
+
+    def post(self, request, *args, **kwargs):
+        """
+        Partner Public Platform API that handles different wallet transfer types such as bet, cancel, settle,
+        and re-settle. JSON is the data format that this endpoint receives and responds with.
+        """
+        try:
+            json_data = json.loads(request.body)
+
+            client = json_data["client"]
+            transaction_id = json_data["tranId"]
+            amount = json_data["amount"]
+            currency = json_data["currency"]
+            transfer_type = json_data["transferType"]
+            bet_details = json_data["details"]
+
+            third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
+            AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
+            AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
+
+            auth_header = request.META['HTTP_AUTHORIZATION']
+            date_header = request.META['HTTP_DATE']
+            content_md5_header = request.META['HTTP_CONTENT_MD5']
+
+            # Exit and return JSON if property ID is invalid.
+            ab_with_prop_id = str(auth_header).split(":")[0]
+            prop_id = ab_with_prop_id[3:]
+
+            if prop_id_is_invalid(prop_id):
+                json_to_return = {
+                                    "error_code": 10000,
+                                    "message": "Invalid authorization property ID"
+                                 }
+                logger.error("AllBet Game Error: Invalid authorization property ID")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+            # Construct string for signing.
+            string_to_sign = "POST" + "\n" + content_md5_header + "\n" + "application/json; charset=UTF-8" + "\n" + date_header + "\n" + "/transfer"
+            string_to_sign_encoded = string_to_sign.encode()
+
+            # Generate signature
+            hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
+            digest_result = hmac_obj.digest()
+            sign_bytes = base64.b64encode(digest_result)
+            sign_string = sign_bytes.decode()
+
+            generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
+            print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
+
+
+
+
+            # Default JSON Response fields
+            res_error_code = 50000
+            res_message = "server error"
+            res_balance = 0
+
+
+
+
+
+
+
+
+            # Bet
+            if transfer_type == "10":
+                return place_bet(client, transaction_id, amount, bet_details)
+
+
+
+
+
+
+            # TODO: Other wallet operations
+            elif transfer_type == "11":
+                # Cancel
+                pass
+            elif transfer_type == "20":
+                # Settle
+                pass
+            elif transfer_type == "21":
+                # Re-settle
+                pass
+            else:
+                res_error_code = 40000
+                res_message = "Error: Invalid transfer type"
+
+            # After res_error_code, res_message, res_balance are finalized, return JSON response.
+            json_to_return = {
+                                "error_code": res_error_code,
+                                "message": res_message,
+                                "balance": res_balance
+                            }
+            return JsonResponse(json_to_return)
+
+
+
+
+
+
+        except Exception as e:
+            logger.error("Generic AllBet TransferView Error: " + str(e))
+            json_to_return = {
+                                "error_code": 50000,
+                                "message": "server error: " + str(e),
+                                "balance": 0
+                             }
+            return JsonResponse(json_to_return)
