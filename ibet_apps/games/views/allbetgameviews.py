@@ -478,110 +478,11 @@ class TransferView(View):
 
             # Bet
             if transfer_type == "10":
-<<<<<<< HEAD
                 return place_bet(client, transaction_id, amount, bet_details)
 
 
 
             # Cancel
-=======
-                try:
-                    third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-                    AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-                    AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
-
-                    auth_header = request.META['HTTP_AUTHORIZATION']
-                    date_header = request.META['HTTP_DATE']
-                    content_md5_header = request.META['HTTP_CONTENT_MD5']
-
-                    # Construct string for signing
-                    string_to_sign = "POST" + "\n" + content_md5_header + "\n" + "application/json; charset=UTF-8" + "\n" + date_header + "\n" + "/transfer"
-                    string_to_sign_encoded = string_to_sign.encode()
-
-                    # Generate signature
-                    hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
-                    digest_result = hmac_obj.digest()
-
-                    sign_bytes = base64.b64encode(digest_result)
-                    sign_string = sign_bytes.decode()
-
-                    generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
-                    print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
-
-                    if generated_auth_header == auth_header:
-                        user_obj = CustomUser.objects.get(username=client)
-                        user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
-                        bet_amount = float(amount)
-
-                        # Bet can go through.
-                        if user_balance >= bet_amount:
-                            with transaction.atomic():
-                                balance_after_bet = user_balance - bet_amount
-                                user_obj.main_wallet = balance_after_bet
-                                user_obj.save()
-
-                                ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                                GameBet.objects.create(
-                                    provider = GameProvider.objects.get(provider_name="ALLBET"),
-                                    category = Category.objects.get(name="Games"),
-                                    #game = None,
-                                    #game_name = None,
-                                    user = user_obj,
-                                    user_name = user_obj.username,
-                                    amount_wagered = bet_amount,
-                                    amount_won = 0.00,
-                                    #outcome = None,
-                                    #odds = None,
-                                    #bet_type = None,
-                                    #line = None,
-                                    transaction_id = ibet_trans_id,
-                                    currency = user_obj.currency,
-                                    market = ibetCN,
-                                    ref_no = transaction_id,
-                                    #bet_time = None,
-                                    #resolved_time = None,
-                                    #other_data = {}
-                                )
-
-                            res_error_code = 0
-                            res_message = "success"
-                            res_balance = int(user_obj.main_wallet * 100) / 100.0
-
-                            logger.info("AllBet TransferView Success: Bet placed")
-
-                        # Not enough money to make the bet.
-                        else:
-                            res_error_code = 10101
-                            res_message = "not enough credits"
-                            res_balance = int(user_obj.main_wallet * 100) / 100.0
-
-                            logger.error("AllBet TransferView Error: Not enough credit to place bet")
-
-                    else:
-                        res_error_code = 5000
-                        res_message = "invalid authorization header"
-                        res_balance = 0
-
-                        logger.error("AllBet TransferView Error: Invalid authorization header")
-                    
-                except Exception as e:
-                    if str(e) == "CustomUser matching query does not exist.":
-                        res_error_code = 10003
-                        res_message = "client does not exist"
-                        res_balance = 0
-
-                        logger.error("AllBet TransferView Error: Client does not exist")
-
-                    json_to_return = {
-                                        "error_code": res_error_code,
-                                        "message": res_message,
-                                        "balance": res_balance
-                                    }
-                    return JsonResponse(json_to_return)
-
-            # TODO: Other wallet operations
->>>>>>> cfc5dcd9005a5d84987424194e5c5c8cc46ae6ab
             elif transfer_type == "11":
                 return cancel_bet(client, transaction_id, amount, bet_details)
 
