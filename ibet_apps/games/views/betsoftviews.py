@@ -318,7 +318,15 @@ class BetSoftBetRefund(View):
         try:
             user = CustomUser.objects.get(username=user_id)
             prev_bet = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered__gt=Decimal('0.00'))
-            prev_bet = prev_bet[0]
+            if prev_bet.count() > 0:
+                prev_bet = prev_bet[0]
+            else:
+                logger.info("Betsoft refund bet error invalid transaction id which is " + str(casino_transaction_id))
+
+                response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
+                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(302)
+                response = xmltodict.unparse(response, pretty=True)
+                return HttpResponse(response, content_type='text/xml')
 
             check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
             if check_duplicate_trans:
