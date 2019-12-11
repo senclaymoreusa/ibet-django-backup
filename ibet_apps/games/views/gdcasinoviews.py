@@ -218,7 +218,7 @@ class LiveDealerSoapService(ServiceBase):
                                             user_name=user.username, 
                                             currency=user.currency, 
                                             market=ibetCN,
-                                            ref_no=request.transactionId,
+                                            ref_no=request.linkId,
                                             amount_wagered=decimal.Decimal(request.amount),
                                             )    
                     else:
@@ -242,7 +242,7 @@ class LiveDealerSoapService(ServiceBase):
                                         user_name=user.username,  
                                         currency=user.currency, 
                                         market=ibetCN,
-                                        ref_no=request.transactionId,
+                                        ref_no=request.linkId,
                                         amount_wagered=decimal.Decimal(request.amount),
                                         )
                         else:
@@ -325,7 +325,7 @@ class LiveDealerSoapService(ServiceBase):
                                                     game_name=request.gameId,
                                                     currency=user.currency, 
                                                     market=ibetCN,
-                                                    ref_no=request.transactionId,
+                                                    ref_no=request.linkId,
                                                     amount_wagered=decimal.Decimal(request.amount),
                                                     amount_won=request.winLoss,
                                                     outcome=1,
@@ -340,7 +340,7 @@ class LiveDealerSoapService(ServiceBase):
                                                     game_name=request.gameId,
                                                     currency=user.currency, 
                                                     market=ibetCN,
-                                                    ref_no=request.transactionId,
+                                                    ref_no=request.linkId,
                                                     amount_wagered=decimal.Decimal(request.amount),
                                                     amount_won=request.winLoss,
                                                     outcome=0,
@@ -356,7 +356,7 @@ class LiveDealerSoapService(ServiceBase):
                                                         transaction_id=trans_id,
                                                         currency=user.currency, 
                                                         market=ibetCN,
-                                                        ref_no=request.transactionId,
+                                                        ref_no=request.linkId,
                                                         amount_won=request.amount,
                                                         outcome=1,
                                                         resolved_time=timezone.now(),
@@ -369,7 +369,7 @@ class LiveDealerSoapService(ServiceBase):
                                                         transaction_id=trans_id,
                                                         currency=user.currency, 
                                                         market=ibetCN,
-                                                        ref_no=request.transactionId,
+                                                        ref_no=request.linkId,
                                                         amount_won=request.amount,
                                                         outcome=0,
                                                         resolved_time=timezone.now(),
