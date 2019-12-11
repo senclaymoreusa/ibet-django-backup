@@ -291,7 +291,6 @@ letouCN = 12
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
     (ibetTH, "ibet-TH"),
-    (ibetAS, "ibet-AS"),
     (ibetCN, "ibet-CN"),
     (letouVN, "letou-VN"),
     (letouTH, "letou-TH"),
