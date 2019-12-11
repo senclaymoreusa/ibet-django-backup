@@ -98,9 +98,31 @@ class ValidateTokenAPI(View):
             res = {}
             try:
                 user = Token.objects.get(key=token).user
-
+                
                 res["memberCode"] = user.username
-                res["CurrencyCode"] = "RMB"
+                if user.currency == CURRENCY_CNY:
+                    res["CurrencyCode"] = "RMB"
+                if user.currency == CURRENCY_USD:
+                    res["CurrencyCode"] = "USD"
+                if user.currency == CURRENCY_THB:
+                    res["CurrencyCode"] = "THB"
+                if user.currency == CURRENCY_IDR:
+                    res["CurrencyCode"] = "IDR"
+                if user.currency == CURRENCY_HKD:
+                    res["CurrencyCode"] = "HKD"
+                if user.currency == CURRENCY_AUD:
+                    res["CurrencyCode"] = "AUD"
+                if user.currency == CURRENCY_MYR:
+                    res["CurrencyCode"] = "MYR"
+                if user.currency == CURRENCY_MMK:
+                    res["CurrencyCode"] = "MMK"
+                if user.currency == CURRENCY_EUR:
+                    res["CurrencyCode"] = "EUR"
+                if user.currency == CURRENCY_GBP:
+                    res["CurrencyCode"] = "GBP"
+                if user.currency == CURRENCY_NOK:
+                    res["CurrencyCode"] = "NOK"
+
                 # res["IPAddress"] = "127.0.0.1"
                 res["statusCode"] = 100
                 res["statusDesc"] = "Success"
