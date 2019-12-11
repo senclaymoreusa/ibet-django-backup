@@ -112,7 +112,7 @@ class PrepareTransferCredit(APIView):
             else:
                 return Response({"error":"The request is failed"}) 
         except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The  user is not existed."}) 
 class PostTransferforAG(APIView):
 
     permission_classes = (AllowAny, )
