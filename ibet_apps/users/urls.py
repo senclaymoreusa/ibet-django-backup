@@ -4,6 +4,7 @@ from . import views
 import users.views.agintegrationviews as agintegrationviews
 import users.views.yggdrasilintegrationviews as yggdrasilintegrationviews
 import users.views.saintegrationviews as saintegrationviews
+import users.views.iovation as iovationviews
 
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
@@ -81,7 +82,11 @@ urlpatterns += [
     path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset_withdraw_password"),
     path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view"),
     path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting"),
+
+    path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info"),
+
     path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount")
+
 
     
 ]

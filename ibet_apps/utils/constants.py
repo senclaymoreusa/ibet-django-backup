@@ -591,6 +591,8 @@ FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
 LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -686,6 +688,12 @@ ASIAPAY_R1 = keys["ASIAPAY"]["R1"]
 ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
 ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
+
+#iovation
+IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"] 
+IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"] 
+IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
+IOVATION_URL = keys["IOVATION"]["URL"]
 
 # help2pay sandbox credentials & callback
 
