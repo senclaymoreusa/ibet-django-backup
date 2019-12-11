@@ -5,7 +5,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import JSONField
-
 from users.models import CustomUser
 
 from utils.constants import *
@@ -21,8 +20,9 @@ def random_string():
 class GameProvider(models.Model):
     provider_name = models.CharField(max_length=100)
     type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
-    market = models.CharField(max_length=50,null=True)
+    market = models.CharField(max_length=50, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
+    is_transfer_wallet = models.BooleanField(default=False)
 
     def __str__(self):
         return self.provider_name
@@ -73,6 +73,8 @@ class Game(models.Model):
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
+    smallgame_id = models.CharField(max_length=200, null=True, blank=True)
+    is_free = models.NullBooleanField(default=None)
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -94,10 +96,10 @@ class Game(models.Model):
     def __str__(self):
         return 'Game: {0},\nCategory: {1}\nProvider: {2}'.format(self.name, self.category_id, self.provider)
 
-# game bet history model
-class GameBet(models.Model):
-    provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE) # sportsbook/game provider
-    category = models.ForeignKey('Category', on_delete=models.CASCADE) # category within sportsbook/game provider (e.g basketball, soccer, blackjack)
+# game bet history model (* means required)
+class GameBet(models.Model): 
+    provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE) # *sportsbook/game provider
+    category = models.ForeignKey('Category', on_delete=models.CASCADE) # *category within sportsbook/game provider (e.g basketball, soccer, blackjack)
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
     # expect game to be mostly used for small flash games that providers give
@@ -105,8 +107,10 @@ class GameBet(models.Model):
     game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
-    username = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
     amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
+    user_name = models.CharField(max_length=255, blank=True, null=True)
+
     amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
@@ -155,6 +159,10 @@ class GameBet(models.Model):
 #     def __str__(self):
 #         return '{0}: {1}'.format(self.name, self.get_category_display())
 
+class PNGTicket(models.Model):
+    png_ticket = models.UUIDField()
+    user_obj = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_time = models.DateTimeField(default=timezone.now)
 
 # create a ticket per user per session to ensure valid request
 class EATicket(models.Model):
@@ -188,11 +196,4 @@ class QTSession(models.Model):
         return '{0}'.format(self.user.username)
 
 
-#MG token
-class MGToken(models.Model):
 
-    user=models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    token= models.CharField(max_length=50, null=True)
-
-    def __str__(self):
-        return '{0}'.format(self.user)

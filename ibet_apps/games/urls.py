@@ -1,21 +1,25 @@
 from django.urls import path, include
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
+
 import games.views.eagameviews as eagameviews
 import games.views.betsoftviews as betsoftviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.allbetgameviews as allbetgameviews
 import games.views.fggameviews as fggameviews
+import games.views.onebookviews as onebookviews
 import games.views.mggameviews as mggameviews
-from django.views.decorators.csrf import csrf_exempt
-from games.views.views import *
 import games.views.gdcasinoviews as gdcasino
 import games.views.betsviews as bets
-from games.live_casino import *
-import games.views.onebookviews as onebookviews
+import games.views.bti_views as bti
 import games.views.sagameviews as sagameviews
 import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
+
+from games.views.views import *
+
+
 
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
@@ -46,13 +50,17 @@ urlpatterns = [
     path('api/gd/check_transaction_status', gdcasino.checkTransactionStatus.as_view(), name = 'GDCasino_check_Transaction_Status'),
 
     # Play n Go
-    path('api/playngo/login/', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
-    path('api/playngo/balance/', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
-    path('api/playngo/reserve/', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
+    path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
+    path('api/playngo/login', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
+    path('api/playngo/balance', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
+    path('api/playngo/reserve', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
+    path('api/playngo/release', csrf_exempt(playngogameviews.ReleaseView.as_view()), name="png_rel"),
+    path('api/playngo/cancel', csrf_exempt(playngogameviews.CancelReserveView.as_view()), name="png_cancel"),
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
     path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
+    path('api/allbet/transfer', csrf_exempt(allbetgameviews.TransferView.as_view()), name='allbet_transfer'),
 
     # fg
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
@@ -66,7 +74,7 @@ urlpatterns = [
 
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
-    path('api/mg/token_save', mggameviews.MGtoken.as_view(), name = 'mg_token'),
+   
 
 
     # kaiyuan gaming
@@ -82,7 +90,25 @@ urlpatterns = [
     path('api/onebook/get_bet_detail', onebookviews.GetBetDetail, name="Get_Bet_Detail"),
     # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
+    # bti server-to-server endpoints
+    path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
+    path('api/bti/reserve', csrf_exempt(bti.Reserve.as_view()), name="bti_reserve_bet"),
+    path('api/bti/debitreserve', csrf_exempt(bti.DebitReserve.as_view()), name="bti_debit_reserve"),
+    path('api/bti/cancelreserve', csrf_exempt(bti.CancelReserve.as_view()), name="bti_cancel_reserve"),
+    path('api/bti/commitreserve', csrf_exempt(bti.CommitReserve.as_view()), name="bti_commit_reserve"),
+    path('api/bti/add2bet', csrf_exempt(bti.Add2Bet.as_view()), name="bti_add2bet"),
+    path('api/bti/add2betconfirm', csrf_exempt(bti.Add2BetConfirm.as_view()), name="bti_add2bet_confirm"),
+    path('api/bti/creditcustomer', csrf_exempt(bti.CreditCustomer.as_view()), name="bti_credit_customer"),
+    path('api/bti/debitcustomer', csrf_exempt(bti.DebitCustomer.as_view()), name="bti_credit_customer"),
 
+    # bti client-to-server endpoints
+    path('api/bti/status', csrf_exempt(bti.Status.as_view()), name="bti_status"),
+    path('api/bti/refresh', csrf_exempt(bti.Refresh.as_view()), name="bti_refresh"),
+    # path('api/bti/login', csrf_exempt(bti.Login.as_view()), name="bti_login"),
+    
+    #sa
+    path('api/sa/reg_user_info', sagameviews.RegUserInfo.as_view(), name="sa_register_user"),
+    path('api/sa/login_request', sagameviews.LoginRequest.as_view(), name="sa_login_request"),
     #betsoft
     path('api/betsoft/authenticate', betsoftviews.BetSoftAuthenticate.as_view(), name="betsoft_authenticate"),
     path('api/betsoft/result', betsoftviews.BetSoftBetResult.as_view(), name="betsoft_bet_result"),

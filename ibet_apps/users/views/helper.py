@@ -122,7 +122,6 @@ def get_old_limitations(userId):
 
 
 def checkUserBlock(user):
-    
     if user.block:
         return True
     elif user.temporary_block_time or user.permanent_block_time:

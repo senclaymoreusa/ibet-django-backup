@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ..models import CustomUser, GameRequestsModel 
+from ..models import CustomUser 
 import simplejson as json
 import xmltodict
 import decimal
@@ -49,25 +49,25 @@ class YggdrasilAPI(APIView):
         # Bet API
         if sessiontoken and org and playerid and amount and currency and reference and subreference and description and prepaidticketid and prepaidvalue and prepaidcost and prepaidref and jackpotcontribution and cat and tag and lang and version:
   
-            GameRequestsModel.objects.create(
-                sessionToken        = sessiontoken,
-                organization        = org,
-                MemberID            = playerid,
-                value               = amount,
-                currency            = currency,
-                reference           = reference,
-                subreference        = subreference,
-                description         = description,
-                prepaidticketid     = prepaidticketid,
-                prepaidvalue        = prepaidvalue,
-                prepaidcost         = prepaidcost,
-                prepaidref          = prepaidref,
-                jackpotcontribution = jackpotcontribution,
-                cat                 = cat,
-                tag                 = tag,
-                lang                = lang,
-                version             = version
-            )
+            # GameRequestsModel.objects.create(
+            #     sessionToken        = sessiontoken,
+            #     organization        = org,
+            #     MemberID            = playerid,
+            #     value               = amount,
+            #     currency            = currency,
+            #     reference           = reference,
+            #     subreference        = subreference,
+            #     description         = description,
+            #     prepaidticketid     = prepaidticketid,
+            #     prepaidvalue        = prepaidvalue,
+            #     prepaidcost         = prepaidcost,
+            #     prepaidref          = prepaidref,
+            #     jackpotcontribution = jackpotcontribution,
+            #     cat                 = cat,
+            #     tag                 = tag,
+            #     lang                = lang,
+            #     version             = version
+            # )
 
             try:
                 user = CustomUser.objects.filter(username = playerid)
@@ -113,13 +113,13 @@ class YggdrasilAPI(APIView):
         # Cancel
         elif playerid and reference and subreference and org and version and not amount:
 
-            GameRequestsModel.objects.create(
-                MemberID     = playerid,
-                reference    = reference,
-                subreference = subreference,
-                organization = org,
-                version      = version
-            )
+            # GameRequestsModel.objects.create(
+            #     MemberID     = playerid,
+            #     reference    = reference,
+            #     subreference = subreference,
+            #     organization = org,
+            #     version      = version
+            # )
 
             try:
 
@@ -152,21 +152,21 @@ class YggdrasilAPI(APIView):
         # Append
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and reference and subreference and description and cat and tag and lang and version:
            
-            GameRequestsModel.objects.create(
-               organization = org,
-               MemberID     = playerid,
-               value        = amount,
-               isJackpotWin = isJackpotWin,
-               bonusprize   = bonusprize,
-               currency     = currency,
-               reference    = reference,
-               subreference = subreference,
-               description  = description,
-               cat          = cat,
-               tag          = tag,
-               lang         = lang,
-               version      = version
-            )
+            # GameRequestsModel.objects.create(
+            #    organization = org,
+            #    MemberID     = playerid,
+            #    value        = amount,
+            #    isJackpotWin = isJackpotWin,
+            #    bonusprize   = bonusprize,
+            #    currency     = currency,
+            #    reference    = reference,
+            #    subreference = subreference,
+            #    description  = description,
+            #    cat          = cat,
+            #    tag          = tag,
+            #    lang         = lang,
+            #    version      = version
+            # )
 
             try:
 
@@ -201,28 +201,28 @@ class YggdrasilAPI(APIView):
         # End bet
         elif org and playerid and amount and isJackpotWin and bonusprize and currency and tickets and reference and subreference and description and cat and tag and lang and version and prepaidref and prepaidticketid and singleWin and totalWin and roundCount and ruleType:
             
-            GameRequestsModel.objects.create(
-                organization    = org,
-                MemberID        = playerid,
-                value           = amount,
-                isJackpotWin    = isJackpotWin,
-                bonusprize      = bonusprize,
-                currency        = currency,
-                tickets         = tickets,
-                reference       = reference,
-                subreference    = subreference,
-                description     = description,
-                cat             = cat,
-                tag             = tag,
-                lang            = lang,
-                version         = version,
-                prepaidref      = prepaidref,
-                prepaidticketid = prepaidticketid,
-                singleWin       = singleWin,
-                totalWin        = totalWin,
-                roundCount      = roundCount,
-                ruleType        = ruleType
-            )
+            # GameRequestsModel.objects.create(
+            #     organization    = org,
+            #     MemberID        = playerid,
+            #     value           = amount,
+            #     isJackpotWin    = isJackpotWin,
+            #     bonusprize      = bonusprize,
+            #     currency        = currency,
+            #     tickets         = tickets,
+            #     reference       = reference,
+            #     subreference    = subreference,
+            #     description     = description,
+            #     cat             = cat,
+            #     tag             = tag,
+            #     lang            = lang,
+            #     version         = version,
+            #     prepaidref      = prepaidref,
+            #     prepaidticketid = prepaidticketid,
+            #     singleWin       = singleWin,
+            #     totalWin        = totalWin,
+            #     roundCount      = roundCount,
+            #     ruleType        = ruleType
+            # )
 
             try: 
 
@@ -262,27 +262,27 @@ class YggdrasilAPI(APIView):
         #  campaignpayout
         elif cash and campaignref and last and prepaidref and prepaidticketid and singleWin:
 
-            GameRequestsModel.objects.create(
-                organization    = org,
-                MemberID        = playerid,
-                cash            = cash,
-                bonus           = bonus,
-                currency        = currency,
-                reference       = reference,
-                description     = description,
-                cat             = cat,
-                tag             = tag,
-                campaignref     = campaignref,
-                last            = last,
-                lang            = lang,
-                version         = version,
-                prepaidref      = prepaidref,
-                prepaidticketid = prepaidticketid,
-                singleWin       = singleWin,
-                totalWin        = totalWin,
-                roundCount      = roundCount,
-                ruleType        = ruleType
-            )
+            # GameRequestsModel.objects.create(
+            #     organization    = org,
+            #     MemberID        = playerid,
+            #     cash            = cash,
+            #     bonus           = bonus,
+            #     currency        = currency,
+            #     reference       = reference,
+            #     description     = description,
+            #     cat             = cat,
+            #     tag             = tag,
+            #     campaignref     = campaignref,
+            #     last            = last,
+            #     lang            = lang,
+            #     version         = version,
+            #     prepaidref      = prepaidref,
+            #     prepaidticketid = prepaidticketid,
+            #     singleWin       = singleWin,
+            #     totalWin        = totalWin,
+            #     roundCount      = roundCount,
+            #     ruleType        = ruleType
+            # )
 
             try:
 
@@ -320,13 +320,13 @@ class YggdrasilAPI(APIView):
 
         elif org and sessiontoken and playerid and gameid and description and not amount and not version and not lang and not totalWin:
          
-            GameRequestsModel.objects.create(
-                organization    = org,
-                MemberID        = playerid,
-                sessionToken    = sessiontoken,
-                gameId          = gameid,
-                description     = description
-            )
+            # GameRequestsModel.objects.create(
+            #     organization    = org,
+            #     MemberID        = playerid,
+            #     sessionToken    = sessiontoken,
+            #     gameId          = gameid,
+            #     description     = description
+            # )
 
             try:
 

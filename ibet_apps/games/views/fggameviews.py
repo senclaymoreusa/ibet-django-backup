@@ -269,8 +269,8 @@ class ProcessTransaction(APIView):
         try:
             fguser = FGSession.objects.get(uuid=uuid)
             user = CustomUser.objects.get(username=fguser.user)
-            provider = GameProvider.objects.get(provider_name="FG")
-            category = Category.objects.get(name='Slots')
+            provider = GameProvider.objects.get(provider_name=FG_PROVIDER)
+            category = Category.objects.get(name='Games')
 
         except:
             response = {
@@ -281,6 +281,7 @@ class ProcessTransaction(APIView):
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
+               
                 wallet = user.main_wallet + decimal.Decimal(amount)
                 if (wallet > 0):
                     with transaction.atomic():
@@ -291,7 +292,8 @@ class ProcessTransaction(APIView):
 
                         GameBet.objects.get_or_create(provider=provider,
                                                         category=category,
-                                                        username=user,
+                                                        user=user,
+                                                        user_name=user.username,
                                                         amount_wagered=-float(amount),
                                                         currency=user.currency,
                                                         market=ibetCN,
@@ -338,13 +340,15 @@ class ProcessTransaction(APIView):
 
                         GameBet.objects.get_or_create(provider=provider,
                                                         category=category,
-                                                        username=user,
+                                                        user=user,
+                                                        user_name=user.username,
                                                         amount_wagered=0.00,
                                                         currency=user.currency,
                                                         amount_won=float(amount),
                                                         market=ibetCN,
                                                         ref_no=transactionId,
-                                                        transaction_id=trans_id
+                                                        transaction_id=trans_id,
+                                                        resolved_time=timezone.now()
                                                         )
                     response = {
                         "seq" : seq,
@@ -376,6 +380,7 @@ class ProcessTransaction(APIView):
         elif tranType == "PLTFRM_BON" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
+               
                 isFinal = request.GET["isFinal"]
                 response = {
                     "seq" : seq,
@@ -398,12 +403,14 @@ class ProcessTransaction(APIView):
         elif tranType == "ROLLBACK" :
                 gameInfoId = request.GET["gameInfoId"]
                 omegaSessionKey = request.GET['omegaSessionKey']
+                transactionId = re.sub("[^0-9]", "", timestamp)
+                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                 response = {
                     "seq" : seq,
                     "tranType" : tranType,
                     "partyId" : fguser.party_id ,
                     "currency" : currency,
-                    "transactionId" : re.sub("[^0-9]", "", timestamp) ,
+                    "transactionId" : transactionId ,
                     "omegaSessionKey" : omegaSessionKey,
                     "alreadyProcessed" : True,
                     "realBalance" : math.floor(float(user.main_wallet * 100)) / 100  ,
@@ -413,6 +420,18 @@ class ProcessTransaction(APIView):
                     "errorCode" : None,
                     "message" : None
                 }  
+                GameBet.objects.get_or_create(provider=provider,
+                                                category=category,
+                                                user=user,
+                                                user_name=user.username,
+                                                amount_wagered=0.00,
+                                                currency=user.currency,
+                                                amount_won=float(amount),
+                                                market=ibetCN,
+                                                ref_no=transactionId,
+                                                transaction_id=trans_id
+                                          
+                                                )
 
         elif tranType == "END_GAME" :
                 omegaSessionKey = request.GET['omegaSessionKey']

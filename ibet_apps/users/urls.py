@@ -1,10 +1,10 @@
 from django.urls import path
 from . import views
 
-import users.views.gbsportsintegrationviews as gbsportsintegrationviews
 import users.views.agintegrationviews as agintegrationviews
 import users.views.yggdrasilintegrationviews as yggdrasilintegrationviews
 import users.views.saintegrationviews as saintegrationviews
+import users.views.iovation as iovationviews
 
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
@@ -59,11 +59,6 @@ urlpatterns += [
     path('api/validateandresetpassword/', views.ValidateAndResetPassowrd.as_view(), name='validate_and_reset_password'),
     path('api/cancelregistration/', views.CancelRegistration.as_view(), name='cancel_registration'),
     path('api/getusernamebyreferid/', views.GetUsernameByReferid.as_view(), name = 'get_user'),
-    path('api/walletgeneral/', gbsportsintegrationviews.WalletGeneralAPI.as_view(), name='wallet_general'),
-    path('api/walletbet/', gbsportsintegrationviews.WalletBetAPIURL.as_view(), name='wallet_bet'),
-    path('api/walletsettle/', gbsportsintegrationviews.WalletSettleAPIURL.as_view(), name='wallet_settle'),
-    path('api/generategameurl/', gbsportsintegrationviews.GenerateGameURL.as_view(), name='generate_game_url'),
-    path('api/generatefakeusergameurl/', gbsportsintegrationviews.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
     path('api/posttransferforag/', agintegrationviews.PostTransferforAG.as_view(), name='post_transfer_for_ag'),
     path('api/Yggdrasil/',yggdrasilintegrationviews.YggdrasilAPI.as_view(), name='Yggdrasil_api'),
     path('api/sagetbalance/', saintegrationviews.SAGetUserBalance.as_view(), name='sa_get_balance'),
@@ -86,7 +81,12 @@ urlpatterns += [
     path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw_password"),
     path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset_withdraw_password"),
     path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view"),
-    path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting")
+    path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting"),
+
+    path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info"),
+
+    path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount")
+
 
     
 ]
