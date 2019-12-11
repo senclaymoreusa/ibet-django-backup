@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from users.views.helper import checkUserBlock
 from users.models import CustomUser
 import simplejson as json
@@ -212,20 +213,23 @@ class BetSoftBetResult(View):
                     return HttpResponse(response, content_type='text/xml')
 
                 if negative_bet:
-                    win_amount = win_amount + negative_bet
+                    win_amount = int(win_amount) + int(negative_bet)
+                
 
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
                     user.save()
                     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
-                                                    username=user,
+                                                    user=user,
+                                                    user_name=user.username,
                                                     amount_wagered=0.00,
                                                     currency=user.currency,
                                                     amount_won=decimal.Decimal(int(win_amount)/100),
                                                     market=ibetCN,
                                                     ref_no=ref_id,
-                                                    transaction_id=trans_id
+                                                    transaction_id=trans_id,
+                                                    resolved_time=timezone.now(),
                                                     ) 
 
 
@@ -255,7 +259,8 @@ class BetSoftBetResult(View):
                     user.save()
                     GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
-                                                    username=user,
+                                                    user=user,
+                                                    user_name=user.username,
                                                     amount_wagered=decimal.Decimal(int(bet_amount)/100),
                                                     currency=user.currency,
                                                     amount_won=0.00,
@@ -312,7 +317,8 @@ class BetSoftBetRefund(View):
 
         try:
             user = CustomUser.objects.get(username=user_id)
-            prev_bet = GameBet.objects.get(ref_no=casino_transaction_id)
+            prev_bet = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered__gt=Decimal('0.00'))
+            prev_bet = prev_bet[0]
 
             check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
             if check_duplicate_trans:
@@ -324,12 +330,12 @@ class BetSoftBetRefund(View):
 
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             # user.amount
-            # print(MD5(user_id + casino_transaction_id + key))
-
+            
             if hash == MD5(user_id + casino_transaction_id + key):
                 GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                 category=prev_bet.category,
-                                                username=user,
+                                                user=user,
+                                                user_name=user.username,
                                                 amount_wagered=0.00,
                                                 currency=user.currency,
                                                 amount_won=prev_bet.amount_wagered,

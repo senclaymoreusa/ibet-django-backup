@@ -135,8 +135,7 @@ class WalletBetAPIURL(APIView):
                             try:
                                 cate = Category.objects.get(name=category)
                             except:
-                                cate = Category.objects.create(name=category)
-                                logger.info("Create new category.")
+                                logger.error("missing category.")
 
                             GameBet.objects.create(
                                 provider=PROVIDER,
@@ -220,8 +219,7 @@ class WalletBetAPIURL(APIView):
                                 try:
                                     cate = Category.objects.get(name=category)
                                 except:
-                                    cate = Category.objects.create(name=category)
-                                    logger.info("Create new category.")
+                                    logger.error("missing category.")
                                 if BetType == '1':
                                     bet_type = SINGLE
                                 else:
@@ -346,8 +344,7 @@ class WalletSettleAPIURL(APIView):
                     try:
                         cate = Category.objects.get(name=category)
                     except:
-                        cate = Category.objects.create(name=category)
-                        logger.info("Create new category.")
+                        logger.error("missing category.")
                         
                     if BetType == '1':
                         bet_type = SINGLE
@@ -451,8 +448,7 @@ class WalletSettleAPIURL(APIView):
                         try:
                             cate = Category.objects.get(name=category)
                         except:
-                            cate = Category.objects.create(name=category)
-                            logger.info("Create new category.")
+                            logger.error("missing category.")
                         
                         if BetType == '1':
                             bet_type = SINGLE
