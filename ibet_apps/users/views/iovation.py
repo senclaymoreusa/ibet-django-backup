@@ -43,24 +43,25 @@ class LoginDeviceInfo(APIView):
             'Content-Type': 'application/json',
             'Authorization' : 'Basic ' + encc 
             }
-        statedIp = ""
-        # print(socket.gethostbyname(socket.getfqdn()))
-        try:
-            statedIp = socket.gethostbyname(socket.getfqdn())
-            data = {
-                "statedIp": socket.gethostbyname(socket.getfqdn()),
-                "accountCode": "device" + str(datetime.datetime.now()),
-                "blackbox": blackbox,
-                "type": "login"
-                }
 
-        except:
-            data = {
-                "statedIp": "192.168.86.121",
-                "accountCode": "device" + str(datetime.datetime.now()),
-                "blackbox": blackbox,
-                "type": "login"
-                }
+        #give a default value first if cannot get the statedIp..
+        statedIp = "192.168.86.121"
+        # print(socket.gethostbyname(socket.getfqdn()))
+        try: 
+            statedIp = socket.gethostbyname(socket.gethostname())
+        except socket.gaierror as e: 
+            try: 
+                statedIp = socket.gethostbyname(socket.gethostname() + '.local')
+            except: 
+                pass
+        except: 
+            pass
+        data = {
+            "statedIp": statedIp,
+            "accountCode": "device" + str(datetime.datetime.now()),
+            "blackbox": blackbox,
+            "type": "login"
+        }
 
 
         r = requests.post(IOVATION_URL, data=json.dumps(data), headers=headers)
