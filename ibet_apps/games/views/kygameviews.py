@@ -146,7 +146,8 @@ def getBets():
             GameBet.objects.create(
                 provider=provider[0],
                 category=category[0],
-                username=user,
+                user=user,
+                user_name=user.username,
                 amount_wagered=decimal.Decimal(cell_score[i]),
                 amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                 transaction_id=trans_id,
@@ -330,7 +331,8 @@ class TestGetRecord(View):
                     GameBet.objects.create(
                         provider=provider[0],
                         category=category[0],
-                        username=user,
+                        user=user,
+                        user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
                         amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                         transaction_id=trans_id,
