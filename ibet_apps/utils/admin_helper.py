@@ -19,7 +19,6 @@ import logging
 import uuid
 import csv
 
-
 logger = logging.getLogger('django')
 
 users = CustomUser.objects.all()
@@ -72,10 +71,13 @@ def calculateActiveDownlineNumber(affiliate_id):
                 affiliate_active_users += 1
     return affiliate_active_users
 
+
 '''
 @param date: mm/dd/yyyy
 @return: timezone datetime
 '''
+
+
 def dateToDatetime(date):
     if date:
         date = date.split('/')
@@ -84,10 +86,13 @@ def dateToDatetime(date):
         date = date.astimezone(current_tz)
     return date
 
+
 '''
 @param queryset: users
 @return: queryset of active users between start_time and end_time
 '''
+
+
 def filterActiveUser(queryset, start_time, end_time):
     # get bet transaction in this period
     if start_time and end_time:
@@ -278,10 +283,13 @@ def getManagerList(list_type):
             managers.append(manager.user.username)
     return managers
 
+
 '''
 @param date: utc timezone datetime
 @return: local timezone datetime
 '''
+
+
 def utcToLocalDatetime(date):
     if date:
         current_tz = timezone.get_current_timezone()
@@ -289,18 +297,37 @@ def utcToLocalDatetime(date):
     return date
 
 
-def displayChoiceValue(bonuses):
+# for bonus admin display
+def bonusValueToKey(bonuses):
+    try:
+        cap = Campaign.objects.get(pk=bonuses['campaign']).name
+    except ObjectDoesNotExist:
+        cap = ""
     # display SmallIntegerField value for read
     bonuses['status'] = BONUS_STATUS_CHOICES[bonuses['status']][1]
     bonuses['type'] = BONUS_TYPE_CHOICES[bonuses['type']][1]
-    bonuses['campaign'] = Campaign.objects.get(pk=int(bonuses['campaign'])).name
+    bonuses['campaign'] = cap
     return bonuses
 
+
+BONUS_TYPE_VALUE_DICT = {
+    "manual": BONUS_TYPE_MANUAL,
+    "deposit": BONUS_TYPE_DEPOSIT,
+    "turnover": BONUS_TYPE_TURNOVER,
+    "verification": BONUS_TYPE_VERIFICATION
+}
+
+BONUS_DELIVERY_VALUE_DICT = {
+    "push": BONUS_DELIVERY_PUSH,
+    "site": BONUS_DELIVERY_SITE,
+}
 
 '''
 @param date: filename, table header, table body data
 @return: response
 '''
+
+
 def exportCSV(filename, row_title, data):
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')

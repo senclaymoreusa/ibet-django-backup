@@ -20,8 +20,9 @@ def random_string():
 class GameProvider(models.Model):
     provider_name = models.CharField(max_length=100)
     type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
-    market = models.CharField(max_length=50,null=True)
+    market = models.CharField(max_length=50, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
+    is_transfer_wallet = models.BooleanField(default=False)
 
     def __str__(self):
         return self.provider_name
@@ -72,6 +73,8 @@ class Game(models.Model):
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
     popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
+    smallgame_id = models.CharField(max_length=200, null=True, blank=True)
+    is_free = models.NullBooleanField(default=None)
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -104,9 +107,9 @@ class GameBet(models.Model):
     game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
-    username = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
     amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
-
+    user_name = models.CharField(max_length=255, blank=True, null=True)
 
     amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
@@ -193,11 +196,4 @@ class QTSession(models.Model):
         return '{0}'.format(self.user.username)
 
 
-#MG token
-class MGToken(models.Model):
 
-    user=models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    token= models.CharField(max_length=50, null=True)
-
-    def __str__(self):
-        return '{0}'.format(self.user)

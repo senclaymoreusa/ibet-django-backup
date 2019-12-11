@@ -55,8 +55,9 @@ urlpatterns = [
     path('api/playngo/login', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
     path('api/playngo/balance', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
     path('api/playngo/reserve', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
-    # path('api/playngo/release', csrf_exempt(playngogameviews.ReleaseView.as_view()), name="png_rel"),
-   
+    path('api/playngo/release', csrf_exempt(playngogameviews.ReleaseView.as_view()), name="png_rel"),
+    path('api/playngo/cancel', csrf_exempt(playngogameviews.CancelReserveView.as_view()), name="png_cancel"),
+
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
     path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
@@ -74,7 +75,7 @@ urlpatterns = [
 
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
-    path('api/mg/token_save', mggameviews.MGtoken.as_view(), name = 'mg_token'),
+   
 
 
     # kaiyuan gaming

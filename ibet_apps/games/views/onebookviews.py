@@ -464,11 +464,9 @@ def getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
-                                        market='China',
-                                        notes='2004')
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+        raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+        
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     delay = 2
     success = False
@@ -568,8 +566,8 @@ class GetBetDetail(APIView):
             PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
             PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
-                                        market='China',
+                                        type=GAME_TYPE_SPORTS,
+                                        market='letouCN, letouTH, letouVN',
                                         notes='2004')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -597,10 +595,9 @@ class GetBetDetail(APIView):
                 for i in range(len(rdata["Data"]["BetDetails"])):
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     try:
-                        cate = Category.objects.get(name='SPORTS')
+                        cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='SPORTS')
-                        logger.info("create new game category.")
+                        logger.error("missing sports game category.")
                     user = CustomUser.objects.get(username=username)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
@@ -608,7 +605,8 @@ class GetBetDetail(APIView):
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
-                                                    username=user,
+                                                    user=user,
+                                                    username=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -623,7 +621,8 @@ class GetBetDetail(APIView):
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
-                                                    username=user,
+                                                    user=user,
+                                                    username=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],

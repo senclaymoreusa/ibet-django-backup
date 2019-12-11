@@ -9,6 +9,7 @@ def getThirdPartyKeys(bucket, file):
     s3client = boto3.client("s3")
     try:
         config_obj = s3client.get_object(Bucket=bucket, Key=file)
+
         config = json.loads(config_obj['Body'].read())
     except ClientError as e:
         logger.error(e)
@@ -17,6 +18,20 @@ def getThirdPartyKeys(bucket, file):
         logger.error(e)
         return None
     return config
+
+# Method that writes filestr to S3 to bucket_name with file_name
+def writeToS3(filestr, bucket_name, file_name):
+
+    s3client = boto3.client("s3")
+    try:
+        logger.info('Writing to S3 to bucket ' + bucket_name + ' with file name ' + file_name)
+        s3client.put_object(Body=filestr, Bucket=bucket_name, Key=file_name)
+        logger.info('Successfully wrote to S3...')
+
+    except ClientError as e:
+        logger.error(e)
+    except NoCredentialsError as e:
+        logger.error(e)
 
 
 def getAWSClient(service_name, third_party_keys, region):
