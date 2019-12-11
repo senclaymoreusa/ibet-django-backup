@@ -16,7 +16,7 @@ import games.views.bti_views as bti
 import games.views.sagameviews as sagameviews
 import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
-
+import games.views.aggamesviews as aggamesviews
 from games.views.views import *
 
 
@@ -135,6 +135,10 @@ urlpatterns = [
     path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
 
+    #AG
+    path('api/ag/check_or_create', aggamesviews.CheckOrCreateGameAccout.as_view(), name="Check_Or_Create_Game_Account"),
+    path('api/ag/get_balance', aggamesviews.GetBalance.as_view(), name="Get_Balance"),
+    path('api/ag/prepare_transfer_credit_balance', aggamesviews.PrepareTransferCredit.as_view(), name="Prepare_Transfer_Credit"),
 ]
 
 #onebookviews.getBetDetail(repeat=300,repeat_until=None)

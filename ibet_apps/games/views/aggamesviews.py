@@ -7,8 +7,112 @@ from  games.models import *
 from django.utils import timezone
 import decimal
 import xmltodict
+from games.helper import *
+from django.core.exceptions import  ObjectDoesNotExist
+import requests
+import xml.etree.ElementTree as ET
+import random
+from django.utils import timezone
+
+class CheckOrCreateGameAccout(APIView):
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        username =  request.POST['username']
+        password = request.POST['password']
+        oddtype = request.POST['oddtype']
+        actype = request.POST['actype']
+        cur = request.POST['cur']
+        try:
+            user = CustomUser.objects.get(username=username)
+            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=lg/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
+            
+            param = des_encrypt(s,AG_DES).decode("utf-8") 
+
+            key = MD5(param + AG_MD5)
+            r = requests.get(AG_URL ,  params={
+                    "params": param,
+                    "key": key,  
+                })
+            rdata = r.text
+            if r.status_code == 200:
+                tree = ET.fromstring(rdata)
+                info = tree.get('info')
+                msg =  tree.get('msg')
+                return Response({'info': info, 'msg': msg})
+            else:
+                return Response({"error":"The request is failed"}) 
+        except ObjectDoesNotExist:
+            return Response({"error":"The user is not existed."}) 
+
+class GetBalance(APIView):
+    permission_classes = (AllowAny, )
+    def post(self, request, *args, **kwargs):
+        username =  request.POST['username']
+        password = request.POST['password']
+        oddtype = request.POST['oddtype']
+        actype = request.POST['actype']
+        cur = request.POST['cur']
+        try:
+            user = CustomUser.objects.get(username=username)
+            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=gb/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
+            
+            param = des_encrypt(s,AG_DES).decode("utf-8") 
+
+            key = MD5(param + AG_MD5)
+            r = requests.get(AG_URL ,  params={
+                    "params": param,
+                    "key": key,  
+                })
+            rdata = r.text
+            if r.status_code == 200:
+                tree = ET.fromstring(rdata)
+                info = tree.get('info')
+                msg =  tree.get('msg')
+                return Response({'info': info, 'msg': msg})
+            else:
+                return Response({"error":"The request is failed"}) 
+        except ObjectDoesNotExist:
+            return Response({"error":"The user is not existed."}) 
 
 
+class PrepareTransferCredit(APIView):
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        
+        username =  request.POST['username']
+        password = request.POST['password']
+        actype = request.POST['actype']
+        cur = request.POST['cur']
+        agtype = request.POST['type']
+        # fixcredit = request.POST['fixcredit']
+        gameCategory = request.POST['gameCategory']
+        credit = request.POST['credit']
+        try:
+            user = CustomUser.objects.get(username=username)
+            billno = AG_CAGENT + str(random.randint(0, 10000000))
+            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=tc/\\\\/" + "billno=" + billno +  "/\\\\/" + "type=" + agtype + "/\\\\/" + "credit=" + credit + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" +  "gameCategory=" + gameCategory + "/\\\\/" + "cur=" + cur  
+            print(s)
+            param = des_encrypt(s,AG_DES).decode("utf-8") 
+            print(param)
+            key = MD5(param + AG_MD5)
+            print(key)
+            r = requests.get(AG_URL ,  params={
+                    "params": param,
+                    "key": key,  
+                })
+            rdata = r.text
+            print(rdata)
+            if r.status_code == 200:
+                tree = ET.fromstring(rdata)
+                info = tree.get('info')
+                msg =  tree.get('msg')
+                return Response({'info': info, 'msg': msg})
+            else:
+                return Response({"error":"The request is failed"}) 
+        except ObjectDoesNotExist:
+            return Response({"error":"The user is not existed."}) 
 class PostTransferforAG(APIView):
 
     permission_classes = (AllowAny, )
