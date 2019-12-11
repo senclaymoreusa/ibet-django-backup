@@ -297,7 +297,7 @@ class ProcessTransaction(APIView):
                                                         amount_wagered=-float(amount),
                                                         currency=user.currency,
                                                         market=ibetCN,
-                                                        ref_no=transactionId,
+                                                        ref_no=gameTranId,
                                                         transaction_id=trans_id
                                                         )
                     response = {
@@ -346,7 +346,7 @@ class ProcessTransaction(APIView):
                                                         currency=user.currency,
                                                         amount_won=float(amount),
                                                         market=ibetCN,
-                                                        ref_no=transactionId,
+                                                        ref_no=gameTranId,
                                                         transaction_id=trans_id,
                                                         resolved_time=timezone.now()
                                                         )
@@ -428,7 +428,7 @@ class ProcessTransaction(APIView):
                                                 currency=user.currency,
                                                 amount_won=float(amount),
                                                 market=ibetCN,
-                                                ref_no=transactionId,
+                                                ref_no=gameTranId,
                                                 transaction_id=trans_id
                                           
                                                 )

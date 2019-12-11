@@ -200,6 +200,7 @@ class MGgame(APIView):
                 playtype = dd['pkt']['methodcall']['call']['@playtype']
                 amount = dd['pkt']['methodcall']['call']['@amount']
                 currency = dd['pkt']['methodcall']['call']['@currency']
+                gameid = dd['pkt']['methodcall']['call']['@gameid']
                 # gameref = dd['pkt']['methodcall']['call']['@gamereference']
                
                 # here should judge the currency later...
@@ -231,7 +232,7 @@ class MGgame(APIView):
                                                             currency=user.currency,
                                                             amount_won=decimal.Decimal(amount)/100,
                                                             market=ibetCN,
-                                                            ref_no=transactionId,
+                                                            ref_no=gameid,
                                                             transaction_id=trans_id,
                                                             resolved_time=timezone.now(),
                                                             # game_name=gameref,
@@ -245,7 +246,7 @@ class MGgame(APIView):
                                                             amount_wagered=decimal.Decimal(amount)/100,
                                                             currency=user.currency,
                                                             market=ibetCN,
-                                                            ref_no=transactionId,
+                                                            ref_no=gameid,
                                                             transaction_id=trans_id,
                                                             # game_name=gameref,
                                                             other_data=other_data
