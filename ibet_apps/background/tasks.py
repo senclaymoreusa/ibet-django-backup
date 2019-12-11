@@ -63,7 +63,7 @@ outcomeConversion = {
     "refund": 14
 }
 @transaction.atomic
-@background(schedule=5) 
+# @background(schedule=5) 
 def onebook_getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
@@ -176,7 +176,7 @@ def aes_encode(key, data):
 def get_timestamp():
     return int(round(time.time() * 1000))    
 
-@background(schedule=10)
+# @background(schedule=10)
 def kaiyuan_getBets():
     # Query Bet Order
     timestamp = get_timestamp()

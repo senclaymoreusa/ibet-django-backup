@@ -19,7 +19,7 @@ import games.views.qtgameviews as qtgameviews
 
 from games.views.views import *
 
-from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
+# from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
 
 
 urlpatterns = [
@@ -138,6 +138,6 @@ urlpatterns = [
 
 ]
 
-onebook_getBetDetail(repeat=30,repeat_until=None)
+# onebook_getBetDetail(repeat=30,repeat_until=None)
 
-kaiyuan_getBets(repeat=30, repeat_until=None)
+# kaiyuan_getBets(repeat=30, repeat_until=None)
