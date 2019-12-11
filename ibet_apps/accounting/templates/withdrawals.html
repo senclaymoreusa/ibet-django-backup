@@ -1,10 +1,22 @@
 {% extends "xadmin/base_site.html" %}
+{% load staticfiles %}
 
 {% block content-nav %}
 {% endblock %}
 
 {% block content %}
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-accounting.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-datatable.css" %}" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+        type="text/css" />
+</head>
+
+<body>
 
 <div class="panel panel-default">
     <div class="panel-heading">
@@ -18,22 +30,48 @@
         <div class="row">
             <div class='col-md-4'>
                 <div class="input-group">
-                    <input type=" text" id="search" class="form-control"
+                    <label for="search"></label>
+                    <input type="text" id="search" class="form-control"
                         placeholder="Enter user ID, username or transaction number">
                     <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                             class="glyphicon glyphicon-search"></span></span>
                 </div>
             </div>
-            <div class='col-md-2' style="float: right">
-                <div class='input-group date' id='withdraw_time_to'>
+            <div class='col-sm-1'>
+                <div class="input-group">
+                    <span id="clear-search-btn" class="input-group-addon" style="cursor: pointer; background-color: #428bca; color:white">Clear Search</span>
+                </div>
+            </div>
+        </div>
+        <!-- status filter & date range -->
+        <div class="row">
+            <div class="col-md-4" style="padding: 10px 0 0 30px">
+                <div class="input-group">
+                    <label for="status-filter">STATUS</label>
+                    <div class="row">
+                        <select id="status-filter">
+                            <option value="all">ALL</option>
+                            <option value="created">CREATED</option>
+                            <option value="review">REVIEW</option>  <!-- pending review -->
+                            <option value="rejected">REJECTED</option>
+                            <option value="pending">PENDING</option>
+                            <option value="success">SUCCESS</option>
+                            <option value="failed">FAILED</option>
+                            <option value="canceled">CANCELED</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-2' style="padding: 10px 30px 0 15px; float: right;">
+                <div class='input-group date' id='deposit_time_from'>
                     <input type='text' class="form-control" placeholder="To" id='max' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
             </div>
-            <div class='col-md-2' style="float: right">
-                <div class='input-group date' id='withdraw_time_from'>
+            <div class='col-md-2' style="padding: 10px 15px 0 30px; float: right;">
+                <div class='input-group date' id='deposit_time_to'>
                     <input type='text' class="form-control" placeholder="From" id='min' autocomplete="off" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
@@ -41,294 +79,109 @@
                 </div>
             </div>
         </div>
-
-        <!-- nav tab -->
-        <div class="container nav-bar" style="width:99%">
-            <nav>
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item active">
-                        <a class="nav-link" data-toggle="tab" href="#pending" role="tab" aria-controls="home"
-                            aria-selected="true">PENDING</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#approved" role="tab" aria-controls="profile"
-                            aria-selected="false">APPROVED</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#rejected" role="tab" aria-controls="contact"
-                            aria-selected="false">REJECTED</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#success" role="tab" aria-controls="contact"
-                            aria-selected="false">SUCCESSFUL</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#failed" role="tab" aria-controls="contact"
-                            aria-selected="false">FAILED</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#resend" role="tab" aria-controls="contact"
-                            aria-selected="false">RESEND</a>
-                    </li>
-                </ul>
-            </nav>
+        <!-- actual transaction table & data -->
+        <div id="deposits-section" aria-labelledby="home-tab"
+            >
+            <table id="deposits-table" class="table-striped table-bordered hover compact"
+                style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
+                <colgroup>
+                    <col style="width: 60px">  <!-- // player id    -->
+                    <col style="width: 80px">  <!-- // username -->
+                    <col style="width: 100px"> <!--  // player segment -->
+                    <col style="width: 56px">  <!-- // risk level -->
+                    <col style="width: 100px"> <!--  // user status -->
+                    <col style="width: 100px"> <!--  // method  -->
+                    <col style="width: 100px"> <!--  // channel -->
+                    <col style="width: 230px"> <!--  // transaction no.-->
+                    <col style="width: 270px"> <!--  // order no. -->
+                    <col style="width: 130px"> <!--  // created time -->
+                    <col style="width: 130px"> <!--  // resolved time -->
+                    <col style="width: 100px"> <!--  // bank -->
+                    <col style="width: 85px">  <!-- // amount -->
+                    <col style="width: 78px">  <!-- // status -->
+                    <col style="width: 80px">  <!-- // button -->
+                </colgroup>
+                <thead>
+                    <tr>
+{#                            <th scope="col">#</th>#}
+                        <th scope="col">PLAYER ID</th>
+                        <th scope="col">USERNAME</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">RISK LEVEL</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">METHOD</th>
+                        <th scope="col">CHANNEL</th>
+                        <th scope="col">TRANSACTION NO.</th>
+                        <th scope="col">PROVIDER REF NO.</th>
+                        <th scope="col">CREATED TIME</th>
+                        <th scope="col">RESOLVE TIME</th>
+                        <th scope="col">BANK</th>
+                        <th scope="col">AMOUNT</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col"></th>
+                        <th scope="col" style="display: none;">pk</th>
+                    </tr>
+                </thead>
+                <tbody id="pending_deposit_data">
+                    {% for tran in transactions %}
+                    <tr id="{{ tran.pk }}">
+                        <!-- <td>{{ forloop.counter }}</td> -->
+                        <td>{{ tran.id }}</td>
+                        <td>{{ tran.username }}</td>
+                        <td>Normal</td>
+                        <td>{{ tran.risk_level }}</td>
+                        <td>{{ tran.user_status }}</td>
+                        <td>{{ tran.method }}</td>
+                        <td>{{ tran.channel }}</td>
+                        <td>{{ tran.tran_no }}</td>
+                        <td>{{ tran.order_id }}</td>
+                        <td>{{ tran.app_time }}</td>
+                        <td>{{ tran.arr_time }}</td>
+                        <td>{{ tran.bank }}</td>
+                        <td>{{ tran.amount }}</td>
+                        <td>{{ tran.status }}</td>
+                        {% if tran.status == 'Review' %}
+                            {% if tran.channel == 'Qaicash' or tran.channel == 'Help2Pay' %}
+                                <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                                        data-target="#audit_withdraw">Review</button></td>
+                            {% endif %}
+                        {% endif %}
+                        {% if tran.status == 'Pending' %}
+                        <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                            data-target="#audit_withdraw">Confirm</button></td>
+                        {% endif %}
+                        <td style="display: none">{{ tran.pk }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <div class="tab-content datatable" id="myTabContent">
-            <!-- PENDING TABLE -->
-            <div class="tab-pane fade in active" id="pending" role="tabpanel" aria-labelledby="home-tab"
-                style="margin-bottom: 50px;">
-                <table id="withdrawal_pending_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">VIP LEVEL</th>
-                            <th scope="col">RISK LEVEL</th>
-                            <th scope="col">BANK</th>
-                            <th scope="col">MEMBER BALANCE</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">WITHDRAWAL TODAY</th>
-                            <th scope="col">WITHDRAWAL COUNT TODAY</th>
-                            <th scope="col" style="display: none">pk</th>
-                            <th scope="col" style="display: none">account</th>
-                            <th scope="col">CHANNEL</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in pending_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <!-- vip level -->
-                            <td>{{ tran.vip }}</td>
-                            <td>{{ tran.risk_level }}</td>
-                            <td>{{ tran.bank }}</td>
-                            <td>{{ tran.balance }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.withdrawal_today }}</td>
-                            <td>{{ tran.withdrawal_count_today }}</td>
-                            <td style="display: none">{{ tran.pk }}</td>
-                            <td style="display: none">{{ tran.account }}</td>
-                            <td>{{ tran.channel }}</td>
-                            <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                                    data-target="#audit_withdraw">Audit</button></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
+        <!-- pagination -->
+        <div class="container" style="padding-bottom: 50px">
+            <div class="row">
+                <div class="col-md-offset-11">
+                    <p>Page {{ page_no|add:'1' }} of {{ total_pages|add:'1' }}</p>
+                </div>
+                <div class="col-md-offset-11">
+                    {% if page_no != 0 %}
+                        <button id="prev-page">Prev</button>
+                    {% endif %}
+                    {% if page_no != total_pages %}
+                        <button id="next-page">Next</button>
+                    {% endif %}
+                </div>
+                <div class="row per-page">
+                    <div class="col-md-offset-10" id="num-per-page">
+                        <select id="num-per-page-select">
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <label for="num-per-page-select">results per page</label>
+                    </div>
+                </div>
             </div>
-
-            <!-- APPROVED TABLE -->
-            <div class="tab-pane fade" id="approved" role="tabpanel" aria-labelledby="profile-tab"
-                style="margin-bottom: 50px;">
-                <table id="approved_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">BANK</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">AUDIT TIME</th>
-                            <th scope="col">AUDITOR</th>
-                            <th scope="col">CHANNEL</th>
-                            <th scope="col">NOTE</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in approved_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.bank }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.audit_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.auditor }}</td>
-                            <td>{{ tran.channel }}</td>
-                            <td>{{ tran.note }}</td>
-                            <td><button type='button' class='btn btn-sm btn-look'><i class='fa fa-search'></i></button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <!-- REJECTED TABLE -->
-            <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="profile-tab"
-                style="margin-bottom: 50px;">
-                <table id="rejected_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">BANK</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">AUDIT TIME</th>
-                            <th scope="col">AUDITOR</th>
-                            <th scope="col">CHANNEL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in rejected_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.bank }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.audit_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.auditor }}</td>
-                            <td>{{ tran.channel }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <!-- SUCCESSFUL TABLE -->
-            <div class="tab-pane fade" id="success" role="tabpanel" aria-labelledby="profile-tab"
-                style="margin-bottom: 50px;">
-                <table id="success_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">BANK</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">AUDIT TIME</th>
-                            <th scope="col">PROCESSING TIME</th>
-                            <th scope="col">AUDITOR</th>
-                            <th scope="col">CHANNEL</th>
-                            <th scope="col">NOTE</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in success_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.bank }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.audit_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.processing_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.auditor }}</td>
-                            <td>{{ tran.channel }}</td>
-                            <td>{{ tran.note }}</td>
-                            <td><button type='button' class='btn btn-sm btn-look'><i class='fa fa-search'></i></button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <!-- FAILED TABLE -->
-            <div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="profile-tab"
-                style="margin-bottom: 50px;">
-                <table id="failed_table" class="table-striped table-bordered hover compact"
-                    style="width:100%; margin-bottom: 50px">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">MEMBER ID</th>
-                            <th scope="col">USERNAME</th>
-                            <th scope="col">TRANSACTION NO.</th>
-                            <th scope="col">BANK</th>
-                            <th scope="col">CITY</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">ACCOUNT</th>
-                            <th scope="col">AMOUNT</th>
-                            <th scope="col">APPLICATION TIME</th>
-                            <th scope="col">AUDIT TIME</th>
-                            <th scope="col">PROCESSING TIME</th>
-                            <th scope="col">AUDITOR</th>
-                            <th scope="col">CHANNEL</th>
-                            <th scope="col">NOTE</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tran in failed_tran %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ tran.id }}</td>
-                            <td>{{ tran.username }}</td>
-                            <td>{{ tran.tran_no }}</td>
-                            <td>{{ tran.bank }}</td>
-                            <td>{{ tran.city }}</td>
-                            <td>{{ tran.name }}</td>
-                            <td>{{ tran.account }}</td>
-                            <td>{{ tran.amount }}</td>
-                            <td>{{ tran.app_time|date:'d/m/y H:i:s' }}</td>
-                            <td>{{ tran.audit_time }}</td>
-                            <td>{{ tran.auditor }}</td>
-                            <td>{{ tran.channel }}</td>
-                            <td>{{ tran.note }}</td>
-                            <td><button type='button' class='btn btn-sm btn-look'><i class='fa fa-search'></i></button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <label class="show-rows">SHOW ROWS</label>
-            </div>
-
-            <div class="tab-pane fade" id="resend" role="tabpanel" aria-labelledby="contact-tab">...</div>
         </div>
-
         <!-- audit popup window -->
         <div class="modal fade" id="audit_withdraw" role="dialog">
             <div id="withdraw_request_pop" class="modal-dialog">
@@ -338,7 +191,7 @@
                         Withdrawal request details
                     </div>
                     <div class="modal-body">
-                        <form action="{% url 'xadmin:withdrawal_view' %}" method="POST">
+                        <form action="/" method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="type" value="audit_withdraw"></input>
                             <input type="hidden" id="wtd_trans_no" name="wtd_trans_no"></input>
@@ -383,21 +236,21 @@
                                     </div>
                                 </div>
                                 <!-- MEMBER DETAILS -->
-                                <div class="col-md-4 withdraw-request-details" style="padding-bottom: 50px">
+                                <div class="col-md-4 withdraw-request-details" style="padding-bottom: 90px">
                                     <div class="col-md-4 withdraw-request-title">
                                         <p>Member ID</p>
                                         <p>Username</p>
                                         <p>First Name</p>
                                         <p>Last Name</p>
                                     </div>
-                                    <div class="col-md-3 withdraw-request-data" id="member_detail1">
+                                    <div class="col-md-3 withdraw-request-data" id="member-details">
                                     </div>
                                     <div class="col-md-3 withdraw-request-title">
                                         <p>VIP Level</p>
                                         <p>Risk Level</p>
                                         <p>Balance</p>
                                     </div>
-                                    <div class="col-md-2 withdraw-request-data" id="member_detail2">
+                                    <div class="col-md-2 withdraw-request-data" id="risk-details">
                                     </div>
                                 </div>
                             </div>
@@ -431,13 +284,16 @@
                                     style="width: 100%; margin-top: 10px; margin-bottom: 40px">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
+                                            {#                                        <th scope="col">#</th>#}
+                                            <th scope="col">PAYMENT</th>
                                             <th scope="col">TRANSACTION NO.</th>
-                                            <th scope="col">APPLICATION TIME</th>
+                                            <th scope="col">CREATED TIME</th>
                                             <th scope="col">BANK</th>
+                                            <th scope="col">BRANCH</th>
                                             <th scope="col">CITY</th>
                                             <th scope="col">NAME</th>
                                             <th scope="col">ACCOUNT</th>
+                                            <th scope="col">PROVIDER REF NO.</th>
                                             <th scope="col">AMOUNT</th>
                                             <th scope="col">STATUS</th>
                                         </tr>
@@ -459,13 +315,12 @@
                                     placeholder="Add anything of importance"></textarea>
 
                                 <div id="withdraw-request-button" style="margin-top:40px">
-                                    <button type="button" class="btn btn-success"
-                                        id="withdraw-review-a">Approve</button>
-                                    <button type="button" class="btn btn-success" id="withdraw-review-appnext">Approve
-                                        and Next</button>
-                                    <button type="button" class="btn btn-danger" id="withdraw-review-r">Reject</button>
-                                    <button type="button" class="btn btn-danger" id="withdraw-review-rejnext">Reject and
-                                        Next</button>
+                                    <button type="button" class="btn btn-success" id="withdraw-review-a" data-state="unclicked">Approve</button>
+                                    <!-- <button type="button" class="btn btn-success" id="withdraw-review-appnext">Approve
+                                        and Next</button> -->
+                                    <button type="button" class="btn btn-danger" id="withdraw-review-r" data-state="unclicked">Reject</button>
+                                    <!-- <button type="button" class="btn btn-danger" id="withdraw-review-rejnext">Reject and
+                                        Next</button> -->
                                     <button type="button" class="btn btn-primary" id="withdraw-review-cancel"
                                         data-dismiss="modal">Cancel</button>
                                 </div>
@@ -475,8 +330,9 @@
                 </div>
             </div>
         </div>
-    </div>
+        
 </div>
+
 
 <!-- datatables -->
 <!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
@@ -488,29 +344,19 @@
     src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
 <script type="text/javascript" language="javascript"
     src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
-
-<!-- datepicker -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
-    type="text/css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
 
-
 <script>
-
-
-    $(document).ready(function () {
-
-        var csrftoken = $.cookie("csrftoken")
+    function initCSRF() {
+         let csrftoken = $.cookie("csrftoken");
 
         function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
         }
-
         $.ajaxSetup({
             beforeSend: function (xhr, settings) {
                 if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -518,98 +364,141 @@
                 }
             }
         });
+    }
+    function initSearchParams() {
+        if (window.location.search) {
+            let params = new URLSearchParams(window.location.search);
+            document.getElementById('search').value = params.get('search_params');
 
-        // draw DataTable
-        var table = $('#withdrawal_pending_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
+            if (params.get('status')) {
+                let selectedStatus = document.getElementById('status-filter');
+                for(let i = 0; i < selectedStatus.options.length; i++) {
+                    if (params.get('status') === selectedStatus.options[i].value) {
+                        selectedStatus.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (params.get('show')) {
+                let numPages = document.getElementById('num-per-page-select');
+                for(let i = 0; i < numPages.options.length; i++) {
+                    if (params.get('show') == numPages.options[i].value) {
+                        numPages.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (params.get('from')) {
+                document.getElementById('min').value = params.get('from');
+            }
+            if (params.get('to')) {
+                document.getElementById('max').value = params.get('to');
+            }
+        }
+    }
+    function initEventHandlers() {
+        const BASEURL = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=0 %}?"
+        // filter by status
+        $('#status-filter').on('change', function(event) {
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('status', event.target.value);
+            window.location = BASEURL +queryString.toString();
+        });
+        
+        $('#num-per-page-select').on('change', function(event) {
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('show', event.target.value);
+            window.location = BASEURL + queryString.toString();
         });
 
-        var other_table = $('#approved_table, #rejected_table, #success_table, #rejected_table, #failed_table').DataTable({
-            responsive: true,
-            dom: 'B<ftilp>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 4, 5, 6, 7, 8, 10, 11, 12],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
+        // for submitting a search
+        $('#search-btn').on('click', function () {
+            let searchTerm = document.getElementById('search').value;
+            let fromDate = document.getElementById('min').value;
+            let toDate = document.getElementById('max').value;
+
+            console.log("searching for: " + searchTerm);
+            console.log("date range: " + fromDate + ", " + toDate);
+
+            let queryString = new URLSearchParams(window.location.search);
+            if (searchTerm) queryString.set('search_params', searchTerm);
+            if (fromDate) queryString.set('from', fromDate);
+            if (toDate) queryString.set('to', toDate);
+            // fetch data and redraw rows
+            if (searchTerm || fromDate || toDate) window.location = BASEURL + queryString.toString();
+            else window.location = BASEURL;
         });
+
+        $('#clear-search-btn').on('click', function() {
+            document.getElementById('search').value = '';
+            document.getElementById('min').value = '';
+            document.getElementById('max').value = '';
+            document.getElementById('status-filter').selectedIndex = 0;
+        });
+
+        // scroll between pages
+        $('#prev-page').click(() => {
+            window.location = "{% url 'xadmin:get_transactions' txn_type='withdraw' page=page_no|add:'-1' %}" + window.location.search;
+        });
+        $('#next-page').click(() => {
+            window.location= "{% url 'xadmin:get_transactions' txn_type='withdraw' page=page_no|add:'1' %}" + window.location.search;
+        });
+
+        let dateFormat = "mm/dd/yy";
+        let dateFrom = $("#min").
+            datepicker({
+                defaultDate: "+1w",
+                changeMonth: true,
+                changeYear: true
+            })
+            .on("change", function() {
+                dateTo.datepicker( "option", "minDate", getDate( this ) );
+            });
+        let dateTo = $("#max").
+            datepicker({
+                defaultDate: "+1w",
+                changeMonth: true,
+                changeYear: true
+            })
+            .on("change", function() {
+                dateFrom.datepicker( "option", "maxDate", getDate( this ) );
+            });
+
+        function getDate( element ) {
+            let date;
+            try {
+                date = $.datepicker.parseDate( dateFormat, element.value );
+            } catch( error ) {
+                console.log("date error");
+                date = null;
+            }
+            return date;
+        }
+    }
+
+    $(document).ready(function () {
+        initCSRF();
+        initSearchParams();
+        initEventHandlers();
 
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
 
-        // user id, username, transaction no. search
-        $('#search-btn').on('keyup click', function () {
-            table.search($('#search').val()).draw();
-            other_table.search($('#search').val()).draw();
-        });
-
-        // date range search
-        $.fn.dataTable.ext.search.push(
-            function (settings, data, dataIndex) {
-                var min = $('#min').datepicker("getDate");
-                var max = $('#max').datepicker("getDate");
-
-                var dateParts = data[9].split("/");
-                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
-                var startDate = new Date(newDate);
-
-                if (min == null && max == null) { return true; }
-                if (min == null && startDate <= max) { return true; }
-                if (max == null && startDate >= min) { return true; }
-                if (startDate <= max && startDate >= min) { return true; }
-                return false;
-            }
-        );
-
-        $("#min").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { table.draw(); other_table.draw(); }, changeMonth: true, changeYear: true });
-
-        // Event listener to the two range filtering inputs to redraw on input
-        $('#min, #max').change(function () {
-            table.draw();
-            other_table.draw();
-        });
-
         // send data to pop-up window
-        $('#withdrawal_pending_table tbody').on('click', 'button', function () {
-            var data = table.row($(this).parents('tr')).data();
+        $('#deposits-table tbody').on('click', 'button', function () {
+            let row = $(this).closest('tr');
+            let rowData = row.find('td');
+            let data = rowData.map(d => rowData[d].innerHTML);
+            console.log(data);
             // transaction pk: data[12]
             // bank account: data[13]
             showTransactionDetail(data);
-            showWithdrawDetail(data);
-            showBankDetail(data);
-            var user_id = data[1];
+            // showWithdrawDetail(data);
+            // showBankDetail(data);
+            var user_id = data[0];
             $.when(
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:withdrawal_view' %}",
+                    url: "{% url 'xadmin:user_info' %}",
                     data: {
                         'type': 'getMemberInfo',
                         'user': user_id,
@@ -617,9 +506,9 @@
                 }),
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'xadmin:withdrawal_view' %}",
+                    url: "{% url 'xadmin:get_latest_transactions' %}",
                     data: {
-                        'type': 'getLatestWithdraw',
+                        'type': 'withdrawals',
                         'user': user_id,
                     },
                 })
@@ -627,51 +516,57 @@
                 addMemberDetails(data1);
                 addWithdrawRecord(data2, data[12], data[0]);
             });
-            var container = $('#withdraw_request_pop');
-            $(document).mouseup(function (e) {
-                // if the target of the click isn't the container nor a descendant of the container
-                if (!container.is(e.target) && container.has(e.target).length === 0) {
-                    location.reload();
-                }
-            });
+            // var container = $('#withdraw_request_pop');
+            // $(document).mouseup(function (e) {
+            //     // if the target of the click isn't the container nor a descendant of the container
+            //     if (!container.is(e.target) && container.has(e.target).length === 0) {
+            //         location.reload();
+            //     }
+            // });
         });
 
         function addMemberDetails(data) {
-            $("#member_detail1").empty();
-            var content = "";
+            let userDetails = $("#member-details");
+            userDetails.empty();
+            let content = "";
             content += "<p>" + data[0].id + "</p>";
             content += "<p>" + data[0].username + "</p>";
             content += "<p>" + data[0].first_name + "</p>";
             content += "<p>" + data[0].last_name + "</p>";
-            $("#member_detail1").append(content);
+            userDetails.append(content);
 
-            $("#member_detail2").empty();
-            var content2 = "";
-            content2 += "<p>" + data[0].vip_level + "</p>";
-            content2 += "<p>" + data[0].risk_level + "</p>";
-            content2 += "<p style='margin-top:25px'>" + data[0].balance + "</p>";
-            $("#member_detail2").append(content2);
+            let riskDetails = $("#risk-details");
+            riskDetails.empty();
+            content = "";
+            content += "<p>.....</p>";
+            content += "<p>" + data[0].risk_level + "</p>";
+            content += "<p>" + data[0].balance + "</p>";
+            riskDetails.append(content);
         }
 
         function addWithdrawRecord(data, trans_pk, index) {
-            $("#latest_withdraws").empty();
-            content = "";
-            for (var i = 0; i < data[0].length; i++) {
-                content += '<tr>'
-                content += '<td>' + (i + 1) + '</td>';
+            let txnArea = $("#latest_withdraws");
+            txnArea.empty();
+            let content = "";
+            for (let i = 0; i < data[0].length; i++) {
+                content += '<tr>';
+                // content += '<td>' + (i + 1) + '</td>';
+                content += '<td>' + data[0][i].payment + '</td>';
                 content += '<td>' + data[0][i].tran_no + '</td>';
-                content += '<td>' + data[0][i].app_time + '' + '</td>';
-                content += '<td>' + data[0][i].bank + '</td>';
-                content += '<td>' + data[0][i].city + '</td>';
-                content += '<td>' + data[0][i].name + '</td>';
-                content += '<td>' + data[0][i].account + '</td>';
+                content += '<td>' + data[0][i].time_app + '' + '</td>';
+                content += '<td>' + (data[0][i].bank || '') + '</td>';
+                content += '<td>' + (data[0][i].branch || '') + '</td>';
+                content += '<td>' + (data[0][i].city || '') + '</td>';
+                content += '<td>' + (data[0][i].name || '') + '</td>';
+                content += '<td>' + (data[0][i].account || '') + '</td>';
+                content += '<td>' + data[0][i].order_id + '</td>';
                 content += '<td>' + data[0][i].amount + '</td>';
                 content += '<td>' + data[0][i].status + '</td>';
                 content += '</tr>'
             }
-            $("#latest_withdraws").append(content);
+            txnArea.append(content);
             $("#wtd_trans_no").val(trans_pk);
-            $("#wtd_row_no").val(index);
+            // $("#wtd_row_no").val(index);
         }
 
         showBankDetail = function (data) {
@@ -700,77 +595,49 @@
             $("#trans_withdraw_detail").empty();
             var content = "";
             // tran no.
-            content += "<p id='transaction_id'>" + data[3] + "</p>";
+            content += "<p id='transaction_id'>" + data[7] + "</p>";
             // application time
             content += "<p>" + data[9] + "</p>";
             // amount
-            content += "<p>" + data[8] + "</p>";
+            content += "<p>" + data[12] + "</p>";
             $("#trans_withdraw_detail").append(content);
         }
-
-        // only Qaicash need to be reviewed
-        // double click button
-        $('#withdraw-review-a').click(function () {
-            $('#withdraw-review-a').html('Click to Approve');
-            $('#withdraw-review-a').attr('id', 'withdraw-review-app');
-            $('#withdraw-review-app').click(function () {
-                // $('#withdraw-review-app').attr('type', 'submit')
-                $('#withdraw-review-app').attr('name', 'withdraw-review-app')
-                var remark = $('#notes').val();
-                var id = $('#trans_withdraw_detail p').first().html();
-                var userID = $('#member_detail1 p').first().html();
-                sendDataToThirdParty("{% url 'Qaicash_approve_Payout' %}", id, userID, remark, -1);
-            });
-        });
-
-        $('#withdraw-review-r').click(function () {
-            $('#withdraw-review-r').html('Click to Reject');
-            $('#withdraw-review-r').attr('id', 'withdraw-review-rej');
-            $('#withdraw-review-rej').click(function () {
-                // $('#withdraw-review-rej').attr('type', 'submit');
-                $('#withdraw-review-rej').attr('name', 'withdraw-review-rej');
-                var remark = $('#notes').val();
-                var id = $('#trans_withdraw_detail p').first().html();
-                var userID = $('#member_detail1 p').first().html();
-                sendDataToThirdParty("{% url 'Qaicash_reject_Payout' %}", id, userID, remark, -1);
-            });
-        });
 
         $('#withdraw-review-cancel').click(function () {
             location.reload();
         });
 
-        $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
-            // Get data from the first row
-            var wtd_trans_no = $("#wtd_trans_no").val();
-            var wtd_row_index = $("#wtd_row_no").val();
-            var pagination_num = table.page.len();
-            var table_size = table.rows().count();
-            var remark = $('#notes').val();
-            var id = $('#trans_withdraw_detail p').first().html();
-            var userID = $('#member_detail1 p').first().html();
+        // $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
+        //     // Get data from the first row
+        //     var wtd_trans_no = $("#wtd_trans_no").val();
+        //     var wtd_row_index = $("#wtd_row_no").val();
+        //     var pagination_num = table.page.len();
+        //     var table_size = table.rows().count();
+        //     var remark = $('#notes').val();
+        //     var id = $('#trans_withdraw_detail p').first().html();
+        //     var userID = $('#member-details p').first().html();
 
-            var audit_result = "Approve";
-            var qaicash_api = "{% url 'Qaicash_approve_Payout' %}";
-            if (e.target.id == "withdraw-review-rejnext") {
-                // reject
-                audit_result = "Reject";
-                qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
-            }
+        //     var audit_result = "Approve";
+        //     var qaicash_api = "{% url 'Qaicash_approve_Payout' %}";
+        //     if (e.target.id == "withdraw-review-rejnext") {
+        //         // reject
+        //         audit_result = "Reject";
+        //         qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
+        //     }
             
-            if (wtd_row_index == table_size) {
-                $('#lastwithdraw').text("This is the last one");
-                $('#lastwithdraw').css('color', 'red');
-            }
+        //     if (wtd_row_index == table_size) {
+        //         $('#lastwithdraw').text("This is the last one");
+        //         $('#lastwithdraw').css('color', 'red');
+        //     }
 
-            if (wtd_row_index % pagination_num == 0) {
-                table.page('next').draw('page');
-                wtd_row_index = wtd_row_index % pagination_num;
-            } else if (wtd_row_index > pagination_num) {
-                wtd_row_index = wtd_row_index % pagination_num;
-            }
-            sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index);            
-        });
+        //     if (wtd_row_index % pagination_num == 0) {
+        //         table.page('next').draw('page');
+        //         wtd_row_index = wtd_row_index % pagination_num;
+        //     } else if (wtd_row_index > pagination_num) {
+        //         wtd_row_index = wtd_row_index % pagination_num;
+        //     }
+        //     sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index);            
+        // });
         
         function sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index){
             var response = $.ajax({
@@ -785,16 +652,16 @@
                     'remark': remark,
                 },
                 success: function (data) {
-                    if (data['code']!== undefined){
+                    if (data['code'] !== undefined){
                         // has error
                         var errorMsg = data['error'];
                         $('#reviewError').text(errorMsg);
                         $('#reviewError').css('color', 'red');
-                    }else{
+                    } else {
                         // transaction success
                         if (wtd_row_index >= 0){
                             $('#withdrawal_pending_table tbody tr').eq(wtd_row_index).find('#edit-pending-detail-btn').click();
-                        }else{
+                        } else {
                             location.reload();
                         }
                     }
@@ -802,8 +669,58 @@
             });
         }
     });
+    // double click button
+    // risk review
+    $('#withdraw-review-a').click(function () {
+        let state = $(this).attr('data-state');
+        if (state == 'unclicked') {
+            $(this).attr('data-state', 'clicked');
+            $(this).html("Click to approve");
+        }
+        else {
+            return sendRiskReview('approve');
+        }
+    });
 
-
+    $('#withdraw-review-r').click(function () {
+        let state = $(this).attr('data-state');
+        if (state == 'unclicked') {
+            $(this).attr('data-state', 'clicked');
+            $(this).html("Click to reject");
+        }
+        else {
+            return sendRiskReview('reject');
+        }
+    });
+    
+    function sendRiskReview(decision) {
+        let remark = $('#notes').val();
+        let txnId = $('#trans_withdraw_detail p').first().html();
+        let userId = $('#member-details p').first().html();
+        // console.log(remark, txnId, userId);
+        
+        $.ajax({
+            method: 'POST',
+            url: "{% url 'xadmin:risk_review' %}",
+            data: {
+                user_id: userId,
+                txn_no: txnId,
+                remark: remark,
+                decision: decision
+            },
+            success: (data) => {
+                // console.log('success! data:');
+                // console.log(data);
+                let response = `<p>${data}</p>`
+                response+= '<p>Page refreshing in 3 seconds...</p>'
+                $('.modal-body').html(response);
+                setTimeout(() => { location.reload() }, 2400);
+            }
+        })
+    }
+    
 </script>
 
+</body>
+</html>
 {% endblock %}

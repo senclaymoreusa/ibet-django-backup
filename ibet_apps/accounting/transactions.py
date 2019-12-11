@@ -7,7 +7,7 @@ from users.models import CustomUser
 
 def get_transactions(request):
     user = CustomUser.objects.get(username=request.GET["userid"])
-    all_transactions = Transaction.objects.filter(user_id=user.id)
+    all_transactions = Transaction.objects.filter(user_id=user.id).order_by('-request_time')
     # res = serializers.serialize('json', all_transactions)
     return JsonResponse({
         'results': list(all_transactions.values())

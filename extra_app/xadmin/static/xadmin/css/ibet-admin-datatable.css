@@ -1,0 +1,122 @@
+table.dataTable {
+    border-spacing: 0;
+}
+
+.dataTables_paginate {
+    float: right;
+}
+
+.dataTables_info {
+    float: right;
+    margin: 10px;
+}
+
+.dataTables_length {
+    float: right;
+}
+
+.paginate_button.previous {
+    position:relative;
+    left: 1px;
+}
+
+.paginate_button.next {
+    position:relative;
+}
+
+.show-rows {
+    width: 82px;
+    height: 13px;
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+    position: relative;
+    float: right;
+    bottom: 20px;
+    left: 86px;
+}
+
+.dataTables_filter input {
+    float: right;
+    width: 350px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+}
+
+.dataTables_length label select{
+    width: 82px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.dataTables_paginate.paging_simple_numbers span{
+    display: none
+}
+
+/* remove the search box */
+.dataTables_filter {
+    display: none;
+}
+
+.datatable table thead tr th {
+    font-family: Helvetica;
+    font-size: 10px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.datatable table tbody tr td {
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+.dt-buttons{
+    width: 131px;
+    height: 34px;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 30px;
+    border: solid 1px #357ebd;
+    background-color: #428bca;
+    position: relative;
+    top: 33px;
+}
+
+.dt-buttons .dt-button.buttons-csv.buttons-html5{
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #ffffff;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+
+table.table-bordered {
+    margin-top: 0px;
+}
+

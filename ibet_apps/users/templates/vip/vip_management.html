@@ -4,33 +4,44 @@
 {% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static "xadmin/css/ibet-admin-vip.css" %}" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-vip.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
 </head>
 
 <body>
     <div id="vip_management">
-        <div class="row">
-            <div class="col-md-4 input-group" style="float: left; margin-top: 20px;">
-                <input type="text" id="search" class="form-control" placeholder="Enter user ID, username or manager">
-                <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white;"><span
-                        class="glyphicon glyphicon-search"></span></span>
-            </div>
-            <div class="col-md-4 date_range" style="float: right">
-                <label>ACTIVE DATE RANGE</label>
-                <br>
-                <input name="min_date" id="min_date" type="text" placeholder="From">
-                <input name="max_date" id="max_date" type="text" placeholder="To">
-            </div>
-        </div>
+        <div id="vip_table_container">
+            <div class="row">
+                <div class="col-md-2" id="filter">
+                    <label for="segmentation_filter">PLAYER SEGMENT</label><br>
+                    <select id="segmentation_filter" class="form-control">
+                        <option value="-1">ALL</option>
+                        {% for type in segment_list %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <div id="vip_table_container" style="overflow-x: scroll;">
-            <table id="vip_table" class="table-striped table-bordered hover compact">
+                <div class="col-md-3 input-group" style="margin-top:22px">
+                    <input type="text" id="vip-search" class="form-control" placeholder="Enter user ID or username ">
+                    <span id="vip-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
+                            class="glyphicon glyphicon-search"></span></span>
+                </div>
+
+                <div class="col-md-6" id="date_range">
+                    <label>ACTIVE DATE RANGE</label>
+                    <br>
+                    <input name="min_date" id="min_date" type="text" placeholder="From">
+                    <input name="max_date" id="max_date" type="text" placeholder="To">
+                </div>
+            </div>
+            <table id="vip_table" class="table-striped table-bordered hover" style="width:100%">
                 <thead>
                     <tr>
                         <th scope="col">PLAYER ID</th>
@@ -53,6 +64,7 @@
                         <th scope="col">WITHDRAWAL COUNT</th>
                         <th scope="col">BONUS COST</th>
                         <th scope="col">NGR</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,7 +72,79 @@
                     </tr>
                 </tbody>
             </table>
-            <!-- <label class="show-rows">SHOW ROWS</label> -->
+
+            <label class="show-rows">SHOW ROWS</label>
+        </div>
+    </div>
+
+    <!-- VIP Detail Pop up -->
+    <div class="modal fade" id="edit-vip" role="dialog">
+        <div id="edit-vip-pop-up" class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <strong class="model-header-text">VIP Player Details</strong>
+                    <div class="model-header-time">
+                        {{ time }}
+                    </div>
+                </div>
+
+                <div id="vip-player-details">
+                    <div class="row">
+                      <div class="col-md-4">
+                          <strong>
+                              Username<br>
+                              Segment<br>
+                              VIP manager<br>
+                              Name<br>
+                              ID number<br>
+                              Email<br>
+                              Phone<br>
+                              Birthday<br>
+                              Preferred product<br>
+                              Contact preference<br>
+                          </strong>
+                      </div>
+                       <div class="col-md-4" id="vip-player-info" >
+                       </div>
+                       <div class="col-md-4" id="vip-player-segment" >
+                            <p>You can override the system assigned player segment. This setting is not affected by
+                            the player's activity.</p>
+                            <label for="segmentation-assign">SEGMENT</label><br>
+                            <select id="segmentation-assign" class="form-control" style="width: 60%">
+                                {% for type in segment_list %}
+                                    <option value="{{ type }}">{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                            <br>
+                            <label for="manager-assign">VIP MANAGER</label><br>
+                            <select id="manager-assign" class="manager-assign">
+                                <option id="manager-assign-default" value="" selected disabled style="display:None"></option>
+                            {% for manager in managers %}
+                                <option value="{{ manager }}">{{ manager }}</option>
+                            {% endfor %}
+                            </select>
+                           {% if managers == None %}
+                           <p style="color:red">{{ empty_manager_group }}</p>
+                           {% endif %}
+
+
+                       </div>
+                    </div>
+
+                    <div class="reason-box">
+                        <p>REASON FOR CHANGES</p>
+                        <textarea type='text' class="form-control" id="vip-change-reason" style=""
+                                  placeholder="Please provide a brief explaination."></textarea>
+                    </div>
+                </div>
+
+                <div class="vip-details-btn">
+                    <button type="button" class="btn btn-primary" id="vip-details-save">Save</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -70,77 +154,15 @@
     <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
     <script type="text/javascript" language="javascript"
         src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+    <script src="{% static 'xadmin/js/ibet-admin-vip.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 
-    <!-- <script>
-        $(document).ready(function () {
-            var csrftoken = $.cookie("csrftoken")
-            function csrfSafeMethod(method) {
-                // these HTTP methods do not require CSRF protection
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-            }
-            $.ajaxSetup({
-                beforeSend: function (xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                    }
-                }
-            });
-            $("#min_date").datepicker();
-            $("#max_date").datepicker();
-            var minDate = $('#min_date').val();
-            var maxDate = $('#max_date').val();
+    <script>
+        var vip_url = "{% url 'xadmin:vipview' %}"
+        var user_link = "{% url 'xadmin:user_detail' %}"
+        var admin_user = "{{ user.username }}";
+    </script>
 
-            var vip_table = $('#vip_table').DataTable({
-                "serverSide": true,
-                "searching": true,
-                "ajax": {
-                    type: 'GET',
-                    url: "{% url 'xadmin:vipview' %}",
-                    data: {
-                        'type': 'getVIPInfo',
-                        'minDate': function () { return minDate; },
-                        'maxDate': function () { return maxDate; },
-                    },
-                },
-                // for export fuction
-                dom: 'B<ftilp>',
-                buttons: [
-                    'csv',
-                ],
-                "language": {
-                    "info": " _START_ - _END_ of _TOTAL_",
-                    "infoEmpty": " 0 - 0 of 0",
-                    "infoFiltered": "",
-                    // "search": "<span class='input-group-addon' style='background-color: #428bca; color:white; width:10px'><span class='glyphicon glyphicon-search'></span></span>",
-                    "paginate": {
-                        "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                        "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                    },
-                    "lengthMenu": "_MENU_",
-                },
-            });
-            
-            $(".dt-buttons .buttons-csv").text("Export");
-
-            $('#min_date, #max_date').change(function () {
-                minDate = $('#min_date').val();
-                maxDate = $('#max_date').val();
-                minDate = formatStringToDate(minDate);
-                maxDate = formatStringToDate(maxDate);
-                vip_table.draw();
-            });
-            function formatStringToDate(date) {
-                if (date.length === 0) {
-                    return date;
-                }
-                var parts = date.split('/');
-                date = parts[2] + '-' + parts[0] + '-' + parts[1];
-                return date;
-            }
-        });
-    </script> -->
 </body>
-
 </html>
-
 {% endblock %}

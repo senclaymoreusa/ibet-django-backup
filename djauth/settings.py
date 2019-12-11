@@ -71,7 +71,6 @@ CORS_ALLOW_CREDENTIALS = True
 
 ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
 
-# CORS_ORIGIN_ALLOW_ALL=True     # Stephen
 CORS_ORIGIN_ALLOW_ALL = True
 
 SESSION_COOKIE_SAMESITE = None
@@ -94,27 +93,29 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
     'bonus.apps.BonusConfig',
-    'games.apps.GamesConfig',
+    'games',
     'accounting.apps.AccountingConfig',
     'system.apps.SystemConfig',
-    'rest_framework',              # Stephen
-    'corsheaders',                 # Stephen
-    'rest_auth',                   # Stephen
-    'rest_framework.authtoken',    # Stephen
-    'django.contrib.sites',        # Stephen
-    'allauth',                     # Stephen
-    'allauth.account',             # Stephen
-    'rest_auth.registration',      # Stephen
-    'allauth.socialaccount',       # Stephen
+    'rest_framework',              
+    'corsheaders',                 
+    'rest_auth',                   
+    'rest_framework.authtoken',    
+    'django.contrib.sites',        
+    'allauth',                     
+    'allauth.account',             
+    'rest_auth.registration',      
+    'allauth.socialaccount',       
     'django_rest_passwordreset',
     'django_nose',
     'reversion',
     'ckeditor',                    # ckeditor
     'ckeditor_uploader',           # ckeditor
     'django_user_agents',
+    'background_task',
 ]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"  # ckeditor
@@ -127,11 +128,11 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-SITE_ID = 1                        # Stephen
+SITE_ID = 1                        
 
-ACCOUNT_EMAIL_REQUIRED = False                # Stephen
-ACCOUNT_AUTHENTICATION_METHOD = 'username'    # Stephen
-ACCOUNT_EMAIL_VERIFICATION = 'none'           # Stephen
+ACCOUNT_EMAIL_REQUIRED = False                
+ACCOUNT_AUTHENTICATION_METHOD = 'username'    
+ACCOUNT_EMAIL_VERIFICATION = 'none'           
 
 AUTH_USER_MODEL = 'users.CustomUser' # Override the default user model and reference custom user model instead.
 
@@ -140,11 +141,11 @@ HOST_URL = 'http://localhost:3000/'
 SENDGRID_API_KEY = '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'
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',      # Stephen
+    'corsheaders.middleware.CorsMiddleware',      
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',  # Stephen
+    'django.middleware.common.CommonMiddleware',  
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -200,13 +201,21 @@ if os.getenv("ENV") == "local":
             'PORT': 5432,
         }
     }
+
+
+    print("[" + str(datetime.datetime.now()) + "] Using local Redis...")
+    REDIS = {
+        "HOST": 'localhost',
+        "PORT": 6379
+    }
+
 elif "ENV" in os.environ:
     print("[" + str(datetime.datetime.now()) + "] Using db of " + os.environ["ENV"])
     AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.environ["ENV"]
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     
     print("DB HOST: " + db_data['RDS_HOSTNAME'])
-    
+    # print(db_data)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -218,6 +227,12 @@ elif "ENV" in os.environ:
         }
     }
 
+    print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
+    REDIS = {
+        # "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
+        "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
+        "PORT": 6379
+    }
 
 
 # Password validation
