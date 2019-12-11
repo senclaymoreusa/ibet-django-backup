@@ -525,7 +525,6 @@ def getBetDetail():
                                                     ref_no=trans_id,
                                                     market=ibetCN,
                                                     other_data=rdata,
-                                                    resolved_time=timezone.now(),
                                                     )
                 
                 sleep(delay)    
@@ -613,7 +612,6 @@ class GetBetDetail(APIView):
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     resolved_time=utcToLocalDatetime(resolve),
                                                     market=ibetCN,
-                                                    resolved_time=timezone.now(),
                                                     )
                 sleep(delay)    
             else:
