@@ -31,19 +31,12 @@ def setup_models():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=PLAYNGO_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(
-                                                provider_name=PLAYNGO_PROVIDER,
-                                                type=2,
-                                                market="letouCN, letouTH, letouVN"
-                                              )
+        logger.error("missing playngo provider.")
 
     try:
         CATEGORY = Category.objects.get(name="Games")
     except ObjectDoesNotExist:
-        CATEGORY = Category.objects.create(
-                                            name="Games",
-                                            notes="Games"
-                                          )
+        logger.error("missing category.")
     
     return (PROVIDER, CATEGORY)
 
@@ -425,7 +418,7 @@ class CancelReserveView(View):
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
-                        #resolved_time = None,
+                        # resolved_time = timezone.now(),
                         #other_data = {}
                     )
                     
@@ -535,7 +528,7 @@ class ReleaseView(View):
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
-                        #resolved_time = None,
+                        resolved_time = timezone.now(),
                         #other_data = {}
                     )
 

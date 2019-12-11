@@ -89,9 +89,10 @@ class Reserve(View):
                         bet = GameBet(
                             provider=PROVIDER,
                             category=CATEGORY,
-                            username=user,
+                            user=user,
                             ref_no=reserve_id,
                             amount_wagered=amount,
+                            user_name=user.username,
                             transaction_id=txn_id,
                             market=MARKET_CN,
                             other_data={
@@ -213,7 +214,8 @@ class DebitReserve(View):
             bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
-                username=user,
+                user=user,
+                user_name=user.username,
                 ref_no=reserve_id,
                 amount_wagered=amount,
                 transaction_id=txn_id,
@@ -297,7 +299,8 @@ class CommitReserve(View):
                 bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
+                        user_name=user.username,
                         ref_no=reserve_id,
                         amount_wagered=actualTotal,
                         market=MARKET_CN,
@@ -362,7 +365,8 @@ class CancelReserve(View):
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
+                        user_name=user.username,
                         ref_no=reserve_id,
                         amount_won=refund,
                         market=MARKET_CN,
@@ -388,7 +392,8 @@ class CancelReserve(View):
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
+                        user_name=user.username,
                         ref_no=reserve_id,
                         amount_won=credit_amount,
                         market=MARKET_CN,
@@ -416,7 +421,8 @@ class CancelReserve(View):
                     bet = GameBet(
                         provider=PROVIDER,
                         category=CATEGORY,
-                        username=user,
+                        user=user,
+                        user_name=user.username,
                         ref_no=reserve_id,
                         amount_won=credit_amount,
                         market=MARKET_CN,
@@ -470,7 +476,8 @@ class Add2Bet(View):
                 new_bet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    username=user,
+                    user=user,
+                    user_name=user.username,
                     ref_no=reserve_id,
                     amount_wagered=amount,
                     transaction_id=txn_id,
@@ -523,7 +530,8 @@ class Add2BetConfirm(View):
             confirm_bet = GameBet(
                 provider=PROVIDER,
                 category=CATEGORY,
-                username=user,
+                user=user,
+                user_name=user.username,
                 ref_no=reserve_id,
                 amount_wagered=bet_to_confirm.amount_wagered,
                 transaction_id=txn_id,
@@ -618,7 +626,8 @@ class DebitCustomer(View):
                 resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    username=user,
+                    user=user,
+                    user_name=user.username,
                     ref_no=reserve_id,
                     amount_won=decimal.Decimal(amount) * -1,
                     transaction_id=txn_id,
@@ -713,7 +722,8 @@ class CreditCustomer(View):
                 resolvedBet = GameBet(
                     provider=PROVIDER,
                     category=CATEGORY,
-                    username=user,
+                    user=user,
+                    user_name=user.username,
                     ref_no=reserve_id,
                     amount_won=amount,
                     transaction_id=txn_id,
@@ -748,23 +758,21 @@ def wrongRequest():
     return HttpResponse(res, content_type='text/plain')
 
 def getProviderCategory():
+    PROVIDER = None
+    CATEGORY = None
     try:
         PROVIDER = GameProvider.objects.get(provider_name=BTI_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider(
-            provider_name=BTI_PROVIDER,
-            type=GAME_TYPE_SPORTS,
-            market="letouCN, letouTH, letouVN",
-        )
-        PROVIDER.save()
+        logger.error("missing bti provider")
 
     try:
         CATEGORY = Category.objects.get(name='Sports')
     except ObjectDoesNotExist:
-        CATEGORY = Category(name='Sports')
-        CATEGORY.save()
-
-    return (PROVIDER, CATEGORY)
+        logger.error("missing sport category")
+    if PROVIDER and CATEGORY:
+        return (PROVIDER, CATEGORY)
+    else:
+        raise Exception("Provider or category is missing")
 
 ###########################################################################################
 # begin FE calls

@@ -447,11 +447,9 @@ def getBetDetail():
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=GAME_TYPE_SPORTS,
-                                        market='letouCN, letouTH, letouVN',
-                                        notes='2004')
         logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+        raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+        
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     delay = 2
     success = False
@@ -486,8 +484,7 @@ def getBetDetail():
                     try:
                         cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='Sports')
-                        logger.info("create new game category.")
+                        logger.error("missing sports game category.")
                     trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                     user = CustomUser.objects.get(username=username)
                     transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
@@ -495,7 +492,8 @@ def getBetDetail():
                         # print("onebook")
                         GameBet.objects.create(provider=PROVIDER,
                                                     category=cate,
-                                                    username=user,
+                                                    user=user,
+                                                    username=user.username,
                                                     transaction_id=transid,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
@@ -514,7 +512,8 @@ def getBetDetail():
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=transid,
-                                                    username=user,
+                                                    user=user,
+                                                    username=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -577,8 +576,7 @@ class GetBetDetail(APIView):
                     try:
                         cate = Category.objects.get(name='Sports')
                     except:
-                        cate = Category.objects.create(name='Sports')
-                        logger.info("create new game category.")
+                        logger.error("missing sports game category.")
                     user = CustomUser.objects.get(username=username)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
@@ -586,7 +584,8 @@ class GetBetDetail(APIView):
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
-                                                    username=user,
+                                                    user=user,
+                                                    username=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -601,7 +600,8 @@ class GetBetDetail(APIView):
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
-                                                    username=user,
+                                                    user=user,
+                                                    username=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
