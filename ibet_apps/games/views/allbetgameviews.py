@@ -377,17 +377,41 @@ def settle_bet(client, transaction_id, amount, bet_details):
 
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-
-
-
-
     except Exception as e:
         print("settle_bet error: " + str(e))
         pass
 
 
 
+def cancel_bet(client, transaction_id, amount, bet_details):
+    """
+    Helper method for the cancel bet transfer type.
+    """
 
+    # TODO:
+    # - check successful refund
+    # - check txn already exists
+    # - cancel should work for both ints and floats
+    # - check total bet amount in details
+    # - check client DNE
+    # - check negative bet amount -> WHY???
+
+    
+    # Check if transaction ID exists
+    try:
+        existing_transaction = GameBet.objects.get(ref_no=transaction_id)
+
+        # Since txn is found, we can refund it.
+        
+
+
+
+    except ObjectDoesNotExist:
+        json_to_return = {
+                            "error_code": 10006,
+                            "message": "Error: Cannot find specified bet to cancel."
+                         }
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
 
@@ -452,23 +476,15 @@ class TransferView(View):
 
 
 
-
-
-
-
             # Bet
             if transfer_type == "10":
                 return place_bet(client, transaction_id, amount, bet_details)
 
 
 
-
-
-
-            # TODO: Other wallet operations
+            # Cancel
             elif transfer_type == "11":
-                # Cancel
-                pass
+                return cancel_bet(client, transaction_id, amount, bet_details)
 
 
             # Settle
