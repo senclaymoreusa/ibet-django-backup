@@ -194,7 +194,7 @@ class Transaction(models.Model):
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
-    # commission tracsaction
+    # commission transaction
     month = models.DateField(null=True, blank=True)
     #Asiapay qrcode
     qrcode = models.CharField(max_length=500, null=True, blank= True, verbose_name=_("QRCode"))
