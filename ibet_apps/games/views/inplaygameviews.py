@@ -98,7 +98,7 @@ class ValidateTokenAPI(View):
             res = {}
             try:
                 user = Token.objects.get(key=token).user
-                
+
                 res["memberCode"] = user.username
                 if user.currency == CURRENCY_CNY:
                     res["CurrencyCode"] = "RMB"
@@ -322,7 +322,8 @@ class InplayUpdateBalanceAPI(View):
                         category = category[0],
                         # game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
                         # game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
-                        username = user,
+                        user = user,
+                        user_name = user.username,
                         amount_wagered = decimal.Decimal(amount),
                         # amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
                         # # outcome = models.BooleanField() # true = win, false = lost
