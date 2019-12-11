@@ -493,7 +493,7 @@ def getBetDetail():
                         GameBet.objects.create(provider=PROVIDER,
                                                     category=cate,
                                                     user=user,
-                                                    username=user.username,
+                                                    user_name=user.username,
                                                     transaction_id=transid,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
@@ -504,6 +504,7 @@ def getBetDetail():
                                                     ref_no=trans_id,
                                                     market=ibetCN,
                                                     other_data=rdata,
+                                                    resolved_time=timezone.now(),
                                                     )
                     else:
                         
@@ -513,7 +514,7 @@ def getBetDetail():
                                                     category=cate,
                                                     transaction_id=transid,
                                                     user=user,
-                                                    username=user.username,
+                                                    user_name=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -524,6 +525,7 @@ def getBetDetail():
                                                     ref_no=trans_id,
                                                     market=ibetCN,
                                                     other_data=rdata,
+                                                    resolved_time=timezone.now(),
                                                     )
                 
                 sleep(delay)    
@@ -585,7 +587,7 @@ class GetBetDetail(APIView):
                                                     category=cate,
                                                     transaction_id=trans_id,
                                                     user=user,
-                                                    username=user.username,
+                                                    user_name=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -593,6 +595,7 @@ class GetBetDetail(APIView):
                                                     amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     market=ibetCN,
+                                                    resolved_time=timezone.now(),
                                                     )
                     else:
                         resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
@@ -601,7 +604,7 @@ class GetBetDetail(APIView):
                                                     category=cate,
                                                     transaction_id=trans_id,
                                                     user=user,
-                                                    username=user.username,
+                                                    user_name=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -610,6 +613,7 @@ class GetBetDetail(APIView):
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     resolved_time=utcToLocalDatetime(resolve),
                                                     market=ibetCN,
+                                                    resolved_time=timezone.now(),
                                                     )
                 sleep(delay)    
             else:
