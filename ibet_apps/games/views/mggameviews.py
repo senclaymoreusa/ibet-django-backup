@@ -237,7 +237,7 @@ class MGgame(APIView):
                                                             transaction_id=trans_id,
                                                             resolved_time=timezone.now(),
                                                             # game_name=gameref,
-                                                            outcome=OUTCOME_CHOICES[0][0],
+                                                            outcome=0,
                                                             other_data=other_data
                                                             )
                         elif (playtype == "refund" or playtype == "transferfrommgs") :
@@ -253,7 +253,7 @@ class MGgame(APIView):
                                                             transaction_id=trans_id,
                                                             resolved_time=timezone.now(),
                                                             # game_name=gameref,
-                                                            outcome=OUTCOME_CHOICES[14][0],
+                                                            outcome=14,
                                                             other_data=other_data
                                                             )
 

@@ -352,7 +352,7 @@ class ProcessTransaction(APIView):
                                                         ref_no=gameTranId,
                                                         transaction_id=trans_id,
                                                         resolved_time=timezone.now(),
-                                                        outcome=OUTCOME_CHOICES[0][0],
+                                                        outcome=0,
                                                         other_data={
                                                             'provider_trans_id':transactionId
                                                         }
@@ -437,7 +437,7 @@ class ProcessTransaction(APIView):
                                                 market=ibetCN,
                                                 ref_no=gameTranId,
                                                 transaction_id=trans_id,
-                                                outcome=OUTCOME_CHOICES[7][0],
+                                                outcome=7,
                                                 other_data={
                                                             'provider_trans_id':transactionId
                                                         }
