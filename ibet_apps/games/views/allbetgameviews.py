@@ -123,7 +123,7 @@ class EncryptionView(View):
 
 def prop_id_is_invalid(test_id):
     """
-    Helper method to check provided property ID field against actual ID stored in AWS.
+    Helper method to check provided property ID field in request against actual ID stored in AWS.
     """
 
     third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
@@ -164,7 +164,7 @@ class BalanceView(View):
             AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
             AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
 
-            # Check Property ID
+            # Isolate Property ID from request header.
             ab_with_prop_id = str(auth_header).split(":")[0]
             prop_id = ab_with_prop_id[3:]
             
@@ -174,10 +174,10 @@ class BalanceView(View):
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
                                  }
-                logger.error("AllBet Game Error: Invalid authorization property ID")
+                logger.error("AllBet BalanceView Error: Invalid authorization property ID")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-            # Generate signature
+            # Generate signature.
             string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + date_header + "\n" + "/get_balance/" + player_account_name
             string_to_sign_encoded = string_to_sign.encode()
 
@@ -190,7 +190,6 @@ class BalanceView(View):
             generated_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
             print(generated_header) # Keeping this print statement for testing purposes.
 
-            # Compare generated_header against auth_header.
             if auth_header != generated_header:
                 json_to_return = {
                                     "error_code": 10001,
@@ -200,7 +199,7 @@ class BalanceView(View):
                 logger.error("AllBet BalanceView Error: Invalid sign while attempting to retrieve balance for user " + str(player_account_name))
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
             else:
-                user_obj = CustomUser.objects.get(username=player_account_name) # Guaranteed to exist.
+                user_obj = CustomUser.objects.get(username=player_account_name) # Guaranteed to exist at this point in code execution.
                 json_to_return = {
                                     "error_code": 0,
                                     "balance": int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
@@ -211,19 +210,20 @@ class BalanceView(View):
         except Exception as e:
             json_to_return = {
                                 "error_code": 50000,
-                                "message": "server error",
+                                "message": "server error: " + str(e),
                                 "balance": 0
                              }
             logger.error("Generic AllBet BalanceView Error: " + str(e))
-            return HttpResponse(str(e))
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
 def place_bet(client, transaction_id, amount, bet_details):
     """
-    Helper method for the place bet transfer type.
+    Helper method for the place bet transfer type, which handles both single bets as well
+    as batch bets.
     """
 
-    # Check if transaction ID already used
+    # Idempotence - check if bet transaction ID already used.
     try:
         existing_transaction = GameBet.objects.get(ref_no=transaction_id)
 
@@ -231,35 +231,51 @@ def place_bet(client, transaction_id, amount, bet_details):
                             "error_code": 10007,
                             "message": "Error: transaction ID already used."
                          }
+        logger.error("AllBet TransferView Error: Bet transaction ID already used.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     except ObjectDoesNotExist:
-        print("place_bet OK: Existing transaction does not exist.")
+        logger.info("AllBet TransferView place_bet OK: Incoming transaction ID not used yet.")
         pass
 
-    #################################################################################################################################
-    # TODO: Check bet_details for single bet that is zero or negative 
-    # TODO: Check that total bet amount equals sum of individual bets
-    # TODO: Batch bets should work
-    #################################################################################################################################
+    bet_details_total_amount = 0
 
+    for bet_dictionary in bet_details:
+        single_bet_id = bet_dictionary["betNum"]
+        single_bet_amount = bet_dictionary["amount"]
 
+        if single_bet_amount <= 0:
+            json_to_return = {
+                                "error_code": 40000,
+                                "message": "Error: Single bet amount cannot be less than or equal to 0."
+                             }
+            logger.error("AllBet TransferView Error: Single bet amount cannot be less than or equal to 0.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+        
+        bet_details_total_amount += single_bet_amount
+
+    if bet_details_total_amount != amount:
+        json_to_return = {
+                            "error_code": 40000,
+                            "message": "Error: Total bet amount does not add up to the bet amounts in details parameter."
+                         }
+        logger.error("AllBet TransferView Error: Total bet amount does not add up to the bet amounts in details parameter.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+    # At this point, we know that the bet request is a valid single or batch bet.
     try:
         user_obj = CustomUser.objects.get(username=client)
         user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
         bet_amount = float(amount)
 
-
-        print("bet_amount: " + str(bet_amount))
         # Illegal operation: total bet amount is 0 or negative.
-        if bet_amount <= 0.0:
+        if bet_amount <= 0:
             json_to_return = {
                                 "error_code": 40000,
                                 "message": "Error: Total bet amount cannot be less than or equal to 0."
                              }
+            logger.error("AllBet TransferView Error: Total bet amount cannot be less than or equal to 0.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-
 
         # Bet can go through.
         if user_balance >= bet_amount:
@@ -270,13 +286,13 @@ def place_bet(client, transaction_id, amount, bet_details):
 
                 ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-
                 GameBet.objects.create(
                     provider = GameProvider.objects.get(provider_name="ALLBET"),
                     category = Category.objects.get(name="Poker"),
                     #game = None,
                     #game_name = None,
-                    username = user_obj,
+                    user = user_obj,
+                    user_name = user_obj.username,
                     amount_wagered = bet_amount,
                     amount_won = 0.00,
                     #outcome = None,
@@ -287,19 +303,19 @@ def place_bet(client, transaction_id, amount, bet_details):
                     currency = user_obj.currency,
                     market = ibetCN,
                     ref_no = transaction_id,
-                    #bet_time = None,
+                    bet_time = timezone.now(),
                     #resolved_time = None,
-                    #other_data = {}
+                    other_data = {
+                        "bet_details": bet_details
+                    }
                 )
 
                 json_to_return = {
                                     "error_code": 0,
                                     "balance": int(user_obj.main_wallet * 100) / 100.0
                                  }
-
+                logger.info("AllBet TransferView Success: Bet placed.")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-
 
         # User does not have enough money.
         else:
@@ -307,23 +323,28 @@ def place_bet(client, transaction_id, amount, bet_details):
                                 "error_code": 10101,
                                 "message": "User does not have enough money to place bet."
                              }
+            logger.error("AllBet TransferView Error: User does not have enough money to place bet.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-
-
+    
     except Exception as e:
-        print(str(e))
-
-        if str(e) == "CustomUser matching query does not exist.": # TODO: find a better way to do this...
+        if str(e) == "CustomUser matching query does not exist.":
             json_to_return = {
                                 "error_code": 10003,
                                 "message": "Specified user does not exist."
                              }
+            logger.error("AllBet TransferView Error: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-
-
         return HttpResponse(str(e))
+
+
+
+
+
+######################################################################################################################################################
+######################################################################################################################################################
+######################################################################################################################################################
+
 
 
 def settle_bet(client, transaction_id, amount, bet_details):
@@ -339,8 +360,7 @@ def settle_bet(client, transaction_id, amount, bet_details):
 
 
         with transaction.atomic():
-            # TODO: Check assumptions - amount may be pos/neg based on win/loss and ints/floats are treated the same.
-            balance_after_settling = user_balance + settle_amount # ALWAYS ADD???
+            balance_after_settling = user_balance + settle_amount # settle_amount will be positive for wins and negative for losses.
             user_obj.main_wallet = balance_after_settling
             user_obj.save()
 
@@ -352,7 +372,8 @@ def settle_bet(client, transaction_id, amount, bet_details):
                 category = Category.objects.get(name="Poker"),
                 #game = None,
                 #game_name = None,
-                username = user_obj,
+                user = user_obj,
+                user_name = user_obj.username,
                 amount_wagered = 0.00,
                 amount_won = settle_amount,
                 #outcome = None,
@@ -364,12 +385,12 @@ def settle_bet(client, transaction_id, amount, bet_details):
                 market = ibetCN,
                 ref_no = transaction_id,
                 #bet_time = None,
-                #resolved_time = None,
+                resolved_time = timezone.now(),
                 #other_data = {}
             )
 
 
-            # Return user balance after settling.
+            # Return updated user balance after settling is complete.
             json_to_return = {
                                 "error_code": 0,
                                 "balance": int(user_obj.main_wallet * 100) / 100.0
@@ -383,37 +404,16 @@ def settle_bet(client, transaction_id, amount, bet_details):
 
 
 
-def cancel_bet(client, transaction_id, amount, bet_details):
-    """
-    Helper method for the cancel bet transfer type.
-    """
-
-    # TODO:
-    # - check successful refund
-    # - check txn already exists
-    # - cancel should work for both ints and floats
-    # - check total bet amount in details
-    # - check client DNE
-    # - check negative bet amount -> WHY???
-
-    
-    # Check if transaction ID exists
-    try:
-        existing_transaction = GameBet.objects.get(ref_no=transaction_id)
-
-        # Since txn is found, we can refund it.
-        
 
 
 
-    except ObjectDoesNotExist:
-        json_to_return = {
-                            "error_code": 10006,
-                            "message": "Error: Cannot find specified bet to cancel."
-                         }
-        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
+
+
+######################################################################################################################################################
+######################################################################################################################################################
+######################################################################################################################################################
 
 class TransferView(View):
 
@@ -449,7 +449,7 @@ class TransferView(View):
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
                                  }
-                logger.error("AllBet Game Error: Invalid authorization property ID")
+                logger.error("AllBet TransferView Error: Invalid authorization property ID")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             # Construct string for signing.
@@ -465,53 +465,38 @@ class TransferView(View):
             generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
             print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
-
-
-
             # Default JSON Response fields
             res_error_code = 50000
             res_message = "server error"
             res_balance = 0
 
-
-
-
-            # Bet
-            if transfer_type == "10":
+            # Place bet
+            if transfer_type == 10:
                 return place_bet(client, transaction_id, amount, bet_details)
 
-
-
-            # Cancel
-            elif transfer_type == "11":
-                return cancel_bet(client, transaction_id, amount, bet_details)
-
-
-            # Settle
-            elif transfer_type == "20":
+            # Settle bet
+            elif transfer_type == 20:
                 return settle_bet(client, transaction_id, amount, bet_details)
 
+            # Cancel bet
+            elif transfer_type == 11:
+                pass # TODO
+            
+            # Re-settle bet
+            elif transfer_type == 21:
+                pass # TODO
 
-
-            elif transfer_type == "21":
-                # Re-settle
-                pass
             else:
                 res_error_code = 40000
-                res_message = "Error: Invalid transfer type"
+                res_message = "AllBet TransferView Error: Invalid transfer type"
 
-            # After res_error_code, res_message, res_balance are finalized, return JSON response.
+            # If we have not yet returned successfully from a helper function, we return with an error.
             json_to_return = {
                                 "error_code": res_error_code,
                                 "message": res_message,
                                 "balance": res_balance
-                            }
+                             }
             return JsonResponse(json_to_return)
-
-
-
-
-
 
         except Exception as e:
             logger.error("Generic AllBet TransferView Error: " + str(e))
