@@ -46,6 +46,7 @@ def des3Encryption(plain_text):
         return str(base64.b64encode(cipher_text), "utf-8")
     except Exception as e:
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
+        return ""
 
 
 def des3Decryption(cipher_text):
@@ -57,6 +58,7 @@ def des3Decryption(cipher_text):
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
+        return ""
 
 
 class InplayLoginAPI(View):
@@ -88,7 +90,7 @@ class InplayLoginAPI(View):
             #     return HttpResponse(status=400)
         except Exception as e:
             logger.error("IMES Login Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse("Login Error", content_type='text/plain', status=200)
 
 
 class ValidateTokenAPI(View):
@@ -182,8 +184,11 @@ class InplayGetBalanceAPI(View):
                 ciphertext = des3Encryption(response)
                 return HttpResponse(ciphertext, content_type='text/plain', status=200)
             else:
-                # response[]
-                return HttpResponse("Wrong Event Type")
+                response["StatusCode"] = -100
+                response["StatusMessage"] = "Wrong Event Type"
+
+                response = json.dumps(response)
+                cipher_text = des3Encryption(response)
         except Exception as e:
             logger.error("IMES GET Balance Error: {}".format(repr(e)))
             return HttpResponse(status=400)
@@ -220,17 +225,22 @@ class InplayGetApprovalAPI(View):
                 cipher_text = des3Encryption(response)
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
             else:
-                return HttpResponse("Wrong event type")
+                response["StatusCode"] = -100
+                    
+                response = json.dumps(response)
+                cipher_text = des3Encryption(response)
+                return HttpResponse(cipher_text, content_type='text/plain', status=200)
         except Exception as e:
             logger.error("IMES Get Approval Error: {}".format(repr(e)))
             
+            response = {}
             response["StatusCode"] = -100
             response["StatusMessage"] = "Internal Error"
 
             response = json.dumps(response)
             cipher_text = des3Encryption(response)
 
-            return HttpResponse(cipher_text, content_type='text/plain', status=400)
+            return HttpResponse(cipher_text, content_type='text/plain', status=200)
 
 
 class InplayDeductBalanceAPI(View):
@@ -260,8 +270,8 @@ class InplayDeductBalanceAPI(View):
                         transfer_from="main",
                         transfer_to="IMES",
                         product=0,
-                        transaction_type=TRANSACTION_TRANSFER,
-                        status=TRAN_PENDING_TYPE
+                        transaction_type=TRANSACTION_BET_PLACED,
+                        status=TRAN_SUCCESS_TYPE
                     )
                     # res["DateReceived"] = str(timezone.now())
                     # res["DateSent"] = str(timezone.now())
@@ -288,7 +298,7 @@ class InplayDeductBalanceAPI(View):
             response = json.dumps(response)
             cipher_text = des3Encryption(response)
 
-            return HttpResponse(cipher_text, content_type='text/plain', status=400)
+            return HttpResponse(cipher_text, content_type='text/plain', status=200)
 
 
 class InplayUpdateBalanceAPI(View):
