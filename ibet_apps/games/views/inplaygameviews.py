@@ -254,7 +254,7 @@ class InplayDeductBalanceAPI(View):
                     GameBet.objects.create(
                         provider=provider[0],
                         category=category[0],
-                        user=user
+                        user=user,
                         user_name=user.username,
                         amount_wagered=decimal.Decimal(amount),
                         transaction_id=trans_id,
