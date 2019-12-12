@@ -10,7 +10,7 @@ from django.db import transaction
 import requests,json
 import logging
 from utils.constants import *
-from ipware.ip import get_real_ip
+from ipware import get_client_ip
 import base64, datetime
 import socket
 from utils.aws_helper import getThirdPartyKeys
@@ -27,37 +27,47 @@ class LoginDeviceInfo(APIView):
         # if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
         #     bucket = 'ibet-admin-approd'
         # third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
+        
+        ip, is_routable = get_client_ip(request)
+        if ip is None:
+            # Unable to get the client's IP address
+            logger.error("Unable to get the client's IP address")
 
+        # else:
+        #     # We got the client's IP address
+        #     if is_routable:
+        #         # The client's IP address is publicly routable on the Internet
+        #         print("test1")
+              
+        #     else:
+        #         # The client's IP address is private
+        #         print("test2")
+               
         authcode = IOVATION_SUBSCRIBERID + "/" + IOVATION_ACCOUNT + ":" + IOVATION_PASSWORD
         enc = base64.encodestring(bytes(authcode, encoding='ascii'))
       
         encc = str(enc)[2:len(str(enc)) - 3]
        
-        # print(socket.gethostname())
-        # print(socket.gethostbyname(socket.getfqdn()))
-        # print(encc)
-        # ip = get_real_ip(request)
-    
-        # print(ip)
+       
         headers = {
             'Content-Type': 'application/json',
             'Authorization' : 'Basic ' + encc 
             }
 
         #give a default value first if cannot get the statedIp..
-        statedIp = "192.168.86.121"
+        # statedIp = "192.168.86.121"
         # print(socket.gethostbyname(socket.getfqdn()))
-        try: 
-            statedIp = socket.gethostbyname(socket.gethostname())
-        except socket.gaierror as e: 
-            try: 
-                statedIp = socket.gethostbyname(socket.gethostname() + '.local')
-            except: 
-                pass
-        except: 
-            pass
+        # try: 
+        #     statedIp = socket.gethostbyname(socket.gethostname())
+        # except socket.gaierror as e: 
+        #     try: 
+        #         statedIp = socket.gethostbyname(socket.gethostname() + '.local')
+        #     except: 
+        #         pass
+        # except: 
+        #     pass
         data = {
-            "statedIp": statedIp,
+            "statedIp": ip,
             "accountCode": "device" + str(datetime.datetime.now()),
             "blackbox": blackbox,
             "type": "login"

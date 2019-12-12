@@ -66,6 +66,8 @@ from users.views.helper import *
 from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
 
 
 import datetime
@@ -355,15 +357,22 @@ class LoginView(GenericAPIView):
         
        
         customUser = CustomUser.objects.filter(username=self.user)
-       
+        #    item['key'] if 'key' in item else None
         try:
-            statedIp = self.iovationData['statedIp']
+            statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
             result = self.iovationData['result']
-            device = self.iovationData['details']['device']['os']
-            browser = self.iovationData['details']['device']['browser']
-            ipLocation = self.iovationData['details']['realIp']['ipLocation']
+            device = self.iovationData['details']['device']['os'] if 'device' in self.iovationData['details'] else ''
+            browser = self.iovationData['details']['device']['browser'] if 'device' in self.iovationData['details'] else ''
+            ipLocation = self.iovationData['details']['realIp']['ipLocation'] if 'ipLocation' in self.iovationData['details']['realIp'] else None
             otherData = self.iovationData
            
+
+            # print(self.user.username)
+            # r = RedisClient().connect()
+            redis = RedisHelper()
+            redis.set_device_by_user(self.user.username, device)
+
+            
             with transaction.atomic():
                 action = UserAction(
                     user= customUser.first(),
