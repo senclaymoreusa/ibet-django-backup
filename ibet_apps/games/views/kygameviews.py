@@ -152,7 +152,8 @@ def getBets():
                 amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                 transaction_id=trans_id,
                 market=ibetCN,
-                ref_no=game_id[i]
+                ref_no=game_id[i],
+                resolved_time=timezone.now()
             )
     else:
         pass
@@ -337,7 +338,8 @@ class TestGetRecord(View):
                         amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                         transaction_id=trans_id,
                         market=ibetCN,
-                        ref_no=game_id[i]
+                        ref_no=game_id[i],
+                        resolved_time=timezone.now()
                     )
             
             return HttpResponse(status=200)
