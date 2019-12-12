@@ -167,7 +167,7 @@ class BonusView(View):
             reqs = Requirement.objects.all()
             for req in reqs:
 
-                if bonus_pk != str(req.bonus.pk):
+                if bonus_name != str(req.bonus.name):
                     continue
 
                 req_data = serializers.serialize('json', [req])
@@ -179,7 +179,7 @@ class BonusView(View):
 
             # We need to join with the BonusCategory table to get all the applicable categories for this bonus.
             for bc_obj in BonusCategory.objects.all():
-                if str(bc_obj.bonus.pk) != bonus_pk:
+                if str(bc_obj.bonus.name) != bonus_name:
                     continue
                 category_json = serializers.serialize('json', {bc_obj.category})
                 category_json = json.loads(category_json)
@@ -207,6 +207,7 @@ class BonusView(View):
         try:
             req_data = request.POST.get("bonusDict")
             req_data = json.loads(req_data)
+            print(req_data)
         except Exception as e:
             logger.error("Error getting new bonus details " + str(e))
             response = JsonResponse({"error": "Error getting new bonus details"})
@@ -217,7 +218,10 @@ class BonusView(View):
             if bonus is None:
                 with transaction.atomic():
                     type = req_data.get('type')
+                    if type == "triggered":
+                        type = req_data.get('trigger_type')
                     type = BONUS_TYPE_VALUE_DICT.get(type)
+                    print(type)
 
                     delivery = req_data.get('delivery_method')
                     delivery = BONUS_DELIVERY_VALUE_DICT.get(delivery)
@@ -255,17 +259,15 @@ class BonusView(View):
 
                         must_have = requirements['must_have']
                         wager_multiple = requirements['wager_multiple']
+                        time_limit = sys.maxsize
+                        if requirements['time_limit']:
+                            time_limit = int(requirements['time_limit'])
 
                         # if wager['multiple'] is -1, it means this bonus has no wager requirements on this product
                         # and the bonus money cannot be applied on this product
                         for wager in wager_multiple:
                             if int(wager['multiple']) == -1:
                                 continue
-
-                            time_limit = None
-                            if wager['time_limit']:
-                                time_limit = int(wager['time_limit'])
-
                             wager_req = Requirement(
                                 aggregate_method=int(wager['aggregate_method']),
                                 time_limit=time_limit,
