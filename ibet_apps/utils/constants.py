@@ -204,12 +204,18 @@ LANGUAGE_CHOICES = (
     ('ja', 'Japanese'),
 )
 
+GAME_TYPE_SPORTS = 0
+GAME_TYPE_GAMES = 1
+GAME_TYPE_LIVE_CASINO = 2
+GAME_TYPE_TABLE_GAMES = 3
+GAME_TYPE_GENERAL = 4
+
 GAME_TYPE_CHOICES = (
-    (0, 'Sports'),
-    (1, 'Games'),
-    (2, 'Live Casino'),
-    (3, 'Financial'),
-    (4, 'General'),
+    (GAME_TYPE_SPORTS, 'Sports'),
+    (GAME_TYPE_GAMES, 'Games'),
+    (GAME_TYPE_LIVE_CASINO, 'Live Casino'),
+    (GAME_TYPE_TABLE_GAMES, 'Table Games'),
+    (GAME_TYPE_GENERAL, 'General'),
 )
 
 SPREAD = 'SPREAD'
@@ -584,6 +590,8 @@ FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
 LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -600,13 +608,27 @@ DEV_URL = "https://ibet-web-dev.claymoreusa.net"
 LINE_PAYMENTS_SANDBOX_URL = "https://sandbox-api-pay.line.me/v2/payments/"
 PRODUCT_IMG_URL = "https://pathtoproductimage.jpg"  # dummy image, will be replaced with actual company URL later
 
-# qaicash-payment
-QAICASH_URL = keys["QAICASH"]["URL"]
-MERCHANTID = keys["QAICASH"]["MERCHANTID"]
-MERCHANTAPIKEY = keys["QAICASH"]["MERCHANTAPIKEY"]
-APIVERSION = keys["QAICASH"]["APIVERSION"]
-DEPOSIT_URL = keys["QAICASH"]["DEPOSIT_URL"]
-PAYOUT_URL = keys["QAICASH"]["PAYOUT_URL"]
+
+
+if os.getenv("ENV") == "local" or "dev" in os.getenv("ENV"):
+    # qaicash-payment staging
+    QAICASH_URL = keys["QAICASH"]["STAGING"]["URL"]
+    MERCHANTID = keys["QAICASH"]["STAGING"]["MERCHANTID"]
+    MERCHANTAPIKEY = keys["QAICASH"]["STAGING"]["MERCHANTAPIKEY"]
+    APIVERSION = keys["QAICASH"]["STAGING"]["APIVERSION"]
+    DEPOSIT_URL = keys["QAICASH"]["STAGING"]["DEPOSIT_URL"]
+    PAYOUT_URL = keys["QAICASH"]["STAGING"]["PAYOUT_URL"]
+    CALLBACK_URL = keys["QAICASH"]["STAGING"]["CALLBACK_URL"]
+
+elif "prod" in os.getenv("ENV"):
+     # qaicash-payment production
+    QAICASH_URL = keys["QAICASH"]["PRODUCTION"]["URL"]
+    MERCHANTID = keys["QAICASH"]["PRODUCTION"]["MERCHANTID"]
+    MERCHANTAPIKEY = keys["QAICASH"]["PRODUCTION"]["MERCHANTAPIKEY"]
+    APIVERSION = keys["QAICASH"]["PRODUCTION"]["APIVERSION"]
+    DEPOSIT_URL = keys["QAICASH"]["PRODUCTION"]["DEPOSIT_URL"]
+    PAYOUT_URL = keys["QAICASH"]["PRODUCTION"]["PAYOUT_URL"]
+    CALLBACK_URL = keys["QAICASH"]["PRODUCTION"]["CALLBACK_URL"]
 
 # paypal-payment
 PAYPAL_MODE = 'sandbox'   # sandbox or live
@@ -640,7 +662,7 @@ FGATE_TYPE = keys["FGO"]["TYPE"]
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-# circlepay
+# circlepay -- doesn't have a sandbox 
 CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
 CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
 CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
@@ -666,6 +688,12 @@ ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
 ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
+#iovation
+IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"] 
+IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"] 
+IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
+IOVATION_URL = keys["IOVATION"]["URL"]
+
 # help2pay sandbox credentials & callback
 
 HELP2PAY_MERCHANT_THB = "M0513"
@@ -673,7 +701,7 @@ HELP2PAY_MERCHANT_VND = "M0514"
 HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
 
-if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     API_DOMAIN = "https://payment-testing.claymoreeuro.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
@@ -685,10 +713,10 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
     QT_PASS_KEY = keys["QTGAMES"]["PRODUCTION"]["PASS_KEY"]
     qt = keys["QTGAMES"]["PRODUCTION"]
-
-
-else:
-    API_DOMAIN = "https://754dc8ae.ngrok.io/"
+    H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
+    H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0513"
+elif "dev" in os.getenv("ENV"):
+    API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -699,6 +727,22 @@ else:
     PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
     QT_PASS_KEY = keys["QTGAMES"]["SANDBOX"]["PASS_KEY"]
     qt = keys["QTGAMES"]["SANDBOX"]
+    H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
+    H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+else:
+    API_DOMAIN = "https://cf61d044.ngrok.io/"
+    HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
+    HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
+    HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
+    QT_PASS_KEY = keys["QTGAMES"]["SANDBOX"]["PASS_KEY"]
+    qt = keys["QTGAMES"]["SANDBOX"]
+    H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
+    H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -1232,6 +1276,7 @@ BONUS_TYPE_DEPOSIT = 1
 BONUS_TYPE_TURNOVER = 2
 BONUS_TYPE_STANDARD = 3
 BONUS_TYPE_FREESPINS = 4
+BONUS_TYPE_MANUAL = 5
 
 BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_VERIFICATION, 'VERIFICATION'),
@@ -1239,6 +1284,7 @@ BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_TURNOVER, 'TURNOVER'),
     (BONUS_TYPE_STANDARD, 'STANDARD'),
     (BONUS_TYPE_FREESPINS, 'FREE SPINS'),
+    (BONUS_TYPE_MANUAL, 'MANUAL')
 )
 
 BONUS_STATUS_CHOICES = (
@@ -1268,6 +1314,12 @@ BONUS_RELEASE_TYPE_CHOICES = (
     (0, 'Pre-wager'),
     (1, 'Post-wager'),
 )
+
+BONUS_AGGREGATE_SUM = 0
+BONUS_AGGREGATE_COUNT = 1
+BONUS_AGGREGATE_AVERAGE = 2
+BONUS_AGGREGATE_MAX = 3
+BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
     (0, 'SUM'),
@@ -1343,7 +1395,55 @@ SECURITY_QUESTION = (
     (6, _('What is the name of the person that influenced you the most?'))
     
 )
+
+# Bonus
+BONUS_MANUAL = 0
+BONUS_TRIGGERED = 1
+BONUS_CATEGORY = (
+    (0, 'Manual'),
+    (1, 'Triggered'),
+)
+
+BONUS_MUST_HAVE = (
+    (0, 'ID verified'),
+    (1, 'Phone verified'),
+    (2, 'Email verified'),
+    (3, 'A successful deposit'),
+    (4, 'A successful withdrawal'),
+    (5, 'Manual audit for first withdrawal'),
+)
+
+BONUS_DELIVERY_PUSH = 0
+BONUS_DELIVERY_SITE = 1
+DELIVERY_CHOICES = (
+    (0, 'Push'),
+    (1, 'Site activation'),
+)
+
 # Games
+# All provider
+KY_PROVIDER = "KY"
+BETSOFT_PROVIDER = "Betsoft"
+AG_PROVIDER = "AG"
+FG_PROVIDER = "FG"
+MG_PROVIDER = "MG"
+ONEBOOK_PROVIDER = "Onebook"
+GB_PROVIDER = "GB"
+GD_PROVIDER = "GD"
+N2_PROVIDER = "N2"
+BTI_PROVIDER = "BTi"
+PLAYNGO_PROVIDER = "PLAYNGO"
+IMES_PROVIDER = "IMES"
+QTECH_PROVIDER = "QTech"
+
+# Taiwan team
+GPT_PROVIDER = "GPT"
+OPUS_PROVIDER = "OPUS"
+BBIN_PROVIDER = "BBIN"
+PT_PROVIDER = "PT"
+
+
+
 
 # Playngo
 PNG_STATUS_OK = 0
@@ -1361,14 +1461,13 @@ PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
 
 # Kaiyuan Gaming
-KY_PROVIDER = "Kaiyuan"
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
 #onebook
-ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
+# ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
 ONEBOOK_VENDORID = keys["ONEBOOK"]["VENDORID"]
 ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
 ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
@@ -1387,7 +1486,7 @@ SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
-GB_PROVIDER = keys["GB"]["PROVIDER"]
+# GB_PROVIDER = keys["GB"]["PROVIDER"]
 GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
@@ -1409,3 +1508,6 @@ QT_STATUS_CODE = (
     (4, "ACCOUNT_BLOCKED"),
     (5, "REQUEST_DECLINED"),
 )
+
+# Betsoft
+BETSOFT_KEY = keys["BETSOFT"]["KEY"]
