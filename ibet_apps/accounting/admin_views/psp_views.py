@@ -96,5 +96,4 @@ class GetPSP(CommAdminView):
             provider = WithdrawChannel.objects.filter(pk=pk)
             
         provider = serializers.serialize('json', provider)
-        print(provider)
         return HttpResponse(provider, content_type='application/json')

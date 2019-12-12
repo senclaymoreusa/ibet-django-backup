@@ -197,7 +197,8 @@
     function initSearchParams() {
         if (window.location.search) {
             let params = new URLSearchParams(window.location.search);
-            document.getElementById('search').value = params.get('search_params');
+            document.getElementById('search').value = params.get('search');
+
             if (params.get('market')) {
                 let selectedMarket = document.getElementById('market-filter');
                 for(let i = 0; i < selectedMarket.options.length; i++) {
@@ -227,6 +228,7 @@
                     }
                 }
             }
+
         }
     }
     function initEventHandlers() {
