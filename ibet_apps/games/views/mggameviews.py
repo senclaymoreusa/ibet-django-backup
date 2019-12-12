@@ -200,7 +200,8 @@ class MGgame(APIView):
                 playtype = dd['pkt']['methodcall']['call']['@playtype']
                 amount = dd['pkt']['methodcall']['call']['@amount']
                 currency = dd['pkt']['methodcall']['call']['@currency']
-            
+                # gameref = dd['pkt']['methodcall']['call']['@gamereference']
+               
                 # here should judge the currency later...
         
                 user = Token.objects.get(key=token).user
@@ -232,6 +233,8 @@ class MGgame(APIView):
                                                             market=ibetCN,
                                                             ref_no=transactionId,
                                                             transaction_id=trans_id,
+                                                            resolved_time=timezone.now(),
+                                                            # game_name=gameref,
                                                             other_data=other_data
                                                             )
                         else :
@@ -244,6 +247,7 @@ class MGgame(APIView):
                                                             market=ibetCN,
                                                             ref_no=transactionId,
                                                             transaction_id=trans_id,
+                                                            # game_name=gameref,
                                                             other_data=other_data
                                                             )
 

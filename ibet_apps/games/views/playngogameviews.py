@@ -299,7 +299,8 @@ class ReserveView(View):
                         category = CATEGORY,
                         #game = None,
                         #game_name = None,
-                        username = user_obj,
+                        user = user_obj,
+                        user_name = user_obj.username,
                         amount_wagered = bet_amount_decimal,
                         amount_won = 0.00,
                         #outcome = None,
@@ -406,7 +407,8 @@ class CancelReserveView(View):
                         category = CATEGORY,
                         #game = None,
                         #game_name = None,
-                        username = user_obj,
+                        user = user_obj,
+                        user_name = user_obj.username,
                         amount_wagered = 0.00,
                         amount_won = amount_to_refund,
                         #outcome = None,
@@ -418,7 +420,7 @@ class CancelReserveView(View):
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
-                        #resolved_time = None,
+                        # resolved_time = timezone.now(),
                         #other_data = {}
                     )
                     
@@ -516,7 +518,8 @@ class ReleaseView(View):
                         category = CATEGORY,
                         #game = None,
                         #game_name = None,
-                        username = user_obj,
+                        user = user_obj,
+                        user_name = user_obj.username,    
                         amount_wagered = 0.00,
                         amount_won = win_amount_decimal,
                         #outcome = None,
@@ -528,7 +531,7 @@ class ReleaseView(View):
                         market = ibetVN, # Need to clarify with provider
                         ref_no = transaction_id,
                         #bet_time = None,
-                        #resolved_time = None,
+                        resolved_time = timezone.now(),
                         #other_data = {}
                     )
 

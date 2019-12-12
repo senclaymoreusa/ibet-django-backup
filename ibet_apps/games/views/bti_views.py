@@ -758,6 +758,8 @@ def wrongRequest():
     return HttpResponse(res, content_type='text/plain')
 
 def getProviderCategory():
+    PROVIDER = None
+    CATEGORY = None
     try:
         PROVIDER = GameProvider.objects.get(provider_name=BTI_PROVIDER)
     except ObjectDoesNotExist:
@@ -767,8 +769,10 @@ def getProviderCategory():
         CATEGORY = Category.objects.get(name='Sports')
     except ObjectDoesNotExist:
         logger.error("missing sport category")
-
-    return (PROVIDER, CATEGORY)
+    if PROVIDER and CATEGORY:
+        return (PROVIDER, CATEGORY)
+    else:
+        raise Exception("Provider or category is missing")
 
 ###########################################################################################
 # begin FE calls
