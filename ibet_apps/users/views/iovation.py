@@ -23,25 +23,12 @@ class LoginDeviceInfo(APIView):
         except Exception as e:
             logger.error("cannot get blackbox", e)
            
-        # bucket = 'ibet-admin-apdev'
-        # if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
-        #     bucket = 'ibet-admin-approd'
-        # third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
-        
-        ip, is_routable = get_client_ip(request)
-        if ip is None:
-            # Unable to get the client's IP address
-            logger.error("Unable to get the client's IP address")
-
-        # else:
-        #     # We got the client's IP address
-        #     if is_routable:
-        #         # The client's IP address is publicly routable on the Internet
-        #         print("test1")
-              
-        #     else:
-        #         # The client's IP address is private
-        #         print("test2")
+        # print(request.environ['REMOTE_ADDR'])
+        ip = request.environ['REMOTE_ADDR']
+        # ip, is_routable = get_client_ip(request)
+        # if ip is None:
+        #     # Unable to get the client's IP address
+        #     logger.error("Unable to get the client's IP address")
                
         authcode = IOVATION_SUBSCRIBERID + "/" + IOVATION_ACCOUNT + ":" + IOVATION_PASSWORD
         enc = base64.encodestring(bytes(authcode, encoding='ascii'))
@@ -54,18 +41,7 @@ class LoginDeviceInfo(APIView):
             'Authorization' : 'Basic ' + encc 
             }
 
-        #give a default value first if cannot get the statedIp..
-        # statedIp = "192.168.86.121"
-        # print(socket.gethostbyname(socket.getfqdn()))
-        # try: 
-        #     statedIp = socket.gethostbyname(socket.gethostname())
-        # except socket.gaierror as e: 
-        #     try: 
-        #         statedIp = socket.gethostbyname(socket.gethostname() + '.local')
-        #     except: 
-        #         pass
-        # except: 
-        #     pass
+       
         data = {
             "statedIp": ip,
             "accountCode": "device" + str(datetime.datetime.now()),
