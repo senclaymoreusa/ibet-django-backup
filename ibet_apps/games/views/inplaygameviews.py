@@ -147,7 +147,6 @@ class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
         balance_package = request.GET.get("balancePackage")
         date_sent = request.GET.get("dateSent")
-        # data = "lbGQtVNxUDypUuwmTwOg5ROUx6IUpDxu1EbE7B+cNNHTP3oIVqIw2QQ6AFB85L6Y"
         # balance_package = "ZwgZhGFWmUv5vDi5q2ruVNc3lf+JmmxTctAdoxbVdOUeW+RbwyYE95B0M4EiVX/k"
         try:
             balance_package = balance_package.replace(' ', '+')
@@ -160,19 +159,6 @@ class InplayGetBalanceAPI(View):
                 member_code = data["MemberCode"]
                 member_code = member_code.strip('\"')
                 user = CustomUser.objects.get(username=member_code)
-
-                '''
-                GameBet.objects.create(
-                    provider=provider[0],
-                    category=category[0],
-                    username=user,
-                    amount_wagered=decimal.Decimal(cell_score[i]),
-                    amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
-                    transaction_id=trans_id,
-                    market=ibetCN,
-                    ref_no=game_id[i]
-                )
-                '''
 
                 response["StatusCode"] = 100
                 response["StatusMessage"] = "Success"
@@ -261,18 +247,21 @@ class InplayDeductBalanceAPI(View):
                 user = CustomUser.objects.get(username=user)
                 if user.main_wallet > amount:
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    trans = Transaction.objects.create(
+
+                    provider = GameProvider.objects.get_or_create(provider_name=IMES_PROVIDER, type=0, market=ibetCN)
+                    category = Category.objects.get_or_create(name='SPORTS')
+ 
+                    GameBet.objects.create(
+                        provider=provider[0],
+                        category=category[0],
+                        user=user
+                        user_name=user.username,
+                        amount_wagered=decimal.Decimal(amount),
                         transaction_id=trans_id,
-                        user_id=user,
-                        order_id=package_id,
-                        amount=amount,
-                        currency=user_currency,
-                        transfer_from="main",
-                        transfer_to="IMES",
-                        product=0,
-                        transaction_type=TRANSACTION_BET_PLACED,
-                        status=TRAN_SUCCESS_TYPE
+                        market=ibetCN,
+                        ref_no=package_id
                     )
+                    
                     # res["DateReceived"] = str(timezone.now())
                     # res["DateSent"] = str(timezone.now())
                     response["StatusCode"] = 100
