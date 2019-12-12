@@ -298,7 +298,10 @@ class ProcessTransaction(APIView):
                                                         currency=user.currency,
                                                         market=ibetCN,
                                                         ref_no=gameTranId,
-                                                        transaction_id=trans_id
+                                                        transaction_id=trans_id,
+                                                        other_data={
+                                                            'provider_trans_id':transactionId
+                                                        }
                                                         )
                     response = {
                         "seq" : seq,
@@ -348,7 +351,11 @@ class ProcessTransaction(APIView):
                                                         market=ibetCN,
                                                         ref_no=gameTranId,
                                                         transaction_id=trans_id,
-                                                        resolved_time=timezone.now()
+                                                        resolved_time=timezone.now(),
+                                                        outcome=OUTCOME_CHOICES[0][0],
+                                                        other_data={
+                                                            'provider_trans_id':transactionId
+                                                        }
                                                         )
                     response = {
                         "seq" : seq,
@@ -429,8 +436,11 @@ class ProcessTransaction(APIView):
                                                 amount_won=float(amount),
                                                 market=ibetCN,
                                                 ref_no=gameTranId,
-                                                transaction_id=trans_id
-                                          
+                                                transaction_id=trans_id,
+                                                outcome=OUTCOME_CHOICES[7][0],
+                                                other_data={
+                                                            'provider_trans_id':transactionId
+                                                        }
                                                 )
 
         elif tranType == "END_GAME" :

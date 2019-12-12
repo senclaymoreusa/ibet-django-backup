@@ -223,7 +223,8 @@ class MGgame(APIView):
                         user.save()
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                        if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
+                        if (playtype == "win" or playtype == "progressivewin") :
+                           
                             GameBet.objects.get_or_create(provider=provider,
                                                             category=category,
                                                             user=user,
@@ -236,8 +237,26 @@ class MGgame(APIView):
                                                             transaction_id=trans_id,
                                                             resolved_time=timezone.now(),
                                                             # game_name=gameref,
+                                                            outcome=OUTCOME_CHOICES[0][0],
                                                             other_data=other_data
                                                             )
+                        elif (playtype == "refund" or playtype == "transferfrommgs") :
+                            GameBet.objects.get_or_create(provider=provider,
+                                                            category=category,
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            amount_wagered=0.00,
+                                                            currency=user.currency,
+                                                            amount_won=decimal.Decimal(amount)/100,
+                                                            market=ibetCN,
+                                                            ref_no=gameid,
+                                                            transaction_id=trans_id,
+                                                            resolved_time=timezone.now(),
+                                                            # game_name=gameref,
+                                                            outcome=OUTCOME_CHOICES[14][0],
+                                                            other_data=other_data
+                                                            )
+
                         else :
                             GameBet.objects.get_or_create(provider=provider,
                                                             category=category,
