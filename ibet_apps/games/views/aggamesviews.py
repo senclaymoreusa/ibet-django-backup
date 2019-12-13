@@ -13,145 +13,276 @@ import requests
 import xml.etree.ElementTree as ET
 import random
 from django.utils import timezone
-
-class CheckOrCreateGameAccout(APIView):
-    permission_classes = (AllowAny, )
-
-    def post(self, request, *args, **kwargs):
-        username =  request.POST['username']
-        password = request.POST['password']
-        oddtype = request.POST['oddtype']
-        actype = request.POST['actype']
-        cur = request.POST['cur']
-        try:
-            user = CustomUser.objects.get(username=username)
-            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=lg/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
-            
-            param = des_encrypt(s,AG_DES).decode("utf-8") 
-
-            key = MD5(param + AG_MD5)
-            r = requests.get(AG_URL ,  params={
-                    "params": param,
-                    "key": key,  
-                })
-            rdata = r.text
-            if r.status_code == 200:
-                tree = ET.fromstring(rdata)
-                info = tree.get('info')
-                msg =  tree.get('msg')
-                return Response({'info': info, 'msg': msg})
-            else:
-                return Response({"error":"The request is failed"}) 
-        except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed."}) 
-
-class GetBalance(APIView):
-    permission_classes = (AllowAny, )
-    def post(self, request, *args, **kwargs):
-        username =  request.POST['username']
-        password = request.POST['password']
-        oddtype = request.POST['oddtype']
-        actype = request.POST['actype']
-        cur = request.POST['cur']
-        try:
-            user = CustomUser.objects.get(username=username)
-            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=gb/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
-            
-            param = des_encrypt(s,AG_DES).decode("utf-8") 
-
-            key = MD5(param + AG_MD5)
-            r = requests.get(AG_URL ,  params={
-                    "params": param,
-                    "key": key,  
-                })
-            rdata = r.text
-            if r.status_code == 200:
-                tree = ET.fromstring(rdata)
-                info = tree.get('info')
-                msg =  tree.get('msg')
-                return Response({'info': info, 'msg': msg})
-            else:
-                return Response({"error":"The request is failed"}) 
-        except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed."}) 
+from time import gmtime, strftime, strptime
+from django.http import  HttpResponse
+from rest_framework.decorators import api_view, permission_classes
+from time import sleep
 
 
-class PrepareTransferCredit(APIView):
-    permission_classes = (AllowAny, )
 
-    def post(self, request, *args, **kwargs):
+def checkCreateGameAccoutOrGetBalance(username,password,method,oddtype,actype,cur):
+
+    try:
+        user = CustomUser.objects.get(username=username)
+        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=" + method + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
         
-        username =  request.POST['username']
-        password = request.POST['password']
-        actype = request.POST['actype']
-        cur = request.POST['cur']
-        agtype = request.POST['type']
-        # fixcredit = request.POST['fixcredit']
-        gameCategory = request.POST['gameCategory']
-        credit = request.POST['credit']
-        try:
-            user = CustomUser.objects.get(username=username)
-            billno = AG_CAGENT + str(random.randint(0, 10000000))
-            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=tc/\\\\/" + "billno=" + billno +  "/\\\\/" + "type=" + agtype + "/\\\\/" + "credit=" + credit + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" +  "gameCategory=" + gameCategory + "/\\\\/" + "cur=" + cur  
-            print(s)
-            param = des_encrypt(s,AG_DES).decode("utf-8") 
-            print(param)
-            key = MD5(param + AG_MD5)
-            print(key)
-            r = requests.get(AG_URL ,  params={
-                    "params": param,
-                    "key": key,  
-                })
-            rdata = r.text
-            print(rdata)
-            if r.status_code == 200:
-                tree = ET.fromstring(rdata)
-                info = tree.get('info')
-                msg =  tree.get('msg')
-                return Response({'info': info, 'msg': msg})
-            else:
-                return Response({"error":"The request is failed"}) 
-        except ObjectDoesNotExist:
-            return Response({"error":"The  user is not existed."}) 
+        param = des_encrypt(s,AG_DES).decode("utf-8") 
 
-class TransferCreditConfirm(APIView):
+        key = MD5(param + AG_MD5)
+        r = requests.get(AG_URL ,  params={
+                "params": param,
+                "key": key,  
+            })
+        rdata = r.text
+        if r.status_code == 200:
+            tree = ET.fromstring(rdata)
+            info = tree.get('info')   
+            msg =  tree.get('msg')
+            if info == '0' or msg == '':
+                return 0
+            else:
+                return 1
+        else:
+            return 1
+    except ObjectDoesNotExist:
+        return 1
+
+
+    
+@api_view(['POST'])
+@permission_classes((AllowAny,))        
+def getBalance(request):  
+    username =  request.POST['username']
+    password = request.POST['password']
+    oddtype = request.POST['oddtype']
+    actype = request.POST['actype']
+    cur = request.POST['cur']
+    try:
+        user = CustomUser.objects.get(username=username)
+        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=" + "gb" + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
+        
+        param = des_encrypt(s,AG_DES).decode("utf-8") 
+
+        key = MD5(param + AG_MD5)
+        r = requests.get(AG_URL ,  params={
+                "params": param,
+                "key": key,  
+            })
+        rdata = r.text
+        if r.status_code == 200:
+            tree = ET.fromstring(rdata)
+            info = tree.get('info')
+            msg =  tree.get('msg')
+            return Response({'info': info, 'msg': msg})
+        else:
+            return Response({"error":"The request is failed"}) 
+    except ObjectDoesNotExist:
+        return Response({"error":"The user is not existed."}) 
+
+
+def prepareTransferCredit(username, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno):    
+
+    try:
+        user = CustomUser.objects.get(username=username)
+        
+        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=tc/\\\\/" + "billno=" + billno +  "/\\\\/" + "type=" + agtype + "/\\\\/" + "fixcredit=" + fixcredit + "/\\\\/" + "credit=" + credit + "/\\\\/"+ "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" +  "gameCategory=" + gameCategory + "/\\\\/" + "cur=" + cur  
+        print(s)
+        param = des_encrypt(s,AG_DES).decode("utf-8") 
+        print(param)
+        key = MD5(param + AG_MD5)
+        print(key)
+        r = requests.get(AG_URL ,  params={
+                "params": param,
+                "key": key,  
+            })
+        rdata = r.text
+        print(rdata)
+        if r.status_code == 200:
+            tree = ET.fromstring(rdata)
+            info = tree.get('info')
+            msg =  tree.get('msg')
+            if info == '0':
+                return 0
+            else:
+                return 1
+            
+        else:
+            return 1
+    except ObjectDoesNotExist:
+        return 1
+
+
+def transferCreditConfirm(username,password,actype,cur,agtype,fixcredit,gameCategory,credit,flag,billno):
+
+    try:
+        user = CustomUser.objects.get(username=username)
+        
+        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=tcc/\\\\/" + "billno=" + billno +  "/\\\\/" + "type=" + agtype + "/\\\\/" + "credit=" + credit + "/\\\\/" + "fixcredit=" + fixcredit + "/\\\\/" + "actype=" + actype + "/\\\\/" +"flag=" + flag + "/\\\\/"  +  "password=" + password + "/\\\\/" +  "gameCategory=" + gameCategory + "/\\\\/" + "cur=" + cur  
+        print(s)
+        param = des_encrypt(s,AG_DES).decode("utf-8") 
+        print(param)
+        key = MD5(param + AG_MD5)
+        print(key)
+        r = requests.get(AG_URL ,  params={
+                "params": param,
+                "key": key,  
+            })
+        rdata = r.text
+        print(rdata)
+        if r.status_code == 200:
+            tree = ET.fromstring(rdata)
+            info = tree.get('info')
+            msg =  tree.get('msg')
+            if info == '0':
+                return 0
+            elif info == '1': #失败, 订单未处理状态
+                return 1
+            elif info == '2': #因无效的转账金额引致的失败
+                return 2
+            
+        else:
+            return 1
+    except ObjectDoesNotExist:
+        return 1
+
+
+def queryOrderStatus(actype,cur,billno):  
+
+    
+    s = "cagent=" + AG_CAGENT + "/\\\\/" + "billno=" + billno + "/\\\\/" + "method=qos/\\\\/" + "actype=" + actype + "/\\\\/" + "cur=" + cur  
+    
+    param = des_encrypt(s,AG_DES).decode("utf-8") 
+
+    key = MD5(param + AG_MD5)
+    r = requests.get(AG_URL ,  params={
+            "params": param,
+            "key": key,  
+        })
+    rdata = r.text
+    if r.status_code == 200:
+        tree = ET.fromstring(rdata)
+        info = tree.get('info')
+        msg =  tree.get('msg')
+        if info == '0':
+            return 0
+        elif info == '1':
+            return 1
+        elif info == '2':
+            return 2
+        elif info == 'network_error':
+            return 3    
+    else:
+        return 4
+
+@api_view(['POST'])
+@permission_classes((AllowAny,))        
+def forwardGame(request):
+    username =  request.POST['username']
+    password = request.POST['password']
+    actype = request.POST['actype']
+    cur = request.POST['cur']
+    agtype = request.POST['type']
+    credit = request.POST['credit']
+    lang = request.POST['lang']
+    billno = request.POST['billno']
+    gameType = request.POST['gameType']
+    oddtype = request.POST['oddtype']
+    sid = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime()) + str(random.randint(0, 10000000))
+    try:
+        user = CustomUser.objects.get(username=username)
+        
+        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
+        print(s)
+        param = des_encrypt(s,AG_DES).decode("utf-8") 
+        print(param)
+        key = MD5(param + AG_MD5)
+        print(key)
+        
+        r = requests.get(AG_FORWARD_URL ,  data={
+                "params": param,
+                "key": key,  
+            })
+        rdata = r.text
+        
+                
+        return HttpResponse(rdata)
+        
+    except ObjectDoesNotExist:
+        return Response({"error":"The  user is not existed."}) 
+
+
+class TransferCreditAndLogin(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
         username =  request.POST['username']
         password = request.POST['password']
+        oddtype = request.POST['oddtype']
         actype = request.POST['actype']
         cur = request.POST['cur']
-        agtype = request.POST['type']
-        # fixcredit = request.POST['fixcredit']
+        agtype = request.POST['agtype']
         gameCategory = request.POST['gameCategory']
         credit = request.POST['credit']
-        try:
-            user = CustomUser.objects.get(username=username)
-            billno = AG_CAGENT + str(random.randint(0, 10000000))
-            s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=tc/\\\\/" + "billno=" + billno +  "/\\\\/" + "type=" + agtype + "/\\\\/" + "credit=" + credit + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" +  "gameCategory=" + gameCategory + "/\\\\/" + "cur=" + cur  
-            print(s)
-            param = des_encrypt(s,AG_DES).decode("utf-8") 
-            print(param)
-            key = MD5(param + AG_MD5)
-            print(key)
-            r = requests.get(AG_URL ,  params={
-                    "params": param,
-                    "key": key,  
-                })
-            rdata = r.text
-            print(rdata)
-            if r.status_code == 200:
-                tree = ET.fromstring(rdata)
-                info = tree.get('info')
-                msg =  tree.get('msg')
-                return Response({'info': info, 'msg': msg})
-            else:
-                return Response({"error":"The request is failed"}) 
-        except ObjectDoesNotExist:
-            return Response({"error":"The  user is not existed."}) 
+        fixcredit = request.POST['fixcredit']
+        billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
+        lg_method = 'lg'
+        gb_method = 'gb'
+        success = True
+        confirm = True
+        checking = True
+        if checkCreateGameAccoutOrGetBalance(username, password, lg_method, oddtype, actype, cur) == 0: #check or create game account
+            while success:
+                if checkCreateGameAccoutOrGetBalance(username, password, gb_method, oddtype, actype, cur) == 0: #get balance
+                    if prepareTransferCredit(username, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == 0:
+                        print("prepare")
+                        delay = kwargs.get("delay", 5)
+                        while confirm:
+                            flag = '1'
+                            if transferCreditConfirm(username,password,actype,cur,agtype,fixcredit,gameCategory,credit,flag,billno) == 0:
+                                print("confirm")
+                                success = False
+                                confirm = False
+                                return Response({"success": "transfer credit confirm"})
+                                break
+                                   
+                            else:
+                                while checking:
+                                    if queryOrderStatus(actype,cur,billno) == 0:
+                                        print("query")
+                                        success = False
+                                        confirm = False
+                                        checking = False
+                                        return Response({"success": "quert order status"})
+                                        break
+                                    elif queryOrderStatus(actype,cur,billno) == 1:  
+                                        success = True
+                                        confirm = True
+                                        checking = False
+                                        
+                                    elif queryOrderStatus(actype,cur,billno) == 3:  
+                                        checking = True       
+                                        sleep(delay)
+                                        
+                                    elif queryOrderStatus(actype,cur,billno) == 2: 
+                                        success = True
+                                        confirm = False
+                                        checking = False
+                                        sleep(delay)
+                                        
+
+                    else:
+                        success = False
+                        return Response({"error": "Cannot prepare transfer credit for AG game account."})
+                        break
+                else:
+                    success = False
+                    return Response({"error": "Cannot get balance for AG game account."})
+                    break
+        else:
+            return Response({"error": "Cannot check or create AG game account."})
 
 
+    
 class PostTransferforAG(APIView):
 
     permission_classes = (AllowAny, )

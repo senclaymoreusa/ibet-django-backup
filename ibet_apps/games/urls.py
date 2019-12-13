@@ -136,9 +136,13 @@ urlpatterns = [
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
 
     #AG
-    path('api/ag/check_or_create', aggamesviews.CheckOrCreateGameAccout.as_view(), name="Check_Or_Create_Game_Account"),
-    path('api/ag/get_balance', aggamesviews.GetBalance.as_view(), name="Get_Balance"),
-    path('api/ag/prepare_transfer_credit_balance', aggamesviews.PrepareTransferCredit.as_view(), name="Prepare_Transfer_Credit"),
+    # path('api/ag/check_or_create', aggamesviews.checkOrCreateGameAccout, name="Check_Or_Create_Game_Account"),
+    path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
+    # path('api/ag/prepare_transfer_credit_balance', aggamesviews.prepareTransferCredit, name="Prepare_Transfer_Credit"),
+    # path('api/ag/transfer_credit_confirm', aggamesviews.transferCreditConfirm, name="Transfer_Credit_Confirm"),
+    # path('api/ag/query_order_status', aggamesviews.queryOrderStatus, name="Query_Order_Status"),
+    path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
+    path('api/ag/transfer_credit_login', aggamesviews.TransferCreditAndLogin.as_view(), name="Transfer_Credit_And_Login"),
 ]
 
 #onebookviews.getBetDetail(repeat=300,repeat_until=None)

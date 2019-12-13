@@ -351,18 +351,18 @@ class WalletSettleAPIURL(APIView):
                     else:
                         bet_type = OTHER
                         
-                    if BetResult == '0':
-                        BetResult = 1 #lose
-                    elif BetResult == '1':
-                        BetResult = 0 #win
-                    elif BetResult == '2':
-                        BetResult = 2 #tie
-                    elif BetResult == '4':
-                        BetResult = 8 #cancel
-                    elif BetResult == '5':
-                        BetResult = 9 #兑现
-                    elif BetResult == 'R':
-                        BetResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                    if TicketResult == '0':
+                        TicketResult = 1 #lose
+                    elif TicketResult == '1':
+                        TicketResult = 0 #win
+                    elif TicketResult == '2':
+                        TicketResult = 2 #tie
+                    elif TicketResult == '4':
+                        TicketResult = 8 #cancel
+                    elif TicketResult == '5':
+                        TicketResult = 9 #兑现
+                    elif TicketResult == 'R':
+                        TicketResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
                     with transaction.atomic():    
                         GameBet.objects.create(
                             provider=PROVIDER,
@@ -375,7 +375,7 @@ class WalletSettleAPIURL(APIView):
                             amount_wagered=decimal.Decimal(RealBetAmt/100),
                             bet_type=bet_type,
                             amount_won=decimal.Decimal(RefundBetAmt/100),
-                            outcome=BetResult,
+                            outcome=TicketResult,
                             resolved_time=timezone.now(),
                             other_data=data,
                         )
@@ -455,18 +455,18 @@ class WalletSettleAPIURL(APIView):
                         else:
                             bet_type = OTHER
                         
-                        if BetResult == '0':
-                            BetResult = 1 #lose
-                        elif BetResult == '1':
-                            BetResult = 0 #win
-                        elif BetResult == '2':
-                            BetResult = 2 #tie
-                        elif BetResult == '4':
-                            BetResult = 8 #cancel
-                        elif BetResult == '5':
-                            BetResult = 9 #兑现
-                        elif BetResult == 'R':
-                            BetResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                        if TicketResult == '0':
+                            TicketResult = 1 #lose
+                        elif TicketResult == '1':
+                            TicketResult = 0 #win
+                        elif TicketResult == '2':
+                            TicketResult = 2 #tie
+                        elif TicketResult == '4':
+                            TicketResult = 8 #cancel
+                        elif TicketResult == '5':
+                            TicketResult = 9 #兑现
+                        elif TicketResult == 'R':
+                            TicketResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
                         with transaction.atomic():
                             GameBet.objects.create(
                                 provider=PROVIDER,
@@ -479,7 +479,7 @@ class WalletSettleAPIURL(APIView):
                                 amount_wagered=decimal.Decimal(RealBetAmt/100),
                                 bet_type=bet_type,
                                 amount_won=decimal.Decimal(RefundBetAmt/100),
-                                outcome=BetResult,
+                                outcome=TicketResult,
                                 resolved_time=timezone.now(),
                                 other_data=data,
                             )
