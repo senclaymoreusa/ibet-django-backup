@@ -221,9 +221,12 @@ class SubmitPayout(View):
         if currency == '2':
             merchant_code = HELP2PAY_MERCHANT_THB
             secret_key = HELP2PAY_SECURITY_THB
+            payoutURL = H2P_PAYOUT_URL_THB
         elif currency == '8':
             merchant_code = HELP2PAY_MERCHANT_VND
             secret_key = HELP2PAY_SECURITY_VND
+            payoutURL = H2P_PAYOUT_URL_VND
+        
         strAmount = str('%.2f' % amount)
         
         utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
@@ -232,7 +235,7 @@ class SubmitPayout(View):
 
         secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
         checksum = MD5(secretMsg)
-
+       
         db_currency_code = 2 if currency == '2' else 7
         try:
             with transaction.atomic():
@@ -272,8 +275,8 @@ class SubmitPayout(View):
                 "toBankAccountName": toBankAccountName,
                 "toBankAccountNumber": toBankAccountNumber,
             }
-        
-            r = requests.post("http://app.besthappylife.biz/MerchantPayout/M0513", data=data)
+
+            r = requests.post(payoutURL, data=data)
             if r.status_code == 200:
                 return HttpResponse(r.content)
             else:
