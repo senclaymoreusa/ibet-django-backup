@@ -56,7 +56,7 @@ def gamebet_copy():
 def transaction_copy():
 
     # TODO: This needs to be updated so that only the newer records will be retrieved from Transaction
-    results = Transaction.objects.filter(bet_time__lt=timezone.now())
+    results = Transaction.objects.filter(request_time__lt=timezone.now())
 
     filestr = ''
     count = 0
@@ -104,7 +104,7 @@ def transaction_copy():
 def user_action_copy():
 
     # TODO: This needs to be updated so that only the newer records will be retrieved from UserAction
-    results = UserAction.objects.filter(bet_time__lt=timezone.now())
+    results = UserAction.objects.filter(created_time__lt=timezone.now())
 
     filestr = ''
     count = 0
