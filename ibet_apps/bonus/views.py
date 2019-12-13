@@ -455,7 +455,7 @@ class UserBonusEventView(View):
             result['recordsTotal'] = total
             result['recordsFiltered'] = count
         except Exception as e:
-            logger.error("Error getting UserBonusEvent objects: ", e)
+            logger.error("Error getting UserBonusEvent objects: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(json.dumps(result), content_type='application/json', status=status.HTTP_200_OK)
