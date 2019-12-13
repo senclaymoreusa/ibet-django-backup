@@ -188,7 +188,7 @@ class BalanceView(View):
             sign_string = sign_bytes.decode()
 
             generated_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
-            print(generated_header) # Keeping this print statement for testing purposes.
+            # print(generated_header) # Keeping this print statement for testing purposes.
 
             if auth_header != generated_header:
                 json_to_return = {
@@ -337,35 +337,23 @@ def place_bet(client, transaction_id, amount, bet_details):
 
         return HttpResponse(str(e))
 
-
-
-
-
 ######################################################################################################################################################
-######################################################################################################################################################
-######################################################################################################################################################
-
-
 
 def settle_bet(client, transaction_id, amount, bet_details):
     """
-    Helper method for the settle bet transfer type.
+    Helper method for the settle bet transfer type. 'amount' parameter will be positive for wins and negative for losses.
     """
     try:
         user_obj = CustomUser.objects.get(username=client)
         user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
-        settle_amount = float(amount)
-
-        print("settle_amount: " + str(settle_amount))
-
+        settle_amount = float(amount) # Can be positive/negative/zero for win/loss/tie.
 
         with transaction.atomic():
-            balance_after_settling = user_balance + settle_amount # settle_amount will be positive for wins and negative for losses.
+            balance_after_settling = user_balance + settle_amount 
             user_obj.main_wallet = balance_after_settling
             user_obj.save()
 
             ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
 
             GameBet.objects.create(
                 provider = GameProvider.objects.get(provider_name="ALLBET"),
@@ -386,33 +374,30 @@ def settle_bet(client, transaction_id, amount, bet_details):
                 ref_no = transaction_id,
                 #bet_time = None,
                 resolved_time = timezone.now(),
-                #other_data = {}
+                other_data = {
+                    "bet_details": bet_details
+                }
             )
-
 
             # Return updated user balance after settling is complete.
             json_to_return = {
                                 "error_code": 0,
                                 "balance": int(user_obj.main_wallet * 100) / 100.0
                              }
-
+            logger.info("AllBet TransferView Success: Bet settled for user " + str(user_obj.username))
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     except Exception as e:
-        print("settle_bet error: " + str(e))
-        pass
+        if str(e) == "CustomUser matching query does not exist.":
+            json_to_return = {
+                                "error_code": 10003,
+                                "message": "Specified user does not exist."
+                             }
+            logger.error("AllBet TransferView Error: Specified user does not exist.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
+        return HttpResponse(str(e))
 
-
-
-
-
-
-
-
-
-######################################################################################################################################################
-######################################################################################################################################################
 ######################################################################################################################################################
 
 class TransferView(View):
@@ -463,7 +448,7 @@ class TransferView(View):
             sign_string = sign_bytes.decode()
 
             generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
-            print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
+            # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
             # Default JSON Response fields
             res_error_code = 50000
