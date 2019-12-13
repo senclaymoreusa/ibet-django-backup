@@ -18,7 +18,6 @@ def get_transactions(request):
 
 def save_transaction(request):
     if request.method == "POST":
-        print(request)
         data = json.loads(request.body)
         user = CustomUser.objects.get(pk=request.user.pk)
         txn_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
