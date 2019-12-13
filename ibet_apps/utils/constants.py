@@ -258,8 +258,8 @@ ACTIVE_STATE = 0
 DISABLED_STATE = 1
 
 THIRDPARTY_STATUS_CHOICES = (
-    (ACTIVE_STATE, "ACTIVE"), 
-    (DISABLED_STATE, "DISABLED")
+    (ACTIVE_STATE, "Active"), 
+    (DISABLED_STATE, "Disabled")
 )
 
 VIP_1 = 1
@@ -281,10 +281,9 @@ VIP_CHOICES = (
 ibetVN = 0
 ibetTH = 1
 ibetCN = 2
-
-letouVN = 10
-letouTH = 11
-letouCN = 12
+letouVN = 3
+letouTH = 4
+letouCN = 5
 
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
@@ -292,7 +291,7 @@ MARKET_CHOICES = (
     (ibetCN, "ibet-CN"),
     (letouVN, "letou-VN"),
     (letouTH, "letou-TH"),
-    (letouCN, "letou-CN"),
+    (letouCN, "letou-CN")
 )
 
 COUNTRY_CHOICES = (
@@ -1461,6 +1460,10 @@ PNG_STATUS_SESSIONEXPIRED = 10
 PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
 
+# Inplay Matrix
+IMES_URL = keys["IMES"]["URL"]
+IMES_KEY = keys["IMES"]["DESKEY"]
+
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
@@ -1512,3 +1515,6 @@ QT_STATUS_CODE = (
 
 # Betsoft
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
+
+#IMES
+IMES_PROVIDER = "IMES"
