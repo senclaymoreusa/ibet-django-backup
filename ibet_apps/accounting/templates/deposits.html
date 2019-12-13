@@ -74,8 +74,7 @@
         </div>
 
         <!-- actual deposit table & data -->
-        <div id="deposits-section" aria-labelledby="home-tab"
-            >
+        <div id="deposits-section" aria-labelledby="home-tab" class="data-section">
             <table id="deposits-table" class="table-striped table-bordered hover compact"
                 style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
                 <colgroup>
@@ -134,25 +133,27 @@
                         <td>{{ tran.bank }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.status }}</td>
-                        {#{% if tran.status == 'Created' %}#}
-                        {# {% if tran.method == "Local Bank Transfer" and tran.status =='Pending'%} #}
+
                         {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
                         <td class="manual-override">
-                            <button id="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                            <button id="{{ tran.pk }}"class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
                                 <!-- <span class="glyphicon glyphicon-search"></span> -->
                                 Confirm
                             </button>
                         </td>
                         
-                        {% endif %}
-                        {% if tran.status == 'Success' %}
-                            {#{% if tran.method == "Local Bank Transfer" %}#}
+                        {% elif tran.status == 'Success' %}
                         <td class="manual-override">
                             <button id="result-override-btn" type="button" data-toggle="modal" data-target="#override_deposit">
                                 Override
                             </button>
                         </td>
-                            {#{% endif %}#}
+                        {% else %}
+                        <td class="manual-override">
+                            <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                    <span class="glyphicon glyphicon-search"></span>
+                            </button>
+                        </td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -161,6 +162,7 @@
             </table>
         </div>
     </div>
+    
     <!-- pagination -->
     <div class="container" style="padding-bottom: 50px">
         <div class="row">
@@ -188,7 +190,7 @@
         </div>
     </div>
 
-    <!-- audit/confirm settlement modal -->
+    <!-- audit/confirm-settlement modal -->
     <div class="modal fade" id="audit_deposit" role="dialog">
         <div id="deposit_request_pop" class="modal-dialog">
             <!-- Modal content-->
@@ -280,7 +282,7 @@
                                 </tbody>
                             </table>
                         </div>
-
+                        {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
                         <!-- notes -->
                         <div class="form-group">
                             <label for="deposit_notes" class="deposit-request-word"
@@ -298,13 +300,14 @@
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- override txn modal -->
+    <!-- override_txn modal -->
     <div class="modal fade" id="override_deposit" role="dialog">
         <div id="override" class="modal-dialog">
                 <!-- Modal content-->
@@ -320,6 +323,7 @@
                 </div>
         </div>
     </div>
+
 </div>
 
 <!-- datatables -->
@@ -456,6 +460,17 @@
             })
             .on("change", function() {
                 dateFrom.datepicker( "option", "maxDate", getDate( this ) );
+                if ($("#min").val() != "") {
+                    let searchTerm = document.getElementById('search').value;
+                    let fromDate = document.getElementById('min').value;
+                    let toDate = document.getElementById('max').value;
+
+                    let queryString = new URLSearchParams(window.location.search);
+                    if (searchTerm) queryString.set('search_params', searchTerm);
+                    if (fromDate) queryString.set('from', fromDate);
+                    if (toDate) queryString.set('to', toDate);
+                    window.location = BASEURL + queryString.toString();
+                }
             });
 
         function getDate( element ) {

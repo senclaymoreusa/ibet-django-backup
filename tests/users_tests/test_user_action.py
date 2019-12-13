@@ -42,7 +42,42 @@ class UserActionModelTest(APITestCase):
     def test_action_create_success_when_login(self):
         response = self.client.post(reverse('api_login'), {
             'username': 'vicky_test',
-            'password': 'testtest'
+            'password': 'testtest',
+            'iovationData': {
+                'statedIp': '192.168.86.103',
+                'result': 'A',
+                "details": {
+                    "device": {
+                        "os": "INTEL MAC OS X 10_14_6",
+                        "type": "MAC",
+                        "alias": 780672411032764200,
+                        "isNew": False,
+                        "screen": "1080X1920",
+                        "browser": {
+                            "type": "CHROME",
+                            "version": "78.0.3904.97",
+                            "language": "EN-US",
+                            "timezone": "480",
+                            "cookiesEnabled": True,
+                            "configuredLanguage": "EN-US,EN;Q=0.9"
+                        }
+                    },
+                    "realIp": {
+                        "isp": "COMCAST CABLE COMMUNICATIONS  LLC",
+                        "source": "iovation",
+                        "address": "73.202.78.65",
+                        "ipLocation": {
+                            "city": "SANTA CLARA",
+                            "region": "CALIFORNIA",
+                            "country": "UNITED STATES",
+                            "latitude": 37.35148,
+                            "longitude": -121.95082,
+                            "countryCode": "US"
+                        },
+                        "parentOrganization": "COMCAST"
+                    }
+		        },
+            }
         }, format='json')
         assert response.status_code == 200
         user = CustomUser.objects.filter(username="vicky_test")
