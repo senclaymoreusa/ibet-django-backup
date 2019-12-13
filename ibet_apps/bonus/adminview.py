@@ -35,5 +35,4 @@ class BonusTransactionsView(CommAdminView):
         context['time'] = timezone.now()
         context['bonuses_types'] = BONUS_TYPE_CHOICES
         context['bonuses_status'] = BONUS_STATUS_CHOICES
-        context['bonus_event'] = UserBonusEvent.objects.all()
         return render(request, "bonus_transactions.html", context)

@@ -88,10 +88,6 @@ $(document).ready(function() {
     });
 
 
-
-
-
-
     // helper function
     function formatDatetime(data){
         if(data === 'None' || data === null){
