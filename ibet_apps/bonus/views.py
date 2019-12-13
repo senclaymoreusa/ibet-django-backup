@@ -387,7 +387,7 @@ class UserBonusEventView(View):
             order = request.GET.get('order[0][dir]')
             # filter
             bonus_type = int(request.GET.get('bonus_type', -1))
-            bonus_status = int(request.GET.get('bonus_status', -1))
+            ube_status = int(request.GET.get('ube_status', -1))
             min_date = request.GET.get('min_date')
             max_date = request.GET.get('max_date')
 
@@ -408,8 +408,8 @@ class UserBonusEventView(View):
             if bonus_type != -1:
                 ube_filter &= Q(bonus__type=bonus_type)
 
-            if bonus_status != -1:
-                ube_filter &= Q(bonus__status=bonus_status)
+            if ube_status != -1:
+                ube_filter &= Q(status=ube_status)
 
             #  SEARCH BOX
             if search_value:
@@ -432,7 +432,7 @@ class UserBonusEventView(View):
             result['data'] = []
 
             # put bonus data and user data into events
-            # TODO: needs to update ube amount(fixed, percentage, tiered)
+            # TODO: needs to update ube amount(fixed, percentage, tiered), completion
             for event in events:
                 event_data = serializers.serialize('json', {event})
                 event_data = json.loads(event_data)

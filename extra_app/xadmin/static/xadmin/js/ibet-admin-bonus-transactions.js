@@ -41,7 +41,7 @@ $(document).ready(function() {
             data: {
                 'type': 'bonus_transactions_admin',
                 'bonus_type': function() {var type=$('#bonus_type_filter :selected').val(); return type;},
-                'bonus_status': function() {var status=$('#bonus_status_filter :selected').val(); return status;},
+                'ube_status': function() {var status=$('#bonus_status_filter :selected').val(); return status;},
                 'search': function () { return $('#bonus-transactions-search').val(); },
                 'min_date': function () { return $('#bonus-delivery-start').val(); },
                 'max_date': function () { return $('#bonus-delivery-end').val(); },
@@ -49,8 +49,20 @@ $(document).ready(function() {
         },
         columns: [
             { "data": 'event.pk' },
-            { "data": 'event.fields.owner' },
-            { "data": 'username' },
+            { "data": 'event.fields.owner',
+                "render": function(data, type, row, meta){
+                if(type === 'display'){
+                    data = '<a href=' + user_link + data + '>' + data+ '</a>';
+                }
+                return data;
+             }},
+            { "data": 'username',
+                "render": function(data, type, row, meta){
+                    if(type === 'display'){
+                        data = '<a href=' + user_link + row['event']['fields']['owner'] + '>' + data + '</a>';
+                    }
+                    return data;
+            }},
             { "data": 'bonus.fields.type' },
             { "data": 'bonus.fields.name' },
             { "data": 'event.fields.delivery_time',
@@ -67,7 +79,13 @@ $(document).ready(function() {
              },
             { "data": 'event.fields.amount' },
             { "data": 'event.fields.amount' },
-            { "data": 'delivered_by_username' },
+            { "data": 'delivered_by_username',
+                "render": function(data, type, row, meta){
+                    if(type === 'display'){
+                        data = '<a href=' + user_link + row['event']['fields']['delivered_by'] + '>' + data + '</a>';
+                    }
+                    return data;
+            }},
             { "data": 'event.fields.status' },
             {
                 "data": null,
