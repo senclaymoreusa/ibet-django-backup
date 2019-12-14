@@ -369,8 +369,8 @@ class LoginView(GenericAPIView):
 
             # print(self.user.username)
             # r = RedisClient().connect()
-            redis = RedisHelper()
-            redis.set_device_by_user(self.user.username, device)
+            # redis = RedisHelper()
+            # redis.set_device_by_user(self.user.username, device)
 
             
             with transaction.atomic():
