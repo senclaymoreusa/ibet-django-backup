@@ -258,8 +258,10 @@ def kyTransfer(user, amount, wallet, method):
                         transaction_type=TRANSACTION_DEPOSIT,
                         status=TRAN_SUCCESS_TYPE
                     )
+                    return True
                 else:
                     logger.info("Deposit Not Success {}".format(res_data['d']))
+                    return False
             elif res_data['s'] == 103:
                 if res_data['d']['code'] == 0:
                     Transaction.objects.create(
@@ -274,16 +276,20 @@ def kyTransfer(user, amount, wallet, method):
                         transaction_type=TRANSACTION_DEPOSIT,
                         status=TRAN_SUCCESS_TYPE
                     )
+                    return True
                 else:
                     logger.info("Withdraw Not Success {}".format(res_data['d']))
+                    return False
             else:
                 logger.info("Wrong S type: {}".format(res_data['s']))
+                return False
         else:
             logger.info("Failed response: {}".format(res.status_code))
+            return False
 
     except Exception as e:
         logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
-        return HttpResponse(status=400)
+        return False
 
 
 class TestTransferAPI(View):

@@ -188,7 +188,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
         currency = 20
     else:
         currency = 20
-
+    
     # wallet_name = fund_wallet + "_wallet"  #for example: onebook_wallet
     # wallet = getattr(user, wallet_name)
     # if direction == '1' and wallet - amount < 0:
