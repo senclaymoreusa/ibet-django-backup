@@ -8,6 +8,13 @@ from utils.constants import *
 
 import uuid
 
+def defaultDowntime():
+    d = dict({
+            "once": [],
+            "daily": [],
+            "monthly": []
+        })
+    return d
 
 class Bank(models.Model):
     bank_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -83,6 +90,10 @@ class ThirdParty(models.Model):
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
     player_segment = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
 
+    # payment method risk / settlement settings
+    risk_review = models.BooleanField(default=True)
+    settlement_confirmation = models.BooleanField(default=True)
+    result_override = models.BooleanField(default=True)
 
     # white/blacklist
     whitelist = JSONField(default=dict)
@@ -91,7 +102,7 @@ class ThirdParty(models.Model):
     # scheduled downtime
     downtime_start = models.DateTimeField(null=True, blank=True)
     downtime_end = models.DateTimeField(null=True, blank=True)
-    
+    all_downtime = JSONField(null=True, default=defaultDowntime)
     # changelog ? 
     changelog = JSONField(default=dict)
 

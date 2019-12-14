@@ -3,44 +3,141 @@
         Edit payment method
     </div>
     <div class="modal-body">
-        <div id="psp-details" style="background-color: #f3f3f3">
-            <table>
-                <tr>
-                    <td class="text-label">Method</td>
-                    <td id="psp-method">VISA</td>
-                    <td class="text-label">Type</td>
-                    <td id="psp-type">Deposit</td>
-                </tr>
-                <tr>
-                    <td class="text-label">Channel</td>
-                    <td id="psp-channel"></td>
-                    <td class="text-label">Market</td>
-                    <td id="psp-market"></td>
-                </tr>
-                <tr>
-                    <td class="text-label">Supplier</td>
-                    <td id="psp-supplier"></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table>
+        <div id="psp-details" style="columns: 2; background-color: #f3f3f3">
+            <p class="text-label">Method</p>
+            <p class="text-label">Type</p>
+            <p class="text-label">Channel</p>
+            <p class="text-label">Market</p>
+            <p class="text-label">Supplier</p>
+            <p class="text-value" id="psp-method">VISA</p>
+            <p class="text-value" id="psp-type">Deposit</p>
+            <p class="text-value" id="psp-channel"></p>
+            <p class="text-value" id="psp-market"></p>
+            <p class="text-value" id="psp-supplier"></p>
         </div>
-        <!-- <div id="radio-buttons-labels">
-            
-        </div> -->
-        <div class="col-md-4">
+        <div id="radio-buttons-labels">
             <p style="display: inline-block;" class="text-label">Payment Method Status</p>
-            <p class="text-label">Risk Review Required</p>
-            <p class="text-label">Settlement Confirmation Required</p>
-            <p class="text-label">Result override allowed</p>
+            <input id="status-active" style="display: inline-block;" type="radio" name="status" value="active" checked="checked" disabled="true">Active</input>
+            <input id="status-disabled" style="display: inline-block;" type="radio" name="status" value="disabled" disabled="true">Disabled</input>
+            <br>
+            <p style="display: inline-block;" class="text-label">Risk Review Required</p>
+            <input style="display: inline-block;" type="radio" name="risk" value="yes" checked="checked" disabled="true">Yes</input>
+            <input style="display: inline-block;" type="radio" name="risk" value="no" disabled="true">No</input>
+            <br>
+            <p style="display: inline-block;" class="text-label">Settlement Confirmation Required</p>
+            <input id="settlement-yes" style="display: inline-block;" type="radio" name="settlement" value="yes" disabled="true" checked="checked">Yes</input>
+            <input id="settlement-no" style="display: inline-block;" type="radio" name="settlement" value="no" disabled="true">No</input>
+            <br>
+            <p style="display: inline-block;" class="text-label">Result override allowed</p>
+            <input id="override-yes" style="display: inline-block;" type="radio" name="override" value="yes" disabled="true" checked="checked">Yes</input>
+            <input id="override-no" style="display: inline-block;" type="radio" name="override" value="no" disabled="true">No</input>
+            <br>
         </div>
-        <div id="radio-buttons" class="col-md-6">
-            <input style="display: inline-block;" type="radio" name="status" value="male">Active</input>
-            <input type="radio" name="risk" value="female">Yes</input>
+        <hr style="width: 100%; color: #bdbdbd">
+        <div id="downtime">
+            <p style="font-weight: bold; font-family: Helvetica; font-size: 13px;">SCHEDULED DOWNTIME</p>
+            <p>The payment method will be disabled during this period.</p>
+            <div id="freq-dropdown">
+                <label for="downtime-freq">FREQUENCY</label>
+                <select id="downtime-freq">
+                    <option value="once">Once</option>
+                    <option value="daily">Daily</option>
+                    <option value="monthly" selected="true">Monthly</option>
+                </select>
+                <div id="day-select">
+                    <label for="day">DAY</label>
+                    <select id="day" style="display: hidden;">
+                        {% for i in days %}
+                            <option value="{{i}}">{{i}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="freq-inputs">
+                <button id="add-freq">+</button>
+                <div class='input-group date' id='deposit_time_to' style="margin: 0px 12px 0px 12px">
+                    <input type='text' class="form-control" id='dt-from'/>
+                    <span class="input-group-addon">
+                        From
+                        <!-- <span class="glyphicon glyphicon-calendar"></span> -->
+                    </span>
+                </div>
+                <div class='input-group date' id='deposit_time_from' style="margin: 0px 12px 0px 12px">
+                    <input type='text' class="form-control" id='dt-to'/>
+                    <span class="input-group-addon">
+                        To
+                        <!-- <span class="glyphicon glyphicon-calendar"></span> -->
+                    </span>
+                </div>
+                <button id="del-freq">-</button>
+            </div>
         </div>
-        <div id="radio-buttons" class="col-md-6">
-                <input style="display: inline-block;" type="radio" name="status" value="male">Disabled</input>
-            <input type="radio" name="risk" value="female">No</input>
-        </div>
+        
     </div>
 </div>
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+
+<script>
+    function toggleDowntime() {
+        $('#downtime-freq').on('change', (event) => {
+            let frequency = $('#downtime-freq').children("option:selected").val();
+            if (frequency == "monthly") document.getElementById('day-select').style.visibility = 'visible';
+            else document.getElementById('day-select').style.visibility = 'hidden'
+        });
+    }
+    $(document).ready(function () {
+        toggleDowntime();
+        let frequency = $('#downtime-freq').children("option:selected").val();
+        console.log("frequency is: " + frequency);
+        if (frequency == "monthly") document.getElementById('day-select').style.visibility = 'visible';
+        else document.getElementById('day-select').style.visibility = 'hidden'
+
+        $('#dt-from').timepicker({
+            timeFormat: 'hh:mm p',
+            interval: 30,
+            // minTime: '10',
+            // maxTime: '6:00pm',
+            defaultTime: '11',
+            // startTime: '10:00',
+            dynamic: true,
+            dropdown: false,
+            scrollbar: false
+        })
+        $('#dt-to').timepicker({
+            timeFormat: 'hh:mm p',
+            interval: 30,
+            // minTime: '10',
+            // maxTime: '6:00pm',
+            defaultTime: '23',
+            // startTime: '10:00',
+            dynamic: true,
+            dropdown: false,
+            scrollbar: false
+        })
+        
+        $('#add-freq').on('click', function(event) {
+            console.log("sadf");
+            console.log($(this).data('pk'));
+            let frequency = $('#downtime-freq').children("option:selected").val();
+            
+            console.log($('#dt-from').val(), $('#dt-to').val());
+            $.ajax({
+                type: 'POST',
+                url: '{% url "xadmin:sched_downtime" %}',
+                data: {
+                    'pk': $(this).data('pk'),
+                    'from': $('#dt-from').val(),
+                    'to': $('#dt-to').val(),
+                    'psp_type': $(this).data('type'),
+                    'frequency': frequency
+                },
+                success: (data) => {
+                    console.log(data);
+                }
+            })
+        })
+    })
+</script>

@@ -82,6 +82,7 @@ class GetPaymentChannels(CommAdminView):
         
         context["deposits"] = deposit_psp
         context["withdraws"] = withdraw_psp
+        context["days"] = range(1,32)
 
         return render(request, "channels.html", context)
 
@@ -97,3 +98,26 @@ class GetPSP(CommAdminView):
             
         provider = serializers.serialize('json', provider)
         return HttpResponse(provider, content_type='application/json')
+
+class scheduleDowntime(CommAdminView):
+    def post(self, request):
+        psp_pk = request.POST.get('pk')
+        start = request.POST.get('from')
+        end = request.POST.get('to')
+        psp_type = request.POST.get('psp_type')
+        freq = request.POST.get('frequency')
+
+        print(request.POST)
+        try:
+            if psp_type == "deposit": psp = DepositChannel.objects.get(pk=psp_pk)
+            else: psp = WithdrawChannel.objects.get(pk=psp_pk)
+        except Exception as e:
+            logger.error("Attempting to modify unknown PSP")
+        try:
+            new_downtime = {
+                "start": start,
+                "end": end
+            }
+            psp.all_downtime["downtime"][freq].append(new_downtime)
+
+        return HttpResponse(status=200)

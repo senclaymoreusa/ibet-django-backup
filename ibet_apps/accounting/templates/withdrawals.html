@@ -18,7 +18,7 @@
 
 <body>
 
-<div class="panel panel-default">
+<div class="panel panel-default" style="overflow-x: scroll;">
     <div class="panel-heading">
         <h2 class="panel-title">
             Withdrawal
@@ -96,7 +96,10 @@
                     <col style="width: 130px"> <!--  // created time -->
                     <col style="width: 130px"> <!--  // resolved time -->
                     <col style="width: 100px"> <!--  // bank -->
+                    <col style="width: 100px"> <!--  // account holder -->
+                    <col style="width: 100px"> <!--  // account no. -->
                     <col style="width: 85px">  <!-- // amount -->
+                    <col style="width: 100px"> <!--  // reviewer -->
                     <col style="width: 78px">  <!-- // status -->
                     <col style="width: 80px">  <!-- // button -->
                 </colgroup>
@@ -115,7 +118,10 @@
                         <th scope="col">CREATED TIME</th>
                         <th scope="col">RESOLVE TIME</th>
                         <th scope="col">BANK</th>
+                        <th scope="col">ACCOUNT HOLDER</th>
+                        <th scope="col">ACCOUNT NO.</th>
                         <th scope="col">AMOUNT</th>
+                        <th scope="col">REVIEWER</th>
                         <th scope="col">STATUS</th>
                         <th scope="col"></th>
                         <th scope="col" style="display: none;">pk</th>
@@ -137,7 +143,10 @@
                         <td>{{ tran.app_time }}</td>
                         <td>{{ tran.arr_time }}</td>
                         <td>{{ tran.bank }}</td>
+                        <td>{{ tran.acc_no }}</td>
+                        <td>{{ tran.name }}</td>
                         <td>{{ tran.amount }}</td>
+                        <td>{{ tran.reviewer }}</td>
                         <td>{{ tran.status }}</td>
                         {% if tran.status == 'Review' %}
                             {% if tran.channel == 'Qaicash' or tran.channel == 'Help2Pay' %}
