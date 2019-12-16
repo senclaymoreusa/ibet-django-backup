@@ -180,7 +180,7 @@ def createMember(user,currency,oddsType):
     })
     rdata = r.json()
     logger.info(rdata)
-    print(rdata)
+    # print(rdata)
     if r.status_code == 200:
         if rdata['error_code'] == 0 or rdata['error_code'] == 6:
             return CODE_SUCCESS
@@ -236,7 +236,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                 "wallet_id":wallet_id,
             })
             rdata = r.json()
-            print(rdata)
+            # print(rdata)
             logger.info(rdata)
             if r.status_code == 200:
                 success = True
@@ -358,12 +358,12 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
         return ERROR_CODE_FAIL
 
 
-class test(View):
-    def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela")
-        response = createMember(user, 20, "2")
+# class test(View):
+#     def get(self, request, *args, **kwargs):
+#         user = CustomUser.objects.get(username="angela")
+#         response = createMember(user, 20, "2")
         
-        return HttpResponse(response)
+#         return HttpResponse(response)
 
     
 # def test01(request, username):
