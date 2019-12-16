@@ -12,3 +12,13 @@ def get_transactions(request):
     return JsonResponse({
         'results': list(all_transactions.values())
     })
+
+def save_transaction(request):
+    if request.method == "POST":
+        user = CustomUser.objects.get(username=request.user)
+
+        txn = Transaction(
+            user_id=user
+        )
+        txn.save()
+        return

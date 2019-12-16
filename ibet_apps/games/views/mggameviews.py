@@ -200,6 +200,7 @@ class MGgame(APIView):
                 playtype = dd['pkt']['methodcall']['call']['@playtype']
                 amount = dd['pkt']['methodcall']['call']['@amount']
                 currency = dd['pkt']['methodcall']['call']['@currency']
+                gameid = dd['pkt']['methodcall']['call']['@gameid']
                 # gameref = dd['pkt']['methodcall']['call']['@gamereference']
                
                 # here should judge the currency later...
@@ -222,7 +223,8 @@ class MGgame(APIView):
                         user.save()
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                        if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
+                        if (playtype == "win" or playtype == "progressivewin") :
+                           
                             GameBet.objects.get_or_create(provider=provider,
                                                             category=category,
                                                             user=user,
@@ -231,12 +233,30 @@ class MGgame(APIView):
                                                             currency=user.currency,
                                                             amount_won=decimal.Decimal(amount)/100,
                                                             market=ibetCN,
-                                                            ref_no=transactionId,
+                                                            ref_no=gameid,
                                                             transaction_id=trans_id,
                                                             resolved_time=timezone.now(),
                                                             # game_name=gameref,
+                                                            outcome=0,
                                                             other_data=other_data
                                                             )
+                        elif (playtype == "refund" or playtype == "transferfrommgs") :
+                            GameBet.objects.get_or_create(provider=provider,
+                                                            category=category,
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            amount_wagered=0.00,
+                                                            currency=user.currency,
+                                                            amount_won=decimal.Decimal(amount)/100,
+                                                            market=ibetCN,
+                                                            ref_no=gameid,
+                                                            transaction_id=trans_id,
+                                                            resolved_time=timezone.now(),
+                                                            # game_name=gameref,
+                                                            outcome=14,
+                                                            other_data=other_data
+                                                            )
+
                         else :
                             GameBet.objects.get_or_create(provider=provider,
                                                             category=category,
@@ -245,7 +265,7 @@ class MGgame(APIView):
                                                             amount_wagered=decimal.Decimal(amount)/100,
                                                             currency=user.currency,
                                                             market=ibetCN,
-                                                            ref_no=transactionId,
+                                                            ref_no=gameid,
                                                             transaction_id=trans_id,
                                                             # game_name=gameref,
                                                             other_data=other_data
