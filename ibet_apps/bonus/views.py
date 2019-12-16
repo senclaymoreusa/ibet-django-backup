@@ -207,7 +207,6 @@ class BonusView(View):
         try:
             req_data = request.POST.get("bonusDict")
             req_data = json.loads(req_data)
-            print(req_data)
         except Exception as e:
             logger.error("Error getting new bonus details " + str(e))
             response = JsonResponse({"error": "Error getting new bonus details"})
@@ -223,7 +222,7 @@ class BonusView(View):
                     type = BONUS_TYPE_VALUE_DICT.get(type)
 
                     bonus_amount_list = req_data.get('bonus_amount_list')
-                    # print(bonus_amount_list)
+
                     max_user_amount = req_data.get('max_user_amount')
                     max_amount = req_data.get('max_target_user_amount')
 
@@ -232,9 +231,6 @@ class BonusView(View):
 
                     if max_amount:
                         max_amount = float(max_amount)
-
-                    print(max_user_amount)
-                    print(max_amount)
 
                     is_tiered = False
                     parent_bonus = None
@@ -301,7 +297,7 @@ class BonusView(View):
                             aggregate_method = requirements['aggregate_method']
                             time_limit = None
                             if requirements['time_limit']:
-                                time_limit = int(requirements['time_limit'])
+                                time_limit = int(requirements.get('time_limit'))
                             if must_have:
                                 for req in must_have:
                                     must_have_req = Requirement(
@@ -311,7 +307,7 @@ class BonusView(View):
                                     must_have_req.save()
                                     logger.info("Create a new must have Requirement for " + str(bonus_obj.name))
                             # add wager requirements
-                            wager_multiple = requirements['wager_multiple']
+                            wager_multiple = requirements.get('wager_multiple')
                             wager_dict = wager_multiple[curr_idx]
 
                             # this bonus has no wager requirements on this product, and the bonus money cannot be
@@ -364,7 +360,7 @@ class BonusView(View):
                                     )
                                     ni_group.save()
                             if players.get('excluded_player'):
-                                for key in players['excluded_player']:
+                                for key in players.get('excluded_player'):
                                     ne_group = BonusUserGroup(
                                         bonus=bonus_obj,
                                         groups=UserGroup.objects.get(pk=key),
