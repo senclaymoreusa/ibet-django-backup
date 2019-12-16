@@ -142,7 +142,8 @@ urlpatterns = [
     # path('api/ag/transfer_credit_confirm', aggamesviews.transferCreditConfirm, name="Transfer_Credit_Confirm"),
     # path('api/ag/query_order_status', aggamesviews.queryOrderStatus, name="Query_Order_Status"),
     path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
-    path('api/ag/transfer_credit_login', aggamesviews.TransferCreditAndLogin.as_view(), name="Transfer_Credit_And_Login"),
+    #path('api/ag/transfer_credit_login', aggamesviews.TransferCreditAndLogin.as_view(), name="Transfer_Credit_And_Login"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
 ]
 
 #onebookviews.getBetDetail(repeat=300,repeat_until=None)

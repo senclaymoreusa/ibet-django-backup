@@ -9,7 +9,7 @@ import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw
 from games.views.onebookviews import fundTransfer
 from games.views.kygameviews import kyTransfer
-
+from games.view.aggamesviews import fundTransfer
 
 logger = logging.getLogger('django')
 
@@ -31,6 +31,8 @@ class TransferDeposit():
 
     def KYDeposit(self):
         return kyTransfer(self.user, self.amount, self.from_wallet, 0)
+    def GADeposit(self):
+        return fundTransfer(self.user, self.from_wallet,password, oddtype, actype, gameCategory, credit, fixcredit, cur, agtype)
 
     
 class TransferWithdraw():
