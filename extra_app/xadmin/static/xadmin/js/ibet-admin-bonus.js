@@ -104,7 +104,7 @@ $(document).ready(function() {
     var wagerMasterValue = 0;
     var wagerList = [];     //admin
     var timeLimit = -1;     //admin
-    var bonusAmountList = {};
+    var bonusAmountList = [];
 
 
     //bonus 05
@@ -205,6 +205,11 @@ $(document).ready(function() {
     $('#bonus-amount').on('change', function(){
         bonusAmount = parseFloat($(this).val()).toFixed(2);
         $(this).prop('value', bonusAmount);
+        bonusAmountList = [];
+        bonusAmountList.push({
+            "amount_type": "same",
+            "bonus_amount": bonusAmount,
+        });
     });
 
     $('#wager-casino-times').on('change', function(){
@@ -290,30 +295,30 @@ $(document).ready(function() {
     });
 
     $("#bonus-amount-detail-02 input").on('change', function(){
-        bonusAmountList = {};
+        bonusAmountList = [];
         var amountType = $("input[name='bonus-amount-type-deposit-choice']:checked").val();
         if(amountType == "percentage"){
             minDeposit = $('#dp-min').val();
             bonusPer = $('#dp-percentage').val();
             maxBonusAmount = $('#dp-max-amount').val();
-            bonusAmountList= {
+            bonusAmountList.push({
                 "amount_type": amountType,
-                "min_deposit": minDeposit,
+                "amount_threshold": minDeposit,
                 "bonus_percentage": bonusPer,
                 "max_bonus_amount": maxBonusAmount,
-            };
+            });
         }else if(amountType == "fixed"){
             minDeposit = $('#df-min').val();
             bonusAmount = $('#df-bonus-amount').val();
-            bonusAmountList = {
+            bonusAmountList.push({
                 "amount_type": amountType,
-                "min_deposit": minDeposit,
-            };
+                "amount_threshold": minDeposit,
+                "bonus_amount": bonusAmount,
+            });
         }else if(amountType == "tiered"){
-            bonusAmountList = {
+            bonusAmountList.push({
                 "amount_type": amountType,
-                //add default data here later
-            };
+            });
         }
     });
 
@@ -338,7 +343,7 @@ $(document).ready(function() {
             $('#turnover-fixed').append('<style>.up-arrow:after{left:307px;}</style>');
             $('#turnover-fixed').css("display", "");
         }else if(amountType === "tiered"){
-            $('#wager-product-reqs').css("display", "none")
+//            $('#wager-product-reqs').css("display", "none")
             $('#turnover-percentage').css("display", "none");
             $('#turnover-fixed').css("display", "none");
             $('#turnover-tiered').append('<style>.up-arrow:before{left:445px;}</style>');
@@ -348,30 +353,29 @@ $(document).ready(function() {
     });
 
     $("#bonus-amount-detail-03 input").on('change', function(){
-        bonusAmountList = {};
+        bonusAmountList = [];
         var amountType = $("input[name='bonus-amount-type-turnover-choice']:checked").val();
         if(amountType == "percentage"){
             minDeposit = $('#tp-min').val();
             bonusPer = $('#tp-percentage').val();
             maxBonusAmount = $('#tp-max-amount').val();
-            bonusAmountList= {
+            bonusAmountList.push({
                 "amount_type": amountType,
-                "min_deposit": minDeposit,
+                "amount_threshold": minDeposit,
                 "bonus_percentage": bonusPer,
                 "max_bonus_amount": maxBonusAmount,
-            };
+            });
         }else if(amountType == "fixed"){
             minDeposit = $('#tf-min').val();
             bonusAmount = $('#tf-bonus-amount').val();
-            bonusAmountList = {
+            bonusAmountList.push({
                 "amount_type": amountType,
-                "min_deposit": minDeposit,
-            };
+                "amount_threshold": minDeposit,
+            });
         }else if(amountType == "tiered"){
-            bonusAmountList = {
+            bonusAmountList.push({
                 "amount_type": amountType,
-                //add default data here later
-            };
+            });
         }
     });
 
@@ -480,7 +484,6 @@ $(document).ready(function() {
         if(typeof target !== typeof undefined && target !== false) {
             dataTarget = $(element).attr('data-target');
         }
-        console.log(dataTarget)
     }
 
      // new bonus
@@ -533,24 +536,28 @@ $(document).ready(function() {
     $('#bonus-next-03').on('click', function(){
         updateDataTarget(this);
         triggerType = $("input[name='bonus-trigger-type']:checked").val();
-        if(triggerType == "verification"){
+        if(triggerType === "verification"){
             triggerSubType = $("input[name='verification-choice']:checked").val();
             $('#bonus-amount-detail, .wager-req-01').css("display", "");
             $('#bonus-amount-detail-02, .wager-req-02').css("display", "none");
             $('#bonus-amount-detail-03').css("display", "none");
-        }else if(triggerType == "deposit"){
+        }else if(triggerType === "deposit"){
             triggerSubType = $("input[name='deposit-choice']:checked").val();
             $('#bonus-amount-detail, .wager-req-01').css("display", "none");
             $('#bonus-amount-detail-02, .wager-req-02').css("display", "");
             $('#bonus-amount-detail-03').css("display", "none");
-        }else if(triggerType == "turnover"){
+            if(triggerSubType === "next"){
+                $('#deposit-tiered-col').hide();
+            }else{
+                $('#deposit-tiered-col').show();
+            }
+        }else if(triggerType === "turnover"){
             var turnoverChoice = $("input[name='turnover-choice']:checked").val();
-            if(turnoverChoice == "product"){
+            if(turnoverChoice === "product"){
                 triggerSubType = $("#product-selector").val();
-            }else if(turnoverChoice == "provider"){
+            }else if(turnoverChoice === "provider"){
                 triggerSubType = providerChosen;
             }
-            console.log("turn")
             $('#bonus-amount-detail').css("display", "none");
             $('#bonus-amount-detail-02, .wager-req-02').css("display", "none");
             $('#bonus-amount-detail-03, .wager-req-01').css("display", "");
@@ -577,10 +584,8 @@ $(document).ready(function() {
         if(bonusCategory == "manual" || triggerType == "verification"){
             if($('#bonus-amount').value === "" || emptyWager.length > 0){
                 showErrorMsg(this);
-                return;
             }else{
                 removeErrorMsg(this);
-                return;
             }
         }else {
             //bonusAmountList should not be empty
@@ -596,91 +601,92 @@ $(document).ready(function() {
                 if(emptyAmount.length > 0 || depositWagerCal === undefined){                      //deposit tiered bonus check
                     showErrorMsg(this);
                     depositEmpty = true;
-                }else if(bonusAmountList['amount_type'] !== "tiered" && emptyWager.length > 0){   //deposit percentage,fixed bonus check
+                }
+
+                if(bonusAmountList[0]['amount_type'] !== "tiered" && emptyWager.length > 0){   //deposit percentage,fixed bonus check
                     showErrorMsg(this);
                     depositEmpty = true;
                 }
 
                 if(depositEmpty === false ){
                     removeErrorMsg(this);
-                    if(bonusAmountList['amount_type'] !== "tiered"){
-                        for(var i = 0; i < productList.length; i++){
-                            var curBox = $('#wager-' + productList[i]);
-                            if(curBox.is(':checked')){
-                                if(curBox.is(':disabled')){
-                                  wagerList.push({
-                                        "product": productList[i],
-                                        "multiple": $('#wager-' + productList[i] + '-times').val(),
-                                        "aggregate_method": 0 //sum
-                                    });
-                                }else{
-                                    var subWager = $('#wager-' + productList[i] + '-total').val().split(' ');
-                                    wagerList.push({
-                                        "product": productList[i],
-                                        "multiple": subWager[3].substring(0, subWager[3].length - 1),
-                                        "aggregate_method": 0 //sum
-                                    });
-                                }
-                            }else{
-                                wagerList.push({
-                                    "product": productList[i],
-                                    "multiple": "-1",
-                                    "aggregate_method": 0 //sum
-                                });
-                            }
-                        }
-                    }else{
+                    if(bonusAmountList[0]['amount_type'] === "tiered"){
+                        bonusAmountList = [];
+                        wagerList = [];
                         // for deposit tiered amount
                         $.each($('.deposit-tiered-amount'), function(){
-                            wagerList.push({
-                                "min_deposit": $(this).find('.dt-min').val(),
+                            bonusAmountList.push({
+                                "amount_type": "tiered",
+                                "amount_threshold": $(this).find('.dt-min').val(),
                                 "bonus_percentage": $(this).find('.dt-percentage').val(),
                                 "max_bonus_amount": $(this).find('.dt-max-amount').val(),
-                                "casino_multiple": $(this).find('.dt-casino').val(),
-                                "live_casino_multiple": $(this).find('.dt-live-casino').val(),
-                                "sports_multiple": $(this).find('.dt-sports').val(),
-                                "lottery_multiple": $(this).find('.dt-lottery').val(),
-                                "aggregate_method": 0, //sum
+                            });
+                            wagerList.push({
+                                "casino": $(this).find('.dt-casino').val(),
+                                "live_casino": $(this).find('.dt-live-casino').val(),
+                                "sports": $(this).find('.dt-sports').val(),
+                                "lottery": $(this).find('.dt-lottery').val(),
                             })
                         })
                     }
                 }
             }else if(triggerType == "turnover"){
-                console.log("check turnover bonus")
                 //deposit bonus check
-                if(emptyAmount.length > 0){
-                    showErrorMsg(this);
-                    turnoverEmpty = true;
-                }else if(bonusAmountList['amount_type'] !== "tiered" && emptyWager.length > 0){
+                if(emptyAmount.length > 0 || emptyWager.length > 0){
                     showErrorMsg(this);
                     turnoverEmpty = true;
                 }
                 if(turnoverEmpty === false ){
                     removeErrorMsg(this);
-
-                    if(bonusAmountList['amount_type'] !== "tiered"){
-
+                    if(bonusAmountList[0]['amount_type'] === "tiered"){
+                        bonusAmountList = [];
+                        wagerList = [];// for deposit tiered amount
+                        $.each($('.turnover-tiered-amount'), function(){
+                            bonusAmountList.push({
+                                "amount_type": "tiered",
+                                "amount_threshold": $(this).find('.tt-min').val(),
+                                "bonus_percentage": $(this).find('.tt-percentage').val(),
+                            });
+                        });
                     }
                 }
             }
-
-            //turnover bonus check
-
-
+        }
+        if (wagerList.length === 0){
+            addWagerReq();
         }
     });
+
+    function addWagerReq(){
+        var tempDict = {}
+        for(var i = 0; i < productList.length; i++){
+            var curBox = $('#wager-' + productList[i]);
+            if(curBox.is(':checked')){
+                if(curBox.is(':disabled')){
+                  tempDict[productList[i]] = $('#wager-' + productList[i] + '-times').val();
+                }else{
+                    var subWager = $('#wager-' + productList[i] + '-total').val().split(' ');
+                    tempDict[productList[i]] = subWager[3].substring(0, subWager[3].length - 1);
+                }
+            }else{
+                tempDict[productList[i]] = "-1";
+            }
+        }
+        wagerList.push(tempDict);
+    }
 
     $('#bonus-next-05').on('click', function(){
         updateDataTarget(this);
         // check empty, either openAll or selectGroup should be true, selectMustHave must be true
         if ($('#open-to-all').is(':checked')){
-            targetAll = true
+            targetAll = true;
+            targetAudience = null;
         }else{
             targetAll = false
         }
         var selectGroup = $('#specific-accounts').is(':checked') && $('#group-assigned').val() !== null;
-        var selectMustHave = $('#bonus-requirements').val() !== null;
-        if((!targetAll && !selectGroup) || !selectMustHave){
+//        var selectMustHave = $('#bonus-requirements').val() !== null;
+        if((!targetAll && !selectGroup)){
             showErrorMsg(this);
         }else{
             removeErrorMsg(this);
@@ -697,6 +703,12 @@ $(document).ready(function() {
             maxUser = $('#maximum-claimer').val();
             maxUserAmount = $('#max-user-amount').val();
             maxTargetUserAmount = $('#max-target-user-amount').val();
+            if(maxUserAmount.length === 0){
+                maxUserAmount = null
+            }
+            if(maxTargetUserAmount.length === 0){
+                maxTargetUserAmount = null
+            }
         }
     });
 
@@ -708,6 +720,7 @@ $(document).ready(function() {
                 "wager_multiple": wagerList,
                 "time_limit": timeLimit,
                 "must_have": wagerRequirements,
+                "aggregate_method": 0 //sum
             }
 
             var playersDict = {
@@ -740,10 +753,9 @@ $(document).ready(function() {
                 "trigger_type": triggerType,        // verification,     deposit    or   turnover
                 "trigger_subtype": triggerSubType,  // id,email,phone    first, next     product, provider
                 "bonus_amount_list": bonusAmountList,   // amount types
-                "deposit_wager_base": depositWagerCal   // 0 for deposit+bonus, 1 for bonus only
+                "deposit_wager_base": depositWagerCal,  // 0 for deposit+bonus, 1 for bonus only
+                "master_types": masterType,
             };
-
-            console.log(bonusDict)
 
             $.ajax({
                 type: 'POST',

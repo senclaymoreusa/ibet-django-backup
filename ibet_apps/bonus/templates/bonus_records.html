@@ -76,7 +76,7 @@
 
 <div id="new-bonus-pages">
     <!--bonus detail 01: name and duration-->
-    <div id="bonus-01" class="modal fade bonus-01" role="dialog">
+    <div id="bonus-01" data-keyboard="false" data-backdrop="static" class="modal fade bonus-01" role="dialog">
         <div class="modal-dialog" style="width:40%">
             <!-- Modal content-->
             <div class="modal-content">
@@ -110,7 +110,7 @@
     </div>
 
     <!--bonus detail 02: bonus master type, category and issue-->
-    <div id="bonus-02" class="modal fade" role="dialog">
+    <div id="bonus-02" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
@@ -164,7 +164,7 @@
     </div>
 
     <!--bonus detail 03: triggered bonus-->
-    <div id="bonus-03" class="modal fade" role="dialog">
+    <div id="bonus-03" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
         <div class="modal-dialog" style="width:40%">
             <!-- Modal content-->
             <div class="modal-content">
@@ -229,7 +229,7 @@
     </div>
 
     <!-- bonus detail 04: bonus amount and wagering requirements  -->
-    <div id="bonus-04" class="modal fade" role="dialog">
+    <div id="bonus-04" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
         <div class="modal-dialog" style="width:40%">
             <!-- Modal content-->
             <div class="modal-content">
@@ -260,7 +260,7 @@
                             <div class="col-md-3" style="width: 140px;">
                                 <input type="radio" name="bonus-amount-type-deposit-choice" value="fixed"> Fixed amount <br>
                             </div>
-                            <div class="col-md-3" style="width: 140px;">
+                            <div class="col-md-3" style="width: 140px;" id="deposit-tiered-col">
                                 <input type="radio" name="bonus-amount-type-deposit-choice" value="tiered"> Tiered amount <br>
                             </div>
                         </div>
@@ -438,12 +438,12 @@
                             </div>
 
                             {% for i in turnover_tiered_amount %}
-                            <div class="row" style="margin-bottom: 10px">
+                            <div class="row turnover-tiered-amount" style="margin-bottom: 10px">
                                 <div class="col-md-2" style="width: 110px;">
-                                    <input type="number" id="tt-min" style="width: 97px;" value = "{{ i.0 }}" disabled disabled>
+                                    <input type="number" class="tt-min" style="width: 97px;" value = "{{ i.0 }}" disabled disabled>
                                 </div>
                                 <div class="col-md-2" style="width: 120px;">
-                                    <input type="number" id="tt-percentage" style="width:77px;" value = "{{ i.1 }}" disabled disabled>
+                                    <input type="number" class="tt-percentage" style="width:77px;" value = "{{ i.1 }}" disabled disabled>
                                     <input class="disabled-input" disabled value="%" style="width:33px;">
                                 </div>
                             </div>
@@ -576,7 +576,7 @@
     </div>
 
     <!-- bonus detail 05: bonus target audience and must-haves  -->
-    <div id="bonus-05" class="modal fade" role="dialog">
+    <div id="bonus-05" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
         <div class="modal-dialog" style="width:40%">
             <!-- Modal content-->
             <div class="modal-content">
@@ -609,7 +609,7 @@
                     </div>
 
                     <div>
-                        <label class="bonus-label"><strong>ELIGIBILITY MUST-HAVES*</strong></label>
+                        <label class="bonus-label"><strong>ELIGIBILITY MUST-HAVES</strong></label>
                         <br>
                         <select id="bonus-requirements" class="group-assign bonus-input"
                                 data-placeholder="Select requirements" multiple class="chosen-select">
@@ -649,7 +649,7 @@
     </div>
 
     <!--bonus detail 06: bonus claim control-->
-    <div id="bonus-06" class="modal fade" role="dialog">
+    <div id="bonus-06" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
@@ -688,14 +688,14 @@
                     <div class="row control-row">
                         <div class="col-md-6">Player</div>
                         <div class="col-md-6">
-                            <input id="max-user-amount" type="text" class="bonus-control-measure" placeholder="Infinite">
+                            <input id="max-user-amount" type="number" class="bonus-control-measure" placeholder="Infinite">
                         </div>
                     </div>
 
                     <div class="row control-row">
                         <div class="col-md-6">Target audience</div>
                         <div class="col-md-6">
-                            <input id="max-target-user-amount" type="text" class="bonus-control-measure" placeholder="Infinite">
+                            <input id="max-target-user-amount" type="number" class="bonus-control-measure" placeholder="Infinite">
                         </div>
                     </div>
 
@@ -716,7 +716,7 @@
     </div>
 
     <!--bonus detail 07: bonus delivery-->
-    <div id="bonus-07" class="modal fade" role="dialog">
+    <div id="bonus-07" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">

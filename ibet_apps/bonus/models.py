@@ -46,13 +46,12 @@ class Bonus(models.Model):
     max_total_times = models.IntegerField(default=1, null=True)  # per player (bonus 2.0)
     max_relevant_times = models.IntegerField(default=1, null=True)  # per associated accounts (bonus 2.0)
     max_users = models.IntegerField(null=True, blank=True)  # the maximum number of players can be enrolled (bonus 2.0)
+    delivery = models.SmallIntegerField(choices=DELIVERY_CHOICES, default=0, null=True)  # release method (bonus 2.0)
 
     max_user_amount = models.FloatField(null=True, blank=True)  # the maximum amount per player can claim (bonus 3.0)
     max_amount = models.FloatField(null=True, blank=True)  # maximum amount of bonus could be released (bonus 3.0)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)  # for tiered bonus (bonus 3.0)
 
-    delivery = models.SmallIntegerField(choices=DELIVERY_CHOICES, default=0, null=True)  # release method (bonus 2.0)
-
-    # max bonus amount, for deposit bonus(bonus 3.0)
     def __str__(self):
         return str(self.name) + str(self.pk)
 
