@@ -1426,10 +1426,10 @@ BONUS_PAYOUT_MANUAL = 2
 BONUS_PAYOUT_NONE = 3
 
 BONUS_PAYOUT_CHOICES = (
-    (0, 'Instant'),
-    (1, 'Weekly'),
-    (2, 'Manual'),
-    (3, 'None')
+    (BONUS_PAYOUT_INSTANT, 'Instant'),
+    (BONUS_PAYOUT_WEEKLY, 'Weekly'),
+    (BONUS_PAYOUT_MANUAL, 'Manual'),
+    (BONUS_PAYOUT_NONE, 'None')
 )
 
 # Games
