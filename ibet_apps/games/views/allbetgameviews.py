@@ -216,6 +216,9 @@ class BalanceView(View):
             logger.error("Generic AllBet BalanceView Error: " + str(e))
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
+######################################################################################################################################################
+
+
 
 def place_bet(client, transaction_id, amount, bet_details):
     """
@@ -225,30 +228,28 @@ def place_bet(client, transaction_id, amount, bet_details):
 
     # Idempotence - check if bet transaction ID already used.
     try:
-        existing_transaction = GameBet.objects.get(ref_no=transaction_id)
+        existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
 
-        json_to_return = {
-                            "error_code": 10007,
-                            "message": "Error: transaction ID already used."
-                         }
-        logger.error("AllBet TransferView Error: Bet transaction ID already used.")
-        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-    except ObjectDoesNotExist:
-        logger.info("AllBet TransferView place_bet OK: Incoming transaction ID not used yet.")
+        if existing_transactions.count() >= 1:
+            json_to_return = {
+                "error_code": 10007,
+                "message": "Error: transaction ID already used."
+            }
+            logger.error("AllBet TransferView Error: Bet transaction ID already used.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+    except:
         pass
 
     bet_details_total_amount = 0
 
     for bet_dictionary in bet_details:
-        single_bet_id = bet_dictionary["betNum"]
         single_bet_amount = bet_dictionary["amount"]
 
         if single_bet_amount <= 0:
             json_to_return = {
-                                "error_code": 40000,
-                                "message": "Error: Single bet amount cannot be less than or equal to 0."
-                             }
+                "error_code": 40000,
+                "message": "Error: Single bet amount cannot be less than or equal to 0."
+            }
             logger.error("AllBet TransferView Error: Single bet amount cannot be less than or equal to 0.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
         
@@ -256,88 +257,93 @@ def place_bet(client, transaction_id, amount, bet_details):
 
     if bet_details_total_amount != amount:
         json_to_return = {
-                            "error_code": 40000,
-                            "message": "Error: Total bet amount does not add up to the bet amounts in details parameter."
-                         }
+            "error_code": 40000,
+            "message": "Error: Total bet amount does not add up to the bet amounts in details parameter."
+        }
         logger.error("AllBet TransferView Error: Total bet amount does not add up to the bet amounts in details parameter.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+    # Illegal operation: total bet amount is 0 or negative.
+    if float(amount) <= 0:
+        json_to_return = {
+            "error_code": 40000,
+            "message": "Error: Total bet amount cannot be less than or equal to 0."
+        }
+        logger.error("AllBet TransferView Error: Total bet amount cannot be less than or equal to 0.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     # At this point, we know that the bet request is a valid single or batch bet.
     try:
         user_obj = CustomUser.objects.get(username=client)
-        user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
+        user_balance = int(user_obj.main_wallet * 100) / 100.0 
         bet_amount = float(amount)
-
-        # Illegal operation: total bet amount is 0 or negative.
-        if bet_amount <= 0:
-            json_to_return = {
-                                "error_code": 40000,
-                                "message": "Error: Total bet amount cannot be less than or equal to 0."
-                             }
-            logger.error("AllBet TransferView Error: Total bet amount cannot be less than or equal to 0.")
-            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         # Bet can go through.
         if user_balance >= bet_amount:
-            with transaction.atomic():
-                balance_after_bet = user_balance - bet_amount
-                user_obj.main_wallet = balance_after_bet
-                user_obj.save()
+            for bet_entry in bet_details:
+                single_bet_id = bet_entry["betNum"]
+                single_bet_amount = bet_entry["amount"]
 
-                ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                with transaction.atomic():
+                    user_balance = int(user_obj.main_wallet * 100) / 100.0
+                    balance_after_placing = user_balance - single_bet_amount
+                    user_obj.main_wallet = balance_after_placing
+                    user_obj.save()
 
-                GameBet.objects.create(
-                    provider = GameProvider.objects.get(provider_name="ALLBET"),
-                    category = Category.objects.get(name="Poker"),
-                    #game = None,
-                    #game_name = None,
-                    user = user_obj,
-                    user_name = user_obj.username,
-                    amount_wagered = bet_amount,
-                    amount_won = 0.00,
-                    #outcome = None,
-                    #odds = None,
-                    #bet_type = None,
-                    #line = None,
-                    transaction_id = ibet_trans_id,
-                    currency = user_obj.currency,
-                    market = ibetCN,
-                    ref_no = transaction_id,
-                    bet_time = timezone.now(),
-                    #resolved_time = None,
-                    other_data = {
-                        "bet_details": bet_details
-                    }
-                )
+                    ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                json_to_return = {
-                                    "error_code": 0,
-                                    "balance": int(user_obj.main_wallet * 100) / 100.0
-                                 }
-                logger.info("AllBet TransferView Success: Bet placed.")
-                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+                    GameBet.objects.create(
+                        provider = GameProvider.objects.get(provider_name=ALLBET_PROVIDER),
+                        category = Category.objects.get(name="Live Casino"),
+                        #game = None,
+                        #game_name = None,
+                        user = user_obj,
+                        user_name = user_obj.username,
+                        amount_wagered = single_bet_amount,
+                        amount_won = None,
+                        #outcome = None,
+                        #odds = None,
+                        #bet_type = None,
+                        #line = None,
+                        transaction_id = ibet_trans_id,
+                        currency = user_obj.currency,
+                        market = ibetCN,
+                        ref_no = single_bet_id,
+                        bet_time = timezone.now(),
+                        #resolved_time = timezone.now(),
+                        other_data = {
+                            "transaction_id": transaction_id
+                        }
+                    )
+
+            json_to_return = {
+                "error_code": 0,
+                "balance": int(user_obj.main_wallet * 100) / 100.0
+            }
+            logger.info("AllBet TransferView Success: Bet(s) placed.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         # User does not have enough money.
         else:
             json_to_return = {
-                                "error_code": 10101,
-                                "message": "User does not have enough money to place bet."
-                             }
+                "error_code": 10101,
+                "message": "User does not have enough money to place bet."
+            }
             logger.error("AllBet TransferView Error: User does not have enough money to place bet.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     
     except Exception as e:
         if str(e) == "CustomUser matching query does not exist.":
             json_to_return = {
-                                "error_code": 10003,
-                                "message": "Specified user does not exist."
-                             }
+                "error_code": 10003,
+                "message": "Specified user does not exist."
+            }
             logger.error("AllBet TransferView Error: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         return HttpResponse(str(e))
 
-######################################################################################################################################################
+
 
 def settle_bet(client, transaction_id, amount, bet_details):
     """
@@ -356,8 +362,8 @@ def settle_bet(client, transaction_id, amount, bet_details):
             ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
             GameBet.objects.create(
-                provider = GameProvider.objects.get(provider_name="ALLBET"),
-                category = Category.objects.get(name="Poker"),
+                provider = GameProvider.objects.get(provider_name=ALLBET_PROVIDER),
+                category = Category.objects.get(name="Live Casino"),
                 #game = None,
                 #game_name = None,
                 user = user_obj,
@@ -397,6 +403,8 @@ def settle_bet(client, transaction_id, amount, bet_details):
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         return HttpResponse(str(e))
+
+
 
 ######################################################################################################################################################
 
