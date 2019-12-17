@@ -341,79 +341,116 @@ def place_bet(client, transaction_id, amount, bet_details):
         return HttpResponse(str(e))
 
 
-######################################################################################################################################################
-
-
 def settle_bet(client, transaction_id, amount, settle_details):
     """
     Helper method for the settle bet transfer type. 'amount' parameter will be positive for wins and negative for losses.
+    This method supports batch settling of bets.
     """
 
-    # Batch settlement is not allowed. Multiple bets cannot be settled in one transaction.
-    if len(settle_details) > 1:
+    # Idempotence - check if transaction_id already used.
+    try:
+        existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
+
+        if existing_transactions.count() >= 1:
+            json_to_return = {
+                "error_code": 10007,
+                "message": "Error: transaction ID already used."
+            }
+            logger.error("AllBet TransferView Error: Cannot settle since Transaction ID is already used.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+    except:
+        pass
+
+    settle_details_total_amount = 0
+
+    for settle_dictionary in settle_details:
+        settle_details_total_amount += settle_dictionary["amount"]
+        single_settle_id = settle_dictionary["betNum"]
+
+        try:
+            existing_transaction = GameBet.objects.get(ref_no=single_settle_id)
+        except ObjectDoesNotExist:
+            json_to_return = {
+                "error_code": 10006,
+                "message": "Error: Attempted to settle a bet that does not exist."
+            }
+            logger.error("AllBet TransferView Error: Attempted to settle a bet that does not exist.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+    if settle_details_total_amount != amount:
         json_to_return = {
             "error_code": 40000,
-            "message": "Batch settlement is not allowed."
+            "message": "Error: Total settle amount does not add up to the settle amount in details parameter."
         }
+        logger.error("AllBet TransferView Error: Total settle amount does not add up to the settle amount in details parameter.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     try:
         user_obj = CustomUser.objects.get(username=client)
-        user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
-        settle_amount = float(amount) # Can be positive/negative/zero for win/loss/tie.
+        user_balance = int(user_obj.main_wallet * 100) / 100.0
 
-        with transaction.atomic():
-            balance_after_settling = user_balance + settle_amount 
-            user_obj.main_wallet = balance_after_settling
-            user_obj.save()
+        # Loop through settle_details and settle bets individually.
+        for settle_entry in settle_details:
+            single_settle_id = settle_entry["betNum"]
+            single_settle_amount = settle_entry["amount"]
 
-            ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+            with transaction.atomic():
+                user_balance = int(user_obj.main_wallet * 100) / 100.0
+                balance_after_settling = user_balance + single_settle_amount
+                user_obj.main_wallet = balance_after_settling
+                user_obj.save()
 
-            GameBet.objects.create(
-                provider = GameProvider.objects.get(provider_name=ALLBET_PROVIDER),
-                category = Category.objects.get(name="Live Casino"),
-                #game = None,
-                #game_name = None,
-                user = user_obj,
-                user_name = user_obj.username,
-                amount_wagered = 0.00,
-                amount_won = settle_amount,
-                outcome = None, # 0 through 14
-                #odds = None,
-                #bet_type = None,
-                #line = None,
-                transaction_id = ibet_trans_id,
-                currency = user_obj.currency,
-                market = ibetCN,
-                ref_no = transaction_id,
-                #bet_time = None,
-                resolved_time = timezone.now(),
-                other_data = {
-                    "settle_details": settle_details
-                }
-            )
+                ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-            # Return updated user balance after settling is complete.
-            json_to_return = {
-                                "error_code": 0,
-                                "balance": int(user_obj.main_wallet * 100) / 100.0
-                             }
-            logger.info("AllBet TransferView Success: Bet settled for user " + str(user_obj.username))
-            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+                settle_outcome = None
+                if single_settle_amount > 0:
+                    settle_outcome = 0 # Win
+                elif single_settle_amount < 0:
+                    settle_outcome = 1 # Lose
+                else:
+                    settle_outcome = 2 # Tie
+
+                GameBet.objects.create(
+                    provider = GameProvider.objects.get(provider_name=ALLBET_PROVIDER),
+                    category = Category.objects.get(name="Live Casino"),
+                    #game = None,
+                    #game_name = None,
+                    user = user_obj,
+                    user_name = user_obj.username,
+                    amount_wagered = 0.00,
+                    amount_won = single_settle_amount,
+                    outcome = settle_outcome,
+                    #odds = None,
+                    #bet_type = None,
+                    #line = None,
+                    transaction_id = ibet_trans_id,
+                    currency = user_obj.currency,
+                    market = ibetCN,
+                    ref_no = single_settle_id,
+                    #bet_time = timezone.now(),
+                    resolved_time = timezone.now(),
+                    other_data = {
+                        "transaction_id": transaction_id
+                    }
+                )
+
+        json_to_return = {
+            "error_code": 0,
+            "balance": int(user_obj.main_wallet * 100) / 100.0
+        }
+        logger.info("AllBet TransferView Success: Bet(s) settled.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     except Exception as e:
         if str(e) == "CustomUser matching query does not exist.":
             json_to_return = {
-                                "error_code": 10003,
-                                "message": "Specified user does not exist."
-                             }
+                "error_code": 10003,
+                "message": "Specified user does not exist."
+            }
             logger.error("AllBet TransferView Error: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         return HttpResponse(str(e))
-
-
-######################################################################################################################################################
 
 
 class TransferView(View):
