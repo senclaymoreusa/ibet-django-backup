@@ -94,7 +94,7 @@ class BetSoftAuthenticate(View):
                         "TIME": strftime("%d %b %Y %H:%M:%S"),
                         "RESPONSE": {
                             "RESULT": "ERROR",
-                            "CODE": str(500)
+                            "CODE": "500"
                         }
                     } 
                 }
@@ -113,7 +113,7 @@ class BetSoftAuthenticate(View):
                     "TIME": strftime("%d %b %Y %H:%M:%S"),
                     "RESPONSE": {
                         "RESULT": "ERROR",
-                        "CODE": str(400)
+                        "CODE": "400"
                     }
                 } 
             }
@@ -133,7 +133,7 @@ class BetSoftAuthenticate(View):
                     "TIME": strftime("%d %b %Y %H:%M:%S"),
                     "RESPONSE": {
                         "RESULT": "ERROR",
-                        "CODE": str(399)
+                        "CODE": "399"
                     }
                 } 
             }
@@ -187,11 +187,11 @@ class BetSoftBetResult(View):
         ref_id = ""
 
         try:
-            
+
             if hash != MD5(user_id + bet + win + is_round_finished + round_id + game_id + key):
                 logger.info("Betsoft bet/result error with wrong hash validation")
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
+                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "500"
                 response = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(response, content_type='text/xml')
 
@@ -203,9 +203,9 @@ class BetSoftBetResult(View):
                 win_amount = win_list[0]
                 ref_id = win_list[1]
                 
-                check_duplicate_trans = GameBet.objects.filter(ref_no=ref_id)
+                check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=ref_id)
 
-                if check_duplicate_trans:
+                if check_duplicate_trans.count() > 0:
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                     response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
                     response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
@@ -219,16 +219,20 @@ class BetSoftBetResult(View):
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 + decimal.Decimal(win_amount)) / 100)
                     user.save()
-                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
+                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
                                                     user=user,
                                                     user_name=user.username,
-                                                    amount_wagered=0.00,
                                                     currency=user.currency,
                                                     amount_won=decimal.Decimal(int(win_amount)/100),
                                                     market=ibetCN,
-                                                    ref_no=ref_id,
-                                                    transaction_id=trans_id
+                                                    ref_no=round_id,
+                                                    transaction_id=trans_id,
+                                                    resolved_time=timezone.now(),
+                                                    outcome=0,
+                                                    other_data={
+                                                            'provider_trans_id': ref_id
+                                                        }
                                                     ) 
 
 
@@ -238,9 +242,9 @@ class BetSoftBetResult(View):
                 ref_id = bet_list[1]
                 amount = bet_amount
 
-                check_duplicate_trans = GameBet.objects.filter(ref_no=ref_id)
+                check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=ref_id)
 
-                if check_duplicate_trans:
+                if check_duplicate_trans.count() > 0:
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                     response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
                     response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
@@ -249,25 +253,27 @@ class BetSoftBetResult(View):
 
                 if int(bet_amount) > 1000000 or decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-                    response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(300)
+                    response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "300"
                     response = xmltodict.unparse(response, pretty=True)
                     return HttpResponse(response, content_type='text/xml')
 
                 with transaction.atomic():
                     user.main_wallet = decimal.Decimal((user.main_wallet * 100 - decimal.Decimal(bet_amount)) / 100)
                     user.save()
-                    GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
+                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=BETSOFT_PROVIDER),
                                                     category=Category.objects.get(name='Games'),
                                                     user=user,
                                                     user_name=user.username,
                                                     amount_wagered=decimal.Decimal(int(bet_amount)/100),
                                                     currency=user.currency,
-                                                    amount_won=0.00,
                                                     market=ibetCN,
-                                                    ref_no=ref_id,
-                                                    transaction_id=trans_id
+                                                    ref_no=round_id,
+                                                    transaction_id=trans_id,
+                                                    other_data={
+                                                            'provider_trans_id': ref_id
+                                                        }
                                                     )
-                
+
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
             response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
             response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
@@ -277,14 +283,14 @@ class BetSoftBetResult(View):
         except ObjectDoesNotExist as e:
             logger.error("Betsoft bet/result error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
             logger.error("Betsoft bet/result error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
@@ -316,14 +322,20 @@ class BetSoftBetRefund(View):
 
         try:
             user = CustomUser.objects.get(username=user_id)
-            prev_bet = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered__gt=Decimal('0.00'))
-            prev_bet = prev_bet[0]
+            prev_bet = GameBet.objects.filter(other_data__provider_trans_id=casino_transaction_id, amount_wagered__gt=Decimal('0.00'))
+            if prev_bet.count() > 0:
+                prev_bet = prev_bet[0]
+            else:
+                logger.info("Betsoft refund bet error: transaction id ("+ str(casino_transaction_id)+ ") is invalid")
+                response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
+                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "302"
+                response = xmltodict.unparse(response, pretty=True)
+                return HttpResponse(response, content_type='text/xml')
 
-            check_duplicate_trans = GameBet.objects.filter(ref_no=casino_transaction_id, amount_wagered=0.00)
-            if check_duplicate_trans:
+            check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=casino_transaction_id, outcome=14)
+            if check_duplicate_trans.count() > 0:
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                 response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = prev_bet.transaction_id
-                response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
                 response = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(response, content_type='text/xml')
 
@@ -339,8 +351,12 @@ class BetSoftBetRefund(View):
                                                 currency=user.currency,
                                                 amount_won=prev_bet.amount_wagered,
                                                 market=ibetCN,
-                                                ref_no=casino_transaction_id,
-                                                transaction_id=trans_id
+                                                ref_no=prev_bet.ref_no,
+                                                transaction_id=trans_id,
+                                                outcome=14,
+                                                other_data={
+                                                            'provider_trans_id': casino_transaction_id
+                                                        }
                                                 )
                 user.main_wallet = decimal.Decimal(((user.main_wallet + prev_bet.amount_wagered) * 100) / 100)
                 user.save()
@@ -351,7 +367,7 @@ class BetSoftBetRefund(View):
             else:
 
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
+                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "500"
             
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
@@ -361,7 +377,7 @@ class BetSoftBetRefund(View):
             logger.error("Betsoft refund bet error invalid user: ", e)
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
@@ -369,14 +385,14 @@ class BetSoftBetRefund(View):
             logger.error("Betsoft refund bet error invalid transaction id: ", e)
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(302)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "302"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
             logger.error("Betsoft refund bet error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
@@ -476,7 +492,7 @@ class BetSoftGetInfo(View):
             else:
 
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
+                response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "500"
             
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
@@ -485,14 +501,14 @@ class BetSoftGetInfo(View):
         except ObjectDoesNotExist as e:
             logger.error("Betsoft get info error invalid user: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
             logger.error("Betsoft refund bet error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
+            response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 

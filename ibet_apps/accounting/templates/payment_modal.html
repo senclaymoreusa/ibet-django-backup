@@ -1,0 +1,46 @@
+<div class="modal-content">
+    <div class="modal-header">
+        Edit payment method
+    </div>
+    <div class="modal-body">
+        <div id="psp-details" style="background-color: #f3f3f3">
+            <table>
+                <tr>
+                    <td class="text-label">Method</td>
+                    <td id="psp-method">VISA</td>
+                    <td class="text-label">Type</td>
+                    <td id="psp-type">Deposit</td>
+                </tr>
+                <tr>
+                    <td class="text-label">Channel</td>
+                    <td id="psp-channel"></td>
+                    <td class="text-label">Market</td>
+                    <td id="psp-market"></td>
+                </tr>
+                <tr>
+                    <td class="text-label">Supplier</td>
+                    <td id="psp-supplier"></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+        <!-- <div id="radio-buttons-labels">
+            
+        </div> -->
+        <div class="col-md-4">
+            <p style="display: inline-block;" class="text-label">Payment Method Status</p>
+            <p class="text-label">Risk Review Required</p>
+            <p class="text-label">Settlement Confirmation Required</p>
+            <p class="text-label">Result override allowed</p>
+        </div>
+        <div id="radio-buttons" class="col-md-6">
+            <input style="display: inline-block;" type="radio" name="status" value="male">Active</input>
+            <input type="radio" name="risk" value="female">Yes</input>
+        </div>
+        <div id="radio-buttons" class="col-md-6">
+                <input style="display: inline-block;" type="radio" name="status" value="male">Disabled</input>
+            <input type="radio" name="risk" value="female">No</input>
+        </div>
+    </div>
+</div>

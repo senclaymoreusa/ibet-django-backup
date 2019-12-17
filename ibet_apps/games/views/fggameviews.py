@@ -281,6 +281,7 @@ class ProcessTransaction(APIView):
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
+               
                 wallet = user.main_wallet + decimal.Decimal(amount)
                 if (wallet > 0):
                     with transaction.atomic():
@@ -296,8 +297,11 @@ class ProcessTransaction(APIView):
                                                         amount_wagered=-float(amount),
                                                         currency=user.currency,
                                                         market=ibetCN,
-                                                        ref_no=transactionId,
-                                                        transaction_id=trans_id
+                                                        ref_no=gameTranId,
+                                                        transaction_id=trans_id,
+                                                        other_data={
+                                                            'provider_trans_id':transactionId
+                                                        }
                                                         )
                     response = {
                         "seq" : seq,
@@ -345,8 +349,13 @@ class ProcessTransaction(APIView):
                                                         currency=user.currency,
                                                         amount_won=float(amount),
                                                         market=ibetCN,
-                                                        ref_no=transactionId,
-                                                        transaction_id=trans_id
+                                                        ref_no=gameTranId,
+                                                        transaction_id=trans_id,
+                                                        resolved_time=timezone.now(),
+                                                        outcome=0,
+                                                        other_data={
+                                                            'provider_trans_id':transactionId
+                                                        }
                                                         )
                     response = {
                         "seq" : seq,
@@ -378,6 +387,7 @@ class ProcessTransaction(APIView):
         elif tranType == "PLTFRM_BON" :
                 omegaSessionKey = request.GET['omegaSessionKey']
                 gameInfoId = request.GET["gameInfoId"]
+               
                 isFinal = request.GET["isFinal"]
                 response = {
                     "seq" : seq,
@@ -425,8 +435,12 @@ class ProcessTransaction(APIView):
                                                 currency=user.currency,
                                                 amount_won=float(amount),
                                                 market=ibetCN,
-                                                ref_no=transactionId,
-                                                transaction_id=trans_id
+                                                ref_no=gameTranId,
+                                                transaction_id=trans_id,
+                                                outcome=7,
+                                                other_data={
+                                                            'provider_trans_id':transactionId
+                                                        }
                                                 )
 
         elif tranType == "END_GAME" :

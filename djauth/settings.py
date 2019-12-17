@@ -188,6 +188,7 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #     EU:  eudev / euprod
 #
 
+TESTING = sys.argv[1:2] == ['test']
 
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")

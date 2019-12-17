@@ -14,10 +14,8 @@ from utils.constants import *
 from decimal import Decimal
 from pyDes import des, ECB, PAD_PKCS5
 from datetime import datetime
-
 import base64, hashlib
 import random
-
 import urllib.parse
 
 logger = logging.getLogger("django")
@@ -212,11 +210,6 @@ def transferRequest(user, amount, from_wallet, to_wallet):
             else:
                 return False
 
-def des_encrypt(s, encrypt_key):
-    iv = encrypt_key
-    k = des(encrypt_key, ECB, iv, pad=None, padmode=PAD_PKCS5)
-    en = k.encrypt(s, padmode=PAD_PKCS5)
-    return base64.b64encode(en)
 
 
 

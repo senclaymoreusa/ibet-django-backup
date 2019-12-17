@@ -18,12 +18,23 @@ from django.http import  HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from time import sleep
 from  accounting.models import *
+from pyDes import des, ECB, PAD_PKCS5
+import base64, hashlib
 
+def des_encrypt(s, encrypt_key):
+    iv = encrypt_key
+    k = des(encrypt_key, ECB, iv, pad=None, padmode=PAD_PKCS5)
+    en = k.encrypt(s, padmode=PAD_PKCS5)
+    return base64.b64encode(en)
+
+def MD5(code):
+    res = hashlib.md5(code.encode()).hexdigest()
+    return res
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
     s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + user.username + "/\\\\/" + "method=" + method + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
-    
+    print(s)
     param = des_encrypt(s,AG_DES).decode("utf-8") 
 
     key = MD5(param + AG_MD5)
@@ -205,17 +216,33 @@ def forwardGame(request):
         return Response({"error":"The  user is not existed."}) 
 
 
-def fundTransfer(user, fund_wallet, password, oddtype, actype, gameCategory, credit, fixcredit, cur, agtype): 
+def fundTransfer(user, fund_wallet, credit, agtype): 
         username =  user.username
         trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
-        # password = request.POST['password']
-        # oddtype = request.POST['oddtype']
-        # actype = request.POST['actype']
-        # cur = request.POST['cur']
+        password = AG_CAGENT + username
+           
+        oddtype = 'A'
+        actype = '1'
+
+        if user.currency == CURRENCY_CNY:
+            cur = "CNY"
+        elif user.currency == CURRENCY_USD:
+            cur = "USD"
+        elif user.currency == CURRENCY_THB:
+            cur = "THB"
+        elif user.currency == CURRENCY_EUR:
+            cur = "EUR"
+        elif user.currency == CURRENCY_IDR:
+            cur = "IDR"
+        elif user.currency == CURRENCY_VND:
+            cur = "VND"
+        else:
+            cur = "CNY"
+
         # agtype = request.POST['agtype']
-        # gameCategory = request.POST['gameCategory']
+        gameCategory = ""
         # credit = request.POST['credit']
-        # fixcredit = request.POST['fixcredit']
+        fixcredit = ""
         billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
         lg_method = 'lg'
         gb_method = 'gb'
@@ -227,7 +254,7 @@ def fundTransfer(user, fund_wallet, password, oddtype, actype, gameCategory, cre
                 if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == 0: #get balance
                     if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == 0:
                         print("prepare")
-                        delay = kwargs.get("delay", 5)
+                        
                         while confirm:
                             flag = '1'
                             if transferCreditConfirm(user,password,actype,cur,agtype,fixcredit,gameCategory,credit,flag,billno) == 0:
@@ -235,7 +262,7 @@ def fundTransfer(user, fund_wallet, password, oddtype, actype, gameCategory, cre
                                     Transaction.objects.create(transaction_id=trans_id,
                                         user_id=user,
                                         order_id=trans_id,
-                                        amount=amount,
+                                        amount=credit,
                                         currency=user.currency,
                                         transfer_from=fund_wallet,
                                         transfer_to='AG',
@@ -246,7 +273,7 @@ def fundTransfer(user, fund_wallet, password, oddtype, actype, gameCategory, cre
                                     Transaction.objects.create(transaction_id=trans_id,
                                         user_id=user,
                                         order_id=trans_id,
-                                        amount=amount,
+                                        amount=credit,
                                         currency=user.currency,
                                         transfer_from='AG',
                                         transfer_to=fund_wallet,
@@ -297,13 +324,13 @@ def fundTransfer(user, fund_wallet, password, oddtype, actype, gameCategory, cre
                                         
                                     elif queryOrderStatus(actype,cur,billno) == 3:  
                                         checking = True       
-                                        sleep(delay)
+                                        time.sleep(5)
                                         
                                     elif queryOrderStatus(actype,cur,billno) == 2: 
                                         success = True
                                         confirm = False
                                         checking = False
-                                        sleep(delay)
+                                        time.sleep(5)
                                         
 
                     else:
@@ -320,8 +347,9 @@ def fundTransfer(user, fund_wallet, password, oddtype, actype, gameCategory, cre
 class test(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela01")
-        response = fundTransfer(user,  "main", "123123", "A", "1", "0", "300.00", "", "CNY", "IN")
+        user = CustomUser.objects.get(username="ibttest01")
+        response = fundTransfer(user, "main", "300.00",  "IN")
+        print(response)
         return HttpResponse(response)
   
 class PostTransferforAG(APIView):
