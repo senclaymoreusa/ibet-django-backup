@@ -31,8 +31,9 @@ class TransferDeposit():
 
     def KYDeposit(self):
         return kyTransfer(self.user, self.amount, self.from_wallet, 0)
-    # def GADeposit(self):
-    #     return fundTransfer(self.user, self.from_wallet, oddtype, actype, gameCategory, credit, fixcredit, cur, agtype)
+
+    def GADeposit(self):
+        return fundTransfer(self.user, self.from_wallet, self.amount, "IN")
 
     
 class TransferWithdraw():
@@ -54,3 +55,6 @@ class TransferWithdraw():
 
     def KYWithdraw(self):
         return kyTransfer(self.user, self.amount, self.to_wallet, 1)
+
+    def GAWithdraw(self):
+        return fundTransfer(self.user, self.from_wallet, self.amount, "OUT")
