@@ -286,7 +286,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             product=0,
                                             transaction_type=TRANSACTION_TRANSFER,
                                             status=TRAN_SUCCESS_TYPE)
-                user.save()
+                # user.save()
         
             return CODE_SUCCESS
         elif rdata['Data']['status'] == 1 :
@@ -335,7 +335,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             product=0,
                                                             transaction_type=TRANSACTION_TRANSFER_IN,
                                                             status=TRAN_SUCCESS_TYPE)
-                                user.save()         
+                                # user.save()         
                             return CODE_SUCCESS
                             break
                         elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
