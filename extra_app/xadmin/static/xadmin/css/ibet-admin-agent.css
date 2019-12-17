@@ -12,7 +12,7 @@ body {
 }
 
 .table-block {
-    background-color: rgb(243, 243, 243); 
+    background-color: rgb(243, 243, 243);
     margin-right: 5px;
     height: 84px;
     padding-top: 20px;
@@ -51,14 +51,14 @@ body {
     width:15%;
     text-align: center;
     vertical-align: middle;
-    line-height: 42px; 
+    line-height: 42px;
 }
 
 .ggr-acquired-block {
     width:20%;
     text-align: center;
     vertical-align: middle;
-    line-height: 42px; 
+    line-height: 42px;
 }
 
 .first-row {
@@ -84,7 +84,7 @@ body {
 
 #commission-audit-button {
     margin-left: 200px;
-    padding-bottom: 4px;   
+    padding-bottom: 4px;
 }
 
 #commission_detail {
@@ -101,13 +101,13 @@ body {
 }
 
 .panel-default > .panel-heading-custom {
-    background: #ffa313; color: #fff; 
+    background: #ffa313; color: #fff;
 }
 .panel-default > .panel-heading-custom_perfomance {
-    background: #bc6ccc; color: #fff; 
+    background: #bc6ccc; color: #fff;
 }
 .panel-default > .panel-heading-custom_activity {
-    background: #588ebd; color: #fff; 
+    background: #588ebd; color: #fff;
 }
 
 /* Affiliate application pop up */
@@ -134,7 +134,7 @@ body {
 }
 
 .modal-header .close {
-    margin-top: -12px;
+    margin-top: -10px;
 }
 
 .modal-header .model-header-text{
@@ -154,8 +154,8 @@ body {
     color: #000000;
     float: right;
     position: absolute;
-    top: 10%;
-    right: 6%;
+    top: 9px;
+    right: 45px;
 }
 
 .user-application-info ul {
@@ -206,11 +206,11 @@ body {
 }
 
 .panel-default > .panel-affiliate-heading {
-    background: #ffa313; color: #fff; 
+    background: #ffa313; color: #fff;
 }
 
 #audit_affiliate_commission_pop .modal-header{
-    background: #ffa313; 
+    background: #ffa313;
     color: #fff;
     font-size: 16px;
     font-weight: bold;
@@ -250,9 +250,9 @@ body {
 }
 
 .edit-affiliate-detail-title {
-    background: #ffa313; 
-    color: #fff; 
-    height:30px; 
+    background: #ffa313;
+    color: #fff;
+    height:30px;
     border-top-right-radius: 3px;
     border-top-left-radius: 3px;
 }
@@ -275,8 +275,8 @@ body {
     background-color: rgb(243, 243, 243);
     height: 80px;
     margin-left: 5px;
-    line-height: 75px; 
-    text-align: center; 
+    line-height: 75px;
+    text-align: center;
     overflow: hidden;
 }
 
@@ -293,10 +293,10 @@ ul.ui-autocomplete {
 /* affiliate details */
 
 .panel-style {
-    padding: 0px; 
-    margin: 20px; 
+    padding: 0px;
+    margin: 20px;
     width: 46%;
-    float:left; 
+    float:left;
 }
 
 #affiliate-details {
@@ -409,9 +409,9 @@ ul.ui-autocomplete {
 }
 
 .promotion-link {
-    background-color: #f3f3f3; 
-    width: 80%; 
-    height: 30px; 
+    background-color: #f3f3f3;
+    width: 80%;
+    height: 30px;
     margin-left: 1px;
 }
 
@@ -432,7 +432,7 @@ ul.ui-autocomplete {
 }
 
 #affiliate_channels_details .modal-body>div:nth-of-type(even) {
-    background-color: #f3f3f3; 
+    background-color: #f3f3f3;
 }
 
 .commission_level {
@@ -446,9 +446,10 @@ ul.ui-autocomplete {
 }
 
 .activity_detail {
-    border-top: 1px solid; 
-    overflow-y: auto; 
+    border-top: 1px solid;
+    overflow-y: auto;
     height:807px;
+    margin-top: 10px;
 }
 
 /* System commission levels setting */
@@ -538,7 +539,15 @@ ul.ui-autocomplete {
 
 #date-range {
     float: right;
-    margin-right: -340px;
+    margin-right: -310px;
+}
+
+#date-range input {
+    width: 165px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
 }
 
 #downline-list {
@@ -609,4 +618,8 @@ table thead tr th {
 
 #manager_assign_chosen .chosen-single span {
     margin-top: 3px;
+}
+
+/* fix pagination choices for affiliate table */
+#affiliates_wrapper .dataTables_paginate, #affiliates_wrapper .dataTables_info, #affiliates_wrapper .dataTables_length {
 }

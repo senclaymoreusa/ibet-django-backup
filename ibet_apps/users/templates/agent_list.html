@@ -11,67 +11,68 @@
     {% load staticfiles%}
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-agent.css' %}"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+      type="text/css"/>
 </head>
 
 <body>
-<input type="hidden" id="admin_user" value={{ user.username }}>
+<!--&lt;!&ndash; Overview &ndash;&gt;-->
+<!--<div class="panel panel-default">-->
+<!--    <div class="panel-heading">-->
+<!--        <h2 class="panel-title">-->
+<!--            Overview-->
+<!--        </h2>-->
+<!--    </div>-->
+<!--    <div class="panel-body">-->
+<!--        <div class="row overview-subtitle">-->
+<!--            <div class="col-md-3 affliates-count-ftd-title ">AFFILIATES COUNT</div>-->
+<!--            <div class="col-md-2 affliates-count-ftd-title ">FTD THIS MONTH</div>-->
+<!--            <div class="col-md-2 active-ggr-title">ACTIVE THIS MONTH</div>-->
+<!--            <div class="col-md-2 active-ggr-title">GGR THIS MONTH</div>-->
+<!--            <div class="col-md-2 affliates-acquired-title">AFFILIATES ACQUIRED THIS MONTH</div>-->
+<!--        </div>-->
+<!--        <div class="row affliates-count-font">-->
+<!--            <div class="col-md-3 table-block affliates-count-block">-->
+<!--                <div class="first-row">-->
+<!--                    <div class="col-sm-4 ">-->
+<!--                        <strong>Active</strong>-->
+<!--                    </div>-->
+<!--                    <div class="col-sm-2 ">-->
+<!--                        {{ active_number }}-->
+<!--                    </div>-->
+<!--                    <div class="col-sm-4 ">-->
+<!--                        <strong>VIP</strong>-->
+<!--                    </div>-->
+<!--                    <div class="col-sm-2 ">-->
+<!--                        {{ vip_number }}-->
+<!--                    </div>-->
+<!--                </div>-->
 
-<!-- Overview -->
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h2 class="panel-title">
-            Overview
-        </h2>
-    </div>
-    <div class="panel-body">
-        <div class="row overview-subtitle">
-            <div class="col-md-3 affliates-count-ftd-title ">AFFILIATES COUNT</div>
-            <div class="col-md-2 affliates-count-ftd-title ">FTD THIS MONTH</div>
-            <div class="col-md-2 active-ggr-title">ACTIVE THIS MONTH</div>
-            <div class="col-md-2 active-ggr-title">GGR THIS MONTH</div>
-            <div class="col-md-2 affliates-acquired-title">AFFILIATES ACQUIRED THIS MONTH</div>
-        </div>
-        <div class="row affliates-count-font">
-            <div class="col-md-3 table-block affliates-count-block">
-                <div class="first-row">
-                    <div class="col-sm-4 ">
-                        <strong>Active</strong>
-                    </div>
-                    <div class="col-sm-2 ">
-                        {{ active_number }}
-                    </div>
-                    <div class="col-sm-4 ">
-                        <strong>VIP</strong>
-                    </div>
-                    <div class="col-sm-2 ">
-                        {{ vip_number }}
-                    </div>
-                </div>
-
-                <div class="second-row">
-                    <div class="col-sm-4 ">
-                        <strong>Negative</strong>
-                    </div>
-                    <div class="col-sm-2 ">
-                        {{ negative_number }}
-                    </div>
-                    <div class="col-sm-4 ">
-                        <strong>Deactivated</strong>
-                    </div>
-                    <div class="col-sm-2 ">
-                        {{ deactivated_number }}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 table-block ftd-active-block"><strong>{{ ftd_this_month }}</strong></div>
-            <!-- need to know the definition of active affiliates -->
-            <div class="col-md-2 table-block ftd-active-block"><strong>{{ actives_this_month }}</strong></div>
-            <div class="col-md-2 table-block ggr-acquired-block"><strong>${{ ggr_this_month }}</strong></div>
-            <div class="col-md-3 table-block ggr-acquired-block"><strong>{{ affiliates_acquired_this_month }}</strong>
-            </div>
-        </div>
-    </div>
-</div>
+<!--                <div class="second-row">-->
+<!--                    <div class="col-sm-4 ">-->
+<!--                        <strong>Negative</strong>-->
+<!--                    </div>-->
+<!--                    <div class="col-sm-2 ">-->
+<!--                        {{ negative_number }}-->
+<!--                    </div>-->
+<!--                    <div class="col-sm-4 ">-->
+<!--                        <strong>Deactivated</strong>-->
+<!--                    </div>-->
+<!--                    <div class="col-sm-2 ">-->
+<!--                        {{ deactivated_number }}-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col-md-2 table-block ftd-active-block"><strong>{{ ftd_this_month }}</strong></div>-->
+<!--            &lt;!&ndash; need to know the definition of active affiliates &ndash;&gt;-->
+<!--            <div class="col-md-2 table-block ftd-active-block"><strong>{{ actives_this_month }}</strong></div>-->
+<!--            <div class="col-md-2 table-block ggr-acquired-block"><strong>${{ ggr_this_month }}</strong></div>-->
+<!--            <div class="col-md-3 table-block ggr-acquired-block"><strong>{{ affiliates_acquired_this_month }}</strong>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
 
 <!-- Commission Table -->
 <div class="panel panel-default" style="width: 50%; display:inline-block; vertical-align: top;">
@@ -375,50 +376,78 @@
         </h2>
     </div>
     <div class="panel-body">
-        <div class='row' style="width:35%; margin: 0 0 10px 5px;">
-            <div class="input-group">
+        <div class='row' style="margin-bottom: 20px;">
+            <div class="col-md-3 input-group" style="margin-top:22px">
                 <input type="text" id="affiliate-search" class="form-control"
                        placeholder="Enter affiliate ID, username ">
                 <span id="search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                         class="glyphicon glyphicon-search"></span></span>
+            </div>
+            <div class="col-md-6" id="date-range">
+                <label>AFFILIATE ACTIVE DATE RANGE</label>
+                <br>
+                <input name="min-date" id="min-date" type="text" placeholder="From">
+                <input name="max-date" id="max-date" type="text" placeholder="To">
             </div>
         </div>
         <div style="overflow-x: scroll;">
             <table id="affiliates" class="table-striped table-bordered table-title hover"
                    style="margin-bottom: 100px">
                 <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">AFFILIATE ID</th>
-                    <th scope="col">MANAGER</th>
-                    <th scope="col">ACTIVE USERS</th>
-                    <th scope="col">DOWNLINE DEPOSIT</th>
-                    <th scope="col">TURNOVER</th>
-                    <th scope="col">DOWNLINE GGR</th>
-                    <th scope="col">COMMISSION LAST MONTH</th>
-                    <th scope="col">COMMISSION MONTH BEFORE</th>
-                    <th scope="col">BALANCE</th>
-                    <th scope="col">STATUS</th>
-                    <th scope="col">LEVEL</th>
-                </tr>
+                    <tr>
+                        <th scope="col">AFFILIATE ID</th>
+                        <th scope="col">AFFILIATE USERNAME</th>
+                        <th scope="col">BALANCE</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">COMMISSION LAST MONTH</th>
+                        <th scope="col">REGISTRATIONS</th>
+                        <th scope="col">FTDs</th>
+                        <th scope="col">ACTIVE PLAYERS</th>
+                        <th scope="col">ACTIVE PLAYERS(no freebets)</th>
+                        <th scope="col">TURNOVER</th>
+                        <th scope="col">GGR</th>
+                        <th scope="col">BONUS COST</th>
+                        <th scope="col">NGR</th>
+                        <th scope="col">DEPOSIT</th>
+                        <th scope="col">WITHDRAWAL</th>
+
+                        <th scope="col">SPORTS ACTIVES</th>
+                        <th scope="col">SPORTS GGR</th>
+                        <th scope="col">SPORTS BONUS</th>
+                        <th scope="col">SPORTS NGR</th>
+
+                        <th scope="col">CASINO ACTIVES</th>
+                        <th scope="col">CASINO GGR</th>
+                        <th scope="col">CASINO BONUS</th>
+                        <th scope="col">CASINO NGR</th>
+
+                        <th scope="col">LIVE CASINO ACTIVES</th>
+                        <th scope="col">LIVE CASINO GGR</th>
+                        <th scope="col">LIVE CASINO BONUS</th>
+                        <th scope="col">LIVE CASINO NGR</th>
+
+                        <th scope="col">LOTTERY ACTIVES</th>
+                        <th scope="col">LOTTERY GGR</th>
+                        <th scope="col">LOTTERY BONUS</th>
+                        <th scope="col">LOTTERY NGR</th>
+
+                        <th scope="col">ACTIVE DOWNLINES</th>
+                        <th scope="col">DOWNLINE REGISTRATIONS</th>
+                        <th scope="col">DOWNLINE FTDs</th>
+                        <th scope="col">DOWNLINE NEW PLAYERS</th>
+                        <th scope="col">DOWNLINE ACTIVE PLAYERS</th>
+
+                        <th scope="col">DOWNLINE TURNOVER</th>
+                        <th scope="col">DOWNLINE GGR</th>
+                        <th scope="col">DOWNLINE BONUS COST</th>
+                        <th scope="col">DOWNLINE NGR</th>
+                        <th scope="col">DOWNLINE DEPOSIT</th>
+                        <th scope="col">DOWNLINE WITHDRAWAL</th>
+                    </tr>
                 </thead>
-                <tbody style="font-size: 13px">
-                {% for i in affiliates_table %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td><a href="{% url 'xadmin:agent_detail' i.id %}"> {{ i.id }}</a></td>
-                    <td>{{ i.manager }}</td>
-                    <td>{{ i.active_users }}</td>
-                    <td>{{ i.downlines_deposit }}</td>
-                    <td>{{ i.turnover }}</td>
-                    <td>{{ i.downlines_ggr }}</td>
-                    <td>{{ i.commission_last_month }}</td>
-                    <td>{{ i.commission_month_before }}</td>
-                    <td>{{ i.balance }}</td>
-                    <td>{{ i.status }}</td>
-                    <td>{{ i.level }}</td>
-                </tr>
-                {% endfor %}
+                <tbody>
+                    <tr>
+                    </tr>
                 </tbody>
             </table>
             <label class="show-rows">SHOW ROWS</label>
@@ -428,7 +457,6 @@
 </div>
 
 <!-- datatables -->
-<!-- <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> -->
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language="javascript"
@@ -439,12 +467,8 @@
         src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.print.min.js"></script>
 
 <!-- datepicker -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
-      type="text/css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
 
 <script src="{% static 'xadmin/js/ibet-admin-agent-list.js' %}"></script>
@@ -452,6 +476,8 @@
 <script>
 var agent_list_url = "{% url 'xadmin:agentview' %}";
 var admin_user = "{{ user.username }}";
+var user_link = "{% url 'xadmin:user_detail' %}"
+var agent_detail = "{% url 'xadmin:agent_detail' %}"
 
 </script>
 </body>

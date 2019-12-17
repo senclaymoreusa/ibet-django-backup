@@ -43,7 +43,13 @@ bet_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_BET_PLACED)
 
 
-# get downline list for affiliate or affiliates
+'''
+@param queryset: affiliate object or queryset
+@return: downline list(users referred by this affiliate)
+'''
+
+
+# get downline list for affiliate or affiliates(one level)
 def getDownline(affiliates):
     downline_list = []
     # corner case
@@ -60,40 +66,38 @@ def getDownline(affiliates):
     return downline_list
 
 
-def calculateActiveDownlineNumber(affiliate_id):
+'''
+@param queryset: affiliate object or queryset
+@return: downline list(users, users referred by this affiliate, his referred users, his referred users' referred users...)
+'''
+
+
+# get downline list for affiliate or affiliates(all levels)
+def getAllDownline(affiliates):
+    downline_list = None
+    # corner case
+    if affiliates in [None, '']:
+        logger.info("Error input for getting downline list!")
+        return []
+    elif isinstance(affiliates, QuerySet):
+        for affiliate in affiliates:
+            affiliate_referral_path = affiliate.referral_path
+            downline_list |= CustomUser.objects.filter(referral_path__contains=affiliate_referral_path)
+    else:
+        affiliate_referral_path = affiliates.referral_path
+        downline_list = CustomUser.objects.filter(referral_path__contains=affiliate_referral_path)
+    return downline_list
+
+
+'''
+@param queryset: affiliate object
+@return: number of active downline between start_time and end_time
+'''
+
+
+def calculateActiveDownlineNumber(affiliate, start_time, end_time):
     # check affiliate_id first
-    downlines = affiliate_id.referees.all()
-    active_user_list = GameBet.objects.values_list('username', flat=True).distinct()
-    affiliate_active_users = 0
-    if downlines:
-        for downline in downlines:
-            if downline.pk in active_user_list:
-                affiliate_active_users += 1
-    return affiliate_active_users
-
-
-'''
-@param date: mm/dd/yyyy
-@return: timezone datetime
-'''
-
-
-def dateToDatetime(date):
-    if date:
-        date = date.split('/')
-        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
-
-
-'''
-@param queryset: users
-@return: queryset of active users between start_time and end_time
-'''
-
-
-def filterActiveUser(queryset, start_time, end_time):
+    downlines = affiliate.referees.all()
     # get bet transaction in this period
     if start_time and end_time:
         game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
@@ -104,27 +108,116 @@ def filterActiveUser(queryset, start_time, end_time):
     else:
         game_bet_tran = GameBet.objects.all()
 
-    active_user_list = game_bet_tran.values_list('username', flat=True)
+    active_user_list = game_bet_tran.values_list('user', flat=True).distinct()
+
+    affiliate_active_users = 0
+    if downlines:
+        for downline in downlines:
+            if downline.pk in active_user_list:
+                affiliate_active_users += 1
+    return affiliate_active_users
+
+
+'''
+@param queryset: users queryset, start time, end time, include free bets or not
+@return: queryset of active users between start_time and end_time
+'''
+
+
+def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
+    # get bet transaction in this period
+    active_filter = Q()
+    if free_bets:
+        active_filter &= Q(other_data__is_free=True)
+
+    if cate:
+        active_filter &= Q(category__name=cate)
+
+    if start_time and end_time:
+        active_filter &= Q(bet_time__gte=start_time)
+        active_filter &= Q(bet_time__lte=end_time)
+    elif start_time:
+        active_filter &= Q(bet_time__gte=start_time)
+    elif end_time:
+        active_filter &= Q(bet_time__lte=end_time)
+
+    active_user_list = GameBet.objects.filter(active_filter).values_list('user', flat=True)
     if queryset:
         queryset = queryset.filter(pk__in=active_user_list)
     return queryset
+
+
+'''
+@param date: mm/dd/yyyy
+@return: timezone datetime
+'''
+def dateToDatetime(date):
+    if date:
+        date = date.split('/')
+        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
+        current_tz = timezone.get_current_timezone()
+        date = date.astimezone(current_tz)
+    return date
 
 
 # calculate ftd user number in certain user_group within certain time range
 def calculateFTD(user_group, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
-    ftd = user_group.filter(Q(ftd_time__gte=start_time)
-                            & Q(ftd_time__lte=end_time)).count()
-    return ftd
+    ftd_filter = Q()
+    if start_time and end_time:
+        ftd_filter &= Q(ftd_time__gte=start_time)
+        ftd_filter &= Q(ftd_time__lte=end_time)
+    elif start_time:
+        ftd_filter &= Q(ftd_time__gte=start_time)
+    elif end_time:
+        ftd_filter &= Q(ftd_time__lte=end_time)
+
+    ftd_user = user_group.filter(ftd_filter).count()
+    return ftd_user
+
+
+# calculate newly registered players referred by the affiliate within certain time range
+def calculateRegistrations(user_group, start_time, end_time):
+    # calculate this user_group's(downline list group or user group) within end_date ftd
+    # user_group has to be objects group, end_date should be datetime format
+    regis_filter = Q()
+    if start_time and end_time:
+        regis_filter &= Q(time_of_registration__gte=start_time)
+        regis_filter &= Q(time_of_registration__lte=end_time)
+    elif start_time:
+        regis_filter &= Q(time_of_registration__gte=start_time)
+    elif end_time:
+        regis_filter &= Q(time_of_registration__lte=end_time)
+
+    new_user = user_group.filter(regis_filter).count()
+    return new_user
+
+
+# calculate new players referred by the affiliate place first bet during certain time range
+def calculateNewPlayer(user_group, start_time, end_time, free_bets):
+    new_player_count = 0
+    new_player_filter = Q()
+
+    if free_bets:
+        new_player_filter &= Q(other_data__is_free=False)
+
+    for user in user_group:
+        bet = GameBet.objects.filter(Q(user=user) & new_player_filter).order_by("bet_time")
+        if bet:
+            first_bet = bet[0]
+            if start_time <= first_bet.bet_time <= end_time:
+                new_player_count += 1
+
+    return new_player_count
 
 
 # TODO: functions need to be updated
-def calculateTurnover(user, start_time, end_time):
+def calculateTurnover(user, start_time, end_time, cate):
     return 0
 
 
-def calculateGGR(user, start_time, end_time):
+def calculateGGR(user, start_time, end_time, cate):
     return 0
 
 
@@ -140,23 +233,12 @@ def calculateWithdrawal(user, start_time, end_time):
     return count, amount
 
 
-def calculateBonus(user, start_time, end_time):
+def calculateBonus(user, start_time, end_time, cate):
     return 0
 
 
-def calculateNGR(user, start_time, end_time):
+def calculateNGR(user, start_time, end_time, cate):
     return 0
-
-
-'''
-@param date: utc timezone datetime
-@return: local timezone datetime
-'''
-def utcToLocalDatetime(date):
-    if date:
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
 
 
 def calculateAdjustment(user, start_time, end_time):
@@ -207,7 +289,12 @@ def decode_user_id_from_referral_code(code):
         return user_id
 
 
-# get user last login time
+'''
+@param user: user object
+@return: time of last login time
+'''
+
+
 def last_login(user):
     action = UserAction.objects.filter(Q(user=user) &
                                        Q(event_type=EVENT_CHOICES_LOGIN)).order_by('-created_time')
@@ -220,6 +307,8 @@ def last_login(user):
 @param date: mm/dd/yyyy
 @return: timezone datetime
 '''
+
+
 def dateToDatetime(date):
     if date:
         date = date.split('/')
@@ -230,30 +319,11 @@ def dateToDatetime(date):
 
 
 '''
-@param queryset: users
-@return: queryset of active users between start_time and end_time
-'''
-def filterActiveUser(queryset, start_time, end_time):
-    # get bet transaction in this period
-    if start_time and end_time:
-        game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
-    elif start_time:
-        game_bet_tran = GameBet.objects.filter(bet_time__gte=start_time)
-    elif end_time:
-        game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
-    else:
-        game_bet_tran = GameBet.objects.all()
-
-    active_user_list = game_bet_tran.values_list('username', flat=True)
-    if queryset:
-        queryset = queryset.filter(pk__in=active_user_list)
-    return queryset
-
-
-'''
 @param date: utc timezone datetime
 @return: local timezone datetime
 '''
+
+
 def utcToLocalDatetime(date):
     if date:
         current_tz = timezone.get_current_timezone()
@@ -284,17 +354,6 @@ def getManagerList(list_type):
     return managers
 
 
-'''
-@param date: utc timezone datetime
-@return: local timezone datetime
-'''
-
-
-def utcToLocalDatetime(date):
-    if date:
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
 
 
 # for bonus admin display
@@ -326,8 +385,6 @@ BONUS_DELIVERY_VALUE_DICT = {
 @param date: filename, table header, table body data
 @return: response
 '''
-
-
 def exportCSV(filename, row_title, data):
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')
