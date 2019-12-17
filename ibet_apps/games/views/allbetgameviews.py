@@ -145,10 +145,6 @@ class BalanceView(View):
         try:
             auth_header = request.META['HTTP_AUTHORIZATION']
             date_header = request.META['HTTP_DATE']
-                        
-            third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-            AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-            AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
 
             # Isolate Property ID from request header.
             ab_with_prop_id = str(auth_header).split(":")[0]
@@ -167,13 +163,13 @@ class BalanceView(View):
             string_to_sign = "GET" + "\n" + "" + "\n" + "" + "\n" + date_header + "\n" + "/get_balance/" + player_account_name
             string_to_sign_encoded = string_to_sign.encode()
 
-            hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
+            hmac_obj = hmac.new(base64.b64decode(ALLBET_SHA1_KEY), string_to_sign_encoded, sha1)
             digest_result = hmac_obj.digest()
 
             sign_bytes = base64.b64encode(digest_result)
             sign_string = sign_bytes.decode()
 
-            generated_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
+            generated_header = "AB" + " " + ALLBET_PROP_ID + ":" + sign_string
             # print(generated_header) # Keeping this print statement for testing purposes.
 
             if auth_header != generated_header:
@@ -455,11 +451,7 @@ class TransferView(View):
             currency = json_data["currency"]
             transfer_type = json_data["transferType"]
             bet_details = json_data["details"]
-
-            third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-            AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-            AB_SHA1_KEY = third_party_keys["ALLBET"]["SHA1KEY"]
-
+            
             auth_header = request.META['HTTP_AUTHORIZATION']
             date_header = request.META['HTTP_DATE']
             content_md5_header = request.META['HTTP_CONTENT_MD5']
@@ -481,12 +473,12 @@ class TransferView(View):
             string_to_sign_encoded = string_to_sign.encode()
 
             # Generate signature
-            hmac_obj = hmac.new(base64.b64decode(AB_SHA1_KEY), string_to_sign_encoded, sha1)
+            hmac_obj = hmac.new(base64.b64decode(ALLBET_SHA1_KEY), string_to_sign_encoded, sha1)
             digest_result = hmac_obj.digest()
             sign_bytes = base64.b64encode(digest_result)
             sign_string = sign_bytes.decode()
 
-            generated_auth_header = "AB" + " " + AB_PROPERTY_ID + ":" + sign_string
+            generated_auth_header = "AB" + " " + ALLBET_PROP_ID + ":" + sign_string
             # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
             # Default JSON Response fields

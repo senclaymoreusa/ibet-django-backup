@@ -1475,6 +1475,7 @@ KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
+ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
 
 #onebook
 # ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
