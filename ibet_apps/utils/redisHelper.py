@@ -19,9 +19,6 @@ def getUsersByDeviceRedisKey(device_id):
 def getOnebookBetDetailsRedisKey():
     return REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS
 
-
-
-
 class RedisHelper():
     
     def __init__(self):
@@ -66,3 +63,9 @@ class RedisHelper():
     def remove_onebook_bet_details(self, onebook_run):
         onebook_bet_details = getOnebookBetDetailsRedisKey()
         return self.r.srem(onebook_bet_details, onebook_run)
+
+    def set_latest_timestamp(self, key, timestamp):
+        return self.r.set(key, timestamp)
+
+    def get_latest_timestamp(self, key):
+        return self.r.get(key)
