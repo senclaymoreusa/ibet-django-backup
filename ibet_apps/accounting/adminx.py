@@ -16,6 +16,7 @@ xadmin.site.register_view(r'accounting/override', OverrideTransaction, name='ove
 xadmin.site.register_view(r'payment_config/', GetPaymentChannels, name='psp_config')
 xadmin.site.register_view(r'get_psp/', GetPSP, name='get_psp')
 xadmin.site.register_view(r'schedule_downtime/', scheduleDowntime, name='sched_downtime')
+xadmin.site.register_view(r'delete_downtime/', removeDowntime, name='del_downtime')
 xadmin.site.register_view(r'get_transactions/', GetLatestTransactions, name='get_latest_transactions')
 # xadmin.site.register_view(r'withdrawals/confirm/', ConfirmSettlement, name='confirm_settlement')
 # xadmin.site.register_view(r'(?P<type>deposits|withdrawals)/(?P<page>-?\d*)/$', TestView, name='get_transactions')

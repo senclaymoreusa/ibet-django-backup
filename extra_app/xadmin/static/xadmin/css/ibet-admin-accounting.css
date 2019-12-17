@@ -370,14 +370,14 @@ label {
     width: 40%;
 }
 
-#freq-inputs {
+.freq-inputs {
     display: flex; 
-    justify-content: space-between
+    justify-content: space-between;
+    margin-bottom: 13px;
 }
 
-#freq-dropdown, #day-select {
-    margin-top: 12px;
-    margin-bottom: 14px;
+#downtime-freq, #day-select, .freq-input-inner {
+    margin-left: 12px;
 }
 #add-freq {
     height: 32px;
@@ -388,7 +388,7 @@ label {
     border: solid 1px #357ebd;
 }
 
-#del-freq {
+.del-freq {
     height: 32px;
     width: 32px;
     color: white;
@@ -411,4 +411,9 @@ label {
 .modal-header {
     font-size: 20px;
     font-weight: bold;
+}
+
+#downtime_From,
+#downtime_To {
+    margin: 0px 12px 0px 12px;
 }

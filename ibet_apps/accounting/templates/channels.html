@@ -293,6 +293,74 @@
             }
         });
     }
+    
+    function timeInput(bound, downtime) {
+        let inputs = document.createElement("div");
+        inputs.setAttribute("class", "input-group date");
+        inputs.setAttribute("id", "downtime_"+bound);
+        
+        let input = document.createElement("input");
+        input.setAttribute("type", "text");
+        input.setAttribute("class", "form-control");
+        input.setAttribute("id", "dt-"+bound);
+        input.setAttribute("value", downtime);
+        input.disabled = true;
+        
+        let span = document.createElement("span");
+        span.setAttribute("class", "input-group-addon");
+        span.innerText = bound;
+        inputs.appendChild(input);
+        inputs.appendChild(span);
+        return inputs;
+    }
+    function createDate(date) {
+        let select = document.createElement("select");
+        select.setAttribute("class", "freq-input-inner");
+        select.disabled = true;
+        let option = document.createElement("option");
+        option.setAttribute("value", date);
+        option.innerText = date;
+        option.selected = true;
+        select.appendChild(option);
+        return select;
+    }
+    function createFreq(freq) {
+        let select = document.createElement("select");
+        select.setAttribute("class", "freq-input-inner");
+        select.disabled = true;
+        let option = document.createElement("option");
+        option.setAttribute("value", freq);
+        option.innerText = freq;
+        option.selected = true;
+        select.appendChild(option);
+        return select;
+    }
+    function downtimeRow(downtime, freq) {
+        let node = document.createElement("div");
+        node.setAttribute("class", "freq-inputs ");
+        node.setAttribute("id", downtime.id);
+
+        let frequency = createFreq(freq);
+        node.appendChild(frequency);
+
+        if (downtime.date) {
+            let date = createDate(downtime.date);
+            node.appendChild(date);
+        }
+
+        let fromInput = timeInput("From", downtime.start);
+        let toInput = timeInput("To", downtime.end);
+
+        let delButton = document.createElement("button");
+        delButton.setAttribute("class", "del-freq");
+        delButton.setAttribute("data-id", downtime.id);
+        delButton.innerText = "-";
+        
+        node.appendChild(fromInput);
+        node.appendChild(toInput);
+        node.appendChild(delButton);
+        return node;
+    }
 
     function setProviderFields(data, psp_type) {
         convMarket = {
@@ -303,15 +371,55 @@
             4:'letou-th',
             5:'letou-cn'
         }
-        console.log(data, psp_type);
-        market = convMarket[data.fields.market];
+
+        let market = convMarket[data.fields.market];
         document.getElementById('psp-method').innerHTML = data.fields.method;
         document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1);
         document.getElementById('psp-channel').innerHTML = data.fields.channel;
         document.getElementById('psp-market').innerHTML = market;
         document.getElementById('psp-supplier').innerHTML = data.fields.supplier;
+        
+        let all_downtime = data.fields.all_downtime;
+        let dt_section = document.getElementById('all-dt');
+
+        // remove rows if pre-populated
+        while (dt_section.childNodes.length > 2) {
+            dt_section.removeChild(dt_section.childNodes[0]);
+        }
+
+        // generate rows for each existing scheduled downtime
+        for (let i = 0; i < all_downtime.once.length; i++) {
+            let row = downtimeRow(all_downtime.once[i], "Once");
+            dt_section.insertBefore(row, dt_section.firstChild);
+        }
+        for (let i = 0; i < all_downtime.daily.length; i++) {
+            let row = downtimeRow(all_downtime.daily[i], "Daily");
+            dt_section.insertBefore(row, dt_section.firstChild);
+        }
+        for (let i = 0; i < all_downtime.monthly.length; i++) {
+            let row = downtimeRow(all_downtime.monthly[i], "Monthly");
+            dt_section.insertBefore(row, dt_section.firstChild);
+        }
         document.getElementById('add-freq').setAttribute('data-pk', data.pk);
         document.getElementById('add-freq').setAttribute('data-type', psp_type);
+        $('.del-freq').on('click', function(event) {
+            console.log($(this).data('id'));
+            $.ajax({
+                type: 'POST',
+                url: '{% url "xadmin:del_downtime" %}',
+                data: {
+                    'dt_id': $(this).data('id'),
+                    'psp_id': data.pk,
+                    'psp_type': psp_type
+                },
+                success: (data) => {
+                    console.log(data);
+                    let selector = "#" + $(this).data('id');
+                    console.log(selector);
+                    $(selector).fadeOut();
+                }
+            })
+        });
     }
 
     $(document).ready(function () {
