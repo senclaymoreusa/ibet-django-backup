@@ -346,7 +346,8 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                             logger.info("Waiting for %s seconds before retrying again")
                             sleep(300) #wait for 5 minites then try again  
                     except NameError as error:
-                        logger.error(error)          
+                        logger.error(error)
+                        return  ERROR_CODE_FAIL         
                 elif rr.status_code == 204:
                     # Handle error
                     logger.info("Failed to complete a request for check fund transfer...")
