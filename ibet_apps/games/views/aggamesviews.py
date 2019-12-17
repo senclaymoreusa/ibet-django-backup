@@ -43,7 +43,7 @@ def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
             "key": key,  
         })
     rdata = r.text
-    
+    print(rdata)
     if r.status_code == 200:
         tree = ET.fromstring(rdata)
         info = tree.get('info')   
@@ -180,20 +180,40 @@ def queryOrderStatus(actype,cur,billno):
 @permission_classes((AllowAny,))        
 def forwardGame(request):
     username =  request.POST['username']
-    password = request.POST['password']
-    actype = request.POST['actype']
-    cur = request.POST['cur']
-    agtype = request.POST['type']
-    credit = request.POST['credit']
-    lang = request.POST['lang']
-    billno = request.POST['billno']
+    password = AG_CAGENT + username
+    actype = request.POST['actype']  #actype=1 代表真钱账号,0 代表试玩账号
+    billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
     gameType = request.POST['gameType']
-    oddtype = request.POST['oddtype']
+    oddtype = 'A'
     lg_method = 'lg'
     sid = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime()) + str(random.randint(0, 10000000))
     try:
         user = CustomUser.objects.get(username=username)
-        if checkCreateGameAccoutOrGetBalance(username, password, lg_method, oddtype, actype, cur) == 0:
+        if user.currency == CURRENCY_CNY:
+            cur = "CNY"
+        elif user.currency == CURRENCY_USD:
+            cur = "USD"
+        elif user.currency == CURRENCY_THB:
+            cur = "THB"
+        elif user.currency == CURRENCY_EUR:
+            cur = "EUR"
+        elif user.currency == CURRENCY_IDR:
+            cur = "IDR"
+        elif user.currency == CURRENCY_VND:
+            cur = "VND"
+        else:
+            cur = "CNY"
+
+        if user.language == 'English':
+            lang = '3'
+        elif user.language == 'Chinese':
+            lang = '1'
+        elif user.language == 'Thai':
+            lang = '6'
+        elif user.language == 'Vietnamese':
+            lang = '8'
+
+        if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == 0:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
             
             param = des_encrypt(s,AG_DES).decode("utf-8") 
@@ -201,16 +221,15 @@ def forwardGame(request):
             key = MD5(param + AG_MD5)
             
             
-            r = requests.get(AG_FORWARD_URL ,  data={
-                    "params": param,
-                    "key": key,  
-                })
-            rdata = r.text
+            # r = requests.get(AG_FORWARD_URL ,  data={
+            #         "params": param,
+            #         "key": key,  
+            #     })
+            # rdata = r.text
+            return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key})
         else:
             return Response({"error": "Cannot check or create AG game account."})
         
-                
-        return HttpResponse(rdata)
         
     except ObjectDoesNotExist:
         return Response({"error":"The  user is not existed."}) 
@@ -243,7 +262,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
         gameCategory = ""
         # credit = request.POST['credit']
         fixcredit = ""
-        billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
+        billno = c
         lg_method = 'lg'
         gb_method = 'gb'
         success = True
