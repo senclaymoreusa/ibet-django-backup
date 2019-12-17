@@ -34,7 +34,7 @@ def MD5(code):
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
     s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + user.username + "/\\\\/" + "method=" + method + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
-    print(s)
+    # print(s)
     param = des_encrypt(s,AG_DES).decode("utf-8") 
 
     key = MD5(param + AG_MD5)
@@ -253,7 +253,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
             while success:
                 if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == 0: #get balance
                     if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == 0:
-                        print("prepare")
+                        # print("prepare")
                         
                         while confirm:
                             flag = '1'
@@ -280,7 +280,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
                                         product=0,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
-                                print("confirm")
+                                # print("confirm")
                                 success = False
                                 confirm = False
                                 return CODE_SUCCESS
@@ -289,7 +289,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
                             else:
                                 while checking:
                                     if queryOrderStatus(actype,cur,billno) == 0:
-                                        print("query")
+                                        # print("query")
                                         success = False
                                         confirm = False
                                         checking = False
@@ -344,14 +344,30 @@ def fundTransfer(user, fund_wallet, credit, agtype):
         else:
             return Response({"error": "Cannot check or create AG game account."})
 
-class test(APIView):
-    permission_classes = (AllowAny, )
-    def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="ibttest01")
-        response = fundTransfer(user, "main", "300.00",  "IN")
-        print(response)
-        return HttpResponse(response)
-  
+# class test(APIView):
+#     permission_classes = (AllowAny, )
+#     def get(self, request, *args, **kwargs):
+#         user = CustomUser.objects.get(username="ibttest01")
+#         response = fundTransfer(user, "main", "300.00",  "IN")
+#         print(response)
+#         return HttpResponse(response)
+
+def agService(request):
+    if request.method == "GET":
+        
+        username = request.GET.get("id")
+        ag_type = request.GET.get("type")
+        stamp = request.GET.get("stamp")
+        feature = request.GET.get("feature")
+        try:
+            user = CustomUser.objects.get(username=username)
+            if feature == MD5(username + ag_type + stamp + AG_MD5):
+                return HttpResponse("Success")
+            else:
+                return HttpResponse("error, invalid invoking api")
+        except:
+            logger.error("this user is not existed.")
+
 class PostTransferforAG(APIView):
 
     permission_classes = (AllowAny, )
