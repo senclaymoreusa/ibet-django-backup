@@ -68,16 +68,16 @@
                         {% endfor %}
                     </select>
                     <div class='input-group date' id='downtime_From'>
-                        <input type='text' class="form-control" id='dt-from'/>
                         <span class="input-group-addon">
                             From
                         </span>
+                        <input type='text' class="form-control" id='dt-from'/>
                     </div>
                     <div class='input-group date' id='downtime_To'>
-                        <input type='text' class="form-control" id='dt-to'/>
                         <span class="input-group-addon">
                             To
                         </span>
+                        <input type='text' class="form-control" id='dt-to'/>
                     </div>
                 </div>
             </div>
@@ -161,6 +161,8 @@
                 },
                 success: (data) => {
                     console.log(data);
+                    alert("Downtime added");
+                    window.location.reload();
                 }
             })
         });
