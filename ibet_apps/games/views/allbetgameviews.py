@@ -216,9 +216,6 @@ class BalanceView(View):
             logger.error("Generic AllBet BalanceView Error: " + str(e))
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-######################################################################################################################################################
-
-
 
 def place_bet(client, transaction_id, amount, bet_details):
     """
@@ -344,11 +341,22 @@ def place_bet(client, transaction_id, amount, bet_details):
         return HttpResponse(str(e))
 
 
+######################################################################################################################################################
 
-def settle_bet(client, transaction_id, amount, bet_details):
+
+def settle_bet(client, transaction_id, amount, settle_details):
     """
     Helper method for the settle bet transfer type. 'amount' parameter will be positive for wins and negative for losses.
     """
+
+    # Batch settlement is not allowed. Multiple bets cannot be settled in one transaction.
+    if len(settle_details) > 1:
+        json_to_return = {
+            "error_code": 40000,
+            "message": "Batch settlement is not allowed."
+        }
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
     try:
         user_obj = CustomUser.objects.get(username=client)
         user_balance = int(user_obj.main_wallet * 100) / 100.0 # Truncate to 2 decimal places.
@@ -370,7 +378,7 @@ def settle_bet(client, transaction_id, amount, bet_details):
                 user_name = user_obj.username,
                 amount_wagered = 0.00,
                 amount_won = settle_amount,
-                #outcome = None,
+                outcome = None, # 0 through 14
                 #odds = None,
                 #bet_type = None,
                 #line = None,
@@ -381,7 +389,7 @@ def settle_bet(client, transaction_id, amount, bet_details):
                 #bet_time = None,
                 resolved_time = timezone.now(),
                 other_data = {
-                    "bet_details": bet_details
+                    "settle_details": settle_details
                 }
             )
 
@@ -405,8 +413,8 @@ def settle_bet(client, transaction_id, amount, bet_details):
         return HttpResponse(str(e))
 
 
-
 ######################################################################################################################################################
+
 
 class TransferView(View):
 
