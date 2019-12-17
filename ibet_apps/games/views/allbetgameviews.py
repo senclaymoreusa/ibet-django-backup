@@ -121,20 +121,6 @@ class EncryptionView(View):
             return HttpResponse("Error in encryption: " + str(e))
 
 
-def prop_id_is_invalid(test_id):
-    """
-    Helper method to check provided property ID field in request against actual ID stored in AWS.
-    """
-
-    third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-    AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-    
-    if AB_PROPERTY_ID != test_id:
-        return True 
-        
-    return False
-
-
 class BalanceView(View):
     
     def get(self, request, player_account_name):
@@ -169,7 +155,7 @@ class BalanceView(View):
             prop_id = ab_with_prop_id[3:]
             
             # Exit and return JSON if property ID is invalid.
-            if prop_id_is_invalid(prop_id):
+            if ALLBET_PROP_ID != prop_id:
                 json_to_return = {
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
@@ -482,7 +468,7 @@ class TransferView(View):
             ab_with_prop_id = str(auth_header).split(":")[0]
             prop_id = ab_with_prop_id[3:]
 
-            if prop_id_is_invalid(prop_id):
+            if ALLBET_PROP_ID != prop_id:
                 json_to_return = {
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
