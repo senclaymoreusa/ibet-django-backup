@@ -459,8 +459,9 @@ class FundTransfer(APIView):
 
 
 @transaction.atomic
-@background(schedule=5) 
-def getBetDetail():
+@api_view(['POST'])
+@permission_classes((AllowAny,))      
+def getBetDetail(request):
     try:
         PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
     except ObjectDoesNotExist:
