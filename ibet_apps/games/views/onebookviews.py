@@ -25,7 +25,7 @@ import datetime
 from datetime import date
 from django.utils import timezone
 import random
-
+from rest_framework.decorators import api_view, permission_classes
 logger = logging.getLogger('django')
 
 
