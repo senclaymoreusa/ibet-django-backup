@@ -24,7 +24,7 @@ class Bonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
     expiration_days = models.IntegerField(null=True)
-    status = models.SmallIntegerField(choices=BONUS_STATUS_CHOICES, default=0, verbose_name=_('Bonus Type'))
+    status = models.SmallIntegerField(choices=BONUS_STATUS_CHOICES, default=0, verbose_name=_('Bonus Status'))
     ## A comma-separated list of country IDs where this bonus is applicable
     ## The reason that we don't have to normalize it is that we can just do substring matching
     countries = models.CharField(max_length=50, null=True)
