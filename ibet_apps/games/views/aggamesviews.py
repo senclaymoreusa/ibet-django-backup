@@ -43,7 +43,7 @@ def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
             "key": key,  
         })
     rdata = r.text
-    print(rdata)
+    #print(rdata)
     if r.status_code == 200:
         tree = ET.fromstring(rdata)
         info = tree.get('info')   
@@ -262,7 +262,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
         gameCategory = ""
         # credit = request.POST['credit']
         fixcredit = ""
-        billno = c
+        billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
         lg_method = 'lg'
         gb_method = 'gb'
         success = True
@@ -366,7 +366,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
 # class test(APIView):
 #     permission_classes = (AllowAny, )
 #     def get(self, request, *args, **kwargs):
-#         user = CustomUser.objects.get(username="ibttest01")
+#         user = CustomUser.objects.get(username="angela03")
 #         response = fundTransfer(user, "main", "300.00",  "IN")
 #         print(response)
 #         return HttpResponse(response)
