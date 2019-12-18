@@ -147,17 +147,19 @@ class KyBets(View):
                     GameBet.objects.create(
                         provider=provider[0],
                         category=category[0],
-                        username=user,
+                        user=user,
+                        user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
                         amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                         transaction_id=trans_id,
                         market=ibetCN,
-                        ref_no=game_id[i]
+                        ref_no=game_id[i],
+                        resolved_time=timezone.now()
                     )
 
-                return HttpResponse(status=201)
-            else:
                 return HttpResponse(status=200)
+            else:
+                return HttpResponse("No record at this time", status=200)
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
             return HttpResponse(status=400)
@@ -405,12 +407,14 @@ class TestGetRecord(View):
                     GameBet.objects.create(
                         provider=provider[0],
                         category=category[0],
-                        username=user,
+                        user=user,
+                        username=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
                         amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                         transaction_id=trans_id,
                         market=ibetCN,
-                        ref_no=game_id[i]
+                        ref_no=game_id[i],
+                        resolved_time=timezone.now()
                     )
             
             return HttpResponse(status=200)
