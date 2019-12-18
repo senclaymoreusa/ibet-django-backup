@@ -462,21 +462,26 @@ class FundTransfer(APIView):
 @api_view(['POST'])
 @permission_classes((AllowAny,))      
 def getBetDetail(request):
-    try:
-        PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
-    except ObjectDoesNotExist:
-        logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
-        raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
-        
-    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
-    delay = 2
-    success = False
-    version_key = PROVIDER.notes
-    onebook_run = "run"
-    try:
-        r = RedisClient().connect()
-        redis = RedisHelper()
-        # print(redis.check_onebook_bet_details(onebook_run))
+    if request.method == 'POST':
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+        except ObjectDoesNotExist:
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            
+        headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+        delay = 2
+        success = False
+        version_key = PROVIDER.notes
+        onebook_run = "run"
+        try:
+            r = RedisClient().connect()
+            redis = RedisHelper()
+        except:
+            logger.error("There is something wrong with redis connection.")
+            return Response({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        #print(redis.check_onebook_bet_details(onebook_run))
         if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
             while(True):
@@ -499,63 +504,65 @@ def getBetDetail(request):
                     # logger.info(rdata["Data"]["BetDetails"])
                     for i in range(len(rdata["Data"]["BetDetails"])):
                         username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
-                        #print(username)
-                        try:
-                            cate = Category.objects.get(name='SPORTS')
-                        except:
-                            cate = Category.objects.create(name='SPORTS')
-                            logger.info("create new game category.")
+                        # print(username)
+                        
+                        cate = Category.objects.get(name='Sports')
+                        
                         trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                         user = CustomUser.objects.get(username=username)
                         transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                         if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
-                            # print("onebook")
+                            
                             GameBet.objects.create(provider=PROVIDER,
-                                                        category=cate,
-                                                        username=user,
-                                                        transaction_id=transid,
-                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                        outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                        ref_no=trans_id,
-                                                        market=ibetCN,
-                                                        other_data=rdata,
-                                                        )
+                                                category=cate,
+                                                user=user,
+                                                user_name=user.username,
+                                                transaction_id=transid,
+                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                ref_no=trans_id,
+                                                market=ibetCN,
+                                                other_data=rdata,
+                                                resolved_time=timezone.now(),
+                                                )
                         else:
                             
                             resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
                                 
                             GameBet.objects.get_or_create(provider=PROVIDER,
-                                                        category=cate,
-                                                        transaction_id=transid,
-                                                        username=user,
-                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                        outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                        resolved_time=utcToLocalDatetime(resolve),
-                                                        ref_no=trans_id,
-                                                        market=ibetCN,
-                                                        other_data=rdata,
-                                                        )
+                                                category=cate,
+                                                transaction_id=transid,
+                                                user=user,
+                                                user_name=user.username,
+                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                resolved_time=utcToLocalDatetime(resolve),
+                                                ref_no=trans_id,
+                                                market=ibetCN,
+                                                other_data=rdata,
+                                                )
                     
-                    sleep(delay)    
+                    # sleep(delay)  
+                    # print("sleep")  
                 else:
                     logger.info("BetDetails is not existed.")
                     break
             redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
-            # print(redis.check_onebook_bet_details(onebook_run))        
-            return rdata
+            #print(redis.check_onebook_bet_details(onebook_run))        
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
         else:
             logger.info("skip running this time.")
-    except:
-        logger.error("There is something woring with Redis connection.")
+            return Response({'status': 'skip running this time.'}, status=status.HTTP_200_OK)
     
+
     
  
 
