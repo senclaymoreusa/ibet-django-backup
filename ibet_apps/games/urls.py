@@ -25,6 +25,7 @@ from games.views.views import *
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),
+    path('api/games-category/', GamesCategoryAPI.as_view(), name='games_category'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),

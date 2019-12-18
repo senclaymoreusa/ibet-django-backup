@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from django.http import HttpResponseRedirect, HttpResponse
 import simplejson as json
 from django.db.models import Q, F 
-from utils.constants import GAME_PROVIDERS, GAME_FILTER_OPTION
+from utils.constants import *
 
 logger = logging.getLogger('django')
 
@@ -22,7 +22,7 @@ class GamesSearchView(View):
 
     def get(self, request,  *args, **kwargs):
         q = request.GET.get('q')
-        gameType = request.GET.get('type')
+        # gameType = request.GET.get('type')
         category = request.GET.get('category')
         filterCategory = request.GET.get('filtercategory')
         jackpot = request.GET.get('jackpot')
@@ -38,6 +38,8 @@ class GamesSearchView(View):
         # print("jackpot: " + str(jackpot))
         # print("provider: " + str(provider))
         # print("sort: " + str(sort))
+        # print('theme:' + str(theme))
+        # print('featrue:' + str(feature))
 
         attributeList = []
         providerList = []
@@ -45,25 +47,31 @@ class GamesSearchView(View):
         #     attributeList = attributeList + gameType.split()
         # if category:
         #     attributeList = attributeList + category.split()
+
+        if provider:
+            providerList = provider.split('+')
         if filterCategory:
             attributeList = attributeList + filterCategory.split('+')
         if jackpot:
             attributeList = attributeList + jackpot.split('+')
-        if provider:
-            providerList = provider.split('+')
         if feature:
             attributeList = attributeList + feature.split('+')
         if theme:
             attributeList = attributeList + theme.split('+')
         
+        # print(providerList)
         # print(str(attributeList))
         # print("feature: " + str(feature))
         # print("theme: " + str(theme))
         # print("sort: " + str(sort))
+        try:
+            games_category = Category.objects.get(name='Games')
+        except:
+            logger.error("Cannot find Games category")
 
-        gameFilter = Q()
+        gameFilter = (Q(category_id__parent_id=games_category)|Q(category_id=games_category))
         if q:
-            gameFilter |= (
+            gameFilter &= (
                 # Q(name__icontains=q)|Q(name_zh__icontains=q)|
                 # Q(name_fr__icontains=q)|Q(description__icontains=q)|
                 # Q(description_zh__icontains=q)|Q(description_fr__icontains=q)| 
@@ -73,12 +81,16 @@ class GamesSearchView(View):
             )
             logger.info("Searching key word: " + str(q) + "from all games")
 
-        if gameType:
-            # print(str(gameType))
-            gameFilter = gameFilter & Q(category_id__parent_id__name__iexact=gameType)
-            if category != 'all' and category:
-                gameFilter = gameFilter & Q(category_id__name__iexact=category)
-            logger.info("Filter by game category: " + str(gameType))
+        # if gameType:
+        #     # print(str(gameType))
+        #     gameFilter = gameFilter & Q(category_id__parent_id__name__iexact=gameType)
+        #     if category != 'all' and category:
+        #         gameFilter = gameFilter & Q(category_id__name__iexact=category)
+        #     logger.info("Filter by game category: " + str(gameType))
+        if category != 'all' and category:
+            # category = category.split('-')
+            category = ' '.join(category.split('-'))
+            gameFilter = gameFilter & Q(category_id__name__iexact=category)
 
         # providerFilter = Q()
         # if provider:
@@ -97,10 +109,13 @@ class GamesSearchView(View):
 
 
         # gameFilter = gameFilter & providerFilter
+        providerFilter = Q()
         if provider:
-            gameFilter |= (
-                Q(provider__provider_name__icontains=q)
-            )
+            for i in providerList:
+                providerFilter |= (
+                    Q(provider__provider_name__icontains=i)
+                )
+        gameFilter &= providerFilter
 
         for attr in attributeList:
             gameFilter = gameFilter & Q(attribute__icontains=attr)
@@ -125,6 +140,7 @@ class GamesSearchView(View):
         
         data = serializers.serialize('json', data)
         data = json.loads(data)
+        # print(data)
         logger.info("Sending search game results response......... ")
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -138,15 +154,13 @@ class ProvidersSearchView(View):
             logger.info("Search providers by keyword: " + str(q))
             res = []
             # print(str(q))
+            providers = GameProvider.objects.filter(type=GAME_TYPE_GAMES)
             if not q:
-                # category = Category.objects.get(name='Games')
-                providers = GameProvider.objects.filter(type=1)
                 for provider in providers:
                     res.append(provider.provider_name)
             
             else:
                 q = q.lower()
-                providers = GameProvider.objects.all()
                 for provider in providers:
                     name = provider.provider_name
                     if q in name.lower():
@@ -166,7 +180,12 @@ class FilterAPI(View):
     def get(self, request, *args, **kwargs):
         
         logger.info("Sending filter options response......... ")
-        return HttpResponse(json.dumps(GAME_FILTER_OPTION), content_type='application/json')
+        res = []
+        providers = GameProvider.objects.filter(type=1)
+        for provider in providers:
+            res.append(provider.provider_name)
+        GAME_FILTER_OPTIONS['Providers'] = res
+        return HttpResponse(json.dumps(GAME_FILTER_OPTIONS), content_type='application/json')
 
 
 class GameDetailAPIListView(ListAPIView):
@@ -181,3 +200,19 @@ class GameDetailAPIListView(ListAPIView):
 class CategoryAPIListView(ListAPIView):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
+
+
+
+class GamesCategoryAPI(View):
+
+    def get(self, request, *args, **kwargs):
+        
+        try:
+            categories = Category.objects.filter(parent_id__name="Games")
+            res = []
+            for i in categories:
+                res.append(i.name)
+        except Exception as e:
+            logger.error("Error: getting all the slot category")
+
+        return HttpResponse(json.dumps(res), content_type='application/json')

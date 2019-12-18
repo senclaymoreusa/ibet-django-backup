@@ -753,10 +753,6 @@ REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
 GAME_FILTER_OPTION = [
     {
-        'name': 'Games Category',
-        'data': ['New', 'Popular', 'Table Games', 'Slots', 'All Games']
-    },
-    {
         'name': 'Jackpot',
         'data': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots']
     },
@@ -780,6 +776,16 @@ GAME_FILTER_OPTION = [
         'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
     },
 ]
+
+
+GAME_FILTER_OPTIONS = {
+    'Providers': [],
+    'Features': ['Megaways', 'Pay Both Ways', 'Bonus Feature', 'Free Spins', 'Double Or Nothing Feature'],
+    'Theme': ['Egypt', 'Oriental', 'Mythology', 'Animal', 'Adventure', 'Fruit', 'Western', 'Film/Tv', 'Music', 'Sports',
+            'Space', 'Holidays', 'Dark/ Halloween', 'Vegas'],
+    'Jackpot': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots'],
+    'Sort': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
+}
 
 # Notification
 MESSAGE_REJECTED = 0
@@ -1443,7 +1449,6 @@ GPT_PROVIDER = "GPT"
 OPUS_PROVIDER = "OPUS"
 BBIN_PROVIDER = "BBIN"
 PT_PROVIDER = "PT"
-
 
 
 
