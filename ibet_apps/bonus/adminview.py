@@ -25,3 +25,14 @@ class BonusRecordsView(CommAdminView):
         context['groups'] = UserGroup.objects.all()
         context['must_have'] = BONUS_MUST_HAVE
         return render(request, "bonus_records.html", context)
+
+
+class BonusTransactionsView(CommAdminView):
+
+    def get(self, request):
+        context = super().get_context()
+        context["breadcrumbs"].append("Bonuses / Bonus transactions")
+        context['time'] = timezone.now()
+        context['bonuses_types'] = BONUS_TYPE_CHOICES
+        context['bonuses_status'] = USER_BONUS_EVENT_TYPE_CHOICES
+        return render(request, "bonus_transactions.html", context)

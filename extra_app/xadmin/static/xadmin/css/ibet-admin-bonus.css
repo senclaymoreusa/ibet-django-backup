@@ -233,3 +233,27 @@ table {
 .delivery-choice input {
     margin-right: 5px;
 }
+
+
+/* BONUS TRANSACTIONS PAGE */
+#bonus-transactions-table {
+    margin-top: 30px;
+    margin-bottom: 90px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#bonus-delivery-btn {
+    background-color: #428bca;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border-color: #428bca;
+}
