@@ -90,7 +90,7 @@ def generateUrl(param, is_api):
 
 
 class KyBets(View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
             # Query Bet Order
             timestamp = get_timestamp()
@@ -157,7 +157,7 @@ class KyBets(View):
                         resolved_time=timezone.now()
                     )
 
-                return HttpResponse("success", status=200)
+                return HttpResponse("You have add {} records".format(count), status=200)
             else:
                 return HttpResponse("No record at this time", status=200)
         except Exception as e:
