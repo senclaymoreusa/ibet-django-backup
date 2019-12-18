@@ -37,6 +37,7 @@ class ThirdParty(models.Model):
     method = models.CharField(max_length=30, verbose_name=_("Method"))
     channel = models.CharField(max_length=30, verbose_name=_("Channel"))
     supplier = models.CharField(max_length=50, verbose_name=_("Supplier"), null=True)
+
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
     )
@@ -183,7 +184,7 @@ class Transaction(models.Model):
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
     
-    # Transaction types: Deposit, Withdrawal, Bet Placed, Bet Settled, etc.
+    # Transaction types: Deposit, Withdrawal
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")
     )
@@ -211,7 +212,7 @@ class Transaction(models.Model):
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
-    # commission tracsaction
+    # commission transaction
     month = models.DateField(null=True, blank=True)
     #Asiapay qrcode
     qrcode = models.CharField(max_length=500, null=True, blank= True, verbose_name=_("QRCode"))

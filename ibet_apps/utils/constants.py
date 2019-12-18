@@ -62,6 +62,7 @@ CIRCLEPAY   =   7
 FGATE       =   8
 SCRATCHCARD =   9
 PAYMENTIQ   =   10
+LBT         =   11
 
 CHANNEL_CHOICES = (
     (HELP2PAY, 'Help2Pay'),
@@ -74,7 +75,8 @@ CHANNEL_CHOICES = (
     (CIRCLEPAY, 'CirclePay'),
     (FGATE, 'Fgate'),
     (SCRATCHCARD, 'ScratchCard'),
-    (PAYMENTIQ, 'PaymentIQ')
+    (PAYMENTIQ, 'PaymentIQ'),
+    (LBT, 'Local Bank Transfer')
 )
 
 CURRENCY_CNY = 0
