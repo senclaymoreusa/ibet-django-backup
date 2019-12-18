@@ -96,7 +96,8 @@ class RequirementCategory(models.Model):
 class UserBonusEvent(models.Model):
     owner = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Owner'))
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
-    timestamp = models.DateTimeField('Start Time', blank=False)
+    delivery_time = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    completion_time = models.DateTimeField(null=True, blank=True)
     delivered_by = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Operator'))
     status = models.SmallIntegerField(choices=USER_BONUS_EVENT_TYPE_CHOICES, default=0,
                                       verbose_name=_('User Bonus Event Type'))

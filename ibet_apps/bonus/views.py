@@ -7,7 +7,7 @@ from bonus.models import *
 from users.models import CustomUser
 from games.models import Category
 from utils.admin_helper import bonusValueToKey, dateToDatetime, BONUS_TYPE_VALUE_DICT, BONUS_DELIVERY_VALUE_DICT, \
-    BONUS_GAME_CATEGORY
+    BONUS_GAME_CATEGORY, ubeValueToKey
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -252,7 +252,8 @@ class BonusView(View):
                             affiliate_limit=req_data.get('affiliate_limit'),
                             image_s3=req_data.get('image_s3'),
                             status=int(req_data.get('status')),
-                            is_free_bid='free-spin' in req_data.get('master_types') or 'free-bet' in req_data.get('master_types'),
+                            is_free_bid='free-spin' in req_data.get('master_types') or 'free-bet' in req_data.get(
+                                'master_types'),
                             type=type,
                             currency=req_data.get('currency') or 0,
                             issued=req_data.get('issued'),
@@ -260,8 +261,8 @@ class BonusView(View):
                             max_total_times=int(req_data.get('max_total_times')),
                             max_relevant_times=int(req_data.get('max_associated_accounts')),
                             max_users=int(req_data.get('max_user')),
-                            max_user_amount=max_user_amount,    # None is unlimited
-                            max_amount=max_amount,              # None is unlimited
+                            max_user_amount=max_user_amount,  # None is unlimited
+                            max_amount=max_amount,  # None is unlimited
                             delivery=BONUS_DELIVERY_VALUE_DICT.get(req_data.get('delivery_method')),
                             ## TODO: Need to deal with campaign if that's decided to be a P0 feature
                         )
@@ -334,14 +335,14 @@ class BonusView(View):
 
                                 for cate in wager_cates:
                                     wager_cate_obj = Category.objects.get(name=cate)
-    
+
                                     rc_obj = RequirementCategory(
                                         requirement=wager_req,
                                         category=wager_cate_obj
                                     )
                                     rc_obj.save()
                                     logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
-    
+
                                     bc_obj = BonusCategory(
                                         bonus=bonus_obj,
                                         category=wager_cate_obj,
@@ -385,7 +386,7 @@ class BonusView(View):
                     #         logger.error("Error saving new BonusCategory object: ", e)
                     #         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-
+                    # add target user group
         except Exception as e:
             logger.error("Error creating new bonus details " + str(e))
             response = JsonResponse({"error": "Error creating new bonus, please try again!"})
@@ -429,16 +430,88 @@ class UserBonusEventView(View):
         try:
             bonus_pk = request.GET.get('bonus')
             user_pk = request.GET.get('user')
+            # pagination
+            length = int(request.GET.get('length', 20))
+            start = int(request.GET.get('start', 0))
+            search_value = request.GET.get('search', None)
+            order_column = int(request.GET.get('order[0][column]', -1))
+            order = request.GET.get('order[0][dir]')
+            # filter
+            bonus_type = int(request.GET.get('bonus_type', -1))
+            ube_status = int(request.GET.get('ube_status', -1))
+            min_date = request.GET.get('min_date')
+            max_date = request.GET.get('max_date')
 
-            events = UserBonusEvent.objects.filter(bonus=bonus_pk, owner=user_pk).order_by('-timestamp')
-            response = serializers.serialize('json', events)
-            response = json.loads(response)
+            result = {}
+            ube_filter = Q()
 
+            total = UserBonusEvent.objects.all().count()
+
+            if min_date and max_date:
+                ube_filter &= (Q(delivery_time__gte=dateToDatetime(min_date)) & Q(
+                    delivery_time__lte=dateToDatetime(max_date)))
+
+            if bonus_pk:
+                ube_filter &= Q(bonus=bonus_pk)
+
+            if user_pk:
+                ube_filter &= Q(owner=user_pk)
+
+            if bonus_type != -1:
+                ube_filter &= Q(bonus__type=bonus_type)
+
+            if ube_status != -1:
+                ube_filter &= Q(status=ube_status)
+
+            #  SEARCH BOX
+            if search_value:
+                ube_filter &= (Q(owner__username__icontains=search_value) | Q(bonus__name__icontains=search_value) | Q(
+                    pk__contains=search_value))
+
+            events = UserBonusEvent.objects.filter(ube_filter).order_by('-delivery_time')
+
+            # START TIME SORTING
+
+            if order_column:
+                if order == 'desc':
+                    events = events.order_by('-delivery_time')[start:start + length]
+                else:
+                    events = events.order_by('delivery_time')[start:start + length]
+            else:
+                events = events[start:start + length]
+
+            count = events.count()
+
+            result['data'] = []
+
+            # put bonus data and user data into events
+            # TODO: needs to update ube amount(fixed, percentage, tiered), completion
+            for event in events:
+                event_data = serializers.serialize('json', {event})
+                event_data = json.loads(event_data)
+
+                bonus_data = serializers.serialize('json', {event.bonus})
+                bonus_data = json.loads(bonus_data)
+
+                bonus_data[0]['fields'] = bonusValueToKey(bonus_data[0]['fields'])
+                event_data[0]['fields'] = ubeValueToKey(event_data[0]['fields'])
+
+                ube_data = {
+                    'event': event_data[0],
+                    'bonus': bonus_data[0],
+                    'username': event.owner.username,
+                    'delivered_by_username': event.delivered_by.username
+                }
+
+                result['data'].append(ube_data)
+
+            result['recordsTotal'] = total
+            result['recordsFiltered'] = count
         except Exception as e:
-            logger.error("Error getting UserBonusEvent objects: ", e)
+            logger.error("Error getting UserBonusEvent objects: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        return HttpResponse(json.dumps(response), content_type='application/json', status=status.HTTP_200_OK)
+        return HttpResponse(json.dumps(result), content_type='application/json', status=status.HTTP_200_OK)
 
     # Creates a NEW event between a User and Bonus.
     # You can never "update" an event that already happened between a User and Bonus.

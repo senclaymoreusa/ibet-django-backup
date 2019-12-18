@@ -29,3 +29,14 @@ class BonusRecordsView(CommAdminView):
         context['turnover_tiered_amount'] = [[11, 11], [22, 22], [33, 33], [44, 44]]
 
         return render(request, "bonus_records.html", context)
+
+
+class BonusTransactionsView(CommAdminView):
+
+    def get(self, request):
+        context = super().get_context()
+        context["breadcrumbs"].append("Bonuses / Bonus transactions")
+        context['time'] = timezone.now()
+        context['bonuses_types'] = BONUS_TYPE_CHOICES
+        context['bonuses_status'] = USER_BONUS_EVENT_TYPE_CHOICES
+        return render(request, "bonus_transactions.html", context)
