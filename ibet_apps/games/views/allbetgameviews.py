@@ -320,6 +320,7 @@ def place_bet(client, transaction_id, amount, bet_details):
             logger.error("AllBet TransferView Error: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
+        logger.error("AllBet TransferView Error: Unspecified error in place_bet function.")
         return HttpResponse(str(e))
 
 
@@ -432,6 +433,7 @@ def settle_bet(client, transaction_id, amount, settle_details):
             logger.error("AllBet TransferView Error: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
+        logger.error("AllBet TransferView Error: Unspecified error in settle_bet function.")
         return HttpResponse(str(e))
 
 
