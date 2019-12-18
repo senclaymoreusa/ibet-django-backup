@@ -35,7 +35,7 @@
         </div>
         <hr style="width: 100%; color: #bdbdbd">
         <div id="downtime">
-            <p style="font-weight: bold; font-family: Helvetica; font-size: 13px;">SCHEDULED DOWNTIME</p>
+            <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">SCHEDULED DOWNTIME</p>
             <p>The payment method will be disabled during this period.</p>
             <!-- <div id="freq-dropdown">
                 <label for="downtime-freq">FREQUENCY</label>
@@ -82,7 +82,95 @@
                 </div>
             </div>
         </div>
-        
+        <hr style="width: 100%; color: #bdbdbd">
+        <div id="payment-settings">
+            <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">PAYMENT SETTINGS</p>
+            <div id="min-max" class="modal-section">
+                <label for='min-dep'>MINIMUM DEPOSIT</label>
+                <div class='input-group date' id='min-deposit'>
+                    <input type='text' class="form-control" id='min-dep'/>
+                </div>
+                <label for='max-dep'>MAXIMUM DEPOSIT</label>
+                <div class='input-group date' id='max-deposit'>
+                    <input type='text' class="form-control" id='max-dep'/>
+                </div>
+            </div>
+            <div id="txn-fee" class="modal-section">
+                <label for='min-dep'>TRANSACTION FEE</label>
+                <div class='input-group date' id='txn-fee'>
+                    <input type='text' class="form-control" id='txn-fee-input'/>
+                </div>
+                <label for='max-dep'>TRANSACTION % FEE</label>
+                <div class='input-group date' id='txn-fee-per'>
+                    <input type='text' class="form-control" id='txn-fee-per-input'/>
+                    <span class="input-group-addon">
+                        %
+                    </span>
+                </div>
+            </div>
+        </div>
+        <hr style="width: 100%; color: #bdbdbd">
+        <div id="access-settings">
+            <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">ACCESS SETTINGS</p>
+            <p>To have access to this payment method, the player needs the following conditions to be met.</p>
+            <div id="verifications">
+                
+                <input id="id-verify" type="checkbox" checked="checked" disabled>
+                <label for="id-verify">ID verified</label>
+                <br>
+                
+                <input id="email-verify" type="checkbox" checked="checked" disabled>
+                <label for="email-verify">Email verified</label>
+                <br>
+                
+                <input id="phone-verify" type="checkbox" checked="checked" disabled>
+                <label for="phone-verify">Phone verified</label>
+                <br>
+            </div>
+            <div class="allowance" style="padding-top: 10px">
+            <p style="font-weight: bold; font-size: 12px;">ALLOWED PLAYER SEGMENT</p>
+                <div class="row">
+                    {% for x in player_segments %}
+                        {% if x == "ALL" %}
+                        <input type="checkbox" class="cbox" checked="checked" id="segment-{{x}}" disabled>
+                        <label for="segment-{{x}}">{{x}}</label>
+                        {% else %}
+                        <input type="checkbox" class="cbox" disabled>
+                        <label for="segment-{{x}}">{{x}}</label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            <p style="font-weight: bold; font-size: 12px;">ALLOWED RISK LEVEL</p>
+                <div class="row">
+                    {% for x in risk_levels %}
+                        {% if x == "ALL" %}
+                        <input type="checkbox" class="cbox" checked="checked" id="risk-{{x}}" disabled>
+                        <label for="risk-{{x}}">{{x}}</label>
+                        {% else %}
+                        <input type="checkbox" class="cbox" disabled>
+                        <label for="risk-{{x}}">{{x}}</label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            <p style="font-weight: bold; font-size: 12px;">ALLOWED STATUS</p>
+                <div class="row">
+                    {% for x in statuses %}
+                        {% if x == "ALL" %}
+                        <input type="checkbox" class="cbox" checked="checked" id="status-{{x}}" disabled>
+                        <label for="status-{{x}}">{{x}}</label>
+                        {% else %}
+                        <input type="checkbox" class="cbox" disabled>
+                        <label for="status-{{x}}">{{x}}</label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <hr style="width: 100%; color: #bdbdbd">
+            <div class="blacklist">
+                <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">BLACK & WHITE LISTS</p>
+                <p>These lists override all other access permissions. A player in the blacklist has no access to this payment method. A player in the whitelist has access regardless of general settings.</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -161,8 +249,16 @@
                 },
                 success: (data) => {
                     console.log(data);
-                    alert("Downtime added");
-                    window.location.reload();
+                    if (data.success) {
+                        alert("Downtime added");
+                        window.location.reload();
+                    }
+                    else {
+                        alert("Missing info");
+                    }
+                },
+                error: (data) => {
+                    alert("Error: " + (JSON.stringify(data)));
                 }
             })
         });

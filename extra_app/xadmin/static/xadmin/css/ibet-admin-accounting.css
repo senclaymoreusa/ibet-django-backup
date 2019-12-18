@@ -370,7 +370,17 @@ label {
     width: 40%;
 }
 
-.freq-inputs {
+#payment-settings label {
+    width: 10%;
+}
+
+
+#payment-settings .input-group {
+    margin-right: 10px;
+    width: 25%;
+}
+
+.freq-inputs, .modal-section {
     display: flex; 
     justify-content: space-between;
     margin-bottom: 13px;
@@ -397,6 +407,62 @@ label {
     background-color: #d9534f;
 }
 
+.cbox {
+    margin-right: 20px;
+    width: 20px;
+    height: 20px;
+}
+.allowance label {
+    font-size: 16px;
+    font-family: Helvetica;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+}
+.allowance .row {
+    padding-top: 5px;
+    padding-bottom: 13px;
+}
+#verifications label {
+    /* display: block; */
+    width: 212.6px;
+    height: 16px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+/* .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+.checkbox input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+.checkbox input:checked ~ .checkmark:before {
+    display: block;
+  }
+.checkbox .checkmark:before {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+} */
 .row {
     margin-left: 0px;
 }

@@ -169,7 +169,7 @@
 
     <!-- PSP config modal -->
     <div class="modal fade" id="edit-psp" role="dialog">
-        <div id="override" class="modal-dialog" style="width: 28%">
+        <div id="override" class="modal-dialog" style="width: 40%">
             <!-- Modal content -->
             {% include "payment_modal.html" %}
         </div>
@@ -373,11 +373,11 @@
         }
 
         let market = convMarket[data.fields.market];
-        document.getElementById('psp-method').innerHTML = data.fields.method;
-        document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1);
-        document.getElementById('psp-channel').innerHTML = data.fields.channel;
-        document.getElementById('psp-market').innerHTML = market;
-        document.getElementById('psp-supplier').innerHTML = data.fields.supplier;
+        document.getElementById('psp-method').innerHTML = data.fields.method || "N/A";
+        document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1) || "N/A";
+        document.getElementById('psp-channel').innerHTML = data.fields.channel || "N/A";
+        document.getElementById('psp-market').innerHTML = market || "N/A";
+        document.getElementById('psp-supplier').innerHTML = data.fields.supplier || "N/A";
         
         let all_downtime = data.fields.all_downtime;
         let dt_section = document.getElementById('all-dt');

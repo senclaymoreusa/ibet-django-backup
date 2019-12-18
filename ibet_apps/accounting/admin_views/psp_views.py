@@ -84,6 +84,9 @@ class GetPaymentChannels(CommAdminView):
         context["deposits"] = deposit_psp
         context["withdraws"] = withdraw_psp
         context["days"] = range(1,32)
+        context["player_segments"] = ["ALL", "Normal", 1, 2, 3, 4, 5]
+        context["risk_levels"] = ["ALL", "Very low", "Low", "Medium", "High", "Very high", "VIP", "Business"]
+        context["statuses"] = ["ALL", "Normal", "Suspicious", "Restricted"]
         
         return render(request, "channels.html", context)
 
@@ -109,6 +112,14 @@ class scheduleDowntime(CommAdminView):
         freq = request.POST.get('frequency')
         date = request.POST.get('date')
         print(request.POST)
+        print(start)
+        print(end)
+        if not (start and end):
+            print(start,end)
+            return JsonResponse({
+                "success": False,
+                "error": "1"
+            })
         try:
             if psp_type == "deposit": psp = DepositChannel.objects.get(pk=psp_pk)
             else: psp = WithdrawChannel.objects.get(pk=psp_pk)
@@ -125,6 +136,7 @@ class scheduleDowntime(CommAdminView):
             
             # clean out all old downtime entries
             cleanDowntime(psp.all_downtime['once'])
+            
             # create new downtime entry
             psp.all_downtime[freq].append(new_downtime)
             psp.save()
@@ -174,5 +186,14 @@ class removeDowntime(CommAdminView):
             })
 
 def cleanDowntime(downtimeArr):
+    res = []
     now = datetime.datetime.now()
-    return
+    for i, dt in enumerate(downtimeArr):
+        endDate = datetime.datetime.strptime(dt['end'], "%d/%m/%y %H:%M%p")
+        if now > endDate:
+            res.append(dt['id'])
+            del downtimeArr[i]
+    return JsonResponse({
+        'success': True,
+        'deleted': res
+    })
