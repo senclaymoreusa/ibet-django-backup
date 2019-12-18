@@ -23,89 +23,47 @@ logger = logging.getLogger("django")
 
 class ChannelListView(CommAdminView):
     def get(self, request):
-        get_type = request.GET.get("type")
+    
+        context = super().get_context()
+        title = "Finance / Payment methods"
+        context["breadcrumbs"].append({"url": "/deposit/", "title": title})
+        context['time'] = timezone.now()
 
-        if get_type == "getChannelInfo":
-            channel = request.GET.get("current_channel")
-            context = super().get_context()
-            
-            if DepositChannel.objects.filter(pk=channel).exists():
-                current_channel = DepositChannel.objects.get(pk=channel)
-                current_type = "Deposit"
-            else:
-                current_channel = WithdrawChannel.objects.get(pk=channel)
-                current_type = "Withdraw"
-                   
-            context[
-                "current_channel_name"
-            ] = current_channel.get_thirdParty_name_display()
-            logger.info('Get Channel ' + str(context["current_channel_name"]) + ' info')
+        # CHANNEL
+        depositChannel = DepositChannel.objects.all()
+        withdrawChannel = WithdrawChannel.objects.all()
 
-            response_data = {
-                "channel_id": str(current_channel),
-                "name": current_channel.get_thirdParty_name_display(),
-                "channel_status": current_channel.get_switch_display(),
-                "min_deposit": str(current_channel.min_amount),
-                "max_deposit": current_channel.max_amount,
-                "transaction_fee": current_channel.transaction_fee,
-                "transaction_fee_per": current_channel.transaction_fee_per,
-                "volume": current_channel.volume,
-                "new_user_volume": current_channel.new_user_volume,
-                "limit_access": current_channel.limit_access,
-                # methods part
-                "method": current_channel.method,
-                "type": current_type,
-                "channel": current_channel.get_thirdParty_name_display(),
-                "market": current_channel.get_market_display(),
-                "supplier": current_channel.supplier
-            }
-            logger.info('Append Channel ' + str(context["current_channel_name"]) + ' details')
-            return HttpResponse(
-                json.dumps(response_data, default=decimal_default), content_type="application/json"
-            )
-
-        else:
-            context = super().get_context()
-            title = "Finance / Payment methods"
-            context["breadcrumbs"].append({"url": "/deposit/", "title": title})
-            context['time'] = timezone.now()
-
-            # CHANNEL
-            depositChannel = DepositChannel.objects.all()
-            withdrawChannel = WithdrawChannel.objects.all()
-            channels = list(chain(depositChannel, withdrawChannel))
-
-            # channels
-            channel_data = []
-            for channel in channels:
-                channelDict = {}
-                channelDict["id"] = channel.pk
-                channelDict["method"] = channel.method
-                channelDict["channel"] = channel.get_thirdParty_name_display()
-                channelDict["supplier"] = channel.supplier
-                try:
-                    channel._meta.get_field('deposit_channel')
-                    channelDict["type"] = "Deposit"
-                except models.FieldDoesNotExist:
-                    channelDict["type"] = "Withdrawal"
-                    
-                channelDict["market"] = channel.get_market_display()
-                channelDict["min"] = channel.min_amount
-                channelDict["max"] = channel.max_amount
-                channelDict["flat_fee"] = "flat fee"
-                channelDict["fee"] = channel.transaction_fee
-                channelDict["volume"] = channel.volume
-                channelDict["require"] = "require"
-                channelDict["vip_level"] = "vip level"
-                channelDict["risk_level"] = channel.get_block_risk_level_display()
-                channelDict["new_users_volume"] = channel.new_user_volume
-                channelDict["status"] = channel.get_switch_display()
-                channel_data.append(channelDict)
-            context["channel_data"] = channel_data
-            context["markets_choices"] = MARKET_CHOICES
-            context["types_choices"] = ("Deposit", "Withdrawal")
-            context["status_choices"] = THIRDPARTY_STATUS_CHOICES
-            return render(request, "channels.html", context)
+        # channels
+        channel_data = []
+        for channel in chain(depositChannel, withdrawChannel):
+            channelDict = dict()
+            channelDict["id"] = channel.pk
+            channelDict["method"] = channel.method
+            channelDict["channel"] = channel.get_thirdParty_name_display()
+            channelDict["supplier"] = channel.supplier
+            try:
+                channel._meta.get_field('deposit_channel')
+                channelDict["type"] = "Deposit"
+            except models.FieldDoesNotExist:
+                channelDict["type"] = "Withdrawal"
+                
+            channelDict["market"] = channel.get_market_display()
+            channelDict["min"] = channel.min_amount
+            channelDict["max"] = channel.max_amount
+            channelDict["flat_fee"] = "flat fee"
+            channelDict["fee"] = channel.transaction_fee
+            channelDict["volume"] = channel.volume
+            channelDict["require"] = "require"
+            channelDict["vip_level"] = "vip level"
+            channelDict["risk_level"] = channel.get_block_risk_level_display()
+            channelDict["new_users_volume"] = channel.new_user_volume
+            channelDict["status"] = channel.get_switch_display()
+            channel_data.append(channelDict)
+        context["channel_data"] = channel_data
+        context["markets_choices"] = MARKET_CHOICES
+        context["types_choices"] = ("Deposit", "Withdrawal")
+        context["status_choices"] = THIRDPARTY_STATUS_CHOICES
+        return render(request, "channels.html", context)
 
     def post(self, request):
         post_type = request.POST.get("type")
@@ -174,5 +132,93 @@ def decimal_default(obj):
     if isinstance(obj, Decimal):
         return float(obj)
     logger.info(TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__))
-        
 
+
+
+
+
+    # def get(self, request):
+
+        # get_type = request.GET.get("type")
+
+        # if get_type == "getChannelInfo":
+        #     channel = request.GET.get("current_channel")
+        #     context = super().get_context()
+            
+        #     if DepositChannel.objects.filter(pk=channel).exists():
+        #         current_channel = DepositChannel.objects.get(pk=channel)
+        #         current_type = "Deposit"
+        #     else:
+        #         current_channel = WithdrawChannel.objects.get(pk=channel)
+        #         current_type = "Withdraw"
+                   
+        #     context[
+        #         "current_channel_name"
+        #     ] = current_channel.get_thirdParty_name_display()
+        #     logger.info('Get Channel ' + str(context["current_channel_name"]) + ' info')
+
+        #     response_data = {
+        #         "channel_id": str(current_channel),
+        #         "name": current_channel.get_thirdParty_name_display(),
+        #         "channel_status": current_channel.get_switch_display(),
+        #         "min_deposit": str(current_channel.min_amount),
+        #         "max_deposit": current_channel.max_amount,
+        #         "transaction_fee": current_channel.transaction_fee,
+        #         "transaction_fee_per": current_channel.transaction_fee_per,
+        #         "volume": current_channel.volume,
+        #         "new_user_volume": current_channel.new_user_volume,
+        #         "limit_access": current_channel.limit_access,
+        #         # methods part
+        #         "method": current_channel.method,
+        #         "type": current_type,
+        #         "channel": current_channel.get_thirdParty_name_display(),
+        #         "market": current_channel.get_market_display(),
+        #         "supplier": current_channel.supplier
+        #     }
+        #     logger.info('Append Channel ' + str(context["current_channel_name"]) + ' details')
+        #     return HttpResponse(
+        #         json.dumps(response_data, default=decimal_default), content_type="application/json"
+        #     )
+
+        # else:
+        #     context = super().get_context()
+        #     title = "Finance / Payment methods"
+        #     context["breadcrumbs"].append({"url": "/deposit/", "title": title})
+        #     context['time'] = timezone.now()
+
+        #     # CHANNEL
+        #     depositChannel = DepositChannel.objects.all()
+        #     withdrawChannel = WithdrawChannel.objects.all()
+        #     channels = list(chain(depositChannel, withdrawChannel))
+
+        #     # channels
+        #     channel_data = []
+        #     for channel in channels:
+        #         channelDict = {}
+        #         channelDict["id"] = channel.pk
+        #         channelDict["method"] = channel.method
+        #         channelDict["channel"] = channel.get_thirdParty_name_display()
+        #         channelDict["supplier"] = channel.supplier
+        #         try:
+        #             channel._meta.get_field('deposit_channel')
+        #             channelDict["type"] = "Deposit"
+        #         except models.FieldDoesNotExist:
+        #             channelDict["type"] = "Withdrawal"
+                    
+        #         channelDict["market"] = channel.get_market_display()
+        #         channelDict["min"] = channel.min_amount
+        #         channelDict["max"] = channel.max_amount
+        #         channelDict["flat_fee"] = "flat fee"
+        #         channelDict["fee"] = channel.transaction_fee
+        #         channelDict["volume"] = channel.volume
+        #         channelDict["require"] = "require"
+        #         channelDict["vip_level"] = "vip level"
+        #         channelDict["risk_level"] = channel.get_block_risk_level_display()
+        #         channelDict["new_users_volume"] = channel.new_user_volume
+        #         channelDict["status"] = channel.get_switch_display()
+        #         channel_data.append(channelDict)
+        #     context["channel_data"] = channel_data
+        #     context["markets_choices"] = MARKET_CHOICES
+        #     context["types_choices"] = ("Deposit", "Withdrawal")
+        #     context["status_choices"] = THIRDPARTY_STATUS_CHOICES
+        #     return render(request, "channels.html", context)

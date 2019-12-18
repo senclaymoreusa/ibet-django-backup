@@ -8,239 +8,181 @@ from datetime import datetime
 import datetime
 from datetime import date
 from django.utils import timezone
-from time import gmtime, strftime, strptime
-import random, logging
-from django.core.exceptions import  ObjectDoesNotExist
-from users.models import CustomUser
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.views import View
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.conf import settings
-import time
-import urllib
-import requests
-from utils.aws_helper import getThirdPartyKeys
-from Crypto.Cipher import AES
-from games.helper import *
-from utils.admin_helper import *
+from utils.aws_helper import writeToS3
+import logging
+from utils.redisHelper import RedisHelper
+from datetime import datetime, date, time
+import datetime
+import pytz
+from dateutil.parser import parse
 
 logger = logging.getLogger('django')
+redis = RedisHelper()
 
-# @background(schedule=10)
-# def demo_task():
-#     print ('THIS IS ONLY A TEST')
+# Method that copies Game Bet history to S3
+# This is the first stage of the pipeline - the reason behind it is that, it's much more efficient
+# to batch copy from S3 to Redshift than to insert records directly to Redshift
+# I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
+# REF: https://console.aws.amazon.com/datapipeline/home?region=ap-northeast-1#ExecutionDetailsPlace:pipelineId=df-01600683VJZR9UCYHR8X&show=latest
+# @background(schedule=5000) # TODO: this is commented because it's still yet to decide whether we want to use background_task
+def gamebet_copy():
 
-# connect AWS S3
-third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
-KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
+    REDIS_KEY_LATEST_TIMESTAMP_GAMEBET = 'latest_timestamp:game_bet'
+    max_datetime = datetime.datetime(1900, 1, 1).replace(tzinfo=pytz.UTC)
 
-
-convertCurrency = {
-    3:CURRENCY_USD,
-    4:CURRENCY_THB,
-    6:CURRENCY_EUR,
-    13:CURRENCY_CNY,
-    15:CURRENCY_IDR,
-    20:CURRENCY_TEST,
-    51:CURRENCY_VND,
-}
-
-outcomeConversion = {
-    "won": 0,
-    "lose": 1,
-    "running": 4,
-    "draw":5,
-    "half lose":6,
-    "half won" : 10,
-    "reject": 11,
-    "waiting":12,
-    "waiting running": 13,
-    "void": 3,
-    "refund": 14
-}
-@transaction.atomic
-# @background(schedule=5) 
-def onebook_getBetDetail():
-    try:
-        PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
-    except ObjectDoesNotExist:
-        PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
-                                        type=0,
-                                        market='China',
-                                        notes='2004')
-        logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
-    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
-    delay = 2
-    success = False
-    version_key = PROVIDER.notes
-    onebook_run = "run"
-    redis = RedisHelper()
-    redis_connect = RedisClient().connect()
-    # print(redis.check_onebook_bet_details(onebook_run))
-    if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
-        print("redis is false")
-        redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
-        print("redis insert key")
-        while(True):
-            
-            r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
-                "vendor_id": ONEBOOK_VENDORID,
-                "version_key": version_key,
-            })
-            rdata = r.json()
-            logger.info(rdata)
-            print(rdata)
-            version_key = rdata["Data"]["last_version_key"]        
-            
-            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
-            
-            updates.notes = version_key
-            updates.save()
-                
-            if  "BetDetails" in rdata['Data']:
-                
-                # logger.info(rdata["Data"]["BetDetails"])
-                for i in range(len(rdata["Data"]["BetDetails"])):
-                    username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
-                    #print(username)
-                    try:
-                        cate = Category.objects.get(name='SPORTS')
-                    except:
-                        cate = Category.objects.create(name='SPORTS')
-                        logger.info("create new game category.")
-                    trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
-                    user = CustomUser.objects.get(username=username)
-                    transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
-                        # print("onebook")
-                        GameBet.objects.create(provider=PROVIDER,
-                                                    category=cate,
-                                                    username=user,
-                                                    transaction_id=transid,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    ref_no=trans_id,
-                                                    market=ibetCN,
-                                                    other_data=rdata,
-                                                    )
-                    else:
-                        
-                        resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
-                            
-                        GameBet.objects.get_or_create(provider=PROVIDER,
-                                                    category=cate,
-                                                    transaction_id=transid,
-                                                    username=user,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    resolved_time=utcToLocalDatetime(resolve),
-                                                    ref_no=trans_id,
-                                                    market=ibetCN,
-                                                    other_data=rdata,
-                                                    )
-                
-                sleep(delay)    
-            else:
-                logger.info("BetDetails is not existed.")
-                break
-        redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
-        print("redis remove key")
-        # print(redis.check_onebook_bet_details(onebook_run))        
-        return rdata
+    ts_from_redis = redis.get_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_GAMEBET)
+    if ts_from_redis is None:
+        latest_datetime = max_datetime
     else:
-        logger.info("skip running this time.")
-    
+        latest_datetime = parse(ts_from_redis.decode())
+
+    logger.info('The timestamp of the latest copy for GameBet was: ' + str(latest_datetime))
+    results = GameBet.objects.filter(bet_time__gt=latest_datetime)
+
+    filestr = ''
+    count = 0
+    for result in results:
+        if result.bet_time > max_datetime:
+            max_datetime = result.bet_time
+        filestr = filestr \
+                  + result.provider.provider_name + ',' \
+                  + result.category.name + ',' \
+                  + result.game.name + ',' \
+                  + result.game.game_url + ',' \
+                  + result.user.username + ',' \
+                  + result.user.email + ',' \
+                  + str(result.amount_wagered) + ','\
+                  + str(result.amount_won) + ',' \
+                  + result.get_outcome_display() + ',' \
+                  + str(result.odds) + ',' \
+                  + result.get_bet_type_display() + ',' \
+                  + result.line + ',' \
+                  + result.transaction_id + ',' \
+                  + str(result.get_currency_display()) + ',' \
+                  + str(result.get_market_display()) + ',' \
+                  + result.ref_no + ',' \
+                  + str(result.bet_time) + ',' \
+                  + str(result.resolved_time) + ',' \
+                  + str(result.other_data) + ',' + '\n'
+        count = count + 1
+
+    logger.info(str(count) + 'new GameBet records have been retrieved in total. ')
+    if count <= 0:
+        return
+
+    # TODO: The bucket name and file name are still to be decided
+    writeToS3(filestr, 'redshift-middle', 'input/gamebet.csv')
+
+    # Write the timestamp of the latest record processed to Redis
+    redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_GAMEBET, str(max_datetime))
 
 
-BS = 16
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+# Method that copies Transaction history to S3
+# Similar to gamebet_copy
+# I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
+def transaction_copy():
 
-def aes_encode(key, data):
-    cipher = AES.new(key, AES.MODE_ECB)
-    # cipher_chunks.append()
-    cipher_text = cipher.encrypt(pad(data))
-    return cipher_text
+    REDIS_KEY_LATEST_TIMESTAMP_TRANSACTION = 'latest_timestamp:transaction'
+    max_datetime = datetime.datetime(1900, 1, 1).replace(tzinfo=pytz.UTC)
 
-def get_timestamp():
-    return int(round(time.time() * 1000))    
-
-# @background(schedule=10)
-def kaiyuan_getBets():
-    # Query Bet Order
-    timestamp = get_timestamp()
-
-    startTime = get_timestamp() - 300000 # five minutes before now
-    endTime = get_timestamp() - 60000 # one minute before now
-
-    param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
-
-    param = aes_encode(KY_AES_KEY, param)
-    param = base64.b64encode(param)
-    param = str(param, "utf-8")
-
-    key = KY_AGENT + str(timestamp) + KY_MD5_KEY
-    key = hashlib.md5(key.encode())
-    key = key.hexdigest()
-
-    url = KY_RECORD_URL
-
-    req_param = {}
-    req_param["agent"] = KY_AGENT
-    req_param["timestamp"] = str(timestamp)
-    req_param["param"] = param
-    req_param["key"] = key
-
-    req = urllib.parse.urlencode(req_param)
-    url = url + '?' + req
-    res = requests.get(url)
-
-    data = res.json()
-
-    if data['d']['code'] == 0:
-        count = int(data['d']['count'])
-        record_list = data['d']['list']
-
-        provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=1, market=ibetCN)
-        category = Category.objects.get_or_create(name='Chess', notes="Kaiyuan Chess")
-
-        game_id = record_list['GameID']
-        accounts = record_list['Accounts']
-        # server_id = record_list['ServerID']
-        # kind_id = record_list['KindID']
-        # table_id = record_list['TableID']
-        cell_score = record_list['CellScore']
-        profit = record_list['Profit']
-        revenue = record_list['Revenue']
-
-        for i in range(0, count):
-            username = accounts[i][6:]
-            user = CustomUser.objects.get(username=username)
-
-            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-            GameBet.objects.create(
-                provider=provider[0],
-                category=category[0],
-                username=user,
-                amount_wagered=decimal.Decimal(cell_score[i]),
-                amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
-                transaction_id=trans_id,
-                market=ibetCN,
-                ref_no=game_id[i]
-            )
+    ts_from_redis = redis.get_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_TRANSACTION)
+    if ts_from_redis is None:
+        latest_datetime = max_datetime
     else:
-        pass
-    # print(res.json)
- 
+        latest_datetime = parse(ts_from_redis.decode())
+
+    logger.info('The timestamp of the latest copy for Transaction was: ' + str(latest_datetime))
+    results = Transaction.objects.filter(request_time__gt=latest_datetime)
+
+    filestr = ''
+    count = 0
+    for result in results:
+        if result.request_time > max_datetime:
+            max_datetime = result.request_time
+        filestr = filestr \
+                  + result.transaction_id + ',' \
+                  + result.user_id.username + ',' \
+                  + result.user_id.email + ',' \
+                  + result.order_id + ','\
+                  + str(result.amount) + ',' \
+                  + str(result.get_currency_display()) + ',' \
+                  + result.get_language_display() + ',' \
+                  + str(result.depositorTier) + ',' \
+                  + result.method + ',' \
+                  + result.get_channel_display() + ',' \
+                  + str(result.last_updated) + ',' \
+                  + str(result.request_time) + ',' \
+                  + str(result.arrive_time) + ',' \
+                  + result.get_status_display() + ',' \
+                  + result.get_transaction_type() + ',' \
+                  + result.remark + ',' \
+                  + result.transfer_from + ',' \
+                  + result.transfer_to + ',' \
+                  + result.get_product_display() + ',' \
+                  + result.get_review_status_display() + ',' \
+                  + result.user_bank_account.account_name + ',' \
+                  + result.user_bank_account.account_number + ',' \
+                  + result.user_bank_account.bank.name + ',' \
+                  + result.transaction_image + ',' \
+                  + str(result.month) + ',' \
+                  + result.qrcode + ',' \
+                  + result.commission_id.pk + ',' \
+                  + str(result.other_data) + ',' \
+                  + result.release_by.username + ',' + '\n'
+        count = count + 1
+
+    logger.info(str(count) + 'new Transaction records have been retrieved in total. ')
+    if count <= 0:
+        return
+
+    # TODO: The bucket name and file name are still to be decided
+    writeToS3(filestr, 'redshift-middle', 'input/transaction.csv')
+
+    # Write the timestamp of the latest record processed to Redis
+    redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_TRANSACTION, str(max_datetime))
+
+
+# Method that copies UserAction history to S3
+# Similar to gamebet_copy
+# I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
+def user_action_copy():
+
+    REDIS_KEY_LATEST_TIMESTAMP_USERACTION = 'latest_timestamp:user_action'
+    max_datetime = datetime.datetime(1900, 1, 1).replace(tzinfo=pytz.UTC)
+
+    ts_from_redis = redis.get_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_USERACTION)
+    if ts_from_redis is None:
+        latest_datetime = max_datetime
+    else:
+        latest_datetime = parse(ts_from_redis.decode())
+
+    logger.info('The timestamp of the latest copy for UserAction was: ' + str(latest_datetime))
+    results = UserAction.objects.filter(created_time__gt=latest_datetime)
+
+    filestr = ''
+    count = 0
+
+    for result in results:
+        if result.created_time > max_datetime:
+            max_datetime = result.created_time
+        filestr = filestr \
+                  + (result.user.username) + ',' \
+                  + (result.user.email) + ',' \
+                  + (result.ip_addr) + ',' \
+                  + (result.get_event_type_display()) + ',' \
+                  + str(result.device) + ',' \
+                  + str(result.browser) + ',' \
+                  + str(result.refer_url) + ',' \
+                  + str(result.page_id) + ',' \
+                  + str(result.created_time) + '\n'
+        count = count + 1
+
+    logger.info(str(count) + ' new UserAction records have been retrieved in total. ')
+    if count <= 0:
+        return
+
+    # TODO: The bucket name and file name are still to be decided
+    writeToS3(filestr, 'redshift-middle', 'input/useraction.csv')
+
+    # Write the timestamp of the latest record processed to Redis
+    redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_USERACTION, str(max_datetime))

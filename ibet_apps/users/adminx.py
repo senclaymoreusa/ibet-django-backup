@@ -58,6 +58,11 @@ class GlobalSettings(object):
                     {
                         'title': _('Bonus records'),
                         'url': '/xadmin/bonus_records/',
+                        'icon': 'fas fa-power-off'
+                    },
+                    {
+                        'title': _('Bonus transactions'),
+                        'url': '/xadmin/bonus_transactions/',
                         'icon': 'fas fa-clock-o'
                     },
                 )

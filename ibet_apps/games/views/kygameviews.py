@@ -223,12 +223,14 @@ def getBets():
             GameBet.objects.create(
                 provider=provider[0],
                 category=category[0],
-                username=user,
+                user=user,
+                user_name=user.username,
                 amount_wagered=decimal.Decimal(cell_score[i]),
                 amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                 transaction_id=trans_id,
                 market=ibetCN,
-                ref_no=game_id[i]
+                ref_no=game_id[i],
+                resolved_time=timezone.now()
             )
     else:
         pass
@@ -333,8 +335,10 @@ def kyTransfer(user, amount, wallet, method):
                         transaction_type=TRANSACTION_DEPOSIT,
                         status=TRAN_SUCCESS_TYPE
                     )
+                    return True
                 else:
                     logger.info("Deposit Not Success {}".format(res_data['d']))
+                    return False
             elif res_data['s'] == 103:
                 if res_data['d']['code'] == 0:
                     Transaction.objects.create(
@@ -349,16 +353,20 @@ def kyTransfer(user, amount, wallet, method):
                         transaction_type=TRANSACTION_DEPOSIT,
                         status=TRAN_SUCCESS_TYPE
                     )
+                    return True
                 else:
                     logger.info("Withdraw Not Success {}".format(res_data['d']))
+                    return False
             else:
                 logger.info("Wrong S type: {}".format(res_data['s']))
+                return False
         else:
             logger.info("Failed response: {}".format(res.status_code))
+            return False
 
     except Exception as e:
         logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
-        return HttpResponse(status=400)
+        return False
 
 
 class TestTransferAPI(View):
@@ -408,7 +416,7 @@ class TestGetRecord(View):
                         provider=provider[0],
                         category=category[0],
                         user=user,
-                        username=user.username,
+                        user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
                         amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
                         transaction_id=trans_id,
