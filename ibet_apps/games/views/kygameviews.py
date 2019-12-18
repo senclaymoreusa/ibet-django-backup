@@ -157,12 +157,12 @@ class KyBets(View):
                         resolved_time=timezone.now()
                     )
 
-                return HttpResponse(status=200)
+                return HttpResponse("success", status=200)
             else:
                 return HttpResponse("No record at this time", status=200)
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse("Kaiyuan Game Background Task Error", status=400)
 
 
 # @background(schedule=10)
