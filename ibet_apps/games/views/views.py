@@ -66,9 +66,16 @@ class GamesSearchView(View):
         # print("sort: " + str(sort))
         try:
             games_category = Category.objects.get(name='Games')
+            all_child_category_of_games = Category.objects.filter(parent_id=games_category)
         except:
             logger.error("Cannot find Games category")
-
+        
+        category_pk_arr = []
+        for i in all_child_category_of_games:
+            category_pk_arr.append(
+                { 'pk': str(i.pk), 'name': i.name }
+            )
+        
         gameFilter = (Q(category_id__parent_id=games_category)|Q(category_id=games_category))
         if q:
             gameFilter &= (
@@ -140,7 +147,12 @@ class GamesSearchView(View):
         
         data = serializers.serialize('json', data)
         data = json.loads(data)
-        # print(data)
+
+        for i in data:
+            for category_obj in category_pk_arr:
+                if category_obj['pk'] == i['fields']['category_id']:
+                    i['fields']['category_name'] = category_obj['name']
+
         logger.info("Sending search game results response......... ")
         return HttpResponse(json.dumps(data), content_type='application/json')
 
