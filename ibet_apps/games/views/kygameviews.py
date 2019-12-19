@@ -126,8 +126,8 @@ class KyBets(View):
                 count = int(data['d']['count'])
                 record_list = data['d']['list']
 
-                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=GAME_TYPE_TABLE_GAMES, market='letouCN, letouTH, letouVN')
-                category = Category.objects.get_or_create(name='Table Games', notes="Kaiyuan Chess")
+                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                category = Category.objects.get(name='Table Games')
 
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
@@ -145,8 +145,8 @@ class KyBets(View):
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                     GameBet.objects.create(
-                        provider=provider[0],
-                        category=category[0],
+                        provider=provider,
+                        category=category,
                         user=user,
                         user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
@@ -154,7 +154,8 @@ class KyBets(View):
                         transaction_id=trans_id,
                         market=ibetCN,
                         ref_no=game_id[i],
-                        resolved_time=timezone.now()
+                        resolved_time=timezone.now(),
+                        other_data=json.dumps({"game_id": game_id[i]})
                     )
 
                 return HttpResponse("You have add {} records".format(count), status=200)
@@ -394,8 +395,8 @@ class TestGetRecord(View):
                 count = int(data['d']['count'])
                 record_list = data['d']['list']
 
-                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=GAME_TYPE_TABLE_GAMES, market='letouCN, letouTH, letouVN')
-                category = Category.objects.get_or_create(name='Table Games', notes="Kaiyuan Chess")
+                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                category = Category.objects.get(name='Table Games')
 
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
@@ -413,8 +414,8 @@ class TestGetRecord(View):
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                     GameBet.objects.create(
-                        provider=provider[0],
-                        category=category[0],
+                        provider=provider,
+                        category=category,
                         user=user,
                         user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
@@ -422,7 +423,8 @@ class TestGetRecord(View):
                         transaction_id=trans_id,
                         market=ibetCN,
                         ref_no=game_id[i],
-                        resolved_time=timezone.now()
+                        resolved_time=timezone.now(),
+                        other_data=json.dumps({"game_id": game_id[i]})
                     )
             
             return HttpResponse(status=200)
