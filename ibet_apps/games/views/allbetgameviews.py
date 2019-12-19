@@ -455,7 +455,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
     except:
         pass
 
-    
+
     try:
         user_obj = CustomUser.objects.get(username=client)
     except ObjectDoesNotExist:
@@ -466,17 +466,14 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
         logger.error("AllBet TransferView Error: Specified user does not exist.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-    
-    if amount < 0:
+
+    if amount <= 0:
         json_to_return = {
             "error_code": 40000,
-            "message": "Cannot have negative total bet amount"
+            "message": "Cannot cancel negative or zero total bet amount"
         }
-        logger.error("AllBet TransferView Error: Cannot have negative total bet amount")
+        logger.error("AllBet TransferView Error: Cannot cancel negative or zero total bet amount")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-
-
 
 
     cancel_details_total_amount = 0
@@ -485,19 +482,25 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
         cancel_details_total_amount += cancel_dictionary["amount"]
         single_cancel_id = cancel_dictionary["betNum"]
 
-
-
-        if cancel_dictionary["amount"] < 0:
+        if cancel_dictionary["amount"] <= 0:
             json_to_return = {
                 "error_code": 40000,
-                "message": "Error: Negative bet amount in details."
+                "message": "Error: Negative or zero bet amount in details."
             }
-            logger.error("AllBet TransferView Error: Negative bet amount in details.")
+            logger.error("AllBet TransferView Error: Negative or zero bet amount in details.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-
         try:
-            existing_transaction = GameBet.objects.get(ref_no=single_cancel_id)
+            existing_bet = GameBet.objects.get(ref_no=single_cancel_id)
+
+            if existing_bet.amount_wagered != cancel_dictionary["amount"]:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "Error: Bet amount and cancel amount do not match."
+                }
+                logger.error("AllBet TransferView Error: Bet amount and cancel amount do not match.")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
         except ObjectDoesNotExist:
             json_to_return = {
                 "error_code": 10006,
@@ -505,7 +508,6 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
             }
             logger.error("AllBet TransferView Error: Attempted to cancel a bet that does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
 
 
     if cancel_details_total_amount != amount:
@@ -517,7 +519,58 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
+    try:
+        user_obj = CustomUser.objects.get(username=client)
+        user_balance = int(user_obj.main_wallet * 100) / 100.0
 
+        # Cancel bets individually.
+        for cancel_entry in cancel_details:
+            single_cancel_id = cancel_entry["betNum"]
+            single_cancel_amount = cancel_entry["amount"]
+
+            with transaction.atomic():
+                user_balance = int(user_obj.main_wallet * 100) / 100.0
+                balance_after_cancelling = user_balance + single_cancel_amount
+                user_obj.main_wallet = balance_after_cancelling
+                user_obj.save()
+
+                ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                GameBet.objects.create(
+                    provider = GameProvider.objects.get(provider_name=ALLBET_PROVIDER),
+                    category = Category.objects.get(name="Live Casino"),
+                    #game = None,
+                    #game_name = None,
+                    user = user_obj,
+                    user_name = user_obj.username,
+                    amount_wagered = 0.00,
+                    amount_won = single_cancel_amount,
+                    outcome = 8, # Cancel
+                    #odds = None,
+                    #bet_type = None,
+                    #line = None,
+                    transaction_id = ibet_trans_id,
+                    currency = user_obj.currency,
+                    market = ibetCN,
+                    ref_no = single_cancel_id,
+                    #bet_time = timezone.now(),
+                    resolved_time = timezone.now(),
+                    other_data = {
+                        "transaction_id": transaction_id
+                    }
+                )
+
+        json_to_return = {
+            "error_code": 0,
+            "balance": int(user_obj.main_wallet * 100) / 100.0
+        }
+        logger.info("AllBet TransferView Success: Bet(s) cancelled.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+    except Exception as e:
+        # Generic
+        logger.error("AllBet TransferView Error: Unspecified error in cancel_bet function.")
+        return HttpResponse(str(e))
 
 
 #########################################################################################################################################################
@@ -567,7 +620,7 @@ class TransferView(View):
             sign_string = sign_bytes.decode()
 
             generated_auth_header = "AB" + " " + ALLBET_PROP_ID + ":" + sign_string
-            # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
+            print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
             # Default JSON Response fields
             res_error_code = 50000
