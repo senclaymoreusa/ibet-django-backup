@@ -256,9 +256,9 @@ class RegisterView(CreateAPIView):
             logger.error("Error getting CustomUser object : ", str(e))
             return Response(self.get_response_data(user), status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
-        # add time of registration and register event
         try:
             with transaction.atomic():
+                # add time of registration and register event
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
@@ -270,28 +270,17 @@ class RegisterView(CreateAPIView):
                 action.save()
                 logger.info("Add time of registration and register event for new user " + str(user))
 
-        except Exception as e:
-            logger.error("Error adding time of registration and register event for new user : ", str(e))
-
-        # generate referral code for new user
-        try:
-            with transaction.atomic():
+                # generate referral code for new user
                 referral_code = str(utils.admin_helper.generateUniqueReferralCode(customUser.pk))
                 customUser.referral_code = referral_code
                 customUser.save()
-                # generate a default referral link for new user
                 link = ReferChannel.objects.create(
                     user_id=customUser,
                     refer_channel_name='default'
                 )
                 logger.info("Create refer link code " + str(link.pk) + " for new user " + str(customUser.username))
 
-        except Exception as e:
-            logger.error("Error creating referral code and default referral channel for new user: ", str(e))
-
-        # generate bonus wallet for new user
-        try:
-            with transaction.atomic():
+                # generate bonus wallet for new user
                 categories = GameCategory.objects.all()
                 if categories:
                     for category in categories:
@@ -300,10 +289,10 @@ class RegisterView(CreateAPIView):
                             category=category
                         )
                         bonus_wallet.save()
-                    logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
+                logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
 
         except Exception as e:
-            logger.error("Error creating Bonus Wallet for new Player: ", str(e))
+            logger.error("Error adding new user registration, refer link or bonus wallet : ", str(e))
 
         return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
