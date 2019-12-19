@@ -237,8 +237,29 @@ class ProcessTransactions(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            playerId = request.GET['playerId']
+            txnId = request.GET['txnId']
+            gameId = request.GET["gameId"]
+            roundId = request.GET['roundId']
+            transType = request.GET["txnType"]
+            currency = request.GET["currency"]
+            created = request.GET['created'] # timestamp
+            completed = request.GET['completed'] # true / false
+            amount = request.GET["amount"]
+            amount = Decimal(amount)
+        except:
+            status_code = 400
+            message = 'One or more required payload parameters are missing!'
+            logger.error(message) 
             
-        playerId = request.GET['playerId']
+            response = {
+                "code": "REQUEST_DECLINED",
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
         try:
             user = CustomUser.objects.get(username=playerId)
@@ -282,19 +303,8 @@ class ProcessTransactions(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
             
-                
-        txnId = request.GET['txnId']
-        print('txnid=' + txnId)
-        gameId = request.GET["gameId"]
-        roundId = request.GET['roundId']
-        transType = request.GET["txnType"]
-        currency = request.GET["currency"]
-        completed = request.GET['completed'] # true / false
-        created = request.GET['created'] # timestamp
-        amount = request.GET["amount"]
-        amount = Decimal(amount)
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-        
+                
         if transType == "DEBIT":
             bal = user.main_wallet - amount
             
@@ -425,9 +435,29 @@ class ProcessRollback(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
-
-          
-        playerId = request.GET['playerId']
+        try:
+            playerId = request.GET['playerId']
+            txnId = request.GET['txnId']
+            gameId = request.GET["gameId"]
+            transType = request.GET["txnType"]
+            currency = request.GET["currency"]
+            created = request.GET['created'] # timestamp
+            completed = request.GET['completed'] # true / false
+            amount = request.GET["amount"]
+            amount = Decimal(amount)
+            orig_txnId = request.GET['betId']
+            
+        except:
+            status_code = 400
+            message = 'One or more required payload parameters are missing!'
+            logger.error(message) 
+            
+            response = {
+                "code": "REQUEST_DECLINED",
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
         try:
             user = CustomUser.objects.get(username=playerId)
@@ -470,10 +500,7 @@ class ProcessRollback(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
-          
-        orig_txnId = request.GET['betId']
-        amount = request.GET["amount"]
-        amount = Decimal(amount)
+        
         user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         
@@ -494,10 +521,8 @@ class ProcessRollback(APIView):
                 "balance": str(user.main_wallet),
                 "referenceId": trans_id
             }
-            print(" FoundOriginal ref_no, {}".format(orig_txnId))
             
         except:
-            print("Original ref_no, {}, NOT FOUND".format(orig_txnId))
             logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
             response = {
                 "balance": str(user.main_wallet)
@@ -505,7 +530,6 @@ class ProcessRollback(APIView):
             
         txnId = request.GET['txnId']   
         gameId = request.GET["gameId"]
-        roundId = request.GET['roundId']
         currency = request.GET["currency"]
         completed = request.GET['completed'] # true / false
         created = request.GET['created'] # timestamp
@@ -529,7 +553,6 @@ class ProcessRollback(APIView):
                         'transactionType': "RollBack",
                         'rollBackFrom': orig_txnId,
                         'completed': completed, 
-                        'roundId': roundId, 
                         'category': request.GET['category'],
                         'device': request.GET['device']
                     }
