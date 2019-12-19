@@ -127,7 +127,7 @@ class KyBets(View):
                 record_list = data['d']['list']
 
                 provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
-                category = Category.objects.get(name='Table Games')
+                category = Category.objects.filter(name='Table Games')
 
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
@@ -146,7 +146,7 @@ class KyBets(View):
 
                     GameBet.objects.create(
                         provider=provider,
-                        category=category,
+                        category=category[0],
                         user=user,
                         user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
@@ -163,7 +163,7 @@ class KyBets(View):
                 return HttpResponse("No record at this time", status=200)
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
-            return HttpResponse("Kaiyuan Game Background Task Error", status=400)
+            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
 
 
 # @background(schedule=10)
@@ -396,7 +396,7 @@ class TestGetRecord(View):
                 record_list = data['d']['list']
 
                 provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
-                category = Category.objects.get(name='Table Games')
+                category = Category.objects.filter(name='Table Games')
 
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
@@ -415,7 +415,7 @@ class TestGetRecord(View):
 
                     GameBet.objects.create(
                         provider=provider,
-                        category=category,
+                        category=category[0],
                         user=user,
                         user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
@@ -430,7 +430,7 @@ class TestGetRecord(View):
             return HttpResponse(status=200)
         except Exception as e:
             logger.error("KY Scheduled Task Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse("KY Scheduled Task Error: {}".format(repr(e)), status=400)
             
 
 
