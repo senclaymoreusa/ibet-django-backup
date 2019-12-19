@@ -39,6 +39,11 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = _('Game Category')
 
+    def get_all_objects(self):
+        queryset = self._meta.model.objects.all()
+        print(queryset)
+        return queryset
+
 
     def __str__(self):
         return '{0}'.format(self.name)

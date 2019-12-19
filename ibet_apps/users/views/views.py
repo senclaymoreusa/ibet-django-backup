@@ -58,7 +58,7 @@ from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSe
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
 from users.models import CustomUser, Config, NoticeMessage, UserAction, UserActivity, Limitation
-from games.models import Game
+
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
@@ -68,7 +68,8 @@ from django.contrib.auth.hashers import make_password, check_password
 from operation.views import send_sms
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
-
+from games.models import Game
+from games.models import Category as GameCategory
 
 import datetime
 import logging
@@ -249,24 +250,62 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        customUser = CustomUser.objects.filter(username=user).first()
+        try:
+            customUser = CustomUser.objects.get(username=user)
+        except Exception as e:
+            logger.error("Error getting CustomUser object : ", str(e))
+            return Response(self.get_response_data(user), status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
-        # if customUser.
-        customUser.time_of_registration = timezone.now()
-        customUser.save()
+        # add time of registration and register event
+        try:
+            with transaction.atomic():
+                customUser.time_of_registration = timezone.now()
+                customUser.save()
+                action = UserAction(
+                    user=customUser,
+                    ip_addr=self.request.META['REMOTE_ADDR'],
+                    event_type=EVENT_CHOICES_REGISTER,
+                    created_time=timezone.now()
+                )
+                action.save()
+                logger.info("Add time of registration and register event for new user " + str(user))
 
-        
-        action = UserAction(
-            user= customUser,
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=2,
-            created_time=timezone.now()
-        )
-        action.save()
+        except Exception as e:
+            logger.error("Error adding time of registration and register event for new user : ", str(e))
 
-        return Response(self.get_response_data(user),
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+        # generate referral code for new user
+        try:
+            with transaction.atomic():
+                referral_code = str(utils.admin_helper.generateUniqueReferralCode(customUser.pk))
+                customUser.referral_code = referral_code
+                customUser.save()
+                # generate a default referral link for new user
+                link = ReferChannel.objects.create(
+                    user_id=customUser,
+                    refer_channel_name='default'
+                )
+                logger.info("Create refer link code " + str(link.pk) + " for new user " + str(customUser.username))
+
+        except Exception as e:
+            logger.error("Error creating referral code and default referral channel for new user: ", str(e))
+
+        # generate bonus wallet for new user
+        try:
+            with transaction.atomic():
+                categories = GameCategory.objects.all()
+                if categories:
+                    for category in categories:
+                        bonus_wallet = UserBonusWallet(
+                            user=customUser,
+                            category=category
+                        )
+                        bonus_wallet.save()
+                    logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
+
+        except Exception as e:
+            logger.error("Error creating Bonus Wallet for new Player: ", str(e))
+
+        return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         user = serializer.save(self.request)

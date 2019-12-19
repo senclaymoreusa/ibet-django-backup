@@ -175,7 +175,7 @@ limit_user = 36 ** limit_digit
 
 
 # encode
-def generate_unique_referral_code(user_id):
+def generateUniqueReferralCode(user_id):
     code = ''
     if user_id in range(0, limit_user):
         i = 0
