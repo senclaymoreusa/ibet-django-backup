@@ -17,6 +17,7 @@ import games.views.bti_views as bti
 import games.views.sagameviews as sagameviews
 import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
+import games.views.ptgameviews as ptgameviews
 
 from games.views.views import *
 
@@ -86,7 +87,8 @@ urlpatterns = [
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
-
+    # playtech
+    path('api/pttest',ptgameviews.PTtest.as_view(), name = 'pt_test'),
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
