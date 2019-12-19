@@ -232,7 +232,7 @@ class ProcessTransactions(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1],
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][3],
                 "message": message
             }
             
@@ -255,7 +255,7 @@ class ProcessTransactions(APIView):
             logger.error(message) 
             
             response = {
-                "code": "REQUEST_DECLINED",
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][5],
                 "message": message
             }
             
@@ -273,7 +273,7 @@ class ProcessTransactions(APIView):
                 logger.error(message) 
                 
                 response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
+                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][2],
                     "message": message
                 }
                 
@@ -285,7 +285,7 @@ class ProcessTransactions(APIView):
                 logger.error("Blocked user {} trying to access QT Game".format(username))
                 
                 response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1],
+                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][4],
                     "message": message
                 }
                 
@@ -297,7 +297,7 @@ class ProcessTransactions(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
+                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
                 "message": message
             }
             
@@ -346,7 +346,7 @@ class ProcessTransactions(APIView):
                 
                     response = {
                         "code": "UNKNOWN_ERROR",
-                        "message": "Unexpected error"
+                        "message": "DEBIT unexpected error"
                     }
             else: 
                 response = {
@@ -394,7 +394,7 @@ class ProcessTransactions(APIView):
             
                 response = {
                     "code": "UNKNOWN_ERROR",
-                    "message": "Unexpected error"
+                    "message": "CREDIT unexpected error"
                 }
                 
         else:
@@ -429,7 +429,7 @@ class ProcessRollback(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1],
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][2],
                 "message": message
             }
             
@@ -483,7 +483,7 @@ class ProcessRollback(APIView):
                 logger.error("Blocked user {} trying to access QT Game".format(username))
                 
                 response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1],
+                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][4],
                     "message": message
                 }
                 
@@ -495,7 +495,7 @@ class ProcessRollback(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
+                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
                 "message": message
             }
             
@@ -528,11 +528,6 @@ class ProcessRollback(APIView):
                 "balance": str(user.main_wallet)
             }
             
-        txnId = request.GET['txnId']   
-        gameId = request.GET["gameId"]
-        currency = request.GET["currency"]
-        completed = request.GET['completed'] # true / false
-        created = request.GET['created'] # timestamp
         #
         # it proceeds with rollback regardless the orig_txnId
         #
