@@ -24,7 +24,7 @@ import json
 
 from rest_framework.authtoken.models import Token
 from Crypto.Cipher import DES3
-# from pyDes import *
+import xmltodict
 import base64
 import pytz
 import urllib
@@ -349,17 +349,28 @@ class InplayUpdateBalanceAPI(View):
             return HttpResponse(repr(e), status=400)
 
 
-class PostBetDetailsAPI(View):
+class InplayPostBetDetailsAPI(View):
     def post(self, request, *arg, **kwargs):
         bet_package = request.POST.get('postPackage')
         
         try:
-            bet_package = bet_package.replace(' ', '+')
-            data = des3Decryption(bet_package)
-            data = "".join([data.rsplit("}" , 1)[0] , "}"])
-            print(data)
+            bet_package = {}
+            bet_package["betId"] = 16452000
+            bet_package["betTime"] = timezone.now()
+            bet_package["memberCode"] = "Bobby"
+            bet_package["sportsName"] = "LOL"
+
+            print(bet_package)
+
+            bet_package = xmltodict.unparse(bet_package, pretty=True)
+            print(bet_package)
+
+            # bet_package = bet_package.replace(' ', '+')
+            # data = des3Decryption(bet_package)
+            # data = "".join([data.rsplit("}" , 1)[0] , "}"])
+            # print(data)
             # data = json.loads(data)
-            return HttpResponse(data, status=200)
+            return HttpResponse(bet_package, status=200)
         except Exception as e:
             print(repr(e))
             return HttpResponse(repr(e), status=400)
