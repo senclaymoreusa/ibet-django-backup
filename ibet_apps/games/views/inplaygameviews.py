@@ -354,23 +354,31 @@ class InplayPostBetDetailsAPI(View):
         bet_package = request.POST.get('postPackage')
         
         try:
-            bet_package = {}
-            bet_package["betId"] = 16452000
-            bet_package["betTime"] = timezone.now()
-            bet_package["memberCode"] = "Bobby"
-            bet_package["sportsName"] = "LOL"
+            data = {}
 
-            print(bet_package)
+            bet_details = {}
+            bet_details["betId"] = 16452000
+            bet_details["betTime"] = timezone.now()
+            bet_details["memberCode"] = "Bobby"
+            bet_details["sportsName"] = "LOL"
 
-            bet_package = xmltodict.unparse(bet_package, pretty=True)
-            print(bet_package)
+            data["BetDetails"] = bet_details
 
+            print(data)
+
+            data = xmltodict.unparse(data, pretty=True)
+            print(data)
+
+            data = des3Encryption(data)
+            print(data)
+
+            bet_package = "lOP+e157+uV2wZncm2L6dgUqnzqDIgPJDKRq9YCM1+kIDnJpQWglT1yhTKU66poigmeql4jwlQ3JSQh2wu4Uila8JPbNJAb8M9R/giYfa/CSEUZesHzQFPsz347jdYV6ZEC0osHDZL2oCLkuibC4dylXViTW6pAOhmi70gnCuvb1LZwN/Rn4EF6YAjG5m7pYjRB5cEScMlDrJQ7FoP4FRG5JJX9DTW3bUKsrifdTtDRyGN7fUIyk/nSj2Mv0MbVezUT64i6nSMN8c2OSzkQs4Q=="
             # bet_package = bet_package.replace(' ', '+')
-            # data = des3Decryption(bet_package)
-            # data = "".join([data.rsplit("}" , 1)[0] , "}"])
-            # print(data)
+            data = des3Decryption(bet_package)
+            data = "".join([data.rsplit("}" , 1)[0] , "}"])
+            print(data)
             # data = json.loads(data)
-            return HttpResponse(bet_package, status=200)
+            return HttpResponse(data, status=200)
         except Exception as e:
             print(repr(e))
             return HttpResponse(repr(e), status=400)
