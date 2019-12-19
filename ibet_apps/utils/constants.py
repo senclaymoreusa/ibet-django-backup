@@ -582,14 +582,7 @@ EVENT_CHOICES = (
     (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
 
-#FGgame
-BRANDID = '524'
-BRAND_PASSWORD = 'Flow6refg'
-PLATFORM = 'NETENT_CAS',
-FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
-#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
 
 
 
@@ -696,7 +689,19 @@ IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"]
 IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
 IOVATION_URL = keys["IOVATION"]["URL"]
 
-# help2pay sandbox credentials & callback
+#FGgame
+BRANDID = keys["FG"]["BRANDID"]
+BRAND_PASSWORD = keys["FG"]["BRAND_PASSWORD"]
+PLATFORM = keys["FG"]["PLATFORM"],
+FG_URL = keys["FG"]["FG_URL"]
+FG_SESSION_CHECK = keys["FG"]["FG_SESSION_CHECK"]
+
+#MGgame
+USERNAME = keys["MG"]["USERNAME"]
+PASSWORD = keys["MG"]['PASSWORD']
+
+# LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
 
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_MERCHANT_VND = "M0514"

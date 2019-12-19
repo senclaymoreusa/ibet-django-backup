@@ -125,36 +125,36 @@ class FGLogin(APIView):
             return Response(rr)
 
 
-class GameLaunch(APIView):
+# class GameLaunch(APIView):
 
-    permission_classes = (AllowAny, )
+#     permission_classes = (AllowAny, )
 
-    def get(self, request, *args, **kwargs):
-        gameId = request.GET['gameId']
-        try:
-            sessionKey = request.GET['sessionKey']
-            rr = requests.get(LAUNCH_URL, params={
-                "platform": PLATFORM,
-                "brandId": BRANDID,
-                "gameId" : gameId,
-                "playForReal": "true",
-                "lang" : "en",
-                "sessionKey" : sessionKey
-            })
+#     def get(self, request, *args, **kwargs):
+#         gameId = request.GET['gameId']
+#         try:
+#             sessionKey = request.GET['sessionKey']
+#             rr = requests.get(LAUNCH_URL, params={
+#                 "platform": PLATFORM,
+#                 "brandId": BRANDID,
+#                 "gameId" : gameId,
+#                 "playForReal": "true",
+#                 "lang" : "en",
+#                 "sessionKey" : sessionKey
+#             })
             
 
-        except:
+#         except:
 
-            rr = requests.get(LAUNCH_URL, params={
-                "platform": PLATFORM,
-                "brandId": BRANDID,
-                "gameId" : gameId,
-                "playForReal": "false",
-                "lang" : "en"
-            })
+#             rr = requests.get(LAUNCH_URL, params={
+#                 "platform": PLATFORM,
+#                 "brandId": BRANDID,
+#                 "gameId" : gameId,
+#                 "playForReal": "false",
+#                 "lang" : "en"
+#             })
         
-        rr = rr.text    
-        return HttpResponse(rr)
+#         rr = rr.text    
+#         return HttpResponse(rr)
 
 class GetAccountDetail(APIView):
 
