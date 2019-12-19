@@ -62,14 +62,14 @@ from users.models import CustomUser, Config, NoticeMessage, UserAction, UserActi
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
+from games.models import Game
+from games.models import Category as GameCategory
 from users.views.helper import *
 from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
-from games.models import Game
-from games.models import Category as GameCategory
 
 import datetime
 import logging
