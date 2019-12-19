@@ -15,6 +15,8 @@ from datetime import datetime, date, time
 import datetime
 import pytz
 from dateutil.parser import parse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger('django')
 redis = RedisHelper()
@@ -25,7 +27,9 @@ redis = RedisHelper()
 # I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
 # REF: https://console.aws.amazon.com/datapipeline/home?region=ap-northeast-1#ExecutionDetailsPlace:pipelineId=df-01600683VJZR9UCYHR8X&show=latest
 # @background(schedule=5000) # TODO: this is commented because it's still yet to decide whether we want to use background_task
-def gamebet_copy():
+@api_view(['POST'])
+@permission_classes((AllowAny,))  
+def gamebet_copy(request):
 
     REDIS_KEY_LATEST_TIMESTAMP_GAMEBET = 'latest_timestamp:game_bet'
     max_datetime = datetime.datetime(1900, 1, 1).replace(tzinfo=pytz.UTC)
@@ -38,10 +42,11 @@ def gamebet_copy():
 
     logger.info('The timestamp of the latest copy for GameBet was: ' + str(latest_datetime))
     results = GameBet.objects.filter(bet_time__gt=latest_datetime)
-
+    
     filestr = ''
     count = 0
     for result in results:
+        print(result)
         if result.bet_time > max_datetime:
             max_datetime = result.bet_time
         filestr = filestr \
@@ -65,22 +70,24 @@ def gamebet_copy():
                   + str(result.resolved_time) + ',' \
                   + str(result.other_data) + ',' + '\n'
         count = count + 1
-
+        
     logger.info(str(count) + 'new GameBet records have been retrieved in total. ')
     if count <= 0:
-        return
+        return HttpResponse("count <= 0")
 
     # TODO: The bucket name and file name are still to be decided
     writeToS3(filestr, 'redshift-middle', 'input/gamebet.csv')
 
     # Write the timestamp of the latest record processed to Redis
     redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_GAMEBET, str(max_datetime))
-
+    return HttpResponse(str(count) + 'new GameBet records have been retrieved in total. ')
 
 # Method that copies Transaction history to S3
 # Similar to gamebet_copy
 # I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
-def transaction_copy():
+@api_view(['POST'])
+@permission_classes((AllowAny,)) 
+def transaction_copy(request):
 
     REDIS_KEY_LATEST_TIMESTAMP_TRANSACTION = 'latest_timestamp:transaction'
     max_datetime = datetime.datetime(1900, 1, 1).replace(tzinfo=pytz.UTC)
@@ -133,19 +140,21 @@ def transaction_copy():
 
     logger.info(str(count) + 'new Transaction records have been retrieved in total. ')
     if count <= 0:
-        return
+        return HttpResponse("count <= 0")
 
     # TODO: The bucket name and file name are still to be decided
     writeToS3(filestr, 'redshift-middle', 'input/transaction.csv')
 
     # Write the timestamp of the latest record processed to Redis
     redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_TRANSACTION, str(max_datetime))
-
+    return HttpResponse(str(count) + 'new GameBet records have been retrieved in total. ')
 
 # Method that copies UserAction history to S3
 # Similar to gamebet_copy
 # I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
-def user_action_copy():
+@api_view(['POST'])
+@permission_classes((AllowAny,)) 
+def user_action_copy(request):
 
     REDIS_KEY_LATEST_TIMESTAMP_USERACTION = 'latest_timestamp:user_action'
     max_datetime = datetime.datetime(1900, 1, 1).replace(tzinfo=pytz.UTC)
@@ -179,10 +188,11 @@ def user_action_copy():
 
     logger.info(str(count) + ' new UserAction records have been retrieved in total. ')
     if count <= 0:
-        return
+        return HttpResponse("count <= 0")
 
     # TODO: The bucket name and file name are still to be decided
     writeToS3(filestr, 'redshift-middle', 'input/useraction.csv')
 
     # Write the timestamp of the latest record processed to Redis
     redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_USERACTION, str(max_datetime))
+    return HttpResponse(str(count) + 'new GameBet records have been retrieved in total. ')
