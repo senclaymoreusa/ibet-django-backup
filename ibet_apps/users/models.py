@@ -1,6 +1,6 @@
 from django.db import models, DatabaseError
 from django.contrib.auth.models import AbstractUser
-from django.urls import reverse #Used to generate urls by reversing the URL patterns
+from django.urls import reverse  # Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 from django.db import transaction
@@ -18,16 +18,17 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
 import logging
 
 logger = logging.getLogger('django')
+
 
 class MyUserManager(BaseUserManager):
     """
     This class handles the creation of our users. We need to create this class and extend BaseUserManager
     because our model (CustomUser) has additional fields to Django's default User class.
     """
+
     def create_user(self, username, email, phone, password=None):
         """
         Create a CustomUser, which are the users on our site.
@@ -37,11 +38,11 @@ class MyUserManager(BaseUserManager):
 
         # Create and save a CustomUser into the database.
         user = self.model(
-					username = username,
-					email = self.normalize_email(email),
-                    phone = phone,
-				)
-        user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
+            username=username,
+            email=self.normalize_email(email),
+            phone=phone,
+        )
+        user.set_password(password)  # Hash the password using Django auth; Never use 'user.password = password'
         # user.active = True # Add this only to fix Letou registeration bug, will remove later
         user.save(using=self._db)
         return user
@@ -51,13 +52,14 @@ class MyUserManager(BaseUserManager):
         Create a superuser, which is just a user object with special attributes.
         """
         user = self.create_user(
-            username = username, email = email, phone = phone, password = password
-		)
+            username=username, email=email, phone=phone, password=password
+        )
         user.is_admin = True
         user.is_staff = True
         user.active = True
         user.save(using=self._db)
         return user
+
 
 class UserTag(models.Model):
     tag_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -71,6 +73,7 @@ class UserTag(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class CustomUser(AbstractBaseUser):
     """
@@ -153,14 +156,14 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True,default=0)
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True, default=0)
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
-    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
+    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)  # first time deposit
     verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='')
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
@@ -183,17 +186,18 @@ class CustomUser(AbstractBaseUser):
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True, blank=True)
     user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
-    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
+    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True,
+                                        blank=True)
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL,
                                              related_name='AffiliateManager')
-    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL,
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL,
                                        related_name='VIPManager')
 
-    #commission
-    commission_status = models.BooleanField(default=False)               # for current month
+    # commission
+    commission_status = models.BooleanField(default=False)  # for current month
     commission_setting = models.CharField(max_length=50, choices=COMMISSION_SET, default='System')
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
@@ -206,7 +210,7 @@ class CustomUser(AbstractBaseUser):
 
     activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
 
-    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)   # only for admin user market
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)  # only for admin user market
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)  # only for admin user market
     department = models.SmallIntegerField(null=True, blank=True)
 
@@ -237,10 +241,10 @@ class CustomUser(AbstractBaseUser):
         editable=False,
     )
 
-    objects = MyUserManager() # Links our custom UserManager to our CustomUser model.
+    objects = MyUserManager()  # Links our custom UserManager to our CustomUser model.
 
-    USERNAME_FIELD = 'username' # field to be used as unique identifier for CustomUser
-    REQUIRED_FIELDS = ['email', 'phone'] # fields prompted for when creating superuser
+    USERNAME_FIELD = 'username'  # field to be used as unique identifier for CustomUser
+    REQUIRED_FIELDS = ['email', 'phone']  # fields prompted for when creating superuser
 
     class Meta:
         verbose_name_plural = _('Customer User')
@@ -285,20 +289,24 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+
 # User Personal Commission
 class Commission(models.Model):
 
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
-    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20,
+                                                         decimal_places=2, default=0)
     commission_level = models.IntegerField(default=1)
     active_downline_needed = models.IntegerField(default=6)
     monthly_downline_ftd_needed = models.IntegerField(default=6)
+    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
             # Get the maximum display_id value from the database
-            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))['largest']
+            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))[
+                'largest']
 
             # aggregate can return None! Check it first.
             # If it isn't none, just use the last ID specified (which should be the greatest) and add one to it
@@ -316,6 +324,8 @@ class SystemCommission(models.Model):
     active_downline_needed = models.IntegerField(default=0)
     monthly_downline_ftd_needed = models.IntegerField(default=0)
     ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    operation_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    payment_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
 
 # one user can have up to 10 referral channels
@@ -334,7 +344,6 @@ class ReferChannel(models.Model):
 
 
 class UserWithTag(models.Model):
-
     STATUS_CHOICES = (
         (0, _('pending')),
         (1, _('approved')),
@@ -345,8 +354,9 @@ class UserWithTag(models.Model):
 
     def __str__(self):
         return '{0}'.format(self.tag)
+
     class Meta:
-        unique_together = (('user','tag'),)
+        unique_together = (('user', 'tag'),)
         verbose_name = "Tag"
         verbose_name_plural = _('Assign tag to user')
 
@@ -355,6 +365,7 @@ class Status(models.Model):
     status_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     notes = models.CharField(max_length=200)
+
     def __str__(self):
         return '{0}'.format(self.name)
 
@@ -363,7 +374,9 @@ class Language(models.Model):
     """
     Model representing a Language (e.g. English, French, Japanese, etc.)
     """
-    name = models.CharField(max_length=200, help_text="Enter the book's natural language (e.g. English, French, Japanese etc.)")
+    name = models.CharField(max_length=200,
+                            help_text="Enter the book's natural language (e.g. English, French, Japanese etc.)")
+
     # name = models.CharField(max_length=200, choices= ((u'en', u'English'), (u'zh', u'Chinese',), (u'fr', u'Franch')))
     def __str__(self):
         """
@@ -371,8 +384,8 @@ class Language(models.Model):
         """
         return self.name
 
-class NoticeMessage(models.Model):
 
+class NoticeMessage(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
     message = models.CharField(max_length=200, default='')
@@ -385,6 +398,7 @@ class NoticeMessage(models.Model):
         """
         return self.message
 
+
 class Config(models.Model):
     name = models.CharField(max_length=50, default='General')
     referral_award_points = models.IntegerField(default=5)
@@ -396,8 +410,8 @@ class Config(models.Model):
     def __str__(self):
         return self.name
 
-class UserAction(models.Model):
 
+class UserAction(models.Model):
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
@@ -407,13 +421,14 @@ class UserAction(models.Model):
     # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     result = models.CharField(max_length=10, null=True, blank=True)
-    ip_location = JSONField(null=True, default=dict)                     
+    ip_location = JSONField(null=True, default=dict)
     other_info = JSONField(null=True, default=dict)
     created_time = models.DateTimeField(
         _('Created Time'),
         default=timezone.now,
         editable=False,
     )
+
     class Meta:
         verbose_name_plural = _('User action history')
 
@@ -431,7 +446,6 @@ class UserActivity(models.Model):
 
 
 class Limitation(models.Model):
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
@@ -452,6 +466,7 @@ class Limitation(models.Model):
         auto_now_add=True,
         editable=False,
     )
+
 
 # Member VIP System
 
@@ -488,7 +503,6 @@ def new_user_handler(sender, **kwargs):
                 logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
         except DatabaseError as e:
             logger.error("Error creating referral code and default referral channel for new user: ", e)
-
 
 
 class UserWallet(models.Model):

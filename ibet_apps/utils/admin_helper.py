@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 from datetime import date
 
-from users.models import CustomUser, UserAction
+from users.models import CustomUser, UserAction, SystemCommission, Commission
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
@@ -41,7 +41,6 @@ commission_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_COMMISSION)
 bet_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_BET_PLACED)
-
 
 '''
 @param queryset: affiliate object or queryset
@@ -82,10 +81,13 @@ def getAllDownline(affiliates):
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
-            downline_list |= CustomUser.objects.filter(referral_path__contains=affiliate_referral_path)
+            downline_list |= CustomUser.objects.filter(
+                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
-        downline_list = CustomUser.objects.filter(referral_path__contains=affiliate_referral_path)
+        downline_list = CustomUser.objects.filter(
+            Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
+
     return downline_list
 
 
@@ -127,8 +129,8 @@ def calculateActiveDownlineNumber(affiliate, start_time, end_time):
 def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
     # get bet transaction in this period
     active_filter = Q()
-    if free_bets:
-        active_filter &= Q(other_data__is_free=True)
+    if not free_bets:
+        active_filter &= ~Q(other_data__is_free=True)
 
     if cate:
         active_filter &= Q(category__name=cate)
@@ -151,6 +153,8 @@ def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
 @param date: mm/dd/yyyy
 @return: timezone datetime
 '''
+
+
 def dateToDatetime(date):
     if date:
         date = date.split('/')
@@ -160,8 +164,12 @@ def dateToDatetime(date):
     return date
 
 
-# calculate ftd user number in certain user_group within certain time range
-def calculateFTD(user_group, start_time, end_time):
+'''
+@return: first time deposit users within time range
+'''
+
+
+def getFTD(queryset, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
     ftd_filter = Q()
@@ -173,7 +181,7 @@ def calculateFTD(user_group, start_time, end_time):
     elif end_time:
         ftd_filter &= Q(ftd_time__lte=end_time)
 
-    ftd_user = user_group.filter(ftd_filter).count()
+    ftd_user = queryset.filter(ftd_filter)
     return ftd_user
 
 
@@ -210,6 +218,29 @@ def calculateNewPlayer(user_group, start_time, end_time, free_bets):
                 new_player_count += 1
 
     return new_player_count
+
+
+def getCommissionRate(user, start_time, end_time):
+    if not user:
+        return 0
+
+    downlines = getAllDownline(user)
+    active_downline = filterActiveUser(downlines, start_time, end_time, True, None).count()
+    downline_ftd = getFTD(downlines, start_time, end_time).count()
+    ngr = 0
+    for downline in downlines:
+        ngr += calculateNGR(downline, start_time, end_time, None)
+    if user.commission_setting == 'System':
+        commissions = SystemCommission.objects.all().order_by('-commission_percentage')
+    else:
+        commissions = Commission.objects.filter(user_id=user).order_by('-commission_percentage')
+
+    if commissions:
+        for level in commissions:
+            if active_downline >= level.active_downline_needed \
+                    and downline_ftd >= level.monthly_downline_ftd_needed and ngr >= level.ngr:
+                return level.commission_percentage
+    return 0
 
 
 # TODO: functions need to be updated
@@ -354,8 +385,6 @@ def getManagerList(list_type):
     return managers
 
 
-
-
 # for bonus admin display
 def bonusValueToKey(bonuses):
     try:
@@ -385,6 +414,8 @@ BONUS_DELIVERY_VALUE_DICT = {
 @param date: filename, table header, table body data
 @return: response
 '''
+
+
 def exportCSV(filename, row_title, data):
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')

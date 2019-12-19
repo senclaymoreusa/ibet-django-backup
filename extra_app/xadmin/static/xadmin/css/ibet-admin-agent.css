@@ -478,14 +478,14 @@ ul.ui-autocomplete {
     padding-top: 10px;
 }
 
-#system-commission-level-details .input-value {
+#edit-commission-pop .input-value {
     width: 80px;
     height: 35px;
     text-align: center;
     border: solid 1px #bdbdbd;
 }
 
-#system-commission-level-details .sign {
+#edit-commission-pop .sign {
     width: 20px;
     height: 35px;
     text-align: center;
@@ -620,6 +620,6 @@ table thead tr th {
     margin-top: 3px;
 }
 
-/* fix pagination choices for affiliate table */
-#affiliates_wrapper .dataTables_paginate, #affiliates_wrapper .dataTables_info, #affiliates_wrapper .dataTables_length {
+#commissionCheckbox {
+    text-align: right;
 }

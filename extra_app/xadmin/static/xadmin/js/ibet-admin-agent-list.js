@@ -14,10 +14,10 @@ $(document).ready(function () {
         }
     });
 
-    var admin_user = $('#admin_user').val();
     // COMMISSION
     var commissionTable = $('#commission').DataTable({
         responsive: true,
+        "ordering": false,
         dom: '<<t>Bpil>',
         "columnDefs": [{
             "searchable": false,
@@ -61,12 +61,12 @@ $(document).ready(function () {
     }
 
     addCommissionHistory = function (data) {
-        $("#commission_statement").empty();
+        $(".commission_statement").empty();
         content = "";
         for (var i = 0; i < data.length; i++) {
-            content += '<tr id="commission_statement">';
-            if (data[i].release_time.length === 0) {
-                content += '<td id="commissionCheckbox"><input type="checkbox" name="commission_checkbox" /></td>';
+            content += '<tr class="commission_statement">';
+            if (data[i].status === 'Pending') {
+                content += '<td id="commissionCheckbox"><input type="checkbox" name="commission_checkbox" class="commissionCheckbox" /></td>';
             } else {
                 content += '<td></td>'
             }
@@ -85,11 +85,12 @@ $(document).ready(function () {
             content += '<td style="display: none" id="tran_pk">' + data[i].trans_pk + '</td>';
             content += '</tr>';
         }
-        $("#commission_statement").append(content);
+        $(".commission_statement").append(content);
 
         var commission_detail_table = $('#commission_detail').DataTable({
             retrieve: true,
             responsive: true,
+            "ordering": false,
             dom: '<<t>Bpil>',
             "columnDefs": [{
                 "searchable": false, "targets": [1],
@@ -108,26 +109,52 @@ $(document).ready(function () {
     }
 
     releaseCommission = function () {
-        var checkedlist = []
-        var checkednumber = 0
-        $('input[name="commission_checkbox"]').click(function () {
-            var tranPK = $(this).closest('tr').find('#tran_pk').html();
-            if ($(this).prop("checked") == true) {
-                checkednumber += 1;
-                checkedlist.push(tranPK);
-            } else if ($(this).prop("checked") == false) {
-                checkednumber -= 1;
-                for (i = 0; i < checkedlist.length; i++) {
-                    if (checkedlist[i] === tranPK) {
-                        checkedlist.pop(checkedlist[i]);
-                        break;
-                    }
+        var checkedList = []
+        var checkedNumber = 0
+        $('input[name="commission_checkbox"]').on('change', function () {
+            var currBox = $(this);
+            if($(currBox).attr("id") === "release-all"){
+                checkedList = [];
+                checkedNumber = 0;
+                if($(currBox).is(':checked')){
+                    $.each($(".commissionCheckbox"), function(){
+                        $(".commissionCheckbox").prop("checked", "checked");
+                        if ($(this).prop("checked") == true && $(this).attr("id") !== "release-all") {
+                            checkedNumber += 1;
+                            tranPK = $(this).closest('tr').find('#tran_pk').html()
+                            checkedList.push(tranPK);
+                        }
+                    })
+                }else{
+                    $.each($(".commissionCheckbox"), function(){
+                        $(".commissionCheckbox").prop("checked", "");
+                    })
                 }
+            }else{
+                if($(currBox).prop("checked") == false){
+                    $("#release-all").prop("checked", "");
+                };
+                var tranPK = $(currBox).closest('tr').find('#tran_pk').html();
+                if ($(currBox).prop("checked") == true) {
+                    checkedNumber += 1;
+                    if(!checkedList.includes(tranPK)){
+                        checkedList.push(tranPK);
+                    };
+                } else if ($(currBox).prop("checked") == false) {
+                    checkedNumber -= 1;
+                    if(checkedList.includes(tranPK)){
+                        var index = checkedList.indexOf(tranPK);
+                        if (index > -1) {
+                          checkedList.splice(index, 1);
+                        }
+                    };
+                };
             }
-            if (checkednumber == 0) {
+
+            if (checkedNumber == 0) {
                 $('#selected').empty();
             } else {
-                $('#selected').text(checkednumber + ' selected');
+                $('#selected').text(checkedNumber + ' selected');
             }
         });
 
@@ -137,7 +164,8 @@ $(document).ready(function () {
                 url: agent_list_url,
                 data: {
                     'type': 'releaseCommission',
-                    'list[]': checkedlist,
+                    'list[]': checkedList,
+                    'admin': admin_user,
                 },
                 success: function (data) {
                     window.location.reload();
@@ -147,7 +175,6 @@ $(document).ready(function () {
     }
 
     // COMMISSION (SYSTEM)
-
     $(document).on("click", "#add-commission-level", function () {
         // check previous level has empty input or not
         if (checkCommissionLevelEmpty() == false) {
@@ -163,7 +190,7 @@ $(document).ready(function () {
     });
 
     function checkCommissionLevelEmpty() {
-        var $empty = $(".system-commission-levels input[required]").filter(function () {
+        var $empty = $("#edit-commission-pop input[required]").filter(function () {
             return !this.value.trim();
         }),
             valid = $empty.length == 0,
@@ -208,12 +235,19 @@ $(document).ready(function () {
                     'admin_user': admin_user,
                     'comments': comments,
                     'level_details': JSON.stringify(level_details),
+                    'operation_fee': $('#operation-fee').val(),
+                    'payment_fee': $('#payment-fee').val(),
                 },
                 success: function (data) {
                     location.reload();
                 }
             });
         }
+    });
+
+    $('#operation-fee, #payment-fee').on('change', function(){
+        formatAmount = parseFloat($(this).val()).toFixed(2);
+        $(this).prop('value', formatAmount);
     });
 
     $(document).on("click", "#delete-commission-level-btn", function () {
@@ -339,11 +373,7 @@ $(document).ready(function () {
     });
     })
 
-
-    // TODO: NEED UPDATE
     // AFFILIATE REPORT
-    $('#min-date').datepicker();
-    $('#max-date').datepicker();
 
     var affiliateTable = $('#affiliates').DataTable({
         "serverSide": true,
@@ -355,9 +385,9 @@ $(document).ready(function () {
             url: agent_list_url,
             data: {
                 'type': 'getAffiliateInfo',
-//                'minDate': function () { return $('#min-date').val(); },
-//                'maxDate': function () { return $('#max-date').val(); },
-//                'search': function () { return $('#affiliate-search').val(); },
+                'minDate': function () { return $('#min-date').val(); },
+                'maxDate': function () { return $('#max-date').val(); },
+                'search': function () { return $('#affiliate-search').val(); },
             },
         },
 
@@ -437,6 +467,15 @@ $(document).ready(function () {
             searchPlaceholder: "  Enter user ID or username",
             search: "",
         },
+    });
+
+    $(function(){
+        $("#min-date").datepicker();
+        $("#max-date").datepicker();
+    });
+
+    $('#min-date, #max-date, #affiliate-search').change(function () {
+        affiliateTable.draw();
     });
 
 
