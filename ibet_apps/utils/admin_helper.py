@@ -398,6 +398,11 @@ def bonusValueToKey(bonuses):
     return bonuses
 
 
+def ubeValueToKey(ube):
+    ube['status'] = USER_BONUS_EVENT_TYPE_CHOICES[ube['status']][1]
+    return ube
+
+
 BONUS_TYPE_VALUE_DICT = {
     "manual": BONUS_TYPE_MANUAL,
     "deposit": BONUS_TYPE_DEPOSIT,

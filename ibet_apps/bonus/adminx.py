@@ -17,9 +17,10 @@ class BonusCategoryAdmin(object):
     list_display = ('bonus', 'category')
 
 
-xadmin.site.register(Bonus,BonusAdmin)
-xadmin.site.register(Requirement,RequirementAdmin)
-xadmin.site.register(UserBonusEvent,UserBonusEventAdmin)
-xadmin.site.register(BonusCategory,BonusCategoryAdmin)
+# xadmin.site.register(Bonus,BonusAdmin)
+# xadmin.site.register(Requirement,RequirementAdmin)
+# xadmin.site.register(UserBonusEvent,UserBonusEventAdmin)
+# xadmin.site.register(BonusCategory,BonusCategoryAdmin)
 
 xadmin.site.register_view(r'bonus_records/$', BonusRecordsView, name='bonus_records')
+xadmin.site.register_view(r'bonus_transactions/$', BonusTransactionsView, name='bonus_transactions')
