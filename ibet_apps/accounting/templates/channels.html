@@ -169,7 +169,7 @@
 
     <!-- PSP config modal -->
     <div class="modal fade" id="edit-psp" role="dialog">
-        <div id="override" class="modal-dialog" style="width: 40%">
+        <div id="override" class="modal-dialog" style="width: 35%">
             <!-- Modal content -->
             {% include "payment_modal.html" %}
         </div>
@@ -313,10 +313,11 @@
         inputs.appendChild(input);
         return inputs;
     }
-    function createDate(date) {
+    function createDate(date, show=true) {
         let select = document.createElement("select");
         select.setAttribute("class", "freq-input-inner");
         select.disabled = true;
+        if (!show) select.style.display = "none";
         let option = document.createElement("option");
         option.setAttribute("value", date);
         option.innerText = date;
@@ -345,6 +346,10 @@
 
         if (downtime.date) {
             let date = createDate(downtime.date);
+            node.appendChild(date);
+        }
+        else {
+            let date = createDate("", false);
             node.appendChild(date);
         }
 
@@ -400,10 +405,10 @@
             let row = downtimeRow(all_downtime.monthly[i], "Monthly");
             dt_section.insertBefore(row, dt_section.firstChild);
         }
+        
         document.getElementById('add-freq').setAttribute('data-pk', data.pk);
         document.getElementById('add-freq').setAttribute('data-type', psp_type);
         $('.del-freq').on('click', function(event) {
-            console.log($(this).data('id'));
             $.ajax({
                 type: 'POST',
                 url: '{% url "xadmin:del_downtime" %}',
@@ -413,13 +418,22 @@
                     'psp_type': psp_type
                 },
                 success: (data) => {
-                    console.log(data);
                     let selector = "#" + $(this).data('id');
-                    console.log(selector);
                     $(selector).fadeOut();
                 }
             })
         });
+
+
+        document.getElementById('min-dep').value = data.fields.min_amount;
+        document.getElementById('max-dep').value = data.fields.max_amount;
+        // set txn fees
+        document.getElementById('txn-fee-input').value = data.fields.transaction_fee;
+        document.getElementById('txn-fee-per-input').value = data.fields.transaction_fee_per;
+        // set black/white list
+        document.getElementById('blacklist-input').value = data.fields.blacklist["blacklist"].length;
+        document.getElementById('whitelist-input').value = data.fields.whitelist["whitelist"].length;
+
     }
 
     $(document).ready(function () {

@@ -371,13 +371,14 @@ label {
 }
 
 #payment-settings label {
-    width: 10%;
+    /* width: 10%; */
+    align-self: center;
 }
 
 
 #payment-settings .input-group {
     margin-right: 10px;
-    width: 25%;
+    /* width: 25%; */
 }
 
 .freq-inputs, .modal-section {
@@ -389,6 +390,11 @@ label {
 #downtime-freq, #day-select, .freq-input-inner {
     margin-left: 12px;
 }
+
+.freq-input-inner {
+    width: 93px;
+}
+
 #add-freq {
     height: 32px;
     width: 32px;
@@ -419,7 +425,10 @@ label {
     font-stretch: normal;
     font-style: normal;
     line-height: normal;
+    padding-right: 13px;
 }
+
+
 .allowance .row {
     padding-top: 5px;
     padding-bottom: 13px;

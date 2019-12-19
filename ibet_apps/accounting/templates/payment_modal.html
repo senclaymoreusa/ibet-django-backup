@@ -55,7 +55,6 @@
             </div> -->
             <div id="all-dt">
                 <div class="freq-inputs">
-                    <button id="add-freq">+</button>
                     <!-- <label for="downtime-freq">FREQUENCY</label> -->
                     <select id="downtime-freq" class="freq-input-inner">
                         <option value="once">Once</option>
@@ -79,6 +78,7 @@
                         </span>
                         <input type='text' class="form-control" id='dt-to'/>
                     </div>
+                    <button id="add-freq">+</button>
                 </div>
             </div>
         </div>
@@ -86,26 +86,43 @@
         <div id="payment-settings">
             <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">PAYMENT SETTINGS</p>
             <div id="min-max" class="modal-section">
-                <label for='min-dep'>MINIMUM DEPOSIT</label>
-                <div class='input-group date' id='min-deposit'>
-                    <input type='text' class="form-control" id='min-dep'/>
+                <div class="row">
+                    <label for='min-dep'>MINIMUM DEPOSIT</label>
+                    <div class='input-group date' id='min-deposit'>
+                        <input type='text' class="form-control" id='min-dep' disabled>
+                        <span class="input-group-addon">
+                            $
+                        </span>
+                    </div>
                 </div>
-                <label for='max-dep'>MAXIMUM DEPOSIT</label>
-                <div class='input-group date' id='max-deposit'>
-                    <input type='text' class="form-control" id='max-dep'/>
+                <div class="row">
+                    <label for='max-dep'>MAXIMUM DEPOSIT</label>
+                    <div class='input-group date' id='max-deposit'>
+                        <input type='text' class="form-control" id='max-dep' disabled>
+                        <span class="input-group-addon">
+                            $
+                        </span>
+                    </div>
                 </div>
             </div>
             <div id="txn-fee" class="modal-section">
-                <label for='min-dep'>TRANSACTION FEE</label>
-                <div class='input-group date' id='txn-fee'>
-                    <input type='text' class="form-control" id='txn-fee-input'/>
+                <div class="row">
+                    <label for='min-dep'>TRANSACTION FEE</label>
+                    <div class='input-group date' id='txn-fee'>
+                        <input type='text' class="form-control" id='txn-fee-input' disabled>
+                        <span class="input-group-addon">
+                            $
+                        </span>
+                    </div>
                 </div>
-                <label for='max-dep'>TRANSACTION % FEE</label>
-                <div class='input-group date' id='txn-fee-per'>
-                    <input type='text' class="form-control" id='txn-fee-per-input'/>
-                    <span class="input-group-addon">
-                        %
-                    </span>
+                <div class="row">
+                    <label for='max-dep'>TRANSACTION % FEE</label>
+                    <div class='input-group date' id='txn-fee-per'>
+                        <input type='text' class="form-control" id='txn-fee-per-input' value="1.00" disabled>
+                        <span class="input-group-addon">
+                            %
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -165,10 +182,46 @@
                     {% endfor %}
                 </div>
             </div>
-            <hr style="width: 100%; color: #bdbdbd">
-            <div class="blacklist">
-                <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">BLACK & WHITE LISTS</p>
-                <p>These lists override all other access permissions. A player in the blacklist has no access to this payment method. A player in the whitelist has access regardless of general settings.</p>
+        </div>
+        <hr style="width: 100%; color: #bdbdbd">        
+        <div class="white-blacklist">
+            <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">BLACK & WHITE LISTS</p>
+            <p>These lists override all other access permissions. A player in the blacklist has no access to this payment method. A player in the whitelist has access regardless of general settings.</p>
+            <div class="white-blacklist-inputs" style="display: flex; justify-content: space-evenly; margin-bottom: 20px;">
+                <div class="row">
+                    <label for="whitelist-input">
+                        WHITELISTED PLAYERS
+                    </label>
+                    <div class='input-group date' id='white-list'>
+                        <input type='text' class="form-control" id='whitelist-input' disabled>
+                        <span id='edit-whitelist-btn' class="input-group-addon" style="color: whitesmoke; background-color:#428bca;">
+                            Edit
+                        </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <label for="whitelist-input">
+                        BLACKLISTED PLAYERS
+                    </label>
+                    <div class='input-group date' id='black-list'>
+                        <input type='text' class="form-control" id='blacklist-input' disabled>
+                        <span id='edit-blacklist-btn' class="input-group-addon" style="color: whitesmoke; background-color:#428bca;">
+                            Edit
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>  
+        <div class="form-group">
+            <div id="psp-notes">
+                <label for="withdraw_notes" style="margin-left: 10px">NOTES</label>
+                <textarea type='text' id='notes' class="form-control" name="psp-notes"
+                    style="width: 80%; height: 120px;"
+                    placeholder="Please provide a brief explanation for updating the payment method"></textarea>
+            </div>
+            <div id="psp-config-buttons" style="margin-top: 13px">
+                <button type="button" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
