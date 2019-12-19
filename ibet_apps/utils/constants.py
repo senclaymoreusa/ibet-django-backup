@@ -1440,6 +1440,7 @@ BTI_PROVIDER = "BTi"
 PLAYNGO_PROVIDER = "PLAYNGO"
 IMES_PROVIDER = "IMES"
 QTECH_PROVIDER = "QTech"
+ALLBET_PROVIDER = "ALLBET"
 
 # Taiwan team
 GPT_PROVIDER = "GPT"
@@ -1474,6 +1475,10 @@ KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
+
+# AllBet
+ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
+ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
 
 #onebook
 # ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
