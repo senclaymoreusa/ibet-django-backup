@@ -113,23 +113,6 @@ def createMember(username, oddsType):
         logger.error(e)
         return ERROR_CODE_FAIL
         
-class testing(APIView):
-    permission_classes = (AllowAny,)
-    def post(self, request, *args, **kwargs):
-        onebook_run = "run"
-        redis = RedisHelper()
-        try:
-            r = RedisClient().connect()
-        
-            # print(redis.check_onebook_bet_details(onebook_run))
-            if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
-                redis.set_onebook_bet_details(onebook_run)
-                
-                
-                return HttpResponse("redis is working" + redis.check_onebook_bet_details(onebook_run))
-        except:
-            return HttpResponse("redis is not working")
-        return HttpResponse("redis")
              
 
 class CreateMember(APIView):
