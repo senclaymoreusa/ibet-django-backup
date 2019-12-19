@@ -68,6 +68,7 @@ from users.views.helper import *
 from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
+from itertools import islice
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
 
@@ -253,7 +254,7 @@ class RegisterView(CreateAPIView):
         try:
             customUser = CustomUser.objects.get(username=user)
         except Exception as e:
-            logger.error("Error getting CustomUser object : ", str(e))
+            logger.error("FATAL__ERROR getting CustomUser object : ", str(e))
             return Response(self.get_response_data(user), status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
         try:
@@ -280,19 +281,19 @@ class RegisterView(CreateAPIView):
                 )
                 logger.info("Create refer link code " + str(link.pk) + " for new user " + str(customUser.username))
 
-                # generate bonus wallet for new user
                 categories = GameCategory.objects.all()
-                if categories:
-                    for category in categories:
-                        bonus_wallet = UserBonusWallet(
-                            user=customUser,
-                            category=category
-                        )
-                        bonus_wallet.save()
+                ubw_objs = [
+                    UserBonusWallet(
+                        user=customUser,
+                        category=category
+                    )
+                    for category in categories
+                ]
+                UserBonusWallet.objects.bulk_create(ubw_objs)
                 logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
 
         except Exception as e:
-            logger.error("Error adding new user registration, refer link or bonus wallet : ", str(e))
+            logger.error("Error adding new user registration, refer link or bonus wallet info: ", str(e))
 
         return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
