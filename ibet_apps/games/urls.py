@@ -145,6 +145,8 @@ urlpatterns = [
     path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
     path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
+    path('api/qt/transactions', qtgameviews.ProcessTransactions.as_view(), name="qt_process_transactions"),
+    path('api/qt/transactions/rollback', qtgameviews.ProcessRollback.as_view(), name="qt_process_rollback"),
 
 ]
 
