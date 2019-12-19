@@ -40,7 +40,6 @@ class Category(models.Model):
         verbose_name_plural = _('Game Category')
 
 
-
     def __str__(self):
         return '{0}'.format(self.name)
 
