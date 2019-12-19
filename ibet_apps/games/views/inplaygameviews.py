@@ -349,6 +349,22 @@ class InplayUpdateBalanceAPI(View):
             return HttpResponse(repr(e), status=400)
 
 
+class PostBetDetailsAPI(View):
+    def post(self, request, *arg, **kwargs):
+        bet_package = request.POST.get('postPackage')
+        
+        try:
+            bet_package = bet_package.replace(' ', '+')
+            data = des3Decryption(bet_package)
+            data = "".join([data.rsplit("}" , 1)[0] , "}"])
+            print(data)
+            # data = json.loads(data)
+            return HttpResponse(data, status=200)
+        except Exception as e:
+            print(repr(e))
+            return HttpResponse(repr(e), status=400)
+
+
 class TestDecryption(View):
     def get(self, request, *arg, **kwargs):
         try:
