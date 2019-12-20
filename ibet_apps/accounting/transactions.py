@@ -28,8 +28,8 @@ def get_transactions(request):
 
     if not time_from and not time_to:
         return JsonResponse({
-            'success': True,
-            'results': list(all_transactions.values())
+            'success': False,
+            'results': "You must to select start or end date"
         })
 
 
