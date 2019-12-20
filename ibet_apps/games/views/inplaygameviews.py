@@ -76,8 +76,7 @@ class InplayLoginAPI(View):
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
             post_data['TimeStamp'] = str(time_stamp)
-            print(post_data['TimeStamp'])
-            
+
             url = IMES_URL + "api/login"
             
             res = requests.post(url, data=post_data)
@@ -356,25 +355,7 @@ class InplayPostBetDetailsAPI(View):
         bet_package = request.POST.get('postPackage')
         
         try:
-            data = {}
-
-            bet_details = {}
-
-            member_bet_details = {}
-            member_bet_details["betId"] = 16452000
-            member_bet_details["betTime"] = timezone.now()
-            member_bet_details["memberCode"] = "Bobby"
-            member_bet_details["sportsName"] = "LOL"
-
-            bet_details["MemberBetDetails"] = member_bet_details
-
-            data["BetDetails"] = bet_details
-
-            data = xmltodict.unparse(data, pretty=True)
-            data = des3Encryption(data)
-
-            # bet_package = "lOP+e157+uV2wZncm2L6dgUqnzqDIgPJDKRq9YCM1+kIDnJpQWglT1yhTKU66poigmeql4jwlQ3JSQh2wu4Uila8JPbNJAb8M9R/giYfa/CSEUZesHzQFPsz347jdYV6ZEC0osHDZL2oCLkuibC4dylXViTW6pAOhmi70gnCuvb1LZwN/Rn4EF6YAjG5m7pYjRB5cEScMlDrJQ7FoP4FRG5JJX9DTW3bUKsrifdTtDRyGN7fUIyk/nSj2Mv0MbVezUT64i6nSMN8c2OSzkQs4Q=="
-            # bet_package = bet_package.replace(' ', '+')
+            bet_package = bet_package.replace(' ', '+')
             data = des3Decryption(data)
             data = "".join([data.rsplit(">" , 1)[0] , ">"])
             data = xmltodict.parse(data)
@@ -387,7 +368,6 @@ class InplayPostBetDetailsAPI(View):
             sports_name = member_bet_details["sportsName"]
             bet_amt = member_bet_details["betAmt"]
             odds = member_bet_details["odds"]
-
 
             user = CustomUser.objects.get(username=member_code)
 
