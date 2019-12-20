@@ -7,7 +7,7 @@ from bonus.models import *
 from users.models import CustomUser
 from games.models import Category
 from utils.admin_helper import bonusValueToKey, dateToDatetime, BONUS_TYPE_VALUE_DICT, BONUS_DELIVERY_VALUE_DICT, \
-    ubeValueToKey
+    BONUS_GAME_CATEGORY, ubeValueToKey
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -158,8 +158,8 @@ class BonusView(View):
     def get(self, request, *arg, **kwargs):
 
         try:
-            bonus_pk = self.kwargs.get('pk')
-            bonus = Bonus.objects.get(pk=bonus_pk)
+            bonus_name = self.kwargs.get('name')
+            bonus = Bonus.objects.get(name=bonus_name)
             bonus_data = serializers.serialize('json', {bonus})
             bonus_data = json.loads(bonus_data)[0]['fields']
 
@@ -168,7 +168,7 @@ class BonusView(View):
             reqs = Requirement.objects.all()
             for req in reqs:
 
-                if bonus_pk != str(req.bonus.pk):
+                if bonus_name != str(req.bonus.name):
                     continue
 
                 req_data = serializers.serialize('json', [req])
@@ -180,7 +180,7 @@ class BonusView(View):
 
             # We need to join with the BonusCategory table to get all the applicable categories for this bonus.
             for bc_obj in BonusCategory.objects.all():
-                if str(bc_obj.bonus.pk) != bonus_pk:
+                if str(bc_obj.bonus.name) != bonus_name:
                     continue
                 category_json = serializers.serialize('json', {bc_obj.category})
                 category_json = json.loads(category_json)
@@ -217,100 +217,151 @@ class BonusView(View):
             if bonus is None:
                 with transaction.atomic():
                     type = req_data.get('type')
+                    if type == "triggered":
+                        type = req_data.get('trigger_type')
                     type = BONUS_TYPE_VALUE_DICT.get(type)
 
-                    delivery = req_data.get('delivery_method')
-                    delivery = BONUS_DELIVERY_VALUE_DICT.get(delivery)
+                    bonus_amount_list = req_data.get('bonus_amount_list')
 
-                    # TODO: add transaction atomic
-                    bonus_obj = Bonus(
-                        name=req_data.get('name'),
-                        description=req_data.get('description'),
-                        start_time=dateToDatetime(req_data.get('start_time')),
-                        end_time=dateToDatetime(req_data.get('end_time')),
-                        expiration_days=req_data.get('expiration_days'),
-                        countries=req_data.get('countries'),
-                        amount=req_data.get('amount'),
-                        percentage=req_data.get('percentage'),
-                        coupon_code=req_data.get('coupon_code'),
-                        affiliate_limit=req_data.get('affiliate_limit'),
-                        image_s3=req_data.get('image_s3'),
-                        status=int(req_data.get('status')),
-                        is_free_bid=req_data.get('is_free_bid') or False,
-                        type=type,
-                        currency=req_data.get('currency') or 0,
-                        issued=req_data.get('issued'),
-                        max_daily_times=int(req_data.get('max_daily_times')) or 1,
-                        max_total_times=int(req_data.get('max_total_times')) or 1,
-                        max_relevant_times=int(req_data.get('max_associated_accounts')) or sys.maxsize,
-                        max_users=int(req_data.get('max_user')) or sys.maxsize,
-                        delivery=delivery,
-                        ## TODO: Need to deal with campaign if that's decided to be a P0 feature
-                    )
-                    bonus_obj.save()
-                    logger.info("Create a new bonus " + str(bonus_obj.name))
+                    max_user_amount = req_data.get('max_user_amount')
+                    max_amount = req_data.get('max_target_user_amount')
 
-                    if 'requirements' in req_data.keys():
-                        requirements = req_data['requirements']
+                    if max_user_amount:
+                        max_user_amount = float(max_user_amount)
 
-                        must_have = requirements['must_have']
-                        wager_multiple = requirements['wager_multiple']
+                    if max_amount:
+                        max_amount = float(max_amount)
 
-                        # if wager['multiple'] is -1, it means this bonus has no wager requirements on this product
-                        # and the bonus money cannot be applied on this product
-                        for wager in wager_multiple:
-                            if int(wager['multiple']) == -1:
-                                continue
+                    is_tiered = False
+                    parent_bonus = None
+                    bonus_number = len(bonus_amount_list)
+                    # tiered bonus needs one more parent bonus
+                    if bonus_number > 1:
+                        is_tiered = True
+                        bonus_number += 1
 
-                            wager_req = Requirement(
-                                aggregate_method=int(wager['aggregate_method']),
-                                time_limit=int(wager['time_limit']),
-                                turnover_multiplier=int(wager['multiple']),
-                                bonus=bonus_obj,
-                            )
-                            wager_req.save()
-                            logger.info("Create a new wager Requirement for " + str(bonus_obj.name))
+                    for i in range(0, bonus_number):
+                        bonus_obj = Bonus(
+                            name=req_data.get('name'),
+                            description=req_data.get('description'),
+                            start_time=dateToDatetime(req_data.get('start_time')),
+                            end_time=dateToDatetime(req_data.get('end_time')),
+                            expiration_days=req_data.get('expiration_days'),
+                            countries=req_data.get('countries'),
+                            coupon_code=req_data.get('coupon_code'),
+                            affiliate_limit=req_data.get('affiliate_limit'),
+                            image_s3=req_data.get('image_s3'),
+                            status=int(req_data.get('status')),
+                            is_free_bid='free-spin' in req_data.get('master_types') or 'free-bet' in req_data.get(
+                                'master_types'),
+                            type=type,
+                            currency=req_data.get('currency') or 0,
+                            issued=req_data.get('issued'),
+                            max_daily_times=int(req_data.get('max_daily_times')),
+                            max_total_times=int(req_data.get('max_total_times')),
+                            max_relevant_times=int(req_data.get('max_associated_accounts')),
+                            max_users=int(req_data.get('max_user')),
+                            max_user_amount=max_user_amount,  # None is unlimited
+                            max_amount=max_amount,  # None is unlimited
+                            delivery=BONUS_DELIVERY_VALUE_DICT.get(req_data.get('delivery_method')),
+                            ## TODO: Need to deal with campaign if that's decided to be a P0 feature
+                        )
 
-                            # add requirement category and bonus category
-                            # TODO: needs to update after Category unify
-                            wager_cate_obj, wager_cate = Category.objects.get_or_create(name=wager['product'])
+                        # assign amount and parent
+                        # if tiered bonus, create parent bonus without amount or percentage
+                        curr_idx = i
+                        if is_tiered:
+                            if i == 0:
+                                parent_bonus = bonus_obj
+                            else:
+                                curr_idx = i - 1
+                                bonus_obj.name = bonus_obj.name + ' ' + str(i)
+                                bonus_obj.parent = parent_bonus
 
-                            rc_obj = RequirementCategory(
-                                requirement=wager_req,
-                                category=wager_cate_obj
-                            )
-                            rc_obj.save()
-                            logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
+                        if 'bonus_amount' in bonus_amount_list[curr_idx].keys():
+                            bonus_obj.amount = float(bonus_amount_list[curr_idx]['bonus_amount'])
+                        elif 'bonus_percentage' in bonus_amount_list[curr_idx].keys():
+                            bonus_obj.percentage = float(bonus_amount_list[curr_idx]['bonus_percentage'])
 
-                            bc_obj = BonusCategory(
-                                bonus=bonus_obj,
-                                category=wager_cate_obj,
-                            )
-                            bc_obj.save()
-                            logger.info("Create a new BonusCategory for " + str(bonus_obj.name))
+                        bonus_obj.save()
+                        logger.info("Create a new bonus " + str(bonus_obj.name))
 
-                        for req in must_have:
-                            must_have_req = Requirement(
-                                bonus=bonus_obj,
-                                must_have=int(req)
-                            )
-                            must_have_req.save()
-                            logger.info("Create a new must have Requirement for " + str(bonus_obj.name))
+                        # for turnover bonus, wager requirement list length is 1
+                        if req_data.get('trigger_type') == 'turnover':
+                            curr_idx = 0
 
-                    if 'players' in req_data.keys():
-                        players = req_data['players']
-                        if not players['target_all']:
-                            included_groups = players['target_player']
-                            excluded_groups = players['excluded_player']
-                            if included_groups:
-                                for key in included_groups:
+                        # skip add requirements for parent bonus
+                        if 'requirements' in req_data.keys() and (not is_tiered or i != 0):
+                            requirements = req_data['requirements']
+
+                            must_have = requirements.get('must_have')
+                            aggregate_method = requirements['aggregate_method']
+                            time_limit = None
+                            if requirements['time_limit']:
+                                time_limit = int(requirements.get('time_limit'))
+                            if must_have:
+                                for req in must_have:
+                                    must_have_req = Requirement(
+                                        bonus=bonus_obj,
+                                        must_have=int(req)
+                                    )
+                                    must_have_req.save()
+                                    logger.info("Create a new must have Requirement for " + str(bonus_obj.name))
+                            # add wager requirements
+                            wager_multiple = requirements.get('wager_multiple')
+                            wager_dict = wager_multiple[curr_idx]
+
+                            # this bonus has no wager requirements on this product, and the bonus money cannot be
+                            # applied on this product
+                            for wager in wager_dict:
+                                wager_cates = BONUS_GAME_CATEGORY[wager]
+                                amount_threshold = 0
+                                if 'amount_threshold' in bonus_amount_list[curr_idx].keys():
+                                    amount_threshold = bonus_amount_list[curr_idx]['amount_threshold']
+
+                                if float(wager_dict[wager]) == -1:
+                                    continue
+                                wager_req = Requirement(
+                                    aggregate_method=aggregate_method,
+                                    time_limit=time_limit,
+                                    turnover_multiplier=int(wager_dict[wager]),
+                                    amount_threshold=amount_threshold,
+                                    bonus=bonus_obj,
+                                )
+
+                                wager_req.save()
+                                logger.info("Create a new wager Requirement for " + str(bonus_obj.name))
+                                # add requirement category and bonus category
+
+                                for cate in wager_cates:
+                                    wager_cate_obj = Category.objects.get(name=cate)
+
+                                    rc_obj = RequirementCategory(
+                                        requirement=wager_req,
+                                        category=wager_cate_obj
+                                    )
+                                    rc_obj.save()
+                                    logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
+
+                                    bc_obj = BonusCategory(
+                                        bonus=bonus_obj,
+                                        category=wager_cate_obj,
+                                    )
+                                    bc_obj.save()
+                                    logger.info("Create a new BonusCategory for " + str(bonus_obj.name))
+
+                        # add target user group
+                        if 'players' in req_data.keys():
+                            players = req_data['players']
+                            if players.get('target_player'):
+                                for key in players.get('target_player'):
                                     ni_group = BonusUserGroup(
                                         bonus=bonus_obj,
                                         groups=UserGroup.objects.get(pk=key)
                                     )
                                     ni_group.save()
-                            if excluded_groups:
-                                for key in excluded_groups:
+                            if players.get('excluded_player'):
+                                for key in players.get('excluded_player'):
                                     ne_group = BonusUserGroup(
                                         bonus=bonus_obj,
                                         groups=UserGroup.objects.get(pk=key),
@@ -397,7 +448,8 @@ class UserBonusEventView(View):
             total = UserBonusEvent.objects.all().count()
 
             if min_date and max_date:
-                ube_filter &= (Q(delivery_time__gte=dateToDatetime(min_date)) & Q(delivery_time__lte=dateToDatetime(max_date)))
+                ube_filter &= (Q(delivery_time__gte=dateToDatetime(min_date)) & Q(
+                    delivery_time__lte=dateToDatetime(max_date)))
 
             if bonus_pk:
                 ube_filter &= Q(bonus=bonus_pk)
@@ -413,7 +465,8 @@ class UserBonusEventView(View):
 
             #  SEARCH BOX
             if search_value:
-                ube_filter &= (Q(owner__username__icontains=search_value) | Q(bonus__name__icontains=search_value) | Q(pk__contains=search_value))
+                ube_filter &= (Q(owner__username__icontains=search_value) | Q(bonus__name__icontains=search_value) | Q(
+                    pk__contains=search_value))
 
             events = UserBonusEvent.objects.filter(ube_filter).order_by('-delivery_time')
 

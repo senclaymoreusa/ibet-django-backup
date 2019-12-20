@@ -24,6 +24,10 @@ class BonusRecordsView(CommAdminView):
         context['game_provider'] = GameProvider.objects.all()
         context['groups'] = UserGroup.objects.all()
         context['must_have'] = BONUS_MUST_HAVE
+        context['deposit_tiered_amount'] = DEPOSIT_TIERED_AMOUNTS
+        # TODO: needs update
+        context['turnover_tiered_amount'] = [[11, 11], [22, 22], [33, 33], [44, 44]]
+
         return render(request, "bonus_records.html", context)
 
 
