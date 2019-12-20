@@ -9,7 +9,7 @@ import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw
 from games.views.onebookviews import fundTransfer
 from games.views.kygameviews import kyTransfer
-from games.views.aggamesviews import fundTransfer
+from games.views.aggamesviews import agFundTransfer
 
 logger = logging.getLogger('django')
 
