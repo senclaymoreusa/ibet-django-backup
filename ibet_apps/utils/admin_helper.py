@@ -256,19 +256,6 @@ def filterActiveUser(queryset, start_time, end_time):
     return queryset
 
 
-'''
-@param date: utc timezone datetime
-@return: local timezone datetime
-'''
-
-
-def utcToLocalDatetime(date):
-    if date:
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
-
-
 # Return a list of user in VIP Manager Group
 def getManagerList(list_type):
     if list_type == "VIP":
@@ -290,19 +277,6 @@ def getManagerList(list_type):
         for manager in manager_group:
             managers.append(manager.user.username)
     return managers
-
-
-'''
-@param date: utc timezone datetime
-@return: local timezone datetime
-'''
-
-
-def utcToLocalDatetime(date):
-    if date:
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
 
 
 # for bonus admin display
