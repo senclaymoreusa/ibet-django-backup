@@ -54,6 +54,7 @@ def create_deposit(request):
                 }
             }
             return JsonResponse(data)
+
         r = requests.get(SCRATCHCARD_URL, params={
             'partner': SCRATCHCARD_PARTNER_ID,
             'pin': pin,
@@ -63,11 +64,12 @@ def create_deposit(request):
             'sign': sign,
             'partner_tran_id': trans_id
         })
-        res_json = r.json()
-        # print(r.url)
-        # print(r.status_code)
-        # print(res_json)
-        # print(request.user.username)
+        if r.status_code == 200:
+            res_json = r.json()
+        else:
+            logger.error("Warning::ScratchCard::ScratchCard servers returned status that wasn't 200")
+            
+
 
         if res_json["status"] == 6:
             user_id = CustomUser.objects.get(username=request.user.username)
@@ -173,6 +175,7 @@ def confirm_transaction(request):
             matching_transaction.save()
             return JsonResponse({"msg": "received response"})
         except ObjectDoesNotExist as e:
+            logger.error("FATAL__ERROR::ScratchCard::Matching transaction not found")
             logger.error(e)
             logger.info("matching transaction not found / does not exist")
             return JsonResponse({"message": "Could not find matching transaction"})

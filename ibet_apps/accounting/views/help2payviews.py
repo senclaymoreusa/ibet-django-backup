@@ -186,13 +186,15 @@ class ConfirmWithdrawRequest(View):
                 withdraw_txn.status=TRAN_APPROVED_TYPE
                 withdraw_txn.save()
                 return HttpResponse("true")
-                
+            
             return HttpResponse("false")
         except ObjectDoesNotExist as e:
+            logger.error("FATAL__ERROR::Help2Pay::Withdraw checksum does not match")
             logger.error(repr(e))
             logger.error(f"transaction id {trans_id} does not exist")
             return HttpResponse("false")
         except Exception as e:
+            logger.error("FATAL__ERROR::Help2Pay::Exception occured during withdraw process")
             logger.error(repr(e))
             return HttpResponse("false")
 
@@ -256,6 +258,7 @@ class SubmitPayout(View):
                 can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
         except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
+            logger.error("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request")
             logger.error(repr(e))
             traceback.print_exc(file=sys.stdout)
             return HttpResponse(status=500)
