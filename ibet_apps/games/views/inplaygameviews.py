@@ -398,10 +398,10 @@ class InplayPostBetDetailsAPI(View):
                 other_data = json.loads({"data": data})
             )
             
-            return HttpResponse(data, status=200)
+            return HttpResponse(status=200)
         except Exception as e:
-            logger.error("")
-            return HttpResponse(repr(e), status=400)
+            logger.error("Inplay Post Bet Error {}".format(repr(e)))
+            # return HttpResponse(repr(e), status=400) No return here
 
 
 class TestDecryption(View):
