@@ -372,6 +372,7 @@ class ProcessTransactions(APIView):
                         ref_no=txnId,
                         amount_won=amount,
                         resolved_time=timezone.now(),
+                        outcome=0,
                         transaction_id=trans_id,
                         currency=user.currency,
                         market=ibetCN,
@@ -546,6 +547,7 @@ class ProcessRollback(APIView):
                     amount_wagered=0.00,
                     amount_won=amount,
                     transaction_id=trans_id,
+                    outcome=7,
                     currency=user.currency,
                     market=ibetCN,
                     other_data={
