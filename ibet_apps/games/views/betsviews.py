@@ -21,10 +21,9 @@ def getProvidersAndCategories(request):
         })
 
 def getBetHistory(request):
-    print(request)
-    # date range (start/end)
-    # provider
-    # category
+    # filter by: date range (start/end),
+    # provider,
+    # category,
     # status (open/closed)
     if request.method == "GET":
         username = request.GET.get("userid")
@@ -67,6 +66,7 @@ def getBetHistory(request):
             bet_data.append(data)
 
         return JsonResponse({
+            'success': True,
             'results': bet_data,
             'full_raw_data': list(all_bets.values())
         })
