@@ -13,7 +13,7 @@ import pytz
 def getProvidersAndCategories(request):
     if request.method == "GET":
         p = GameProvider.objects.all()
-        c = Category.objects.all()
+        c = Category.objects.filter(parent_id__isnull=True)
 
         return JsonResponse({
             "providers": list(p.values()),
