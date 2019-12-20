@@ -57,4 +57,4 @@ class TransferWithdraw():
         return kyTransfer(self.user, self.amount, self.to_wallet, 1)
 
     def AGWithdraw(self):
-        return fundTransfer(self.user, self.from_wallet, self.amount, "OUT")
+        return fundTransfer(self.user, self.to_wallet, self.amount, "OUT")
