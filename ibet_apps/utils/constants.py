@@ -1538,5 +1538,12 @@ QT_STATUS_CODE = (
 # Betsoft
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
 
+#AG
+AG_URL = "https://gi.claymoreasia.com/doBusiness.do"
+AG_FORWARD_URL = "https://gci.claymoreasia.com/forwardGame.do"
+AG_CAGENT = "EV3_AGIN"
+AG_MD5 = "2YgQUaUZfDDt"
+AG_DES = "MJp7ScbZ"
+AG_DM = "http://ibet.com"
 #IMES
 IMES_PROVIDER = "IMES"

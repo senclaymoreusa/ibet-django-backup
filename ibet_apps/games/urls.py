@@ -17,7 +17,7 @@ import games.views.bti_views as bti
 import games.views.sagameviews as sagameviews
 import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
-
+import games.views.aggamesviews as aggamesviews
 from games.views.views import *
 
 # from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
@@ -149,6 +149,11 @@ urlpatterns = [
     path('api/qt/transactions', qtgameviews.ProcessTransactions.as_view(), name="qt_process_transactions"),
     path('api/qt/transactions/rollback', qtgameviews.ProcessRollback.as_view(), name="qt_process_rollback"),
 
+    #AG
+    path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
+    path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
+    path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)
