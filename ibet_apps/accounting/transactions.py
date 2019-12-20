@@ -26,6 +26,13 @@ def get_transactions(request):
     time_to = request.GET.get("time_to")
     status = request.GET.get("status")
 
+    if not time_from and not time_to:
+        return JsonResponse({
+            'success': True,
+            'results': list(all_transactions.values())
+        })
+
+
     try:
         user = CustomUser.objects.get(pk=user_id)
         # DEPOSIT = 0, WITHDRAWAL = 1, TRANSFER = 4, BONUS = 5, ADJUSTMENT = 6, COMMISSION = 7
@@ -60,20 +67,16 @@ def get_transactions(request):
         current_tz = timezone.get_current_timezone()
         tz = pytz.timezone(str(current_tz))
 
-        if time_from and time_to:
-            time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
-            time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
-            min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min)) 
-            max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
-            transaction_filter &= (Q(request_time__gt=min_time_from, request_time__lt=max_time_to))
-        elif time_from:
+        if time_from:
             time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
             min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min)) 
             transaction_filter &= Q(request_time__gt=min_time_from)
-        elif time_to:
+
+        if time_to:
             time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
             max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
             transaction_filter &= Q(request_time__lt=max_time_to)
+            
 
         all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
         # res = serializers.serialize('json', all_transactions)
