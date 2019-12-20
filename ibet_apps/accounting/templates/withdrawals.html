@@ -429,8 +429,6 @@
             let fromDate = document.getElementById('min').value;
             let toDate = document.getElementById('max').value;
 
-            console.log("searching for: " + searchTerm);
-            console.log("date range: " + fromDate + ", " + toDate);
 
             let queryString = new URLSearchParams(window.location.search);
             if (searchTerm) queryString.set('search_params', searchTerm);
@@ -492,7 +490,6 @@
             try {
                 date = $.datepicker.parseDate( dateFormat, element.value );
             } catch( error ) {
-                console.log("date error");
                 date = null;
             }
             return date;
@@ -511,7 +508,6 @@
             let row = $(this).closest('tr');
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
-            console.log(data);
             // transaction pk: data[12]
             // bank account: data[13]
             showTransactionDetail(data);
@@ -720,7 +716,6 @@
         let remark = $('#notes').val();
         let txnId = $('#trans_withdraw_detail p').first().html();
         let userId = $('#member-details p').first().html();
-        // console.log(remark, txnId, userId);
         
         $.ajax({
             method: 'POST',
@@ -732,8 +727,6 @@
                 decision: decision
             },
             success: (data) => {
-                // console.log('success! data:');
-                // console.log(data);
                 let response = `<p>${data}</p>`
                 response+= '<p>Page refreshing in 3 seconds...</p>'
                 $('.modal-body').html(response);

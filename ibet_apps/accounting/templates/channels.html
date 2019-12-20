@@ -240,19 +240,16 @@
 
         // filter by status
         $('#status-filter').on('change', (event) => {
-            console.log(`status changed to ${event.target.value}!`);
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
             window.location = BASEURL+queryString.toString();
         });
         $('#type-filter').on('change', (event) => {
-            console.log(`type changed to ${event.target.value}!`);
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('type', event.target.value);
             window.location = BASEURL+queryString.toString();
         })
         $('#market-filter').on('change', (event) => {
-            console.log(`market changed to ${event.target.value}!`);
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('market', event.target.value);
             window.location = BASEURL+queryString.toString();           
@@ -262,13 +259,11 @@
         $('#search-btn').on('click', function () {
             let searchTerm = document.getElementById('search').value;
 
-            console.log("searching for: " + searchTerm);
             let queryString = new URLSearchParams(window.location.search);
 
             // search by payment provider
             if (searchTerm) {
                 queryString.set('search', searchTerm);
-                console.log(queryString.toString());
                 window.location = BASEURL+queryString.toString();
             }
             else window.location = BASEURL;
@@ -457,8 +452,6 @@
 
         $(".confirm-settlement-btn").on('click', function(event) {
             var psp_id = event.target.id;
-            console.log(psp_id);
-            console.log('{% url "xadmin:get_psp" %}')
 
             $.ajax({
                 type: 'GET',
@@ -468,7 +461,6 @@
                     'type': $(this).data('psp')
                 },
                 success: (data) => {
-                    console.log(typeof data);
                     setProviderFields(data[0], $(this).data('psp'));
                 }
             })

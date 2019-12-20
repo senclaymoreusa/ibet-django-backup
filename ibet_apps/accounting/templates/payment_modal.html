@@ -37,25 +37,9 @@
         <div id="downtime">
             <p style="font-weight: bold; font-family: Helvetica; font-size: 15px;">SCHEDULED DOWNTIME</p>
             <p>The payment method will be disabled during this period.</p>
-            <!-- <div id="freq-dropdown">
-                <label for="downtime-freq">FREQUENCY</label>
-                <select id="downtime-freq">
-                    <option value="once">Once</option>
-                    <option value="daily">Daily</option>
-                    <option value="monthly" selected="true">Monthly</option>
-                </select>
-                <div id="day-select">
-                    <label for="day">DAY</label>
-                    <select id="day" style="display: hidden;">
-                        {% for i in days %}
-                            <option value="{{i}}">{{i}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div> -->
+
             <div id="all-dt">
                 <div class="freq-inputs">
-                    <!-- <label for="downtime-freq">FREQUENCY</label> -->
                     <select id="downtime-freq" class="freq-input-inner">
                         <option value="once">Once</option>
                         <option value="daily">Daily</option>
@@ -239,7 +223,6 @@
     let logic = function() {
         let freqValue = $('#downtime-freq').children("option:selected").val();
         if (freqValue != "once") {
-            console.log(freqValue);
             this.setOptions({
                 datepicker: false,
                 format: 'g:ia',
@@ -247,7 +230,6 @@
             });
         }
         else {
-            console.log(freqValue);
             this.setOptions({
                 datepicker: true,
                 startDate:new Date(),
@@ -267,7 +249,6 @@
     $(document).ready(function () {
         toggleDowntime();
         let frequency = $('#downtime-freq').children("option:selected").val();
-        console.log("frequency is: " + frequency);
 
         if (frequency == "monthly")  document.getElementById('day-select').style.display = 'block';
         else document.getElementById('day-select').style.display = 'none';
@@ -285,10 +266,8 @@
 
         
         $('#add-freq').on('click', function(event) {
-            console.log($(this).data('pk'));
             let frequency = $('#downtime-freq').children("option:selected").val();
             
-            console.log($('#dt-from').val(), $('#dt-to').val());
             $.ajax({
                 type: 'POST',
                 url: '{% url "xadmin:sched_downtime" %}',
@@ -301,7 +280,6 @@
                     ...(frequency == 'monthly' && {'date': $('#day-select').children("option:selected").val()})
                 },
                 success: (data) => {
-                    console.log(data);
                     if (data.success) {
                         alert("Downtime added");
                         window.location.reload();

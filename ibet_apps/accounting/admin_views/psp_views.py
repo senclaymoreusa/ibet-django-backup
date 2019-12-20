@@ -111,11 +111,7 @@ class scheduleDowntime(CommAdminView):
         psp_type = request.POST.get('psp_type')
         freq = request.POST.get('frequency')
         date = request.POST.get('date')
-        print(request.POST)
-        print(start)
-        print(end)
         if not (start and end):
-            print(start,end)
             return JsonResponse({
                 "success": False,
                 "error": "1"
