@@ -152,7 +152,7 @@ urlpatterns = [
     #AG
     path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
     path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
-    # path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
 ]
 
