@@ -437,9 +437,6 @@ def settle_bet(client, transaction_id, amount, settle_details):
         return HttpResponse(str(e))
 
 
-#########################################################################################################################################################
-
-
 def cancel_bet(client, transaction_id, amount, cancel_details):
 
     try:
@@ -573,7 +570,96 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
         return HttpResponse(str(e))
 
 
-#########################################################################################################################################################
+def resettle_bet(client, transaction_id, amount, resettle_details):
+
+
+    try:
+        existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
+
+        if existing_transactions.count() >= 1:
+            json_to_return = {
+                "error_code": 10007,
+                "message": "Error: transaction ID already used."
+            }
+            logger.error("AllBet TransferView Error: Cannot re-settle since Transaction ID is already used.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+    except:
+        pass
+
+
+    try:
+        user_obj = CustomUser.objects.get(username=client)
+    except ObjectDoesNotExist:
+        json_to_return = {
+            "error_code": 10003,
+            "message": "Specified user does not exist."
+        }
+        logger.error("AllBet TransferView Error: Specified user does not exist.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+    if len(resettle_details) > 1:
+        json_to_return = {
+            "error_code": 40000,
+            "message": "Error: Batch re-settling is not allowed."
+        }
+        logger.error("AllBet TransferView Error: Batch re-settling is not allowed.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+    try:
+        resettle_id = resettle_details[0]["betNum"]
+        existing_settle = GameBet.objects.get(ref_no=resettle_id, outcome__in=[0, 1, 2])
+        user_obj = CustomUser.objects.get(username=client)
+
+        # Cancel existing settle and re-settle according to new details.
+        with transaction.atomic():
+            user_balance = int(user_obj.main_wallet * 100) / 100.0
+            balance_after_cancelling = user_balance - float(existing_settle.amount_won)
+            balance_after_resettling = balance_after_cancelling + resettle_details[0]["amount"]
+            user_obj.main_wallet = balance_after_resettling
+            user_obj.save()
+
+            ibet_trans_id = user_obj.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+            GameBet.objects.create(
+                provider = GameProvider.objects.get(provider_name=ALLBET_PROVIDER),
+                category = Category.objects.get(name="Live Casino"),
+                #game = None,
+                #game_name = None,
+                user = user_obj,
+                user_name = user_obj.username,
+                amount_wagered = 0.00,
+                amount_won = resettle_details[0]["amount"],
+                outcome = 7,
+                #odds = None,
+                #bet_type = None,
+                #line = None,
+                transaction_id = ibet_trans_id,
+                currency = user_obj.currency,
+                market = ibetCN,
+                ref_no = resettle_id,
+                #bet_time = timezone.now(),
+                resolved_time = timezone.now(),
+                other_data = {
+                    "transaction_id": transaction_id
+                }
+            )
+
+            json_to_return = {
+                "error_code": 0,
+                "balance": int(user_obj.main_wallet * 100) / 100.0
+            }
+            logger.info("AllBet TransferView Success: Bet re-settled.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+    except ObjectDoesNotExist:
+        json_to_return = {
+            "error_code": 10006,
+            "message": "Error: Attempted to re-settle non-existing bet."
+        }
+        logger.error("AllBet TransferView Error: Attempted to re-settle non-existing bet.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
 class TransferView(View):
@@ -641,7 +727,7 @@ class TransferView(View):
 
             # Re-settle bet
             elif transfer_type == 21:
-                pass # TODO
+                return resettle_bet(client, transaction_id, amount, bet_details)
 
             else:
                 res_error_code = 40000
