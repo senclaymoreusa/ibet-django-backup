@@ -10,6 +10,9 @@ from utils.aws_helper import getThirdPartyKeys
 from utils.constants import *
 from users.models import CustomUser
 from games.models import *
+import datetime
+from datetime import date
+from django.utils import timezone
 
 import os
 import json
@@ -368,6 +371,7 @@ class ProcessTransactions(APIView):
                         user_name = user.username,
                         ref_no=txnId,
                         amount_won=amount,
+                        resolved_time=timezone.now(),
                         transaction_id=trans_id,
                         currency=user.currency,
                         market=ibetCN,
