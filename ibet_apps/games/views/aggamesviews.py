@@ -23,6 +23,12 @@ import base64, hashlib
 import ftplib
 
 
+AG_SUCCESS = 0
+AG_FAIL = 1
+AG_INVALID = 2
+AG_NETWORK_ERROR = 3
+AG_ERROR = 4
+
 def des_encrypt(s, encrypt_key):
     iv = encrypt_key
     k = des(encrypt_key, ECB, iv, pad=None, padmode=PAD_PKCS5)
@@ -66,11 +72,11 @@ def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
         info = tree.get('info')   
         msg =  tree.get('msg')
         if info == '0' or msg == '':
-            return 0
+            return AG_SUCCESS
         else:
-            return 1
+            return AG_FAIL
     else:
-        return 1
+        return AG_FAIL
     
 
 
@@ -127,12 +133,12 @@ def prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, cre
         info = tree.get('info')
         msg =  tree.get('msg')
         if info == '0':
-            return 0
+            return AG_SUCCESS
         else:
-            return 1
+            return AG_FAIL
         
     else:
-        return 1
+        return AG_FAIL
     
 
 
@@ -155,14 +161,14 @@ def transferCreditConfirm(user,password,actype,cur,agtype,fixcredit,gameCategory
         info = tree.get('info')
         msg =  tree.get('msg')
         if info == '0':
-            return 0
+            return AG_SUCCESS
         elif info == '1': #失败, 订单未处理状态
-            return 1
+            return AG_FAIL
         elif info == '2': #因无效的转账金额引致的失败
-            return 2
+            return AG_INVALID
         
     else:
-        return 1
+        return AG_FAIL
     
 
 
@@ -182,15 +188,15 @@ def queryOrderStatus(actype,cur,billno):
         info = tree.get('info')
         msg =  tree.get('msg')
         if info == '0':
-            return 0
+            return AG_SUCCESS
         elif info == '1':
-            return 1
+            return AG_FAIL
         elif info == '2':
-            return 2
+            return AG_INVALID
         elif info == 'network_error':
-            return 3    
+            return AG_NETWORK_ERROR    
     else:
-        return 4
+        return AG_ERROR
 
 #check or create game account and login to game lobby
 @api_view(['POST'])
@@ -230,7 +236,7 @@ def forwardGame(request):
         elif user.language == 'Vietnamese':
             lang = '8'
 
-        if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == 0:
+        if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
             
             param = des_encrypt(s,AG_DES).decode("utf-8") 
@@ -252,7 +258,7 @@ def forwardGame(request):
         return Response({"error":"The  user is not existed."}) 
 
 
-def fundTransfer(user, fund_wallet, credit, agtype): 
+def agFundTransfer(user, fund_wallet, credit, agtype): 
         username =  user.username
         trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         password = AG_CAGENT + username
@@ -285,15 +291,15 @@ def fundTransfer(user, fund_wallet, credit, agtype):
         success = True
         confirm = True
         checking = True
-        if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == 0: #check or create game account
+        if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS: #check or create game account
             while success:
-                if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == 0: #get balance
-                    if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == 0:
+                if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == AG_SUCCESS: #get balance
+                    if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == AG_SUCCESS:
                         # print("prepare")
                         
                         while confirm:
                             flag = '1'
-                            if transferCreditConfirm(user,password,actype,cur,agtype,fixcredit,gameCategory,credit,flag,billno) == 0:
+                            if transferCreditConfirm(user,password,actype,cur,agtype,fixcredit,gameCategory,credit,flag,billno) == AG_SUCCESS:
                                 if agtype == 'IN':
                                     Transaction.objects.create(transaction_id=trans_id,
                                         user_id=user,
@@ -324,7 +330,7 @@ def fundTransfer(user, fund_wallet, credit, agtype):
                                    
                             else:
                                 while checking:
-                                    if queryOrderStatus(actype,cur,billno) == 0:
+                                    if queryOrderStatus(actype,cur,billno) == AG_SUCCESS:
                                         # print("query")
                                         success = False
                                         confirm = False
@@ -353,16 +359,16 @@ def fundTransfer(user, fund_wallet, credit, agtype):
                                                 status=TRAN_SUCCESS_TYPE)
                                         return CODE_SUCCESS
                                         break
-                                    elif queryOrderStatus(actype,cur,billno) == 1:  
+                                    elif queryOrderStatus(actype,cur,billno) == AG_FAIL:  
                                         success = True
                                         confirm = True
                                         checking = False
                                         
-                                    elif queryOrderStatus(actype,cur,billno) == 3:  
+                                    elif queryOrderStatus(actype,cur,billno) == AG_NETWORK_ERROR:  
                                         checking = True       
                                         time.sleep(5)
                                         
-                                    elif queryOrderStatus(actype,cur,billno) == 2: 
+                                    elif queryOrderStatus(actype,cur,billno) == AG_INVALID: 
                                         success = True
                                         confirm = False
                                         checking = False
@@ -383,9 +389,9 @@ def fundTransfer(user, fund_wallet, credit, agtype):
 class test(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela05")
-        response = fundTransfer(user, "main", "3000.00",  "IN")
-        print(response)
+        user = CustomUser.objects.get(username="angela03")
+        response = fundTransfer(user, "main", "300.00",  "IN")
+        
         return HttpResponse(response)
 
 def agService(request):
@@ -404,553 +410,3 @@ def agService(request):
         except:
             logger.error("this user is not existed.")
 
-class PostTransferforAG(APIView):
-
-    permission_classes = (AllowAny, )
-
-    def post(self, request, *args, **kwargs):
-
-        ResponseCode = 'ERROR'
-        balance = None
-
-        data = str(request.body, 'utf-8')
-
-        dic = xmltodict.parse(data)
-
-        try:
-            transactionType  = dic['Data']['Record']['transactionType']
-        except:
-            pass 
-
-        if transactionType == 'BET':
-
-            try:
-
-                sessionToken    = dic['Data']['Record']['sessionToken']
-                currency        = dic['Data']['Record']['currency']
-                value           = dic['Data']['Record']['value']
-                playname        = dic['Data']['Record']['playname']
-                agentCode       = dic['Data']['Record']['agentCode']
-                betTime         = dic['Data']['Record']['betTime']
-                transactionID   = dic['Data']['Record']['transactionID']
-                platformType    = dic['Data']['Record']['platformType']
-                Round           = dic['Data']['Record']['round']
-                gametype        = dic['Data']['Record']['gametype']
-                gameCode        = dic['Data']['Record']['gameCode']
-                tableCode       = dic['Data']['Record']['tableCode']
-                transactionCode = dic['Data']['Record']['transactionCode']
-                deviceType      = dic['Data']['Record']['deviceType']
-                playtype        = dic['Data']['Record']['playtype']
-
-                username = playname[len(agentCode):]
-                
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-
-                    if balance >= decimal.Decimal(value):
-
-                        balance -= decimal.Decimal(value)
-                        user.update(main_wallet=balance, modified_time=timezone.now())
-                        ResponseCode = 'OK'
-                        Status = status.HTTP_200_OK
-
-                    else:
-
-                        Status = status.HTTP_409_CONFLICT
-                        ResponseCode = 'INSUFFICIENT_FUNDS'
-
-                except:
-                        Status = status.HTTP_400_BAD_REQUEST
-                        ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken    = sessionToken,
-                #     currency        = currency,
-                #     MemberID        = username,
-                #     agentCode       = agentCode,
-                #     time           = betTime,
-                #     transactionID   = transactionID,
-                #     platformType    = platformType,
-                #     Round           = Round,
-                #     gametype        = gametype,
-                #     gameCode        = gameCode,
-                #     tableCode       = tableCode,
-                #     TransType       = transactionType,
-                #     transactionCode = transactionCode,
-                #     deviceType      = deviceType, 
-                #     playtype        = playtype
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-            #print(sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, deviceType, playtype )
-
-
-        elif transactionType == 'WIN':
-
-            try:
-
-                sessionToken    = dic['Data']['Record']['sessionToken']
-                currency        = dic['Data']['Record']['currency']
-                netAmount       = dic['Data']['Record']['netAmount']
-                validBetAmount  = dic['Data']['Record']['validBetAmount']
-                playname        = dic['Data']['Record']['playname']
-                agentCode       = dic['Data']['Record']['agentCode']
-                settletime      = dic['Data']['Record']['settletime']
-                transactionID   = dic['Data']['Record']['transactionID']
-                billNo          = dic['Data']['Record']['billNo']
-                gametype        = dic['Data']['Record']['gametype']
-                gameCode        = dic['Data']['Record']['gameCode']
-                transactionCode = dic['Data']['Record']['transactionCode']
-                ticketStatus    = dic['Data']['Record']['ticketStatus']
-                gameResult      = dic['Data']['Record']['gameResult']
-                finish          = dic['Data']['Record']['finish']
-
-                username = playname[len(agentCode):]
-
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-                    balance += decimal.Decimal(netAmount) + decimal.Decimal(validBetAmount)
-                    user.update(main_wallet=balance, modified_time=timezone.now())
-                    ResponseCode = 'OK'
-                    Status = status.HTTP_200_OK
-
-                except:
-
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken    = sessionToken,
-                #     currency        = currency,
-                #     netAmount       = netAmount,
-                #     validBetAmount  = validBetAmount, 
-                #     MemberID        = username, 
-                #     agentCode       = agentCode, 
-                #     time            = settletime, 
-                #     transactionID   = transactionID, 
-                #     billNo          = billNo, 
-                #     gametype        = gametype, 
-                #     gameCode        = gameCode, 
-                #     TransType       = transactionType, 
-                #     transactionCode = transactionCode, 
-                #     ticketStatus    = ticketStatus, 
-                #     gameResult      = gameResult, 
-                #     finish          = finish
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        elif transactionType == 'LOSE':
-
-            try:
-
-                sessionToken    = dic['Data']['Record']['sessionToken']
-                currency        = dic['Data']['Record']['currency']
-                netAmount       = dic['Data']['Record']['netAmount']
-                validBetAmount  = dic['Data']['Record']['validBetAmount']
-                playname        = dic['Data']['Record']['playname']
-                agentCode       = dic['Data']['Record']['agentCode']
-                settletime      = dic['Data']['Record']['settletime']
-                transactionID   = dic['Data']['Record']['transactionID']
-                billNo          = dic['Data']['Record']['billNo']
-                gametype        = dic['Data']['Record']['gametype']
-                gameCode        = dic['Data']['Record']['gameCode']
-                transactionCode = dic['Data']['Record']['transactionCode']
-                ticketStatus    = dic['Data']['Record']['ticketStatus']
-                gameResult      = dic['Data']['Record']['gameResult']
-                finish          = dic['Data']['Record']['finish']
-
-                #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
-
-                username = playname[len(agentCode):]
-
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-                    balance += decimal.Decimal(validBetAmount) + decimal.Decimal(netAmount)
-                    user.update(main_wallet=balance, modified_time=timezone.now())
-                    ResponseCode = 'OK'
-                    Status = status.HTTP_200_OK
-
-                except:
-
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken    = sessionToken, 
-                #     currency        = currency, 
-                #     netAmount       = netAmount, 
-                #     validBetAmount  = validBetAmount, 
-                #     MemberID        = username, 
-                #     agentCode       = agentCode, 
-                #     time            = settletime, 
-                #     transactionID   = transactionID, 
-                #     billNo          = billNo, 
-                #     gametype        = gametype, 
-                #     gameCode        = gameCode, 
-                #     TransType       = transactionType, 
-                #     transactionCode = transactionCode, 
-                #     ticketStatus    = ticketStatus, 
-                #     gameResult      = gameResult, 
-                #     finish          = finish
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        elif transactionType == 'WIN' and True: # This shares the same parameter with Win, needs to be further implemented
-
-            try:
-
-                sessionToken    = dic['Data']['Record']['sessionToken']
-                currency        = dic['Data']['Record']['currency']
-                netAmount       = dic['Data']['Record']['netAmount']
-                validBetAmount  = dic['Data']['Record']['validBetAmount']
-                playname        = dic['Data']['Record']['playname']
-                agentCode       = dic['Data']['Record']['agentCode']
-                settletime      = dic['Data']['Record']['settletime']
-                transactionID   = dic['Data']['Record']['transactionID']
-                billNo          = dic['Data']['Record']['billNo']
-                gametype        = dic['Data']['Record']['gametype']
-                gameCode        = dic['Data']['Record']['gameCode']
-                transactionCode = dic['Data']['Record']['transactionCode']
-                ticketStatus    = dic['Data']['Record']['ticketStatus']
-                gameResult      = dic['Data']['Record']['gameResult']
-                finish          = dic['Data']['Record']['finish']
-
-                #print(sessionToken, currency, netAmount, validBetAmount, playname, agentCode, settletime, transactionID, billNo, gametype, gameCode, transactionType, transactionCode, ticketStatus, gameResult, finish)
-
-                username = playname[len(agentCode):]
-
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-                    balance += decimal.Decimal(validBetAmount) + decimal.Decimal(netAmount)
-                    user.update(main_wallet=balance, modified_time=timezone.now())
-                    ResponseCode = 'OK'
-                    Status = status.HTTP_200_OK
-
-                except:
-
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken     = sessionToken, 
-                #     currency         = currency, 
-                #     netAmount        = netAmount, 
-                #     validBetAmount   =  validBetAmount, 
-                #     MemberID         =  username, 
-                #     agentCode        =  agentCode, 
-                #     time             = settletime, 
-                #     transactionID    = transactionID, 
-                #     billNo           =  billNo, 
-                #     gametype         =  gametype, 
-                #     gameCode         =  gameCode, 
-                #     TransType        =  transactionType, 
-                #     transactionCode  =  transactionCode, 
-                #     ticketStatus     =  ticketStatus, 
-                #     gameResult       =   gameResult, 
-                #     finish  =  finish
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        elif transactionType == 'REFUND':
-
-            try:
-
-                ticketStatus    = dic['Data']['Record']['ticketStatus']
-                sessionToken    = dic['Data']['Record']['sessionToken']
-                currency        = dic['Data']['Record']['currency']
-                value           = dic['Data']['Record']['value']
-                playname        = dic['Data']['Record']['playname']
-                agentCode       = dic['Data']['Record']['agentCode']
-                betTime         = dic['Data']['Record']['betTime']
-                transactionID   = dic['Data']['Record']['transactionID']
-                platformType    = dic['Data']['Record']['platformType']
-                Round           = dic['Data']['Record']['round']
-                gametype        = dic['Data']['Record']['gametype']
-                gameCode        = dic['Data']['Record']['gameCode']
-                tableCode       = dic['Data']['Record']['tableCode']
-                transactionCode = dic['Data']['Record']['transactionCode']
-                playtype        = dic['Data']['Record']['playtype']
-
-                #print(ticketStatus, sessionToken, currency, value, playname, agentCode, betTime, transactionID, platformType, Round, gametype, gameCode, tableCode, transactionType, transactionCode, playtype)
-
-                username = playname[len(agentCode):]
-
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-                    balance += decimal.Decimal(value)
-                    user.update(main_wallet=balance, modified_time=timezone.now())
-                    ResponseCode = 'OK'
-                    Status = status.HTTP_200_OK
-
-                except:
-
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-
-                # GameRequestsModel.objects.create(
-                #     ticketStatus    = ticketStatus, 
-                #     sessionToken    = sessionToken, 
-                #     currency        = currency, 
-                #     value           = value, 
-                #     MemberID        = username, 
-                #     agentCode       = agentCode, 
-                #     time            = betTime, 
-                #     transactionID   = transactionID, 
-                #     platformType    = platformType, 
-                #     Round           = Round, 
-                #     gametype        = gametype, 
-                #     gameCode        = gameCode, 
-                #     tableCode       = tableCode, 
-                #     TransType       = transactionType, 
-                #     transactionCode = transactionCode, 
-                #     playtype = playtype
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        elif transactionType == 'BALANCE':
-
-            try:
-
-                sessionToken     = dic['Data']['Record']['sessionToken']
-                playname         = dic['Data']['Record']['playname']
-
-                i = 0
-                while playname[i].isalpha():
-                    i += 1
-                while playname[i].isnumeric():
-                    i += 1
-            
-                username = playname[i:]
-
-                try:
-
-                    user = CustomUser.objects.get(username = username)
-                    balance = user.main_wallet
-                    Status = status.HTTP_200_OK
-                    ResponseCode = 'OK'
-
-                except:
-
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken = sessionToken,
-                #     MemberID     = username,
-                #     TransType    = transactionType
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        elif transactionType == 'WITHDRAW':
-
-            try:
-
-                sessionToken     = dic['Data']['Record']['sessionToken']
-                playname         = dic['Data']['Record']['playname']
-                transactionID    = dic['Data']['Record']['transactionID']
-                currency         = dic['Data']['Record']['currency']
-                amount           = dic['Data']['Record']['amount']
-                gameId           = dic['Data']['Record']['gameId']
-                roundId          = dic['Data']['Record']['roundId']
-                time             = dic['Data']['Record']['time']
-                remark           = dic['Data']['Record']['remark']
-
-                #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
-
-                i = 0
-                while playname[i].isalpha():
-                    i += 1
-                while playname[i].isnumeric():
-                    i += 1
-            
-                username = playname[i:]
-
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-
-                    if balance >= decimal.Decimal(amount):
-                        balance -= decimal.Decimal(amount)
-                        user.update(main_wallet=balance, modified_time=timezone.now())
-                        ResponseCode = 'OK'
-                        Status = status.HTTP_200_OK
-
-                    else:
-                        
-                        Status = status.HTTP_409_CONFLICT
-                        ResponseCode = 'INSUFFICIENT_FUNDS'
-
-                except:
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken     = sessionToken, 
-                #     MemberID         = username, 
-                #     TransType        = transactionType, 
-                #     transactionID    = transactionID, 
-                #     currency         = currency, 
-                #     amount           = amount, 
-                #     gameId           = gameId, 
-                #     roundId          = roundId, 
-                #     time             = time, 
-                #     remark           = remark,
-                # )
-
-            
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-        elif transactionType == 'DEPOSIT':
-
-            try:
-
-                sessionToken     = dic['Data']['Record']['sessionToken']
-                playname         = dic['Data']['Record']['playname']
-                transactionType  = dic['Data']['Record']['transactionType']
-                transactionID    = dic['Data']['Record']['transactionID']
-                currency         = dic['Data']['Record']['currency']
-                amount           = dic['Data']['Record']['amount']
-                gameId           = dic['Data']['Record']['gameId']
-                roundId          = dic['Data']['Record']['roundId']
-                time             = dic['Data']['Record']['time']
-                remark           = dic['Data']['Record']['remark']
-
-                #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
-
-                i = 0
-                while playname[i].isalpha():
-                    i += 1
-                while playname[i].isnumeric():
-                    i += 1
-            
-                username = playname[i:]
-
-                try:
-
-                    user = CustomUser.objects.filter(username = username)
-                    balance = user[0].main_wallet
-                    balance += decimal.Decimal(amount)
-                    user.update(main_wallet=balance, modified_time=timezone.now())
-                    ResponseCode = 'OK'
-                    Status = status.HTTP_200_OK
-
-                except:
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken     = sessionToken, 
-                #     MemberID         = username, 
-                #     TransType        = transactionType, 
-                #     transactionID    = transactionID, 
-                #     currency         = currency, 
-                #     amount           = amount, 
-                #     gameId           = gameId, 
-                #     roundId          = roundId, 
-                #     time             = time, 
-                #     remark           = remark,
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-
-        elif transactionType == 'ROLLBACK':    # Does not do anything for now
-
-            try:
-
-                sessionToken     = dic['Data']['Record']['sessionToken']
-                playname         = dic['Data']['Record']['playname']
-                transactionID    = dic['Data']['Record']['transactionID']
-                currency         = dic['Data']['Record']['currency']
-                amount           = dic['Data']['Record']['amount']
-                gameId           = dic['Data']['Record']['gameId']
-                roundId          = dic['Data']['Record']['roundId']
-                time             = dic['Data']['Record']['time']
-                remark           = dic['Data']['Record']['remark']
-
-                #print(sessionToken, playname, transactionType, transactionID, currency, amount, gameId, roundId, time, remark)
-
-                i = 0
-                while playname[i].isalpha():
-                    i += 1
-                while playname[i].isnumeric():
-                    i += 1
-            
-                username = playname[i:]
-
-                try:
-
-                    user = CustomUser.objects.get(username = username)
-                    balance = user.main_wallet
-                    Status = status.HTTP_200_OK
-                    ResponseCode = 'OK'
-
-                except:
-                    Status = status.HTTP_400_BAD_REQUEST
-                    ResponseCode = 'INVALID_DATA'
-
-                # GameRequestsModel.objects.create(
-                #     sessionToken     = sessionToken, 
-                #     MemberID         = username, 
-                #     TransType        =  transactionType, 
-                #     transactionID    = transactionType, 
-                #     currency         = transactionType, 
-                #     amount           = amount, 
-                #     gameId           = gameId, 
-                #     roundId          = roundId, 
-                #     time             = time, 
-                #     remark           = remark,
-                # )
-
-            except:
-
-                Status = status.HTTP_400_BAD_REQUEST
-                ResponseCode = 'INVALID_DATA'
-
-
-        response_data = '''<?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?><TransferResponse><ResponseCode>{}</ResponseCode><Balance>{}</Balance></TransferResponse>'''.format(ResponseCode, balance)
-
-        return Response(response_data, status=Status)
