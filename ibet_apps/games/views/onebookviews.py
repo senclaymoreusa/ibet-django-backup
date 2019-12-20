@@ -44,7 +44,7 @@ outcomeConversion = {
     "won": 0,
     "lose": 1,
     "running": 4,
-    "draw":2,
+    "draw":5,
     "half lose":6,
     "half won" : 10,
     "reject": 11,
