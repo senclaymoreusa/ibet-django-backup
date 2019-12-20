@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
+print("env:" +os.getenv("ENV"))
+print("datetime:" + str(datetime.datetime.now()))
 print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
@@ -62,6 +64,7 @@ CIRCLEPAY   =   7
 FGATE       =   8
 SCRATCHCARD =   9
 PAYMENTIQ   =   10
+LBT         =   11
 
 CHANNEL_CHOICES = (
     (HELP2PAY, 'Help2Pay'),
@@ -74,7 +77,8 @@ CHANNEL_CHOICES = (
     (CIRCLEPAY, 'CirclePay'),
     (FGATE, 'Fgate'),
     (SCRATCHCARD, 'ScratchCard'),
-    (PAYMENTIQ, 'PaymentIQ')
+    (PAYMENTIQ, 'PaymentIQ'),
+    (LBT, 'Local Bank Transfer')
 )
 
 CURRENCY_CNY = 0
@@ -258,8 +262,8 @@ ACTIVE_STATE = 0
 DISABLED_STATE = 1
 
 THIRDPARTY_STATUS_CHOICES = (
-    (ACTIVE_STATE, "ACTIVE"), 
-    (DISABLED_STATE, "DISABLED")
+    (ACTIVE_STATE, "Active"), 
+    (DISABLED_STATE, "Disabled")
 )
 
 VIP_1 = 1
@@ -281,10 +285,9 @@ VIP_CHOICES = (
 ibetVN = 0
 ibetTH = 1
 ibetCN = 2
-
-letouVN = 10
-letouTH = 11
-letouCN = 12
+letouVN = 3
+letouTH = 4
+letouCN = 5
 
 MARKET_CHOICES = (
     (ibetVN, "ibet-VN"),
@@ -292,8 +295,9 @@ MARKET_CHOICES = (
     (ibetCN, "ibet-CN"),
     (letouVN, "letou-VN"),
     (letouTH, "letou-TH"),
-    (letouCN, "letou-CN"),
+    (letouCN, "letou-CN")
 )
+
 
 COUNTRY_CHOICES = (
     ('US', 'United States'),
@@ -591,6 +595,8 @@ FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
 LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 
+
+
 ASIAPAY_CMDTYPE = (
     ('01', '查询存款订单'),
     ('02', '查询提款订单'),
@@ -661,7 +667,7 @@ FGATE_TYPE = keys["FGO"]["TYPE"]
 ASTROPAY_WP_LOGIN = 'f1b1d639c5'
 ASTROPAY_WP_TRANS_KEY = '738e34417a'
 
-# circlepay
+# circlepay -- doesn't have a sandbox 
 CIRCLEPAY_USERCODE = keys["CIRCLEPAY"]["USERCODE"]
 CIRCLEPAY_API_KEY = keys["CIRCLEPAY"]["API_KEY"]
 CIRCLEPAY_EMAIL = keys["CIRCLEPAY"]["EMAIL"]
@@ -687,6 +693,12 @@ ASIAPAY_R2 = keys["ASIAPAY"]["R2"]
 ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
+#iovation
+IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"] 
+IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"] 
+IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
+IOVATION_URL = keys["IOVATION"]["URL"]
+
 # help2pay sandbox credentials & callback
 
 HELP2PAY_MERCHANT_THB = "M0513"
@@ -694,7 +706,7 @@ HELP2PAY_MERCHANT_VND = "M0514"
 HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
 HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
 
-if os.getenv("ENV") != "local":  # fetch prod credentials from s3
+if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     API_DOMAIN = "https://payment-testing.claymoreeuro.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
@@ -706,10 +718,10 @@ if os.getenv("ENV") != "local":  # fetch prod credentials from s3
     PAYZOD_PASSKEY = keys["PAYZOD"]["PRODUCTION"]["PASSKEY"]
     QT_PASS_KEY = keys["QTGAMES"]["PRODUCTION"]["PASS_KEY"]
     qt = keys["QTGAMES"]["PRODUCTION"]
-
-
-else:
-    API_DOMAIN = "https://754dc8ae.ngrok.io/"
+    H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
+    H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0513"
+elif "dev" in os.getenv("ENV"):
+    API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -720,6 +732,22 @@ else:
     PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
     QT_PASS_KEY = keys["QTGAMES"]["SANDBOX"]["PASS_KEY"]
     qt = keys["QTGAMES"]["SANDBOX"]
+    H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
+    H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+else:
+    API_DOMAIN = "https://cf61d044.ngrok.io/"
+    HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
+    HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
+    HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
+    PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
+    PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
+    PAYZOD_PASSKEY = keys["PAYZOD"]["SANDBOX"]["PASSKEY"]
+    QT_PASS_KEY = keys["QTGAMES"]["SANDBOX"]["PASS_KEY"]
+    qt = keys["QTGAMES"]["SANDBOX"]
+    H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
+    H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
 
 BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -1397,6 +1425,18 @@ DELIVERY_CHOICES = (
     (1, 'Site activation'),
 )
 
+BONUS_PAYOUT_INSTANT = 0
+BONUS_PAYOUT_WEEKLY = 1
+BONUS_PAYOUT_MANUAL = 2
+BONUS_PAYOUT_NONE = 3
+
+BONUS_PAYOUT_CHOICES = (
+    (BONUS_PAYOUT_INSTANT, 'Instant'),
+    (BONUS_PAYOUT_WEEKLY, 'Weekly'),
+    (BONUS_PAYOUT_MANUAL, 'Manual'),
+    (BONUS_PAYOUT_NONE, 'None')
+)
+
 # Games
 # All provider
 KY_PROVIDER = "KY"
@@ -1412,6 +1452,7 @@ BTI_PROVIDER = "BTi"
 PLAYNGO_PROVIDER = "PLAYNGO"
 IMES_PROVIDER = "IMES"
 QTECH_PROVIDER = "QTech"
+ALLBET_PROVIDER = "ALLBET"
 
 # Taiwan team
 GPT_PROVIDER = "GPT"
@@ -1437,11 +1478,19 @@ PNG_STATUS_SESSIONEXPIRED = 10
 PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
 
+# Inplay Matrix
+IMES_URL = keys["IMES"]["URL"]
+IMES_KEY = keys["IMES"]["DESKEY"]
+
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
+
+# AllBet
+ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
+ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
 
 #onebook
 # ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
@@ -1488,3 +1537,6 @@ QT_STATUS_CODE = (
 
 # Betsoft
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
+
+#IMES
+IMES_PROVIDER = "IMES"

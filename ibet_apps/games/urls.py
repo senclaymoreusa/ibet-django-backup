@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 
 import games.views.eagameviews as eagameviews
+import games.views.inplaygameviews as inplayviews
 import games.views.betsoftviews as betsoftviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
@@ -19,6 +20,7 @@ import games.views.qtgameviews as qtgameviews
 
 from games.views.views import *
 
+# from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
 
 
 urlpatterns = [
@@ -27,7 +29,17 @@ urlpatterns = [
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
+    # path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
+
+    # Inplay Matrix
+    path('api/inplay/login/', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay_login"),
+    path('api/inplay/Validatetoken/', inplayviews.ValidateTokenAPI.as_view(), name="inplay_validate"),
+    path('api/inplay/GetBalance/', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay_get_balance"),
+    path('api/inplay/GetApproval/', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay_get_approval"),
+    path('api/inplay/DeductBalance/', inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
+    path('api/inplay/UpdateBalance/', inplayviews.InplayUpdateBalanceAPI.as_view(), name="inplay-update-balance"),
+    path('api/inplay/test-decryption/', inplayviews.TestDecryption.as_view(), name="inplay_test_decryption"),
 
     #ea live casino
     path('api/ea/login/', csrf_exempt(eagameviews.EALiveCasinoClientLoginView.as_view()), name="ea_login"),
@@ -81,13 +93,14 @@ urlpatterns = [
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
     path('api/ky/test/', csrf_exempt(kygameviews.TestTransferAPI.as_view()), name="ky_test"),
     path('api/ky/record/', csrf_exempt(kygameviews.TestGetRecord.as_view()), name="ky_record"),
+    path('api/ky/getbets/', csrf_exempt(kygameviews.KyBets.as_view()), name='ky_bets'),
 
     #onebook
     path('api/onebook/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
     path('api/onebook/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
     path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
-    path('api/onebook/get_bet_detail', onebookviews.GetBetDetail, name="Get_Bet_Detail"),
+    path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
     # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
     # bti server-to-server endpoints
@@ -129,12 +142,15 @@ urlpatterns = [
     path('api/gb/generategameurl/', gbsports.GenerateGameURL.as_view(), name='generate_game_url'),
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
 
-    # path('api/onebook/test/<username>', onebookviews.test01,name="test"),
     # QT
     path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
     path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
+    path('api/qt/transactions', qtgameviews.ProcessTransactions.as_view(), name="qt_process_transactions"),
+    path('api/qt/transactions/rollback', qtgameviews.ProcessRollback.as_view(), name="qt_process_rollback"),
 
 ]
 
-#onebookviews.getBetDetail(repeat=300,repeat_until=None)
+# onebook_getBetDetail(repeat=30,repeat_until=None)
+
+# kaiyuan_getBets(repeat=30, repeat_until=None)

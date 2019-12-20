@@ -214,11 +214,15 @@ class LiveDealerSoapService(ServiceBase):
                                             category=cate,
                                             transaction_id=trans_id,
                                             game_name=request.gameId,
-                                            username=user, 
+                                            user=user,
+                                            user_name=user.username, 
                                             currency=user.currency, 
                                             market=ibetCN,
-                                            ref_no=request.transactionId,
+                                            ref_no=request.linkId,
                                             amount_wagered=decimal.Decimal(request.amount),
+                                            other_data={
+                                                'provider_trans_id': request.transactionId
+                                                }
                                             )    
                     else:
                         res.StatusCode = 2
@@ -237,11 +241,15 @@ class LiveDealerSoapService(ServiceBase):
                             GameBet.objects.create(provider=PROVIDER,
                                         transaction_id=trans_id,
                                         category=cate,
-                                        username=user, 
+                                        user=user,
+                                        user_name=user.username,  
                                         currency=user.currency, 
                                         market=ibetCN,
-                                        ref_no=request.transactionId,
+                                        ref_no=request.linkId,
                                         amount_wagered=decimal.Decimal(request.amount),
+                                        other_data={
+                                                'provider_trans_id': request.transactionId
+                                                }
                                         )
                         else:
                             
@@ -252,7 +260,8 @@ class LiveDealerSoapService(ServiceBase):
                                                 game_name=request.gameId,  
                                                 transaction_id=trans_id,
                                                 category=cate,
-                                                username=user, 
+                                                user=user,
+                                                user_name=user.username,  
                                                 currency=user.currency, 
                                                 market=ibetCN,
                                                 ref_no=request.transactionId,
@@ -317,51 +326,71 @@ class LiveDealerSoapService(ServiceBase):
                             GameBet.objects.create(provider=PROVIDER,   
                                                     transaction_id=trans_id,
                                                     category=cate,
-                                                    username=user, 
+                                                    user=user,
+                                                    user_name=user.username,  
                                                     game_name=request.gameId,
                                                     currency=user.currency, 
                                                     market=ibetCN,
-                                                    ref_no=request.transactionId,
+                                                    ref_no=request.linkId,
                                                     amount_wagered=decimal.Decimal(request.amount),
                                                     amount_won=request.winLoss,
                                                     outcome=1,
+                                                    resolved_time=timezone.now(),
+                                                    other_data={
+                                                        'provider_trans_id': request.transactionId
+                                                        }
                                                     )
                         else:
                             GameBet.objects.create(provider=PROVIDER,   
                                                     category=cate,
                                                     transaction_id=trans_id,
-                                                    username=user, 
+                                                    user=user,
+                                                    user_name=user.username, 
                                                     game_name=request.gameId,
                                                     currency=user.currency, 
                                                     market=ibetCN,
-                                                    ref_no=request.transactionId,
+                                                    ref_no=request.linkId,
                                                     amount_wagered=decimal.Decimal(request.amount),
                                                     amount_won=request.winLoss,
                                                     outcome=0,
+                                                    resolved_time=timezone.now(),
+                                                    other_data={
+                                                        'provider_trans_id': request.transactionId
+                                                        }
                                                     )
                         
                     else:
                         if int(request.amount) < 0:
                             GameBet.objects.create(provider=PROVIDER,   
                                                         category=cate,
-                                                        username=user, 
+                                                        user=user,
+                                                        user_name=user.username,  
                                                         transaction_id=trans_id,
                                                         currency=user.currency, 
                                                         market=ibetCN,
-                                                        ref_no=request.transactionId,
+                                                        ref_no=request.linkId,
                                                         amount_won=request.amount,
                                                         outcome=1,
+                                                        resolved_time=timezone.now(),
+                                                        other_data={
+                                                            'provider_trans_id': request.transactionId
+                                                            }
                                                         )
                         else:
                             GameBet.objects.create(provider=PROVIDER,   
                                                         category=cate,
-                                                        username=user, 
+                                                        user=user,
+                                                        user_name=user.username, 
                                                         transaction_id=trans_id,
                                                         currency=user.currency, 
                                                         market=ibetCN,
-                                                        ref_no=request.transactionId,
+                                                        ref_no=request.linkId,
                                                         amount_won=request.amount,
                                                         outcome=0,
+                                                        resolved_time=timezone.now(),
+                                                        other_data={
+                                                            'provider_trans_id': request.transactionId
+                                                            }
                                                         )
                     
                         res.UserBalance = userBalance
@@ -393,24 +422,28 @@ class LiveDealerSoapService(ServiceBase):
                         
                         GameBet.objects.create(provider=PROVIDER,   
                                                     category=cate,
-                                                    username=user, 
+                                                    user=user,
+                                                    user_name=user.username, 
                                                     transaction_id=trans_id,
                                                     currency=user.currency, 
                                                     market=ibetCN,
                                                     ref_no=request.transactionId,
                                                     amount_won=request.amount,
                                                     outcome=1,
+                                                    resolved_time=timezone.now(),
                                                     )
                     else:
                         GameBet.objects.create(provider=PROVIDER,   
                                                     category=cate,
-                                                    username=user, 
+                                                    user=user,
+                                                    user_name=user.username, 
                                                     transaction_id=trans_id,
                                                     currency=user.currency, 
                                                     market=ibetCN,
                                                     ref_no=request.transactionId,
                                                     amount_won=request.amount,
                                                     outcome=0,
+                                                    resolved_time=timezone.now(),
                                                     )
                     user.main_wallet = userBalance
                     user.save()
@@ -454,7 +487,8 @@ class LiveDealerSoapService(ServiceBase):
                     # if str(token) == request.loginToken:
                     GameBet.objects.create(provider=PROVIDER,   
                                         category=cate,
-                                        username=user, 
+                                        user=user,
+                                        user_name=user.username, 
                                         transaction_id=trans_id,
                                         currency=user.currency, 
                                         market=ibetCN,
@@ -503,7 +537,8 @@ class LiveDealerSoapService(ServiceBase):
             with transaction.atomic():
                 GameBet.objects.create(provider=PROVIDER,   
                                         category=cate,
-                                        username=user, 
+                                        user=user,
+                                        user_name=user.username, 
                                         transaction_id=trans_id,
                                         currency=user.currency, 
                                         market=ibetCN,

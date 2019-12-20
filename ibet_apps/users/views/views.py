@@ -58,14 +58,19 @@ from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSe
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
 from users.models import CustomUser, Config, NoticeMessage, UserAction, UserActivity, Limitation
-from games.models import Game
+
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
+from games.models import Game
+from games.models import Category as GameCategory
 from users.views.helper import *
 from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
+from itertools import islice
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
 
 import datetime
 import logging
@@ -246,24 +251,51 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        customUser = CustomUser.objects.filter(username=user).first()
+        try:
+            customUser = CustomUser.objects.get(username=user)
+        except Exception as e:
+            logger.error("FATAL__ERROR getting CustomUser object : ", str(e))
+            return Response(self.get_response_data(user), status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
-        # if customUser.
-        customUser.time_of_registration = timezone.now()
-        customUser.save()
+        try:
+            with transaction.atomic():
+                # add time of registration and register event
+                customUser.time_of_registration = timezone.now()
+                customUser.save()
+                action = UserAction(
+                    user=customUser,
+                    ip_addr=self.request.META['REMOTE_ADDR'],
+                    event_type=EVENT_CHOICES_REGISTER,
+                    created_time=timezone.now()
+                )
+                action.save()
+                logger.info("Add time of registration and register event for new user " + str(user))
 
-        
-        action = UserAction(
-            user= customUser,
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=2,
-            created_time=timezone.now()
-        )
-        action.save()
+                # generate referral code for new user
+                referral_code = str(utils.admin_helper.generateUniqueReferralCode(customUser.pk))
+                customUser.referral_code = referral_code
+                customUser.save()
+                link = ReferChannel.objects.create(
+                    user_id=customUser,
+                    refer_channel_name='default'
+                )
+                logger.info("Create refer link code " + str(link.pk) + " for new user " + str(customUser.username))
 
-        return Response(self.get_response_data(user),
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+                categories = GameCategory.objects.all()
+                ubw_objs = [
+                    UserBonusWallet(
+                        user=customUser,
+                        category=category
+                    )
+                    for category in categories
+                ]
+                UserBonusWallet.objects.bulk_create(ubw_objs)
+                logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
+
+        except Exception as e:
+            logger.error("Error adding new user registration, refer link or bonus wallet info: ", str(e))
+
+        return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         user = serializer.save(self.request)
@@ -321,8 +353,10 @@ class LoginView(GenericAPIView):
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
         # print('login language code: ' + languageCode)
-        
+       
         self.user = self.serializer.validated_data['user']
+        self.iovationData = self.serializer.validated_data['iovationData']
+       
         if checkUserBlock(self.user):
             errorMessage = _('The current user is blocked!')
             data = {
@@ -342,25 +376,52 @@ class LoginView(GenericAPIView):
                 }
             }
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
-
+      
+      
         if getattr(settings, 'REST_USE_JWT', False):
-            
+           
             self.token = jwt_encode(self.user)
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
-
+        
+       
         customUser = CustomUser.objects.filter(username=self.user)
-        action = UserAction(
-            user= customUser.first(),
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=0,
-            created_time=timezone.now()
-        )
-        action.save()
-        customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
-        loginUser = CustomUser.objects.filter(username=self.user)
-        loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
-        loginUser.update(login_times=loginTimes+1)
+        #    item['key'] if 'key' in item else None
+        try:
+            statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
+            result = self.iovationData['result']
+            device = self.iovationData['details']['device']['os'] if 'device' in self.iovationData['details'] else ''
+            browser = self.iovationData['details']['device']['browser'] if 'device' in self.iovationData['details'] else ''
+            ipLocation = self.iovationData['details']['realIp']['ipLocation'] if 'ipLocation' in self.iovationData['details']['realIp'] else None
+            otherData = self.iovationData
+           
+
+            # print(self.user.username)
+            # r = RedisClient().connect()
+            redis = RedisHelper()
+            redis.set_device_by_user(self.user.username, device)
+
+            
+            with transaction.atomic():
+                action = UserAction(
+                    user= customUser.first(),
+                    ip_addr=statedIp,
+                    result=result,
+                    device=device,
+                    browser=str(browser),
+                    ip_location=ipLocation,
+                    other_info=otherData,
+                    event_type=0,
+                    created_time=timezone.now()
+                )
+                action.save()
+                customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
+                loginUser = CustomUser.objects.filter(username=self.user)
+                loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
+                loginUser.update(login_times=loginTimes+1)
+
+        except Exception as e:
+            logger.error("cannot get users device info in iovation", e)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -384,13 +445,17 @@ class LoginView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):        
         self.request = request
+       
         try:
             self.serializer = self.get_serializer(data=self.request.data,
                                               context={'request': request})
-
+            
             if self.serializer.is_valid(raise_exception=True):
+
+               
                 return self.login()
         except Exception as e:
+            # print(e)
             errorMessage = _('Invalid username/ passowrd')
             data = {}
             data["errorCode"] = ERROR_CODE_INVALID_INFO

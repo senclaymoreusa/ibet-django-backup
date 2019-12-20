@@ -188,6 +188,7 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #     EU:  eudev / euprod
 #
 
+TESTING = sys.argv[1:2] == ['test']
 
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
@@ -233,6 +234,7 @@ elif "ENV" in os.environ:
         "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
         "PORT": 6379
     }
+    # print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
 
 
 # Password validation

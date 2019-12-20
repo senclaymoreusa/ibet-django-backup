@@ -70,7 +70,8 @@ urlpatterns = [
     path('api/paymentiq/cancel', csrf_exempt(paymentiq.cancel), name="Payment_IQ_Cancel"),
     path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card_Deposit"),
     path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
-    path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
+    path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions"),
+    path('api/transactions/save_transaction', csrf_exempt(accounting.transactions.save_transaction), name="Save_Transaction")
 ]
 
 

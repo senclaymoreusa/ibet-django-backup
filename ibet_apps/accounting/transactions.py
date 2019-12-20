@@ -1,14 +1,131 @@
 from django.http import JsonResponse
 from django.core import serializers
+from django.utils import timezone
+from django.db.models import Q
+
+import datetime
 
 from accounting.models import Transaction
 from users.models import CustomUser
+from utils.admin_helper import utcToLocalDatetime
+from utils.constants import *
+import json
+import pytz
+import random
+import logging
+
+logger = logging.getLogger('django')
 
 
 def get_transactions(request):
-    user = CustomUser.objects.get(username=request.GET["userid"])
-    all_transactions = Transaction.objects.filter(user_id=user.id).order_by('-request_time')
-    # res = serializers.serialize('json', all_transactions)
-    return JsonResponse({
-        'results': list(all_transactions.values())
-    })
+
+    
+    user_id = request.GET.get("user_id")
+    trans_type = request.GET.get("type")
+    time_from = request.GET.get("time_from")
+    time_to = request.GET.get("time_to")
+    status = request.GET.get("status")
+
+    if not time_from and not time_to:
+        return JsonResponse({
+            'success': False,
+            'results': "You must to select start or end date"
+        })
+
+
+    try:
+        user = CustomUser.objects.get(pk=user_id)
+        # DEPOSIT = 0, WITHDRAWAL = 1, TRANSFER = 4, BONUS = 5, ADJUSTMENT = 6, COMMISSION = 7
+        transaction_filter = Q(user_id__pk=user_id)
+        # transaction_filter = Q()
+        if trans_type and trans_type == '0':
+            transaction_filter &= Q(transaction_type=TRANSACTION_DEPOSIT)
+        elif trans_type and trans_type == '1':
+            transaction_filter &= Q(transaction_type=TRANSACTION_WITHDRAWAL)
+        elif trans_type and trans_type == '2':
+            transaction_filter &= Q(transaction_type=TRANSACTION_TRANSFER)
+        elif trans_type and trans_type == '3':
+            transaction_filter &= Q(transaction_type=TRANSACTION_BONUS)
+        elif trans_type and trans_type == '4':
+            transaction_filter &= Q(transaction_type=TRANSACTION_ADJUSTMENT)
+        elif trans_type and trans_type == '5':
+            transaction_filter &= Q(transaction_type=TRANSACTION_COMMISSION)
+        
+        # SUCCESS_TYPE = 0  # deposit / withdraw
+        # FAIL_TYPE = 1, REJECTED_TYPE = 8  # withdraw # deposit / withdraw
+        # PENDING_TYPE = 3, RISK_REVIEW = 9 # withdraw # deposit / withdraw
+        # CANCEL_TYPE = 5  # deposit / withdraw
+        if status and status == '1': # pedding
+            transaction_filter &= (Q(status=TRAN_PENDING_TYPE) | Q(status=TRAN_RISK_REVIEW))
+        elif status and status == '2': # fail
+            transaction_filter &= (Q(status=TRAN_FAIL_TYPE) | Q(status=TRAN_REJECTED_TYPE))
+        elif status and status == '0': # success
+            transaction_filter &= (Q(status=TRAN_SUCCESS_TYPE))
+        elif status and status == '3':  #cancel
+            transaction_filter &= (Q(status=TRAN_CANCEL_TYPE))
+
+        current_tz = timezone.get_current_timezone()
+        tz = pytz.timezone(str(current_tz))
+
+        if time_from:
+            time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
+            min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min)) 
+            transaction_filter &= Q(request_time__gt=min_time_from)
+
+        if time_to:
+            time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
+            max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
+            transaction_filter &= Q(request_time__lt=max_time_to)
+            
+
+        all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+        # res = serializers.serialize('json', all_transactions)
+        return JsonResponse({
+            'success': True,
+            'results': list(all_transactions.values())
+        })
+    except Exception as e:
+        logger.error("Getting transaction history error: ", e)
+        return JsonResponse({
+            'success': False,
+            'error_message': "There is something wrong"
+        })
+
+def save_transaction(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user = CustomUser.objects.get(pk=request.user.pk)
+        txn_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        bank_info = {
+            'bank': data['bank'],
+            'bank_acc_no': data['bank_acc_no'],
+            'real_name': data['real_name']
+        }
+        status = 2
+        if data['type'] == 0:
+            status = 3
+        try:
+
+            txn = Transaction(
+                transaction_id=txn_id,
+                user_id=user,
+                amount=data['amount'],
+                currency=data['currency'],
+                method="Local Bank Transfer",
+                transaction_type=data['type'],
+                bank_info=bank_info,
+                channel=11, # 11 = LBT
+                status=status
+            )
+            txn.save()
+            return JsonResponse({
+                'success': True,
+                'transaction_id': txn_id
+            })
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'transaction_id': None
+            })
+        
