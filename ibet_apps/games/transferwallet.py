@@ -33,7 +33,7 @@ class TransferDeposit():
         return kyTransfer(self.user, self.amount, self.from_wallet, 0)
 
     def AGDeposit(self):
-        return fundTransfer(self.user, self.from_wallet, self.amount, "IN")
+        return agFundTransfer(self.user, self.from_wallet, self.amount, "IN")
 
     
 class TransferWithdraw():
@@ -57,4 +57,4 @@ class TransferWithdraw():
         return kyTransfer(self.user, self.amount, self.to_wallet, 1)
 
     def AGWithdraw(self):
-        return fundTransfer(self.user, self.to_wallet, self.amount, "OUT")
+        return agFundTransfer(self.user, self.to_wallet, self.amount, "OUT")
