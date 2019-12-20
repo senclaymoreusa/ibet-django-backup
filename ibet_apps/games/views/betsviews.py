@@ -2,13 +2,23 @@ from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 from django.db.models import Q
 
-from games.models import GameBet
+from games.models import GameBet, GameProvider, Category
 from users.models import CustomUser
 
 from django.utils import timezone
 from datetime import datetime
 import pytz
 
+
+def getProvidersAndCategories(request):
+    if request.method == "GET":
+        p = GameProvider.objects.all()
+        c = Category.objects.all()
+
+        return JsonResponse({
+            "providers": list(p.values()),
+            "categories": list(c.values())
+        })
 
 def getBetHistory(request):
     print(request)
