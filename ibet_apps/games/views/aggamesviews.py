@@ -20,6 +20,8 @@ from time import sleep
 from  accounting.models import *
 from pyDes import des, ECB, PAD_PKCS5
 import base64, hashlib
+import ftplib
+
 
 def des_encrypt(s, encrypt_key):
     iv = encrypt_key
@@ -30,6 +32,21 @@ def des_encrypt(s, encrypt_key):
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
+
+@api_view(['POST'])
+@permission_classes((AllowAny,))        
+def agftp(request): 
+    try:
+        f = ftplib.FTP()
+        f.connect("xe.gdcapi.com")
+        f.login("EV3.ibet", "GelPNvJlXt")
+        f.cwd('AGIN')  
+        f.retrlines('LIST')
+        print(f.retrlines('LIST'))
+        return HttpResponse("success")
+    except ftplib.error_temp:
+        logger.error("cannot connect with ftp.")
+        return HttpResponse("failed")
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
@@ -363,13 +380,13 @@ def fundTransfer(user, fund_wallet, credit, agtype):
         else:
             return Response({"error": "Cannot check or create AG game account."})
 
-# class test(APIView):
-#     permission_classes = (AllowAny, )
-#     def get(self, request, *args, **kwargs):
-#         user = CustomUser.objects.get(username="angela03")
-#         response = fundTransfer(user, "main", "300.00",  "IN")
-#         print(response)
-#         return HttpResponse(response)
+class test(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(username="angela05")
+        response = fundTransfer(user, "main", "3000.00",  "IN")
+        print(response)
+        return HttpResponse(response)
 
 def agService(request):
     if request.method == "GET":

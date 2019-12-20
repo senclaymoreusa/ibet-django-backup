@@ -152,8 +152,9 @@ urlpatterns = [
     #AG
     path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
     path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
-    # path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
+    path('api/ag/ftp', csrf_exempt(aggamesviews.agftp), name="ag_ftp"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test"),
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)
