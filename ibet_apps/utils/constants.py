@@ -1422,6 +1422,18 @@ DELIVERY_CHOICES = (
     (1, 'Site activation'),
 )
 
+BONUS_PAYOUT_INSTANT = 0
+BONUS_PAYOUT_WEEKLY = 1
+BONUS_PAYOUT_MANUAL = 2
+BONUS_PAYOUT_NONE = 3
+
+BONUS_PAYOUT_CHOICES = (
+    (BONUS_PAYOUT_INSTANT, 'Instant'),
+    (BONUS_PAYOUT_WEEKLY, 'Weekly'),
+    (BONUS_PAYOUT_MANUAL, 'Manual'),
+    (BONUS_PAYOUT_NONE, 'None')
+)
+
 # Games
 # All provider
 KY_PROVIDER = "KY"
