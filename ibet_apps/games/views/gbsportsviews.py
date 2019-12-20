@@ -360,7 +360,7 @@ class WalletSettleAPIURL(APIView):
                     elif BetResult == '2':
                         BetResult = 2 #tie
                     elif BetResult == '4':
-                        BetResult = 3 #cancel
+                        BetResult = 8 #cancel
                     elif BetResult == '5':
                         BetResult = 9 #兑现
                     elif BetResult == 'R':
@@ -465,7 +465,7 @@ class WalletSettleAPIURL(APIView):
                         elif BetResult == '2':
                             BetResult = 2 #tie
                         elif BetResult == '4':
-                            BetResult = 3 #cancel
+                            BetResult = 8 #cancel
                         elif BetResult == '5':
                             BetResult = 9 #兑现
                         elif BetResult == 'R':
