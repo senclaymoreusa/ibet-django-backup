@@ -20,6 +20,7 @@ import games.views.qtgameviews as qtgameviews
 import games.views.aggamesviews as aggamesviews
 from games.views.views import *
 
+# from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
 
 
 urlpatterns = [
@@ -92,13 +93,14 @@ urlpatterns = [
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
     path('api/ky/test/', csrf_exempt(kygameviews.TestTransferAPI.as_view()), name="ky_test"),
     path('api/ky/record/', csrf_exempt(kygameviews.TestGetRecord.as_view()), name="ky_record"),
+    path('api/ky/getbets/', csrf_exempt(kygameviews.KyBets.as_view()), name='ky_bets'),
 
     #onebook
     path('api/onebook/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
     path('api/onebook/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
     path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
-    path('api/onebook/get_bet_detail', onebookviews.GetBetDetail, name="Get_Bet_Detail"),
+    path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
     # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
     # bti server-to-server endpoints
@@ -140,11 +142,12 @@ urlpatterns = [
     path('api/gb/generategameurl/', gbsports.GenerateGameURL.as_view(), name='generate_game_url'),
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
 
-    # path('api/onebook/test/<username>', onebookviews.test01,name="test"),
     # QT
     path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
     path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
+    path('api/qt/transactions', qtgameviews.ProcessTransactions.as_view(), name="qt_process_transactions"),
+    path('api/qt/transactions/rollback', qtgameviews.ProcessRollback.as_view(), name="qt_process_rollback"),
 
     #AG
     path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
@@ -153,4 +156,6 @@ urlpatterns = [
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
 ]
 
-#onebookviews.getBetDetail(repeat=300,repeat_until=None)
+# onebook_getBetDetail(repeat=30,repeat_until=None)
+
+# kaiyuan_getBets(repeat=30, repeat_until=None)

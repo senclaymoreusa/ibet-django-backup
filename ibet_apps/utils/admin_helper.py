@@ -152,6 +152,8 @@ def calculateNGR(user, start_time, end_time):
 @param date: utc timezone datetime
 @return: local timezone datetime
 '''
+
+
 def utcToLocalDatetime(date):
     if date:
         current_tz = timezone.get_current_timezone()
@@ -220,6 +222,8 @@ def last_login(user):
 @param date: mm/dd/yyyy
 @return: timezone datetime
 '''
+
+
 def dateToDatetime(date):
     if date:
         date = date.split('/')
@@ -233,6 +237,8 @@ def dateToDatetime(date):
 @param queryset: users
 @return: queryset of active users between start_time and end_time
 '''
+
+
 def filterActiveUser(queryset, start_time, end_time):
     # get bet transaction in this period
     if start_time and end_time:
@@ -254,6 +260,8 @@ def filterActiveUser(queryset, start_time, end_time):
 @param date: utc timezone datetime
 @return: local timezone datetime
 '''
+
+
 def utcToLocalDatetime(date):
     if date:
         current_tz = timezone.get_current_timezone()
@@ -310,6 +318,11 @@ def bonusValueToKey(bonuses):
     return bonuses
 
 
+def ubeValueToKey(ube):
+    ube['status'] = USER_BONUS_EVENT_TYPE_CHOICES[ube['status']][1]
+    return ube
+
+
 BONUS_TYPE_VALUE_DICT = {
     "manual": BONUS_TYPE_MANUAL,
     "deposit": BONUS_TYPE_DEPOSIT,
@@ -320,6 +333,19 @@ BONUS_TYPE_VALUE_DICT = {
 BONUS_DELIVERY_VALUE_DICT = {
     "push": BONUS_DELIVERY_PUSH,
     "site": BONUS_DELIVERY_SITE,
+}
+
+# hard code for deposit tiered amount setting
+DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
+                          [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
+
+# game category match
+## TODO: NEEDS CONFIRM
+BONUS_GAME_CATEGORY = {
+    'casino': ['Games', 'Table Games'],
+    'sports': ['Sports'],
+    'live-casino': ['Live Casino'],
+    'lottery': ['Lotteries'],
 }
 
 '''

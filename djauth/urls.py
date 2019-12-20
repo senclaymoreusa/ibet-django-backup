@@ -46,7 +46,8 @@ urlpatterns = [
     path('accounting/', include('accounting.urls')),
     path('api-auth/', include('rest_framework.urls')),   # Stephen
     path('rest-auth/', include('rest_auth.urls')),         # Stephen
-    path('rest-auth/registration/', include('rest_auth.registration.urls'))    # Stephen
+    path('rest-auth/registration/', include('rest_auth.registration.urls')),   # Stephen
+    path('background/', include('background.urls')),
 ]
 
 # import games.views.kygameviews as kyviews

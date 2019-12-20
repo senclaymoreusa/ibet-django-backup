@@ -24,7 +24,7 @@ class Bonus(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
     expiration_days = models.IntegerField(null=True)
-    status = models.SmallIntegerField(choices=BONUS_STATUS_CHOICES, default=0, verbose_name=_('Bonus Type'))
+    status = models.SmallIntegerField(choices=BONUS_STATUS_CHOICES, default=0, verbose_name=_('Bonus Status'))
     ## A comma-separated list of country IDs where this bonus is applicable
     ## The reason that we don't have to normalize it is that we can just do substring matching
     countries = models.CharField(max_length=50, null=True)
@@ -32,7 +32,8 @@ class Bonus(models.Model):
     percentage = models.FloatField(null=True, blank=True)
     coupon_code = models.CharField(max_length=50, blank=True, null=True)
     is_free_bid = models.BooleanField(default=False)
-    type = models.SmallIntegerField(choices=BONUS_TYPE_CHOICES, default=0, verbose_name=_('Bonus Type')) # manual bonus doesn't have type
+    type = models.SmallIntegerField(choices=BONUS_TYPE_CHOICES, default=0,
+                                    verbose_name=_('Bonus Type'))  # manual bonus doesn't have type
     campaign = models.ForeignKey(Campaign, null=True, on_delete=models.CASCADE)
     affiliate_limit = models.FloatField(null=True, blank=True)
     # release_type = models.SmallIntegerField(choices=BONUS_RELEASE_TYPE_CHOICES, default=0,
@@ -44,8 +45,17 @@ class Bonus(models.Model):
     max_daily_times = models.IntegerField(default=1, null=True)  # per player (bonus 2.0)
     max_total_times = models.IntegerField(default=1, null=True)  # per player (bonus 2.0)
     max_relevant_times = models.IntegerField(default=1, null=True)  # per associated accounts (bonus 2.0)
-    max_users = models.IntegerField(null=True, blank=True)  # per bonus (bonus 2.0)
+    max_users = models.IntegerField(null=True, blank=True)  # the maximum number of times this bonus can be claimed (
+    # bonus 2.0)
     delivery = models.SmallIntegerField(choices=DELIVERY_CHOICES, default=0, null=True)  # release method (bonus 2.0)
+
+    max_user_amount = models.FloatField(null=True, blank=True)  # the maximum amount a player can get reward for this
+    # bonus (bonus 3.0)
+    max_amount = models.FloatField(null=True, blank=True)  # maximum amount of bonus could be released (bonus 3.0)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)  # for tiered bonus (bonus 3.0)
+
+    def __str__(self):
+        return str(self.name) + str(self.pk)
 
 
 # Mapping between Bonuses and UserGroups
@@ -88,7 +98,8 @@ class RequirementCategory(models.Model):
 class UserBonusEvent(models.Model):
     owner = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Owner'))
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'))
-    timestamp = models.DateTimeField('Start Time', blank=False)
+    delivery_time = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    completion_time = models.DateTimeField(null=True, blank=True)
     delivered_by = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name=_('Operator'))
     status = models.SmallIntegerField(choices=USER_BONUS_EVENT_TYPE_CHOICES, default=0,
                                       verbose_name=_('User Bonus Event Type'))
