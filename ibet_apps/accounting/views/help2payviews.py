@@ -23,7 +23,7 @@ from utils.constants import *
 import utils.helpers as helpers
 from users.serializers import LazyEncoder
 from ..serializers import help2payDepositSerialize, help2payDepositResultSerialize
-
+from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings
 from des import DesKey
 from decimal import *
@@ -238,7 +238,7 @@ class SubmitPayout(View):
         checksum = MD5(secretMsg)
        
         db_currency_code = 2 if currency == '2' else 7
-        if withdraw_password == CustomUser.objects.get(username=username).withdraw_password:
+        if check_password(withdraw_password, request.user.withdraw_password):
             try:
                 with transaction.atomic():
                     withdraw_request = Transaction(
