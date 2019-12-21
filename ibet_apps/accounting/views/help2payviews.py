@@ -203,7 +203,8 @@ class SubmitPayout(View):
 
     def post(self, request): # user will need to submit bank acc information
         username = request.user.username
-
+        withdraw_password = request.POST.get("withdrawPassword")
+        
         # toBankAccountName = 'orion'
         # toBankAccountNumber = '12345123'
         toBankAccountName = request.POST.get("toBankAccountName")
@@ -237,28 +238,36 @@ class SubmitPayout(View):
         checksum = MD5(secretMsg)
        
         db_currency_code = 2 if currency == '2' else 7
-        try:
-            with transaction.atomic():
-                withdraw_request = Transaction(
-                    transaction_id=trans_id,
-                    amount=amount,
-                    user_id=CustomUser.objects.get(pk=user_id),
-                    method='Bank Transfer',
-                    currency=db_currency_code,
-                    transaction_type=TRANSACTION_WITHDRAWAL,
-                    channel=0,
-                    request_time=timezone.now(),
-                    other_data={'checksum': checksum},
-                )
-                withdraw_request.save()
-                logger.info("Withdraw request created: " + str(withdraw_request))
-                # can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
-                can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
+        if withdraw_password == CustomUser.objects.get(username=username).withdraw_password:
+            try:
+                with transaction.atomic():
+                    withdraw_request = Transaction(
+                        transaction_id=trans_id,
+                        amount=amount,
+                        user_id=CustomUser.objects.get(pk=user_id),
+                        method='Bank Transfer',
+                        currency=db_currency_code,
+                        transaction_type=TRANSACTION_WITHDRAWAL,
+                        channel=0,
+                        request_time=timezone.now(),
+                        other_data={'checksum': checksum},
+                    )
+                    withdraw_request.save()
+                    logger.info("Withdraw request created: " + str(withdraw_request))
+                    # can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
+                    can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
-        except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-            logger.error(repr(e))
-            traceback.print_exc(file=sys.stdout)
-            return HttpResponse(status=500)
+            except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
+                logger.error(repr(e))
+                traceback.print_exc(file=sys.stdout)
+                return HttpResponse(status=500)
+        else:
+            logger.error("withdraw password is not correct.")    
+            return JsonResponse({
+                'status_code': ERROR_CODE_INVALID_INFO,
+                'message': 'Withdraw password is not correct.'
+            })
+        
 
         if can_withdraw:
             data = {
