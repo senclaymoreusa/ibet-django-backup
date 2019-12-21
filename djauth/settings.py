@@ -234,6 +234,7 @@ elif "ENV" in os.environ:
         "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
         "PORT": 6379
     }
+    # print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
 
 
 # Password validation

@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
+print("env:" +os.getenv("ENV"))
+print("datetime:" + str(datetime.datetime.now()))
 print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
@@ -295,6 +297,7 @@ MARKET_CHOICES = (
     (letouTH, "letou-TH"),
     (letouCN, "letou-CN")
 )
+
 
 COUNTRY_CHOICES = (
     ('US', 'United States'),
@@ -582,14 +585,7 @@ EVENT_CHOICES = (
     (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
 
-#FGgame
-BRANDID = '524'
-BRAND_PASSWORD = 'Flow6refg'
-PLATFORM = 'NETENT_CAS',
-FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
-#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
 
 
 
@@ -696,7 +692,19 @@ IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"]
 IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
 IOVATION_URL = keys["IOVATION"]["URL"]
 
-# help2pay sandbox credentials & callback
+#FGgame
+BRANDID = keys["FG"]["BRANDID"]
+BRAND_PASSWORD = keys["FG"]["BRAND_PASSWORD"]
+PLATFORM = keys["FG"]["PLATFORM"],
+FG_URL = keys["FG"]["FG_URL"]
+FG_SESSION_CHECK = keys["FG"]["FG_SESSION_CHECK"]
+
+#MGgame
+USERNAME = keys["MG"]["USERNAME"]
+PASSWORD = keys["MG"]['PASSWORD']
+
+# LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
 
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_MERCHANT_VND = "M0514"
@@ -1422,6 +1430,18 @@ DELIVERY_CHOICES = (
     (1, 'Site activation'),
 )
 
+BONUS_PAYOUT_INSTANT = 0
+BONUS_PAYOUT_WEEKLY = 1
+BONUS_PAYOUT_MANUAL = 2
+BONUS_PAYOUT_NONE = 3
+
+BONUS_PAYOUT_CHOICES = (
+    (BONUS_PAYOUT_INSTANT, 'Instant'),
+    (BONUS_PAYOUT_WEEKLY, 'Weekly'),
+    (BONUS_PAYOUT_MANUAL, 'Manual'),
+    (BONUS_PAYOUT_NONE, 'None')
+)
+
 # Games
 # All provider
 KY_PROVIDER = "KY"
@@ -1462,6 +1482,8 @@ PNG_STATUS_SPENDINGBUDGETEXCEEDED = 9
 PNG_STATUS_SESSIONEXPIRED = 10
 PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
+
+PNG_ACCESS_TOKEN = keys["PLAYNGO"]["ACCESSTOKEN"]
 
 # Inplay Matrix
 IMES_URL = keys["IMES"]["URL"]
@@ -1523,5 +1545,12 @@ QT_STATUS_CODE = (
 # Betsoft
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
 
+#AG
+AG_URL = "https://gi.claymoreasia.com/doBusiness.do"
+AG_FORWARD_URL = "https://gci.claymoreasia.com/forwardGame.do"
+AG_CAGENT = "EV3_AGIN"
+AG_MD5 = "2YgQUaUZfDDt"
+AG_DES = "MJp7ScbZ"
+AG_DM = "http://ibet.com"
 #IMES
 IMES_PROVIDER = "IMES"

@@ -176,7 +176,7 @@ class CustomUser(AbstractBaseUser):
     onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
     ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=2, default=0)
-
+    ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=2, default=0)
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
     user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
@@ -470,28 +470,16 @@ class Segmentation(models.Model):
         return str(self.level)
 
 
-@receiver(post_save, sender=CustomUser)
-def new_user_handler(sender, **kwargs):
-    if kwargs['created']:
-        user = kwargs['instance']
-        try:
-            with transaction.atomic():
-                # generate a referral code for new user
-                referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
-                user.referral_code = referral_code
-                user.save()
-                # generate a default referral link for new user
-                link = ReferChannel.objects.create(
-                    user_id=user,
-                    refer_channel_name='default'
-                )
-                logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
-        except DatabaseError as e:
-            logger.error("Error creating referral code and default referral channel for new user: ", e)
-
-
-
 class UserWallet(models.Model):
     user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
     provider = models.ForeignKey('games.GameProvider', on_delete=models.CASCADE)
     wallet_amount = models.DecimalField(_('Wallet'), max_digits=20, decimal_places=4, default=0)
+
+
+class UserBonusWallet(models.Model):
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    category = models.ForeignKey('games.Category', on_delete=models.CASCADE)
+    wallet_amount = models.DecimalField(_('Wallet'), max_digits=20, decimal_places=4, default=0)
+
+    class Meta:
+        unique_together = ('user', 'category',)
