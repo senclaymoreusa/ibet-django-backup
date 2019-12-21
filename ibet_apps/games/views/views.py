@@ -220,7 +220,7 @@ class GamesCategoryAPI(View):
     def get(self, request, *args, **kwargs):
         
         try:
-            categories = Category.objects.filter(parent_id__name="Games")
+            categories = Category.objects.filter(parent_id__name="Games").order_by('category_order')
             res = []
             for i in categories:
                 res.append(i.name)
