@@ -140,6 +140,7 @@ def png_authenticate(data):
             return HttpResponse(res_msg, content_type='text/xml') # Successful response
 
         except Exception as e:
+            logger.error("PLAY'nGO AuthenticateView Error: " + str(e))
             return HttpResponse(str(e))
 
     except:
@@ -156,8 +157,6 @@ def png_balance(data):
         currency = req_dict['balance']['currency']
         game_id = req_dict['balance']['gameId']
         access_token = req_dict['balance']['accessToken']
-
-        print("PNG_ACCESS_TOKEN", PNG_ACCESS_TOKEN)
 
         if PNG_ACCESS_TOKEN != access_token:
             res_dict = {
