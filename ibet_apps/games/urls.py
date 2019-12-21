@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/inplay/GetApproval/', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay_get_approval"),
     path('api/inplay/DeductBalance/', inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
     path('api/inplay/UpdateBalance/', inplayviews.InplayUpdateBalanceAPI.as_view(), name="inplay-update-balance"),
+    path('api/inplay/PostBetDetails/', csrf_exempt(inplayviews.InplayPostBetDetailsAPI.as_view()), name="inplay-bet-details"),
     path('api/inplay/test-decryption/', inplayviews.TestDecryption.as_view(), name="inplay_test_decryption"),
 
     #ea live casino
