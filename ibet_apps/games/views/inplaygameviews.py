@@ -24,7 +24,7 @@ import json
 
 from rest_framework.authtoken.models import Token
 from Crypto.Cipher import DES3
-# from pyDes import *
+import xmltodict
 import base64
 import pytz
 import urllib
@@ -76,7 +76,7 @@ class InplayLoginAPI(View):
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
             post_data['TimeStamp'] = str(time_stamp)
-            
+
             url = IMES_URL + "api/login"
             
             res = requests.post(url, data=post_data)
@@ -128,7 +128,8 @@ class ValidateTokenAPI(View):
                 # res["IPAddress"] = "127.0.0.1"
                 res["statusCode"] = 100
                 res["statusDesc"] = "Success"
-            except ObjectDoesNotExist:
+            except ObjectDoesNotExist as e:
+                logger.info(token + " : {}".format(repr(e)))
                 res["statusCode"] = 101 # Invalid User
                 res["statusDesc"] = "Invalid User"
 
@@ -347,6 +348,60 @@ class InplayUpdateBalanceAPI(View):
         except Exception as e:
             logger.error("IMES Update Balance Error: {}".format(repr(e)))
             return HttpResponse(repr(e), status=400)
+
+
+class InplayPostBetDetailsAPI(View):
+    def post(self, request, *arg, **kwargs):
+        bet_package = request.POST.get('postPackage')
+        
+        try:
+            bet_package = bet_package.replace(' ', '+')
+            data = des3Decryption(data)
+            data = "".join([data.rsplit(">" , 1)[0] , ">"])
+            data = xmltodict.parse(data)
+
+            member_bet_details = data["BetDetails"]["MemberBetDetails"]
+
+            member_code = member_bet_details["memberCode"]
+            bet_id = member_bet_details["betId"]
+            bet_time = member_bet_details["betTime"]
+            sports_name = member_bet_details["sportsName"]
+            bet_amt = member_bet_details["betAmt"]
+            odds = member_bet_details["odds"]
+
+            user = CustomUser.objects.get(username=member_code)
+
+            provider = GameProvider.objects.get(provider_name=IMES_PROVIDER)
+            category = Category.objects.filter(name='SPORTS')
+
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+            GameBet.objects.get_or_create(
+                provider = provider,
+                category = category[0],
+                # game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
+                # game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
+                user = user,
+                user_name = user.username,
+                amount_wagered = decimal.Decimal(bet_amt),
+                # amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
+                # # outcome = models.BooleanField() # true = win, false = lost
+                # outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
+                # odds = Decimal(odds) # payout odds (in american odds), e.g. +500, -110, etc.
+                # bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
+                # line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
+                transaction_id = trans_id,
+                currency = user.currency,
+                market = ibetCN,
+                ref_no = bet_id,
+                # resolved_time = models.DateTimeField(null=True, blank=True)
+                other_data = json.loads({"data": data})
+            )
+            
+            return HttpResponse(status=200)
+        except Exception as e:
+            logger.error("Inplay Post Bet Error {}".format(repr(e)))
+            # return HttpResponse(repr(e), status=400) No return here
 
 
 class TestDecryption(View):
