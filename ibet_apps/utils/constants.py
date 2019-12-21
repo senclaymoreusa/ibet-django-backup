@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
+print("env:" +os.getenv("ENV"))
+print("datetime:" + str(datetime.datetime.now()))
 print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
 
 if os.getenv("ENV") != "local":
@@ -295,6 +297,7 @@ MARKET_CHOICES = (
     (letouTH, "letou-TH"),
     (letouCN, "letou-CN")
 )
+
 
 COUNTRY_CHOICES = (
     ('US', 'United States'),
@@ -1428,6 +1431,18 @@ DELIVERY_CHOICES = (
     (1, 'Site activation'),
 )
 
+BONUS_PAYOUT_INSTANT = 0
+BONUS_PAYOUT_WEEKLY = 1
+BONUS_PAYOUT_MANUAL = 2
+BONUS_PAYOUT_NONE = 3
+
+BONUS_PAYOUT_CHOICES = (
+    (BONUS_PAYOUT_INSTANT, 'Instant'),
+    (BONUS_PAYOUT_WEEKLY, 'Weekly'),
+    (BONUS_PAYOUT_MANUAL, 'Manual'),
+    (BONUS_PAYOUT_NONE, 'None')
+)
+
 # Games
 # All provider
 KY_PROVIDER = "KY"
@@ -1443,6 +1458,7 @@ BTI_PROVIDER = "BTi"
 PLAYNGO_PROVIDER = "PLAYNGO"
 IMES_PROVIDER = "IMES"
 QTECH_PROVIDER = "QTech"
+ALLBET_PROVIDER = "ALLBET"
 
 # Taiwan team
 GPT_PROVIDER = "GPT"
@@ -1476,6 +1492,10 @@ KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
+
+# AllBet
+ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
+ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
 
 #onebook
 # ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
@@ -1523,5 +1543,12 @@ QT_STATUS_CODE = (
 # Betsoft
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
 
+#AG
+AG_URL = "https://gi.claymoreasia.com/doBusiness.do"
+AG_FORWARD_URL = "https://gci.claymoreasia.com/forwardGame.do"
+AG_CAGENT = "EV3_AGIN"
+AG_MD5 = "2YgQUaUZfDDt"
+AG_DES = "MJp7ScbZ"
+AG_DM = "http://ibet.com"
 #IMES
 IMES_PROVIDER = "IMES"
