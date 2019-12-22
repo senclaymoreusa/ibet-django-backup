@@ -21,7 +21,6 @@ redis = RedisHelper()
 # to batch copy from S3 to Redshift than to insert records directly to Redshift
 # I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
 # REF: https://console.aws.amazon.com/datapipeline/home?region=ap-northeast-1#ExecutionDetailsPlace:pipelineId=df-01600683VJZR9UCYHR8X&show=latest
-# @background(schedule=5000) # TODO: this is commented because it's still yet to decide whether we want to use background_task
 @api_view(['POST'])
 @permission_classes((AllowAny,))  
 def gamebet_copy(request):
