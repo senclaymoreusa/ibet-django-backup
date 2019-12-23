@@ -648,7 +648,7 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
-    ASTROPAY_CONFIRM_URL = '/accounting/api/astropay/confirm'
+    ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
 else:
     # astroPay sandbox keys:

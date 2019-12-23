@@ -23,11 +23,12 @@ from django.contrib.auth.hashers import make_password, check_password
 logger = logging.getLogger('django')
 secretkey = ASTROPAY_SECRET
 currencyConversion = {
-    "CNY": 0,
-    "USD": 1,
-    "THB": 2,
-    "IDR": 3,
-    "EUR": 10,
+    0: "CNY",
+    1: "USD",
+    2: "THB",
+    3: "IDR",
+    7: "VND",
+    10: "EUR",
 }
 
 #get hash code 
@@ -190,7 +191,7 @@ def sendCardToMobile(request):
         elif country == 'Thailand':
             country = 'TH'
         elif country == 'Vietnam':
-            country = 'VT'
+            country = 'VN'
         else:
             country = 'BR'
         
@@ -296,51 +297,62 @@ def checkUser(request):
 @permission_classes((AllowAny,))
 def sendCardToMobileWithAppId(request):
     amount = request.data.get('amount')
-    currency = request.data.get('currency')
     customer_id = request.data.get('customer_id')
     userid = request.data.get('userid')
     withdraw_password = request.data.get("withdrawPassword")
+    doc_id = request.data.get('doc_id')
     try:
         user = CustomUser.objects.get(pk=userid)
-        
+        currency = user.currency
         user_fn = user.first_name
         user_ln = user.last_name
         name = user_fn + " " + user_ln
-        doc_id = request.data.get('doc_id')
-        country = request.data.get('country')
-        notification_url = request.data.get('notification_url')
-        message = str(secretkey) + str(amount) + str(currency) + str(customer_id)
-        my_hmac = hashlib.sha1(message.encode()).hexdigest()
-        logger.info(my_hmac)
+        
+
+        country = user.country
+        if country == 'China':
+            country = 'CH'
+        elif country == 'Thailand':
+            country = 'TH'
+        elif country == 'Vietnam':
+            country = 'VN'
+        else:
+            country = 'BR'
+        
+        message =   str(customer_id)
+        # my_hmac = hashlib.sha1(message.encode()).hexdigest()
+        # logger.info(my_hmac)
+        print(generateControl(message))
         OrderID =  user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         params = {
             "x_login":ASTROPAY_X_LOGIN,
             "x_trans_key":ASTROPAY_X_TRANS_KEY,
             "x_amount":amount,
-            "x_currency": currency,
+            "x_currency": currencyConversion[currency],
             "x_astropaycard_customer_id":customer_id,
             "x_name":name,
             "x_document":doc_id,
             "x_country":country,
-            "x_control":my_hmac,
-            "notification_url": "http://3fb2738f.ngrok.io/accounting/api/astropay/confirm",
+            "x_control":generateControl(message),
+            "x_reference": OrderID,
+            "notification_url": ASTROPAY_CONFIRM_URL,
         }
         
         url = ASTROPAY_URL
         if check_password(withdraw_password, user.withdraw_password):
             for x in range(3):
-                r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
+                r = requests.post(url + '/cashOut/sendCardToMobile', data=params)
                 rdata = r.json()
                 logger.info(rdata)
                 print(rdata)
-                if r.code == 200 :
-                    if rdata.code == '200':
+                if r.status_code == 200:
+                    if rdata["response"] == 'SUCCESS':
                         create = Transaction.objects.create(
                             order_id=OrderID,
                             transaction_id=rdata["id_cashout"],
                             amount=rdata["amount"],
-                            user_id=CustomUser.objects.get(pk=userid),
-                            currency= currencyConversion[rdata["currency"]],
+                            user_id=user,
+                            currency= currency,
                             transaction_type=1, 
                             channel=2,
                             status=0,
