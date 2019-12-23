@@ -31,7 +31,8 @@ urlpatterns = [
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
     # path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
-
+    path('api/bets/getprovandcats', csrf_exempt(bets.getProvidersAndCategories), name="get_prov_and_cats"),
+    
     # Inplay Matrix
     path('api/inplay/login/', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay_login"),
     path('api/inplay/Validatetoken/', inplayviews.ValidateTokenAPI.as_view(), name="inplay_validate"),
