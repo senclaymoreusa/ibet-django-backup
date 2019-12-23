@@ -44,6 +44,7 @@ urlpatterns = [
     path('api/astropay/verif_transtatus', astropay.verif_transtatus, name='AstroPay_verif_transtatus'),
     path('api/astropay/cancel_card', csrf_exempt(astropay.cancel_cashout_card), name='AstroPay_Cancel_Card'),
     path('api/astropay/capture_transaction', csrf_exempt(astropay.capture_transaction), name="AstroPay_Capture_Transaction"),
+    path('api/astropay/confirm', csrf_exempt(astropay.notification), name="AstroPay_notification"),
     path('api/asiapay/deposit', asiapay.submitDeposit.as_view(), name='AsiaPay_deposit'),
     path('api/asiapay/cashout', asiapay.submitCashout.as_view(), name='AsiaPay_cashout'),
     path('api/asiapay/depositFinish', asiapay.depositfinish.as_view(), name='AsiaPay_deposit_finish'),

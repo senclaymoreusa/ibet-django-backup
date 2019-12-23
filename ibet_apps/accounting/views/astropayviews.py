@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils import timezone
-
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from rest_framework import parsers, renderers, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 import asyncio
 from accounting.views.sqs_message import send_message_sqs 
+from django.contrib.auth.hashers import make_password, check_password
 
 logger = logging.getLogger('django')
 secretkey = ASTROPAY_SECRET
@@ -26,6 +27,7 @@ currencyConversion = {
     "USD": 1,
     "THB": 2,
     "IDR": 3,
+    "EUR": 10,
 }
 
 #get hash code 
@@ -163,6 +165,7 @@ def astroPaymentStatus(request):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#withdraw
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def sendCardToMobile(request):
@@ -170,59 +173,94 @@ def sendCardToMobile(request):
     currency = request.data.get('currency')
     mobile = request.data.get('mobile')
     userid = request.data.get('userid')
-    user_fn = CustomUser.objects.get(pk=userid).first_name
-    user_ln = CustomUser.objects.get(pk=userid).last_name
-    name = user_fn + " " + user_ln
+    withdraw_password = request.data.get("withdrawPassword")
     doc_id = request.data.get('doc_id')
-    country = request.data.get('country')
-    notification_url = request.data.get('notification_url')
-    message = str(secretkey) + str(amount) + str(currency) + str(mobile)
-    my_hmac = hashlib.sha1(message.encode()).hexdigest()
-    OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
-
-    params = {
-        "x_login":ASTROPAY_X_LOGIN,
-        "x_trans_key":ASTROPAY_X_TRANS_KEY,
-        "x_amount":amount,
-        "x_currency": currency,
-        "x_mobile_number":mobile,
-        "x_name":name,
-        "x_document":doc_id,
-        "x_country":country,
-        "x_control":my_hmac,
-        "notification_url": notification_url,
-    }
     
-    url = ASTROPAY_URL
-    for x in range(3):
-        r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
-        rdata = r.json()
-        logger.info(rdata)
-        if r.status_code == 200 :
-            break
-        elif r.status_code == 500:
-            logger.info("Request failed {} time(s)'.format(x+1)")
-            logger.info("Waiting for %s seconds before retrying again")
-            sleep(5)
+    
+    try:
+        user = CustomUser.objects.get(pk=userid)
+
+        user_fn = user.first_name
+        user_ln = user.last_name
+        name = user_fn + " " + user_ln
+        
+        country = user.country
+        if country == 'China':
+            country = 'CH'
+        elif country == 'Thailand':
+            country = 'TH'
+        elif country == 'Vietnam':
+            country = 'VT'
+        else:
+            country = 'BR'
+        
+        message =  str(amount) + str(currency) + str(mobile)
+        # my_hmac = hashlib.sha1(message.encode()).hexdigest()
+        OrderID =  user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        
+        params = {
+            "x_login":ASTROPAY_X_LOGIN,
+            "x_trans_key":ASTROPAY_X_TRANS_KEY,
+            "x_amount":amount,
+            "x_currency": currency,
+            "x_mobile_number":mobile,
+            "x_name":name,
+            "x_document":doc_id,
+            "x_country":country,
+            "x_control":generateControl(message),
+            "x_reference": OrderID,
+            "notification_url": ASTROPAY_CONFIRM_URL,
+        }
+    
+        url = ASTROPAY_URL
+        
+        if user.withdraw_password and check_password(withdraw_password, user.withdraw_password):
+            
+            for x in range(3):
+                r = requests.post(url + '/cashOut/sendCardToMobile', data=params)
+                rdata = r.json()
+                logger.info(rdata)
+                print(r.status_code)
+                if r.status_code == 200:
+                    print(rdata)
+                    break
+                elif r.status_code == 500:
+                    logger.info("Request failed {} time(s)'.format(x+1)")
+                    logger.info("Waiting for %s seconds before retrying again")
+                    sleep(5)
+                else:
+                    logger.info("There was something wrong with the result")
+                    logger.info(rdata)
+                    return Response(rdata)
+        else:
+            logger.error("withdraw password is not correct.")    
+            return Response({
+                'status_code': ERROR_CODE_INVALID_INFO,
+                'message': 'Withdraw password is not correct.'
+            })
+        if rdata["response"] == "SUCCESS":
+            create = Transaction.objects.create(
+                        order_id=OrderID,
+                        transaction_id=rdata["id_cashout"],
+                        amount=rdata["amount"],
+                        user_id=user,
+                        currency= currencyConversion[rdata["currency"]],
+                        transaction_type=1, 
+                        channel=2,
+                        status=0,
+                        method="AstroPay Cashout Card",
+                    )
+            return Response(rdata)
         else:
             logger.info("There was something wrong with the result")
-            logger.info(rdata)
-            return Response(rdata)
-    if rdata["response"] == "SUCCESS":
-        create = Transaction.objects.create(
-                    order_id=OrderID,
-                    transaction_id=rdata["id_cashout"],
-                    amount=rdata["amount"],
-                    user_id=CustomUser.objects.get(pk=userid),
-                    currency= currencyConversion[rdata["currency"]],
-                    transaction_type=1, 
-                    channel=2,
-                    status=0,
-                    method="AstroPay Cashout Card",
-                )
-    else:
-        logger.info("There was something wrong with the result")
-    return Response(rdata)
+            return JsonResponse({
+                    'status_code': ERROR_CODE_FAIL,
+                    'message': 'There was something wrong with the result, please try again.'
+                })
+    except ObjectDoesNotExist as e:
+        logger.error(repr(e))
+        return HttpResponse(status=500)
+
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
@@ -253,7 +291,7 @@ def checkUser(request):
             logger.info(rdata)
             return Response(rdata)
     return Response(rdata)
-
+#withdraw
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def sendCardToMobileWithAppId(request):
@@ -261,56 +299,83 @@ def sendCardToMobileWithAppId(request):
     currency = request.data.get('currency')
     customer_id = request.data.get('customer_id')
     userid = request.data.get('userid')
-    user_fn = CustomUser.objects.get(pk=userid).first_name
-    user_ln = CustomUser.objects.get(pk=userid).last_name
-    name = user_fn + " " + user_ln
-    doc_id = request.data.get('doc_id')
-    country = request.data.get('country')
-    notification_url = request.data.get('notification_url')
-    message = str(secretkey) + str(amount) + str(currency) + str(customer_id)
-    my_hmac = hashlib.sha1(message.encode()).hexdigest()
-    logger.info(my_hmac)
-    OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
-    params = {
-        "x_login":ASTROPAY_X_LOGIN,
-        "x_trans_key":ASTROPAY_X_TRANS_KEY,
-        "x_amount":amount,
-        "x_currency": currency,
-        "x_astropaycard_customer_id":customer_id,
-        "x_name":name,
-        "x_document":doc_id,
-        "x_country":country,
-        "x_control":my_hmac,
-        "notification_url": notification_url,
-    }
-    
-    url = ASTROPAY_URL
-    for x in range(3):
-        r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
-        rdata = r.json()
-        logger.info(rdata)
-        if r.status_code == 200 :
-            create = Transaction.objects.create(
-                order_id=OrderID,
-                transaction_id=rdata["id_cashout"],
-                amount=rdata["amount"],
-                user_id=CustomUser.objects.get(pk=userid),
-                currency= currencyConversion[rdata["currency"]],
-                transaction_type=1, 
-                channel=2,
-                status=0,
-                method="AstroPay Cashout Card",
-            )
-            break
-        elif r.status_code == 500:
-            logger.info("Request failed {} time(s)'.format(x+1)")
-            logger.info("Waiting for %s seconds before retrying again")
-            sleep(5)
+    withdraw_password = request.data.get("withdrawPassword")
+    try:
+        user = CustomUser.objects.get(pk=userid)
+        
+        user_fn = user.first_name
+        user_ln = user.last_name
+        name = user_fn + " " + user_ln
+        doc_id = request.data.get('doc_id')
+        country = request.data.get('country')
+        notification_url = request.data.get('notification_url')
+        message = str(secretkey) + str(amount) + str(currency) + str(customer_id)
+        my_hmac = hashlib.sha1(message.encode()).hexdigest()
+        logger.info(my_hmac)
+        OrderID =  user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        params = {
+            "x_login":ASTROPAY_X_LOGIN,
+            "x_trans_key":ASTROPAY_X_TRANS_KEY,
+            "x_amount":amount,
+            "x_currency": currency,
+            "x_astropaycard_customer_id":customer_id,
+            "x_name":name,
+            "x_document":doc_id,
+            "x_country":country,
+            "x_control":my_hmac,
+            "notification_url": "http://3fb2738f.ngrok.io/accounting/api/astropay/confirm",
+        }
+        
+        url = ASTROPAY_URL
+        if check_password(withdraw_password, user.withdraw_password):
+            for x in range(3):
+                r = requests.post(url + 'cashOut/sendCardToMobile', data=params)
+                rdata = r.json()
+                logger.info(rdata)
+                print(rdata)
+                if r.code == 200 :
+                    if rdata.code == '200':
+                        create = Transaction.objects.create(
+                            order_id=OrderID,
+                            transaction_id=rdata["id_cashout"],
+                            amount=rdata["amount"],
+                            user_id=CustomUser.objects.get(pk=userid),
+                            currency= currencyConversion[rdata["currency"]],
+                            transaction_type=1, 
+                            channel=2,
+                            status=0,
+                            method="AstroPay Cashout Card",
+                        )
+                        
+                    return Response(rdata)
+                    break
+                elif r.status_code == 500:
+                    logger.info("Request failed {} time(s)'.format(x+1)")
+                    logger.info("Waiting for %s seconds before retrying again")
+                    sleep(5)
+                else:
+                    logger.info("There was something wrong with the result")
+                    logger.info(rdata)
+                    return Response(rdata)
         else:
-            logger.info("There was something wrong with the result")
-            logger.info(rdata)
-            return Response(rdata)
-    return Response(rdata)
+            logger.error("withdraw password is not correct.")    
+            return JsonResponse({
+                'status_code': ERROR_CODE_INVALID_INFO,
+                'message': 'Withdraw password is not correct.'
+            })
+    except ObjectDoesNotExist as e:
+        logger.error(repr(e))
+        return HttpResponse(status=500)
+        
+def notification(request):
+    if request.method == "POST":
+        status = request.POST.get("status")
+        id_cashout_card = request.POST.get("id_cashout_card")
+        x_reference = request.POST.get("x_reference")
+        return JsonResponse({
+            'status': status,
+            'message': 'Success'
+        })
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
@@ -395,7 +460,7 @@ def capture_transaction(request):
         amount = body.get("amount")
         currency = "BRL"
 
-        orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+        orderId = user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
         params = {
             "x_login": ASTROPAY_X_LOGIN,

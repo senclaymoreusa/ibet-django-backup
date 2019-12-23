@@ -648,6 +648,7 @@ if os.getenv("ENV") != "local":
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
+    ASTROPAY_CONFIRM_URL = '/accounting/api/astropay/confirm'
     # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
 else:
     # astroPay sandbox keys:
@@ -655,6 +656,7 @@ else:
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+    ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
 
 
 # fgo
