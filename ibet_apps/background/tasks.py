@@ -34,7 +34,7 @@ def gamebet_copy(request):
         latest_datetime = max_datetime
     else:
         latest_datetime = parse(ts_from_redis.decode())
-    
+
     logger.info('The timestamp of the latest copy for GameBet was: ' + str(latest_datetime))
     results = GameBet.objects.filter(bet_time__gt=latest_datetime)
     
@@ -131,18 +131,12 @@ def transaction_copy(request):
                   + ('' if result.request_time is None else str(result.request_time)) + ',' \
                   + ('' if result.arrive_time is None else str(result.arrive_time)) + ',' \
                   + ('' if result.status is None else result.get_status_display()) + ',' \
-                  + ('' if result.transaction_type is None else result.get_transaction_type()) + ',' \
+                  + ('' if result.transaction_type is None else result.get_transaction_type_display()) + ',' \
                   + ('' if result.remark is None else result.remark) + ',' \
                   + ('' if result.transfer_from is None else result.transfer_from) + ',' \
                   + ('' if result.transfer_to is None else result.transfer_to) + ',' \
                   + ('' if result.product is None else result.get_product_display()) + ',' \
                   + ('' if result.review_status is None else result.get_review_status_display()) + ',' \
-                  + ('' if (result.user_bank_account is None or result.user_bank_account.account_name is None) else
-                     result.user_bank_account.account_name) + ',' \
-                  + ('' if (result.user_bank_account is None or result.user_bank_account.account_number is None) else
-                     result.user_bank_account.account_number) + ',' \
-                  + ('' if (result.user_bank_account is None or result.user_bank_account.bank.name is None) else
-                     result.user_bank_account.bank.name) + ',' \
                   + ('' if result.transaction_image is None else result.transaction_image) + ',' \
                   + ('' if result.month is None else str(result.month)) + ',' \
                   + ('' if result.qrcode is None else result.qrcode) + ',' \
