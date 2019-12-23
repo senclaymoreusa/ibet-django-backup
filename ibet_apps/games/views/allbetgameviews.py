@@ -574,6 +574,18 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
 
 
     try:
+        existing_settle = GameBet.objects.get(ref_no=resettle_details[0]["betNum"], outcome__in=[0, 1, 2])
+
+    except ObjectDoesNotExist:
+        json_to_return = {
+            "error_code": 10006,
+            "message": "Error: Attempted to re-settle non-existing bet."
+        }
+        logger.error("AllBet TransferView Error: Attempted to re-settle non-existing bet.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+    try:
         existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
 
         if existing_transactions.count() >= 1:
@@ -653,12 +665,12 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
             logger.info("AllBet TransferView Success: Bet re-settled.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-    except ObjectDoesNotExist:
+    except Exception as e:
         json_to_return = {
-            "error_code": 10006,
-            "message": "Error: Attempted to re-settle non-existing bet."
+            "error_code": 50000,
+            "message": "AllBet transfer error: " + str(e)
         }
-        logger.error("AllBet TransferView Error: Attempted to re-settle non-existing bet.")
+        logger.error("AllBet transfer error: " + str(e))
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -706,7 +718,7 @@ class TransferView(View):
             sign_string = sign_bytes.decode()
 
             generated_auth_header = "AB" + " " + ALLBET_PROP_ID + ":" + sign_string
-            print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
+            # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
             # Default JSON Response fields
             res_error_code = 50000
