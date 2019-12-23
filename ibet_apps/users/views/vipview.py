@@ -4,6 +4,7 @@ from django.shortcuts import render
 from xadmin.views import CommAdminView
 
 import logging
+import csv
 import simplejson as json
 
 from users.models import Segmentation, UserActivity
@@ -77,48 +78,9 @@ class VIPView(CommAdminView):
                 except Exception as e:
                     logger.error("Error getting request from vip admin frontend: ", e)
 
-            vip_list = []
-            for vip in queryset:
-                deposit_count, deposit_amount = calculateDeposit(vip, min_date, max_date)
-                withdrawal_count, withdrawal_amount = calculateWithdrawal(vip, min_date, max_date)
-                referee = vip.referred_by
-                if deposit_count == 0:
-                    ave_deposit = 0
-                else:
-                    ave_deposit = ("%.2f" % (deposit_amount / deposit_count))
+            result['data'] = vipData(queryset, min_date, max_date)[0]
 
-                if referee:
-                    referee = referee.pk
-                else:
-                    referee = ''
-
-                vip_dict = {
-                    'player_id': vip.pk,
-                    'username': vip.username,
-                    'status': "",
-                    'player_segment': str(vip.vip_level) or '',
-                    'country': vip.country or '',
-                    'address': vip.get_user_address(),
-                    'phone_number': vip.phone or '',
-                    'email_verified': vip.email_verified,
-                    'phone_verified': vip.phone_verified,
-                    'id_verified': vip.id_verified,
-                    'affiliate_id': referee,  # the affiliate who referred this VIP user
-                    'ggr': calculateGGR(vip, min_date, max_date),
-                    'turnover': calculateTurnover(vip, min_date, max_date),
-                    'deposit': deposit_amount,
-                    'deposit_count': deposit_count,
-                    'ave_deposit': ave_deposit,
-                    'withdrawal': withdrawal_amount,
-                    'withdrawal_count': withdrawal_count,
-                    'bonus_cost': calculateBonus(vip, min_date, max_date),
-                    'ngr': calculateNGR(vip, min_date, max_date),
-                }
-                vip_list.append(vip_dict)
-            result['data'] = vip_list
-            return HttpResponse(
-                json.dumps(result), content_type="application/json"
-            )
+            return HttpResponse(json.dumps(result), content_type='application/json')
 
         elif get_type == 'getVIPDetailInfo':
             user_id = request.GET.get('userId')
@@ -192,3 +154,66 @@ class VIPView(CommAdminView):
                 logger.info("Error updating vip user info: " + str(e))
 
             return HttpResponse(status=200)
+
+
+# helper function
+# get data for vip admin table
+
+def vipData(queryset, start_time, end_time):
+    vip_list = []
+    vip_export = []
+    for vip in queryset:
+        deposit_count, deposit_amount = calculateDeposit(vip, start_time, end_time)
+        withdrawal_count, withdrawal_amount = calculateWithdrawal(vip, start_time, end_time)
+        referee = vip.referred_by
+        if deposit_count == 0:
+            ave_deposit = 0
+        else:
+            ave_deposit = ("%.2f" % (deposit_amount / deposit_count))
+
+        if referee:
+            referee = referee.pk
+        else:
+            referee = ''
+
+        vip_dict = {
+            'player_id': vip.pk,
+            'username': vip.username,
+            'status': "",
+            'player_segment': str(vip.vip_level) or '',
+            'country': vip.country or '',
+            'address': vip.get_user_address(),
+            'phone_number': vip.phone or '',
+            'email_verified': vip.email_verified,
+            'phone_verified': vip.phone_verified,
+            'id_verified': vip.id_verified,
+            'affiliate_id': referee,  # the affiliate who referred this VIP user
+            'ggr': calculateGGR(vip, start_time, end_time),
+            'turnover': calculateTurnover(vip, start_time, end_time),
+            'deposit': deposit_amount,
+            'deposit_count': deposit_count,
+            'ave_deposit': ave_deposit,
+            'withdrawal': withdrawal_amount,
+            'withdrawal_count': withdrawal_count,
+            'bonus_cost': calculateBonus(vip, start_time, end_time),
+            'ngr': calculateNGR(vip, start_time, end_time),
+        }
+        vip_list.append(vip_dict)
+        vip_export.append(list(vip_dict.values()))
+    return vip_list, vip_export
+
+
+def exportVIP(request):
+    export_title = json.loads(request.GET.get('tableHead'))
+    queryset = CustomUser.objects.filter(vip_level__isnull=False).order_by('-created_time')
+
+    vip_list = vipData(queryset, None, None)[1]
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=VIP.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(export_title)
+    for i in vip_list:
+        writer.writerow(i)
+    return response

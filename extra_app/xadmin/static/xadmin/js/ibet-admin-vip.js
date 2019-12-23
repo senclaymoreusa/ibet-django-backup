@@ -15,6 +15,9 @@ $(document).ready(function () {
         }
     });
 
+    var exportReq = "No";
+    var vipTableHead = [];
+
     var vip_table = $('#vip_table').DataTable({
         "serverSide": true,
         "searching": true,
@@ -30,6 +33,7 @@ $(document).ready(function () {
                 'minDate': function () { return $('#min_date').val(); },
                 'maxDate': function () { return $('#max_date').val(); },
                 'search': function () { return $('#vip-search').val(); },
+                'export': function () { return exportReq; },
             },
         },
 
@@ -110,10 +114,25 @@ $(document).ready(function () {
         },
     });
 
+
     $(function(){
         $("#min_date").datepicker();
         $("#max_date").datepicker();
     });
+
+    $('#export-vip').click(function(){
+        exportReq = "Yes";
+        GetCellValues("vip_table");
+        vipTableHead = JSON.stringify(vipTableHead);
+        document.location = vip_export + '?tableHead=' + vipTableHead;
+    });
+
+    function GetCellValues(tableId) {
+        var table = document.getElementById(tableId);
+        for (var i = 0, m = table.rows[0].cells.length - 1; i < m; i++) {
+            vipTableHead.push(table.rows[0].cells[i].innerHTML);
+        }
+    }
 
     $('#min_date, #max_date, #segmentation_filter').change(function () {
         vip_table.draw();

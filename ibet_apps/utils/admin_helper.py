@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
@@ -152,6 +152,8 @@ def calculateNGR(user, start_time, end_time):
 @param date: utc timezone datetime
 @return: local timezone datetime
 '''
+
+
 def utcToLocalDatetime(date):
     if date:
         current_tz = timezone.get_current_timezone()
@@ -220,6 +222,8 @@ def last_login(user):
 @param date: mm/dd/yyyy
 @return: timezone datetime
 '''
+
+
 def dateToDatetime(date):
     if date:
         date = date.split('/')
@@ -233,6 +237,8 @@ def dateToDatetime(date):
 @param queryset: users
 @return: queryset of active users between start_time and end_time
 '''
+
+
 def filterActiveUser(queryset, start_time, end_time):
     # get bet transaction in this period
     if start_time and end_time:
@@ -244,7 +250,7 @@ def filterActiveUser(queryset, start_time, end_time):
     else:
         game_bet_tran = GameBet.objects.all()
 
-    active_user_list = game_bet_tran.values_list('username', flat=True)
+    active_user_list = game_bet_tran.values_list('user_id', flat=True)
     if queryset:
         queryset = queryset.filter(pk__in=active_user_list)
     return queryset
@@ -254,6 +260,8 @@ def filterActiveUser(queryset, start_time, end_time):
 @param date: utc timezone datetime
 @return: local timezone datetime
 '''
+
+
 def utcToLocalDatetime(date):
     if date:
         current_tz = timezone.get_current_timezone()
@@ -326,21 +334,3 @@ BONUS_DELIVERY_VALUE_DICT = {
     "push": BONUS_DELIVERY_PUSH,
     "site": BONUS_DELIVERY_SITE,
 }
-
-'''
-@param date: filename, table header, table body data
-@return: response
-'''
-
-
-def exportCSV(filename, row_title, data):
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=filename'
-
-    writer = csv.writer(response)
-    writer.writerow(row_title)
-    for i in data:
-        writer.writerow(i)
-
-    return response
