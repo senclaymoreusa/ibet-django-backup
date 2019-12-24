@@ -263,13 +263,6 @@ def filterActiveUser(queryset, start_time, end_time):
 '''
 
 
-def utcToLocalDatetime(date):
-    if date:
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
-
-
 # Return a list of user in VIP Manager Group
 def getManagerList(list_type):
     if list_type == "VIP":
@@ -353,12 +346,11 @@ BONUS_GAME_CATEGORY = {
 
 
 # Helper function for file export to csv
-# def exportCSV(head, body, filename):
+# def exportCSV(body, filename):
 #     response = HttpResponse(content_type='text/csv')
 #     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
 #
 #     writer = csv.writer(response)
-#     writer.writerow(head)
 #     for i in body:
 #         writer.writerow(i)
 #
