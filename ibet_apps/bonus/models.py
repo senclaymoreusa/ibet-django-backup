@@ -105,8 +105,8 @@ class UserBonusEvent(models.Model):
                                       verbose_name=_('User Bonus Event Type'))
     notes = models.TextField(null=True, blank=True)
     amount = models.FloatField(null=True, blank=True)
-    completion_percentage = models.IntegerField(null=True, blank=True, default=0,
-        validators=[
-            MaxValueValidator(100),
-            MinValueValidator(0)
-        ])
+    # completion_percentage = models.IntegerField(null=True, blank=True, default=0,
+    #     validators=[
+    #         MaxValueValidator(100),
+    #         MinValueValidator(0)
+    #     ])

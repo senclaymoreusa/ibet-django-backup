@@ -344,6 +344,11 @@ BONUS_GAME_CATEGORY = {
 }
 
 
+def userBonusCompletion(user, bonus, timestamp):
+    return 0
+
+
+
 # Helper function for file export to csv
 # def exportCSV(body, filename):
 #     response = HttpResponse(content_type='text/csv')
