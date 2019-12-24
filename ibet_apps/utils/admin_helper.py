@@ -1,7 +1,6 @@
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
-from django.utils.dateparse import parse_date
 from django.db.models.query import QuerySet
 from django.db.models import Q, ObjectDoesNotExist
 from django.http import HttpResponse
