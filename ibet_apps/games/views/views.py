@@ -131,10 +131,10 @@ class GamesSearchView(View):
         if sort == 'popularity':
             data = Game.objects.filter(gameFilter).order_by('-popularity')
             logger.info("Order list of games by: popularity") 
-        elif sort == 'jackpot-size-asc':
+        elif sort == 'jackpot size asc':
             data = Game.objects.filter(gameFilter).order_by(F('jackpot_size').asc(nulls_last=True))
             logger.info("Order list of games by: jackpot size asc") 
-        elif sort == 'jackpot-size-desc':
+        elif sort == 'jackpot size desc':
             data = Game.objects.filter(gameFilter).order_by(F('jackpot_size').desc(nulls_last=True))
             logger.info("Order list of games by: jackpot size desc") 
         else:
