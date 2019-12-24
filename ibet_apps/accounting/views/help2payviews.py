@@ -32,6 +32,10 @@ from users.views.helper import *
 
 
 logger = logging.getLogger("django")
+currency_Conversion = {
+    '2': 'THB',
+    '8': 'VND',
+}
 currencyConversion = {
     2: 'THB',
     8: 'VND',
@@ -47,15 +51,15 @@ def MD5(code):
     return res
 
 
-class SubmitDeposit(generics.GenericAPIView):
+class SubmitDeposit(APIView):
     queryset = Transaction.objects.all()
     serializer_class = help2payDepositSerialize
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [AllowAny, ]
 
     def post(self, request, *args, **kwargs):
         language = self.request.POST.get("language")
         user_id = self.request.POST.get("user_id")
-
+    
         trans_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
 
         amount = float(self.request.POST.get("amount"))
@@ -90,9 +94,9 @@ class SubmitDeposit(generics.GenericAPIView):
         data = {
             "Merchant": merchant_code,
             "Customer": user_id,
-            "Currency": currencyConversion[currency],
+            "Currency": currency_Conversion[currency],
             "Reference": str(trans_id),
-            "Key": MD5(merchant_code+trans_id+str(user_id)+amount+currencyConversion[currency]+key_time+secret_key+ip),
+            "Key": MD5(merchant_code+trans_id+str(user_id)+amount+currency_Conversion[currency]+key_time+secret_key+ip),
             "Amount": amount,
             "Datetime": Datetime,
             "FrontURI": API_DOMAIN + HELP2PAY_SUCCESS_PATH,
@@ -103,7 +107,7 @@ class SubmitDeposit(generics.GenericAPIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
-
+        print(rdata)
         db_currency_code = 2 if currency == '2' else 7
 
         create = Transaction.objects.create(
