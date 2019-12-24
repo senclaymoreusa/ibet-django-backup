@@ -54,22 +54,24 @@ class GetPlayer(APIView):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
         user = CustomUser.objects.get(username=username)
+        player = "IBET_" + username.upper()
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
             'X_ENTITY_KEY': '19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2'
         }
        
-        rr = requests.post("https://kioskpublicapi.luckydragon88.com/player/info/playername/" + username, headers=headers)
+        rr = requests.post("https://kioskpublicapi.luckydragon88.com/player/info/playername/" + player, headers=headers)
         
         if rr.status_code == 200 :    
             rrdata = rr.json()
             if 'errorcode' in rrdata:
                 if rrdata['errorcode'] == '41':
                     #user does not exist, create player.
+                    player = "IBET_" + username.upper()
                     admininfo = 'adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
                     userinfo = 'firstname/' + user.firstname + '/lastname/' + user.lastname 
-                    rr = requests.post("https://kioskpublicapi.luckydragon88.com/player/create/playername" + username + admininfo + userinfo, headers=headers)
+                    rr = requests.post("https://kioskpublicapi.luckydragon88.com/player/create/playername" + player + admininfo + userinfo, headers=headers)
                     #error check
 
                 #elif other error
@@ -88,6 +90,7 @@ def ptTransfer(user, amount, wallet, method):
         user_currency = int(user.currency)
         order_time = time.strftime("%Y%m%d%H%M%S")
         orderid = "pt" + str(order_time) + user.username
+        player = "IBET_" + user.username.upper()
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
@@ -99,7 +102,7 @@ def ptTransfer(user, amount, wallet, method):
             if user.currency == CURRENCY_CNY:
                 amount = amount
             
-            url = "https://kioskpublicapi.luckydragon88.com/player/deposit/playername/" + user.username + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id
+            url = "https://kioskpublicapi.luckydragon88.com/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id
             
             rr = requests.post(url, headers=headers)
             if rr.status_code == 200 :    
@@ -137,7 +140,7 @@ def ptTransfer(user, amount, wallet, method):
             if user.currency == CURRENCY_CNY:
                 amount = amount
 
-            url = "https://kioskpublicapi.luckydragon88.com/player/withdraw/playername/" + user.username + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id        
+            url = "https://kioskpublicapi.luckydragon88.com/player/withdraw/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id        
             rr = requests.post(url, headers=headers)
             if rr.status_code == 200 :    
                 rrdata = rr.json()
