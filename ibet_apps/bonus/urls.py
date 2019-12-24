@@ -1,6 +1,6 @@
 from django.urls import path, include
-from rest_framework import routers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+
 from bonus.views import *
 
 
@@ -10,3 +10,7 @@ urlpatterns = [
     path('api/bonus/<str:name>', csrf_exempt(BonusView.as_view()), name="bonus_name"),
     path('api/ubevent/', csrf_exempt(UserBonusEventView.as_view()), name="user_bonus_event"),
 ]
+
+# urlpatterns += [
+#     path('export_bonus_records', exportBonus, name='export_bonus_records'),
+# ]

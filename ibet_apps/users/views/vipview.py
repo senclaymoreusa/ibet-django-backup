@@ -78,7 +78,7 @@ class VIPView(CommAdminView):
                 except Exception as e:
                     logger.error("Error getting request from vip admin frontend: ", e)
 
-            result['data'] = vipData(queryset, min_date, max_date)[0]
+            result['data'] = vipData(queryset, min_date, max_date, "list")
 
             return HttpResponse(json.dumps(result), content_type='application/json')
 
@@ -156,12 +156,10 @@ class VIPView(CommAdminView):
             return HttpResponse(status=200)
 
 
-# helper function
 # get data for vip admin table
 
-def vipData(queryset, start_time, end_time):
-    vip_list = []
-    vip_export = []
+def vipData(queryset, start_time, end_time, type):
+    vip_arr = []
     for vip in queryset:
         deposit_count, deposit_amount = calculateDeposit(vip, start_time, end_time)
         withdrawal_count, withdrawal_amount = calculateWithdrawal(vip, start_time, end_time)
@@ -198,22 +196,19 @@ def vipData(queryset, start_time, end_time):
             'bonus_cost': calculateBonus(vip, start_time, end_time),
             'ngr': calculateNGR(vip, start_time, end_time),
         }
-        vip_list.append(vip_dict)
-        vip_export.append(list(vip_dict.values()))
-    return vip_list, vip_export
+        if type == "list":
+            vip_arr.append(vip_dict)
+        elif type == "export":
+            vip_arr.append(list(vip_dict.values()))
+    return vip_arr
 
 
 def exportVIP(request):
     export_title = json.loads(request.GET.get('tableHead'))
     queryset = CustomUser.objects.filter(vip_level__isnull=False).order_by('-created_time')
 
-    vip_list = vipData(queryset, None, None)[1]
+    vip_list = vipData(queryset, None, None, "export")
+    vip_list.insert(0, export_title)
+    return streamingExport(vip_list, 'VIP')
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=VIP.csv'
 
-    writer = csv.writer(response)
-    writer.writerow(export_title)
-    for i in vip_list:
-        writer.writerow(i)
-    return response
