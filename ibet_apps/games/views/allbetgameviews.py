@@ -517,7 +517,6 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
 
 
     try:
-        user_obj = CustomUser.objects.get(username=client)
         user_balance = int(user_obj.main_wallet * 100) / 100.0
 
         # Cancel bets individually.
@@ -622,7 +621,6 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
     try:
         resettle_id = resettle_details[0]["betNum"]
         existing_settle = GameBet.objects.get(ref_no=resettle_id, outcome__in=[0, 1, 2])
-        user_obj = CustomUser.objects.get(username=client)
 
         # Cancel existing settle and re-settle according to new details.
         with transaction.atomic():
