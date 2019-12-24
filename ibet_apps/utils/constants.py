@@ -703,16 +703,18 @@ IOVATION_URL = keys["IOVATION"]["URL"]
 
 # help2pay sandbox credentials & callback
 
-HELP2PAY_MERCHANT_THB = "M0513"
-HELP2PAY_MERCHANT_VND = "M0514"
-HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
-HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+
 
 if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     API_DOMAIN = "https://payment-testing.claymoreeuro.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+    HELP2PAY_BANK = 'KKR'
+    HELP2PAY_MERCHANT_THB = "M0513"
+    HELP2PAY_MERCHANT_VND = "M0514"
+    HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+    HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
@@ -721,12 +723,17 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     QT_PASS_KEY = keys["QTGAMES"]["PRODUCTION"]["PASS_KEY"]
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
-    H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0513"
+    H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    HELP2PAY_BANK = 'KKR'
+    HELP2PAY_MERCHANT_THB = "M0513"
+    HELP2PAY_MERCHANT_VND = "M0514"
+    HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+    HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
@@ -741,6 +748,11 @@ else:
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    HELP2PAY_BANK = 'KKR'
+    HELP2PAY_MERCHANT_THB = "M0513"
+    HELP2PAY_MERCHANT_VND = "M0514"
+    HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+    HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]

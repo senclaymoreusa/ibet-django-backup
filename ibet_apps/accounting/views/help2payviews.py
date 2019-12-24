@@ -33,12 +33,12 @@ from users.views.helper import *
 
 logger = logging.getLogger("django")
 currencyConversion = {
-    '2': 'THB',
-    '8': 'VND',
+    2: 'THB',
+    8: 'VND',
 }
 convertCurrency = {
-    'THB': '2',
-    'VND': '8',
+    'THB': 2,
+    'VND': 8,
 }
 
 
@@ -202,51 +202,54 @@ class SubmitPayout(View):
         return HttpResponse(status=404)
 
     def post(self, request): # user will need to submit bank acc information
-        username = request.user.username
-        withdraw_password = request.POST.get("withdrawPassword")
-        
-        # toBankAccountName = 'orion'
-        # toBankAccountNumber = '12345123'
-        toBankAccountName = request.POST.get("toBankAccountName")
-        toBankAccountNumber = request.POST.get("toBankAccountNumber")
+        username = request.POST.get("username")
+        try:
+            user = CustomUser.objects.get(username=username)
+            withdraw_password = request.POST.get("withdrawPassword")
+            
+            # toBankAccountName = 'orion'
+            # toBankAccountNumber = '12345123'
+            toBankAccountName = request.POST.get("toBankAccountName")
+            toBankAccountNumber = request.POST.get("toBankAccountNumber")
 
-        amount = float(request.POST.get("amount"))
+            amount = float(request.POST.get("amount"))
 
-        trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
-        # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
-        ip = helpers.get_client_ip(request)
-        bank = 'KKR'
-        language = 'en-Us'
-        user_id=1
-        currency = '2'
-        if currency == '2':
-            merchant_code = HELP2PAY_MERCHANT_THB
-            secret_key = HELP2PAY_SECURITY_THB
-            payoutURL = H2P_PAYOUT_URL_THB
-        elif currency == '8':
-            merchant_code = HELP2PAY_MERCHANT_VND
-            secret_key = HELP2PAY_SECURITY_VND
-            payoutURL = H2P_PAYOUT_URL_VND
-        
-        strAmount = str('%.2f' % amount)
-        
-        utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
-        Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
-        key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
+            trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+            # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+            ip = helpers.get_client_ip(request)
+            bank = HELP2PAY_BANK
+            
+            user_id=user.pk
+            currency = user.currency
+            
+            
+            if currency == 2:
+                merchant_code = HELP2PAY_MERCHANT_THB
+                secret_key = HELP2PAY_SECURITY_THB
+                payoutURL = H2P_PAYOUT_URL_THB
+            elif currency == 8:
+                merchant_code = HELP2PAY_MERCHANT_VND
+                secret_key = HELP2PAY_SECURITY_VND
+                payoutURL = H2P_PAYOUT_URL_VND
+            
+            strAmount = str('%.2f' % amount)
+            
+            utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
+            Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
+            key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
 
-        secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
-        checksum = MD5(secretMsg)
+            secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
+            checksum = MD5(secretMsg)
        
-        db_currency_code = 2 if currency == '2' else 7
-        if check_password(withdraw_password, request.user.withdraw_password):
-            try:
-                with transaction.atomic():
+            db_currency_code = 2 if currency == 2 else 7
+            if check_password(withdraw_password, user.withdraw_password):
+                try:    
                     withdraw_request = Transaction(
                         transaction_id=trans_id,
                         amount=amount,
-                        user_id=CustomUser.objects.get(pk=user_id),
+                        user_id=user,
                         method='Bank Transfer',
-                        currency=db_currency_code,
+                        currency=currency,
                         transaction_type=TRANSACTION_WITHDRAWAL,
                         channel=0,
                         request_time=timezone.now(),
@@ -257,48 +260,53 @@ class SubmitPayout(View):
                     # can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
                     can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
-            except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-                logger.error(repr(e))
-                traceback.print_exc(file=sys.stdout)
-                return HttpResponse(status=500)
-        else:
-            logger.error("withdraw password is not correct.")    
-            return JsonResponse({
-                'status_code': ERROR_CODE_INVALID_INFO,
-                'message': 'Withdraw password is not correct.'
-            })
+                except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
+                    logger.error(repr(e))
+                    traceback.print_exc(file=sys.stdout)
+                    return HttpResponse(status=500)
+            else:
+                logger.error("withdraw password is not correct.")    
+                return JsonResponse({
+                    'status_code': ERROR_CODE_INVALID_INFO,
+                    'message': 'Withdraw password is not correct.'
+                })
         
 
-        if can_withdraw:
-            data = {
-                "Key": MD5(secretMsg),
-                "ClientIP": ip,
-                "ReturnURI": "https://754dc8ae.ngrok.io/accounting/api/help2pay/log_payout",
-                "MerchantCode": merchant_code,
-                "TransactionID": str(trans_id),
-                "MemberCode": user_id,
-                "CurrencyCode": currencyConversion[currency],
-                "Amount": amount,
-                "TransactionDateTime": Datetime,
-                "BankCode": bank,
-                "toBankAccountName": toBankAccountName,
-                "toBankAccountNumber": toBankAccountNumber,
-            }
+            if can_withdraw:
+                data = {
+                    "Key": MD5(secretMsg),
+                    "ClientIP": ip,
+                    "ReturnURI": "http://3fb2738f.ngrok.io/accounting/api/help2pay/log_payout",
+                    "MerchantCode": merchant_code,
+                    "TransactionID": str(trans_id),
+                    "MemberCode": user_id,
+                    "CurrencyCode": currencyConversion[currency],
+                    "Amount": amount,
+                    "TransactionDateTime": Datetime,
+                    "BankCode": bank,
+                    "toBankAccountName": toBankAccountName,
+                    "toBankAccountNumber": toBankAccountNumber,
+                }
+                
+                r = requests.post(payoutURL, data=data)
+                
+                if r.status_code == 200:
+                    return HttpResponse(r.content)
+                else:
+                    return JsonResponse({
+                        'status_code': ERROR_CODE_FAIL,
+                        'message': 'Payment service unavailable'
 
-            r = requests.post(payoutURL, data=data)
-            if r.status_code == 200:
-                return HttpResponse(r.content)
+                    })
             else:
                 return JsonResponse({
                     'status_code': ERROR_CODE_FAIL,
-                    'message': 'Payment service unavailable'
-
+                    'message': 'Insufficient funds'
                 })
-        else:
-            return JsonResponse({
-                'status_code': ERROR_CODE_FAIL,
-                'message': 'Insufficient funds'
-            })
+        except ObjectDoesNotExist as e:
+            logger.error(repr(e))
+            return HttpResponse(status=500)
+
 
 
 
