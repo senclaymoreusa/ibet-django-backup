@@ -87,7 +87,7 @@ urlpatterns = [
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
     # playtech
-    path('api/pttest', ptgameviews.PTtest.as_view(), name = 'pt_test'),
+
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),
     path('api/pt/get_record', ptgameviews.GetBetHistory.as_view(), name = 'pt_get_record'),
 

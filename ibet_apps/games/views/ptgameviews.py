@@ -20,64 +20,72 @@ from django.utils import timezone
 
 logger = logging.getLogger("django")
 
-class PTtest(APIView):
-    permission_classes = (AllowAny,)
-    def get(self, request, *args, **kwargs):
-        headers = {
-            'Pragma': '',
-            'Keep-Alive': 'timeout=5, max=100',
-            'X_ENTITY_KEY': ENTITY_KEY
-
-        }
-        rr = requests.post("https://kioskpublicapi.luckydragon88.com/entity/list", headers=headers,cert=('https://ibet-admin-dev.s3-us-west-1.amazonaws.com/CNY_UAT_FB88.pem','https://ibet-admin-dev.s3-us-west-1.amazonaws.com/CNY_UAT_FB88.key'),verify=False)
-        
-        if rr.status_code == 200 :    
-               
-            rrdata = rr.json()
-       
-           
-        return HttpResponse(json.dumps(rrdata),content_type='application/json',status=200)
 
 class GetPlayer(APIView):
+    """
+    status code: 
+    0 - player exist, can play the game directly.
+    1 - error.
+    2 - balance not enough, need alert to deposit.
+    3 - create a new user, need alert to deposit.
+    """
+
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
         user = CustomUser.objects.get(username=username)
-        player = "IBET_" + username.upper()
+        player = "IBETPU_" + username.upper()
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
             'X_ENTITY_KEY': ENTITY_KEY
         }
        
-        rr = requests.post( PT_BASE_URL + "/player/info/playername/" + player, headers=headers, cert=('',''),verify=True)
+        rr = requests.post( PT_BASE_URL + "/player/info/playername/" + player, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
         
         if rr.status_code == 200 :    
             rrdata = rr.json()
+            # print(rrdata)
+            # error in get player info.
             if 'errorcode' in rrdata:
-                if rrdata['errorcode'] == '41':
-                    #user does not exist, create player.
-                    player = "IBET_" + username.upper()
-                    admininfo = 'adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
-                    userinfo = 'firstname/' + user.firstname + '/lastname/' + user.lastname 
-                    rr = requests.post(PT_BASE_URL + "/player/create/playername" + player + admininfo + userinfo, headers=headers)
+                if rrdata['errorcode'] == 41:
+                # user does not exist, need create a new player.
+                    player = "IBETPU_" + username.upper()
+                    admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
+                    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
+                    r_create = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+                    r_create_data = r_create.json()
+                    # error in create player.
+                    if 'errorcode' in r_create_data:
+                         data = {
+                            "errorInfo": "cannot create player",
+                            "status": 1,
+                        }
+                    else:
+                    # create user successfully.
+                        # print(r_create_data)
+                        data = {
+                                "info": "create user successfully",
+                                "status": 3,
+                        }
+                   
+                else:
+                # other error in get player info.
                     data = {
-                            "errorInfo": "balance not enough",
+                            "errorInfo": rrdata['error'],
                             "status": 1,
                     }
-                    #error check
-
-                #elif other error
+            
 
             else:              
                 #user exist, check balance
                 try:
                     balance = rrdata['result']['BALANCE']
                     bonus = rrdata['result']['BONUSBALANCE']
-                    if (float(balance) < 0 and float(bonus) < 0):
+                    if (float(balance) <= 0 and float(bonus) <= 0):
                         data = {
                             "errorInfo": "balance not enough",
-                            "status": 1,
+                            "status": 2,
 
                         }
                     else:
@@ -90,11 +98,15 @@ class GetPlayer(APIView):
                             "errorInfo": "cannot get balance",
                             "status": 1,
                     }
-            return HttpResponse(json.dumps(data),content_type='application/json',status=200)
 
         else:
-            logger.info(rr)
-            return Response(rr)
+            logger.error(rr)
+            data = {
+                "errorInfo": "status_error:" + rr,
+                "status": 1,
+            }
+
+        return HttpResponse(json.dumps(data),content_type='application/json',status=200)  
        
 
 def ptTransfer(user, amount, wallet, method):
@@ -103,7 +115,7 @@ def ptTransfer(user, amount, wallet, method):
         user_currency = int(user.currency)
         order_time = time.strftime("%Y%m%d%H%M%S")
         orderid = "pt" + str(order_time) + user.username
-        player = "IBET_" + user.username.upper()
+        player = "IBETPU_" + user.username.upper()
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
@@ -117,7 +129,8 @@ def ptTransfer(user, amount, wallet, method):
             
             url = PT_BASE_URL + "/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id
             
-            rr = requests.post(url, headers=headers)
+            rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+        
             if rr.status_code == 200 :    
                 rrdata = rr.json()
                 try:
@@ -154,7 +167,8 @@ def ptTransfer(user, amount, wallet, method):
                 amount = amount
 
             url = PT_BASE_URL + "/player/withdraw/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id        
-            rr = requests.post(url, headers=headers)
+            rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+        
             if rr.status_code == 200 :    
                 rrdata = rr.json()
                 try:
@@ -203,7 +217,8 @@ class GetBetHistory(APIView):
             'X_ENTITY_KEY': ENTITY_KEY
 
         }
-        rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers)
+        rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+        
         
         if rr.status_code == 200 :    
                
