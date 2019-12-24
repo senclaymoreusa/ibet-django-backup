@@ -288,7 +288,7 @@ limit_user = 36 ** limit_digit
 
 
 # encode
-def generate_unique_referral_code(user_id):
+def generateUniqueReferralCode(user_id):
     code = ''
     if user_id in range(0, limit_user):
         i = 0
@@ -413,6 +413,19 @@ BONUS_TYPE_VALUE_DICT = {
 BONUS_DELIVERY_VALUE_DICT = {
     "push": BONUS_DELIVERY_PUSH,
     "site": BONUS_DELIVERY_SITE,
+}
+
+# hard code for deposit tiered amount setting
+DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
+                          [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
+
+# game category match
+## TODO: NEEDS CONFIRM
+BONUS_GAME_CATEGORY = {
+    'casino': ['Games', 'Table Games'],
+    'sports': ['Sports'],
+    'live-casino': ['Live Casino'],
+    'lottery': ['Lotteries'],
 }
 
 '''

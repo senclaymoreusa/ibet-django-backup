@@ -12,11 +12,11 @@ from games.transferwallet import TransferDeposit, TransferWithdraw
 from django.db import IntegrityError, transaction
 from utils.constants import *
 from decimal import Decimal
-from pyDes import des, CBC, PAD_PKCS5
+from pyDes import des, ECB, PAD_PKCS5
 from datetime import datetime
-
 import base64, hashlib
 import random
+import urllib.parse
 
 logger = logging.getLogger("django")
 
@@ -209,6 +209,7 @@ def transferRequest(user, amount, from_wallet, to_wallet):
                     return True
             else:
                 return False
+
 
 
 
