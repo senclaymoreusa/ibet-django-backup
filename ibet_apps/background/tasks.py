@@ -131,7 +131,7 @@ def transaction_copy(request):
                   + ('' if result.request_time is None else str(result.request_time)) + ',' \
                   + ('' if result.arrive_time is None else str(result.arrive_time)) + ',' \
                   + ('' if result.status is None else result.get_status_display()) + ',' \
-                  + ('' if result.transaction_type is None else result.get_transaction_type()) + ',' \
+                  + ('' if result.transaction_type is None else result.get_transaction_type_display()) + ',' \
                   + ('' if result.remark is None else result.remark) + ',' \
                   + ('' if result.transfer_from is None else result.transfer_from) + ',' \
                   + ('' if result.transfer_to is None else result.transfer_to) + ',' \
