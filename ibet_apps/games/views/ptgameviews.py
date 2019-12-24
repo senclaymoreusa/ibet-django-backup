@@ -22,32 +22,21 @@ logger = logging.getLogger("django")
 
 class PTtest(APIView):
     permission_classes = (AllowAny,)
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
             'X_ENTITY_KEY': ENTITY_KEY
 
         }
-        # rr = requests.post("https://kioskpublicapi.luckydragon88.com/entity/list", headers=headers)
+        rr = requests.post("https://kioskpublicapi.luckydragon88.com/entity/list", headers=headers,cert=('https://ibet-admin-dev.s3-us-west-1.amazonaws.com/CNY_UAT_FB88.pem','https://ibet-admin-dev.s3-us-west-1.amazonaws.com/CNY_UAT_FB88.key'),verify=False)
         
-        # if rr.status_code == 200 :    
+        if rr.status_code == 200 :    
                
-        #     rrdata = rr.json()
-        t = request.GET['t']
-        data = {
-            "test" : None
-        }
-        if 'test' in data:
-            test = {
-                "test": t
-            }
-        else:
-            test = {
-                "test": "hoho"
-            }
+            rrdata = rr.json()
+       
            
-        return HttpResponse(json.dumps(test),content_type='application/json',status=200)
+        return HttpResponse(json.dumps(rrdata),content_type='application/json',status=200)
 
 class GetPlayer(APIView):
     permission_classes = (AllowAny,)
@@ -61,7 +50,7 @@ class GetPlayer(APIView):
             'X_ENTITY_KEY': ENTITY_KEY
         }
        
-        rr = requests.post( PT_BASE_URL + "/player/info/playername/" + player, headers=headers)
+        rr = requests.post( PT_BASE_URL + "/player/info/playername/" + player, headers=headers, cert=('',''),verify=True)
         
         if rr.status_code == 200 :    
             rrdata = rr.json()
@@ -72,17 +61,41 @@ class GetPlayer(APIView):
                     admininfo = 'adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
                     userinfo = 'firstname/' + user.firstname + '/lastname/' + user.lastname 
                     rr = requests.post(PT_BASE_URL + "/player/create/playername" + player + admininfo + userinfo, headers=headers)
+                    data = {
+                            "errorInfo": "balance not enough",
+                            "status": 1,
+                    }
                     #error check
 
                 #elif other error
 
             else:              
-                #check balance
-                print("test")
+                #user exist, check balance
+                try:
+                    balance = rrdata['result']['BALANCE']
+                    bonus = rrdata['result']['BONUSBALANCE']
+                    if (float(balance) < 0 and float(bonus) < 0):
+                        data = {
+                            "errorInfo": "balance not enough",
+                            "status": 1,
 
-           
-           
-        return HttpResponse(json.dumps(rrdata),content_type='application/json',status=200)
+                        }
+                    else:
+                        data = {
+                            "status": 0,
+                            "info": "user exist, balance enough"
+                        }
+                except Exception as e:
+                    data = {
+                            "errorInfo": "cannot get balance",
+                            "status": 1,
+                    }
+            return HttpResponse(json.dumps(data),content_type='application/json',status=200)
+
+        else:
+            logger.info(rr)
+            return Response(rr)
+       
 
 def ptTransfer(user, amount, wallet, method):
     try:
