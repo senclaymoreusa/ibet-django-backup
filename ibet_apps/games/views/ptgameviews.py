@@ -26,7 +26,7 @@ class PTtest(APIView):
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
-            'X_ENTITY_KEY': '19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2'
+            'X_ENTITY_KEY': ENTITY_KEY
 
         }
         # rr = requests.post("https://kioskpublicapi.luckydragon88.com/entity/list", headers=headers)
@@ -58,10 +58,10 @@ class GetPlayer(APIView):
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
-            'X_ENTITY_KEY': '19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2'
+            'X_ENTITY_KEY': ENTITY_KEY
         }
        
-        rr = requests.post("https://kioskpublicapi.luckydragon88.com/player/info/playername/" + player, headers=headers)
+        rr = requests.post( PT_BASE_URL + "/player/info/playername/" + player, headers=headers)
         
         if rr.status_code == 200 :    
             rrdata = rr.json()
@@ -71,7 +71,7 @@ class GetPlayer(APIView):
                     player = "IBET_" + username.upper()
                     admininfo = 'adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
                     userinfo = 'firstname/' + user.firstname + '/lastname/' + user.lastname 
-                    rr = requests.post("https://kioskpublicapi.luckydragon88.com/player/create/playername" + player + admininfo + userinfo, headers=headers)
+                    rr = requests.post(PT_BASE_URL + "/player/create/playername" + player + admininfo + userinfo, headers=headers)
                     #error check
 
                 #elif other error
@@ -94,7 +94,7 @@ def ptTransfer(user, amount, wallet, method):
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
-            'X_ENTITY_KEY': '19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2'
+            'X_ENTITY_KEY': ENTITY_KEY
         }
         # Deposit
         if method == 0:
@@ -102,7 +102,7 @@ def ptTransfer(user, amount, wallet, method):
             if user.currency == CURRENCY_CNY:
                 amount = amount
             
-            url = "https://kioskpublicapi.luckydragon88.com/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id
+            url = PT_BASE_URL + "/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id
             
             rr = requests.post(url, headers=headers)
             if rr.status_code == 200 :    
@@ -140,7 +140,7 @@ def ptTransfer(user, amount, wallet, method):
             if user.currency == CURRENCY_CNY:
                 amount = amount
 
-            url = "https://kioskpublicapi.luckydragon88.com/player/withdraw/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id        
+            url = PT_BASE_URL + "/player/withdraw/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id        
             rr = requests.post(url, headers=headers)
             if rr.status_code == 200 :    
                 rrdata = rr.json()
@@ -187,10 +187,10 @@ class GetBetHistory(APIView):
         headers = {
             'Pragma': '',
             'Keep-Alive': 'timeout=5, max=100',
-            'X_ENTITY_KEY': '19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2'
+            'X_ENTITY_KEY': ENTITY_KEY
 
         }
-        rr = requests.get("https://kioskpublicapi.luckydragon88.com/entity/list", headers=headers)
+        rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers)
         
         if rr.status_code == 200 :    
                

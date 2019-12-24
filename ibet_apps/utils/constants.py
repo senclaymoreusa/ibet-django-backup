@@ -705,6 +705,10 @@ PASSWORD = keys["MG"]['PASSWORD']
 
 # LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
+#PTgame
+PT_BASE_URL = "https://kioskpublicapi.luckydragon88.com"
+ENTITY_KEY = "19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2"
+
 
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_MERCHANT_VND = "M0514"
