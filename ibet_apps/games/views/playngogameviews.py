@@ -430,7 +430,7 @@ def png_release(data):
         jackpot_gain_id = req_dict['release']['jackpotGainId']
         channel = req_dict['release']['channel']
         free_game_external_id = req_dict['release']['freegameExternalId']
-        free_game_total_gain = req_dict['release']['freegameTotalGain']
+        # free_game_total_gain = req_dict['release']['freegameTotalGain']
 
         user_obj = CustomUser.objects.get(username=username)
         user_balance = int(user_obj.main_wallet * 100) / 100.0
