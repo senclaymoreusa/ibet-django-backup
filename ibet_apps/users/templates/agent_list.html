@@ -95,8 +95,7 @@
                 <tbody style="font-size: 13px">
                     {% for tran in commission_transaction %}
                     <tr>
-                        <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}
-                        </td>
+                        <td>{{ tran.commission_release_month|date:'M' }} {{ tran.commission_release_month|date:'Y' }}</td>
                         <td>{{ tran.affiliate_number }}</td>
                         <td>{{ tran.active_downline }}</td>
                         <td>{{ tran.total_commission }}</td>

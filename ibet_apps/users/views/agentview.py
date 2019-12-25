@@ -31,9 +31,8 @@ class AgentView(CommAdminView):
 
         if get_type == "getCommissionHistory":
             date = request.GET.get("date")
-            end_date = utcToLocalDatetime(datetime.datetime.strptime(date, '%b %Y'))
-            start_date = end_date - relativedelta(months=1)
-
+            start_date = utcToLocalDatetime(datetime.datetime.strptime(date, '%b %Y'))
+            end_date = start_date + relativedelta(months=1)
             commission_transaction_this_month = commission_tran.filter(
                 Q(request_time__gte=start_date) & Q(request_time__lte=end_date))
 
@@ -227,7 +226,7 @@ class AgentView(CommAdminView):
                 if getCommissionRate(trans.user_id, start_time, end_time) == 0:
                     valid_commission_tran = valid_commission_tran.exclude(pk=trans.pk)
 
-            commission_group = valid_commission_tran.annotate(commission_release_month=TruncMonth('request_time'))
+            commission_group = valid_commission_tran.annotate(commission_release_month=TruncMonth('request_time', tzinfo=timezone.utc))
 
             # for each affiliate, will only generate one commission transaction per month
             commission_transactions = commission_group.values('commission_release_month') \
