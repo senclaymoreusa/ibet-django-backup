@@ -123,38 +123,68 @@ def ptTransfer(user, amount, wallet, method):
         }
         # Deposit
         if method == 0:
-            operation_type = 2
             if user.currency == CURRENCY_CNY:
                 amount = amount
             
-            url = PT_BASE_URL + "/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id
+            url = PT_BASE_URL + "/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
             
             rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
         
             if rr.status_code == 200 :    
                 rrdata = rr.json()
-                try:
-                    if rrdata['result']['result'] == "Deposit OK":
-                        Transaction.objects.create(
-                            transaction_id=trans_id,
-                            user_id=user,
-                            order_id=orderid,
-                            amount=amount,
-                            currency=user.currency,
-                            transfer_from=wallet,
-                            transfer_to='pt',
-                            product=1,
-                            transaction_type=TRANSACTION_TRANSFER,
-                            status=TRAN_SUCCESS_TYPE
-                        )
-                        return True
+              
+                if 'errorcode' in rrdata:
+                # error exist.
+
+                    
+                    if rrdata['errorcode'] == 72:
+                    # user not exist, need to create a new player first.
+                        
+                        admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
+                        userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
+                        r_create = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+                        r_create_data = r_create.json()
+                        # error in create player.
+                        if 'errorcode' in r_create_data:
+                            return False
+                        else:
+                        # create user successfully, deposit again.
+                            print("other things...")
+
+                            
+                            
+
 
                     else:
+                    # other error.
                         return False
+                    
 
-                except Exception as e:
-                    logger.info("PT Deposit Not Success")
-                    return False
+
+                # deposit works. 
+                else:
+                    try:
+                        if rrdata['result']['result'] == "Deposit OK":
+                            Transaction.objects.create(
+                                transaction_id=trans_id,
+                                user_id=user,
+                                order_id=orderid,
+                                amount=amount,
+                                currency=user.currency,
+                                transfer_from=wallet,
+                                transfer_to='pt',
+                                product=1,
+                                transaction_type=TRANSACTION_TRANSFER,
+                                status=TRAN_SUCCESS_TYPE
+                            )
+                            return True
+
+                        else:
+                            return False
+
+                    except Exception as e:
+                        logger.info("PT Deposit Not Success")
+                        return False
             else:
                 logger.info("Failed response: {}".format(res.status_code))
                 return False
