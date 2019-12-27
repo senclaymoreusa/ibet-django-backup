@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 from datetime import date
 
-from users.models import CustomUser, UserAction, SystemCommission, Commission
+from users.models import CustomUser, UserAction, SystemCommissionLevel, PersonalCommissionLevel
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction

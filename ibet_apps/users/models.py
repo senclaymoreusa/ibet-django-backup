@@ -291,7 +291,7 @@ class CustomUser(AbstractBaseUser):
 
 
 # User Personal Commission
-class Commission(models.Model):
+class PersonalCommissionLevel(models.Model):
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
     downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20,
@@ -304,7 +304,7 @@ class Commission(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             # Get the maximum display_id value from the database
-            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))[
+            last_id = PersonalCommissionLevel.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))[
                 'largest']
 
             # aggregate can return None! Check it first.
@@ -312,11 +312,11 @@ class Commission(models.Model):
             if last_id is not None:
                 self.commission_level = last_id + 1
 
-        super(Commission, self).save(*args, **kwargs)
+        super(PersonalCommissionLevel, self).save(*args, **kwargs)
 
 
 # System default Commission
-class SystemCommission(models.Model):
+class SystemCommissionLevel(models.Model):
     commission_level = models.IntegerField(unique=True)
     commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)

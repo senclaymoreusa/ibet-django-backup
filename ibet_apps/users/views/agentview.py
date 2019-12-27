@@ -14,7 +14,7 @@ from decimal import Decimal
 from xadmin.views import CommAdminView
 
 from games.models import Category
-from users.models import CustomUser, UserAction, Commission, UserActivity, ReferChannel, SystemCommission
+from users.models import CustomUser, UserAction, PersonalCommissionLevel, UserActivity, ReferChannel, SystemCommissionLevel
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
 
@@ -272,10 +272,10 @@ class AgentView(CommAdminView):
             context["affiliate_application_list"] = affiliate_application
 
             # SYSTEM COMMISSION
-            system_commission = SystemCommission.objects.all()
+            system_commission = SystemCommissionLevel.objects.all()
             # if there is no system commission, will set up a default one
             if len(system_commission) == 0:
-                default_sc_level = SystemCommission(
+                default_sc_level = SystemCommissionLevel(
                     commission_level=1,
                 )
                 default_sc_level.save()
@@ -339,7 +339,7 @@ class AgentView(CommAdminView):
                                 logger.error("Error referrer's referral_path " + str(e))
                         user.referral_path = referral_path
                         user.save()
-                        affiliate_default_commission = Commission.objects.create(
+                        affiliate_default_commission = PersonalCommissionLevel.objects.create(
                             user_id=user,
                             commission_level=1,
                         )
@@ -390,7 +390,7 @@ class AgentView(CommAdminView):
                     # update commission levels
                     for i in level_details:
                         if i['pk'] == '':
-                            current_commission = SystemCommission.objects.create(
+                            current_commission = SystemCommissionLevel.objects.create(
                                 commission_percentage=i['rate'],
                                 downline_commission_percentage=i['downline_rate'],
                                 commission_level=i['level'],
@@ -404,7 +404,7 @@ class AgentView(CommAdminView):
                             commission_list.append(current_commission.pk)
                             logger.info(str(admin_user) + " create new system commission level " + i['level'])
                         else:
-                            current_commission = SystemCommission.objects.filter(pk=int(i['pk']))
+                            current_commission = SystemCommissionLevel.objects.filter(pk=int(i['pk']))
                             current_commission.update(
                                 commission_percentage=i['rate'],
                                 downline_commission_percentage=i['downline_rate'],
@@ -418,7 +418,7 @@ class AgentView(CommAdminView):
                             logger.info(str(admin_user) + "update commission level " + i['level'])
                             commission_list.append(i['pk'])
 
-                    deleted_commission_levels = SystemCommission.objects.exclude(pk__in=commission_list)
+                    deleted_commission_levels = SystemCommissionLevel.objects.exclude(pk__in=commission_list)
                     deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
                     if deleted_list.count() > 0:
                         logger.info("Admin user " + admin_user + " delete commission level " + str(
@@ -590,7 +590,7 @@ class AgentDetailView(CommAdminView):
 
             # edit detail bottom
             try:
-                context["commission_type"] = Commission.objects.filter(
+                context["commission_type"] = PersonalCommissionLevel.objects.filter(
                     user_id=affiliate).order_by('commission_level')
             except ObjectDoesNotExist:
                 context["commission_type"] = ""
@@ -776,7 +776,7 @@ class AgentDetailView(CommAdminView):
             # update commission levels
             for i in level_details:
                 if i['pk'] == '':
-                    current_commission = Commission.objects.create(
+                    current_commission = PersonalCommissionLevel.objects.create(
                         user_id=affiliate,
                         commission_percentage=i['rate'],
                         downline_commission_percentage=i['downline_rate'],
@@ -789,7 +789,7 @@ class AgentDetailView(CommAdminView):
                     logger.info("Create new commission level " +
                                 i['level'] + " for affiliate " + affiliate.username)
                 else:
-                    current_commission = Commission.objects.filter(pk=i['pk'])
+                    current_commission = PersonalCommissionLevel.objects.filter(pk=i['pk'])
                     current_commission.update(
                         commission_percentage=i['rate'],
                         downline_commission_percentage=i['downline_rate'],
@@ -800,7 +800,7 @@ class AgentDetailView(CommAdminView):
                     logger.info("Update commission level " +
                                 i['level'] + " for affiliate " + affiliate.username)
                     commission_list.append(i['pk'])
-            deleted_commission_levels = Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
+            deleted_commission_levels = PersonalCommissionLevel.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
             deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
             if deleted_list.count() > 0:
                 logger.info("Admin user " + admin_user + " delete commission level " + str(
