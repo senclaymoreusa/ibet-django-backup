@@ -26,6 +26,7 @@ MG_RESPONSE_ERROR = {
     "6000" : "Unspecified error",
     "6001" : "The player token is invalid.",
     "6002" : "The player token expired.",
+    "6003" : "The authentication credentials for the API are incorrect.",
     "6101" : "Login validation failed. Login name or password is incorrect.",
     "6102" : "Account is locked.",
     "6103" : "Account does not exist.",
@@ -41,13 +42,58 @@ class MGgame(APIView):
     def post(self, request, *args, **kwargs):
         data = request.body
         dd = xmltodict.parse(data)
-        name = dd['pkt']['methodcall']['@name']
-        
+        try:
+            name = dd['pkt']['methodcall']['@name']
+            apiusername = dd['pkt']['methodcall']['auth']['@login']
+            apipassword = dd['pkt']['methodcall']['auth']['@password']
+            timestamp = dd['pkt']['methodcall']['@timestamp']
+            seq = dd['pkt']['methodcall']['call']['@seq']
+            
+        except Exception as e:
+            logger.error("MG parse data Error: " + str(e))
+            response = {
+                        "pkt" : {
+                            "methodresponse" : {
+                                "@name" : "",
+                                "@timestamp" : "",
+                                "result" : {
+                                    "@seq" : "",
+                                    "@errorcode" : "6000",
+                                    "@errordescription": MG_RESPONSE_ERROR["6000"],
+                                    "extinfo" : {}
+                                },
+                                
+                            }
+                        }
+            }
+            res = xmltodict.unparse(response, pretty=True)
+            return HttpResponse(res, content_type='text/xml')
+
+        # api security check
+        if apiusername != USERNAME or apipassword != PASSWORD:
+            logger.error("The authentication credentials for the API are incorrect.")
+            response = {
+                "pkt" : {
+                    "methodresponse" : {
+                        "@name" : name,
+                        "@timestamp" : timestamp,
+                        "result" : {
+                            "@seq" : seq,
+                            "@errorcode" : "6003",
+                            "@errordescription": MG_RESPONSE_ERROR["6003"],
+                            "extinfo" : {}
+                        },
+                                
+                    }
+                        
+                }
+            }
+            res = xmltodict.unparse(response, pretty=True)
+            return HttpResponse(res, content_type='text/xml')
         
         if name == "login":
             try:            
-                timestamp = dd['pkt']['methodcall']['@timestamp']
-                loginname = dd['pkt']['methodcall']['auth']['@login']
+                # timestamp = dd['pkt']['methodcall']['@timestamp']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
                
@@ -122,8 +168,6 @@ class MGgame(APIView):
             try:
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
-                timestamp = dd['pkt']['methodcall']['@timestamp']
-                loginname = dd['pkt']['methodcall']['auth']['@login']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
             
@@ -193,8 +237,6 @@ class MGgame(APIView):
                 other_data = dict(dd)
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
-                timestamp = dd['pkt']['methodcall']['@timestamp']
-                loginname = dd['pkt']['methodcall']['auth']['@login']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
                 playtype = dd['pkt']['methodcall']['call']['@playtype']
@@ -352,8 +394,6 @@ class MGgame(APIView):
             try:
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
-                timestamp = dd['pkt']['methodcall']['@timestamp']
-                loginname = dd['pkt']['methodcall']['auth']['@login']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
                 # bonus here should add more work later...
@@ -421,7 +461,6 @@ class MGgame(APIView):
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
                 timestamp = dd['pkt']['methodcall']['@timestamp']
-                loginname = dd['pkt']['methodcall']['auth']['@login']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
         
@@ -491,7 +530,6 @@ class MGgame(APIView):
                 # dd = xmltodict.parse(data)
                 name = dd['pkt']['methodcall']['@name']
                 timestamp = dd['pkt']['methodcall']['@timestamp']
-                loginname = dd['pkt']['methodcall']['auth']['@login']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
         
