@@ -89,6 +89,7 @@ urlpatterns = [
     # playtech
 
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),
+    path('api/pt/transfer_test', ptgameviews.PTTransferTest.as_view(), name = 'pt_transfer'),
     path('api/pt/get_record', ptgameviews.GetBetHistory.as_view(), name = 'pt_get_record'),
 
     # kaiyuan gaming

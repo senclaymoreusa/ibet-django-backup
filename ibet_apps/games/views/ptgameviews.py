@@ -17,12 +17,30 @@ from utils.constants import *
 import datetime
 from datetime import date
 from django.utils import timezone
+import time
 
 logger = logging.getLogger("django")
 
 
+
+def createUser(user):
+    headers = {
+        'Pragma': '',
+        'Keep-Alive': 'timeout=5, max=100',
+        'X_ENTITY_KEY': ENTITY_KEY
+    }
+    player = "IBETPU_" + user.username.upper()
+    admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
+    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
+    rr = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+    rrdata = rr.json()
+    return rrdata
+
+
 class GetPlayer(APIView):
     """
+    check if user exist in PT game before launch. Create a new player if user not exist, otherwise check balance.
+    Make sure user has enough balance to play the game, alert to deposit if not.
     status code: 
     0 - player exist, can play the game directly.
     1 - error.
@@ -50,11 +68,8 @@ class GetPlayer(APIView):
             if 'errorcode' in rrdata:
                 if rrdata['errorcode'] == 41:
                 # user does not exist, need create a new player.
-                    player = "IBETPU_" + username.upper()
-                    admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
-                    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
-                    r_create = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
-                    r_create_data = r_create.json()
+                  
+                    r_create_data = createUser(user)
                     # error in create player.
                     if 'errorcode' in r_create_data:
                          data = {
@@ -107,10 +122,80 @@ class GetPlayer(APIView):
             }
 
         return HttpResponse(json.dumps(data),content_type='application/json',status=200)  
+
+class PTTransferTest(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request, *args, **kwargs):
        
+        data = json.loads(request.body)
+        username = data["user"]
+        user = CustomUser.objects.get(username=username)
+        amount = data["amt"]
+        from_wallet = data["from_wallet"]
+        method = int(data["method"])
+        
+        ptTransfer(user, amount, from_wallet, method)
+        return HttpResponse(status=200)
+      
+def transferHelp(method, user, amount, trans_id, orderid, wallet):
+    headers = {
+                'Pragma': '',
+                'Keep-Alive': 'timeout=5, max=100',
+                'X_ENTITY_KEY': ENTITY_KEY
+            }
+    direction = "deposit" if method == 0 else "withdraw"
+    player = "IBETPU_" + user.username.upper()
+    url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
+    rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+    if rr.status_code == 200 :    
+        rrdata = rr.json()      
+        if 'errorcode' in rrdata:
+        # error exist.
+            return False
+        else:
+            # deposit OK.
+            if rrdata['result']['result'] == "Deposit OK":
+                Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=orderid,
+                    amount=amount,
+                    currency=user.currency,
+                    transfer_from=wallet,
+                    transfer_to='pt',
+                    product=1,
+                    transaction_type=TRANSACTION_TRANSFER,
+                    status=TRAN_SUCCESS_TYPE
+                )
+                return True
+            # withdraw OK.
+            elif rrdata['result']['result'] == "Withdraw OK":
+                Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=orderid,
+                    amount=amount,
+                    currency=user.currency,
+                    transfer_from='pt',
+                    transfer_to=wallet,
+                    product=1,
+                    transaction_type=TRANSACTION_TRANSFER,
+                    status=TRAN_SUCCESS_TYPE
+                )
+                return True
+
+            else:
+                return False
+    else :
+        logger.info("Failed response: {}".format(rr.status_code))
+        return False
+
+
+
 
 def ptTransfer(user, amount, wallet, method):
     try:
+       
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
         user_currency = int(user.currency)
         order_time = time.strftime("%Y%m%d%H%M%S")
@@ -121,124 +206,34 @@ def ptTransfer(user, amount, wallet, method):
             'Keep-Alive': 'timeout=5, max=100',
             'X_ENTITY_KEY': ENTITY_KEY
         }
-        # Deposit
-        if method == 0:
-            if user.currency == CURRENCY_CNY:
-                amount = amount
-            
-            url = PT_BASE_URL + "/player/deposit/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
-            
-            rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
-        
-            if rr.status_code == 200 :    
-                rrdata = rr.json()
-              
-                if 'errorcode' in rrdata:
-                # error exist.
-
-                    
-                    if rrdata['errorcode'] == 72:
-                    # user not exist, need to create a new player first.
-                        
-                        admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
-                        userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
-                        r_create = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
-                        r_create_data = r_create.json()
-                        # error in create player.
-                        if 'errorcode' in r_create_data:
-                            return False
-                        else:
-                        # create user successfully, deposit again.
-                            print("other things...")
-
-                            
-                            
-
-
-                    else:
-                    # other error.
-                        return False
-                    
-
-
-                # deposit works. 
-                else:
-                    try:
-                        if rrdata['result']['result'] == "Deposit OK":
-                            Transaction.objects.create(
-                                transaction_id=trans_id,
-                                user_id=user,
-                                order_id=orderid,
-                                amount=amount,
-                                currency=user.currency,
-                                transfer_from=wallet,
-                                transfer_to='pt',
-                                product=1,
-                                transaction_type=TRANSACTION_TRANSFER,
-                                status=TRAN_SUCCESS_TYPE
-                            )
-                            return True
-
-                        else:
-                            return False
-
-                    except Exception as e:
-                        logger.info("PT Deposit Not Success")
-                        return False
-            else:
-                logger.info("Failed response: {}".format(res.status_code))
+       
+        if user.currency == CURRENCY_CNY:
+            amount = amount
+        # check if user exist.
+        r_create_data = createUser(user)
+        print(r_create_data)
+        # error in create player.
+        if 'errorcode' in r_create_data:
+        # user already exist, transfer directly.
+            if r_create_data['errorcode'] == 19:
+                return transferHelp(method, user, amount, trans_id, orderid, wallet)
+            else :
+                logger.error("user create error in pt transfer")
                 return False
                 
-
-        # withdraw
-        elif method == 1:
-            operation_type = 3
-            if user.currency == CURRENCY_CNY:
-                amount = amount
-
-            url = PT_BASE_URL + "/player/withdraw/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT/externaltranid/" + trans_id        
-            rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
-        
-            if rr.status_code == 200 :    
-                rrdata = rr.json()
-                try:
-                    if rrdata['result']['result'] == "Withdraw OK":
-                        Transaction.objects.create(
-                            transaction_id=trans_id,
-                            user_id=user,
-                            order_id=orderid,
-                            amount=amount,
-                            currency=user.currency,
-                            transfer_from='pt',
-                            transfer_to=wallet,
-                            product=1,
-                            transaction_type=TRANSACTION_TRANSFER,
-                            status=TRAN_SUCCESS_TYPE
-                        )
-                        return True
-
-                    else:
-                        return False
-
-                except Exception as e:
-                    logger.info("PT Withdraw Not Success")
-                    return False
-
-            else:
-                logger.info("Failed response: {}".format(res.status_code))
-                return False
-
-            
         else:
-            amount = 0
+        # create user successfully. transfer then.
 
+            return transferHelp(method, user, amount, trans_id, orderid, wallet)
 
     except Exception as e:
-        logger.error("Playtech Game fundTransfer error: {}".format(repr(e)))
         return False
 
+      
 
 class GetBetHistory(APIView):
+
+    # other work still needed....
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
         headers = {
