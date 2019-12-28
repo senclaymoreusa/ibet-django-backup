@@ -63,7 +63,7 @@ class GameLaunchView(View):
             return HttpResponse("PNGTicket created or updated")
 
         except Exception as e:
-            logger.error("PLAY'nGO GameLaunchView Error: " + str(e))
+            logger.error("PLAY'nGO GameLaunchView: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -140,7 +140,7 @@ def png_authenticate(data):
             return HttpResponse(res_msg, content_type='text/xml') # Successful response
 
         except Exception as e:
-            logger.error("PLAY'nGO AuthenticateView Error: " + str(e))
+            logger.error("PLAY'nGO AuthenticateView: " + str(e))
             return HttpResponse(str(e))
 
     except:
@@ -204,7 +204,7 @@ def png_balance(data):
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO BalanceView Error: " + str(e))
+        logger.error("PLAY'nGO BalanceView: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -285,7 +285,7 @@ def png_reserve(data):
         # Bet amount is bigger than user balance.
         else:
             status_code = PNG_STATUS_NOTENOUGHMONEY
-            logger.error("PLAY'nGO ReserveView Error: Not enough money to place bet.")
+            logger.error("PLAY'nGO ReserveView: Not enough money to place bet.")
 
         # Compose response dictionary and convert to response XML.
         res_dict = {
@@ -307,7 +307,7 @@ def png_reserve(data):
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO ReserveView Error: " + str(e))
+        logger.error("PLAY'nGO ReserveView: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -382,7 +382,7 @@ def png_cancel_reserve(data):
         # Specified bet does not exist.
         except ObjectDoesNotExist:
             ext_trans_id = ""
-            logger.error("PLAY'nGO CancelReserveView Error: Specified bet does not exist.")
+            logger.error("PLAY'nGO CancelReserveView: Specified bet does not exist.")
 
         # Compose response dictionary and convert to response XML.
         res_dict = {
@@ -403,7 +403,7 @@ def png_cancel_reserve(data):
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO CancelReserveView Error: " + str(e))
+        logger.error("PLAY'nGO CancelReserveView: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -430,7 +430,7 @@ def png_release(data):
         jackpot_gain_id = req_dict['release']['jackpotGainId']
         channel = req_dict['release']['channel']
         free_game_external_id = req_dict['release']['freegameExternalId']
-        free_game_total_gain = req_dict['release']['freegameTotalGain']
+        # free_game_total_gain = req_dict['release']['freegameTotalGain']
 
         user_obj = CustomUser.objects.get(username=username)
         user_balance = int(user_obj.main_wallet * 100) / 100.0
@@ -482,7 +482,7 @@ def png_release(data):
                 logger.info("PLAY'nGO ReleaseView Success: Winnings sent to user " + str(user_obj.username))
 
         else:
-            logger.error("PLAY'nGO ReleaseView Error: Transaction already resolved.")
+            logger.error("PLAY'nGO ReleaseView: Transaction already resolved.")
             pass
 
         res_dict = {
@@ -503,7 +503,7 @@ def png_release(data):
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO ReleaseView Error: " + str(e))
+        logger.error("PLAY'nGO ReleaseView: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -532,8 +532,8 @@ class RootView(View):
 
             else:
                 # Provider says this case should never occur.
-                logger.error("Playngo Error: Invalid request received.")
-                return HttpResponse("Playngo Error: Invalid request received.", status=status.HTTP_400_BAD_REQUEST)
+                logger.error("Playngo: Invalid request received.")
+                return HttpResponse("Playngo: Invalid request received.", status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             logger.error("Unspecified error in Playngo.")
