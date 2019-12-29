@@ -620,12 +620,12 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
 
     try:
         resettle_id = resettle_details[0]["betNum"]
-        existing_settle = GameBet.objects.get(ref_no=resettle_id, outcome__in=[0, 1, 2])
+        most_recent_settle = GameBet.objects.filter(ref_no=resettle_id, outcome__in=[0, 1, 2, 7]).latest('resolved_time')
 
         # Cancel existing settle and re-settle according to new details.
         with transaction.atomic():
             user_balance = int(user_obj.main_wallet * 100) / 100.0
-            balance_after_cancelling = user_balance - float(existing_settle.amount_won)
+            balance_after_cancelling = user_balance - float(most_recent_settle.amount_won)
             balance_after_resettling = balance_after_cancelling + resettle_details[0]["amount"]
             user_obj.main_wallet = balance_after_resettling
             user_obj.save()
