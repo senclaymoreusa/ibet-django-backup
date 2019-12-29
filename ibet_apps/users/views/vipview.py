@@ -78,7 +78,7 @@ class VIPView(CommAdminView):
                 except Exception as e:
                     logger.error("Error getting request from vip admin frontend: ", e)
 
-            result['data'] = vipData(queryset, min_date, max_date, "list")
+            result['data'] = getVIPData(queryset, min_date, max_date, "list")
 
             return HttpResponse(json.dumps(result), content_type='application/json')
 
@@ -158,7 +158,7 @@ class VIPView(CommAdminView):
 
 # get data for vip admin table
 
-def vipData(queryset, start_time, end_time, type):
+def getVIPData(queryset, start_time, end_time, type):
     vip_arr = []
     for vip in queryset:
         deposit_count, deposit_amount = calculateDeposit(vip, start_time, end_time)
@@ -207,7 +207,7 @@ def exportVIP(request):
     export_title = json.loads(request.GET.get('tableHead'))
     queryset = CustomUser.objects.filter(vip_level__isnull=False).order_by('-created_time')
 
-    vip_list = vipData(queryset, None, None, "export")
+    vip_list = getVIPData(queryset, None, None, "export")
     vip_list.insert(0, export_title)
     return streamingExport(vip_list, 'VIP')
 

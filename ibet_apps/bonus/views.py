@@ -7,7 +7,7 @@ from bonus.models import *
 from users.models import CustomUser
 from games.models import Category
 from utils.admin_helper import bonusValueToKey, dateToDatetime, BONUS_TYPE_VALUE_DICT, BONUS_DELIVERY_VALUE_DICT, \
-    BONUS_GAME_CATEGORY, ubeValueToKey, streamingExport, userBonusCompletion
+    BONUS_GAME_CATEGORY, ubeValueToKey, streamingExport, calBonusCompletion
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -506,7 +506,7 @@ class UserBonusEventView(View):
             # put bonus data and user data into events
             # TODO: needs to update ube amount(fixed, percentage, tiered), completion
             for event in events:
-                completion = userBonusCompletion(event.owner, event.bonus, timezone.now())
+                completion = calBonusCompletion(event.owner, event.bonus, timezone.now())
                 event_data = serializers.serialize('json', {event})
                 event_data = json.loads(event_data)
 

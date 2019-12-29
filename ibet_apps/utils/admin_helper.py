@@ -344,7 +344,7 @@ BONUS_GAME_CATEGORY = {
 }
 
 
-def userBonusCompletion(user, bonus, timestamp):
+def calBonusCompletion(user, bonus, timestamp):
     return 0
 
 
