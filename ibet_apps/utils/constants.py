@@ -20,14 +20,11 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-    # pt_cert_key = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.key')
-    # pt_cert_pem = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.pem')
+   
 else:
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-    # pt_cert_key = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.key')
-    # pt_cert_pem = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.pem')
-
+   
 GENDER_CHOICES = (
     ('Male', 'Male'),
     ('Female', 'Female')
@@ -710,6 +707,10 @@ PASSWORD = keys["MG"]['PASSWORD']
 # LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
 #PTgame
+PT_STATUS_SUCCESS = 0
+PT_GENERAL_ERROR = 1
+PT_BALANCE_ERROR = 2
+PT_NEWPLAYER_ALERT = 3
 PT_BASE_URL = "https://kioskpublicapi.luckydragon88.com"
 ENTITY_KEY = "19969fca479e990e5eec11bc1db6cd5f711132a52eb99df9a02587c11ee2d9472a2cf1b3ad437d1d2f147b8923a200e70e670c1c06920c12280c9603f70e9fe2"
 
