@@ -176,26 +176,28 @@ class DepositResult(generics.GenericAPIView):
 # help2pay requests withdraw info from user
 def confirmWithdrawRequest(request):
     if request.method == "POST":
+        
         trans_id = request.GET.get("transId")
+        print(trans_id)
         checksum = request.GET.get("key")
-        return HttpResponse("true")
-        # try:
-        #     withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
-        #     if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
-        #         withdraw_txn.arrive_time = timezone.now()
-        #         withdraw_txn.last_updated = timezone.now()
-        #         withdraw_txn.status=TRAN_APPROVED_TYPE
-        #         withdraw_txn.save()
-        #         return HttpResponse("true")
+        print(checksum)
+        try:
+            withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
+            if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
+                withdraw_txn.arrive_time = timezone.now()
+                withdraw_txn.last_updated = timezone.now()
+                withdraw_txn.status=TRAN_APPROVED_TYPE
+                withdraw_txn.save()
+                return HttpResponse("true")
                 
-        #     return HttpResponse("false")
-        # except ObjectDoesNotExist as e:
-        #     logger.error(repr(e))
-        #     logger.error(f"transaction id {trans_id} does not exist")
-        #     return HttpResponse("false")
-        # except Exception as e:
-        #     logger.error(repr(e))
-        #     return HttpResponse("false")
+            return HttpResponse("false")
+        except ObjectDoesNotExist as e:
+            logger.error(repr(e))
+            logger.error(f"transaction id {trans_id} does not exist")
+            return HttpResponse("false")
+        except Exception as e:
+            logger.error(repr(e))
+            return HttpResponse("false")
 
 # user submits withdraw request
 class SubmitPayout(View):
@@ -222,16 +224,20 @@ class SubmitPayout(View):
             
             user_id=user.pk
             currency = user.currency
-            
+            merchant_code = '123'
+            secret_key = '123'
+            payoutURL = '123'
             
             if currency == 2:
                 merchant_code = HELP2PAY_MERCHANT_THB
                 secret_key = HELP2PAY_SECURITY_THB
                 payoutURL = H2P_PAYOUT_URL_THB
+                
             elif currency == 8:
                 merchant_code = HELP2PAY_MERCHANT_VND
                 secret_key = HELP2PAY_SECURITY_VND
                 payoutURL = H2P_PAYOUT_URL_VND
+            
             
             strAmount = str('%.2f' % amount)
             
@@ -275,7 +281,7 @@ class SubmitPayout(View):
             if can_withdraw:
                 data = {
                     "Key": MD5(secretMsg),
-                    "ClientIP": ip,
+                    "ClientIP": '73.202.78.65',
                     "ReturnURI": "https://3fb2738f.ngrok.io/accounting/api/help2pay/request_withdraw",
                     "MerchantCode": merchant_code,
                     "TransactionID": str(trans_id),
@@ -287,10 +293,11 @@ class SubmitPayout(View):
                     "toBankAccountName": toBankAccountName,
                     "toBankAccountNumber": toBankAccountNumber,
                 }
-                
+                print(data)
                 r = requests.post(payoutURL, data=data)
-                
+                print(r.content)
                 if r.status_code == 200:
+
                     return HttpResponse(r.content)
                 else:
                     return JsonResponse({

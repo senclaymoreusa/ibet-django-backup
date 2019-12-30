@@ -337,7 +337,7 @@ def sendCardToMobileWithAppId(request):
             "x_reference": OrderID,
             "notification_url": ASTROPAY_CONFIRM_URL,
         }
-        
+        print(params)
         url = ASTROPAY_URL
         if check_password(withdraw_password, user.withdraw_password):
             for x in range(3):
