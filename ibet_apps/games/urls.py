@@ -26,12 +26,14 @@ from games.views.views import *
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),
+    path('api/games-category/', GamesCategoryAPI.as_view(), name='games_category'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
     # path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
-
+    path('api/bets/getprovandcats', csrf_exempt(bets.getProvidersAndCategories), name="get_prov_and_cats"),
+    
     # Inplay Matrix
     path('api/inplay/login/', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay_login"),
     path('api/inplay/Validatetoken/', inplayviews.ValidateTokenAPI.as_view(), name="inplay_validate"),
@@ -39,6 +41,7 @@ urlpatterns = [
     path('api/inplay/GetApproval/', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay_get_approval"),
     path('api/inplay/DeductBalance/', inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
     path('api/inplay/UpdateBalance/', inplayviews.InplayUpdateBalanceAPI.as_view(), name="inplay-update-balance"),
+    path('api/inplay/PostBetDetails/', csrf_exempt(inplayviews.InplayPostBetDetailsAPI.as_view()), name="inplay-bet-details"),
     path('api/inplay/test-decryption/', inplayviews.TestDecryption.as_view(), name="inplay_test_decryption"),
 
     #ea live casino
@@ -62,12 +65,8 @@ urlpatterns = [
     path('api/gd/check_transaction_status', gdcasino.checkTransactionStatus.as_view(), name = 'GDCasino_check_Transaction_Status'),
 
     # Play n Go
+    path('api/playngo', csrf_exempt(playngogameviews.RootView.as_view()), name="png_root"),
     path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
-    path('api/playngo/login', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
-    path('api/playngo/balance', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
-    path('api/playngo/reserve', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
-    path('api/playngo/release', csrf_exempt(playngogameviews.ReleaseView.as_view()), name="png_rel"),
-    path('api/playngo/cancel', csrf_exempt(playngogameviews.CancelReserveView.as_view()), name="png_cancel"),
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
@@ -78,7 +77,7 @@ urlpatterns = [
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/getSessionKey', fggameviews.GetSessionKey.as_view(), name = 'fg_get_sessionkey' ),
-    path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
+    # path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),

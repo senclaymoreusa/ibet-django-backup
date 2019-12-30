@@ -23,7 +23,7 @@ from  games.models import *
 import json
 import time
 import urllib
-from background_task import background
+# from background_task import background
 import redis
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper

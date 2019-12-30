@@ -35,6 +35,7 @@ class Category(models.Model):
     # category_type = models.SmallIntegerField(choices=CATEGORY_TYPES, default=0)
     parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.CharField(max_length=500)
+    category_order = models.SmallIntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = _('Game Category')

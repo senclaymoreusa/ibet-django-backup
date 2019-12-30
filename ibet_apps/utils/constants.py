@@ -585,14 +585,7 @@ EVENT_CHOICES = (
     (EVENT_CHOICES_SMS_CODE, _('SMS CODE')),
 )
 
-#FGgame
-BRANDID = '524'
-BRAND_PASSWORD = 'Flow6refg'
-PLATFORM = 'NETENT_CAS',
-FG_URL = 'https://lsl.omegasys.eu/ps/ssw/login'
-FG_SESSION_CHECK = 'https://lsl.omegasys.eu/ps/ips/checkSessionAlive'
-#LAUNCH_URL = 'https://ps.adminfg.com/ps/game/GameContainer.action'
-LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
 
 
 
@@ -699,7 +692,19 @@ IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"]
 IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
 IOVATION_URL = keys["IOVATION"]["URL"]
 
-# help2pay sandbox credentials & callback
+#FGgame
+BRANDID = keys["FG"]["BRANDID"]
+BRAND_PASSWORD = keys["FG"]["BRAND_PASSWORD"]
+PLATFORM = keys["FG"]["PLATFORM"],
+FG_URL = keys["FG"]["FG_URL"]
+FG_SESSION_CHECK = keys["FG"]["FG_SESSION_CHECK"]
+
+#MGgame
+USERNAME = keys["MG"]["USERNAME"]
+PASSWORD = keys["MG"]['PASSWORD']
+
+# LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
 
 HELP2PAY_MERCHANT_THB = "M0513"
 HELP2PAY_MERCHANT_VND = "M0514"
@@ -756,10 +761,6 @@ REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
 
 GAME_FILTER_OPTION = [
     {
-        'name': 'Games Category',
-        'data': ['New', 'Popular', 'Table Games', 'Slots', 'All Games']
-    },
-    {
         'name': 'Jackpot',
         'data': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots']
     },
@@ -783,6 +784,16 @@ GAME_FILTER_OPTION = [
         'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
     },
 ]
+
+
+GAME_FILTER_OPTIONS = {
+    'Providers': [],
+    'Features': ['Megaways', 'Pay Both Ways', 'Bonus Feature', 'Free Spins', 'Double Or Nothing Feature'],
+    'Theme': ['Egypt', 'Oriental', 'Mythology', 'Animal', 'Adventure', 'Fruit', 'Western', 'Film/Tv', 'Music', 'Sports',
+            'Space', 'Holidays', 'Dark/ Halloween', 'Vegas'],
+    'Jackpot': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots'],
+    'Sort': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
+}
 
 # Notification
 MESSAGE_REJECTED = 0
@@ -1462,7 +1473,6 @@ PT_PROVIDER = "PT"
 
 
 
-
 # Playngo
 PNG_STATUS_OK = 0
 PNG_STATUS_NOUSER = 1
@@ -1477,6 +1487,8 @@ PNG_STATUS_SPENDINGBUDGETEXCEEDED = 9
 PNG_STATUS_SESSIONEXPIRED = 10
 PNG_STATUS_TIMEBUDGETEXCEEDED = 11
 PNG_STATUS_SERVICEUNAVAILABLE = 12
+
+PNG_ACCESS_TOKEN = keys["PLAYNGO"]["ACCESSTOKEN"]
 
 # Inplay Matrix
 IMES_URL = keys["IMES"]["URL"]
