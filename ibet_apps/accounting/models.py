@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
 from utils.constants import *
 
 import uuid
@@ -37,6 +37,7 @@ class ThirdParty(models.Model):
     method = models.CharField(max_length=30, verbose_name=_("Method"))
     channel = models.CharField(max_length=30, verbose_name=_("Channel"))
     supplier = models.CharField(max_length=50, verbose_name=_("Supplier"), null=True)
+
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
     )
@@ -46,7 +47,10 @@ class ThirdParty(models.Model):
     max_amount = models.DecimalField(
         max_digits=20, decimal_places=2, default=0, verbose_name=_("Max Amount")
     )
-    switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+
+    # switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+    status = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
+
     # flat fee for each transaction
     transaction_fee = models.DecimalField(
         max_digits=20,
@@ -77,7 +81,19 @@ class ThirdParty(models.Model):
     # control new users volume
     limit_access = models.BooleanField(default=False)
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
-    vip_level = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
+    player_segment = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
+
+
+    # white/blacklist
+    whitelist = JSONField(default=dict)
+    blacklist = JSONField(default=dict)
+
+    # scheduled downtime
+    downtime_start = models.DateTimeField(null=True, blank=True)
+    downtime_end = models.DateTimeField(null=True, blank=True)
+    
+    # changelog ? 
+    changelog = JSONField(default=dict)
 
     class Meta:
         abstract = True
@@ -85,7 +101,7 @@ class ThirdParty(models.Model):
     def __str__(self):
         return "{0}".format(self.thirdParty_name)
 
-
+    
 class DepositChannel(ThirdParty):
     priority = models.IntegerField(default=0, verbose_name=_("Priority"))
     deposit_channel = models.ManyToManyField(
@@ -100,6 +116,10 @@ class DepositChannel(ThirdParty):
         verbose_name = "Deposit Channel"
         verbose_name_plural = "Deposit Channels"
 
+    @property
+    def type(self):
+        return "Deposit"
+
     def __str__(self):
         return "PSP Name: {0}, \n \
             Min Amount: {1}, \n \
@@ -108,16 +128,17 @@ class DepositChannel(ThirdParty):
             Market: {4} \n \
             ".format(self.get_thirdParty_name_display(), self.min_amount, self.max_amount, self.channel, self.get_market_display())
 
-
-
 class WithdrawChannel(ThirdParty):
     class Meta:
         verbose_name = "Withdraw Channel"
         verbose_name_plural = "Withdraw Channels"
 
+    @property
+    def type(self):
+        return "Withdraw"
+    
     def __str__(self):
         return self.get_thirdParty_name_display()
-
 
 class Transaction(models.Model):
     """
@@ -125,12 +146,12 @@ class Transaction(models.Model):
     is used for multiple transaction types (deposit, withdrawal, etc.)    
     """
     transaction_id = models.CharField(     #request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
-        max_length=200, default=0, verbose_name=_("Transaction id")
+        max_length=200, default=0, verbose_name=_("Transaction ID")
     )
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("Member")
     )
-    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order id")) #third party refo
+    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order ID")) #third party refo
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name=_("Apply Amount")
     )
@@ -163,7 +184,7 @@ class Transaction(models.Model):
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
     
-    # Transaction types: Deposit, Withdrawal, Bet Placed, Bet Settled, etc.
+    # Transaction types: Deposit, Withdrawal
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")
     )
@@ -187,19 +208,17 @@ class Transaction(models.Model):
 
     # bank account details (used for offline local bank transfer)
     # The user Account
-    user_bank_account = models.ForeignKey(
-        BankAccount, on_delete=models.CASCADE, null=True, blank=True
-    )
-
+    bank_info = JSONField(null=True, default=dict)
     # Auditor upload transaction success image
     transaction_image = models.CharField(max_length=250, null=True, blank=True)
 
-    # commission tracsaction
+    # commission transaction
     month = models.DateField(null=True, blank=True)
     #Asiapay qrcode
     qrcode = models.CharField(max_length=500, null=True, blank= True, verbose_name=_("QRCode"))
 
     commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
+    other_data = JSONField(null=True, default=dict)
 
     # release bonus, adjustment to affiliate...
     # withdraw transaction reviewer

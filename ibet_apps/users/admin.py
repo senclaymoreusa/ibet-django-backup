@@ -30,18 +30,17 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(CustomUser, UserAdmin)
 admin.site.unregister(Group)
 admin.site.register(Language)
-admin.site.register(Category)
 admin.site.register(Status)
-admin.site.register(Game)
 admin.site.register(Config)
 admin.site.register(NoticeMessage)
+admin.site.register(UserWallet)
 
-admin.site.register(GameRequestsModel)
 admin.site.register(Limitation)
 admin.site.register(Commission)
 admin.site.register(ReferChannel)
 admin.site.register(UserAction)
 admin.site.register(Segmentation)
+admin.site.register(SystemCommission)
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm

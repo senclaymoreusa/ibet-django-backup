@@ -55,6 +55,8 @@ urlpatterns = [
     path('api/help2pay/deposit_result', help2pay.DepositResult.as_view(), name='Help2pay_deposit_result'),
     path('api/help2pay/deposit_success', help2pay.depositFrontResult, name = 'Help2pay_deposit_sucess'),
     path('api/help2pay/deposit_status', help2pay.depositStatus, name = 'Help2pay_deposit_status'),
+    path('api/help2pay/submit_payout', csrf_exempt(help2pay.SubmitPayout.as_view()), name = 'Help2pay_submit_payout'),
+    path('api/help2pay/request_withdraw', csrf_exempt(help2pay.ConfirmWithdrawRequest.as_view()), name = 'Help2pay_withdraw_request'),
     path('api/fgate/chargeCard', fgate.chargeCard.as_view(), name = 'fgate_Charge_Card'),
     path('api/circlepay/deposit', csrf_exempt(circlepay.create_deposit), name="CirclePay_create_deposit"),
     path('api/circlepay/confirm', csrf_exempt(circlepay.confirm_payment), name="CirclePay_Confirm_Payment"),
@@ -68,7 +70,8 @@ urlpatterns = [
     path('api/paymentiq/cancel', csrf_exempt(paymentiq.cancel), name="Payment_IQ_Cancel"),
     path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card_Deposit"),
     path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
-    path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions")
+    path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions"),
+    path('api/transactions/save_transaction', csrf_exempt(accounting.transactions.save_transaction), name="Save_Transaction")
 ]
 
 

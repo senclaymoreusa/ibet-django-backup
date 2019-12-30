@@ -6,42 +6,173 @@
 {% endblock %}
 
 {% block content %}
-<div id="supplier-table">
-    <table id="suppliers" class="datatable table-striped table-bordered">
-        <thead>
-            <tr>
-                <th scope="col">METHOD</th>
-                <th scope="col">CHANNEL</th>
-                <th scope="col">SUPPLIER</th>
-                <th scope="col">TYPE</th>
-                <th scope="col">MARKET</th>
-                <th scope="col">MIN AMOUNT</th>
-                <th scope="col">MAX AMOUNT</th>
-                <th scope="col">FLAT FEE</th>
-                <th scope="col">% FEE</th>
-                <th scope="col">REQUIRED VERIFICATIONS</th>
-                <th scope="col">SCHEDULED DOWNTIME</th>
-                <th scope="col">STATUS</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for psp in suppliers %}
-                <tr>
-                    <td>{{ psp.method }}</td>
-                    <td>{{ psp.channel }}</td>
-                    <td>{{ psp.supplier|default:'' }}</td>
-                    <!-- <td>Deposit</td> -->
-                    <td>{{ psp.min_amount|intcomma }}</td>
-                    <td>{{ psp.max_amount|intcomma }}</td>
-                    <td>{{ psp.get_market_display }}</td>
-                    <td>{{ psp.transaction_fee }}</td>
-                    <td>{{ psp.transaction_fee_per }}</td>
-                    <td>{{ psp.get_market_display }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-accounting.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
+    <!-- css for flag icons <link rel="stylesheet" type="text/css" href="{% static 'css/flag-icon.css' %}"></link> -->
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+        type="text/css" />
+    
+</head>
+
+<body>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Payment Methods
+        </h2>
+    </div>
+    
+    <div class="panel-body">
+        <!-- market, status, and type filter -->
+        <div class="row">
+            <div class="col-md-1" style="margin-right: 10px">
+                <label for="market-filter">MARKET</label>
+                <span flag-icon flag-icon-cn></span>
+                <div class="row">
+                    <select id="market-filter">
+                        <option value="all">All</option>
+                        <optgroup label="ibet">
+                            <option value="ibet-cn">ibet - CN</option>
+                            <option value="ibet-th">ibet - TH</option>
+                            <option value="ibet-vn">ibet - VN</option> 
+                        </optgroup>
+                        <optgroup label="letou">
+                            <option value="letou-cn">letou - CN</option>
+                            <option value="letou-th">letou - TH</option>
+                            <option value="letou-vn">letou - VN</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <label for="type-filter">TYPE</label>
+                <div class="row">
+                    <select id="type-filter">
+                        <option value="all">All</option>
+                        <option value="deposit">Deposit</option>
+                        <option value="withdraw">Withdrawal</option> 
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <label for="status-filter">STATUS</label>
+                <div class="row">
+                    <select id="status-filter">
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="disabled">Disabled</option> 
+                    </select>
+                </div>
+            </div>
+            <div class='col-md-2' style="width: 25%; padding: 10px 30px 0 15px; float: right;">
+                <label for="search">FIND A PAYMENT METHOD</label>
+                <div class='input-group date' id='deposit_time_from'>
+                    <input type='text' class="form-control" placeholder="Enter method, channel, or supplier" id='search'/>
+                    <span id='search-btn' class="input-group-addon" style="background-color: #428bca; color: white">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div id="supplier-table" aria-labelledby="home-tab" class="data-section">
+            <table id="suppliers" class="table-striped table-bordered hover compact" 
+            style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
+                <thead>
+                    <tr>
+                        <th scope="col">METHOD</th>
+                        <th scope="col">CHANNEL</th>
+                        <th scope="col">SUPPLIER</th>
+                        <th scope="col">TYPE</th>
+                        <th scope="col">MARKET</th>
+                        <th scope="col">MIN AMOUNT</th>
+                        <th scope="col">MAX AMOUNT</th>
+                        <th scope="col">FLAT FEE</th>
+                        <th scope="col">% FEE</th>
+                        <th scope="col">REQUIRED VERIFICATIONS</th>
+                        <th scope="col">SCHEDULED DOWNTIME</th>
+                        <th scope="col">STATUS</th>
+                        <th scope="col">CONFIG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for psp in deposits %}
+                    <tr>
+                        <td>{{ psp.method }}</td>
+                        <td>{{ psp.channel }}</td>
+                        <td>{{ psp.supplier|default:'' }}</td>
+                        <td>{{ psp.type }}</td>
+                        <td>{{ psp.get_market_display }}</td>
+                        <td>{{ psp.min_amount|intcomma }}</td>
+                        <td>{{ psp.max_amount|intcomma }}</td>
+                        <td>{{ psp.transaction_fee }}</td>
+                        <td>{{ psp.transaction_fee_per }}</td>
+                        <td>{{ psp.req_ver }}</td>
+                        {% if psp.downtime_start and psp.downtime_end %}
+                        <td>{{ psp.downtime_start }} - {{ psp.downtime_end }}</td>
+                        {% else %}
+                        <td></td> 
+                        {% endif %}
+                        <td>{{ psp.get_status_display }}</td>
+                        <td>                            
+                            <button id="{{ psp.pk }}" data-psp="deposit" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
+                                <!-- <span class="glyphicon glyphicon-search"></span> -->
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for psp in withdraws %}
+                    <tr>
+                        <td>{{ psp.method }}</td>
+                        <td>{{ psp.channel }}</td>
+                        <td>{{ psp.supplier|default:'' }}</td>
+                        <td>{{ psp.type }}</td>
+                        <td>{{ psp.get_market_display }}</td>
+                        <td>{{ psp.min_amount|intcomma }}</td>
+                        <td>{{ psp.max_amount|intcomma }}</td>
+                        <td>{{ psp.transaction_fee }}</td>
+                        <td>{{ psp.transaction_fee_per }}</td>
+                        <td>{{ psp.req_ver }}</td>
+                        {% if psp.downtime_start and psp.downtime_end %}
+                        <td>{{ psp.downtime_start }} - {{ psp.downtime_end }}</td>
+                        {% else %}
+                        <td></td> 
+                        {% endif %}
+                        <td>{{ psp.get_status_display }}</td>
+                        <td>                            
+                            <button id="{{ psp.pk }}" data-psp="withdraw" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
+                                <!-- <span class="glyphicon glyphicon-search"></span> -->
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row" style="margin-left: 0px">
+            <!-- <button type="button" class="btn btn-primary" id="white-black-list" onclick="alert('applying black/whitelist')">Apply white/black list to all payments</button> -->
+            <button type="button" class="btn btn-primary" id="white-black-list" onclick="alert('this is the changelog')">View change log</button>
+        </div>
+    </div>
+
+    <!-- PSP config modal -->
+    <div class="modal fade" id="edit-psp" role="dialog">
+        <div id="override" class="modal-dialog">
+            <!-- Modal content -->
+            {% include "payment_modal.html" %}
+        </div>
+    </div>
+    
 </div>
+        
 
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 
@@ -63,9 +194,126 @@
 
 
 <script>
-    $(document).ready(function () {
-        var csrftoken = $.cookie("csrftoken")
+    function initSearchParams() {
+        if (window.location.search) {
+            let params = new URLSearchParams(window.location.search);
+            document.getElementById('search').value = params.get('search');
 
+            if (params.get('market')) {
+                let selectedMarket = document.getElementById('market-filter');
+                for(let i = 0; i < selectedMarket.options.length; i++) {
+                    if (params.get('market') === selectedMarket.options[i].value) {
+                        selectedMarket.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (params.get('status')) {
+                let selectedStatus = document.getElementById('status-filter');
+                for(let i = 0; i < selectedStatus.options.length; i++) {
+                    if (params.get('status') === selectedStatus.options[i].value) {
+                        selectedStatus.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (params.get('type')) {
+                let selectedType = document.getElementById('type-filter');
+                for(let i = 0; i < selectedType.options.length; i++) {
+                    if (params.get('type') === selectedType.options[i].value) {
+                        selectedType.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+    function initEventHandlers() {
+        const BASEURL = "{% url 'xadmin:psp_config' %}?";
+
+        // filter by status
+        $('#status-filter').on('change', (event) => {
+            console.log(`status changed to ${event.target.value}!`);
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('status', event.target.value);
+            window.location = BASEURL+queryString.toString();
+        });
+        $('#type-filter').on('change', (event) => {
+            console.log(`type changed to ${event.target.value}!`);
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('type', event.target.value);
+            window.location = BASEURL+queryString.toString();
+        })
+        $('#market-filter').on('change', (event) => {
+            console.log(`market changed to ${event.target.value}!`);
+            let queryString = new URLSearchParams(window.location.search);
+            queryString.set('market', event.target.value);
+            window.location = BASEURL+queryString.toString();           
+        })
+
+        // for submitting a search
+        $('#search-btn').on('click', function () {
+            let searchTerm = document.getElementById('search').value;
+
+            console.log("searching for: " + searchTerm);
+            let queryString = new URLSearchParams(window.location.search);
+
+            // search by payment provider
+            if (searchTerm) {
+                queryString.set('search', searchTerm);
+                console.log(queryString.toString());
+                window.location = BASEURL+queryString.toString();
+            }
+            else window.location = BASEURL;
+        });
+
+        $('#clear-search-btn').on('click', function() {
+            document.getElementById('search').value = '';
+        });
+    }
+
+    function initCSRF() {
+         let csrftoken = $.cookie("csrftoken");
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+    }
+    function setProviderFields(data, psp_type) {
+        convMarket = {
+            0:'ibet-vn',
+            1:'ibet-th',
+            2:'ibet-cn',
+            3:'letou-vn',
+            4:'letou-th',
+            5:'letou-cn'
+        }
+
+        market = convMarket[data.fields.market]
+        document.getElementById('psp-method').innerHTML = data.fields.method;
+        document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1);
+        document.getElementById('psp-channel').innerHTML = data.fields.channel;
+        document.getElementById('psp-market').innerHTML = market;
+        document.getElementById('psp-supplier').innerHTML = data.fields.supplier;
+    }
+
+    $(document).ready(function () {
+        initCSRF();
+        initSearchParams();
+        initEventHandlers();
+
+        var csrftoken = $.cookie("csrftoken")
         function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -78,8 +326,28 @@
                 }
             }
         });
+
+        $(".confirm-settlement-btn").on('click', function(event) {
+            var psp_id = event.target.id;
+            console.log(psp_id);
+            console.log('{% url "xadmin:get_psp" %}')
+
+            $.ajax({
+                type: 'GET',
+                url: '{% url "xadmin:get_psp" %}',
+                data: {
+                    'pk': psp_id,
+                    'type': $(this).data('psp')
+                },
+                success: (data) => {
+                    console.log(typeof data);
+                    setProviderFields(data[0], $(this).data('psp'));
+                }
+            })
+        })
     })
 </script>
+
 </body>
 </html>
 {% endblock %}

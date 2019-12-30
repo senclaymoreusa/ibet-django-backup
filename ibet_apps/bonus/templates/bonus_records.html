@@ -9,23 +9,29 @@
 <head>
     <meta charset="UTF-8">
     {% load staticfiles%}
-    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-bonus.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-bonus.css' %}"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
+          type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css"/>
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}"/>
 </head>
 
 <body>
 <div id="btn-group">
-    <button id="new_bonus" type="button" class="btn btn-primary">New bonus</button>
-    <button id="view_templates" type="button" class="btn btn-light">View your templates</button>
+    <button id="new_bonus" type="button" class="btn btn-primary" data-toggle="modal"
+            data-target="#bonus-01">New bonus
+    </button>
+    <!--    <button id="view_templates" type="button" class="btn btn-light">View your templates</button>-->
 </div>
 
+<!--bonus records search bar-->
 <div id="search_row" class="row">
     <div class="col-md-2">
         <label for="bonus_type_filter">BONUS TYPE</label><br>
         <select id="bonus_type_filter" class="form-control">
             <option value="-1">ALL</option>
             {% for type in bonuses_types %}
-                <option value="{{ type.0 }}">{{ type.1 }}</option>
+            <option value="{{ type.0 }}">{{ type.1 }}</option>
             {% endfor %}
         </select>
     </div>
@@ -34,32 +40,32 @@
         <select id="bonus_status_filter" class="form-control">
             <option value="-1">ALL</option>
             {% for status in bonuses_status %}
-                <option value="{{ status.0 }}">{{ status.1 }}</option>
+            <option value="{{ status.0 }}">{{ status.1 }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="col-md-3 input-group" style="margin-top:22px;float:right;">
-        <input type="text" id="bonus-search" class="form-control" placeholder="Enter bonus or campaign name ">
+        <input type="text" id="bonus-search" class="form-control" placeholder="Enter bonus name ">
         <span id="bonus-search-btn" class="input-group-addon" style="background-color: #428bca; color:white"><span
                 class="glyphicon glyphicon-search"></span></span>
     </div>
 </div>
 
+<!--bonus records table-->
 <div>
     <table id="bonus_table" class="table-striped table-bordered hover">
         <thead>
-            <tr>
-                <td class="no-sort">BONUS NAME</td>
-                <td class="no-sort">CAMPAIGN</td>
-                <td class="no-sort">BONUS TYPE</td>
-                <td class="no-sort">AMOUNT ISSUED</td>
-                <td class="no-sort">QUANTITY ISSUED</td>
-                <td class="no-sort">AMOUNT REDEEMED</td>
-                <td class="no-sort">QUANTITY REDEEMED</td>
-                <td>START DATE</td>
-                <td class="no-sort">END DATE</td>
-                <td class="no-sort">STATUS</td>
-            </tr>
+        <tr>
+            <td class="no-sort">BONUS NAME</td>
+            <td class="no-sort">BONUS TYPE</td>
+            <td class="no-sort">AMOUNT ISSUED</td>
+            <td class="no-sort">QUANTITY ISSUED</td>
+            <td class="no-sort">AMOUNT REDEEMED</td>
+            <td class="no-sort">QUANTITY REDEEMED</td>
+            <td>START DATE</td>
+            <td class="no-sort">END DATE</td>
+            <td class="no-sort">STATUS</td>
+        </tr>
         </thead>
         <tbody id="bonus_table_body">
         </tbody>
@@ -68,17 +74,758 @@
     <button id="bonus-table-export" class="btn btn-primary">Export</button>
 </div>
 
+<div id="new-bonus-pages">
+    <!--bonus detail 01: name and duration-->
+    <div id="bonus-01" data-keyboard="false" data-backdrop="static" class="modal fade bonus-01" role="dialog">
+        <div class="modal-dialog" style="width:40%">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div id="bonus-detail-01" style="margin:20px;">
+                    <p><strong>BONUS DETAILS</strong></p>
+                    <label for="bonus-name">NAME*</label><br>
+                    <input id="bonus-name" required style="width:292px;"><br>
+                    <label for="bonus-duration">BONUS DURATION*</label><br>
+                    <div id="bonus-duration">
+                        <input class="bonus-duration-title" value="From" disabled>
+                        <input id="bonus-start-time" name="bonus-start-time" type="text" required style="width:100px;">
+                        <input class="bonus-duration-title" value="To" disabled>
+                        <input id="bonus-end-time" name="bonus-end-time" type="text" required style="width:100px;">
+                    </div>
+                    <br>
+                    <div class="new-bonus-btn-group">
+                        <p class='errorMessage'>&nbsp;</p>
+                        <button type="button" id="bonus-next-01" class="btn btn-primary next bonus-01"
+                                data-toggle="modal" data-target="#bonus-02">
+                            Next
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--bonus detail 02: bonus master type, category and issue-->
+    <div id="bonus-02" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div id="bonus-detail-02" style="margin:20px;">
+                    <label for="bonus-type"><strong> BONUS MASTER TYPE* </strong></label><br>
+                    <div id="bonus-type">
+                        <input type="checkbox" class="single-product" id="live-casino" value="live-casino"
+                               name="master-type"
+                               onclick="singleProductSelect(), liveCasinoSelect()"/>
+                        <label class="product-label" for="live-casino"> Live Casino bonus </label><br>
+                        <input type="checkbox" class="single-product" id="casino" value="casino" name="master-type"
+                               onclick="singleProductSelect(), casinoSelect()"/>
+                        <label class="product-label" for="casino"> Casino bonus </label><br>
+                        <input type="checkbox" class="free-product" id="free-spin" value="free-spin"
+                               name="master-type"/>
+                        <label class="product-label" for="free-spin"> Free spin bonus </label><br>
+                        <input type="checkbox" class="single-product" id="sports" value="sports" name="master-type"
+                               onclick="singleProductSelect(), sportsSelect()"/>
+                        <label class="product-label" for="sports"> Sports bonus </label><br>
+                        <input type="checkbox" class="free-product" id="free-bet" value="free-bet" name="master-type"/>
+                        <label class="product-label" for="free-bet"> Free bet bonus </label><br>
+                        <input type="checkbox" class="multi-product" id="multi-product" value="multi-product"
+                               onclick="multiProductSelect()" name="master-type"/>
+                        <label class="product-label" for="multi-product"> Multi-product bonus </label><br>
+                    </div>
+                    <br>
+                    <label for="bonus-category"><strong> BONUS CATEGORY* </strong></label><br>
+                    <div id="bonus-category">
+                        <input name="bonus-category" type="radio" value="manual"> Manual
+                        <input name="bonus-category" type="radio" value="triggered"> Triggered
+                    </div>
+                    <br>
+                    <input type="checkbox" id="bonus-issue" name="issue" value="issue"> Issue and complete <br>
+                    <div class="new-bonus-btn-group">
+                        <p class='errorMessage'>&nbsp;</p>
+                        <button type="button" class="btn btn-primary previous" data-toggle="modal"
+                                data-target="#bonus-01">
+                            Previous
+                        </button>
+                        <button id="bonus-next-02" type="button" class="btn btn-primary next" data-toggle="modal">Next
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--bonus detail 03: triggered bonus-->
+    <div id="bonus-03" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
+        <div class="modal-dialog" style="width:40%">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div id="bonus-detail-triggered-03" style="margin:20px;">
+                    <label for="bonus-trigger-type">TRIGGER TYPES*</label><br>
+                    <div id="bonus-trigger-type">
+                        <input id="verification-bonus" type="checkbox" name="bonus-trigger-type" value="verification"/>
+                        Verification<br>
+                        <div id="verification-choices" class="bonus-type">
+                            <input type="radio" name="verification-choice" value="id"> ID<br>
+                            <input type="radio" name="verification-choice" value="phone"> Phone<br>
+                            <input type="radio" name="verification-choice" value="email"> Email<br>
+                        </div>
+                        <input id="deposit-bonus" type="checkbox" name="bonus-trigger-type" value="deposit"/>
+                        Deposit<br>
+                        <div id="deposit-choices" class="bonus-type">
+                            <input type="radio" name="deposit-choice" value="first"> First<br>
+                            <input type="radio" name="deposit-choice" value="next"> Next<br>
+                        </div>
+                        <input id="turnover-bonus" type="checkbox" name="bonus-trigger-type" value="turnover"/> Turnover<br>
+                        <div id="turnover-choices" class="bonus-type">
+                            <input type="radio" id="turnover-choices-product"
+                                   name="turnover-choice" value="product"> Product specific<br>
+                            <select id="product-selector" class="form-control" style="width: 172px; margin: 10px;">
+                                <option selected disabled style="display:none"> Select product</option>
+                                <option value="sports">Sports</option>
+                                <option value="casino">Casino</option>
+                                <option value="live-casino">Live Casino</option>
+                                <option value="lottery">Lottery</option>
+                            </select>
+                            <input type="radio" id="turnover-choices-provider" name="turnover-choice" value="provider">
+                            Provider specific<br>
+
+                            <select id="provider-selector" class="bonus-input"
+                                    data-placeholder="Select provider" multiple class="chosen-select">
+                                {% for provider in game_provider %}
+                                <option value={{ provider.provider_name }}>{{ provider.provider_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="new-bonus-btn-group">
+                        <p class='errorMessage'>&nbsp;</p>
+                        <button type="button" class="btn btn-primary previous" data-toggle="modal"
+                                data-target="#bonus-02">
+                            Previous
+                        </button>
+                        <button id="bonus-next-03" type="button" class="btn btn-primary next" data-toggle="modal"
+                                data-target="#bonus-04">
+                            Next
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- bonus detail 04: bonus amount and wagering requirements  -->
+    <div id="bonus-04" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
+        <div class="modal-dialog" style="width:40%">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div style="margin:20px;">
+                    <!--  category = manual or triggered type = verification  -->
+                    <div id="bonus-amount-detail" style="display: none">
+                        <label for="bonus-amount"><strong> BONUS AMOUNT* </strong></label><br>
+                        <input type="radio" name="bonus-amount" value="same" checked="checked"> Same for all<br>
+                        <input type="number" id="bonus-amount" required>
+                    </div>
+
+                    <!--  triggered type = deposit  -->
+                    <div id="bonus-amount-detail-02" style="display: none">
+                        <label for="bonus-amount"><strong> BONUS AMOUNT* </strong></label><br>
+
+                        <div id="bonus-amount-deposit-type" class="row" style="margin-top: 30px;">
+                            <div class="col-md-3" style="width: 110px;">
+                                <label for="bonus-amount-deposit-type"><strong> Amount type </strong></label><br>
+                            </div>
+                            <div class="col-md-3" style="width: 180px;">
+                                <input type="radio" name="bonus-amount-type-deposit-choice"
+                                       value="percentage"> Percentage of deposit <br>
+                            </div>
+                            <div class="col-md-3" style="width: 140px;">
+                                <input type="radio" name="bonus-amount-type-deposit-choice" value="fixed"> Fixed amount <br>
+                            </div>
+                            <div class="col-md-3" style="width: 140px;" id="deposit-tiered-col">
+                                <input type="radio" name="bonus-amount-type-deposit-choice" value="tiered"> Tiered amount <br>
+                            </div>
+                        </div>
+
+                        <div id="deposit-percentage" class="deposit-amount-type up-arrow" style="display: none">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    MINIMUM DEPOSIT*
+                                </div>
+                                <div class="col-md-3">
+                                    BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-4">
+                                    MAX BONUS AMOUNT*
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <input type="number" id="dp-min" style="width: 115px;" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="dp-percentage" style="width:80px;" required>
+                                    <input class="disabled-input" disabled value="%">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="dp-max-amount" style="width: 115px;" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="deposit-fixed" class="deposit-amount-type up-arrow" style="display: none">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    MINIMUM DEPOSIT*
+                                </div>
+                                <div class="col-md-3">
+                                    BONUS AMOUNT*
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <input type="number" id="df-min" style="width: 115px;" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="df-bonus-amount" style="width:115px;" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="deposit-tiered" class="deposit-amount-type up-arrow" style="display: none; width: 1008px; padding: 20px 0 20px 30px;">
+                            <div class="row">
+                                <div class="col-md-2" style="width: 110px;">
+                                    MINIMUM DEPOSIT*
+                                </div>
+                                <div class="col-md-2" style="width: 120px;">
+                                    BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-2" style="width: 110px;">
+                                    MAX BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-2" style="width: 150px;">
+                                    CASINO WAGERING MULTIPLE*
+                                </div>
+                                <div class="col-md-2" style="width: 150px;">
+                                    LIVE CASINO WAGERING MULTIPLE*
+                                </div>
+                                <div class="col-md-2" style="width: 150px;">
+                                    SPORTS WAGERING MULTIPLE*
+                                </div>
+                                <div class="col-md-2" style="width: 150px;">
+                                    LOTTERY WAGERING MULTIPLE*
+                                </div>
+                            </div>
+                            {% for i in deposit_tiered_amount %}
+                                <div class="row deposit-tiered-amount" style="margin-bottom: 10px">
+                                    <div class="col-md-2" style="width: 110px;">
+                                        <input type="number" class="dt-min" style="width: 97px;" value = '{{ i.0 }}' disabled>
+                                    </div>
+                                    <div class="col-md-2" style="width: 120px;">
+                                        <input type="number" class="dt-percentage" style="width:77px;" value = '{{ i.1 }}' disabled>
+                                        <input class="disabled-input" disabled value="%" style="width:33px;">
+                                    </div>
+                                    <div class="col-md-2" style="width: 107px;">
+                                        <input type="number" class="dt-max-amount" style="width: 97px;" value = '{{ i.2 }}' disabled>
+                                    </div>
+                                    <div class="col-md-2" style="width: 150px;">
+                                        <input type="number" class="dt-casino" style="width:77px;" value = '{{ i.3 }}' disabled>
+                                        <input class="disabled-input" disabled value="X" style="width:33px;">
+                                    </div>
+                                    <div class="col-md-2" style="width: 150px;">
+                                        <input type="number" class="dt-live-casino" style="width:77px;" value = '{{ i.4 }}' disabled>
+                                        <input class="disabled-input" disabled value="X" style="width:33px;">
+                                    </div>
+                                    <div class="col-md-1" style="width: 150px;">
+                                        <input type="number" class="dt-sports" style="width:77px;" value = '{{ i.5 }}' disabled>
+                                        <input class="disabled-input" disabled value="X" style="width:33px;">
+                                    </div>
+                                    <div class="col-md-1" style="width: 150px;">
+                                        <input type="number" class="dt-lottery" style="width:77px;" value = '{{ i.6 }}' disabled>
+                                        <input class="disabled-input" disabled value="X" style="width:33px;">
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+
+                    <!--  triggered type = turnover  -->
+                    <div id="bonus-amount-detail-03" style="display: none">
+                        <label for="bonus-amount"><strong> BONUS AMOUNT* </strong></label><br>
+
+                        <div id="bonus-amount-turnover-type" class="row" style="margin-top: 30px;">
+                            <div class="col-md-3" style="width: 110px;">
+                                <label for="bonus-amount-turnover-type"><strong> Amount type </strong></label><br>
+                            </div>
+                            <div class="col-md-3" style="width: 180px;">
+                                <input type="radio" name="bonus-amount-type-turnover-choice"
+                                       value="percentage"> Percentage of activity <br>
+                            </div>
+                            <div class="col-md-3" style="width: 140px;">
+                                <input type="radio" name="bonus-amount-type-turnover-choice" value="fixed"> Fixed amount <br>
+                            </div>
+                            <div class="col-md-3" style="width: 140px;">
+                                <input type="radio" name="bonus-amount-type-turnover-choice" value="tiered"> Tiered amount <br>
+                            </div>
+                        </div>
+
+                        <div id="turnover-percentage" class="deposit-amount-type up-arrow" style="display: none">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    MINIMUM TURNOVER*
+                                </div>
+                                <div class="col-md-3">
+                                    BONUS AMOUNT*
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <input type="number" id="tp-min" style="width: 115px;" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="tp-percentage" style="width:80px;" required>
+                                    <input class="disabled-input" disabled value="%">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="turnover-fixed" class="deposit-amount-type up-arrow" style="display: none">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    MINIMUM TURNOVER*
+                                </div>
+                                <div class="col-md-3">
+                                    BONUS AMOUNT*
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <input type="number" id="tf-min" style="width: 115px;" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="tf-bonus-amount" style="width:115px;" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="turnover-tiered" class="deposit-amount-type up-arrow" style="display: none; width: 500px; padding: 20px 0 20px 30px;">
+                            <div class="row">
+                                <div class="col-md-2" style="width: 110px;">
+                                    MINIMUM TURNOVER*
+                                </div>
+                                <div class="col-md-2" style="width: 120px;">
+                                    BONUS AMOUNT*
+                                </div>
+                            </div>
+
+                            {% for i in turnover_tiered_amount %}
+                            <div class="row turnover-tiered-amount" style="margin-bottom: 10px">
+                                <div class="col-md-2" style="width: 110px;">
+                                    <input type="number" class="tt-min" style="width: 97px;" value = "{{ i.0 }}" disabled disabled>
+                                </div>
+                                <div class="col-md-2" style="width: 120px;">
+                                    <input type="number" class="tt-percentage" style="width:77px;" value = "{{ i.1 }}" disabled disabled>
+                                    <input class="disabled-input" disabled value="%" style="width:33px;">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="bonus-payout">
+                            <label for="turnover-payout">PAYOUT</label><br>
+                            <select id="turnover-payout" class="bonus-input" style="width: 89px">
+                                <option value="instant"> Instant</option>
+                                <option value="weekly"> Weekly</option>
+                                <option value="manual"> Manual</option>
+                                <option value="none"> None</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="wager-reqs">
+                        <label for="wager-reqs" class="bonus-label"><strong> WAGERING
+                            REQUIREMENTS* </strong></label><br>
+
+                        <div class="wager-req-01" style="display: none">
+                            <p>Define the wagering multiple for the default product for this bonus. Next, define at what
+                                capacity other products can contribute to the wagering requirement.</p>
+                        </div>
+
+                        <div class="wager-req-02" style="display: none; font-size: 13px; margin-bottom: 50px;">
+                            <p>The wagering requirement is calculated using</p>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <input type="radio" name="wager-cal" value="0"> Deposit + bonus
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="radio" name="wager-cal" value="1"> Bonus only
+                                </div>
+                            </div>
+                        </div>
+                        <div id="wager-product-reqs">
+                            <div class="row" style="width:280px;margin-bottom: 5px;">
+                                <div class="col-md-6">
+                                    ALL <input type="checkbox" class="wager-product" id="all-product" name="all" value="all"
+                                               style="margin:0px;">
+                                    PRODUCT
+                                </div>
+                                <div class="col-md-6" style="padding-right:0px;">WAGERING MULTIPLE</div>
+                            </div>
+                            <div class="row wager-reqs">
+                                <div class="col-md-5">
+                                    <input type="checkbox" class="wager-product" id="wager-casino" name="wager-casino"
+                                           value="wager-casino">
+                                    <label>Casino</label>
+                                </div>
+                                <div class="col-md-7" id="casino-unselected">
+                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
+                                           disabled>
+                                </div>
+                                <div class="col-md-7" id="casino-selected" style="display: none">
+                                    <input type="text" id="wager-casino-times" class="input-front">
+                                    <input type="text" id="wager-casino-total" class="input-behind" disabled>
+                                </div>
+                            </div>
+                            <div class="row wager-reqs">
+                                <div class="col-md-5">
+                                    <input type="checkbox" class="wager-product" id="wager-live-casino"
+                                           name="wager-live-casino"
+                                           value="wager-live-casino">
+                                    <label>Live Casino</label>
+                                </div>
+                                <div class="col-md-7" id="live-casino-unselected">
+                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
+                                           disabled>
+                                </div>
+                                <div class="col-md-7" id="live-casino-selected" style="display: none">
+                                    <input type="text" id="wager-live-casino-times" class="input-front">
+                                    <input type="text" id="wager-live-casino-total" class="input-behind" disabled>
+                                </div>
+                            </div>
+                            <div class="row wager-reqs">
+                                <div class="col-md-5">
+                                    <input type="checkbox" class="wager-product" id="wager-sports" name="wager-sports"
+                                           value="wager-sports">
+                                    <label>Sports</label>
+                                </div>
+                                <div class="col-md-7" id="sports-unselected">
+                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
+                                           disabled>
+                                </div>
+                                <div class="col-md-7" id="sports-selected" style="display: none">
+                                    <input type="text" id="wager-sports-times" class="input-front">
+                                    <input type="text" id="wager-sports-total" class="input-behind" disabled>
+                                </div>
+                            </div>
+                            <div class="row wager-reqs">
+                                <div class="col-md-5">
+                                    <input type="checkbox" class="wager-product" id="wager-lottery" name="wager-lottery"
+                                           value="wager-lottery">
+                                    <label>Lottery</label>
+                                </div>
+                                <div class="col-md-7" id="lottery-unselected">
+                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
+                                           disabled>
+                                </div>
+                                <div class="col-md-7" id="lottery-selected" style="display: none">
+                                    <input type="text" id="wager-lottery-times" class="input-front">
+                                    <input type="text" id="wager-lottery-total" class="input-behind" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <p>Time period for wagering requirements to be completed within</p>
+                        <input type="number" id="time-period" class="input-front" style="width: 50px;"
+                               placeholder="Infinite">
+                        <input type="text" class="input-behind" style="width: 220px;" disabled
+                               value="    Days after being received or claimed">
+                    </div>
+
+                    <div class="new-bonus-btn-group">
+                        <p class='errorMessage'>&nbsp;</p>
+                        <button id="bonus-prev-04" type="button" class="btn btn-primary previous" data-toggle="modal"
+                                data-target="#bonus-03">Previous
+                        </button>
+                        <button id="bonus-next-04" type="button" class="btn btn-primary next" data-toggle="modal"
+                                data-target="#bonus-05">
+                            Next
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- bonus detail 05: bonus target audience and must-haves  -->
+    <div id="bonus-05" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
+        <div class="modal-dialog" style="width:40%">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div style="margin:20px;">
+                    <div name="target-audience">
+                        <label for="target-audience"><strong>TARGET AUDIENCE*</strong></label>
+                        <div id="target-audience">
+                            <input type="radio" name="target-audience-choice" id="open-to-all" value="all"> Open to all
+                            <br>
+                            <!--                            <input type="radio" name="target-audience-choice" id="targeted" value="target"> Targeted-->
+                            <!--                            <div id="targeted-accounts" style="margin:20px;">-->
+                            <input type="radio" id="specific-accounts" name="target-audience-choice"
+                                   style="margin: 10px 0 10px 0"> Specific groups <br>
+                            <select id="group-assigned" class="bonus-input"
+                                    data-placeholder="Select player groups" multiple class="chosen-select">
+                                {% for group in groups %}
+                                <option value="{{ group.pk }}">{{ group.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <!--                                {% if groups == None %}-->
+                            <!--                                <p style="color:red">{{ empty_bonus_group }}</p>-->
+                            <!--                                {% endif %}-->
+                            <!--                            </div>-->
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="bonus-label"><strong>ELIGIBILITY MUST-HAVES</strong></label>
+                        <br>
+                        <select id="bonus-requirements" class="group-assign bonus-input"
+                                data-placeholder="Select requirements" multiple class="chosen-select">
+                            {% for i in must_have %}
+                            <option value="{{ i.0 }}">{{ i.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div name="excluded-groups">
+                        <label class="bonus-label"><strong>EXCLUDED PLAYER GROUPS</strong></label>
+                        <p>This selection overrides any previous defined eligibility. If a player fits into any
+                            of those criteria they will not be able to receive the bonus.</p>
+                        <p>EXCLUDED PLAYER GROUPS</p>
+                        <select id="group-unassigned" class="bonus-input" style="margin: 10px;"
+                                data-placeholder="Select player groups" multiple class="chosen-select">
+                            {% for group in groups %}
+                            <option value="{{ group.pk }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="new-bonus-btn-group">
+                        <p class='errorMessage'>&nbsp;</p>
+                        <button type="button" class="btn btn-primary previous" data-toggle="modal"
+                                data-target="#bonus-04">
+                            Previous
+                        </button>
+                        <button id="bonus-next-05" type="button" class="btn btn-primary next" data-toggle="modal"
+                                data-target="#bonus-06">Next
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--bonus detail 06: bonus claim control-->
+    <div id="bonus-06" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div id="bonus-claim" style="margin:20px;">
+                    <label><strong> CLAIM CONTROL MEASURES* </strong></label><br>
+                    <div id="maximum-claim">
+                        <p>Maximum amount of times the bonus can be claimed by one player</p>
+                        <input type="text" id="daily-claim" class="input-front" style="width: 50px;" required>
+                        <input type="text" class="input-behind" style="width: 140px;" disabled
+                               value=" Daily claimed allowed ">
+
+                        <input type="text" id="total-claim" class="input-front" style="width: 50px; margin-left:20px;"
+                               required>
+                        <input type="text" class="input-behind" style="width: 140px;" disabled
+                               value=" Total claimed allowed ">
+
+                        <p>Maximum amount of times the bonus can be claimed by associated accounts</p>
+                        <input type="text" id="associated-total-claim" class="input-front" style="width: 50px;"
+                               required>
+                        <input type="text" class="input-behind" style="width: 50px;" disabled value=" Times ">
+
+                        <p>Maximum number of players who can claim this bonus</p>
+                        <input type="text" id="maximum-claimer" class="input-front" style="width: 50px;" required>
+                        <input type="text" class="input-behind" style="width: 60px;" disabled value=" Players ">
+                    </div>
+
+                    <label style="margin: 30px 0 20px 0;"><strong> BONUS AMOUNT CONTROL MEASURES </strong></label><br>
+                    <div class="row" style="width:373px">
+                        <div class="col-md-6">ENTITY</div>
+                        <div class="col-md-6">MAX BONUS AMOUNT</div>
+                    </div>
+                    <div class="row control-row">
+                        <div class="col-md-6">Player</div>
+                        <div class="col-md-6">
+                            <input id="max-user-amount" type="number" class="bonus-control-measure" placeholder="Infinite">
+                        </div>
+                    </div>
+
+                    <div class="row control-row">
+                        <div class="col-md-6">Target audience</div>
+                        <div class="col-md-6">
+                            <input id="max-target-user-amount" type="number" class="bonus-control-measure" placeholder="Infinite">
+                        </div>
+                    </div>
+
+                    <div class="new-bonus-btn-group">
+                        <p class='errorMessage'>&nbsp;</p>
+                        <button type="button" class="btn btn-primary previous" data-toggle="modal"
+                                data-target="#bonus-05">
+                            Previous
+                        </button>
+                        <button id="bonus-next-06" type="button" class="btn btn-primary next" data-toggle="modal"
+                                data-target="#bonus-07">Next
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--bonus detail 07: bonus delivery-->
+    <div id="bonus-07" data-keyboard="false" data-backdrop="static" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f5f5f5;">
+                    <strong class="model-header-text">New bonus</strong>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div style="margin: 20px;">
+                    <label><strong>BONUS DELIVERY* </strong></label><br>
+                    <div class="delivery-choice row">
+                        <div class="col-md-4" style="padding-left: 0px;">
+                            <input type="radio" name="delivery" value="push" checked> Push to player's account
+                        </div>
+                        <div class="col-md-4" style="padding-left: 0px;">
+                            <input type="radio" name="delivery" value="site"> Site activation(from site)
+                        </div>
+                    </div>
+                    <div class="new-bonus-btn-group">
+                        <button type="button" class="btn btn-primary previous" data-toggle="modal"
+                                data-target="#bonus-06">
+                            Previous
+                        </button>
+                        <button type="button" class="btn btn-success" id="publish">Publish</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" language="javascript"
-    src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
-<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+        src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.html5.min.js"></script>
+<script type='text/javascript'
+        src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="{% static 'xadmin/js/ibet-admin-bonus.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 
 </body>
 </html>
 <script>
-    var bonus_url = '{% url "bonus_search" %}'
+    var bonusName;
+    var bonus_url = '{% url "bonus_search" %}';
+    var bonus_create = "{% url "bonus_name" name="new_bonus" %}";
+
+    function multiProductSelect() {
+      var checkBox = document.getElementById("multi-product");
+      if (checkBox.checked == true){
+        $('#live-casino, #casino, #sports').attr("disabled", true)
+        $('#live-casino, #casino, #sports').attr("checked", false)
+        $('label[for="live-casino"], label[for="casino"], label[for="sports"]').css("opacity", "0.35");
+      }else{
+        $('#live-casino, #casino, #sports').attr("disabled", false)
+        $('label[for="live-casino"], label[for="casino"], label[for="sports"]').css("opacity", "");
+      }
+    }
+
+    var liveCasinoBox = document.getElementById("live-casino");
+    var casinoBox = document.getElementById("casino");
+    var sportsBox = document.getElementById("sports");
+
+    function singleProductSelect(selectedProduct) {
+      if (liveCasinoBox.checked == true || casinoBox.checked == true || sportsBox.checked == true){
+        $('#multi-product').prop("disabled", true)
+        $('#multi-product').prop("checked", false)
+        $('label[for="multi-product"]').css("opacity", "0.35");
+      }else{
+        $('#multi-product').attr("disabled", false)
+        $('label[for="multi-product"]').css("opacity", "");
+      }
+    }
+
+    function liveCasinoSelect(){
+       if (liveCasinoBox.checked == true ){
+        $('#casino, #sports').attr("disabled", true)
+        $('#casino, #sports').attr("checked", false)
+        $('label[for="casino"], label[for="sports"]').css("opacity", "0.35");
+      }else{
+        $('#casino, #sports').attr("disabled", false)
+        $('label[for="casino"], label[for="sports"]').css("opacity", "");
+      }
+    };
+
+    function casinoSelect(){
+      if (casinoBox.checked == true ){
+        $('#live-casino, #sports').attr("disabled", true)
+        $('#live-casino, #sports').attr("checked", false)
+        $('label[for="live-casino"], label[for="sports"]').css("opacity", "0.35");
+      }else{
+        $('#live-casino, #sports').attr("disabled", false)
+        $('label[for="live-casino"], label[for="sports"]').css("opacity", "");
+      }
+    };
+
+    function sportsSelect(){
+      if (sportsBox.checked == true){
+        $('#live-casino, #casino').attr("disabled", true)
+        $('#live-casino, #casino').attr("checked", false)
+        $('label[for="live-casino"], label[for="casino"]').css("opacity", "0.35");
+      }else{
+        $('#live-casino, #casino').attr("disabled", false)
+        $('label[for="live-casino"], label[for="casino"]').css("opacity", "");
+      }
+    };
+
 </script>
 {% endblock %}

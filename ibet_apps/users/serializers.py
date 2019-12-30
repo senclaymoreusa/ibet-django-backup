@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Game, Category, CustomUser, NoticeMessage
+from users.models import CustomUser, NoticeMessage
 from accounting.models import DepositAccessManagement, DepositChannel
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import (email_address_exists, get_username_max_length)
@@ -20,6 +20,7 @@ from django.utils.functional import Promise
 from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
+from django.contrib.postgres.fields import JSONField
 
 class ChoicesSerializerField(serializers.SerializerMethodField):
     """
@@ -32,26 +33,6 @@ class ChoicesSerializerField(serializers.SerializerMethodField):
         method = getattr(value, method_name)
         # finally use instance method to return result of get_XXXX_display()
         return method()
-
-class SubCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ('name', 'notes', 'category_id', 'parent_id')
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    parent_id = SubCategorySerializer(read_only=True)
-    class Meta:
-        model = Category
-        fields = ('parent_id', 'name', 'notes', 'category_id')
-        
-
-class GameSerializer(serializers.ModelSerializer):
-    category_id = CategorySerializer(read_only=True)
-    class Meta:
-        model = Game
-        fields = ('pk','category_id', 'name', 'name_zh', 'name_fr', 'description', 'description_zh', 'description_fr', 'start_time', 'end_time', 'opponent1', 'opponent2', 'status_id', 'image', 'game_url', 'image_url')
-
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     security_question = ChoicesSerializerField()
@@ -182,6 +163,8 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)
     password = serializers.CharField(style={'input_type': 'password'})
+    iovationData = serializers.JSONField(required=False)
+
 
     def authenticate(self, **kwargs):
         return authenticate(self.context['request'], **kwargs)
@@ -250,7 +233,7 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         email = attrs.get('email')
         password = attrs.get('password')
-
+        iovationData = attrs.get('iovationData')
         user = None
 
         if 'allauth' in settings.INSTALLED_APPS:

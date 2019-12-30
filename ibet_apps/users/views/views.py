@@ -54,18 +54,23 @@ from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
 from dateutil.relativedelta import relativedelta
-from users.serializers import GameSerializer, CategorySerializer, UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
+from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSerializer, CustomTokenSerializer, NoticeMessageSerializer, FacebookRegisterSerializer, FacebookLoginSerializer, BalanceSerializer
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
-from users.models import Game, CustomUser, Category, Config, NoticeMessage, UserAction, UserActivity, Limitation, GameRequestsModel
-from games.models import Game as NewGame
+from users.models import CustomUser, Config, NoticeMessage, UserAction, UserActivity, Limitation
+
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
+from games.models import Game
+from games.models import Category as GameCategory
 from users.views.helper import *
 from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
+from itertools import islice
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
 
 import datetime
 import logging
@@ -147,35 +152,22 @@ class AllSearchListView(generic.ListView):
         return Game.objects.filter(name__contains=self.request.GET.get('q'))
 
 
-class GameAPIListView(ListAPIView):
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        term = self.request.GET['term']
-        # print("term:" + term)
-        data = Game.objects.filter(category_id__parent_id__name__icontains=term)
+# class GameAPIListView(ListAPIView):
+#     serializer_class = GameSerializer
+#     def get_queryset(self):
+#         term = self.request.GET['term']
+#         # print("term:" + term)
+#         data = Game.objects.filter(category_id__parent_id__name__icontains=term)
 
-        if not data:
-            data = Game.objects.filter(category_id__name__icontains=term)
+#         if not data:
+#             data = Game.objects.filter(category_id__name__icontains=term)
 
-        if not data:
-            data = Game.objects.filter(name__icontains=term)
+#         if not data:
+#             data = Game.objects.filter(name__icontains=term)
 
-        if not data:
-            logger.error('Search term did not match any categories or token')
-        return data
-
-class GameDetailAPIListView(ListAPIView):
-    
-    serializer_class = GameSerializer
-    def get_queryset(self):
-        id = self.request.GET['id']
-        data = NewGame.objects.filter(pk=id)
-        return data
-
-
-class CategoryAPIListView(ListAPIView):
-    serializer_class = CategorySerializer
-    queryset = Category.objects.all()
+#         if not data:
+#             logger.error('Search term did not match any categories or token')
+#         return data
 
 
 class UserDetailsView(RetrieveUpdateAPIView):
@@ -259,24 +251,51 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        customUser = CustomUser.objects.filter(username=user).first()
+        try:
+            customUser = CustomUser.objects.get(username=user)
+        except Exception as e:
+            logger.error("FATAL__ERROR getting CustomUser object : ", str(e))
+            return Response(self.get_response_data(user), status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
-        # if customUser.
-        customUser.time_of_registration = timezone.now()
-        customUser.save()
+        try:
+            with transaction.atomic():
+                # add time of registration and register event
+                customUser.time_of_registration = timezone.now()
+                customUser.save()
+                action = UserAction(
+                    user=customUser,
+                    ip_addr=self.request.META['REMOTE_ADDR'],
+                    event_type=EVENT_CHOICES_REGISTER,
+                    created_time=timezone.now()
+                )
+                action.save()
+                logger.info("Add time of registration and register event for new user " + str(user))
 
-        
-        action = UserAction(
-            user= customUser,
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=2,
-            created_time=timezone.now()
-        )
-        action.save()
+                # generate referral code for new user
+                referral_code = str(utils.admin_helper.generateUniqueReferralCode(customUser.pk))
+                customUser.referral_code = referral_code
+                customUser.save()
+                link = ReferChannel.objects.create(
+                    user_id=customUser,
+                    refer_channel_name='default'
+                )
+                logger.info("Create refer link code " + str(link.pk) + " for new user " + str(customUser.username))
 
-        return Response(self.get_response_data(user),
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+                categories = GameCategory.objects.all()
+                ubw_objs = [
+                    UserBonusWallet(
+                        user=customUser,
+                        category=category
+                    )
+                    for category in categories
+                ]
+                UserBonusWallet.objects.bulk_create(ubw_objs)
+                logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
+
+        except Exception as e:
+            logger.error("Error adding new user registration, refer link or bonus wallet info: ", str(e))
+
+        return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         user = serializer.save(self.request)
@@ -334,8 +353,10 @@ class LoginView(GenericAPIView):
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
         # print('login language code: ' + languageCode)
-        
+       
         self.user = self.serializer.validated_data['user']
+        self.iovationData = self.serializer.validated_data['iovationData']
+       
         if checkUserBlock(self.user):
             errorMessage = _('The current user is blocked!')
             data = {
@@ -355,25 +376,52 @@ class LoginView(GenericAPIView):
                 }
             }
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
-
+      
+      
         if getattr(settings, 'REST_USE_JWT', False):
-            
+           
             self.token = jwt_encode(self.user)
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
-
+        
+       
         customUser = CustomUser.objects.filter(username=self.user)
-        action = UserAction(
-            user= customUser.first(),
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=0,
-            created_time=timezone.now()
-        )
-        action.save()
-        customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
-        loginUser = CustomUser.objects.filter(username=self.user)
-        loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
-        loginUser.update(login_times=loginTimes+1)
+        #    item['key'] if 'key' in item else None
+        try:
+            statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
+            result = self.iovationData['result']
+            device = self.iovationData['details']['device']['os'] if 'device' in self.iovationData['details'] else ''
+            browser = self.iovationData['details']['device']['browser'] if 'device' in self.iovationData['details'] else ''
+            ipLocation = self.iovationData['details']['realIp']['ipLocation'] if 'ipLocation' in self.iovationData['details']['realIp'] else None
+            otherData = self.iovationData
+           
+
+            # print(self.user.username)
+            # r = RedisClient().connect()
+            redis = RedisHelper()
+            redis.set_device_by_user(self.user.username, device)
+
+            
+            with transaction.atomic():
+                action = UserAction(
+                    user= customUser.first(),
+                    ip_addr=statedIp,
+                    result=result,
+                    device=device,
+                    browser=str(browser),
+                    ip_location=ipLocation,
+                    other_info=otherData,
+                    event_type=0,
+                    created_time=timezone.now()
+                )
+                action.save()
+                customUser.update(last_login_time=timezone.now(), modified_time=timezone.now())
+                loginUser = CustomUser.objects.filter(username=self.user)
+                loginTimes = CustomUser.objects.filter(username=self.user).first().login_times
+                loginUser.update(login_times=loginTimes+1)
+
+        except Exception as e:
+            logger.error("cannot get users device info in iovation", e)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -397,13 +445,17 @@ class LoginView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):        
         self.request = request
+       
         try:
             self.serializer = self.get_serializer(data=self.request.data,
                                               context={'request': request})
-
+            
             if self.serializer.is_valid(raise_exception=True):
+
+               
                 return self.login()
         except Exception as e:
+            # print(e)
             errorMessage = _('Invalid username/ passowrd')
             data = {}
             data["errorCode"] = ERROR_CODE_INVALID_INFO
@@ -1165,17 +1217,18 @@ class GenerateActivationCode(APIView):
         try:
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
+                phone = data['phone']
                 time = timezone.now() - datetime.timedelta(days=1)
                 event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
                 count = UserAction.objects.filter(event_filter).count()
-                if count <= 3:
+                if count <= 300:
                     random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
 
                     # DB transaction atomic as a context manager:
                     with transaction.atomic():
                         user.update(activation_code=random_num)
 
-                        send_sms(str(random_num), user[0].pk)
+                        send_sms(str(random_num), user[0].pk, phone)
 
                         action = UserAction(
                             user=user[0],
@@ -1187,30 +1240,76 @@ class GenerateActivationCode(APIView):
                         return Response(status=status.HTTP_201_CREATED)
 
                 return Response(ERROR_CODE_MAX_EXCEED)
+            elif postType == "change_member_email":
+                email = data['email']
+                random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+
+                # DB transaction atomic as a context manager:
+                with transaction.atomic():
+                    user.update(activation_code=random_num)
+
+                    from_email_address = 'claymore@claymoreusa.com'
+                    # to_email_address = user[0].email
+                    to_email_address = email
+                    email_subject = str(_('Activation Code')) + ' '
+                    email_content = str(_('Your activation code is ')) + str(random_num)
+
+                    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+                    from_email = Email(from_email_address)
+                    to_email = Email(to_email_address)
+                    subject = email_subject
+                    content = Content("text/plain", email_content)
+                    mail = Mail(from_email, subject, to_email, content)
+                    response = sg.client.mail.send.post(request_body=mail.get())
+
+                    action = UserAction(
+                        user=user[0],
+                        event_type=EVENT_CHOICES_SMS_CODE,
+                        created_time=timezone.now()
+                    )
+                    action.save()
+
+                    return Response(status=status.HTTP_201_CREATED)
             else:
                 # leave this for active code, currently no SMS system available
                 random_num = ''.join([str(random.randint(0, 9)) for _ in range(4)])
                 user.update(activation_code=random_num)
-                send_sms(str(random_num), user[0].pk) 
+                send_sms(str(random_num), user[0].pk)
         except Exception as e:
             logger.error("Error Generating Activation Code: ", e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
 
+
 class VerifyActivationCode(APIView):
 
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        username = request.data['username']
-        code = request.data['code']
-        user = get_user_model().objects.filter(username=username)
-        if user[0].activation_code == code:
-            user.update(active=True)
-            user.update(activation_code='')
+        data = json.loads(request.body)
+        postType = data['type']
+        username = data['username']
+        code = data['code']
+
+        # user = get_user_model().objects.filter(username=username)
+        user = get_user_model().objects.get(username=username)
+        if user.activation_code == code:
+            user.active=True
+            user.activation_code=''
+            if postType == "change_member_phone_num":
+                user.phone = data['phone']
+            elif postType == "change_member_email":
+                user.email = data['email']
+            else:
+                return Response(ERROR_CODE_NOT_FOUND)
+
+            user.save()
             return Response(status=status.HTTP_200_OK)
+        
         return Response(status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response(ERROR_CODE_TIME_EXCEED)
 
 
 class UserSearchAutocomplete(View):

@@ -1,9 +1,14 @@
 import requests, json, logging, random, hashlib, base64, datetime, pytz, socket
 
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View, generic
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
+from django.core.signals import request_finished
+from django.dispatch import receiver
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.db import IntegrityError, DatabaseError, transaction
 
 from rest_framework import parsers, renderers, status, generics
 from rest_framework.response import Response
@@ -11,13 +16,14 @@ from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
-from django.utils.translation import ugettext_lazy as _
+
 from users.models import CustomUser
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from utils.constants import *
 import utils.helpers as helpers
 from users.serializers import LazyEncoder
 from ..serializers import help2payDepositSerialize, help2payDepositResultSerialize
+from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings
 from des import DesKey
 from decimal import *
@@ -97,13 +103,16 @@ class SubmitDeposit(generics.GenericAPIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
+
+        db_currency_code = 2 if currency == '2' else 7
+
         create = Transaction.objects.create(
             transaction_id=trans_id,
             amount=amount,
             user_id=CustomUser.objects.get(pk=user_id),
             method='Bank Transfer',
-            currency=currency,
-            transaction_type=0,
+            currency=db_currency_code,
+            transaction_type=TRANSACTION_DEPOSIT,
             channel=0,
             request_time=timezone.now(),
         )
@@ -159,6 +168,139 @@ class DepositResult(generics.GenericAPIView):
             'status': trans_status,
             'result': result
         }, status=status.HTTP_200_OK)
+
+# help2pay requests withdraw info from user
+class ConfirmWithdrawRequest(View):
+    def get(self, request):
+        return HttpResponse("false")
+
+    def post(self, request):
+        trans_id = request.GET.get("transId")
+        checksum = request.GET.get("key")
+
+        try:
+            withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
+            if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
+                withdraw_txn.arrive_time = timezone.now()
+                withdraw_txn.last_updated = timezone.now()
+                withdraw_txn.status=TRAN_APPROVED_TYPE
+                withdraw_txn.save()
+                return HttpResponse("true")
+                
+            return HttpResponse("false")
+        except ObjectDoesNotExist as e:
+            logger.error(repr(e))
+            logger.error(f"transaction id {trans_id} does not exist")
+            return HttpResponse("false")
+        except Exception as e:
+            logger.error(repr(e))
+            return HttpResponse("false")
+
+# user submits withdraw request
+class SubmitPayout(View):
+    def get(self, request):
+        return HttpResponse(status=404)
+
+    def post(self, request): # user will need to submit bank acc information
+        username = request.user.username
+        withdraw_password = request.POST.get("withdrawPassword")
+        
+        # toBankAccountName = 'orion'
+        # toBankAccountNumber = '12345123'
+        toBankAccountName = request.POST.get("toBankAccountName")
+        toBankAccountNumber = request.POST.get("toBankAccountNumber")
+
+        amount = float(request.POST.get("amount"))
+
+        trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+        ip = helpers.get_client_ip(request)
+        bank = 'KKR'
+        language = 'en-Us'
+        user_id=1
+        currency = '2'
+        if currency == '2':
+            merchant_code = HELP2PAY_MERCHANT_THB
+            secret_key = HELP2PAY_SECURITY_THB
+            payoutURL = H2P_PAYOUT_URL_THB
+        elif currency == '8':
+            merchant_code = HELP2PAY_MERCHANT_VND
+            secret_key = HELP2PAY_SECURITY_VND
+            payoutURL = H2P_PAYOUT_URL_VND
+        
+        strAmount = str('%.2f' % amount)
+        
+        utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
+        Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
+        key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
+
+        secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
+        checksum = MD5(secretMsg)
+       
+        db_currency_code = 2 if currency == '2' else 7
+        if check_password(withdraw_password, request.user.withdraw_password):
+            try:
+                with transaction.atomic():
+                    withdraw_request = Transaction(
+                        transaction_id=trans_id,
+                        amount=amount,
+                        user_id=CustomUser.objects.get(pk=user_id),
+                        method='Bank Transfer',
+                        currency=db_currency_code,
+                        transaction_type=TRANSACTION_WITHDRAWAL,
+                        channel=0,
+                        request_time=timezone.now(),
+                        other_data={'checksum': checksum},
+                    )
+                    withdraw_request.save()
+                    logger.info("Withdraw request created: " + str(withdraw_request))
+                    # can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
+                    can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
+
+            except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
+                logger.error(repr(e))
+                traceback.print_exc(file=sys.stdout)
+                return HttpResponse(status=500)
+        else:
+            logger.error("withdraw password is not correct.")    
+            return JsonResponse({
+                'status_code': ERROR_CODE_INVALID_INFO,
+                'message': 'Withdraw password is not correct.'
+            })
+        
+
+        if can_withdraw:
+            data = {
+                "Key": MD5(secretMsg),
+                "ClientIP": ip,
+                "ReturnURI": "https://754dc8ae.ngrok.io/accounting/api/help2pay/log_payout",
+                "MerchantCode": merchant_code,
+                "TransactionID": str(trans_id),
+                "MemberCode": user_id,
+                "CurrencyCode": currencyConversion[currency],
+                "Amount": amount,
+                "TransactionDateTime": Datetime,
+                "BankCode": bank,
+                "toBankAccountName": toBankAccountName,
+                "toBankAccountNumber": toBankAccountNumber,
+            }
+
+            r = requests.post(payoutURL, data=data)
+            if r.status_code == 200:
+                return HttpResponse(r.content)
+            else:
+                return JsonResponse({
+                    'status_code': ERROR_CODE_FAIL,
+                    'message': 'Payment service unavailable'
+
+                })
+        else:
+            return JsonResponse({
+                'status_code': ERROR_CODE_FAIL,
+                'message': 'Insufficient funds'
+            })
+
+
 
 
 @api_view(['POST'])

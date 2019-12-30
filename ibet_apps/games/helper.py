@@ -1,16 +1,22 @@
 import decimal
 import logging
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from users.models import CustomUser
+from users.models import CustomUser, UserWallet
+from games.models import GameProvider
 # from games.views.eagameviews import requestEADeposit
 # from games.views.transferwallet import TransferDeposit, TransferWithdraw
 from games.transferwallet import TransferDeposit, TransferWithdraw
+from django.db import IntegrityError, transaction
 from utils.constants import *
 from decimal import Decimal
-from pyDes import des, CBC, PAD_PKCS5
+from pyDes import des, ECB, PAD_PKCS5
+from datetime import datetime
 import base64, hashlib
+import random
+import urllib.parse
 
 logger = logging.getLogger("django")
 
@@ -42,65 +48,170 @@ def generateHash(message):
 
 
 def transferRequest(user, amount, from_wallet, to_wallet):
+    success = False
     if from_wallet == "main":
-        transfer_to = TransferDeposit(user, amount, from_wallet)
-        function_name = to_wallet + 'Deposit'
-        status = getattr(transfer_to, function_name)()
-        if status == CODE_SUCCESS:
-            field_name = to_wallet + '_wallet'
-            user.main_wallet -= Decimal(float(amount))
-            old_amount = getattr(user, field_name)
-            new_amount = old_amount + amount
-            setattr(user, field_name, new_amount)
-            user.save()
-            logger.info("main wallet transfer to " + str(to_wallet))
-            return True
 
-        logger.info("Fail transfer money from main to " + str(to_wallet))
-        return False
+        try:
+            with transaction.atomic():
+                user.main_wallet -= Decimal(float(amount))
+                user.save()
+                logger.info("main wallet transfer to " + str(to_wallet))
+                to_provider = GameProvider.objects.get(provider_name=to_wallet)
+                wallet, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
+                wallet.wallet_amount = wallet.wallet_amount + Decimal(float(amount))
+                wallet.save()
+                success = True
+        
+        except IntegrityError:
+            logger.error("transfer_money() transfer failed. There was an database error with transfer the amount from main_wallet to " + str(to_wallet))
+            success = False
+        
+        if success:
+            transfer_to = TransferDeposit(user, amount, from_wallet)
+            function_name = to_wallet + 'Deposit'
+            status = getattr(transfer_to, function_name)()
+            if status != CODE_SUCCESS:
+                field_name = to_wallet + '_wallet'
+                try:
+                    with transaction.atomic():
+                        user.main_wallet += Decimal(float(amount))
+                        # old_amount = getattr(user, field_name)
+                        # new_amount = old_amount + amount
+                        # setattr(user, field_name, new_amount)
+                        user.save()
+                        logger.info("main wallet transfer to " + str(to_wallet))
+                        to_provider = GameProvider.objects.get(provider_name=to_wallet)
+                        to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
+                        to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount - Decimal(float(amount))
+                        to_wallet_obj.save()
+                        logger.info("Refund" + str(amount) + " to " + str(to_wallet) + " from main_wallet because transfer_money() request failed")
+                        return False
+                except IntegrityError:
+                    logger.error("transfer_money() refund failed. There was an database error with refund the amount from main_wallet to " + str(to_wallet))
+                    return False
+            else:
+                return True
+        else:
+            return False
 
     else:
-        transfer_from = TransferWithdraw(user, amount, to_wallet)
-        function_name = from_wallet + 'Withdraw'
-        status = getattr(transfer_from, function_name)()
-        if status == CODE_SUCCESS:
+        
+        if to_wallet == "main":
 
-            from_field_name = from_wallet + '_wallet'
-            from_old_amount = getattr(user, from_field_name)
-            from_new_amount = from_old_amount - Decimal(float(amount))
-            setattr(user, from_field_name, from_new_amount)
+            try:
+                with transaction.atomic():
+                    user.main_wallet += Decimal(float(amount))
+                    user.save()
 
-            if to_wallet == "main":
-                old_amount = user.main_wallet
-                user.main_wallet = old_amount + Decimal(float(amount))
-                user.save()
-                logger.info("Transfer money from " + str(to_wallet) + "to main")
+                    from_provider = GameProvider.objects.get(provider_name=from_wallet)
+                    from_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=from_provider)
+                    from_wallet_obj.wallet_amount = from_wallet_obj.wallet_amount - Decimal(float(amount))
+                    from_wallet_obj.save()
+                    success = True
+
+            except IntegrityError:
+                    logger.error("transfer_money() transfer failed. There was an database error with transfer the amount from " + str(from_wallet) + " to main wallet")
+                    success = False
+            
+            if success:
+                transfer_from = TransferWithdraw(user, amount, to_wallet)
+                function_name = from_wallet + 'Withdraw'
+                status = getattr(transfer_from, function_name)()
+                if status != CODE_SUCCESS:
+                    try:
+                        with transaction.atomic():
+                            user.main_wallet -= Decimal(float(amount))
+                            user.save()
+
+                            from_provider = GameProvider.objects.get(provider_name=from_wallet)
+                            from_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=from_provider)
+                            from_wallet_obj.wallet_amount = from_wallet_obj.wallet_amount + Decimal(float(amount))
+                            from_wallet_obj.save()
+                            logger.info("Refund" + str(amount) + " to " + str(from_wallet) + " from main_wallet because transfer_money() request failed")
+                            return False
+                    except IntegrityError:
+                        logger.error("transfer_money() refund failed. There was an database error with refund the amount from " + str(from_wallet) + " to main wallet")
+                        return False
                 return True
             else:
-                transfer_to = TransferDeposit(user, amount, from_wallet)
-                function_name = to_wallet + 'Deposit'
-                status = getattr(transfer_to, function_name)()
-                if status == CODE_SUCCESS:
-                    to_field_name = to_wallet + '_wallet'
-                    to_old_amount = getattr(user, to_field_name)
-                    to_new_amount = to_old_amount + Decimal(float(amount))
-                    setattr(user, to_field_name, to_new_amount)
-                    user.save()
-                    logger.info("Transfer money from " + str(from_wallet) + " to " + str(to_wallet))
-                    return True
-                else:
-                    function_name = from_wallet + 'Deposit'
-                    status = getattr(transfer_to, function_name)()
-                    if status == CODE_SUCCESS:
-                        from_field_name = from_wallet + '_wallet'
-                        from_old_amount = getattr(user, from_field_name)
-                        from_new_amount = from_old_amount + Decimal(float(amount))
-                        setattr(user, from_field_name, from_new_amount)
-                        user.save()
-                        logger.info("Fail transfer money from " + str(from_wallet) + " to " + str(to_wallet))
+                return False
+
+        else:
+
+            try:
+                with transaction.atomic():
+                    from_provider = GameProvider.objects.get(provider_name=from_wallet)
+                    from_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=from_provider)
+                    from_wallet_obj.wallet_amount = from_wallet_obj.wallet_amount - Decimal(float(amount))
+                    from_wallet_obj.save()
+
+                    to_provider = GameProvider.objects.get(provider_name=to_wallet)
+                    to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
+                    to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount + Decimal(float(amount))
+                    to_wallet_obj.save()
+                    success = True
+                    
+            except IntegrityError:
+                logger.error("transfer_money() transfer failed. There was an database error with transfer the amount from " + str(from_wallet) + " to " + str(to_wallet))
+                return False
+                    
+            if success:
+                transfer_from = TransferWithdraw(user, amount, to_wallet)
+                function_name = from_wallet + 'Withdraw'
+                from_status = getattr(transfer_from, function_name)()
+
+                if from_status != CODE_SUCCESS:
+
+                    try:
+                        with transaction.atomic():
+                            
+                            from_provider = GameProvider.objects.get(provider_name=from_wallet)
+                            from_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=from_provider)
+                            from_wallet_obj.wallet_amount = from_wallet_obj.wallet_amount + Decimal(float(amount))
+                            from_wallet_obj.save()
+                            
+                            to_provider = GameProvider.objects.get(provider_name=to_wallet)
+                            to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
+                            to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount - Decimal(float(amount))
+                            to_wallet_obj.save()
+                            logger.info("Withdraw request: Refund" + str(amount) + " to " + str(from_wallet) + " from " + + str(to_wallet) + " because transfer_money() request failed")
+                            return False
+                    
+                    except IntegrityError:
+                        logger.error("transfer_money() refund failed. There was an database error with refund the amount from " + str(from_wallet) + " to " + str(to_wallet))
                         return False
-        user.save()
-        return False
+                    
+                else:
+                    
+                    transfer_to = TransferDeposit(user, amount, to_wallet)
+                    function_name = to_wallet + 'Deposit'
+                    to_status = getattr(transfer_to, function_name)()
+                    # withdraw success from from_wallet but fail deposit from to_wallet
+                    if to_status != CODE_SUCCESS:
+
+                        try:
+                            with transaction.atomic():
+
+                                user.main_wallet += Decimal(float(amount))
+                                user.save()
+
+                                to_provider = GameProvider.objects.get(provider_name=to_wallet)
+                                to_wallet_obj, created = UserWallet.objects.get_or_create(user=user, provider=to_provider)
+                                to_wallet_obj.wallet_amount = to_wallet_obj.wallet_amount - Decimal(float(amount))
+                                to_wallet_obj.save()
+                                logger.info("Deposit request: Refund" + str(amount) + " to main_wallet from " + + str(to_wallet) + " because transfer_money() request failed")
+                                return False
+                        
+                        except IntegrityError:
+                            logger.error("transfer_money() refund failed. There was an database error with refund the amount from " + str(to_wallet) + " to main_wallet")
+                            return False
+                    
+                    return True
+            else:
+                return False
+
+
+
 
 def des_decrypt(s):
     encrypt_key = SA_ENCRYPT_KEY
@@ -113,3 +224,6 @@ def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
+def generateTxnId():
+    now = datetime.now()
+    return str(random.randint(0, 100)) + str(now.year) + str(now.month) + str(now.day) + str(now.second)

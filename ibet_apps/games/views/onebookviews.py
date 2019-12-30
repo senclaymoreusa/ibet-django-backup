@@ -16,7 +16,16 @@ from decimal import Decimal
 from time import sleep
 from datetime import datetime
 from utils.admin_helper import *
-
+# from background_task import background
+import redis
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
+from django.db import DatabaseError, transaction
+import datetime
+from datetime import date
+from django.utils import timezone
+import random
+from rest_framework.decorators import api_view, permission_classes
 logger = logging.getLogger('django')
 
 
@@ -37,10 +46,17 @@ outcomeConversion = {
     "running": 4,
     "draw":5,
     "half lose":6,
+    "half won" : 10,
+    "reject": 11,
+    "waiting":12,
+    "waiting running": 13,
+    "void": 3,
+    "refund": 14
 }
 def createMember(username, oddsType):
     try:
         user = CustomUser.objects.get(username=username)
+        
         if user.currency == CURRENCY_CNY:
             currency = 13
         elif user.currency == CURRENCY_USD:
@@ -88,10 +104,8 @@ def createMember(username, oddsType):
         if not success:
             return ERROR_CODE_FAIL
         
-        if rdata['error_code'] == 0:
+        if rdata['error_code'] == 0 or rdata['error_code'] == 6:
             return CODE_SUCCESS
-        elif rdata['error_code'] == 2 or rdata['error_code'] == 6:
-            return ERROR_CODE_DUPE
         else:
             return ERROR_CODE_FAIL
         
@@ -99,7 +113,7 @@ def createMember(username, oddsType):
         logger.error(e)
         return ERROR_CODE_FAIL
         
-
+             
 
 class CreateMember(APIView):
     permission_classes = (AllowAny,)
@@ -151,10 +165,37 @@ class CreateMember(APIView):
         except ObjectDoesNotExist as e:
             return Response({"error":"The user is not existed."}) 
 
-def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
+def createMember(user,currency,oddsType):
+
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
+        "vendor_id": ONEBOOK_VENDORID,
+        "Vendor_Member_ID": user.username + "_test",  #will remove _test when go production
+        "OperatorId": ONEBOOK_OPERATORID,
+        "UserName": user.username + "_test",  #will remove _test when go production
+        "OddsType": oddsType,
+        "Currency": currency,
+        "MaxTransfer": ONEBOOK_MAXTRANSFER,
+        "MinTransfer": ONEBOOK_MINTRANSFER,
+    })
+    rdata = r.json()
+    logger.info(rdata)
+    # print(rdata)
+    if r.status_code == 200:
+        if rdata['error_code'] == 0 or rdata['error_code'] == 6:
+            return CODE_SUCCESS
+        else:
+            return ERROR_CODE_FAIL
+    else: 
+        return ERROR_CODE_FAIL
+    
+    
+    
+
+def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
+    
     trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
-    # try:
-        # user = CustomUser.objects.get(username=username)
+    
     
     if user.currency == CURRENCY_CNY:
         currency = 13
@@ -172,7 +213,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
         currency = 20
     else:
         currency = 20
-
+    
     # wallet_name = fund_wallet + "_wallet"  #for example: onebook_wallet
     # wallet = getattr(user, wallet_name)
     # if direction == '1' and wallet - amount < 0:
@@ -183,141 +224,152 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id):
     delay = 5
     success = False
     username = user.username
-    for x in range(3):
-        r = requests.post(ONEBOOK_API_URL + "FundTransfer/", headers=headers, data={
-            "vendor_id": ONEBOOK_VENDORID,
-            "Vendor_Member_ID": username + "_test",  #will remove _test when go production
-            "vendor_trans_id": trans_id,
-            "amount": amount,
-            "currency": currency,
-            "direction":direction,
-            "wallet_id":wallet_id,
-        })
-        rdata = r.json()
-        logger.info(rdata)
-        if r.status_code == 200:
-            success = True
-            break
-        elif r.status_code == 204:
-            success = True
-            # Handle error
-            logger.info("Failed to complete a request for FundTransfer...")
-            logger.error(rdata)
-            return ERROR_CODE_FAIL
-        elif r.status_code == 500:
-            logger.info("Request failed {} time(s)'.format(x+1)")
-            logger.info("Waiting for %s seconds before retrying again")
-            sleep(delay)
-    if not success:
-        return ERROR_CODE_FAIL
-    if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
-        # amount = Decimal(amount.replace(',',''))
-        if direction == '1':
-            #deposit
-            # wallet = wallet - amount
-            # user.onebook_wallet = user.onebook_wallet + amount
-            
-            Transaction.objects.create(transaction_id=trans_id,
-                                    user_id=user,
-                                    order_id=trans_id,
-                                    amount=amount,
-                                    currency=user.currency,
-                                    transfer_from=fund_wallet,
-                                    transfer_to='Onebook',
-                                    product=0,
-                                    transaction_type=TRANSACTION_TRANSFER,
-                                    status=TRAN_SUCCESS_TYPE)
-        
-        elif direction == '0':                                                            
-            #withdraw
-            # wallet = wallet + amount
-            # user.onebook_wallet = user.onebook_wallet - amount
-            Transaction.objects.create(transaction_id=trans_id,
-                                    user_id=user,
-                                    order_id=trans_id,
-                                    amount=amount,
-                                    currency=user.currency,
-                                    transfer_from='Onebook',
-                                    transfer_to=fund_wallet,
-                                    product=0,
-                                    transaction_type=TRANSACTION_TRANSFER,
-                                    status=TRAN_SUCCESS_TYPE)
-        user.save()
-    
-        return CODE_SUCCESS
-    elif rdata['Data']['status'] == 1 :
-        
-        return ERROR_CODE_FAIL   
-    elif rdata['Data']['status'] == 2:  #call checkFundTransfer api
+    if createMember(user, currency,oddsType) == CODE_SUCCESS:  #check if user is a member ,if not create a new member
         for x in range(3):
-            rr = requests.post(ONEBOOK_API_URL + "CheckFundTransfer/", headers=headers, data={
+            r = requests.post(ONEBOOK_API_URL + "FundTransfer/", headers=headers, data={
                 "vendor_id": ONEBOOK_VENDORID,
-                "vendor_trans_id": trans_id,  
-                "wallet_id": wallet_id,
+                "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                "vendor_trans_id": trans_id,
+                "amount": amount,
+                "currency": currency,
+                "direction":direction,
+                "wallet_id":wallet_id,
             })
-            rrdata = rr.json()
-            logger.info(rrdata)
-            if rr.status_code == 200:
-                try:
-                    rcode = rrdata['error_code']
-                    if rcode == 0:  #transfer success, will update user's balance
-                        if direction == '1':
-                        #deposit
-                            # wallet = wallet - amount
-                            # user.onebook_wallet = user.onebook_wallet + amount
-                            
-                            Transaction.objects.create(transaction_id=trans_id,
-                                                    user_id=user,
-                                                    order_id=trans_id,
-                                                    amount=amount,
-                                                    currency=user.currency,
-                                                    transfer_from=fund_wallet,
-                                                    transfer_to='Onebook',
-                                                    product=0,
-                                                    transaction_type=TRANSACTION_TRANSFER_OUT,
-                                                    status=TRAN_SUCCESS_TYPE)
-                        elif direction == '0':
-                            #withdraw
-                            # wallet = wallet + amount
-                            # user.onebook_wallet = user.onebook_wallet - amount
-                            Transaction.objects.create(transaction_id=trans_id,
-                                                    user_id=user,
-                                                    order_id=trans_id,
-                                                    amount=amount,
-                                                    currency=user.currency,
-                                                    transfer_from='Onebook',
-                                                    transfer_to=fund_wallet,
-                                                    product=0,
-                                                    transaction_type=TRANSACTION_TRANSFER_IN,
-                                                    status=TRAN_SUCCESS_TYPE)
-                        user.save()         
-                        return CODE_SUCCESS
-                        break
-                    elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
-                        return ERROR_CODE_FAIL
-                        break
-                    elif rcode == 3:
-                        logger.info("Request failed {} time(s)'.format(x+1)")
-                        logger.info("Waiting for %s seconds before retrying again")
-                        sleep(300) #wait for 5 minites then try again  
-                except NameError as error:
-                    logger.error(error)          
-            elif rr.status_code == 204:
+            rdata = r.json()
+            # print(rdata)
+            logger.info(rdata)
+            if r.status_code == 200:
+                success = True
+                break
+            elif r.status_code == 204:
+                success = True
                 # Handle error
-                logger.info("Failed to complete a request for check fund transfer...")
-                logger.error(rrdata)
+                logger.info("Failed to complete a request for FundTransfer...")
+                logger.error(rdata)
                 return ERROR_CODE_FAIL
-    else:    
+            elif r.status_code == 500:
+                logger.info("Request failed {} time(s)'.format(x+1)")
+                logger.info("Waiting for %s seconds before retrying again")
+                sleep(delay)
+        if not success:
+            return ERROR_CODE_FAIL
+        if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
+            # amount = Decimal(amount.replace(',',''))
+            with transaction.atomic():
+                if direction == '1':
+                    #deposit
+                    # wallet = wallet - amount
+                    # user.onebook_wallet = user.onebook_wallet + amount
+                    
+                    Transaction.objects.create(transaction_id=trans_id,
+                                            user_id=user,
+                                            order_id=trans_id,
+                                            amount=amount,
+                                            currency=user.currency,
+                                            transfer_from=fund_wallet,
+                                            transfer_to='Onebook',
+                                            product=0,
+                                            transaction_type=TRANSACTION_TRANSFER,
+                                            status=TRAN_SUCCESS_TYPE)
+                
+                elif direction == '0':                                                            
+                    #withdraw
+                    # wallet = wallet + amount
+                    # user.onebook_wallet = user.onebook_wallet - amount
+                    Transaction.objects.create(transaction_id=trans_id,
+                                            user_id=user,
+                                            order_id=trans_id,
+                                            amount=amount,
+                                            currency=user.currency,
+                                            transfer_from='Onebook',
+                                            transfer_to=fund_wallet,
+                                            product=0,
+                                            transaction_type=TRANSACTION_TRANSFER,
+                                            status=TRAN_SUCCESS_TYPE)
+                # user.save()
+        
+            return CODE_SUCCESS
+        elif rdata['Data']['status'] == 1 :
+            
+            return ERROR_CODE_FAIL   
+        elif rdata['Data']['status'] == 2:  #call checkFundTransfer api
+            for x in range(3):
+                rr = requests.post(ONEBOOK_API_URL + "CheckFundTransfer/", headers=headers, data={
+                    "vendor_id": ONEBOOK_VENDORID,
+                    "vendor_trans_id": trans_id,  
+                    "wallet_id": wallet_id,
+                })
+                rrdata = rr.json()
+                logger.info(rrdata)
+                if rr.status_code == 200:
+                    try:
+                        rcode = rrdata['error_code']
+                        if rcode == 0:  #transfer success, will update user's balance
+                            with transaction.atomic():
+                                if direction == '1':
+                                #deposit
+                                    # wallet = wallet - amount
+                                    # user.onebook_wallet = user.onebook_wallet + amount
+                                    
+                                    Transaction.objects.create(transaction_id=trans_id,
+                                                            user_id=user,
+                                                            order_id=trans_id,
+                                                            amount=amount,
+                                                            currency=user.currency,
+                                                            transfer_from=fund_wallet,
+                                                            transfer_to='Onebook',
+                                                            product=0,
+                                                            transaction_type=TRANSACTION_TRANSFER_OUT,
+                                                            status=TRAN_SUCCESS_TYPE)
+                                elif direction == '0':
+                                    #withdraw
+                                    # wallet = wallet + amount
+                                    # user.onebook_wallet = user.onebook_wallet - amount
+                                    Transaction.objects.create(transaction_id=trans_id,
+                                                            user_id=user,
+                                                            order_id=trans_id,
+                                                            amount=amount,
+                                                            currency=user.currency,
+                                                            transfer_from='Onebook',
+                                                            transfer_to=fund_wallet,
+                                                            product=0,
+                                                            transaction_type=TRANSACTION_TRANSFER_IN,
+                                                            status=TRAN_SUCCESS_TYPE)
+                                # user.save()         
+                            return CODE_SUCCESS
+                            break
+                        elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
+                            return ERROR_CODE_FAIL
+                            break
+                        elif rcode == 3:
+                            logger.info("Request failed {} time(s)'.format(x+1)")
+                            logger.info("Waiting for %s seconds before retrying again")
+                            sleep(300) #wait for 5 minites then try again  
+                    except NameError as error:
+                        logger.error(error)
+                        return  ERROR_CODE_FAIL         
+                elif rr.status_code == 204:
+                    # Handle error
+                    logger.info("Failed to complete a request for check fund transfer...")
+                    logger.error(rrdata)
+                    return ERROR_CODE_FAIL
+        else:    
+            return ERROR_CODE_FAIL
+    else:
         return ERROR_CODE_FAIL
 
 
-class test(View):
-    def get(self, request, *args, **kwargs):
-        # response = fundTransfer("angela", 200, "main", '1', '1')
-        response = createMember("angela05", "1")
-        return HttpResponse(response)
+# class test(View):
+#     def get(self, request, *args, **kwargs):
+#         user = CustomUser.objects.get(username="angela")
+#         response = createMember(user, 20, "2")
+        
+#         return HttpResponse(response)
 
     
+# def test01(request, username):
+#     #username = request.GET.get('username')
+#     return HttpResponse(username)
 
 class FundTransfer(APIView):
     permission_classes = (AllowAny,)
@@ -369,6 +421,7 @@ class FundTransfer(APIView):
                 
                 if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
                     amount = Decimal(amount.replace(',',''))
+                    
                     if direction == '1':
                         #deposit
                         user.main_wallet = user.main_wallet - amount
@@ -418,17 +471,130 @@ class FundTransfer(APIView):
 
 
 
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes((AllowAny,))      
+def getBetDetail(request):
+    if request.method == 'POST':
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+        except ObjectDoesNotExist:
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            
+        headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+        delay = 2
+        success = False
+        version_key = PROVIDER.notes
+        onebook_run = "run"
+        try:
+            r = RedisClient().connect()
+            redis = RedisHelper()
+        except:
+            logger.error("There is something wrong with redis connection.")
+            return Response({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        #print(redis.check_onebook_bet_details(onebook_run))
+        if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
+            redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
+            while(True):
+                r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
+                    "vendor_id": ONEBOOK_VENDORID,
+                    "version_key": version_key,
+                })
+                rdata = r.json()
+                logger.info(rdata)
+                # print(rdata)
+                version_key = rdata["Data"]["last_version_key"]        
+                
+                updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+                
+                updates.notes = version_key
+                updates.save()
+                    
+                if  "BetDetails" in rdata['Data']:
+                    
+                    # logger.info(rdata["Data"]["BetDetails"])
+                    for i in range(len(rdata["Data"]["BetDetails"])):
+                        username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
+                        # print(username)
+                        
+                        cate = Category.objects.get(name='Sports')
+                        
+                        trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
+                        user = CustomUser.objects.get(username=username)
+                        transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                        if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
+                            
+                            GameBet.objects.create(provider=PROVIDER,
+                                                category=cate,
+                                                user=user,
+                                                user_name=user.username,
+                                                transaction_id=transid,
+                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                ref_no=trans_id,
+                                                market=ibetCN,
+                                                other_data=rdata,
+                                                resolved_time=timezone.now(),
+                                                )
+                        else:
+                            
+                            resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                                
+                            GameBet.objects.get_or_create(provider=PROVIDER,
+                                                category=cate,
+                                                transaction_id=transid,
+                                                user=user,
+                                                user_name=user.username,
+                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                resolved_time=utcToLocalDatetime(resolve),
+                                                ref_no=trans_id,
+                                                market=ibetCN,
+                                                other_data=rdata,
+                                                )
+                    
+                    # sleep(delay)  
+                    # print("sleep")  
+                else:
+                    logger.info("BetDetails is not existed.")
+                    break
+            redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
+            #print(redis.check_onebook_bet_details(onebook_run))        
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        else:
+            logger.info("skip running this time.")
+            return Response({'status': 'skip running this time.'}, status=status.HTTP_200_OK)
+    
+
+    
+ 
+
+@transaction.atomic
 class GetBetDetail(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         try:
-            PROVIDER = GameProvider.objects.get(provider_name="Onebook")
+            PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name=ONEBOOK_PROVIDER,
+                                        type=GAME_TYPE_SPORTS,
+                                        market='letouCN, letouTH, letouVN',
+                                        notes='2004')
             logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
         delay = kwargs.get("delay", 2)
         success = False
-        version_key = GameProvider.objects.get(provider_name='Onebook').notes
+        version_key = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER).notes
         
         for x in range(0,3000):
             r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
@@ -438,7 +604,8 @@ class GetBetDetail(APIView):
             rdata = r.json()
             logger.info(rdata)
             version_key = rdata["Data"]["last_version_key"]
-            updates = GameProvider.objects.get(provider_name='Onebook')
+            updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
+            
             updates.notes = version_key
             updates.save()
             
@@ -448,12 +615,19 @@ class GetBetDetail(APIView):
 
                 for i in range(len(rdata["Data"]["BetDetails"])):
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
-                    cate = Category.objects.get(name='SPORTS')
+                    try:
+                        cate = Category.objects.get(name='Sports')
+                    except:
+                        logger.error("missing sports game category.")
+                    user = CustomUser.objects.get(username=username)
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
                         
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
-                                                    username=CustomUser.objects.get(username=username),
+                                                    transaction_id=trans_id,
+                                                    user=user,
+                                                    user_name=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -461,13 +635,16 @@ class GetBetDetail(APIView):
                                                     amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     market=ibetCN,
+                                                    resolved_time=timezone.now(),
                                                     )
                     else:
                         resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
                         
                         GameBet.objects.get_or_create(provider=PROVIDER,
                                                     category=cate,
-                                                    username=CustomUser.objects.get(username=username),
+                                                    transaction_id=trans_id,
+                                                    user=user,
+                                                    user_name=user.username,
                                                     odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                     amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                     currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
