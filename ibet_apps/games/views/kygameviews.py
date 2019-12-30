@@ -23,7 +23,7 @@ from  games.models import *
 import json
 import time
 import urllib
-from background_task import background
+# from background_task import background
 import redis
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
@@ -333,7 +333,7 @@ def kyTransfer(user, amount, wallet, method):
                         transfer_from=wallet,
                         transfer_to='ky',
                         product=1,
-                        transaction_type=TRANSACTION_DEPOSIT,
+                        transaction_type=TRANSACTION_TRANSFER,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True
@@ -351,7 +351,7 @@ def kyTransfer(user, amount, wallet, method):
                         transfer_from='ky',
                         transfer_to=wallet,
                         product=1,
-                        transaction_type=TRANSACTION_DEPOSIT,
+                        transaction_type=TRANSACTION_TRANSFER,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True

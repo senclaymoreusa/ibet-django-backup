@@ -1,7 +1,8 @@
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.http import HttpResponse
-
+from decimal import Decimal
+from django.db import IntegrityError, DatabaseError, transaction
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
@@ -9,6 +10,9 @@ from utils.aws_helper import getThirdPartyKeys
 from utils.constants import *
 from users.models import CustomUser
 from games.models import *
+import datetime
+from datetime import date
+from django.utils import timezone
 
 import os
 import json
@@ -209,4 +213,366 @@ class GameLaunch(APIView):
 #         except requests.exceptions.RequestException as err:
 #             logger.error("Oops: " + str(err))
     
-     
+
+class ProcessTransactions(APIView):
+
+    permission_classes = (AllowAny, )
+    
+    
+    def post(self, request, *args, **kwargs):
+        """
+        Transactions: Deposit and Withdraw
+        """
+        status_code = 500
+        message = ''
+        
+        http_session = request.META.get('HTTP_WALLET_SESSION')
+        pass_key = request.META.get('HTTP_PASS_KEY')
+        
+        if pass_key != QT_PASS_KEY:
+            status_code = 401
+            message = 'The given pass-key is incorrect'
+            logger.error(message) 
+            
+            response = {
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][3],
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            playerId = request.GET['playerId']
+            txnId = request.GET['txnId']
+            gameId = request.GET["gameId"]
+            roundId = request.GET['roundId']
+            transType = request.GET["txnType"]
+            currency = request.GET["currency"]
+            created = request.GET['created'] # timestamp
+            completed = request.GET['completed'] # true / false
+            amount = request.GET["amount"]
+            amount = Decimal(amount)
+        except:
+            status_code = 400
+            message = 'One or more required payload parameters are missing!'
+            logger.error(message) 
+            
+            response = {
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][5],
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            user = CustomUser.objects.get(username=playerId)
+            qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+            prov = GameProvider.objects.get(provider_name="QTech")
+            cat = Category.objects.get(name='Games')
+            
+            if not qt_session.valid:
+                status_code = 400
+                message = 'Missing, invalid or expired player (wallet) session token'
+                logger.error(message) 
+                
+                response = {
+                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][2],
+                    "message": message
+                }
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+            elif user.block:
+                status_code = 403
+                message = "The player account is blocked"
+                logger.error("Blocked user {} trying to access QT Game".format(username))
+                
+                response = {
+                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][4],
+                    "message": message
+                }
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+                
+        except:
+            status_code = 400
+            message = 'PLAYER_NOT_FOUND'
+            logger.error(message) 
+            
+            response = {
+                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                
+        if transType == "DEBIT":
+            bal = user.main_wallet - amount
+            
+            if bal > 0: 
+                # user has enough funds
+                try:
+                    with transaction.atomic():
+                        bet = GameBet(
+                            provider=prov,
+                            category=cat,
+                            user=user,
+                            user_name = user.username,
+                            ref_no=txnId,
+                            amount_wagered=amount,
+                            transaction_id=trans_id,
+                            currency=user.currency,
+                            market=ibetCN,
+                            other_data={
+                                'txnType': transType,
+                                'completed': completed, 
+                                'roundId': roundId, 
+                                'category': request.GET['category'],
+                                'device': request.GET['device']
+                            }
+                        )
+                        user.main_wallet = bal
+                        bet.save()
+                        user.save()
+                        
+                    response = {
+                        "balance": str(bal),
+                        "referenceId": trans_id
+                    }
+                    
+                    status_code = 201
+                    
+                except (DatabaseError, IntegrityError) as e:
+                    logger.error(repr(e))
+                
+                    response = {
+                        "code": "UNKNOWN_ERROR",
+                        "message": "DEBIT unexpected error"
+                    }
+            else: 
+                response = {
+                    "code": "INSUFFICIENT_FUNDS",
+                    "message": "Not enough funds for the debit operation"
+                }
+                status_code = 400
+                
+            
+        elif transType == "CREDIT":
+            user.main_wallet += amount
+            
+            try:
+                with transaction.atomic():
+                    bet = GameBet(
+                        provider=prov,
+                        category=cat,
+                        user=user,
+                        user_name = user.username,
+                        ref_no=txnId,
+                        amount_won=amount,
+                        resolved_time=timezone.now(),
+                        outcome=0,
+                        transaction_id=trans_id,
+                        currency=user.currency,
+                        market=ibetCN,
+                        other_data={
+                            'txnType': transType,
+                            'completed': completed, 
+                            'roundId': roundId, 
+                            'category': request.GET['category'],
+                            'device': request.GET['device']
+                        }
+                    )
+                    bet.save()
+                    user.save()
+                    
+                response = {
+                    "balance": str(user.main_wallet),
+                    "referenceId": trans_id
+                }
+                
+                status_code = 201
+                
+            except (DatabaseError, IntegrityError) as e:
+                logger.error(repr(e))
+            
+                response = {
+                    "code": "UNKNOWN_ERROR",
+                    "message": "CREDIT unexpected error"
+                }
+                
+        else:
+            response = {
+                "code": "REQUEST_DECLINED",
+                "message": "Invalid transaction type: " + transType
+            }
+            status_code = 400
+                    
+            
+        return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+    
+
+class ProcessRollback(APIView):
+
+    permission_classes = (AllowAny, )
+    
+    
+    def post(self, request, *args, **kwargs):
+        """
+        Transactions: Deposit and Withdraw
+        """
+        status_code = 500
+        message = ''
+        
+        http_session = request.META.get('HTTP_WALLET_SESSION')
+        pass_key = request.META.get('HTTP_PASS_KEY')
+        
+        if pass_key != QT_PASS_KEY:
+            status_code = 401
+            message = 'The given pass-key is incorrect'
+            logger.error(message) 
+            
+            response = {
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][2],
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            playerId = request.GET['playerId']
+            txnId = request.GET['txnId']
+            gameId = request.GET["gameId"]
+            transType = request.GET["txnType"]
+            currency = request.GET["currency"]
+            created = request.GET['created'] # timestamp
+            completed = request.GET['completed'] # true / false
+            amount = request.GET["amount"]
+            amount = Decimal(amount)
+            orig_txnId = request.GET['betId']
+            
+        except:
+            status_code = 400
+            message = 'One or more required payload parameters are missing!'
+            logger.error(message) 
+            
+            response = {
+                "code": "REQUEST_DECLINED",
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            user = CustomUser.objects.get(username=playerId)
+            qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+            prov = GameProvider.objects.get(provider_name="QTech")
+            cat = Category.objects.get(name='Games')
+            
+            if not qt_session.valid:
+                status_code = 400
+                message = 'Missing, invalid or expired player (wallet) session token'
+                logger.error(message) 
+                
+                response = {
+                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
+                    "message": message
+                }
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+            elif user.block:
+                status_code = 403
+                message = "The player account is blocked"
+                logger.error("Blocked user {} trying to access QT Game".format(username))
+                
+                response = {
+                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][4],
+                    "message": message
+                }
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+                
+        except:
+            status_code = 400
+            message = 'PLAYER_NOT_FOUND'
+            logger.error(message) 
+            
+            response = {
+                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
+                "message": message
+            }
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        user.main_wallet += amount
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
+        
+        try:
+            #
+            # try to find the original QT txnId for rollback
+            #
+            record = GameBet.objects.filter(  provider=prov,
+                                           category=cat,
+                                           user=user,
+                                           user_name = user.username,
+                                           currency=user.currency,
+                                           market=ibetCN,
+                                           ref_no=orig_txnId
+                                           )
+            
+            response = {
+                "balance": str(user.main_wallet),
+                "referenceId": trans_id
+            }
+            
+        except:
+            logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
+            response = {
+                "balance": str(user.main_wallet)
+            }
+            
+        #
+        # it proceeds with rollback regardless the orig_txnId
+        #
+        try:
+            with transaction.atomic():
+                bet = GameBet(
+                    provider=prov,
+                    category=cat,
+                    user=user,
+                    user_name = user.username,
+                    ref_no=txnId,
+                    amount_wagered=0.00,
+                    amount_won=amount,
+                    transaction_id=trans_id,
+                    outcome=7,
+                    currency=user.currency,
+                    market=ibetCN,
+                    other_data={
+                        'transactionType': "RollBack",
+                        'rollBackFrom': orig_txnId,
+                        'completed': completed, 
+                        'category': request.GET['category'],
+                        'device': request.GET['device']
+                    }
+                )
+                bet.save()
+                user.save()
+            
+            status_code = 200
+            
+        except (DatabaseError, IntegrityError) as e:
+            logger.error(repr(e))
+        
+            response = {
+                "code": "UNKNOWN_ERROR",
+                "message": "Unexpected error"
+            }
+        
+        
+        
+        return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        
