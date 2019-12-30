@@ -497,7 +497,7 @@ def getBetDetail(request):
         #print(redis.check_onebook_bet_details(onebook_run))
         if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
-            while(True):
+            while(redis.check_onebook_bet_details(onebook_run)): #loop while the key is existed in redis
                 r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
                     "vendor_id": ONEBOOK_VENDORID,
                     "version_key": version_key,
@@ -574,6 +574,7 @@ def getBetDetail(request):
                     logger.info("Waiting for %s seconds before retrying again")
                     sleep(5)
                 else:
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
                     logger.info("There was something wrong with the result")
                     return Response({'status': 'There was something wrong with the result'}, status=status.HTTP_400_BAD_REQUEST)
             redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
