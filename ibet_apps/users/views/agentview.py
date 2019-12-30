@@ -39,13 +39,13 @@ class AgentView(CommAdminView):
             commission_this_month_record = []
             for tran in commission_transaction_this_month:
                 user = tran.user_id
-                downlines = getAllDownline(user)
+                downlines = getDownlines(user)
 
                 tranDict = {'id': user.pk,
                             'trans_pk': tran.pk,
                             'active_players': filterActiveUser(downlines, start_date,
                                                                end_date, True, None).count(),
-                            'downline_ftd': getFTD(downlines, start_date, end_date).count(),
+                            'downline_ftd': calculateFTD(downlines, start_date, end_date),
                             'commission_rate': getCommissionRate(user, start_date, end_date),
                             'deposit': calculateDeposit(user, start_date, end_date)[1],
                             'withdrawal': calculateWithdrawal(user, start_date, end_date)[1],
@@ -121,14 +121,14 @@ class AgentView(CommAdminView):
             affiliate_list = []
             for affiliate in queryset:
                 # downline list
-                downlines = getDownline(affiliate)
-                downlines_all = getAllDownline(affiliate)
+                downlines = getPlayers(affiliate)
+                downlines_all = getDownlines(affiliate)
                 downlines_total_deposit = 0
                 downlines_total_withdrawal = 0
                 downlines_regis = calculateRegistrations(downlines, min_date, max_date)
                 downlines_all_regis = calculateRegistrations(downlines_all, min_date, max_date)
-                downlines_ftds = getFTD(downlines, min_date, max_date).count()
-                downlines_all_ftds = getFTD(downlines_all, min_date, max_date).count()
+                downlines_ftds = calculateFTD(downlines, min_date, max_date)
+                downlines_all_ftds = calculateFTD(downlines_all, min_date, max_date)
 
                 for downline in downlines:
                     downline_deposit_count, downline_deposit = calculateDeposit(downline, min_date, max_date)
@@ -214,6 +214,7 @@ class AgentView(CommAdminView):
             context["breadcrumbs"].append({'url': '/affiliate_overview/', 'title': title})
             context["title"] = title
 
+
             # Commission Table
             # commission transaction group by month
 
@@ -245,7 +246,7 @@ class AgentView(CommAdminView):
 
                 for aff in trans['aff_list']:
                     aff_obj = CustomUser.objects.get(pk=aff)
-                    active_downline += filterActiveUser((getAllDownline(aff_obj)), start_time, end_time, True, None).count()
+                    active_downline += filterActiveUser((getDownlines(aff_obj)), start_time, end_time, True, None).count()
 
                 commission_dict = {
                     'commission_release_month': end_time,  # month
@@ -440,7 +441,7 @@ def getDownlineList(queryset, start_time, end_time):
             'channel': str(downline.referred_by_channel or ''),
             'ftd': str(downline.ftd_time),
             'registration_date': str(utcToLocalDatetime(downline.time_of_registration)),
-            'last_login': str(last_login(downline)),
+            'last_login': str(lastLogin(downline)),
             'total_deposit': calculateDeposit(downline, start_time, end_time)[0],
             'total_withdrawal': calculateWithdrawal(downline, start_time, end_time)[0],
             'total_bonus': calculateBonus(downline, start_time, end_time, None),
@@ -487,7 +488,7 @@ class AgentDetailView(CommAdminView):
             except Exception as e:
                 logger.error("Error getting User object: ", e)
 
-            queryset = getDownline(affiliate)
+            queryset = getPlayers(affiliate)
 
             #  TOTAL ENTRIES
             total = queryset.count()
@@ -558,8 +559,8 @@ class AgentDetailView(CommAdminView):
                     request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
                 comm=Coalesce(Sum('amount'), 0))
             # downline status
-            context["downline_number"] = getDownline(affiliate).count()
-            context["active_users"] = calculateActiveDownlineNumber(affiliate)
+            context["downline_number"] = getPlayers(affiliate).count()
+            context["active_users"] = filterActiveUser(getDownlines(affiliate), None, None, True, None).count()
             context["downline_deposit"] = downline_deposit
             context['domain'] = LETOU_DOMAIN
             context['referral_code'] = affiliate.referral_code
@@ -636,7 +637,7 @@ class AgentDetailView(CommAdminView):
                     transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
                 downline_info['adjustment'] = affiliate_tran.filter(
                     transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-                downline_info['turnover'] = calculateTurnover(i, None, None)
+                downline_info['turnover'] = calculateTurnover(i, None, None, None)
                 downline_info['balance'] = i.main_wallet
                 downline_list_table.append(downline_info)
             context["downline_list"] = downline_list_table

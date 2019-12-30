@@ -43,81 +43,53 @@ bet_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_BET_PLACED)
 
 '''
-@param queryset: affiliate object or queryset
-@return: downline list(users referred by this affiliate)
+@param affiliates: affiliate object or queryset
+@return: players list(users referred by affiliates)
 '''
 
 
-# get downline list for affiliate or affiliates(one level)
-def getDownline(affiliates):
-    downline_list = []
-    # corner case
+# get player list for affiliate or affiliates
+def getPlayers(affiliates):
+    player_list = None
     if affiliates in [None, '']:
-        logger.info("Error input for getting downline list!")
+        logger.info("Invalid input for getting affiliates' player list.")
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
-            downline = affiliate.referees.all()
-            if downline:
-                downline_list.append(downline)
+            affiliate_referral_path = affiliate.referral_path
+            player_list |= CustomUser.objects.filter(
+                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
     else:
-        downline_list = affiliates.referees.all()
-    return downline_list
+        affiliate_referral_path = affiliates.referral_path
+        player_list = CustomUser.objects.filter(
+            Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
+
+    return player_list
 
 
 '''
-@param queryset: affiliate object or queryset
-@return: downline list(users, users referred by this affiliate, his referred users, his referred users' referred users...)
+@param affiliates: affiliate object or queryset
+@return: downline list(affiliates referred by affiliates)
 '''
 
 
-# get downline list for affiliate or affiliates(all levels)
-def getAllDownline(affiliates):
+# get downline list for affiliate or affiliates
+def getDownlines(affiliates):
     downline_list = None
-    # corner case
     if affiliates in [None, '']:
-        logger.info("Error input for getting downline list!")
+        logger.info("Invalid input for getting affiliates' downline list.")
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
             downline_list |= CustomUser.objects.filter(
-                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
+                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
         downline_list = CustomUser.objects.filter(
-            Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
+            Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(pk=affiliates.pk))
 
     return downline_list
-
-
-'''
-@param queryset: affiliate object
-@return: number of active downline between start_time and end_time
-'''
-
-
-def calculateActiveDownlineNumber(affiliate, start_time, end_time):
-    # check affiliate_id first
-    downlines = affiliate.referees.all()
-    # get bet transaction in this period
-    if start_time and end_time:
-        game_bet_tran = GameBet.objects.filter(Q(bet_time__gte=start_time) & Q(bet_time__lte=end_time))
-    elif start_time:
-        game_bet_tran = GameBet.objects.filter(bet_time__gte=start_time)
-    elif end_time:
-        game_bet_tran = GameBet.objects.filter(bet_time__lte=end_time)
-    else:
-        game_bet_tran = GameBet.objects.all()
-
-    active_user_list = game_bet_tran.values_list('user', flat=True).distinct()
-
-    affiliate_active_users = 0
-    if downlines:
-        for downline in downlines:
-            if downline.pk in active_user_list:
-                affiliate_active_users += 1
-    return affiliate_active_users
 
 
 '''
@@ -150,26 +122,11 @@ def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
 
 
 '''
-@param date: mm/dd/yyyy
-@return: timezone datetime
+@return: users who made first time deposit within this time range
 '''
 
 
-def dateToDatetime(date):
-    if date:
-        date = date.split('/')
-        date = datetime.datetime(int(date[2]), int(date[0]), int(date[1]))
-        current_tz = timezone.get_current_timezone()
-        date = date.astimezone(current_tz)
-    return date
-
-
-'''
-@return: first time deposit users within time range
-'''
-
-
-def getFTD(queryset, start_time, end_time):
+def calculateFTD(queryset, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
     ftd_filter = Q()
@@ -181,8 +138,8 @@ def getFTD(queryset, start_time, end_time):
     elif end_time:
         ftd_filter &= Q(ftd_time__lte=end_time)
 
-    ftd_user = queryset.filter(ftd_filter)
-    return ftd_user
+    ftd_count = queryset.filter(ftd_filter).count()
+    return ftd_count
 
 
 # calculate newly registered players referred by the affiliate within certain time range
@@ -198,8 +155,8 @@ def calculateRegistrations(user_group, start_time, end_time):
     elif end_time:
         regis_filter &= Q(time_of_registration__lte=end_time)
 
-    new_user = user_group.filter(regis_filter).count()
-    return new_user
+    registered_count = user_group.filter(regis_filter).count()
+    return registered_count
 
 
 # calculate new players referred by the affiliate place first bet during certain time range
@@ -224,16 +181,16 @@ def getCommissionRate(user, start_time, end_time):
     if not user:
         return 0
 
-    downlines = getAllDownline(user)
+    downlines = getDownlines(user)
     active_downline = filterActiveUser(downlines, start_time, end_time, True, None).count()
-    downline_ftd = getFTD(downlines, start_time, end_time).count()
+    downline_ftd = calculateFTD(downlines, start_time, end_time)
     ngr = 0
     for downline in downlines:
         ngr += calculateNGR(downline, start_time, end_time, None)
     if user.commission_setting == 'System':
-        commissions = SystemCommission.objects.all().order_by('-commission_percentage')
+        commissions = SystemCommissionLevel.objects.all().order_by('-commission_percentage')
     else:
-        commissions = Commission.objects.filter(user_id=user).order_by('-commission_percentage')
+        commissions = PersonalCommissionLevel.objects.filter(user_id=user).order_by('-commission_percentage')
 
     if commissions:
         for level in commissions:
@@ -305,7 +262,7 @@ def generateUniqueReferralCode(user_id):
 
 
 # decode
-def decode_user_id_from_referral_code(code):
+def decodeReferralCode(code):
     user_id = 0
     code = code.upper()
     if len(code) != limit_digit:
@@ -326,7 +283,7 @@ def decode_user_id_from_referral_code(code):
 '''
 
 
-def last_login(user):
+def lastLogin(user):
     action = UserAction.objects.filter(Q(user=user) &
                                        Q(event_type=EVENT_CHOICES_LOGIN)).order_by('-created_time')
     if action:
