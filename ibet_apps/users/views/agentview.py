@@ -310,7 +310,7 @@ class AgentView(CommAdminView):
                             current_trans.arrive_time = timezone.now()
                             current_trans.release_by = admin_user
                             current_trans.save()
-                            admin_user.save()
+                            user.save()
                     except Exception as e:
                         logger.error("Error releasing Commission " + str(trans_id) + " " + str(e))
 
