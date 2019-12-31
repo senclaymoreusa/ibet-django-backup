@@ -14,26 +14,64 @@ from django.core.exceptions import ObjectDoesNotExist
 from users.views.helper import checkUserBlock
 from users.models import CustomUser
 from decimal import Decimal
-import requests
+
 from utils.constants import *
-import random
-import hashlib 
-import logging
-import datetime
+
 from datetime import date
 from django.utils import timezone
-import uuid
 from games.models import *
 from accounting.models import * 
 from utils.constants import *
-import json
 
-from rest_framework.authtoken.models import Token
+# General
+import datetime
+import hashlib 
+import json
+import logging
+import random
+import requests
+import urllib
 import xmltodict
 
+from rest_framework.authtoken.models import Token
+
+
+logger = logging.getLogger('django')
 
 MERCH_ID = "IBETP"
 MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
+GPI_URL = "http://club8api.bet8uat.com/op/"
+
+
+def transCurrency(user):
+    try:
+        currency = user.currency
+
+        if currency == CURRENCY_CNY:
+            currency = "RMB"
+        elif currency == CURRENCY_IDR:
+            currency = "IDR"
+        elif currency == CURRENCY_MYR:
+            currency = "MYR"
+        elif currency == CURRENCY_THB:
+            currency = "THB"
+        elif currency == CURRENCY_USD:
+            currency = "USD"
+        elif currency == CURRENCY_VND:
+            currency = "VND"
+        elif currency == CURRENCY_EUR:
+            currency = "EUR"
+        elif currency == CURRENCY_MMK:
+            currency = "MMK"
+        elif currency == CURRENCY_GBP:
+            currency = "GBP"
+        else:
+            currency = ""
+
+        return currency
+    except Exception as e:
+        logger.error("ERROR: GPI currency transform error -- {}".format(repr(e)))
+        return ""
 
 
 class GPILoginView(View):
@@ -96,10 +134,66 @@ class ValidateUserAPI(View):
 
 class CreateUserAPI(View):
     def get(self, request, *kw, **args):
+        username = request.GET.get("username")
+
+        try:
+            user = CustomUser.objects.get(username=username)
+
+            merch_id = MERCH_ID
+            merch_pwd = MERCH_PWD
+            cust_id = username
+            cust_name = username
+
+            currency = user.currency
+
+            if currency == CURRENCY_CNY:
+                currency = "RMB"
+            elif currency == CURRENCY_IDR:
+                currency = "IDR"
+            elif currency == CURRENCY_MYR:
+                currency = "MYR"
+            elif currency == CURRENCY_THB:
+                currency = "THB"
+            elif currency == CURRENCY_USD:
+                currency = "USD"
+            elif currency == CURRENCY_VND:
+                currency = "VND"
+            elif currency == CURRENCY_EUR:
+                currency = "EUR"
+            elif currency == CURRENCY_MMK:
+                currency = "MMK"
+            elif currency == CURRENCY_GBP:
+                currency = "GBP"
+            else:
+                pass
+
+        
         return "error message"
 
 
 class GetBalanceAPI(View):
     def get(self, request, *kw, **args):
-        merch_id = MERCH_ID
-        return 0
+        username = request.GET.get("username")
+        try:
+            user = CustomUser.objects.get(username=username)
+
+            currency = transCurrency(user)
+
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            req_param["cust_id"] = username
+            req_param["currency"] = currency
+
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_URL + 'getbalance' + '?' + req
+
+            res = requests.get(url)
+            
+            print(res.text)
+
+        except ObjectDoesNotExist:
+            logger.error("Error: can not find user -- {}".format(str(username))
+        except Exception as e:
+            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
