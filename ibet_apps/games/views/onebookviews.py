@@ -497,77 +497,81 @@ def getBetDetail(request):
         #print(redis.check_onebook_bet_details(onebook_run))
         if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
-            while(True):
+            while(redis.check_onebook_bet_details(onebook_run)): #loop while the key is existed in redis
                 r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
                     "vendor_id": ONEBOOK_VENDORID,
                     "version_key": version_key,
                 })
                 rdata = r.json()
-                logger.info(rdata)
-                # print(rdata)
-                version_key = rdata["Data"]["last_version_key"]        
-                
-                updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
-                
-                updates.notes = version_key
-                updates.save()
+                if r.status_code == 200:
+                    logger.info(rdata)
+                    # print(rdata)
+                    version_key = rdata["Data"]["last_version_key"]        
                     
-                if  "BetDetails" in rdata['Data']:
+                    updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
                     
-                    # logger.info(rdata["Data"]["BetDetails"])
-                    for i in range(len(rdata["Data"]["BetDetails"])):
-                        username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
-                        # print(username)
+                    updates.notes = version_key
+                    updates.save()
                         
-                        cate = Category.objects.get(name='Sports')
+                    if  "BetDetails" in rdata['Data']:
                         
-                        trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
-                        user = CustomUser.objects.get(username=username)
-                        transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                        if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
+                        # logger.info(rdata["Data"]["BetDetails"])
+                        for i in range(len(rdata["Data"]["BetDetails"])):
+                            username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
+                            # print(username)
                             
-                            GameBet.objects.create(provider=PROVIDER,
-                                                category=cate,
-                                                user=user,
-                                                user_name=user.username,
-                                                transaction_id=transid,
-                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                ref_no=trans_id,
-                                                market=ibetCN,
-                                                other_data=rdata,
-                                                resolved_time=timezone.now(),
-                                                )
-                        else:
+                            cate = Category.objects.get(name='Sports')
                             
-                            resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                            trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
+                            user = CustomUser.objects.get(username=username)
+                            transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                            if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
                                 
-                            GameBet.objects.get_or_create(provider=PROVIDER,
-                                                category=cate,
-                                                transaction_id=transid,
-                                                user=user,
-                                                user_name=user.username,
-                                                odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                resolved_time=utcToLocalDatetime(resolve),
-                                                ref_no=trans_id,
-                                                market=ibetCN,
-                                                other_data=rdata,
-                                                )
-                    
-                    # sleep(delay)  
-                    # print("sleep")  
+                                GameBet.objects.create(provider=PROVIDER,
+                                                    category=cate,
+                                                    user=user,
+                                                    user_name=user.username,
+                                                    transaction_id=transid,
+                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                    ref_no=trans_id,
+                                                    market=ibetCN,
+                                                    other_data=rdata
+                                                    )
+                            else:
+                                
+                                resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                                    
+                                GameBet.objects.get_or_create(provider=PROVIDER,
+                                                    category=cate,
+                                                    transaction_id=transid,
+                                                    user=user,
+                                                    user_name=user.username,
+                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                    resolved_time=utcToLocalDatetime(resolve),
+                                                    ref_no=trans_id,
+                                                    market=ibetCN,
+                                                    other_data=rdata,
+                                                    )
+                        
+                        # sleep(delay)  
+                        # print("sleep")  
+                    else:
+                        logger.info("BetDetails is not existed.")
+                        break
                 else:
-                    logger.info("BetDetails is not existed.")
-                    break
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    logger.info("There was something wrong with the result")
+                    return Response({'status': 'There was something wrong with the result'}, status=status.HTTP_400_BAD_REQUEST)
             redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
             #print(redis.check_onebook_bet_details(onebook_run))        
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
@@ -635,7 +639,7 @@ class GetBetDetail(APIView):
                                                     amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     market=ibetCN,
-                                                    resolved_time=timezone.now(),
+                                                    
                                                     )
                     else:
                         resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
