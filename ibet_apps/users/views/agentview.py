@@ -221,12 +221,12 @@ class AgentView(CommAdminView):
 
             # filter out valid transaction(the affiliate needs to meet at least lowest commission level)
             valid_commission_tran = commission_tran
-            # for trans in commission_tran:
-            #     start_time = trans.request_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            #     end_time = start_time + relativedelta(months=1)
-            #
-            #     if getCommissionRate(trans.user_id, start_time, end_time) == 0:
-            #         valid_commission_tran = valid_commission_tran.exclude(pk=trans.pk)
+            for trans in commission_tran:
+                start_time = trans.request_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                end_time = start_time + relativedelta(months=1)
+
+                if getCommissionRate(trans.user_id, start_time, end_time) == 0:
+                    valid_commission_tran = valid_commission_tran.exclude(pk=trans.pk)
 
             commission_group = valid_commission_tran.annotate(commission_release_month=TruncMonth('request_time', tzinfo=timezone.utc))
 
