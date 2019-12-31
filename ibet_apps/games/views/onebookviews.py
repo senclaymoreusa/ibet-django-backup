@@ -540,8 +540,7 @@ def getBetDetail(request):
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     ref_no=trans_id,
                                                     market=ibetCN,
-                                                    other_data=rdata,
-                                                    resolved_time=timezone.now(),
+                                                    other_data=rdata
                                                     )
                             else:
                                 
@@ -644,7 +643,7 @@ class GetBetDetail(APIView):
                                                     amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
                                                     outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
                                                     market=ibetCN,
-                                                    resolved_time=timezone.now(),
+                                                    
                                                     )
                     else:
                         resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
