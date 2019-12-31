@@ -19,6 +19,8 @@ import datetime
 from datetime import date
 from django.utils import timezone
 import time
+import utils.aws_helper
+import os
 
 logger = logging.getLogger("django")
 
@@ -35,7 +37,10 @@ def createUser(user):
     userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
 
     # all the API cert file are local, will update to S3 and change the path before merge.
-    rr = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+    print("test")
+    rr = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=(ptkey, ptpem))
+    print("test2")
+    print(rr.status_code)
     # Just check status code here, other error will return to rrdata if 200 and be checked in other func.
     if rr.status_code == 200 :  
         rrdata = rr.json()
@@ -93,10 +98,11 @@ class GetPlayer(APIView):
                     r_create_data = createUser(user)
                     # error in create player.
                     if 'errorcode' in r_create_data:
-                         data = {
+                        data = {
                             "errorInfo": "cannot create player",
                             "status": PT_GENERAL_ERROR
                         }
+                        logger.error("PT GAME: cannot create player." )   
                     else:
                     # create user successfully.
                         # print(r_create_data)
@@ -104,6 +110,7 @@ class GetPlayer(APIView):
                                 "info": "create user successfully",
                                 "status": PT_NEWPLAYER_ALERT
                         }
+                         
                    
                 else:
                 # other error in get player info.
@@ -111,6 +118,7 @@ class GetPlayer(APIView):
                             "errorInfo": rrdata['error'],
                             "status": PT_GENERAL_ERROR
                     }
+                    logger.error("PT GAME: " + rrdata['error'])  
             
 
             else:              
@@ -122,9 +130,8 @@ class GetPlayer(APIView):
                         data = {
                             "errorInfo": "balance not enough",
                             "status": PT_BALANCE_ERROR
-,
-
                         }
+                        logger.error("PT GAME: balance not enough." )  
                     else:
                         data = {
                             "status": PT_STATUS_SUCCESS,
@@ -135,6 +142,7 @@ class GetPlayer(APIView):
                             "errorInfo": "cannot get balance",
                             "status": PT_GENERAL_ERROR
                     }
+                    logger.error("PT GAME: cannot get balance." )  
 
         else:
             logger.error(rr)
@@ -146,16 +154,22 @@ class GetPlayer(APIView):
         return HttpResponse(json.dumps(data),content_type='application/json',status=200)  
 
 class PTTransferTest(APIView):
+    # that's only for test.
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
        
         data = json.loads(request.body)
+        
         username = data["user"]
-        user = CustomUser.objects.get(username=username)
+        try:
+            user = CustomUser.objects.get(username=username)
+        except Exception as e:
+            logger.error("PT user not exist" + str(e))  
+            status = False
+            return HttpResponse(status,status=200)
         amount = data["amt"]
         from_wallet = data["from_wallet"]
         method = int(data["method"])
-        
         status = ptTransfer(user, amount, from_wallet, method)
         
         return HttpResponse(status,status=200)
@@ -172,8 +186,12 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
     player = "IBETPU_" + user.username.upper()
 
     url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
-    
-    rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+    print("test")
+    print(BRANDID)
+    print(ptkey)
+    print(ptpem)
+    rr = requests.post(url, headers=headers, cert=(ptkey, ptpem))
+    print("test2")
     if rr.status_code == 200 :    
         rrdata = rr.json()   
         if 'errorcode' in rrdata:
