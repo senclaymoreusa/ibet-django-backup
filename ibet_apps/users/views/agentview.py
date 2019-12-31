@@ -56,6 +56,7 @@ class AgentView(CommAdminView):
                             'status': "Released" if tran.status == TRAN_APPROVED_TYPE else "Pending",
                             'release_time': str(utcToLocalDatetime(tran.arrive_time)),
                             'operator': tran.release_by.username if tran.release_by else "",
+                            'operator_pk': tran.release_by.pk if tran.release_by else "",
                             }
                 commission_this_month_record.append(tranDict)
             return HttpResponse(json.dumps(commission_this_month_record), content_type='application/json')
@@ -220,12 +221,12 @@ class AgentView(CommAdminView):
 
             # filter out valid transaction(the affiliate needs to meet at least lowest commission level)
             valid_commission_tran = commission_tran
-            for trans in commission_tran:
-                start_time = trans.request_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-                end_time = start_time + relativedelta(months=1)
-
-                if getCommissionRate(trans.user_id, start_time, end_time) == 0:
-                    valid_commission_tran = valid_commission_tran.exclude(pk=trans.pk)
+            # for trans in commission_tran:
+            #     start_time = trans.request_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            #     end_time = start_time + relativedelta(months=1)
+            #
+            #     if getCommissionRate(trans.user_id, start_time, end_time) == 0:
+            #         valid_commission_tran = valid_commission_tran.exclude(pk=trans.pk)
 
             commission_group = valid_commission_tran.annotate(commission_release_month=TruncMonth('request_time', tzinfo=timezone.utc))
 
@@ -525,10 +526,11 @@ class AgentDetailView(CommAdminView):
             affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
             title = "Affiliate " + affiliate.username
 
-            downline = affiliate.referees.all()
+            downline = getDownlines(affiliate)
 
-            downline_deposit = deposit_tran.filter(user_id__in=downline).aggregate(
-                total_deposit=Coalesce(Sum('amount'), 0))
+            downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
+                                                          Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
+                aggregate(total_deposit=Coalesce(Sum('amount'), 0))
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
                 transaction_type=TRANSACTION_COMMISSION)

@@ -33,14 +33,12 @@ before_last_month = this_month + relativedelta(months=-2)
 # transaction filter
 deposit_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_DEPOSIT)
-withdrawal_tran = Transaction.objects.filter(
-    transaction_type=TRANSACTION_WITHDRAWAL)
+# withdrawal_tran = Transaction.objects.filter(
+#     transaction_type=TRANSACTION_WITHDRAWAL)
 bonus_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_BONUS)
 commission_tran = Transaction.objects.filter(
     transaction_type=TRANSACTION_COMMISSION)
-bet_tran = Transaction.objects.filter(
-    transaction_type=TRANSACTION_BET_PLACED)
 
 '''
 @param affiliates: affiliate object or queryset

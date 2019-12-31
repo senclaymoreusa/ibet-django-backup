@@ -60,6 +60,8 @@ $(document).ready(function () {
         $("#total-commission").append(data[3]);
     }
 
+
+
     addCommissionHistory = function (data) {
         $(".commission_statement").empty();
         content = "";
@@ -70,7 +72,7 @@ $(document).ready(function () {
             } else {
                 content += '<td></td>'
             }
-            content += '<td>' + data[i].id + '</td>';
+            content += '<td>' + '<a href=' + agent_detail + data[i].id + '>' + data[i].id + '</a></td>';
             content += '<td>' + data[i].active_players + '</td>';
             content += '<td>' + data[i].downline_ftd + '</td>';
             content += '<td>' + data[i].commission_rate + '%' + '</td>';
