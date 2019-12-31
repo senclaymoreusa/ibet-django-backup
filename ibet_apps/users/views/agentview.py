@@ -252,7 +252,7 @@ class AgentView(CommAdminView):
                     current_trans = Transaction.objects.get(pk=trans_id)
                     if current_trans is None:
                         logger.error(
-                            "Cannot find Commission History " + trans_id)
+                            "Error finding Commission History " + trans_id)
                     else:
                         current_trans.status = TRAN_APPROVED_TYPE
                         current_trans.arrive_time = timezone.now()
@@ -286,7 +286,7 @@ class AgentView(CommAdminView):
                             try:
                                 referral_path = str(user.referred_by.referral_path) + referral_path
                             except Exception as e:
-                                logger.error("Error referrer's referral_path " + str(e))
+                                logger.error("Error getting referrer's referral_path " + str(e))
                         user.referral_path = referral_path
                         user.save()
                         affiliate_default_commission = Commission.objects.create(
@@ -307,7 +307,7 @@ class AgentView(CommAdminView):
                         )
 
             except IntegrityError as e:
-                logger.error("Error handle affiliate application " + str(e))
+                logger.error("Error handling affiliate application " + str(e))
 
             return HttpResponse(status=200)
 
@@ -329,7 +329,7 @@ class AgentView(CommAdminView):
                 )
                 admin_activity.save()
             except Exception as e:
-                logger.info('Error getting admin user object: ' + str(e))
+                logger.error('Error getting admin user object: ' + str(e))
 
             try:
                 with transaction.atomic():

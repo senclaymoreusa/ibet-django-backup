@@ -48,7 +48,7 @@ def getDownline(affiliates):
     downline_list = []
     # corner case
     if affiliates in [None, '']:
-        logger.info("Error input for getting downline list!")
+        logger.error("Warning input for getting downline list!")
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
@@ -186,11 +186,10 @@ def generateUniqueReferralCode(user_id):
             code += str(source_string[mod])
             user_id /= 36
             i += 1
-        return code
 
     else:
-        logger.error("Error create referral code for user")
-        raise ValueError("Please enter an integer bigger than 0 and smaller than 36^%s" % limit_digit)
+        logger.error("FATAL__ERROR creating referral code for user")
+    return code
 
 
 # decode
@@ -198,8 +197,7 @@ def decode_user_id_from_referral_code(code):
     user_id = 0
     code = code.upper()
     if len(code) != limit_digit:
-        logger.error("Error referral code format")
-        raise ValueError("Please enter a valid referral code")
+        logger.error("Error referral code length")
     else:
         i = 0
         while i in range(0, limit_digit):
