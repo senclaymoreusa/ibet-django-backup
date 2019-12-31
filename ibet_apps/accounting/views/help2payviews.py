@@ -107,7 +107,7 @@ class SubmitDeposit(APIView):
         }
         r = requests.post(HELP2PAY_URL, data=data)
         rdata = r.text
-        print(rdata)
+        
         db_currency_code = 2 if currency == '2' else 7
 
         create = Transaction.objects.create(
@@ -178,9 +178,7 @@ def confirmWithdrawRequest(request):
     if request.method == "POST":
         
         trans_id = request.GET.get("transId")
-        print(trans_id)
         checksum = request.GET.get("key")
-        print(checksum)
         try:
             withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
             if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
@@ -282,7 +280,7 @@ class SubmitPayout(View):
                 data = {
                     "Key": MD5(secretMsg),
                     "ClientIP": '73.202.78.65',
-                    "ReturnURI": "https://3fb2738f.ngrok.io/accounting/api/help2pay/request_withdraw",
+                    "ReturnURI": "http://3fb2738f.ngrok.io/accounting/api/help2pay/request_withdraw",
                     "MerchantCode": merchant_code,
                     "TransactionID": str(trans_id),
                     "MemberCode": user_id,
@@ -293,9 +291,9 @@ class SubmitPayout(View):
                     "toBankAccountName": toBankAccountName,
                     "toBankAccountNumber": toBankAccountNumber,
                 }
-                print(data)
+                
                 r = requests.post(payoutURL, data=data)
-                print(r.content)
+                
                 if r.status_code == 200:
 
                     return HttpResponse(r.content)
