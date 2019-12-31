@@ -279,7 +279,7 @@ class SubmitPayout(View):
             if can_withdraw:
                 data = {
                     "Key": MD5(secretMsg),
-                    "ClientIP": '73.202.78.65',
+                    "ClientIP": ip,
                     "ReturnURI": "http://3fb2738f.ngrok.io/accounting/api/help2pay/request_withdraw",
                     "MerchantCode": merchant_code,
                     "TransactionID": str(trans_id),
