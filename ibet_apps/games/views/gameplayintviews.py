@@ -167,8 +167,12 @@ class CreateUserAPI(View):
             else:
                 pass
 
-        
-        return "error message"
+            return "error message"
+
+        except Exception as e:
+            print(repr(e))
+            logger.error(repr(e))
+
 
 
 class GetBalanceAPI(View):
@@ -191,9 +195,15 @@ class GetBalanceAPI(View):
 
             res = requests.get(url)
             
-            print(res.text)
+            res = xmltodict.parse(res.text)
+
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
 
         except ObjectDoesNotExist:
-            logger.error("Error: can not find user -- {}".format(str(username))
+            logger.error("Error: can not find user -- {}".format(str(username)))
+        
         except Exception as e:
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+
+
+
