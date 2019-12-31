@@ -192,11 +192,11 @@ $(document).ready(function () {
     });
 
     function checkCommissionLevelEmpty() {
-        var $empty = $("#edit-commission-pop input[required]").filter(function () {
+        var empty = $("#edit-commission-pop input[required]").filter(function () {
             return !this.value.trim();
         }),
-            valid = $empty.length == 0,
-            items = $empty.map(function () {
+            valid = empty.length == 0,
+            items = empty.map(function () {
                 return this.placeholder
             }).get();
 
@@ -382,6 +382,7 @@ $(document).ready(function () {
         "searching": true,
         "ordering": false,
         "dom": '<<t>pil>',
+        "scrollX": true,
         "ajax": {
             type: 'GET',
             url: agent_list_url,

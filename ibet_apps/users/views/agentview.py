@@ -300,12 +300,17 @@ class AgentView(CommAdminView):
             if commissionList is not []:
                 for trans_id in commissionList:
                     try:
-                        current_trans = Transaction.objects.get(pk=trans_id)
-                        admin_user = CustomUser.objects.get(username=admin)
-                        current_trans.status = TRAN_APPROVED_TYPE
-                        current_trans.arrive_time = timezone.now()
-                        current_trans.release_by = admin_user
-                        current_trans.save()
+                        with transaction.atomic():
+                            current_trans = Transaction.objects.get(pk=trans_id)
+                            admin_user = CustomUser.objects.get(username=admin)
+                            user = current_trans.user_id
+                            user.main_wallet += current_trans.amount
+                            current_trans.status = TRAN_APPROVED_TYPE
+                            current_trans.review_status = REVIEW_APP
+                            current_trans.arrive_time = timezone.now()
+                            current_trans.release_by = admin_user
+                            current_trans.save()
+                            admin_user.save()
                     except Exception as e:
                         logger.error("Error releasing Commission " + str(trans_id) + " " + str(e))
 
