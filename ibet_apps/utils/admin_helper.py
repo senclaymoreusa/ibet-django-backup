@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
@@ -250,10 +250,16 @@ def filterActiveUser(queryset, start_time, end_time):
     else:
         game_bet_tran = GameBet.objects.all()
 
-    active_user_list = game_bet_tran.values_list('username', flat=True)
+    active_user_list = game_bet_tran.values_list('user_id', flat=True)
     if queryset:
         queryset = queryset.filter(pk__in=active_user_list)
     return queryset
+
+
+'''
+@param date: utc timezone datetime
+@return: local timezone datetime
+'''
 
 
 # Return a list of user in VIP Manager Group
@@ -289,13 +295,28 @@ def bonusValueToKey(bonuses):
     bonuses['status'] = BONUS_STATUS_CHOICES[bonuses['status']][1]
     bonuses['type'] = BONUS_TYPE_CHOICES[bonuses['type']][1]
     bonuses['campaign'] = cap
+    if bonuses['start_time']:
+        bonuses['start_time'] = datetime.datetime.strptime(bonuses['start_time'], '%Y-%m-%dT%H:%M:%SZ')
+        bonuses['start_time'] = utcToLocalDatetime(bonuses['start_time'])
+        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %m %Y')
+    if bonuses['end_time']:
+        bonuses['end_time'] = datetime.datetime.strptime(bonuses['end_time'], '%Y-%m-%dT%H:%M:%SZ')
+        bonuses['end_time'] = utcToLocalDatetime(bonuses['end_time'])
+        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %m %Y')
     return bonuses
 
 
 def ubeValueToKey(ube):
     ube['status'] = USER_BONUS_EVENT_TYPE_CHOICES[ube['status']][1]
+    if ube['delivery_time']:
+        ube['delivery_time'] = datetime.datetime.strptime(ube['delivery_time'], '%Y-%m-%dT%H:%M:%S.%fZ')     #for auto add field
+        ube['delivery_time'] = utcToLocalDatetime(ube['delivery_time'])
+        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %m %Y')
+    if ube['completion_time']:
+        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%SZ')
+        ube['completion_time'] = utcToLocalDatetime(ube['completion_time'])
+        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %m %Y')
     return ube
-
 
 BONUS_TYPE_VALUE_DICT = {
     "manual": BONUS_TYPE_MANUAL,
@@ -322,20 +343,35 @@ BONUS_GAME_CATEGORY = {
     'lottery': ['Lotteries'],
 }
 
-'''
-@param date: filename, table header, table body data
-@return: response
-'''
+
+def calBonusCompletion(user, bonus, timestamp):
+    return 0
 
 
-def exportCSV(filename, row_title, data):
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=filename'
 
-    writer = csv.writer(response)
-    writer.writerow(row_title)
-    for i in data:
-        writer.writerow(i)
+# Helper function for file export to csv
+# def exportCSV(body, filename):
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
+#
+#     writer = csv.writer(response)
+#     for i in body:
+#         writer.writerow(i)
+#
+#     return response
 
+class Echo:
+    """An object that implements just the write method of the file-like
+    interface.
+    """
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
+
+def streamingExport(body, filename):
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer)
+    response = StreamingHttpResponse((writer.writerow(row) for row in body),
+                                     content_type="text/csv")
+    response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
     return response

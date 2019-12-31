@@ -74,6 +74,7 @@
             </table>
 
             <label class="show-rows">SHOW ROWS</label>
+            <button id="export-vip" class="btn btn-primary">Export</button>
         </div>
     </div>
 
@@ -161,6 +162,7 @@
         var vip_url = "{% url 'xadmin:vipview' %}"
         var user_link = "{% url 'xadmin:user_detail' %}"
         var admin_user = "{{ user.username }}";
+        var vip_export = '{% url "export_vip" %}';
     </script>
 
 </body>
