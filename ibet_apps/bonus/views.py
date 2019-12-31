@@ -82,7 +82,7 @@ class BonusSearchView(View):
                 result['recordsFiltered'] = count
 
         except Exception as e:
-            logger.error("FATAL__ERROR getting bonus search request: ", e)
+            logger.error("FATAL__ERROR getting bonus search request: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         # We iterate through all requirements and find all bonuses that they are attached to
@@ -207,7 +207,7 @@ class BonusView(View):
                     bonus_data['categories'] = [category_json]
 
         except Exception as e:
-            logger.error("FATAL__ERROR getting Bonus object: ", e)
+            logger.error("FATAL__ERROR getting Bonus object: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(json.dumps(bonus_data), content_type='application/json', status=status.HTTP_200_OK)
