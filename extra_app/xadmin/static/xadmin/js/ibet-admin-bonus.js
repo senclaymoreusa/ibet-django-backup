@@ -55,16 +55,16 @@ $(document).ready(function() {
             { "data": 'total_amount_redeemed' },
             { "data": 'total_count_redeemed',},
             { "data": 'start_time',
-                "render": function(data, type, row, meta){
-                    data = formatDatetime(data)
-                    return data;
-                }
+//                "render": function(data, type, row, meta){
+//                    data = formatDatetime(data)
+//                    return data;
+//                }
              },
             { "data": 'end_time',
-                "render": function(data, type, row, meta){
-                    data = formatDatetime(data)
-                    return data;
-                }
+//                "render": function(data, type, row, meta){
+//                    data = formatDatetime(data)
+//                    return data;
+//                }
              },
             { "data": 'status' },
         ],
@@ -77,6 +77,22 @@ $(document).ready(function() {
     $('#bonus-search-btn').click(function(){
         bonus_table.draw();
     });
+
+    // export bonus records table
+    var bonusTableHead = [];
+
+    $('#export-bonus-records').click(function(){
+        GetCellValues("bonus_table");
+        bonusTableHead = JSON.stringify(bonusTableHead);
+        document.location = bonus_url + '?export=' + true + '&tableHead=' + bonusTableHead;
+    });
+
+    function GetCellValues(tableId) {
+        var table = document.getElementById(tableId);
+        for (var i = 0, m = table.rows[0].cells.length - 1; i < m; i++) {
+            bonusTableHead.push(table.rows[0].cells[i].innerHTML);
+        }
+    }
 
     var productList = ["casino", "live-casino", "sports", "lottery"]
 

@@ -66,19 +66,19 @@ $(document).ready(function() {
             { "data": 'bonus.fields.type' },
             { "data": 'bonus.fields.name' },
             { "data": 'event.fields.delivery_time',
-                "render": function(data, type, row, meta){
-                    data = formatDatetime(data)
-                    return data;
-                }
+//                "render": function(data, type, row, meta){
+//                    data = formatDatetime(data)
+//                    return data;
+//                }
              },
             { "data": 'event.fields.completion_time',
-                "render": function(data, type, row, meta){
-                    data = formatDatetime(data)
-                    return data;
-                }
+//                "render": function(data, type, row, meta){
+//                    data = formatDatetime(data)
+//                    return data;
+//                }
              },
             { "data": 'event.fields.amount' },
-            { "data": 'event.fields.amount' },
+            { "data": 'event.fields.completion_percentage' },
             { "data": 'delivered_by_username',
                 "render": function(data, type, row, meta){
                     if(type === 'display'){
@@ -104,6 +104,22 @@ $(document).ready(function() {
     $('#bonus-search-btn, #bonus-delivery-btn').click(function(){
         bonusTransactionsTable.draw();
     });
+
+    // export bonus records table
+    var bonusTableHead = [];
+
+    $('#export-bonus-transactions').click(function(){
+        GetCellValues("bonus-transactions-table");
+        bonusTableHead = JSON.stringify(bonusTableHead);
+        document.location = bonus_url + '?export=' + true + '&tableHead=' + bonusTableHead;
+    });
+
+    function GetCellValues(tableId) {
+        var table = document.getElementById(tableId);
+        for (var i = 0, m = table.rows[0].cells.length - 1; i < m; i++) {
+            bonusTableHead.push(table.rows[0].cells[i].innerHTML);
+        }
+    }
 
 
     // helper function
