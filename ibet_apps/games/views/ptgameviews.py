@@ -37,10 +37,9 @@ def createUser(user):
     userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
 
     # all the API cert file are local, will update to S3 and change the path before merge.
-    print("test")
-    rr = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=(ptkey, ptpem))
-    print("test2")
-    print(rr.status_code)
+    
+    rr = requests.post(PT_BASE_URL + "/player/create/playername/" + player + admininfo + userinfo, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+        
     # Just check status code here, other error will return to rrdata if 200 and be checked in other func.
     if rr.status_code == 200 :  
         rrdata = rr.json()
@@ -185,15 +184,16 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
     
     player = "IBETPU_" + user.username.upper()
 
+    
     url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
     print("test")
-    print(BRANDID)
-    print(ptkey)
-    print(ptpem)
+    
+   
     rr = requests.post(url, headers=headers, cert=(ptkey, ptpem))
-    print("test2")
+    print(rr)
     if rr.status_code == 200 :    
         rrdata = rr.json()   
+        print(rrdata)
         if 'errorcode' in rrdata:
         # error exist.
             return False
