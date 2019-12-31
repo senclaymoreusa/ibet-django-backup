@@ -177,30 +177,77 @@ class DepositResult(generics.GenericAPIView):
 def confirmWithdrawRequest(request):
     if request.method == "POST":
         
-        trans_id = request.GET.get("transId")
-        checksum = request.GET.get("key")
-        try:
-            withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
-            if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
-                withdraw_txn.arrive_time = timezone.now()
-                withdraw_txn.last_updated = timezone.now()
-                withdraw_txn.status=TRAN_APPROVED_TYPE
-                withdraw_txn.save()
-                return HttpResponse("true")
-                
-            return HttpResponse("false")
-        except ObjectDoesNotExist as e:
-            logger.error(repr(e))
-            logger.error(f"transaction id {trans_id} does not exist")
-            return HttpResponse("false")
-        except Exception as e:
-            logger.error(repr(e))
-            return HttpResponse("false")
+        if 'Status' in request.POST:
+            try:
+                trans_id = request.POST.get("TransactionID")
+                amount = request.POST.get("Amount")
+                trans_status = request.POST.get("Status")
+                withdrawID = request.POST.get('ID')
+
+                update_data = Transaction.objects.get(
+                    transaction_id=trans_id,
+                    amount=amount
+                )
+            except ObjectDoesNotExist as e:
+                logger.error(repr(e))
+                logger.error(f"transaction id {trans_id} does not exist")
+                return HttpResponse("false")  
+
+            if update_data.order_id != '0':  # attempting to confirm the same transaction twice
+                logger.info("Callback was sent twice for Deposit #" + str(trans_id))
+                return JsonResponse({
+                    "error": "Transaction was already modified from 3rd party callback",
+                    "message": "Transaction already exists"
+                })
+            result = "Pending"
+            if trans_status == '000':
+                update_data.status = 0
+                result = "Success"
+                helpers.addOrWithdrawBalance(update_data.user_id, amount, 'withdraw')
+            elif trans_status == '001':
+                update_data.status = 1
+                result = "Failed"
+            elif trans_status == '006':
+                update_data.status = 4
+                result = "Approved"
+            elif trans_status == '007':
+                update_data.status = 8
+                result = "Rejected"
+            elif trans_status == '009':
+                update_data.status = 3
+                result = "Pending"
+
+            update_data.order_id = withdrawID
+            update_data.arrive_time = timezone.now()
+            update_data.last_updated = timezone.now()
+            update_data.remark = result
+            update_data.save()
+            
+            return HttpResponse("true")
+        
+        else:
+            
+            try:
+                trans_id = request.GET.get("transId")
+                checksum = request.GET.get("key")
+                withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
+                if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
+                    withdraw_txn.arrive_time = timezone.now()
+                    withdraw_txn.last_updated = timezone.now()
+                    withdraw_txn.status=TRAN_APPROVED_TYPE
+                    withdraw_txn.save()
+                    return HttpResponse("true")
+                else:
+                    return HttpResponse("false")
+            except ObjectDoesNotExist as e:
+                logger.error(repr(e))
+                logger.error(f"transaction id {trans_id} does not exist")
+                return HttpResponse("false")  
 
 # user submits withdraw request
 class SubmitPayout(View):
     def get(self, request):
-        return HttpResponse(status=404)
+        return HttpResponse(status=404) 
 
     def post(self, request): # user will need to submit bank acc information
         username = request.POST.get("username")

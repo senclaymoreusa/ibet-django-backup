@@ -744,7 +744,7 @@ elif "dev" in os.getenv("ENV"):
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
 else:
-    API_DOMAIN = "https://cf61d044.ngrok.io/"
+    API_DOMAIN = "http://3fb2738f.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -763,8 +763,8 @@ else:
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
 
-BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
+BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
 
 
 
