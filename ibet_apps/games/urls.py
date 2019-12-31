@@ -5,6 +5,7 @@ from rest_framework import routers
 import games.views.eagameviews as eagameviews
 import games.views.inplaygameviews as inplayviews
 import games.views.betsoftviews as betsoftviews
+import games.views.gameplayintviews as gameplayintviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.allbetgameviews as allbetgameviews
@@ -86,7 +87,8 @@ urlpatterns = [
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
-
+    # gpi gaming
+    path('api/gpi/validation/', gameplayintviews.ValidateUserAPI.as_view(), name="gpi_validation"),
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),

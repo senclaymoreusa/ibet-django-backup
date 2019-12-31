@@ -2,11 +2,15 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+# Django
 from django.views import View
 from django.db import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
+
 from users.views.helper import checkUserBlock
 from users.models import CustomUser
 from decimal import Decimal
@@ -66,13 +70,33 @@ class ValidateUserAPI(View):
             res["error_code"] = 0
             res["cust_id"] = user.pk
             res["cust_name"] = user.username
-            res["currency_code"] = currency_code
+            res["currency_code"] = "currency_code"
             res["language"] = "language"
-            res["country"] = "country"
-            res["ip"] = ip
-            res["date_of_birth"] = date_of_birth
+            res["country"] = country
+            res["ip"] = "ip"
+            res["date_of_birth"] = "date_of_birth"
             res["test_cust"] = True
+
         except ObjectDoesNotExist:
-            return "Not a good user"
+            res["error_code"] = -2
+            res["err_message"] = "user does not exist"
+            # res["cust_name"] = user.username
+            # res["currency_code"] = "currency_code"
+            # res["language"] = "language"
+            # res["country"] = country
+            # res["ip"] = "ip"
+            # res["date_of_birth"] = "date_of_birth"
+            # res["test_cust"] = True
         except Exception as e:
-            return "Error: {}".format(repr(e))
+            res["error_code"] = -1
+            res["err_message"] = "Unknown Error"
+
+        return HttpResponse(json.dumps(res), content_type="application/json", status=200)
+
+
+class CreateUserAPI(View):
+    def get(self, request, *kw, **args):
+        return "error message"
+
+
+
