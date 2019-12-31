@@ -24,9 +24,12 @@ from accounting.models import *
 from utils.constants import *
 import json
 
+from rest_framework.authtoken.models import Token
+import xmltodict
 
-MERCH_ID = ""
-MERCH_PWD = ""
+
+MERCH_ID = "IBETP"
+MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
 
 
 class GPILoginView(View):
@@ -50,3 +53,26 @@ class GPILoginView(View):
         res = requests.get(url)
 
         return HttpResponse(res.status_code)
+
+
+class ValidateUserAPI(View):
+    def get(self, request, *kw, **args):
+        token = request.GET.get('ticket')
+        res = {}
+
+        try:
+            user = Token.objects.get(key=token).user
+
+            res["error_code"] = 0
+            res["cust_id"] = user.pk
+            res["cust_name"] = user.username
+            res["currency_code"] = currency_code
+            res["language"] = "language"
+            res["country"] = "country"
+            res["ip"] = ip
+            res["date_of_birth"] = date_of_birth
+            res["test_cust"] = True
+        except ObjectDoesNotExist:
+            return "Not a good user"
+        except Exception as e:
+            return "Error: {}".format(repr(e))
