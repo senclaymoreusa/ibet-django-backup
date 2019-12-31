@@ -30,15 +30,14 @@ this_month = today.replace(day=1)
 last_month = this_month + relativedelta(months=-1)
 before_last_month = this_month + relativedelta(months=-2)
 
+
 # transaction filter
-deposit_tran = Transaction.objects.filter(
-    transaction_type=TRANSACTION_DEPOSIT)
-# withdrawal_tran = Transaction.objects.filter(
-#     transaction_type=TRANSACTION_WITHDRAWAL)
-bonus_tran = Transaction.objects.filter(
-    transaction_type=TRANSACTION_BONUS)
-commission_tran = Transaction.objects.filter(
-    transaction_type=TRANSACTION_COMMISSION)
+
+def getCommissionTrans():
+    commission_tran = Transaction.objects.filter(
+        transaction_type=TRANSACTION_COMMISSION)
+    return commission_tran
+
 
 '''
 @param affiliates: affiliate object or queryset
@@ -81,11 +80,13 @@ def getDownlines(affiliates):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
             downline_list |= CustomUser.objects.filter(
-                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(pk=affiliate.pk))
+                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
+                    pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
         downline_list = CustomUser.objects.filter(
-            Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(pk=affiliates.pk))
+            Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
+                pk=affiliates.pk))
 
     return downline_list
 
@@ -370,7 +371,8 @@ def bonusValueToKey(bonuses):
 def ubeValueToKey(ube):
     ube['status'] = USER_BONUS_EVENT_TYPE_CHOICES[ube['status']][1]
     if ube['delivery_time']:
-        ube['delivery_time'] = datetime.datetime.strptime(ube['delivery_time'], '%Y-%m-%dT%H:%M:%S.%fZ')     #for auto add field
+        ube['delivery_time'] = datetime.datetime.strptime(ube['delivery_time'],
+                                                          '%Y-%m-%dT%H:%M:%S.%fZ')  # for auto add field
         ube['delivery_time'] = utcToLocalDatetime(ube['delivery_time'])
         ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %m %Y')
     if ube['completion_time']:
@@ -378,6 +380,7 @@ def ubeValueToKey(ube):
         ube['completion_time'] = utcToLocalDatetime(ube['completion_time'])
         ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %m %Y')
     return ube
+
 
 BONUS_TYPE_VALUE_DICT = {
     "manual": BONUS_TYPE_MANUAL,
@@ -409,7 +412,6 @@ def calBonusCompletion(user, bonus, timestamp):
     return 0
 
 
-
 # Helper function for file export to csv
 # def exportCSV(body, filename):
 #     response = HttpResponse(content_type='text/csv')
@@ -425,9 +427,11 @@ class Echo:
     """An object that implements just the write method of the file-like
     interface.
     """
+
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
+
 
 def streamingExport(body, filename):
     pseudo_buffer = Echo()

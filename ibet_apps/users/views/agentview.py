@@ -33,7 +33,7 @@ class AgentView(CommAdminView):
             date = request.GET.get("date")
             start_date = utcToLocalDatetime(datetime.datetime.strptime(date, '%b %Y'))
             end_date = start_date + relativedelta(months=1)
-            commission_transaction_this_month = commission_tran.filter(
+            commission_transaction_this_month = getCommissionTrans().filter(
                 Q(request_time__gte=start_date) & Q(request_time__lte=end_date))
 
             commission_this_month_record = []
@@ -109,7 +109,7 @@ class AgentView(CommAdminView):
                 queryset = queryset.filter(Q(pk__contains=search_value) | Q(username__icontains=search_value))
 
             # Commission Transaction filter by month
-            commission_transaction_last_month = commission_tran.filter(
+            commission_transaction_last_month = getCommissionTrans().filter(
                 Q(arrive_time__gte=before_last_month) & Q(arrive_time__lte=last_month))
 
             commission_transaction_last_month_dict = dict(commission_transaction_last_month.values_list('user_id')
@@ -220,8 +220,8 @@ class AgentView(CommAdminView):
             # commission transaction group by month
 
             # filter out valid transaction(the affiliate needs to meet at least lowest commission level)
-            valid_commission_tran = commission_tran
-            for trans in commission_tran:
+            valid_commission_tran = getCommissionTrans()
+            for trans in getCommissionTrans():
                 start_time = trans.request_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 end_time = start_time + relativedelta(months=1)
 
@@ -662,7 +662,7 @@ class AgentDetailView(CommAdminView):
                 .values_list('refer_channel_name', flat=True)
 
             # Total commission
-            context["total_commission"] = commission_tran.aggregate(
+            context["total_commission"] = getCommissionTrans().aggregate(
                 total_commission=Coalesce(Sum('amount'), 0))['total_commission']
 
             context["managers"] = getManagerList("Affiliate")
