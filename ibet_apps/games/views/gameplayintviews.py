@@ -174,7 +174,6 @@ class CreateUserAPI(View):
             logger.error(repr(e))
 
 
-
 class GetBalanceAPI(View):
     def get(self, request, *kw, **args):
         username = request.GET.get("username")
@@ -206,4 +205,37 @@ class GetBalanceAPI(View):
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
 
 
+class DebitAPI(View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get("username")
+        amount = request.GET.get("amount")
 
+        try:
+            user = CustomUser.objects.get(username=username)
+
+            currency = transCurrency(user)
+
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            req_param["cust_id"] = username
+            req_param["currency"] = currency
+            req_param["amount"] = amount
+            req_param["trx_id"] = "Test01"
+
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_URL + 'debit' + '?' + req
+
+            res = requests.get(url)
+            
+            res = xmltodict.parse(res.text)
+
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+
+        except ObjectDoesNotExist:
+            logger.error("Error: can not find user -- {}".format(str(username)))
+        
+        except Exception as e:
+            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            return HttpResponse('GET request!')
