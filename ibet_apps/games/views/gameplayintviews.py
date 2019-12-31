@@ -99,4 +99,7 @@ class CreateUserAPI(View):
         return "error message"
 
 
-
+class GetBalanceAPI(View):
+    def get(self, request, *kw, **args):
+        merch_id = MERCH_ID
+        return 0
