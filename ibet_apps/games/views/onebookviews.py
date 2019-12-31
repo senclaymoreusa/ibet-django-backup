@@ -568,10 +568,6 @@ def getBetDetail(request):
                     else:
                         logger.info("BetDetails is not existed.")
                         break
-                elif r.status_code == 500:
-                    logger.info("Request failed {} time(s)'.format(x+1)")
-                    logger.info("Waiting for %s seconds before retrying again")
-                    sleep(5)
                 else:
                     redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
                     logger.info("There was something wrong with the result")
