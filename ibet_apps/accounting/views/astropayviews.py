@@ -221,9 +221,9 @@ def sendCardToMobile(request):
                 r = requests.post(url + '/cashOut/sendCardToMobile', data=params)
                 rdata = r.json()
                 logger.info(rdata)
-                print(r.status_code)
+                
                 if r.status_code == 200:
-                    print(rdata)
+                    
                     break
                 elif r.status_code == 500:
                     logger.info("Request failed {} time(s)'.format(x+1)")
@@ -322,7 +322,7 @@ def sendCardToMobileWithAppId(request):
         message =   str(customer_id)
         # my_hmac = hashlib.sha1(message.encode()).hexdigest()
         # logger.info(my_hmac)
-        print(generateControl(message))
+        
         OrderID =  user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
         params = {
             "x_login":ASTROPAY_X_LOGIN,
@@ -337,14 +337,14 @@ def sendCardToMobileWithAppId(request):
             "x_reference": OrderID,
             "notification_url": ASTROPAY_CONFIRM_URL,
         }
-        print(params)
+        
         url = ASTROPAY_URL
         if check_password(withdraw_password, user.withdraw_password):
             for x in range(3):
                 r = requests.post(url + '/cashOut/sendCardToMobile', data=params)
                 rdata = r.json()
                 logger.info(rdata)
-                print(rdata)
+                
                 if r.status_code == 200:
                     if rdata["response"] == 'SUCCESS':
                         create = Transaction.objects.create(
