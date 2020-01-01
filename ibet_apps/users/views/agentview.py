@@ -1,9 +1,10 @@
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core import serializers
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse
 
 from django.http import HttpResponseRedirect, HttpResponse
-from django.db.models import Count, Sum, Q
+from django.db.models import Count, Sum, Q, F
 from django.db.models.functions import TruncMonth, TruncYear, TruncDate, Coalesce
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
@@ -11,7 +12,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
 
 from xadmin.views import CommAdminView
-from users.models import CustomUser, UserAction, Commission, UserActivity, ReferChannel, SystemCommission
+
+from games.models import Category
+from users.models import CustomUser, UserAction, PersonalCommissionLevel, UserActivity, ReferChannel, SystemCommissionLevel
 from operation.models import Notification, NotificationToUsers
 from utils.admin_helper import *
 
@@ -28,159 +31,233 @@ class AgentView(CommAdminView):
 
         if get_type == "getCommissionHistory":
             date = request.GET.get("date")
-            date = utcToLocalDatetime(datetime.datetime.strptime(date, '%b %Y'))
-            commission_transaction_this_month = Transaction.objects.filter(
-                Q(transaction_type=TRANSACTION_COMMISSION) & Q(request_time__gte=date) & Q(
-                    request_time__lte=date + relativedelta(months=1)))
+            start_date = utcToLocalDatetime(datetime.datetime.strptime(date, '%b %Y'))
+            end_date = start_date + relativedelta(months=1)
+            commission_transaction_this_month = getCommissionTrans().filter(
+                Q(request_time__gte=start_date) & Q(request_time__lte=end_date))
 
             commission_this_month_record = []
+            for tran in commission_transaction_this_month:
+                user = tran.user_id
+                downlines = getDownlines(user)
 
-            for commission_transaction in commission_transaction_this_month:
-                tranDict = {}
-                user_id = commission_transaction.user_id
-                tranDict['id'] = user_id.pk
-                tranDict['trans_pk'] = commission_transaction.pk
-                tranDict['active_players'] = calculateActiveDownlineNumber(user_id)
-                tranDict['downline_ftd'] = calculateFTD(
-                    commission_transaction.user_id.referees.all(), date - relativedelta(months=1), date)
-                affiliate_last_commission_level = Commission.objects.filter(
-                    user_id=commission_transaction.user_id).last()
-                if affiliate_last_commission_level in [None, '']:
-                    tranDict['commission_rate'] = 0
-                else:
-                    tranDict['commission_rate'] = str(
-                        affiliate_last_commission_level.commission_percentage)
+                tranDict = {'id': user.pk,
+                            'trans_pk': tran.pk,
+                            'active_players': filterActiveUser(downlines, start_date,
+                                                               end_date, True, None).count(),
+                            'downline_ftd': calculateFTD(downlines, start_date, end_date),
+                            'commission_rate': getCommissionRate(user, start_date, end_date),
+                            'deposit': calculateDeposit(user, start_date, end_date)[1],
+                            'withdrawal': calculateWithdrawal(user, start_date, end_date)[1],
+                            'bonus': calculateBonus(user, start_date, end_date, None),
 
-                tranDict['deposit'] = deposit_tran.filter(user_id=user_id).aggregate(
-                    total_deposit=Coalesce(Sum('amount'), 0))['total_deposit']
-                tranDict['withdrawal'] = withdrawal_tran.filter(user_id=user_id).aggregate(
-                    total_withdrawal=Coalesce(Sum('amount'), 0))['total_withdrawal']
-                tranDict['bonus'] = bonus_tran.filter(user_id=user_id).aggregate(
-                    total_bonus=Coalesce(Sum('amount'), 0))['total_bonus']
-                # query from bet history
-                tranDict['winorloss'] = 0
-                tranDict['commission'] = \
-                    commission_tran.filter(Q(user_id=user_id) & Q(request_time__gte=date)).aggregate(
-                        total_commission=Coalesce(Sum('amount'), 0))['total_commission']
-                if commission_transaction.status == TRAN_APPROVED_TYPE:
-                    tranDict['status'] = "Released"
-                else:
-                    tranDict['status'] = "Pending"
-                if commission_transaction.arrive_time:
-                    tranDict['release_time'] = str(utcToLocalDatetime(commission_transaction.arrive_time))
-                else:
-                    tranDict['release_time'] = ""
-
-                tranDict['operator'] = ""
-
+                            'winorloss': calculateNGR(user, start_date, end_date, None),
+                            'commission': tran.amount,
+                            'status': "Released" if tran.status == TRAN_APPROVED_TYPE else "Pending",
+                            'release_time': str(utcToLocalDatetime(tran.arrive_time)),
+                            'operator': tran.release_by.username if tran.release_by else "",
+                            'operator_pk': tran.release_by.pk if tran.release_by else "",
+                            }
                 commission_this_month_record.append(tranDict)
             return HttpResponse(json.dumps(commission_this_month_record), content_type='application/json')
 
         elif get_type == "getAffiliateApplicationDetail":
-            user_id = request.GET.get("user_id")
-            user_obj = CustomUser.objects.get(pk=user_id)
-            user_detail = {
-                'id': user_id,
-                'username': user_obj.username,
-                'first_name': user_obj.first_name or '',
-                'last_name': user_obj.last_name or '',
-                'email': user_obj.email or '',
-                'birthday': user_obj.date_of_birth or '',
-                'phone': user_obj.phone or '',
-                'address': user_obj.get_user_address(),
-                'email_verified': user_obj.email_verified,
-                'phone_verified': user_obj.phone_verified,
-                'address_verified': user_obj.address_verified,
-            }
+            try:
+                user_id = request.GET.get("user_id")
+                user_obj = CustomUser.objects.get(pk=user_id)
+                user_detail = {
+                    'id': user_id,
+                    'username': user_obj.username,
+                    'first_name': user_obj.first_name or '',
+                    'last_name': user_obj.last_name or '',
+                    'email': user_obj.email or '',
+                    'birthday': user_obj.date_of_birth or '',
+                    'phone': user_obj.phone or '',
+                    'address': user_obj.get_user_address(),
+                    'email_verified': user_obj.email_verified,
+                    'phone_verified': user_obj.phone_verified,
+                    'address_verified': user_obj.address_verified,
+                }
+            except Exception as e:
+                user_detail = {}
+                logger.error("Error getting user detail " + str(e))
 
             return HttpResponse(json.dumps(user_detail), content_type='application/json')
+
+        # affiliate datatable
+        elif get_type == "getAffiliateInfo":
+            result = {}
+            # the filter for affiliate
+            length = int(request.GET.get('length', 20))
+            start = int(request.GET.get('start', 0))
+            search_value = request.GET.get('search', None)
+            min_date = request.GET.get('minDate')
+            max_date = request.GET.get('maxDate')
+            min_date = dateToDatetime(min_date)
+            max_date = dateToDatetime(max_date)
+
+            # get affiliates
+            queryset = CustomUser.objects.exclude(user_to_affiliate_time=None).order_by('pk')
+
+            # TOTAL ENTRIES
+            total = queryset.count()
+
+            if min_date and max_date:
+                queryset = filterActiveUser(queryset, min_date, max_date, False, None).order_by('pk')
+
+            if search_value:
+                queryset = queryset.filter(Q(pk__contains=search_value) | Q(username__icontains=search_value))
+
+            # Commission Transaction filter by month
+            commission_transaction_last_month = getCommissionTrans().filter(
+                Q(arrive_time__gte=before_last_month) & Q(arrive_time__lte=last_month))
+
+            commission_transaction_last_month_dict = dict(commission_transaction_last_month.values_list('user_id')
+                                                          .annotate(total_commission=Coalesce(Sum('amount'), 0)))
+
+            count = queryset.count()
+
+            queryset = queryset[start:start + length]
+
+            affiliate_list = []
+            for affiliate in queryset:
+                # downline list
+                downlines = getPlayers(affiliate)
+                downlines_all = getDownlines(affiliate)
+                downlines_total_deposit = 0
+                downlines_total_withdrawal = 0
+                downlines_regis = calculateRegistrations(downlines, min_date, max_date)
+                downlines_all_regis = calculateRegistrations(downlines_all, min_date, max_date)
+                downlines_ftds = calculateFTD(downlines, min_date, max_date)
+                downlines_all_ftds = calculateFTD(downlines_all, min_date, max_date)
+
+                for downline in downlines:
+                    downline_deposit_count, downline_deposit = calculateDeposit(downline, min_date, max_date)
+                    downline_withdrawal_count, downline_withdrawal = calculateWithdrawal(downline, min_date, max_date)
+                    downlines_total_deposit += downline_deposit
+                    downlines_total_withdrawal += downline_withdrawal
+
+                deposit_count, deposit_amount = calculateDeposit(affiliate, min_date, max_date)
+                withdrawal_count, withdrawal_amount = calculateWithdrawal(affiliate, min_date, max_date)
+
+                # Todo: needs update the data
+                affiliates_dict = {'affiliate_id': affiliate.pk,
+                                   'affiliate_username': affiliate.username,
+                                   'balance': affiliate.main_wallet + affiliate.other_game_wallet,
+                                   'status': affiliate.affiliate_status,
+                                   'commission_last_month': commission_transaction_last_month_dict.get(affiliate.pk, 0),
+                                   'registrations': downlines_all_regis,
+                                   'ftds': downlines_all_ftds,
+                                   'active_players': filterActiveUser(downlines_all, min_date, max_date, True,
+                                                                      None).count(),
+                                   'active_players_without_freebets':
+                                       filterActiveUser(downlines, min_date, max_date, False, None).count(),
+
+                                   'turnover': calculateTurnover(affiliate, min_date, max_date, None),
+                                   'ggr': calculateGGR(affiliate, min_date, max_date, None),
+                                   'bonus_cost': calculateBonus(affiliate, min_date, max_date, None),
+                                   'ngr': calculateNGR(affiliate, min_date, max_date, None),
+
+                                   'deposit': deposit_amount,
+                                   'withdrawal': withdrawal_amount,
+
+                                   'sports_actives': filterActiveUser(downlines, min_date, max_date, True,
+                                                                      "Sports").count(),
+                                   'sports_ggr': calculateGGR(affiliate, min_date, max_date, "Sports"),
+                                   'sports_bonus': calculateBonus(affiliate, min_date, max_date, "Sports"),
+                                   'sports_ngr': calculateNGR(affiliate, min_date, max_date, "Sports"),
+
+                                   'casino_actives': filterActiveUser(downlines, min_date, max_date, True,
+                                                                      "Casino").count(),
+                                   'casino_ggr': calculateGGR(affiliate, min_date, max_date, "Casino"),
+                                   'casino_bonus': calculateBonus(affiliate, min_date, max_date, "Casino"),
+                                   'casino_ngr': calculateNGR(affiliate, min_date, max_date, "Casino"),
+
+                                   'live_casino_actives': filterActiveUser(downlines, min_date, max_date, True,
+                                                                           "Live Casino").count(),
+                                   'live_casino_ggr': calculateGGR(affiliate, min_date, max_date, "Live Casino"),
+                                   'live_casino_bonus': calculateBonus(affiliate, min_date, max_date, "Live Casino"),
+                                   'live_casino_ngr': calculateNGR(affiliate, min_date, max_date, "Live Casino"),
+
+                                   'lottery_actives': filterActiveUser(downlines, min_date, max_date, True,
+                                                                       "Lottery").count(),
+                                   'lottery_ggr': calculateGGR(affiliate, min_date, max_date, "Lottery"),
+                                   'lottery_bonus': calculateBonus(affiliate, min_date, max_date, "Lottery"),
+                                   'lottery_ngr': calculateNGR(affiliate, min_date, max_date, "Lottery"),
+
+                                   'active_downlines': filterActiveUser(downlines, min_date, max_date, True,
+                                                                        None).count(),
+                                   'downline_registration': downlines_all_regis - downlines_regis,
+                                   'downline_ftds': downlines_all_ftds - downlines_ftds,
+                                   'downline_new_players': calculateNewPlayer(downlines_all, min_date, max_date, True),
+                                   'downline_active_players': filterActiveUser(downlines_all, min_date, max_date, True,
+                                                                               None).count(),
+
+                                   'downline_turnover': -1,
+                                   'downline_ggr': -1,
+                                   'downline_bonus_cost': -1,
+                                   'downline_ngr': -1,
+
+                                   'downline_deposit': -1,
+                                   'downline_withdrawal': -1,
+                                   }
+                affiliate_list.append(affiliates_dict)
+
+            result['data'] = affiliate_list
+            result['recordsTotal'] = total
+            result['recordsFiltered'] = count
+            return HttpResponse(json.dumps(result), content_type="application/json")
 
         else:
             context = super().get_context()
             context['time'] = timezone.now()
             title = "Affiliate overview"
-            context["breadcrumbs"].append(
-                {'url': '/affiliate_overview/', 'title': title})
+            context["breadcrumbs"].append({'url': '/affiliate_overview/', 'title': title})
             context["title"] = title
 
-            # user-affiliate-group
-            users = CustomUser.objects.all()
-            # the filter for affiliate
-            affiliates = CustomUser.objects.exclude(
-                user_to_affiliate_time=None)
-
-            downline_list = getDownline(users)
-
-            # commission transaction
-            commission_transaction = Transaction.objects.filter(
-                transaction_type=TRANSACTION_COMMISSION)
-            commission_transaction_last_month = commission_transaction.filter(
-                Q(request_time__gte=last_month) & Q(request_time__lte=this_month))
-            commission_transaction_last_month_before = commission_transaction.filter(
-                Q(request_time__gte=before_last_month) & Q(request_time__lte=last_month))
-            commission_transaction_month_before = Transaction.objects.filter(
-                request_time__gte=before_last_month)
-
-            transaction_this_month = Transaction.objects.filter(
-                request_time__gte=last_month)
-
-            # Overview
-
-            # AFFILIATES COUNT
-            context["affiliate"] = affiliates
-            context["active_number"] = users.filter(
-                affiliate_status='Active').count()
-            context["deactivated_number"] = users.filter(
-                affiliate_status='Deactivated').count()
-            context["vip_number"] = users.filter(
-                affiliate_status='VIP').count()
-            context["negative_number"] = users.filter(
-                affiliate_status='Negative').count()
-
-            # FTD THIS MONTH
-            context["ftd_this_month"] = affiliates.filter(
-                ftd_time__gte=last_month).count()
-
-            # ACTIVE THIS MONTH
-            context["actives_this_month"] = GameBet.objects.filter(Q(resolved_time__gte=last_month) & Q(
-                username__in=affiliates)).values_list('username').distinct().count()
-
-            # GGR NEEDS BET TRANSACTION TABLE
-            context["ggr_this_month"] = "/"
-
-            # AFFILIATES ACQUIRED THIS MONTH
-            context["affiliates_acquired_this_month"] = affiliates.filter(
-                user_to_affiliate_time__gte=last_month).count()
 
             # Commission Table
-            commission_transactions = commission_transaction.annotate(
-                commission_release_month=TruncMonth('request_time')).values(
-                'commission_release_month').annotate(total_commission=Sum('amount')).order_by(
-                '-commission_release_month')
+            # commission transaction group by month
+
+            # filter out valid transaction(the affiliate needs to meet at least lowest commission level)
+            valid_commission_tran = getCommissionTrans()
+            for trans in getCommissionTrans():
+                start_time = trans.request_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                end_time = start_time + relativedelta(months=1)
+
+                if getCommissionRate(trans.user_id, start_time, end_time) == 0:
+                    valid_commission_tran = valid_commission_tran.exclude(pk=trans.pk)
+
+            commission_group = valid_commission_tran.annotate(commission_release_month=TruncMonth('request_time', tzinfo=timezone.utc))
+
+            # for each affiliate, will only generate one commission transaction per month
+            commission_transactions = commission_group.values('commission_release_month') \
+                .annotate(
+                total_commission=Sum('amount'),
+                total_count=Count('pk'),
+                pending_num=Count('pk', filter=Q(status=TRAN_PENDING_TYPE)),
+                aff_list=ArrayAgg('user_id')
+            ).order_by('-commission_release_month')
 
             commission = []
             for trans in commission_transactions:
-                commission_dict = {}
-                current_month = trans['commission_release_month']
-                commission_dict['commission_release_month'] = current_month
-                commission_dict['total_commission'] = trans['total_commission']
-                affiliates_this_month = affiliates.filter(
-                    user_to_affiliate_time__gte=current_month + relativedelta(months=1))
-                commission_dict['affiliate_number'] = affiliates_this_month.count()
-                downline_list_this_month = getDownline(affiliates_this_month)
-                commission_dict['active_downline'] = GameBet.objects.filter(
-                    username__in=affiliates).values_list('username').distinct().count()
+                active_downline = 0
+                start_time = trans['commission_release_month']
+                end_time = trans['commission_release_month'] + relativedelta(months=1)
 
-                # commission status(tran_type=commission, user_id in affiliate, month=current month)
-                commission_status = commission_transaction.filter(Q(request_time__gte=current_month) & Q(
-                    request_time__lte=current_month + relativedelta(months=1)) & ~Q(status=TRAN_APPROVED_TYPE)).count()
-                if commission_status == 0:
-                    commission_dict['commission_status'] = "All released"
-                else:
-                    commission_dict['commission_status'] = str(
-                        commission_status) + " Pending"
+                for aff in trans['aff_list']:
+                    aff_obj = CustomUser.objects.get(pk=aff)
+                    active_downline += filterActiveUser((getDownlines(aff_obj)), start_time, end_time, True, None).count()
+
+                commission_dict = {
+                    'commission_release_month': end_time,  # month
+                    'affiliate_number': trans['total_count'],  # only one transaction per affiliate
+                    'active_downline': active_downline,
+                    'total_commission': trans['total_commission'],
+                    'commission_status': "All released" if trans['pending_num'] == 0
+                    else str(trans['pending_num']) + " Pending"
+                }
                 commission.append(commission_dict)
-
             context["commission_transaction"] = commission
 
             # Affiliate Application Table
@@ -196,67 +273,47 @@ class AgentView(CommAdminView):
                 affiliate_application.append(affiliate_application_dict)
             context["affiliate_application_list"] = affiliate_application
 
-            # Affliates Table
-            affiliates_table = []
-
-            if affiliates.count() > 0:
-                for affiliate in affiliates:
-                    affiliates_dict = {}
-                    affiliates_dict['id'] = affiliate.pk
-                    affiliates_dict['manager'] = ""
-                    if affiliate.affiliate_managed_by:
-                        affiliates_dict['manager'] = affiliate.affiliate_managed_by.username
-                    # downline list
-
-                    downlines = getDownline(affiliate)
-                    downlines_deposit = 0
-
-                    for downline in downlines:
-                        downlines_deposit += deposit_tran.filter(user_id=downline).aggregate(
-                            total_deposit=Coalesce(Sum('amount'), 0))['total_deposit']
-                    affiliates_dict['active_users'] = calculateActiveDownlineNumber(affiliate)
-                    affiliates_dict['downlines_deposit'] = downlines_deposit
-                    affiliates_dict['turnover'] = 0
-                    affiliates_dict['downlines_ggr'] = 0
-                    affiliates_dict['commission_last_month'] = commission_transaction_last_month_before.filter(
-                        user_id=affiliate).aggregate(total_commission=Coalesce(Sum('amount'), 0))['total_commission']
-                    affiliates_dict['commission_month_before'] = commission_transaction_month_before.filter(
-                        user_id=affiliate).aggregate(total_commission=Coalesce(Sum('amount'), 0))['total_commission']
-                    affiliates_dict['balance'] = affiliate.main_wallet + \
-                                                 affiliate.other_game_wallet
-                    affiliates_dict['status'] = affiliate.affiliate_status
-                    affiliates_dict['level'] = affiliate.affiliate_level
-                    affiliates_table.append(affiliates_dict)
-            context["affiliates_table"] = affiliates_table
-
             # SYSTEM COMMISSION
-            system_commission = SystemCommission.objects.all()
+            system_commission = SystemCommissionLevel.objects.all()
             # if there is no system commission, will set up a default one
             if len(system_commission) == 0:
-                default_sc_level = SystemCommission(
+                default_sc_level = SystemCommissionLevel(
                     commission_level=1,
                 )
                 default_sc_level.save()
             context["system_commission_type"] = system_commission.order_by('commission_level')
-
+            context['operation_fee'] = 0.00
+            context['payment_fee'] = 0.00
+            if system_commission:
+                context['operation_fee'] = system_commission.first().operation_fee
+                context['payment_fee'] = system_commission.first().payment_fee
             return render(request, 'agent_list.html', context)
 
     def post(self, request):
         post_type = request.POST.get("type")
 
+        # TODO: needs update after figuring operation fee and payment fee
         if post_type == "releaseCommission":
             # transaction pk list need to be released
             commissionList = request.POST.getlist("list[]")
+            admin = request.POST.get("admin")
             if commissionList is not []:
                 for trans_id in commissionList:
-                    current_trans = Transaction.objects.get(pk=trans_id)
-                    if current_trans is None:
-                        logger.error(
-                            "Cannot find Commission History " + trans_id)
-                    else:
-                        current_trans.status = TRAN_APPROVED_TYPE
-                        current_trans.arrive_time = timezone.now()
-                        current_trans.save()
+                    try:
+                        with transaction.atomic():
+                            current_trans = Transaction.objects.get(pk=trans_id)
+                            admin_user = CustomUser.objects.get(username=admin)
+                            user = current_trans.user_id
+                            user.main_wallet += current_trans.amount
+                            current_trans.status = TRAN_APPROVED_TYPE
+                            current_trans.review_status = REVIEW_APP
+                            current_trans.arrive_time = timezone.now()
+                            current_trans.release_by = admin_user
+                            current_trans.save()
+                            user.save()
+                    except Exception as e:
+                        logger.error("Error releasing Commission " + str(trans_id) + " " + str(e))
+
             return HttpResponse(status=200)
 
         elif post_type == "affiliateApplication":
@@ -289,7 +346,7 @@ class AgentView(CommAdminView):
                                 logger.error("Error referrer's referral_path " + str(e))
                         user.referral_path = referral_path
                         user.save()
-                        affiliate_default_commission = Commission.objects.create(
+                        affiliate_default_commission = PersonalCommissionLevel.objects.create(
                             user_id=user,
                             commission_level=1,
                         )
@@ -315,6 +372,8 @@ class AgentView(CommAdminView):
             level_details = request.POST.get('level_details')
             admin_user = request.POST.get('admin_user')
             comments = request.POST.get('comments')
+            operation_fee = request.POST.get('operation_fee')
+            payment_fee = request.POST.get('payment_fee')
 
             level_details = json.loads(level_details)
 
@@ -338,19 +397,21 @@ class AgentView(CommAdminView):
                     # update commission levels
                     for i in level_details:
                         if i['pk'] == '':
-                            current_commission = SystemCommission.objects.create(
+                            current_commission = SystemCommissionLevel.objects.create(
                                 commission_percentage=i['rate'],
                                 downline_commission_percentage=i['downline_rate'],
                                 commission_level=i['level'],
                                 active_downline_needed=i['active_downline'],
                                 monthly_downline_ftd_needed=i['downline_ftd'],
                                 ngr=i['downline_ngr'],
+                                operation_fee=operation_fee,
+                                payment_fee=payment_fee,
                             )
                             current_commission.save()
                             commission_list.append(current_commission.pk)
                             logger.info(str(admin_user) + " create new system commission level " + i['level'])
                         else:
-                            current_commission = SystemCommission.objects.filter(pk=int(i['pk']))
+                            current_commission = SystemCommissionLevel.objects.filter(pk=int(i['pk']))
                             current_commission.update(
                                 commission_percentage=i['rate'],
                                 downline_commission_percentage=i['downline_rate'],
@@ -358,11 +419,13 @@ class AgentView(CommAdminView):
                                 active_downline_needed=i['active_downline'],
                                 monthly_downline_ftd_needed=i['downline_ftd'],
                                 ngr=i['downline_ngr'],
+                                operation_fee=operation_fee,
+                                payment_fee=payment_fee,
                             )
                             logger.info(str(admin_user) + "update commission level " + i['level'])
                             commission_list.append(i['pk'])
 
-                    deleted_commission_levels = SystemCommission.objects.exclude(pk__in=commission_list)
+                    deleted_commission_levels = SystemCommissionLevel.objects.exclude(pk__in=commission_list)
                     deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
                     if deleted_list.count() > 0:
                         logger.info("Admin user " + admin_user + " delete commission level " + str(
@@ -384,13 +447,13 @@ def getDownlineList(queryset, start_time, end_time):
             'channel': str(downline.referred_by_channel or ''),
             'ftd': str(downline.ftd_time),
             'registration_date': str(utcToLocalDatetime(downline.time_of_registration)),
-            'last_login': str(last_login(downline)),
+            'last_login': str(lastLogin(downline)),
             'total_deposit': calculateDeposit(downline, start_time, end_time)[0],
             'total_withdrawal': calculateWithdrawal(downline, start_time, end_time)[0],
-            'total_bonus': calculateBonus(downline, start_time, end_time),
+            'total_bonus': calculateBonus(downline, start_time, end_time, None),
             'total_adjustment': calculateAdjustment(downline, start_time, end_time),
             'balance': getUserBalance(downline),
-            'turnover': calculateTurnover(downline, start_time, end_time),
+            'turnover': calculateTurnover(downline, start_time, end_time, None),
         }
 
         downline_list.append(downline_dict)
@@ -431,14 +494,14 @@ class AgentDetailView(CommAdminView):
             except Exception as e:
                 logger.error("Error getting User object: ", e)
 
-            queryset = getDownline(affiliate)
+            queryset = getPlayers(affiliate)
 
             #  TOTAL ENTRIES
             total = queryset.count()
 
             if min_date and max_date:
                 queryset = filterActiveUser(queryset, dateToDatetime(min_date),
-                                            dateToDatetime(max_date)).order_by('-created_time')
+                                            dateToDatetime(max_date), True, None).order_by('-created_time')
 
             # -1 is All Type for filter
             if account_type != -1:
@@ -468,9 +531,11 @@ class AgentDetailView(CommAdminView):
             affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
             title = "Affiliate " + affiliate.username
 
-            downline = affiliate.referees.all()
+            downline = getDownlines(affiliate)
 
-            downline_deposit = deposit_tran.filter(user_id__in=downline).aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+            downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
+                                                          Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
+                aggregate(total_deposit=Coalesce(Sum('amount'), 0))
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
                 transaction_type=TRANSACTION_COMMISSION)
@@ -501,8 +566,8 @@ class AgentDetailView(CommAdminView):
                     request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
                 comm=Coalesce(Sum('amount'), 0))
             # downline status
-            context["downline_number"] = getDownline(affiliate).count()
-            context["active_users"] = calculateActiveDownlineNumber(affiliate)
+            context["downline_number"] = getPlayers(affiliate).count()
+            context["active_users"] = filterActiveUser(getDownlines(affiliate), None, None, True, None).count()
             context["downline_deposit"] = downline_deposit
             context['domain'] = LETOU_DOMAIN
             context['referral_code'] = affiliate.referral_code
@@ -533,7 +598,7 @@ class AgentDetailView(CommAdminView):
 
             # edit detail bottom
             try:
-                context["commission_type"] = Commission.objects.filter(
+                context["commission_type"] = PersonalCommissionLevel.objects.filter(
                     user_id=affiliate).order_by('commission_level')
             except ObjectDoesNotExist:
                 context["commission_type"] = ""
@@ -579,7 +644,7 @@ class AgentDetailView(CommAdminView):
                     transaction_type=TRANSACTION_BONUS).aggregate(sum_bouns=Coalesce(Sum('amount'), 0))
                 downline_info['adjustment'] = affiliate_tran.filter(
                     transaction_type=TRANSACTION_ADJUSTMENT).aggregate(sum_adjustment=Coalesce(Sum('amount'), 0))
-                downline_info['turnover'] = calculateTurnover(i, None, None)
+                downline_info['turnover'] = calculateTurnover(i, None, None, None)
                 downline_info['balance'] = i.main_wallet
                 downline_list_table.append(downline_info)
             context["downline_list"] = downline_list_table
@@ -597,7 +662,7 @@ class AgentDetailView(CommAdminView):
                 .values_list('refer_channel_name', flat=True)
 
             # Total commission
-            context["total_commission"] = commission_tran.aggregate(
+            context["total_commission"] = getCommissionTrans().aggregate(
                 total_commission=Coalesce(Sum('amount'), 0))['total_commission']
 
             context["managers"] = getManagerList("Affiliate")
@@ -711,7 +776,7 @@ class AgentDetailView(CommAdminView):
 
             try:
                 manager = CustomUser.objects.get(username=manager)
-                affiliate.affiliate_managed_by=manager
+                affiliate.affiliate_managed_by = manager
             except CustomUser.DoesNotExist:
                 manager = affiliate.affiliate_managed_by
 
@@ -719,7 +784,7 @@ class AgentDetailView(CommAdminView):
             # update commission levels
             for i in level_details:
                 if i['pk'] == '':
-                    current_commission = Commission.objects.create(
+                    current_commission = PersonalCommissionLevel.objects.create(
                         user_id=affiliate,
                         commission_percentage=i['rate'],
                         downline_commission_percentage=i['downline_rate'],
@@ -732,7 +797,7 @@ class AgentDetailView(CommAdminView):
                     logger.info("Create new commission level " +
                                 i['level'] + " for affiliate " + affiliate.username)
                 else:
-                    current_commission = Commission.objects.filter(pk=i['pk'])
+                    current_commission = PersonalCommissionLevel.objects.filter(pk=i['pk'])
                     current_commission.update(
                         commission_percentage=i['rate'],
                         downline_commission_percentage=i['downline_rate'],
@@ -743,10 +808,11 @@ class AgentDetailView(CommAdminView):
                     logger.info("Update commission level " +
                                 i['level'] + " for affiliate " + affiliate.username)
                     commission_list.append(i['pk'])
-            deleted_commission_levels =  Commission.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
+            deleted_commission_levels = PersonalCommissionLevel.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
             deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
             if deleted_list.count() > 0:
-                logger.info("Admin user " + admin_user + " delete commission level " + str(deleted_list) + " for affiliate " + str(affiliate.username) )
+                logger.info("Admin user " + admin_user + " delete commission level " + str(
+                    deleted_list) + " for affiliate " + str(affiliate.username))
             deleted_commission_levels.delete()
 
             # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
@@ -772,6 +838,3 @@ class AgentDetailView(CommAdminView):
             subject = request.POST.get('subject')
             text = request.POST.get('text')
             return HttpResponse(status=200)
-
-
-
