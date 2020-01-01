@@ -91,6 +91,7 @@ urlpatterns = [
     path('api/gpi/validation/', gameplayintviews.ValidateUserAPI.as_view(), name="gpi_validation"),
     path('api/gpi/getbalance/', gameplayintviews.GetBalanceAPI.as_view(), name="gpi_getbalance"),
     path('api/gpi/debit/', gameplayintviews.DebitAPI.as_view(), name="gpi_debit"),
+    path('api/gpi/credit/', gameplayintviews.CreditAPI.as_view(), name="gpi_credit"),
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
