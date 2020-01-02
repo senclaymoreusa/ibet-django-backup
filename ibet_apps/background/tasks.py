@@ -90,7 +90,6 @@ def gamebet_copy(request):
     redis.set_latest_timestamp(REDIS_KEY_LATEST_TIMESTAMP_GAMEBET, str(max_datetime))
     return HttpResponse(str(count) + ' new GameBet records have been retrieved in total. ')
 
-
 # Method that copies Transaction history to S3
 # Similar to gamebet_copy
 # I already setup a "Data Pipeline" in AWS to run the second stage (copying from S3 to Redshift)
