@@ -50,6 +50,7 @@ class GetSessionKey(APIView):
                 "sessionKey": user.session_key
             })
             if rr.status_code == 200:
+                logger.info(rr.json())
                 data = {
                     "sessionKey" : user.session_key,
                     "alive" :  rr.json()['alive']
@@ -92,7 +93,7 @@ class FGLogin(APIView):
         if rr.status_code == 200 :    
                
             rrdata = rr.json()
-            # logger.info(rrdata)
+            logger.info(rrdata)
            
             
             try:
