@@ -102,7 +102,7 @@ class BetSoftAuthenticate(View):
                 return HttpResponse(response, content_type='text/xml')
 
         except ObjectDoesNotExist as e:
-            logger.error("Betsoft authenticate error: ", e)
+            logger.error("(FATAL__ERROR) Betsoft authenticate error: ", e)
 
             response = {
                 "EXTSYSTEM": {
@@ -122,7 +122,7 @@ class BetSoftAuthenticate(View):
     
 
         except Exception as e:
-            logger.error("Betsoft authenticate error: ", e)
+            logger.error("(FATAL__ERROR) Betsoft authenticate error: ", e)
             response = {
                 "EXTSYSTEM": {
                     "REQUEST": {
@@ -189,7 +189,7 @@ class BetSoftBetResult(View):
         try:
 
             if hash != MD5(user_id + bet + win + is_round_finished + round_id + game_id + key):
-                logger.info("Betsoft bet/result error with wrong hash validation")
+                logger.error("(FATAL__ERROR) Betsoft bet/result error with wrong hash validation")
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
                 response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "500"
                 response = xmltodict.unparse(response, pretty=True)
@@ -206,6 +206,7 @@ class BetSoftBetResult(View):
                 check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=ref_id)
 
                 if check_duplicate_trans.count() > 0:
+                    logger.info("Betsoft result transaction ID already exist. Amount not changed")
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                     response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
                     response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
@@ -214,6 +215,7 @@ class BetSoftBetResult(View):
 
                 if negative_bet:
                     win_amount = int(win_amount) + int(negative_bet)
+                    logger.info("Betsoft result adding the negative_bet")
                 
 
                 with transaction.atomic():
@@ -233,8 +235,7 @@ class BetSoftBetResult(View):
                                                     other_data={
                                                             'provider_trans_id': ref_id
                                                         }
-                                                    ) 
-
+                                                    )
 
             if bet:
                 bet_list = bet.split("|")
@@ -245,6 +246,7 @@ class BetSoftBetResult(View):
                 check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=ref_id)
 
                 if check_duplicate_trans.count() > 0:
+                    logger.info("Betsoft bet transaction ID already exist. Amount not changed")
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                     response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
                     response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = int(user.main_wallet * 100)
@@ -252,6 +254,7 @@ class BetSoftBetResult(View):
                     return HttpResponse(response, content_type='text/xml')
 
                 if int(bet_amount) > 1000000 or decimal.Decimal(user.main_wallet) * 100 < decimal.Decimal(bet_amount):
+                    logger.info("Betsoft bet amount excess.")
                     response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
                     response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "300"
                     response = xmltodict.unparse(response, pretty=True)
@@ -281,14 +284,14 @@ class BetSoftBetResult(View):
             return HttpResponse(response, content_type='text/xml')
         
         except ObjectDoesNotExist as e:
-            logger.error("Betsoft bet/result error: ", e)
+            logger.error("(FATAL__ERROR) Betsoft bet/result error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
-            logger.error("Betsoft bet/result error: ", e)
+            logger.error("(FATAL__ERROR) Betsoft bet/result error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
@@ -326,7 +329,7 @@ class BetSoftBetRefund(View):
             if prev_bet.count() > 0:
                 prev_bet = prev_bet[0]
             else:
-                logger.info("Betsoft refund bet error: transaction id ("+ str(casino_transaction_id)+ ") is invalid")
+                logger.error("(FATAL__ERROR) Betsoft refund bet error: transaction id ("+ str(casino_transaction_id)+ ") is invalid")
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
                 response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "302"
                 response = xmltodict.unparse(response, pretty=True)
@@ -374,7 +377,7 @@ class BetSoftBetRefund(View):
 
 
         except CustomUser.DoesNotExist as e:
-            logger.error("Betsoft refund bet error invalid user: ", e)
+            logger.error("(FATAL__ERROR) Betsoft refund bet error invalid user: ", e)
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
@@ -382,7 +385,7 @@ class BetSoftBetRefund(View):
             return HttpResponse(response, content_type='text/xml')
 
         except GameBet.DoesNotExist as e:
-            logger.error("Betsoft refund bet error invalid transaction id: ", e)
+            logger.error("(FATAL__ERROR) Betsoft refund bet error invalid transaction id: ", e)
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "302"
@@ -390,7 +393,7 @@ class BetSoftBetRefund(View):
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
-            logger.error("Betsoft refund bet error: ", e)
+            logger.error("(FATAL__ERROR) Betsoft refund bet error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
@@ -499,154 +502,30 @@ class BetSoftGetInfo(View):
 
         
         except ObjectDoesNotExist as e:
-            logger.error("Betsoft get info error invalid user: ", e)
+            logger.error("(FATAL__ERROR) Betsoft get info error invalid user: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
-            logger.error("Betsoft refund bet error: ", e)
+            logger.error("(FATAL__ERROR) Betsoft refund bet error: ", e)
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
 
-
-# class BonusRelease(View):
-
-#     def get(self, request, *args, **kwargs):
-
-#         user_id = request.GET.get('userId', '')
-#         bonus_id = request.GET.get('bonusId', '')
-#         amount = request.GET.get('amount', '')
-#         hash = request.GET.get('hash', '')
-
-#         # print(user_id, bonus_id, amount, hash)
-
-#         response = {
-#             "EXTSYSTEM": {
-#                 "REQUEST": {
-#                     "USERID": user_id,
-#                     "BONUSID": bonus_id,
-#                     "AMOUNT": amount,
-#                     "HASH": hash
-#                 },
-#                 "TIME": strftime("%d %b %Y %H:%M:%S"),
-#                 "RESPONSE": {
-#                     "RESULT": ""
-#                 }
-#             } 
-#         }
-
-#         try:
-#             user = CustomUser.objects.get(username=user_id)
-#             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-#             if hash == MD5(user_id + bonus_id + amount + key):
-#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
-#             else:
-
-#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-#                 response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
-            
-#             response = xmltodict.unparse(response, pretty=True)
-#             return HttpResponse(response, content_type='text/xml')
-
-#         except ObjectDoesNotExist as e:
-#             logger.info("Betsoft release bonus error invalid user: ", e)
-#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
-#             response = xmltodict.unparse(response, pretty=True)
-#             return HttpResponse(response, content_type='text/xml')
-
-#         except Exception as e:
-#             logger.error("Betsoft release bonus error: ", e)
-#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
-#             response = xmltodict.unparse(response, pretty=True)
-#             return HttpResponse(response, content_type='text/xml')
-
-
-
-# class BonusWin(View):
-
-#     def get(self, request, *args, **kwargs):
-
-#         user_id = request.GET.get('userId', '')
-#         bonus_id = request.GET.get('bonusId', '')
-#         amount = request.GET.get('amount', '')
-#         transaction_id = request.GET.get('transactionId', '')
-#         hash = request.GET.get('hash', '')
-
-#         response = {
-#             "EXTSYSTEM": {
-#                 "REQUEST": {
-#                     "USERID": user_id,
-#                     "BONUSID": bonus_id,
-#                     "AMOUNT": amount,
-#                     "TRANSACTIONID": transaction_id,
-#                     "HASH": hash
-#                 },
-#                 "TIME": strftime("%d %b %Y %H:%M:%S"),
-#                 "RESPONSE": {
-#                     "RESULT": ""
-#                 }
-#             } 
-#         }
-
-#         try:
-#             user = CustomUser.objects.get(username=user_id)
-#             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-#             if hash == MD5(user_id + key):
-#                 new_amount = user.main_wallet + amount
-#                 user.main_wallet = new_amount
-#                 user.save()
-
-#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
-#                 response["EXTSYSTEM"]["RESPONSE"]["BALANCE"] = new_amount
-
-#             else:
-
-#                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-#                 response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(500)
-            
-#             response = xmltodict.unparse(response, pretty=True)
-#             return HttpResponse(response, content_type='text/xml')
-
-#         except ObjectDoesNotExist as e:
-#             logger.info("Betsoft release bonus error invalid user: ", e)
-#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(310)
-#             response = xmltodict.unparse(response, pretty=True)
-#             return HttpResponse(response, content_type='text/xml')
-
-#         except Exception as e:
-#             logger.error("Betsoft release bonus error: ", e)
-#             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
-#             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = str(399)
-#             response = xmltodict.unparse(response, pretty=True)
-#             return HttpResponse(response, content_type='text/xml')
-
-            
-
-            
-
-
-
-
-LAUNCH_URL = "https://claymoreasia-gp3.discreetgaming.com/cwstartgamev2.do?bankId={}&gameId={}&mode=real&token={}&lang=en"
-BANKID="4542"
-LAUNCH_GUST_URL = "https://claymoreasia-gp3.discreetgaming.com/cwguestlogin.do?bankId={}&gameId={}&lang=en"
-
-
-
 # called by frontend
+# unused
 class BetsoftGameLaunch(View):
 
     def get(self, request, *args, **kwargs):
+
+
+        LAUNCH_URL = "https://claymoreasia-gp3.discreetgaming.com/cwstartgamev2.do?bankId={}&gameId={}&mode=real&token={}&lang=en"
+        BANKID="4542"
+        LAUNCH_GUST_URL = "https://claymoreasia-gp3.discreetgaming.com/cwguestlogin.do?bankId={}&gameId={}&lang=en"
 
         try:
             gameId = request.GET.get('gameId', '')
