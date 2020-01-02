@@ -1,7 +1,9 @@
+# Django Rest Framework
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 # Django
 from django.views import View
@@ -10,18 +12,14 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
+# Local
 from users.views.helper import checkUserBlock
 from users.models import CustomUser
-from decimal import Decimal
-
 from utils.constants import *
-
-from datetime import date
-from django.utils import timezone
 from games.models import *
 from accounting.models import * 
-from utils.constants import *
 
 # General
 import datetime
@@ -32,8 +30,8 @@ import random
 import requests
 import urllib
 import xmltodict
-
-from rest_framework.authtoken.models import Token
+from decimal import Decimal
+from datetime import date
 
 
 logger = logging.getLogger('django')
@@ -277,6 +275,24 @@ class CreditAPI(View):
             return HttpResponse('GET request!')
 
 
-class CheckTransaction(View):
+class CheckTransactionAPI(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponse(status=200)
+        trx_id = request.GET.get("trx_id")
+        try:
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            req_param["trx_id"] = "Test11"
+
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_URL + 'check' + '?' + req
+
+            res = requests.get(url)
+            
+            res = xmltodict.parse(res.text)
+
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+        except Exception as e:
+            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            return HttpResponse(status=400)
