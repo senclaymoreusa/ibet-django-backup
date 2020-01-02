@@ -235,11 +235,11 @@
         });
 
         function checkCommissionLevelEmpty() {
-            var $empty = $(".commission_levels input[required]").filter(function () {
+            var empty = $(".commission_levels input[required]").filter(function () {
                 return !this.value.trim();
             }),
-                valid = $empty.length == 0,
-                items = $empty.map(function () {
+                valid = empty.length == 0,
+                items = empty.map(function () {
                     return this.placeholder
                 }).get();
 
