@@ -47,9 +47,9 @@ class AgentView(CommAdminView):
                                                                end_date, True, None).count(),
                             'downline_ftd': calculateFTD(downlines, start_date, end_date),
                             'commission_rate': getCommissionRate(user, start_date, end_date),
-                            'deposit': calculateDeposit(user, start_date, end_date)[1],
-                            'withdrawal': calculateWithdrawal(user, start_date, end_date)[1],
-                            'bonus': calculateBonus(user, start_date, end_date, None),
+                            'deposit': getTransactionAmount(user, start_date, end_date, TRANSACTION_DEPOSIT, None)[1],
+                            'withdrawal': getTransactionAmount(user, start_date, end_date, TRANSACTION_WITHDRAWAL, None)[1],
+                            'bonus': getTransactionAmount(user, start_date, end_date, TRANSACTION_BONUS, None)[1],
 
                             'winorloss': calculateNGR(user, start_date, end_date, None),
                             'commission': tran.amount,
@@ -132,13 +132,13 @@ class AgentView(CommAdminView):
                 downlines_all_ftds = calculateFTD(downlines_all, min_date, max_date)
 
                 for downline in downlines:
-                    downline_deposit_count, downline_deposit = calculateDeposit(downline, min_date, max_date)
-                    downline_withdrawal_count, downline_withdrawal = calculateWithdrawal(downline, min_date, max_date)
+                    downline_deposit_count, downline_deposit = getTransactionAmount(downline, min_date, max_date, TRANSACTION_DEPOSIT, None)
+                    downline_withdrawal_count, downline_withdrawal = getTransactionAmount(downline, min_date, max_date, TRANSACTION_WITHDRAWAL, None)
                     downlines_total_deposit += downline_deposit
                     downlines_total_withdrawal += downline_withdrawal
 
-                deposit_count, deposit_amount = calculateDeposit(affiliate, min_date, max_date)
-                withdrawal_count, withdrawal_amount = calculateWithdrawal(affiliate, min_date, max_date)
+                deposit_count, deposit_amount = getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_DEPOSIT, None)
+                withdrawal_count, withdrawal_amount = getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_WITHDRAWAL, None)
 
                 # Todo: needs update the data
                 affiliates_dict = {'affiliate_id': affiliate.pk,
@@ -155,7 +155,7 @@ class AgentView(CommAdminView):
 
                                    'turnover': calculateTurnover(affiliate, min_date, max_date, None),
                                    'ggr': calculateGGR(affiliate, min_date, max_date, None),
-                                   'bonus_cost': calculateBonus(affiliate, min_date, max_date, None),
+                                   'bonus_cost': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, None)[1],
                                    'ngr': calculateNGR(affiliate, min_date, max_date, None),
 
                                    'deposit': deposit_amount,
@@ -164,25 +164,25 @@ class AgentView(CommAdminView):
                                    'sports_actives': filterActiveUser(downlines, min_date, max_date, True,
                                                                       "Sports").count(),
                                    'sports_ggr': calculateGGR(affiliate, min_date, max_date, "Sports"),
-                                   'sports_bonus': calculateBonus(affiliate, min_date, max_date, "Sports"),
+                                   'sports_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Sports")[1],
                                    'sports_ngr': calculateNGR(affiliate, min_date, max_date, "Sports"),
 
                                    'casino_actives': filterActiveUser(downlines, min_date, max_date, True,
                                                                       "Casino").count(),
                                    'casino_ggr': calculateGGR(affiliate, min_date, max_date, "Casino"),
-                                   'casino_bonus': calculateBonus(affiliate, min_date, max_date, "Casino"),
+                                   'casino_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Casino")[1],
                                    'casino_ngr': calculateNGR(affiliate, min_date, max_date, "Casino"),
 
                                    'live_casino_actives': filterActiveUser(downlines, min_date, max_date, True,
                                                                            "Live Casino").count(),
                                    'live_casino_ggr': calculateGGR(affiliate, min_date, max_date, "Live Casino"),
-                                   'live_casino_bonus': calculateBonus(affiliate, min_date, max_date, "Live Casino"),
+                                   'live_casino_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Live Casino")[1],
                                    'live_casino_ngr': calculateNGR(affiliate, min_date, max_date, "Live Casino"),
 
                                    'lottery_actives': filterActiveUser(downlines, min_date, max_date, True,
                                                                        "Lottery").count(),
                                    'lottery_ggr': calculateGGR(affiliate, min_date, max_date, "Lottery"),
-                                   'lottery_bonus': calculateBonus(affiliate, min_date, max_date, "Lottery"),
+                                   'lottery_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Lottery")[1],
                                    'lottery_ngr': calculateNGR(affiliate, min_date, max_date, "Lottery"),
 
                                    'active_downlines': filterActiveUser(downlines, min_date, max_date, True,
@@ -448,10 +448,10 @@ def getDownlineList(queryset, start_time, end_time):
             'ftd': str(downline.ftd_time),
             'registration_date': str(utcToLocalDatetime(downline.time_of_registration)),
             'last_login': str(lastLogin(downline)),
-            'total_deposit': calculateDeposit(downline, start_time, end_time)[0],
-            'total_withdrawal': calculateWithdrawal(downline, start_time, end_time)[0],
-            'total_bonus': calculateBonus(downline, start_time, end_time, None),
-            'total_adjustment': calculateAdjustment(downline, start_time, end_time),
+            'total_deposit': getTransactionAmount(downline, start_time, end_time, TRANSACTION_DEPOSIT, None)[0],
+            'total_withdrawal': getTransactionAmount(downline, start_time, end_time, TRANSACTION_WITHDRAWAL, None)[0],
+            'total_bonus': getTransactionAmount(downline, start_time, end_time, TRANSACTION_BONUS, None)[1],
+            'total_adjustment': getTransactionAmount(downline, start_time, end_time, TRANSACTION_ADJUSTMENT, None)[1],
             'balance': getUserBalance(downline),
             'turnover': calculateTurnover(downline, start_time, end_time, None),
         }
