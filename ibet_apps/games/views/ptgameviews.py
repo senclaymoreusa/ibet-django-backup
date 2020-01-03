@@ -43,8 +43,9 @@ def createUser(user):
     # Just check status code here, other error will return to rrdata if 200 and be checked in other func.
     if rr.status_code == 200 :  
         rrdata = rr.json()
+        logger.info(rrdata)
     else:
-        logger.error(rr)
+        logger.error("FATAL__ERROR: in PT create user status code.")
         rrdata = {
             "errorInfo": "status_error:" + rr,
             "errorcode": PT_GENERAL_ERROR
@@ -70,7 +71,7 @@ class GetPlayer(APIView):
         try:
             user = CustomUser.objects.get(username=username)
         except Exception as e:
-            logger.error("PT user not exist" + str(e))   
+            logger.error("FATAL__ERROR: PT user not exist" + str(e))   
             data = {
                 "errorInfo": "PT user not exist",
                 "status": PT_GENERAL_ERROR
@@ -88,7 +89,8 @@ class GetPlayer(APIView):
         
         if rr.status_code == 200 :    
             rrdata = rr.json()
-            # print(rrdata)
+            logger.info(rrdata)
+           
             # error in get player info.
             if 'errorcode' in rrdata:
                 if rrdata['errorcode'] == 41:
@@ -101,7 +103,7 @@ class GetPlayer(APIView):
                             "errorInfo": "cannot create player",
                             "status": PT_GENERAL_ERROR
                         }
-                        logger.error("PT GAME: cannot create player." )   
+                        logger.error("FATAL__ERROR: cannot create player in get errorcode." )   
                     else:
                     # create user successfully.
                         # print(r_create_data)
@@ -117,7 +119,7 @@ class GetPlayer(APIView):
                             "errorInfo": rrdata['error'],
                             "status": PT_GENERAL_ERROR
                     }
-                    logger.error("PT GAME: " + rrdata['error'])  
+                    logger.error("Error: PT GAME - " + rrdata['error'])  
             
 
             else:              
@@ -130,7 +132,7 @@ class GetPlayer(APIView):
                             "errorInfo": "balance not enough",
                             "status": PT_BALANCE_ERROR
                         }
-                        logger.error("PT GAME: balance not enough." )  
+                        logger.info("PT GAME: balance not enough." )  
                     else:
                         data = {
                             "status": PT_STATUS_SUCCESS,
@@ -141,10 +143,10 @@ class GetPlayer(APIView):
                             "errorInfo": "cannot get balance",
                             "status": PT_GENERAL_ERROR
                     }
-                    logger.error("PT GAME: cannot get balance." )  
+                    logger.error("Error: PT GAME - cannot get balance." )  
 
         else:
-            logger.error(rr)
+            logger.error("FATAL__ERROR: in PT game get user info status code.")
             data = {
                 "errorInfo": "status_error:" + rr,
                 "status": PT_GENERAL_ERROR
@@ -163,7 +165,7 @@ class PTTransferTest(APIView):
         try:
             user = CustomUser.objects.get(username=username)
         except Exception as e:
-            logger.error("PT user not exist" + str(e))  
+            logger.error("FATAL__ERROR: PT user not exist" + str(e))  
             status = False
             return HttpResponse(status,status=200)
         amount = data["amt"]
@@ -183,19 +185,16 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
     direction = "deposit" if method == 0 else "withdraw"
     
     player = "IBETPU_" + user.username.upper()
-
-    
     url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
-    
-    
    
     rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
         
     if rr.status_code == 200 :    
         rrdata = rr.json()   
-        
+        logger.info(rrdata)
         if 'errorcode' in rrdata:
         # error exist.
+            logger.error("Error: PT game transfer errorcode.")
             return False
         else:
             # deposit OK.
@@ -235,7 +234,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                
                 return False
     else :
-        logger.info("Failed response: {}".format(rr.status_code))
+        logger.error("FATAL__ERROR: in PT game transfer status code.")
         return False
 
 
@@ -267,7 +266,7 @@ def ptTransfer(user, amount, wallet, method):
                 
                 return transferHelp(method, user, amount, trans_id, orderid, wallet)
             else :
-                logger.error("user create error in pt transfer")
+                logger.error("Error: user create error in pt transfer")
                 return False
                 
         else:
