@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse  # Used to generate urls by reversing the URL patterns
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 import uuid
 from datetime import date
@@ -105,3 +105,8 @@ class UserBonusEvent(models.Model):
                                       verbose_name=_('User Bonus Event Type'))
     notes = models.TextField(null=True, blank=True)
     amount = models.FloatField(null=True, blank=True)
+    # completion_percentage = models.IntegerField(null=True, blank=True, default=0,
+    #     validators=[
+    #         MaxValueValidator(100),
+    #         MinValueValidator(0)
+    #     ])
