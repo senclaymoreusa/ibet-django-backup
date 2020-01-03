@@ -76,6 +76,7 @@ class InplayLoginAPI(View):
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
             post_data['TimeStamp'] = str(time_stamp)
+            print(post_data)
 
             url = IMES_URL + "api/login"
             
