@@ -30,7 +30,7 @@ logger = logging.getLogger('django')
 def create_deposit(request):
     if request.method == "GET":
         # print(request.META['HTTP_REFERER'])
-        return HttpResponse("You are at the endpoint for ScratchCard reserve payment.")
+        return HttpResponse(status=404)
 
     if request.method == "POST":  # can only allow post requests
         logger.info("Creating Deposit...")
@@ -69,8 +69,6 @@ def create_deposit(request):
         else:
             logger.error("Warning::ScratchCard::ScratchCard servers returned status that wasn't 200")
             
-
-
         if res_json["status"] == 6:
             user_id = CustomUser.objects.get(username=request.user.username)
             obj, created = Transaction.objects.get_or_create(
@@ -173,7 +171,10 @@ def confirm_transaction(request):
             matching_transaction.arrive_time = timezone.now()
             matching_transaction.last_updated = timezone.now()
             matching_transaction.save()
-            return JsonResponse({"msg": "received response"})
+            return JsonResponse({
+                "success": True,
+                "message": "received response"
+            })
         except ObjectDoesNotExist as e:
             logger.error("FATAL__ERROR::ScratchCard::Matching transaction not found")
             logger.error(e)

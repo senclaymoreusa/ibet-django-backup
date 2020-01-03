@@ -61,6 +61,7 @@ def create_deposit(request):
             )
 
             return JsonResponse({
+                "success": True,
                 "record_created": created,
                 "message": "Created new record" if created else "Did not create new record",
                 "user": request.user.username,
@@ -68,8 +69,10 @@ def create_deposit(request):
             })
         except Exception as e:
             logger.error("FATAL__ERROR::CirclePay::Unable to create deposit")
+            logger.error(repr(e))
             return JsonResponse({
-                "success": False
+                "success": False,
+                "message": "Exception occured"
             })
 
 
@@ -77,7 +80,7 @@ def create_deposit(request):
 def confirm_payment(request):
     if request.method == "GET":
         logger.info("Hello GET")
-        return HttpResponse("You are at the endpoint for CirclePay confirm payment")
+        return HttpResponse(status=404)
     if request.method == "POST":
         logger.info("[" + str(datetime.datetime.now()) + "] Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
@@ -115,7 +118,10 @@ def confirm_payment(request):
             matching_transaction.save()
 
             # update transaction record status
-            return JsonResponse({"message": "Received confirmation of payment"})
+            return JsonResponse({
+                "success": True,
+                "message": "Received confirmation of payment"
+            })
         except ObjectDoesNotExist as e:
             logger.error("FATAL__ERROR::CirclePay::Unable to confirm payment")
             logger.error(repr(e))

@@ -470,7 +470,7 @@ def capture_transaction(request):
             card_code = body.get("card_code")
             exp_date = body.get("exp_date")
             amount = body.get("amount")
-            currency = "BRL"
+            currency = "THB"
 
             orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
@@ -494,6 +494,19 @@ def capture_transaction(request):
             if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
                 logger.info("contacted AstroPay servers success and deposit success!")
                 
+                # Transaction.objects.create(
+                #     order_id=orderId,
+                #     transaction_id=
+                #     amount=amount,
+                #     user_id=CustomUser.objects.get(username=
+                #     currency=
+                #     transaction_type=
+                #     channel=
+                #     status=
+                #     method=
+                #     arrive_time=
+                # )
+
                 tranDict = {
                     'order_id':(orderId)[0:20],
                     'transaction_id':userid,
@@ -507,11 +520,11 @@ def capture_transaction(request):
                     'arrive_time': timezone.now(),
                     'product': "None",
                 }
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)            
-                loop.run_until_complete(createDeposit(**tranDict))
+                # loop = asyncio.new_event_loop()
+                # asyncio.set_event_loop(loop)            
+                # loop.run_until_complete(createDeposit(**tranDict))
             else:
-                logger.error("contacted AstroPay servers successful but deposit was unsuccessful")
+                logger.error("successfully contacted AstroPay servers but deposit was unsuccessful")
 
             return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
         except Exception as e:

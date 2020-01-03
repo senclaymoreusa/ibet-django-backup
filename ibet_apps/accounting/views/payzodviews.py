@@ -97,7 +97,7 @@ def get_qr_code(request):
                 return HttpResponse(r.text)
             elif r.status_code == 500:
                 sleep(5)
-            logger.error("Warning::Payzod::Can't contact Payzod servers")
+            logger.error("Warning::Payzod::Failed to reach Payzod servers")
             return HttpResponse("Failed to reach Payzod servers")
 
 
