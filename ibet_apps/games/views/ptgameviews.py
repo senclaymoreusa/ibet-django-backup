@@ -21,6 +21,7 @@ from django.utils import timezone
 import time
 import utils.aws_helper
 import os
+from tempfile import NamedTemporaryFile
 
 logger = logging.getLogger("django")
 
@@ -187,6 +188,13 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
     player = "IBETPU_" + user.username.upper()
     url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
    
+    with NamedTemporaryFile() as f:
+        f.write(ptkey)
+        f.flush()    # ensure all data written
+        # to get the path/file 
+        print("test")
+        print(f.name)
+
     rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
         
     if rr.status_code == 200 :    

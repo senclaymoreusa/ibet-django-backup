@@ -18,21 +18,20 @@ def getThirdPartyKeys(bucket, file):
         return None
     return config
 
-# def getPTCert(bucket, file):
-#     s3client = boto3.client("s3")
-#     try:
-#         print("hahah")
-#         # url = s3client.generate_presigned_url(bucket, file)
-#         # filedata = config_obj['Body'].read()
-#         # contents = filedata.decode('utf-8')
+def getPTCertContent(bucket, file):
+    s3client = boto3.client("s3")
+    try:
+        fileobj = s3client.get_object(Bucket=bucket, Key=file)
+        filedata = fileobj['Body'].read()
+        contents = filedata.decode('utf-8')
        
-#     except ClientError as e:
-#         logger.error(e)
-#         return None
-#     except NoCredentialsError as e:
-#         logger.error(e)
-#         return None
-#     return None
+    except ClientError as e:
+        logger.error(e)
+        return None
+    except NoCredentialsError as e:
+        logger.error(e)
+        return None
+    return contents
     
 
 
