@@ -8,6 +8,9 @@ from users.models import CustomUser
 from django.utils import timezone
 from datetime import datetime
 import pytz
+import logging
+
+logger = logging.getLogger("django")
 
 
 def getProvidersAndCategories(request):
@@ -33,9 +36,10 @@ def getBetHistory(request):
                 return HttpResponse(status=404)
 
             if not request.GET.get("start") and not request.GET.get("end"):
+                logger.info("Getting bet history: You have to select start or end date")
                 return JsonResponse({
                     'success': False,
-                    'results': "You must to select start or end date"
+                    'results': "You have to select start or end date"
                 })
 
             user = CustomUser.objects.get(pk=user_id)
@@ -77,6 +81,7 @@ def getBetHistory(request):
                 data["provider"] = bet.provider.provider_name
                 bet_data.append(data)
 
+            logger.info("Successfully get bet history")
             return JsonResponse({
                 'success': True,
                 'results': bet_data,
@@ -84,7 +89,7 @@ def getBetHistory(request):
             })
 
     except Exception as e:
-
+        logger.error("(Error) Getting bet history error: ", e)
         return JsonResponse({
             'success': False,
             'message': "There is something wrong"
