@@ -348,7 +348,7 @@ class LoginView(GenericAPIView):
         return response_serializer
 
     def login(self):
-        
+
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
@@ -496,7 +496,7 @@ class LogoutView(APIView):
             pass
 
         action = UserAction(
-            user= CustomUser.objects.filter(username=self.user).first(),
+            user= CustomUser.objects.get(username=self.user),
             ip_addr=self.request.META['REMOTE_ADDR'],
             event_type=1,
             created_time=timezone.now()

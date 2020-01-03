@@ -717,6 +717,9 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["PRODUCTION"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["PRODUCTION"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["PRODUCTION"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
@@ -731,6 +734,9 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["SANDBOX"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
@@ -745,6 +751,9 @@ else:
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["SANDBOX"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
