@@ -12,7 +12,6 @@ from django.core.exceptions import  ObjectDoesNotExist
 import requests
 import xml.etree.ElementTree as ET
 import random
-from django.utils import timezone
 from time import gmtime, strftime, strptime
 from django.http import  HttpResponse
 from rest_framework.decorators import api_view, permission_classes
@@ -21,6 +20,12 @@ from  accounting.models import *
 from pyDes import des, ECB, PAD_PKCS5
 import base64, hashlib
 import ftplib
+from io import BytesIO
+import re
+import xmltodict
+import datetime
+from datetime import date
+
 
 
 AG_SUCCESS = 0
@@ -42,17 +47,136 @@ def MD5(code):
 @api_view(['POST'])
 @permission_classes((AllowAny,))        
 def agftp(request): 
+
     try:
-        f = ftplib.FTP()
-        f.connect("xe.gdcapi.com")
-        f.login("EV3.ibet", "GelPNvJlXt")
-        f.cwd('AGIN')  
-        f.retrlines('LIST')
-        print(f.retrlines('LIST'))
-        return HttpResponse("success")
+        ftp = ftplib.FTP()
+        ftp.connect("xe.gdcapi.com")
+        ftp.login("EV3.ibet", "GelPNvJlXt")
+        try:
+            folders = ftp.nlst()
+        except ftplib.error_perm as resp:
+            if str(resp) == "550 No files found":
+                logger.info("No files in this directory")
+                return HttpResponse(ERROR_CODE_NOT_FOUND) 
+            else:
+                raise
+        for folder in folders:
+            ftp.cwd(folder)  
+            small_folders = ftp.nlst()
+            
+            for sf in small_folders:
+                ftp.cwd(sf) 
+                try:
+                    files = ftp.nlst()
+                except ftplib.error_perm as resp:
+                    if str(resp) == "550 No files found":
+                        logger.info("No files in this directory")
+                        return HttpResponse(ERROR_CODE_NOT_FOUND) 
+                    else:
+                        raise
+                
+                for file in files:
+                    r = BytesIO()
+                    read = ftp.retrbinary('RETR ' + file, r.write)
+                    rdata = r.getvalue().decode("utf-8")
+                    xml = '<root>'+rdata+'</root>'
+                    
+                    root = ET.fromstring(xml)
+                    for child in root:
+                        dataType = child.attrib['dataType']
+                        
+                        if dataType == 'TR': #户口转账详情
+                            transferId = child.attrib['transferId']
+                            transferType = child.attrib['transferType']
+                            platformType = child.attrib['platformType']
+                            transferAmount = child.attrib['transferAmount']
+                            playerName = child.attrib['playerName']
+                            currency = child.attrib['currency']
+                            
+
+                            
+                        elif dataType == 'BR': #下注记录详情
+                            playerName = child.attrib['playerName']
+                            billNo = child.attrib['billNo']
+                            betAmount = child.attrib['betAmount']
+                            flag = child.attrib['flag']
+                            betTime = child.attrib['betTime']
+                            gameCode = child.attrib['gameCode']
+                            netAmount = child.attrib['netAmount']
+                            gameType = child.attrib['gameType']
+
+                            try:
+                                user = CustomUser.objects.get(username=playerName)
+                            except ObjectDoesNotExist:
+                                logger.info("This user is not existed.")
+                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
+
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                            GameBet.objects.create(provider=AG_PROVIDER,
+                                                    category=Category.objects.get(name='Live Casino'),
+                                                    user=user,
+                                                    user_name=user.username,
+                                                    transaction_id=trans_id,
+                                                    amount_wagered=betAmount,
+                                                    currency=user.currency,
+                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+                                                    ref_no=trans_id,
+                                                    market=ibetCN,
+                                                    other_data=rdata
+                                                    )
+                        
+                        
+                        
+                    
+                    # _dict = xmltodict.parse(xml, attr_prefix="")
+                    # print(_dict)
+                    # print(_dict["dataType"])
+                    # attrib = root.attrib
+                    # dataType = attrib['dataType']
+                    # print(dataType)
+                ftp.cwd('..')
+            ftp.cwd('..')
+
+            # f.cwd(folder + '/' + small_folders)  
+            
+            # for small_f in small_folders:
+
+            
+        # f.cwd(file + '/20191220')  
+        # filenames = f.nlst() # get filenames within the directory
+        # print(filenames)
+        # # f.retrlines('LIST')
+        # r = BytesIO()
+        # read = f.retrbinary('RETR 201912201821.xml', r.write)
+        # rdata = r.getvalue().decode("utf-8")
+        # print(rdata)
+        # #root = ET.fromstring(rdata)
+        
+        # root = ET.fromstring(re.sub(r"(<\?xml[^>]+\?>)", r"\1<root>", rdata) + "</root>")     
+        # for row in root.findall('row'):
+        #     dataType = row.get('dataType').text
+        #     print(dataType)
+        # GameBet.objects.create(provider=AG_PROVIDER,
+        #                         category=cate,
+        #                         transaction_id=trans_id,
+        #                         user=user,
+        #                         user_name=user.username,
+        #                         odds=rdata["Data"]["BetDetails"][i]["odds"],
+        #                         amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+        #                         currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+        #                         bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+        #                         amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+        #                         outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
+        #                         resolved_time=utcToLocalDatetime(resolve),
+        #                         market=ibetCN,
+        #                         )
+        ftp.quit()
+        return HttpResponse(CODE_SUCCESS)
     except ftplib.error_temp:
         logger.error("cannot connect with ftp.")
-        return HttpResponse("failed")
+        return HttpResponse(ERROR_CODE_FAIL)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
