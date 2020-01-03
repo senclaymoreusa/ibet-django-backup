@@ -79,10 +79,22 @@ def get_transactions(request):
             
 
         all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+
+        trans_data = []
+        for tran in all_transactions:
+            data = dict()
+            data["transaction_id"] = tran.transaction_id
+            data["request_time"] = tran.request_time.strftime("%m/%d/%Y")
+            data["transaction_type"] = tran.get_transaction_type_display()
+            data["channel"] = tran.get_channel_display()
+            data["amount"] = tran.amount
+            data["provider"] = tran.get_status_display()
+            trans_data.append(data)
         # res = serializers.serialize('json', all_transactions)
         return JsonResponse({
             'success': True,
-            'results': list(all_transactions.values())
+            'results': trans_data,
+            'full_raw_data': list(all_transactions.values())
         })
     except Exception as e:
         logger.error("Getting transaction history error: ", e)
