@@ -58,17 +58,19 @@ from users.serializers import UserDetailsSerializer, RegisterSerializer, LoginSe
 from users.serializers import LazyEncoder
 from users.forms import RenewBookForm, CustomUserCreationForm
 from users.models import CustomUser, Config, NoticeMessage, UserAction, UserActivity, Limitation
-from games.models import Game
+
 from accounting.models import Transaction
 from threading import Timer
 from xadmin.views import CommAdminView
+from games.models import Game
+from games.models import Category as GameCategory
 from users.views.helper import *
 from django.contrib.auth.hashers import make_password, check_password
 
 from operation.views import send_sms
+from itertools import islice
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
-
 
 import datetime
 import logging
@@ -249,24 +251,51 @@ class RegisterView(CreateAPIView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        customUser = CustomUser.objects.filter(username=user).first()
+        try:
+            customUser = CustomUser.objects.get(username=user)
+        except Exception as e:
+            logger.error("FATAL__ERROR getting CustomUser object : ", str(e))
+            return Response(self.get_response_data(user), status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
-        # if customUser.
-        customUser.time_of_registration = timezone.now()
-        customUser.save()
+        try:
+            with transaction.atomic():
+                # add time of registration and register event
+                customUser.time_of_registration = timezone.now()
+                customUser.save()
+                action = UserAction(
+                    user=customUser,
+                    ip_addr=self.request.META['REMOTE_ADDR'],
+                    event_type=EVENT_CHOICES_REGISTER,
+                    created_time=timezone.now()
+                )
+                action.save()
+                logger.info("Add time of registration and register event for new user " + str(user))
 
-        
-        action = UserAction(
-            user= customUser,
-            ip_addr=self.request.META['REMOTE_ADDR'],
-            event_type=2,
-            created_time=timezone.now()
-        )
-        action.save()
+                # generate referral code for new user
+                referral_code = str(utils.admin_helper.generateUniqueReferralCode(customUser.pk))
+                customUser.referral_code = referral_code
+                customUser.save()
+                link = ReferChannel.objects.create(
+                    user_id=customUser,
+                    refer_channel_name='default'
+                )
+                logger.info("Create refer link code " + str(link.pk) + " for new user " + str(customUser.username))
 
-        return Response(self.get_response_data(user),
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+                categories = GameCategory.objects.all()
+                ubw_objs = [
+                    UserBonusWallet(
+                        user=customUser,
+                        category=category
+                    )
+                    for category in categories
+                ]
+                UserBonusWallet.objects.bulk_create(ubw_objs)
+                logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
+
+        except Exception as e:
+            logger.error("Error adding new user registration, refer link or bonus wallet info: ", str(e))
+
+        return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         user = serializer.save(self.request)
@@ -392,7 +421,7 @@ class LoginView(GenericAPIView):
                 loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
-            logger.error("cannot get users device info in iovation", e)
+            logger.error("FATAL__ERROR: cannot get users device info in login iovation", e)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()

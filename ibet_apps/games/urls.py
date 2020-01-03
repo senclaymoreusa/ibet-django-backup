@@ -17,27 +17,31 @@ import games.views.bti_views as bti
 import games.views.sagameviews as sagameviews
 import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
-
+import games.views.aggamesviews as aggamesviews
 from games.views.views import *
 
+# from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
 
 
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),
+    path('api/games-category/', GamesCategoryAPI.as_view(), name='games_category'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
     path('api/providers/', ProvidersSearchView.as_view(), name = 'provider_search'),
     path('api/filter/', FilterAPI.as_view(), name='get_filter'),
     # path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
-
+    path('api/bets/getprovandcats', csrf_exempt(bets.getProvidersAndCategories), name="get_prov_and_cats"),
+    
     # Inplay Matrix
     path('api/inplay/login/', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay_login"),
-    path('api/inplay/Validatetoken/', inplayviews.ValidateTokenAPI.as_view(), name="inplay_validate"),
+    path('api/inplay/ValidateToken/', inplayviews.ValidateTokenAPI.as_view(), name="inplay_validate"),
     path('api/inplay/GetBalance/', inplayviews.InplayGetBalanceAPI.as_view(), name="inplay_get_balance"),
     path('api/inplay/GetApproval/', inplayviews.InplayGetApprovalAPI.as_view(), name="inplay_get_approval"),
     path('api/inplay/DeductBalance/', inplayviews.InplayDeductBalanceAPI.as_view(), name="inplay-deduct-balance"),
     path('api/inplay/UpdateBalance/', inplayviews.InplayUpdateBalanceAPI.as_view(), name="inplay-update-balance"),
+    path('api/inplay/PostBetDetails/', csrf_exempt(inplayviews.InplayPostBetDetailsAPI.as_view()), name="inplay-bet-details"),
     path('api/inplay/test-decryption/', inplayviews.TestDecryption.as_view(), name="inplay_test_decryption"),
 
     #ea live casino
@@ -61,12 +65,8 @@ urlpatterns = [
     path('api/gd/check_transaction_status', gdcasino.checkTransactionStatus.as_view(), name = 'GDCasino_check_Transaction_Status'),
 
     # Play n Go
+    path('api/playngo', csrf_exempt(playngogameviews.RootView.as_view()), name="png_root"),
     path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
-    path('api/playngo/login', csrf_exempt(playngogameviews.AuthenticateView.as_view()), name="png_auth"),
-    path('api/playngo/balance', csrf_exempt(playngogameviews.BalanceView.as_view()), name="png_bal"),
-    path('api/playngo/reserve', csrf_exempt(playngogameviews.ReserveView.as_view()), name="png_res"),
-    path('api/playngo/release', csrf_exempt(playngogameviews.ReleaseView.as_view()), name="png_rel"),
-    path('api/playngo/cancel', csrf_exempt(playngogameviews.CancelReserveView.as_view()), name="png_cancel"),
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
@@ -77,7 +77,7 @@ urlpatterns = [
     path('api/get_all_game', fggameviews.GetAllGame.as_view(), name = 'get_all_game'),
     path('api/fg/login', fggameviews.FGLogin.as_view(), name = 'fg_login'),
     path('api/fg/getSessionKey', fggameviews.GetSessionKey.as_view(), name = 'fg_get_sessionkey' ),
-    path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
+    # path('api/fg/gamelaunch', fggameviews.GameLaunch.as_view(), name = 'game_launch'),
     path('omegassw/getAccountDetails', fggameviews.GetAccountDetail.as_view(), name ='account_detail'),
     path('omegassw/getBalance', fggameviews.GetBalance.as_view(), name = 'get_balance'),
     path('omegassw/processTransaction', fggameviews.ProcessTransaction.as_view(), name = 'process_transaction'),
@@ -92,13 +92,14 @@ urlpatterns = [
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),
     path('api/ky/test/', csrf_exempt(kygameviews.TestTransferAPI.as_view()), name="ky_test"),
     path('api/ky/record/', csrf_exempt(kygameviews.TestGetRecord.as_view()), name="ky_record"),
+    path('api/ky/getbets/', csrf_exempt(kygameviews.KyBets.as_view()), name='ky_bets'),
 
     #onebook
     path('api/onebook/create_member', onebookviews.CreateMember.as_view(), name="create_member"),
     path('api/onebook/fund_transfer', onebookviews.FundTransfer.as_view(), name="fund_transfer"),
     path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
-    path('api/onebook/get_bet_detail', onebookviews.GetBetDetail, name="Get_Bet_Detail"),
+    path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
     # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
     # bti server-to-server endpoints
@@ -140,12 +141,20 @@ urlpatterns = [
     path('api/gb/generategameurl/', gbsports.GenerateGameURL.as_view(), name='generate_game_url'),
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
 
-    # path('api/onebook/test/<username>', onebookviews.test01,name="test"),
     # QT
     path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
     path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
+    path('api/qt/transactions', qtgameviews.ProcessTransactions.as_view(), name="qt_process_transactions"),
+    path('api/qt/transactions/rollback', qtgameviews.ProcessRollback.as_view(), name="qt_process_rollback"),
 
+    #AG
+    path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
+    path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
+    path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
 ]
 
-#onebookviews.getBetDetail(repeat=300,repeat_until=None)
+# onebook_getBetDetail(repeat=30,repeat_until=None)
+
+# kaiyuan_getBets(repeat=30, repeat_until=None)

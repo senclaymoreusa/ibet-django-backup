@@ -228,7 +228,7 @@ class Transaction(models.Model):
     #Asiapay qrcode
     qrcode = models.CharField(max_length=500, null=True, blank= True, verbose_name=_("QRCode"))
 
-    commission_id = models.ForeignKey('users.Commission', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
+    commission_id = models.ForeignKey('users.PersonalCommissionLevel', on_delete=models.CASCADE, verbose_name=_('Commission'), null=True, blank=True)
     other_data = JSONField(null=True, default=dict)
 
     # release bonus, adjustment to affiliate...

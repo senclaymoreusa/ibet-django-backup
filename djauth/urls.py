@@ -46,16 +46,9 @@ urlpatterns = [
     path('accounting/', include('accounting.urls')),
     path('api-auth/', include('rest_framework.urls')),   # Stephen
     path('rest-auth/', include('rest_auth.urls')),         # Stephen
-    path('rest-auth/registration/', include('rest_auth.registration.urls'))    # Stephen
+    path('rest-auth/registration/', include('rest_auth.registration.urls')),   # Stephen
+    path('background/', include('background.urls')),
 ]
-
-# import games.views.kygameviews as kyviews
-
-# kyviews.getBets(repeat=300, repeat_until=None)
-
-# import games.views.onebookviews as onebookviews
-
-# onebookviews.getBetDetail(repeat=300,repeat_until=None)
 
 # Use static() to add url mapping to serve static files during development (only)
 from django.conf import settings

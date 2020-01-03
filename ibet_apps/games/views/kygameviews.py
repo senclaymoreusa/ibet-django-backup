@@ -23,7 +23,7 @@ from  games.models import *
 import json
 import time
 import urllib
-from background_task import background
+# from background_task import background
 import redis
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
@@ -89,7 +89,85 @@ def generateUrl(param, is_api):
     return url
 
 
+class KyBets(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Query Bet Order
+            timestamp = get_timestamp()
+
+            startTime = get_timestamp() - 300000 # five minutes before now
+            endTime = get_timestamp() - 60000 # one minute before now
+
+            param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
+
+            param = aes_encode(KY_AES_KEY, param)
+            param = base64.b64encode(param)
+            param = str(param, "utf-8")
+
+            key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+            key = hashlib.md5(key.encode())
+            key = key.hexdigest()
+
+            url = KY_RECORD_URL
+
+            req_param = {}
+            req_param["agent"] = KY_AGENT
+            req_param["timestamp"] = str(timestamp)
+            req_param["param"] = param
+            req_param["key"] = key
+
+            req = urllib.parse.urlencode(req_param)
+            url = url + '?' + req
+            res = requests.get(url)
+
+            data = res.json()
+
+            if data['d']['code'] == 0:
+                count = int(data['d']['count'])
+                record_list = data['d']['list']
+
+                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                category = Category.objects.filter(name='Table Games')
+
+                game_id = record_list['GameID']
+                accounts = record_list['Accounts']
+                # server_id = record_list['ServerID']
+                # kind_id = record_list['KindID']
+                # table_id = record_list['TableID']
+                cell_score = record_list['CellScore']
+                profit = record_list['Profit']
+                revenue = record_list['Revenue']
+
+                for i in range(0, count):
+                    username = accounts[i][6:]
+                    user = CustomUser.objects.get(username=username)
+
+                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                    GameBet.objects.create(
+                        provider=provider,
+                        category=category[0],
+                        user=user,
+                        user_name=user.username,
+                        amount_wagered=decimal.Decimal(cell_score[i]),
+                        amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
+                        transaction_id=trans_id,
+                        market=ibetCN,
+                        ref_no=game_id[i],
+                        resolved_time=timezone.now(),
+                        other_data=json.dumps({"game_id": game_id[i]})
+                    )
+
+                return HttpResponse("You have add {} records".format(count), status=200)
+            else:
+                return HttpResponse("No record at this time", status=200)
+        except Exception as e:
+            logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
+            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
+
+
 # @background(schedule=10)
+'''
 def getBets():
     # Query Bet Order
     timestamp = get_timestamp()
@@ -158,7 +236,7 @@ def getBets():
     else:
         pass
     # print(res.json)
-
+'''
 
 """
 :param user: CustomUser object
@@ -255,7 +333,7 @@ def kyTransfer(user, amount, wallet, method):
                         transfer_from=wallet,
                         transfer_to='ky',
                         product=1,
-                        transaction_type=TRANSACTION_DEPOSIT,
+                        transaction_type=TRANSACTION_TRANSFER,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True
@@ -273,7 +351,7 @@ def kyTransfer(user, amount, wallet, method):
                         transfer_from='ky',
                         transfer_to=wallet,
                         product=1,
-                        transaction_type=TRANSACTION_DEPOSIT,
+                        transaction_type=TRANSACTION_TRANSFER,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True
@@ -317,8 +395,8 @@ class TestGetRecord(View):
                 count = int(data['d']['count'])
                 record_list = data['d']['list']
 
-                provider = GameProvider.objects.get_or_create(provider_name=KY_PROVIDER, type=GAME_TYPE_TABLE_GAMES, market='letouCN, letouTH, letouVN')
-                category = Category.objects.get_or_create(name='Table Games', notes="Kaiyuan Chess")
+                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                category = Category.objects.filter(name='Table Games')
 
                 game_id = record_list['GameID']
                 accounts = record_list['Accounts']
@@ -336,7 +414,7 @@ class TestGetRecord(View):
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                     GameBet.objects.create(
-                        provider=provider[0],
+                        provider=provider,
                         category=category[0],
                         user=user,
                         user_name=user.username,
@@ -345,13 +423,14 @@ class TestGetRecord(View):
                         transaction_id=trans_id,
                         market=ibetCN,
                         ref_no=game_id[i],
-                        resolved_time=timezone.now()
+                        resolved_time=timezone.now(),
+                        other_data=json.dumps({"game_id": game_id[i]})
                     )
             
             return HttpResponse(status=200)
         except Exception as e:
             logger.error("KY Scheduled Task Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse("KY Scheduled Task Error: {}".format(repr(e)), status=400)
             
 
 
