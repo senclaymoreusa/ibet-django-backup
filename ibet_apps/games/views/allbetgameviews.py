@@ -438,85 +438,85 @@ def settle_bet(client, transaction_id, amount, settle_details):
 
 
 def cancel_bet(client, transaction_id, amount, cancel_details):
-
     try:
-        existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
+        
+        try:
+            existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
 
-        if existing_transactions.count() >= 1:
-            json_to_return = {
-                "error_code": 10007,
-                "message": "Error: transaction ID already used."
-            }
-            logger.error("AllBet TransferView: Cannot cancel since Transaction ID is already used.")
-            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-    except:
-        pass
+            if existing_transactions.count() >= 1:
+                json_to_return = {
+                    "error_code": 10007,
+                    "message": "Error: transaction ID already used."
+                }
+                logger.error("AllBet TransferView: Cannot cancel since Transaction ID is already used.")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+        except:
+            pass
 
-
-    try:
-        user_obj = CustomUser.objects.get(username=client)
-    except ObjectDoesNotExist:
-        json_to_return = {
-            "error_code": 10003,
-            "message": "Specified user does not exist."
-        }
-        logger.error("AllBet TransferView: Specified user does not exist.")
-        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-
-    if amount <= 0:
-        json_to_return = {
-            "error_code": 40000,
-            "message": "Cannot cancel negative or zero total bet amount"
-        }
-        logger.error("AllBet TransferView: Cannot cancel negative or zero total bet amount")
-        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
-
-    cancel_details_total_amount = 0
-
-    for cancel_dictionary in cancel_details:
-        cancel_details_total_amount += cancel_dictionary["amount"]
-        single_cancel_id = cancel_dictionary["betNum"]
-
-        if cancel_dictionary["amount"] <= 0:
-            json_to_return = {
-                "error_code": 40000,
-                "message": "Error: Negative or zero bet amount in details."
-            }
-            logger.error("AllBet TransferView: Negative or zero bet amount in details.")
-            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         try:
-            existing_bet = GameBet.objects.get(ref_no=single_cancel_id)
-
-            if existing_bet.amount_wagered != cancel_dictionary["amount"]:
-                json_to_return = {
-                    "error_code": 40000,
-                    "message": "Error: Bet amount and cancel amount do not match."
-                }
-                logger.error("AllBet TransferView: Bet amount and cancel amount do not match.")
-                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
-
+            user_obj = CustomUser.objects.get(username=client)
         except ObjectDoesNotExist:
             json_to_return = {
-                "error_code": 10006,
-                "message": "Error: Attempted to cancel a bet that does not exist."
+                "error_code": 10003,
+                "message": "Specified user does not exist."
             }
-            logger.error("AllBet TransferView: Attempted to cancel a bet that does not exist.")
+            logger.error("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
-    if cancel_details_total_amount != amount:
-        json_to_return = {
-            "error_code": 40000,
-            "message": "Error: Total cancel amount does not add up to the cancel amount in details parameter."
-        }
-        logger.error("AllBet TransferView: Total cancel amount does not add up to the cancel amount in details parameter.")
-        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+        if amount <= 0:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "Cannot cancel negative or zero total bet amount"
+            }
+            logger.error("AllBet TransferView: Cannot cancel negative or zero total bet amount")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
-    try:
+        cancel_details_total_amount = 0
+
+        for cancel_dictionary in cancel_details:
+            cancel_details_total_amount += cancel_dictionary["amount"]
+            single_cancel_id = cancel_dictionary["betNum"]
+
+            if cancel_dictionary["amount"] <= 0:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "Error: Negative or zero bet amount in details."
+                }
+                logger.error("AllBet TransferView: Negative or zero bet amount in details.")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+            try:
+                existing_bet = GameBet.objects.get(ref_no=single_cancel_id)
+
+                if existing_bet.amount_wagered != cancel_dictionary["amount"]:
+                    json_to_return = {
+                        "error_code": 40000,
+                        "message": "Error: Bet amount and cancel amount do not match."
+                    }
+                    logger.error("AllBet TransferView: Bet amount and cancel amount do not match.")
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+            except ObjectDoesNotExist:
+                json_to_return = {
+                    "error_code": 10006,
+                    "message": "Error: Attempted to cancel a bet that does not exist."
+                }
+                logger.error("AllBet TransferView: Attempted to cancel a bet that does not exist.")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+        if cancel_details_total_amount != amount:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "Error: Total cancel amount does not add up to the cancel amount in details parameter."
+            }
+            logger.error("AllBet TransferView: Total cancel amount does not add up to the cancel amount in details parameter.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
         user_balance = int(user_obj.main_wallet * 100) / 100.0
 
         # Cancel bets individually.
