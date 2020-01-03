@@ -289,7 +289,7 @@ class SubmitPayout(View):
             utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
             Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
             key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
-            print(currency)
+          
             secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
             
             checksum = MD5(secretMsg)
