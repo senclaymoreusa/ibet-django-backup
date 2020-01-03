@@ -96,6 +96,9 @@ def png_authenticate(data):
             affiliate_id = "" # Placeholder
             real = int(user_obj.main_wallet * 100) / 100.0
             external_game_session_id = "" # Placeholder
+            
+            if checkUserBlock(user_obj):
+                status_code = PNG_STATUS_ACCOUNTDISABLED
 
             # Compose response dictionary and convert to response XML
             res_dict = {
@@ -430,7 +433,7 @@ def png_release(data):
         jackpot_gain_id = req_dict['release']['jackpotGainId']
         channel = req_dict['release']['channel']
         free_game_external_id = req_dict['release']['freegameExternalId']
-        free_game_total_gain = req_dict['release']['freegameTotalGain']
+        # free_game_total_gain = req_dict['release']['freegameTotalGain']
 
         user_obj = CustomUser.objects.get(username=username)
         user_balance = int(user_obj.main_wallet * 100) / 100.0
