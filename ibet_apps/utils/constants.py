@@ -642,21 +642,7 @@ PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-h
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
 
-if os.getenv("ENV") != "local":
-    # fetch prod credentials from s3
-    ASTROPAY_URL = "https://api.astropaycard.com"
-    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
-    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
-    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
-    ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
-    # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
-else:
-    # astroPay sandbox keys:
-    ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
-    ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
-    ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
-    ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
-    ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
+
 
 
 # fgo
@@ -724,6 +710,11 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
+    ASTROPAY_URL = "https://api.astropaycard.com"
+    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
+    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
+    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
+    ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -743,6 +734,11 @@ elif "dev" in os.getenv("ENV"):
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    ASTROPAY_URL = "https://api.astropaycard.com"
+    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
+    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
+    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
+    ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
 else:
     API_DOMAIN = "http://3fb2738f.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -762,6 +758,11 @@ else:
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
+    ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
+    ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
+    ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+    ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
 
 BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
