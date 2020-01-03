@@ -23,7 +23,7 @@ def getPTCertContent(bucket, file):
     try:
         fileobj = s3client.get_object(Bucket=bucket, Key=file)
         filedata = fileobj['Body'].read()
-        contents = filedata.decode('utf-8')
+        # contents = filedata.decode('utf-8')
        
     except ClientError as e:
         logger.error(e)
@@ -31,7 +31,7 @@ def getPTCertContent(bucket, file):
     except NoCredentialsError as e:
         logger.error(e)
         return None
-    return contents
+    return filedata
     
 
 
