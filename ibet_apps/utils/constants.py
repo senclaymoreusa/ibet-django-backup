@@ -20,14 +20,14 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-    ptkey = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.key')
-    ptpem = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.pem')
+    # ptkey = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.key')
+    # ptpem = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.pem')
    
 else:
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-    ptkey = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.key')
-    ptpem = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.pem')
+    # ptkey = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.key')
+    # ptpem = utils.aws_helper.getPTCert(AWS_S3_ADMIN_BUCKET, 'CNY_UAT_FB88.pem')
    
 GENDER_CHOICES = (
     ('Male', 'Male'),

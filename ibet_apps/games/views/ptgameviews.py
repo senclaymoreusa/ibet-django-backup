@@ -186,14 +186,14 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
 
     
     url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
-    print("test")
+    
     
    
-    rr = requests.post(url, headers=headers, cert=(ptkey, ptpem))
-    print(rr)
+    rr = requests.post(url, headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+        
     if rr.status_code == 200 :    
         rrdata = rr.json()   
-        print(rrdata)
+        
         if 'errorcode' in rrdata:
         # error exist.
             return False
