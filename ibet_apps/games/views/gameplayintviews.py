@@ -36,8 +36,8 @@ from datetime import date
 
 logger = logging.getLogger('django')
 
-MERCH_ID = "IBETP"
-MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
+# MERCH_ID = "IBETP"
+# MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
 GPI_URL = "http://club8api.bet8uat.com/op/"
 
 
@@ -72,27 +72,34 @@ def transCurrency(user):
         return ""
 
 
-class GPILoginView(View):
+class LoginAPI(View):
     def post(self, request, *kw, **args):
+        try:
+            data = json.loads(request.body)
+            username = data["username"]
 
-        data = json.loads(request.body)
-        username = data["username"]
+            user = CustomUser.objects.get(username=username)
 
-        user = CustomUser.objects.get(username=username)
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            req_param["cust_id"] = user.username
+            req_param["currency"] = transCurrency(user)
 
-        merch_id = MERCH_ID
-        merch_pwd = MERCH_PWD
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_URL + 'createuser' + '?' + req
 
-        url = "http://club8api.bet8uat.com/op/createuser?"
-        url += "&merch_id" + MERCH_ID
-        url += "&merch_pwd=" + MERCH_PWD
-        url += "&cust_id=" + username
-        url += "&cust_name=" + str(user.pk)
-        url += "&currency=" + str(user.currency)
+            res = requests.get(url)
 
-        res = requests.get(url)
+            res = xmltodict.parse(res.text)
 
-        return HttpResponse(res.status_code)
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+        except ObjectDoesNotExist:
+            return HttpResponse("User Not found", content_type="plain/text", status=400)
+        except Exception as e:
+            logger.error("Error: GPI LoginAPI error -- {}".format(repr(e)))
+            return HttpResponse("Internal Error", content_type="plain/text", status=500)
 
 
 class ValidateUserAPI(View):

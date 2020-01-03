@@ -88,6 +88,7 @@ urlpatterns = [
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
     # gpi gaming
+    path('api/gpi/login/', csrf_exempt(gameplayintviews.LoginAPI.as_view()), name="gpi_login"),
     path('api/gpi/validation/', gameplayintviews.ValidateUserAPI.as_view(), name="gpi_validation"),
     path('api/gpi/getbalance/', gameplayintviews.GetBalanceAPI.as_view(), name="gpi_getbalance"),
     path('api/gpi/debit/', gameplayintviews.DebitAPI.as_view(), name="gpi_debit"),
