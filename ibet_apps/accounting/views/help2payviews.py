@@ -289,8 +289,9 @@ class SubmitPayout(View):
             utc_datetime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Shanghai'))
             Datetime = utc_datetime.strftime("%Y-%m-%d %H:%M:%S%p")
             key_time = utc_datetime.strftime("%Y%m%d%H%M%S")
-
+            print(currency)
             secretMsg = merchant_code+trans_id+str(user_id)+strAmount+currencyConversion[currency]+key_time+toBankAccountNumber+secret_key
+            
             checksum = MD5(secretMsg)
        
             db_currency_code = 2 if currency == 2 else 7
@@ -327,7 +328,7 @@ class SubmitPayout(View):
                 data = {
                     "Key": MD5(secretMsg),
                     "ClientIP": ip,
-                    "ReturnURI": "http://3fb2738f.ngrok.io/accounting/api/help2pay/request_withdraw",
+                    "ReturnURI": HELP2PAY_RETURN_URL,
                     "MerchantCode": merchant_code,
                     "TransactionID": str(trans_id),
                     "MemberCode": user_id,

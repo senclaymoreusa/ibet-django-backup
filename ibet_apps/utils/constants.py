@@ -766,7 +766,7 @@ else:
 BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
 
-
+HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/request_withdraw"
 
 GAME_FILTER_OPTION = [
     {
