@@ -139,7 +139,7 @@ class BalanceView(View):
                                 "error_code": 10003,
                                 "message": "Specified user does not exist."
                              }
-            logger.error("AllBet BalanceView: User " + str(player_account_name) + " does not exist.")
+            logger.info("AllBet BalanceView: User " + str(player_account_name) + " does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         try:
@@ -156,7 +156,7 @@ class BalanceView(View):
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
                                  }
-                logger.error("AllBet BalanceView: Invalid authorization property ID")
+                logger.error("AllBet BalanceView Error: Invalid authorization property ID")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             # Generate signature.
@@ -178,7 +178,7 @@ class BalanceView(View):
                                     "message": "signature invalid",
                                     "balance": 0 # Provider's instructions
                                  }
-                logger.error("AllBet BalanceView: Invalid sign while attempting to retrieve balance for user " + str(player_account_name))
+                logger.error("AllBet BalanceView Error: Invalid sign while attempting to retrieve balance for user " + str(player_account_name))
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
             else:
                 user_obj = CustomUser.objects.get(username=player_account_name) # Guaranteed to exist at this point in code execution.
@@ -195,11 +195,11 @@ class BalanceView(View):
                                 "message": "server error: " + str(e),
                                 "balance": 0
                              }
-            logger.error("Generic AllBet BalanceView issue: " + str(e))
+            logger.error("Generic AllBet BalanceView Error: " + str(e))
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
-def place_bet(client, transaction_id, amount, bet_details):
+def placeBet(client, transaction_id, amount, bet_details):
     """
     Helper method for the place bet transfer type, which handles both single bets as well
     as batch bets.
@@ -214,7 +214,7 @@ def place_bet(client, transaction_id, amount, bet_details):
                 "error_code": 10007,
                 "message": "Error: transaction ID already used."
             }
-            logger.error("AllBet TransferView: Bet transaction ID already used.")
+            logger.info("AllBet TransferView: Bet transaction ID already used.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     except:
         pass
@@ -229,7 +229,7 @@ def place_bet(client, transaction_id, amount, bet_details):
                 "error_code": 40000,
                 "message": "Error: Single bet amount cannot be less than or equal to 0."
             }
-            logger.error("AllBet TransferView: Single bet amount cannot be less than or equal to 0.")
+            logger.info("AllBet TransferView: Single bet amount cannot be less than or equal to 0.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
         
         bet_details_total_amount += single_bet_amount
@@ -239,7 +239,7 @@ def place_bet(client, transaction_id, amount, bet_details):
             "error_code": 40000,
             "message": "Error: Total bet amount does not add up to the bet amounts in details parameter."
         }
-        logger.error("AllBet TransferView: Total bet amount does not add up to the bet amounts in details parameter.")
+        logger.info("AllBet TransferView: Total bet amount does not add up to the bet amounts in details parameter.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     # Illegal operation: total bet amount is 0 or negative.
@@ -248,7 +248,7 @@ def place_bet(client, transaction_id, amount, bet_details):
             "error_code": 40000,
             "message": "Error: Total bet amount cannot be less than or equal to 0."
         }
-        logger.error("AllBet TransferView: Total bet amount cannot be less than or equal to 0.")
+        logger.info("AllBet TransferView: Total bet amount cannot be less than or equal to 0.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     # At this point, we know that the bet request is a valid single or batch bet.
@@ -308,7 +308,7 @@ def place_bet(client, transaction_id, amount, bet_details):
                 "error_code": 10101,
                 "message": "User does not have enough money to place bet."
             }
-            logger.error("AllBet TransferView: User does not have enough money to place bet.")
+            logger.info("AllBet TransferView: User does not have enough money to place bet.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     
     except Exception as e:
@@ -317,14 +317,14 @@ def place_bet(client, transaction_id, amount, bet_details):
                 "error_code": 10003,
                 "message": "Specified user does not exist."
             }
-            logger.error("AllBet TransferView: Specified user does not exist.")
+            logger.info("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-        logger.error("AllBet TransferView: Unspecified issue in place_bet function.")
+        logger.error("AllBet TransferView Error: Unspecified issue in placeBet function - " + str(e))
         return HttpResponse(str(e))
 
 
-def settle_bet(client, transaction_id, amount, settle_details):
+def settleBet(client, transaction_id, amount, settle_details):
     """
     Helper method for the settle bet transfer type. 'amount' parameter will be positive for wins and negative for losses.
     This method supports batch settling of bets.
@@ -339,7 +339,7 @@ def settle_bet(client, transaction_id, amount, settle_details):
                 "error_code": 10007,
                 "message": "Error: transaction ID already used."
             }
-            logger.error("AllBet TransferView: Cannot settle since Transaction ID is already used.")
+            logger.info("AllBet TransferView: Cannot settle since Transaction ID is already used.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     except:
         pass
@@ -357,7 +357,7 @@ def settle_bet(client, transaction_id, amount, settle_details):
                 "error_code": 10006,
                 "message": "Error: Attempted to settle a bet that does not exist."
             }
-            logger.error("AllBet TransferView: Attempted to settle a bet that does not exist.")
+            logger.info("AllBet TransferView: Attempted to settle a bet that does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     if settle_details_total_amount != amount:
@@ -365,7 +365,7 @@ def settle_bet(client, transaction_id, amount, settle_details):
             "error_code": 40000,
             "message": "Error: Total settle amount does not add up to the settle amount in details parameter."
         }
-        logger.error("AllBet TransferView: Total settle amount does not add up to the settle amount in details parameter.")
+        logger.info("AllBet TransferView: Total settle amount does not add up to the settle amount in details parameter.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     try:
@@ -430,16 +430,16 @@ def settle_bet(client, transaction_id, amount, settle_details):
                 "error_code": 10003,
                 "message": "Specified user does not exist."
             }
-            logger.error("AllBet TransferView: Specified user does not exist.")
+            logger.info("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-        logger.error("AllBet TransferView: Unspecified issue in settle_bet function.")
+        logger.error("AllBet TransferView Error: Unspecified issue in settleBet function - " + str(e))
         return HttpResponse(str(e))
 
 
-def cancel_bet(client, transaction_id, amount, cancel_details):
+def cancelBet(client, transaction_id, amount, cancel_details):
     try:
-        
+
         try:
             existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
 
@@ -448,7 +448,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                     "error_code": 10007,
                     "message": "Error: transaction ID already used."
                 }
-                logger.error("AllBet TransferView: Cannot cancel since Transaction ID is already used.")
+                logger.info("AllBet TransferView: Cannot cancel since Transaction ID is already used.")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
         except:
             pass
@@ -461,7 +461,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                 "error_code": 10003,
                 "message": "Specified user does not exist."
             }
-            logger.error("AllBet TransferView: Specified user does not exist.")
+            logger.info("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -470,7 +470,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                 "error_code": 40000,
                 "message": "Cannot cancel negative or zero total bet amount"
             }
-            logger.error("AllBet TransferView: Cannot cancel negative or zero total bet amount")
+            logger.info("AllBet TransferView: Cannot cancel negative or zero total bet amount")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -485,7 +485,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                     "error_code": 40000,
                     "message": "Error: Negative or zero bet amount in details."
                 }
-                logger.error("AllBet TransferView: Negative or zero bet amount in details.")
+                logger.info("AllBet TransferView: Negative or zero bet amount in details.")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             try:
@@ -496,7 +496,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                         "error_code": 40000,
                         "message": "Error: Bet amount and cancel amount do not match."
                     }
-                    logger.error("AllBet TransferView: Bet amount and cancel amount do not match.")
+                    logger.info("AllBet TransferView: Bet amount and cancel amount do not match.")
                     return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             except ObjectDoesNotExist:
@@ -504,7 +504,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                     "error_code": 10006,
                     "message": "Error: Attempted to cancel a bet that does not exist."
                 }
-                logger.error("AllBet TransferView: Attempted to cancel a bet that does not exist.")
+                logger.info("AllBet TransferView: Attempted to cancel a bet that does not exist.")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -513,7 +513,7 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
                 "error_code": 40000,
                 "message": "Error: Total cancel amount does not add up to the cancel amount in details parameter."
             }
-            logger.error("AllBet TransferView: Total cancel amount does not add up to the cancel amount in details parameter.")
+            logger.info("AllBet TransferView: Total cancel amount does not add up to the cancel amount in details parameter.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -565,12 +565,11 @@ def cancel_bet(client, transaction_id, amount, cancel_details):
 
     except Exception as e:
         # Generic
-        logger.error("AllBet TransferView: Unspecified issue in cancel_bet function.")
+        logger.error("AllBet TransferView Error: Unspecified issue in cancelBet function - " + str(e))
         return HttpResponse(str(e))
 
 
-def resettle_bet(client, transaction_id, amount, resettle_details):
-
+def resettleBet(client, transaction_id, amount, resettle_details):
 
     try:
         existing_settle = GameBet.objects.filter(ref_no=resettle_details[0]["betNum"])
@@ -580,7 +579,7 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
             "error_code": 10006,
             "message": "Error: Attempted to re-settle non-existing bet."
         }
-        logger.error("AllBet TransferView: Attempted to re-settle non-existing bet.")
+        logger.info("AllBet TransferView: Attempted to re-settle non-existing bet.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -592,7 +591,7 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
                 "error_code": 10007,
                 "message": "Error: transaction ID already used."
             }
-            logger.error("AllBet TransferView: Cannot re-settle since Transaction ID is already used.")
+            logger.info("AllBet TransferView: Cannot re-settle since Transaction ID is already used.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     except:
         pass
@@ -605,7 +604,7 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
             "error_code": 10003,
             "message": "Specified user does not exist."
         }
-        logger.error("AllBet TransferView: Specified user does not exist.")
+        logger.info("AllBet TransferView: Specified user does not exist.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -614,7 +613,7 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
             "error_code": 40000,
             "message": "Error: Batch re-settling is not allowed."
         }
-        logger.error("AllBet TransferView: Batch re-settling is not allowed.")
+        logger.info("AllBet TransferView: Batch re-settling is not allowed.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -625,7 +624,7 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
             most_recent_settle = GameBet.objects.filter(ref_no=resettle_id, outcome__in=[0, 1, 2, 7]).latest('resolved_time')
         except ObjectDoesNotExist:
             # In this case, a bet is directly being re-settled without a prior settle.
-            return settle_bet(client, transaction_id, amount, resettle_details)
+            return settleBet(client, transaction_id, amount, resettle_details)
 
         # Cancel existing settle and re-settle according to new details.
         with transaction.atomic():
@@ -673,7 +672,7 @@ def resettle_bet(client, transaction_id, amount, resettle_details):
             "error_code": 50000,
             "message": "AllBet transfer error: " + str(e)
         }
-        logger.error("AllBet transfer issue: " + str(e))
+        logger.error("AllBet transfer Error: " + str(e))
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -707,7 +706,7 @@ class TransferView(View):
                                     "error_code": 10000,
                                     "message": "Invalid authorization property ID"
                                  }
-                logger.error("AllBet TransferView: Invalid authorization property ID")
+                logger.error("AllBet TransferView Error: Invalid authorization property ID")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             # Construct string for signing.
@@ -730,19 +729,19 @@ class TransferView(View):
 
             # Place bet
             if transfer_type == 10:
-                return place_bet(client, transaction_id, amount, bet_details)
+                return placeBet(client, transaction_id, amount, bet_details)
 
             # Settle bet
             elif transfer_type == 20:
-                return settle_bet(client, transaction_id, amount, bet_details)
+                return settleBet(client, transaction_id, amount, bet_details)
 
             # Cancel bet
             elif transfer_type == 11:
-                return cancel_bet(client, transaction_id, amount, bet_details)
+                return cancelBet(client, transaction_id, amount, bet_details)
 
             # Re-settle bet
             elif transfer_type == 21:
-                return resettle_bet(client, transaction_id, amount, bet_details)
+                return resettleBet(client, transaction_id, amount, bet_details)
 
             else:
                 res_error_code = 40000
@@ -757,7 +756,7 @@ class TransferView(View):
             return JsonResponse(json_to_return)
 
         except Exception as e:
-            logger.error("Generic AllBet TransferView Issue: " + str(e))
+            logger.error("Generic AllBet TransferView Error: " + str(e))
             json_to_return = {
                                 "error_code": 50000,
                                 "message": "server error: " + str(e),
