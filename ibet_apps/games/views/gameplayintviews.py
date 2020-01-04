@@ -72,34 +72,34 @@ def transCurrency(user):
         return ""
 
 
-class LoginAPI(View):
-    def post(self, request, *kw, **args):
-        try:
-            data = json.loads(request.body)
-            username = data["username"]
+# class LoginAPI(View):
+#     def post(self, request, *kw, **args):
+#         try:
+#             data = json.loads(request.body)
+#             username = data["username"]
 
-            user = CustomUser.objects.get(username=username)
+#             user = CustomUser.objects.get(username=username)
 
-            req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
-            req_param["cust_id"] = user.username
-            req_param["currency"] = transCurrency(user)
+#             req_param = {}
+#             req_param["merch_id"] = MERCH_ID
+#             req_param["merch_pwd"] = MERCH_PWD
+#             req_param["cust_id"] = user.username
+#             req_param["currency"] = transCurrency(user)
 
-            req = urllib.parse.urlencode(req_param)
+#             req = urllib.parse.urlencode(req_param)
     
-            url = GPI_URL + 'createuser' + '?' + req
+#             url = GPI_URL + 'createuser' + '?' + req
 
-            res = requests.get(url)
+#             res = requests.get(url)
 
-            res = xmltodict.parse(res.text)
+#             res = xmltodict.parse(res.text)
 
-            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
-        except ObjectDoesNotExist:
-            return HttpResponse("User Not found", content_type="plain/text", status=400)
-        except Exception as e:
-            logger.error("Error: GPI LoginAPI error -- {}".format(repr(e)))
-            return HttpResponse("Internal Error", content_type="plain/text", status=500)
+#             return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+#         except ObjectDoesNotExist:
+#             return HttpResponse("User Not found", content_type="plain/text", status=400)
+#         except Exception as e:
+#             logger.error("Error: GPI LoginAPI error -- {}".format(repr(e)))
+#             return HttpResponse("Internal Error", content_type="plain/text", status=500)
 
 
 class ValidateUserAPI(View):
@@ -144,39 +144,26 @@ class CreateUserAPI(View):
         try:
             user = CustomUser.objects.get(username=username)
 
-            merch_id = MERCH_ID
-            merch_pwd = MERCH_PWD
-            cust_id = username
-            cust_name = username
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            req_param["cust_id"] = user.username
+            req_param["currency"] = transCurrency(user)
 
-            currency = user.currency
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_URL + 'createuser' + '?' + req
 
-            if currency == CURRENCY_CNY:
-                currency = "RMB"
-            elif currency == CURRENCY_IDR:
-                currency = "IDR"
-            elif currency == CURRENCY_MYR:
-                currency = "MYR"
-            elif currency == CURRENCY_THB:
-                currency = "THB"
-            elif currency == CURRENCY_USD:
-                currency = "USD"
-            elif currency == CURRENCY_VND:
-                currency = "VND"
-            elif currency == CURRENCY_EUR:
-                currency = "EUR"
-            elif currency == CURRENCY_MMK:
-                currency = "MMK"
-            elif currency == CURRENCY_GBP:
-                currency = "GBP"
-            else:
-                pass
+            res = requests.get(url)
 
-            return "error message"
+            res = xmltodict.parse(res.text)
 
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+
+        except ObjectDoesNotExist:
+            logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            print(repr(e))
-            logger.error(repr(e))
+            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
 
 
 class GetBalanceAPI(View):
