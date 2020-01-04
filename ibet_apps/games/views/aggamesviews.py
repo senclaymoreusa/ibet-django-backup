@@ -25,8 +25,11 @@ import re
 import xmltodict
 import datetime
 from datetime import date
-
-
+from utils.aws_helper import writeToS3
+from utils.admin_helper import *
+import boto3
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
 
 AG_SUCCESS = 0
 AG_FAIL = 1
@@ -52,8 +55,23 @@ def agftp(request):
         ftp = ftplib.FTP()
         ftp.connect("xe.gdcapi.com")
         ftp.login("EV3.ibet", "GelPNvJlXt")
+        
+        try:
+            r = RedisClient().connect()
+            redis = RedisHelper()
+        except:
+            logger.error("There is something wrong with redis connection.")
+            return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_file = redis.get_ag_last_file()
+        print(last_file)
+        processed = True
+        if last_file is None:
+            processed = False
+
         try:
             folders = ftp.nlst()
+            
         except ftplib.error_perm as resp:
             if str(resp) == "550 No files found":
                 logger.info("No files in this directory")
@@ -61,7 +79,8 @@ def agftp(request):
             else:
                 raise
         for folder in folders:
-            ftp.cwd(folder)  
+            ftp.cwd(folder) 
+
             small_folders = ftp.nlst()
             
             for sf in small_folders:
@@ -76,22 +95,67 @@ def agftp(request):
                         raise
                 
                 for file in files:
+                    if last_file == file:
+                        processed = False
+
+                    if last_file == file or processed:
+                        continue
+
+                    logger.info('writing file to local: ' + file)
+                    localFile = open(file, 'wb')
+                    ftp.retrbinary('RETR ' + file, localFile.write)
+                    localFile.close()
+
+                    
                     r = BytesIO()
                     read = ftp.retrbinary('RETR ' + file, r.write)
                     rdata = r.getvalue().decode("utf-8")
                     xml = '<root>'+rdata+'</root>'
-                    
+
+                    s3client = boto3.client("s3")
+                    try:
+                        s3client.upload_file(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
+                        logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + file)
+                    except ClientError as e:
+                        logger.error(e)
+                        return HttpResponse(ERROR_CODE_FAIL)
+    
+
                     root = ET.fromstring(xml)
                     for child in root:
                         dataType = child.attrib['dataType']
                         
-                        if dataType == 'TR': #户口转账详情
-                            transferId = child.attrib['transferId']
-                            transferType = child.attrib['transferType']
-                            platformType = child.attrib['platformType']
-                            transferAmount = child.attrib['transferAmount']
+                        if dataType == 'HSR': #捕鱼王場景的下注记录
                             playerName = child.attrib['playerName']
-                            currency = child.attrib['currency']
+                            tradeNo = child.attrib['tradeNo']
+                            transferAmount = child.attrib['transferAmount']
+                            flag = child.attrib['flag']
+                            SceneStartTime = child.attrib['SceneStartTime']
+                            SceneEndTime = child.attrib['SceneEndTime']
+                            netAmount = child.attrib['netAmount']
+                            gameType = child.attrib['gameType']
+
+                            try:
+                                user = CustomUser.objects.get(username=playerName)
+                            except ObjectDoesNotExist:
+                                logger.info("This user is not existed.")
+                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
+
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                    category=Category.objects.get(name='Live Casino'),
+                                                    user=user,
+                                                    user_name=user.username,
+                                                    transaction_id=trans_id,
+                                                    amount_wagered=transferAmount,
+                                                    currency=user.currency,
+                                                    amount_won=transferAmount,
+                                                    ref_no=tradeNo,
+                                                    market=ibetCN,
+                                                    bet_time=utcToLocalDatetime(SceneStartTime),
+                                                    resolved_time=utcToLocalDatetime(SceneEndTime),
+                                                    )
                             
 
                             
@@ -104,6 +168,7 @@ def agftp(request):
                             gameCode = child.attrib['gameCode']
                             netAmount = child.attrib['netAmount']
                             gameType = child.attrib['gameType']
+                            result = child.attrib['result']
 
                             try:
                                 user = CustomUser.objects.get(username=playerName)
@@ -113,65 +178,57 @@ def agftp(request):
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                            GameBet.objects.create(provider=AG_PROVIDER,
+                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                     category=Category.objects.get(name='Live Casino'),
                                                     user=user,
                                                     user_name=user.username,
                                                     transaction_id=trans_id,
                                                     amount_wagered=betAmount,
                                                     currency=user.currency,
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    ref_no=trans_id,
+                                                    amount_won=netAmount,
+                                                    ref_no=billNo,
                                                     market=ibetCN,
-                                                    other_data=rdata
+                                                    resolved_time=timezone.now(),
                                                     )
-                        
-                        
-                        
-                    
-                    # _dict = xmltodict.parse(xml, attr_prefix="")
-                    # print(_dict)
-                    # print(_dict["dataType"])
-                    # attrib = root.attrib
-                    # dataType = attrib['dataType']
-                    # print(dataType)
+
+                        elif dataType == 'EBR': #电子游戏的下注记录
+                            playerName = child.attrib['playerName']
+                            billNo = child.attrib['billNo']
+                            betAmount = child.attrib['betAmount']
+                            flag = child.attrib['flag']
+                            betTime = child.attrib['betTime']
+                            gameCode = child.attrib['gameCode']
+                            netAmount = child.attrib['netAmount']
+                            gameType = child.attrib['gameType']
+                            result = child.attrib['result']
+
+                            try:
+                                user = CustomUser.objects.get(username=playerName)
+                            except ObjectDoesNotExist:
+                                logger.info("This user is not existed.")
+                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
+
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                    category=Category.objects.get(name='Live Casino'),
+                                                    user=user,
+                                                    user_name=user.username,
+                                                    transaction_id=trans_id,
+                                                    amount_wagered=betAmount,
+                                                    currency=user.currency,
+                                                    amount_won=netAmount,
+                                                    ref_no=billNo,
+                                                    market=ibetCN,
+                                                    resolved_time=timezone.now(),
+                                                    )
+                    last_file = file
+                    print(last_file)
+                    redis.set_ag_last_file(last_file)
                 ftp.cwd('..')
             ftp.cwd('..')
 
-            # f.cwd(folder + '/' + small_folders)  
-            
-            # for small_f in small_folders:
-
-            
-        # f.cwd(file + '/20191220')  
-        # filenames = f.nlst() # get filenames within the directory
-        # print(filenames)
-        # # f.retrlines('LIST')
-        # r = BytesIO()
-        # read = f.retrbinary('RETR 201912201821.xml', r.write)
-        # rdata = r.getvalue().decode("utf-8")
-        # print(rdata)
-        # #root = ET.fromstring(rdata)
         
-        # root = ET.fromstring(re.sub(r"(<\?xml[^>]+\?>)", r"\1<root>", rdata) + "</root>")     
-        # for row in root.findall('row'):
-        #     dataType = row.get('dataType').text
-        #     print(dataType)
-        # GameBet.objects.create(provider=AG_PROVIDER,
-        #                         category=cate,
-        #                         transaction_id=trans_id,
-        #                         user=user,
-        #                         user_name=user.username,
-        #                         odds=rdata["Data"]["BetDetails"][i]["odds"],
-        #                         amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-        #                         currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-        #                         bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-        #                         amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-        #                         outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-        #                         resolved_time=utcToLocalDatetime(resolve),
-        #                         market=ibetCN,
-        #                         )
         ftp.quit()
         return HttpResponse(CODE_SUCCESS)
     except ftplib.error_temp:
