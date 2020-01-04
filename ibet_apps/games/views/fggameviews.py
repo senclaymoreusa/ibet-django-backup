@@ -93,23 +93,26 @@ class FGLogin(APIView):
         if rr.status_code == 200 :    
                
             rrdata = rr.json()
-            logger.info(rrdata)
-           
+            logger.info("status 200.")
+            logger.info(json.dumps(rrdata))
+            
             
             try:
                 sessionKey = rrdata["sessionKey"]
                 partyId = rrdata["partyId"]
                 data = rrdata
+                logger.info("get sessionkey successful.")
                 
                 try:
                     user = FGSession.objects.get(user=pk)
                     user.session_key=sessionKey
                     user.save()
+                    logger.info("fg update sessionkey.")
                 except:
                     
                     pk = CustomUser.objects.get(pk=pk)        
                     FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId, uuid=uuid)   
-                
+                    logger.info("fg create sessionkey.")
 
             except:
 
@@ -278,7 +281,7 @@ class ProcessTransaction(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.error("FATAL__ERROR: in FGgame get object at processtransaction.", e)
+            logger.error("FATAL__ERROR: in FGgame get object at processtransaction.")
 
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
