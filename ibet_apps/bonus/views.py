@@ -7,7 +7,7 @@ from bonus.models import *
 from users.models import CustomUser
 from games.models import Category
 from utils.admin_helper import bonusValueToKey, dateToDatetime, BONUS_TYPE_VALUE_DICT, BONUS_DELIVERY_VALUE_DICT, \
-    BONUS_GAME_CATEGORY, ubeValueToKey
+    BONUS_GAME_CATEGORY, ubeValueToKey, streamingExport, calBonusCompletion
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -82,7 +82,7 @@ class BonusSearchView(View):
                 result['recordsFiltered'] = count
 
         except Exception as e:
-            logger.error("Error getting request: ", e)
+            logger.error("FATAL__ERROR getting bonus search request: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         # We iterate through all requirements and find all bonuses that they are attached to
@@ -149,6 +149,23 @@ class BonusSearchView(View):
             bonuses[pk]['total_count_redeemed'] = ube_count_redeemed
 
         result['data'] = list(bonuses.values())
+
+        if request.GET.get('export'):
+            export_title = json.loads(request.GET.get('tableHead'))
+            bonus_records_export = [export_title]
+            for value in bonuses.values():
+                bonus_records_export.append([value['name'],
+                                             value['type'],
+                                             value['total_amount_issued'],
+                                             value['total_count_issued'],
+                                             value['total_amount_redeemed'],
+                                             value['total_count_redeemed'],
+                                             value['start_time'],
+                                             value['end_time'],
+                                             value['status']])
+
+            return streamingExport(bonus_records_export, "Bonus Records")
+
         return HttpResponse(json.dumps(result), content_type='application/json')
 
 
@@ -190,7 +207,7 @@ class BonusView(View):
                     bonus_data['categories'] = [category_json]
 
         except Exception as e:
-            logger.error("Error getting Bonus object: ", e)
+            logger.error("FATAL__ERROR getting Bonus object: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(json.dumps(bonus_data), content_type='application/json', status=status.HTTP_200_OK)
@@ -441,6 +458,9 @@ class UserBonusEventView(View):
             ube_status = int(request.GET.get('ube_status', -1))
             min_date = request.GET.get('min_date')
             max_date = request.GET.get('max_date')
+            export = request.GET.get('export')
+            if export:
+                bonus_records_export = [json.loads(request.GET.get('tableHead'))]
 
             result = {}
             ube_filter = Q()
@@ -483,10 +503,10 @@ class UserBonusEventView(View):
             count = events.count()
 
             result['data'] = []
-
             # put bonus data and user data into events
             # TODO: needs to update ube amount(fixed, percentage, tiered), completion
             for event in events:
+                completion = calBonusCompletion(event.owner, event.bonus, timezone.now())
                 event_data = serializers.serialize('json', {event})
                 event_data = json.loads(event_data)
 
@@ -495,6 +515,7 @@ class UserBonusEventView(View):
 
                 bonus_data[0]['fields'] = bonusValueToKey(bonus_data[0]['fields'])
                 event_data[0]['fields'] = ubeValueToKey(event_data[0]['fields'])
+                event_data[0]['fields']['completion_percentage'] = completion
 
                 ube_data = {
                     'event': event_data[0],
@@ -502,13 +523,29 @@ class UserBonusEventView(View):
                     'username': event.owner.username,
                     'delivered_by_username': event.delivered_by.username
                 }
-
+                if export:
+                    bonus_records_export.append([
+                        event_data[0]['pk'],
+                        event_data[0]['fields']['owner'],
+                        event.owner.username,
+                        bonus_data[0]['fields']['type'],
+                        bonus_data[0]['fields']['name'],
+                        event_data[0]['fields']['delivery_time'],
+                        event_data[0]['fields']['completion_time'],
+                        bonus_data[0]['fields']['amount'],
+                        completion,
+                        event.delivered_by.username,
+                        event_data[0]['fields']['status'],
+                    ])
                 result['data'].append(ube_data)
+
+            if export:
+                return streamingExport(bonus_records_export, 'Bonus Transactions')
 
             result['recordsTotal'] = total
             result['recordsFiltered'] = count
         except Exception as e:
-            logger.error("Error getting UserBonusEvent objects: ", str(e))
+            logger.error("FATAL__ERROR getting UserBonusEvent objects: ", str(e))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         return HttpResponse(json.dumps(result), content_type='application/json', status=status.HTTP_200_OK)

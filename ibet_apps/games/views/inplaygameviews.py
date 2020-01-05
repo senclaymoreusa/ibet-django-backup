@@ -129,7 +129,7 @@ class ValidateTokenAPI(View):
                 res["statusCode"] = 100
                 res["statusDesc"] = "Success"
             except ObjectDoesNotExist as e:
-                logger.info(token + " : {}".format(repr(e)))
+                logger.info(str(token) + " : {}".format(repr(e)))
                 res["statusCode"] = 101 # Invalid User
                 res["statusDesc"] = "Invalid User"
 
