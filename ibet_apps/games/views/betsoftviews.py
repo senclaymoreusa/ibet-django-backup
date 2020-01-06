@@ -236,6 +236,7 @@ class BetSoftBetResult(View):
                                                             'provider_trans_id': ref_id
                                                         }
                                                     )
+                    logger.info("Betsoft: Win history created successfully which ref_no is {}".format(ref_id))
 
             if bet:
                 bet_list = bet.split("|")
@@ -276,6 +277,7 @@ class BetSoftBetResult(View):
                                                             'provider_trans_id': ref_id
                                                         }
                                                     )
+                    logger.info("Betsoft: Bet history created successfully which ref_no is {}".format(ref_id))
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
             response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = trans_id
