@@ -368,34 +368,21 @@ if os.getenv("ENV") == "local":
         },
     }
 else:
-    print("AWS Logging to sys.stderr")
+    print("AWS Logging to django-logger.log")
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
-            },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
-            },
-        }, 
         'handlers': {
-            'stderr': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'stream': sys.stderr,
+            'file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': '/opt/python/log/django-logger.log',
             }
         },
         'loggers': {
             'django': {
-                'handlers': ['stderr'],
-                'level': 'DEBUG',
-            },
-            'django.template': {
-                'handlers': ['stderr'],
-                'level': 'INFO',
+                'handlers': ['file'],
+                'level': 'ERROR',
                 'propagate': True,
             },
         }
