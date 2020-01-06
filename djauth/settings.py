@@ -383,7 +383,7 @@ else:
         }, 
         'handlers': {
             'stderr': {
-                'level': 'ERROR',
+                'level': 'DEBUG',
                 'class': 'logging.StreamHandler',
                 'stream': sys.stderr,
             }
@@ -391,11 +391,11 @@ else:
         'loggers': {
             'django': {
                 'handlers': ['stderr'],
-                'level': 'ERROR',
+                'level': 'DEBUG',
             },
             'django.template': {
                 'handlers': ['stderr'],
-                'level': 'ERROR',
+                'level': 'INFO',
                 'propagate': True,
             },
         }
