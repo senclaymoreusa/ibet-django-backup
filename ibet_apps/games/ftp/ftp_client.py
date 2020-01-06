@@ -1,6 +1,7 @@
 from ftplib import FTP
 from io import StringIO
 from utils.constants import * 
+from time import sleep
 import logging
 
 logger = logging.getLogger('django')
@@ -20,6 +21,7 @@ class EaFTP():
                 break
             except Exception as e:
                 logger.error("(FATAL_ERROR) Connecting EA FTP error", e)
+                sleep(3)
                 i += 1
 
 class AgFTP():
