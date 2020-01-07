@@ -743,6 +743,54 @@ class CreditCustomer(View):
         except (DatabaseError, IntegrityError, Exception) as e:
             logger.error("CreditCustomer::Error Occured::" + repr(e))
 
+###########################################################################################
+# begin freebet API calls
+###########################################################################################
+def CreateChannel():
+    username + BTI_AGENT_USERNAME
+    password = BTI_AGENT_PW
+    header = {'RequestTarget': 'AJAXService'}
+    payload = {
+        "agentUserName": username,
+        "agentPassword": password
+    }
+    r = requests.post(BTI_FREEBET_URL + "/channelservice/createchannel", headers=header, json=payload)
+    if r.status_code == 200:
+        resp = r.json()
+        session_id = resp[0]["Value"]["Value"]
+        return session_id
+    return None
+
+def CloseChannel(session_id):
+    header = {'RequestTarget': 'AJAXService'}
+    r = requests.post(BTI_FREEBET_URL + "/channelservice/closechannel/ch=" + session_id, headers=header)
+    if r.status_code == 200:
+        return True
+    return False
+
+def AddSegment(session_id, segment_name):
+    header = {'RequestTarget': 'AJAXService'}
+    payload = {
+        'sessionID': session_id,
+        'SegmentName': segment_name
+    }
+    r = requests.post(BTI_FREEBET_URL + "/data/addsegment/ch=" + session_id, headers=header, json=payload)
+
+    if r.status_code == 200 and r.json()[0]["Value"]["Value"] == "Ok":
+        return True
+    return False
+
+def AddCustomersToSegment(session_id, segment_name):
+    header = {'RequestTarget': 'AJAXService'}
+    payload = {
+        'sessionID': session_id,
+        'SegmentName': segment_name,
+
+    }
+    r = requests.post(BTI_FREEBET_URL + "/data/addsegment/ch=" + session_id, headers=header, json=payload)
+
+
+
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
         user = CustomUser.objects.get(username=username)
