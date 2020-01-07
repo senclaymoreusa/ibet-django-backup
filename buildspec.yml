@@ -11,7 +11,10 @@ phases:
   pre_build:
     commands:
       - echo "Before running tests"
-      - touch /opt/python/log/django-logger.log
+      - whoami
+      - chmod g+s /opt/python/log
+      - chown root:wsgi /opt/python/log
+      - sudo touch /opt/python/log/django-logger.log
       - pip install -r requirements.txt
     finally:
       - echo This always runs after installing requirements
