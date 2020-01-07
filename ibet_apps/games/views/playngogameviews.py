@@ -96,6 +96,9 @@ def png_authenticate(data):
             affiliate_id = "" # Placeholder
             real = int(user_obj.main_wallet * 100) / 100.0
             external_game_session_id = "" # Placeholder
+            
+            if checkUserBlock(user_obj):
+                status_code = PNG_STATUS_ACCOUNTDISABLED
 
             # Compose response dictionary and convert to response XML
             res_dict = {

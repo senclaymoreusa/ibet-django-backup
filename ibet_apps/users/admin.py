@@ -36,11 +36,11 @@ admin.site.register(NoticeMessage)
 admin.site.register(UserWallet)
 
 admin.site.register(Limitation)
-admin.site.register(Commission)
+admin.site.register(PersonalCommissionLevel)
 admin.site.register(ReferChannel)
 admin.site.register(UserAction)
 admin.site.register(Segmentation)
-admin.site.register(SystemCommission)
+admin.site.register(SystemCommissionLevel)
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm

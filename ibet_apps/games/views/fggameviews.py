@@ -32,7 +32,7 @@ class GetAllGame(APIView):
             })
 
         except Exception as e:
-            logger.error("provider does not exist", e)
+            logger.error("Error: provider does not exist", e)
             return JsonResponse({
             'game': None
             })
@@ -50,6 +50,7 @@ class GetSessionKey(APIView):
                 "sessionKey": user.session_key
             })
             if rr.status_code == 200:
+                logger.info(rr.json())
                 data = {
                     "sessionKey" : user.session_key,
                     "alive" :  rr.json()['alive']
@@ -59,14 +60,14 @@ class GetSessionKey(APIView):
                 
             else:
                 # Handle error
-                logger.info(rr)
+                logger.error("Error: in fggame check sessionKey status code. ")
 
                
         except Exception as e:
             data = {
                 "sessionKey" : None
             }
-            logger.error("no sessionKey", e)
+            logger.error("Error: fggame cannot check sessionKey", e)
         return HttpResponse(json.dumps(data),content_type='application/json',status=200)
 
 class FGLogin(APIView):
@@ -92,23 +93,26 @@ class FGLogin(APIView):
         if rr.status_code == 200 :    
                
             rrdata = rr.json()
-            # logger.info(rrdata)
-           
+            logger.info("status 200.")
+            logger.info(json.dumps(rrdata))
+            
             
             try:
                 sessionKey = rrdata["sessionKey"]
                 partyId = rrdata["partyId"]
                 data = rrdata
+                logger.info("get sessionkey successful.")
                 
                 try:
                     user = FGSession.objects.get(user=pk)
                     user.session_key=sessionKey
                     user.save()
+                    logger.info("fg update sessionkey.")
                 except:
                     
                     pk = CustomUser.objects.get(pk=pk)        
                     FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId, uuid=uuid)   
-                
+                    logger.info("fg create sessionkey.")
 
             except:
 
@@ -116,12 +120,13 @@ class FGLogin(APIView):
                         "status": rrdata["status"],
                         "message": rrdata["message"]
                         }
+                logger.error("FATAL__ERROR: fglogin cannot get sessionKey.")
 
         
             return HttpResponse(json.dumps(data),content_type='application/json',status=200)
         else:
             # Handle error
-            logger.info(rr)
+            logger.error("FATAL__ERROR: fglogin api status code error.")
             return Response(rr)
 
 
@@ -199,7 +204,7 @@ class GetAccountDetail(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.error("cannot find user", e)
+            logger.error("FATAL__ERROR: fg cannot find user", e)
 
         
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
@@ -230,7 +235,6 @@ class GetBalance(APIView):
                 "message" : None,
                 "errorCode" : None,
                 "realBalance" : math.floor(float(user.main_wallet * 100)) / 100,
-               
                 "bonusBalance" : math.floor(float(user.bonus_wallet * 100)) / 100,
             
             }
@@ -239,7 +243,7 @@ class GetBalance(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.error("cannot find user", e)
+            logger.error("FATAL__ERROR: cannot find user", e)
 
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
@@ -277,6 +281,7 @@ class ProcessTransaction(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
+            logger.error("FATAL__ERROR: in FGgame get object at processtransaction.")
 
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
@@ -302,7 +307,7 @@ class ProcessTransaction(APIView):
                                                         other_data={
                                                             'provider_trans_id':transactionId
                                                         }
-                                                        )
+                                                    )
                     response = {
                         "seq" : seq,
                         "omegaSessionKey" : omegaSessionKey,
@@ -326,7 +331,7 @@ class ProcessTransaction(APIView):
                         "message" : "user balance is not enough"
 
                     }
-                    logger.error("user balance is not enough")
+                    logger.info("user balance is not enough.")
                
 
         elif tranType == "GAME_WIN" :
@@ -381,7 +386,7 @@ class ProcessTransaction(APIView):
                         "message" : "user balance is not enough"
 
                     }
-                    logger.error("user balance is not enough")
+                    logger.info("user balance is not enough")
                     
 
         elif tranType == "PLTFRM_BON" :

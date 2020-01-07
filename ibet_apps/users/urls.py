@@ -6,11 +6,13 @@ import users.views.yggdrasilintegrationviews as yggdrasilintegrationviews
 import users.views.saintegrationviews as saintegrationviews
 import users.views.iovation as iovationviews
 
+
 # from users.forms import AuthenticationFormWithChekUsersStatus
 from django.urls import include
 from django.views.decorators.csrf import csrf_exempt
 import users.views.transferview as transferview
 import users.views.paymentsetting as paymentsettingview
+import users.views.vipview as vipview
 
 
 urlpatterns = [
@@ -23,6 +25,7 @@ urlpatterns += [
     path('games/', views.GameListView.as_view(), name='games'),
     path('all_search_list_view/', views.AllSearchListView.as_view(), name='all_search_list_view'),
     path('profile', views.profile, name='profile'),
+    path('export_vip', vipview.exportVIP, name='export_vip'),
 ]
 
 urlpatterns += [
