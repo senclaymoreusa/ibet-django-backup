@@ -788,6 +788,29 @@ def AddCustomersToSegment(session_id, segment_name):
 
     }
     r = requests.post(BTI_FREEBET_URL + "/data/addsegment/ch=" + session_id, headers=header, json=payload)
+    if r.status_code == 200 and r.json()[-1]["Value"]["Value"] == "Ok":
+        return True
+    return False
+
+def GiveFreeBet(session_id, user_object, amount, withdraw_times, ref_id, expiration, currency):
+    path = f"/data/givefreebettocustomer/ch={session_id}"
+    payload = {
+        "MerchantCode": user_object.pk,
+        "Login": user_object.username,
+        "DomainID": 1,
+        "Amount": amount,
+        "Times2Withdraw": withdraw_times,
+        "CouponCode": "Sg6z2o",
+        "isActive": True,
+        "ReferenceID": ref_id,
+        "ExpirationDate": expiration,
+        "Currency": currency, # ISO format 
+        "Country": user_object.country # ISO format 
+    }
+    r = requests.post(BTI_FREEBET_URL + path, headers=header, json=payload)
+    if r.status_code == 200 and r.json()[0]["Value"]["Value"] == "Ok":
+        return True
+    return False
 
 
 
