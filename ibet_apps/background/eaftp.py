@@ -24,8 +24,8 @@ logger = logging.getLogger('django')
 class GetEaBetHistory(View):
 
     def get(self, request, *args, **kwargs):
-        ftp_connection = ftpClient.ftpConnect()
         logger.info("connecting ea ftp")
+        ftp_connection = ftpClient.ftpConnect()
         fileList = []
         ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', fileList.append)
         try:
