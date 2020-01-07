@@ -1574,3 +1574,11 @@ AG_DES = "MJp7ScbZ"
 AG_DM = "http://ibet.com"
 #IMES
 IMES_PROVIDER = "IMES"
+<<<<<<< Updated upstream
+=======
+
+#BTI
+BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
+BTI_AGENT_USERNAME = "WKIBPH"
+BIT_AGENT_PW = "Tr6saneyu"
+>>>>>>> Stashed changes
