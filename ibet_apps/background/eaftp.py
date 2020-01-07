@@ -25,11 +25,13 @@ class GetEaBetHistory(View):
 
     def get(self, request, *args, **kwargs):
         ftp_connection = ftpClient.ftpConnect()
+        logger.info("connecting ea ftp")
         fileList = []
         ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', fileList.append)
         try:
             r = RedisClient().connect()
             redis = RedisHelper()
+            logger.info("connecting redis")
         except:
             logger.error("(FETAL_ERROR) There is something wrong with redis connection.")
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -53,14 +55,16 @@ class GetEaBetHistory(View):
             ftp_connection.ftp_session.retrbinary('RETR ' + f, localFile.write)
             localFile.close()
 
+            # print('writing file to local: ' + localFileName)
+
             s3client = boto3.client("s3")
             s3client.upload_file(localFileName, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(localFileName))
             logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + localFileName)
 
             with open(localFileName, 'r') as f:
                 data = xmltodict.parse(f.read())
-
-                if 'gameinfo' in data and 'game' in data['gameinfo']:
+                # print(data)
+                if 'gameinfo' in data and data['gameinfo'] and 'game' in data['gameinfo']:
                     all_game_types = data['gameinfo']
                     #multiple type of games playing in this time range
                     if isinstance(all_game_types['game'], list):
@@ -88,7 +92,8 @@ class GetEaBetHistory(View):
 
 
         # test with one file will delete before merge
-
+        
+        # last_file = '123'
         # localFileName = "gameinfo202001040034 (1).xml"
         # with open(localFileName, 'r') as f:
         #     data = xmltodict.parse(f.read())
@@ -121,6 +126,12 @@ class GetEaBetHistory(View):
 
 def gameHistoryToDatabase(bet_detail, game_code):
 
+    try: 
+        provider = GameProvider.objects.get(provider_name=EA_PROVIDER)
+        category = Category.objects.get(name='Live Casino')
+    except Exception as e:
+        logger.error("(FATAL__ERROR) There is missing EA provider or category", e)
+
     for i in bet_detail:
         game_code_id = i['@code']
         game_end_date = i['@enddate']
@@ -146,8 +157,8 @@ def gameHistoryToDatabase(bet_detail, game_code):
         user = CustomUser.objects.get(username=username)
         ibet_trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
         GameBet.objects.create(
-            provider=GameProvider.objects.get(provider_name=EA_PROVIDER),
-            category=Category.objects.get(name='Live Casino'),
+            provider=provider,
+            category=category,
             #game = None,
             #game_name = None,
             user=user,
@@ -177,4 +188,3 @@ def gameHistoryToDatabase(bet_detail, game_code):
 
 
         logger.info("Successfully store the bet history to which code ID from EA is {}".format(game_code_id))
-

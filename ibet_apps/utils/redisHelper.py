@@ -76,7 +76,7 @@ class RedisHelper():
 
     def set_ea_last_file(self, file_name):
         ea_bet_history = getEABetHistroyRedisKey()
-        return self.r.sadd(ea_bet_history, file_name)
+        return self.r.set(ea_bet_history, file_name)
 
     def get_ea_last_file(self):
         ea_bet_history = getEABetHistroyRedisKey()
