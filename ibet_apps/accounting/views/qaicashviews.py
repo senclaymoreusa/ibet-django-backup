@@ -17,7 +17,7 @@ from rest_framework.decorators import api_view, permission_classes,renderer_clas
 from django.core.exceptions import ObjectDoesNotExist
 from utils.constants import *
 from users.serializers import LazyEncoder
-from users.models import Game, CustomUser, Category, Config, NoticeMessage
+from users.models import CustomUser, Config, NoticeMessage
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
 from accounting.serializers import depositMethodSerialize, bankListSerialize,bankLimitsSerialize,submitDepositSerialize,submitPayoutSerialize, payoutTransactionSerialize,approvePayoutSerialize,depositThirdPartySerialize, payoutMethodSerialize,payoutBanklistSerialize,payoutBanklimitsSerialize
 from utils.helpers import addOrWithdrawBalance
@@ -376,7 +376,7 @@ class submitDeposit(generics.GenericAPIView):
             'depositorBank':depositorBank,
             'depositorPhone':depositorPhone,
             'redirectUrl': 'https://www.google.com',
-            'callbackUrl': 'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
+            'callbackUrl': CALLBACK_URL,
             'messageAuthenticationCode': my_hmac,
         })
         rdata = r.json()
@@ -480,7 +480,7 @@ class submitPayout(generics.GenericAPIView):
             'withdrawerName': user.first_name + " " + user.last_name,
             'redirectUrl': REDIRECTURL,
             'withdrawerEmail':user.email,
-            'callbackUrl':'https://ibet-django-apdev.claymoreasia.com/accounting/api/qaicash/confirm',
+            'callbackUrl':CALLBACK_URL,
             'messageAuthenticationCode': my_hmac,
         })
         
@@ -779,7 +779,6 @@ class getDepositTransaction(generics.GenericAPIView):
 #@renderer_classes([renderers.OpenAPIRenderer, renderers.JSONRenderer])
 def transactionConfirm(request):
     body = json.loads(request.body)
-    #print(body)
     orderId = body.get('orderId')
     Status = body.get('status') 
     cur_status = statusConversion[Status]

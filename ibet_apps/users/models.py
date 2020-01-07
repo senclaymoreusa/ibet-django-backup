@@ -1,6 +1,6 @@
 from django.db import models, DatabaseError
 from django.contrib.auth.models import AbstractUser
-from django.urls import reverse #Used to generate urls by reversing the URL patterns
+from django.urls import reverse  # Used to generate urls by reversing the URL patterns
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 from django.db import transaction
@@ -13,6 +13,7 @@ from accounting.models import DepositChannel, DepositAccessManagement, WithdrawC
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
+from django.contrib.postgres.fields import JSONField
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -21,11 +22,13 @@ import logging
 
 logger = logging.getLogger('django')
 
+
 class MyUserManager(BaseUserManager):
     """
     This class handles the creation of our users. We need to create this class and extend BaseUserManager
     because our model (CustomUser) has additional fields to Django's default User class.
     """
+
     def create_user(self, username, email, phone, password=None):
         """
         Create a CustomUser, which are the users on our site.
@@ -35,11 +38,12 @@ class MyUserManager(BaseUserManager):
 
         # Create and save a CustomUser into the database.
         user = self.model(
-					username = username,
-					email = self.normalize_email(email),
-                    phone = phone
-				)
-        user.set_password(password) # Hash the password using Django auth; Never use 'user.password = password'
+            username=username,
+            email=self.normalize_email(email),
+            phone=phone,
+        )
+        user.set_password(password)  # Hash the password using Django auth; Never use 'user.password = password'
+        # user.active = True # Add this only to fix Letou registeration bug, will remove later
         user.save(using=self._db)
         return user
 
@@ -48,13 +52,14 @@ class MyUserManager(BaseUserManager):
         Create a superuser, which is just a user object with special attributes.
         """
         user = self.create_user(
-            username = username, email = email, phone = phone, password = password
-		)
+            username=username, email=email, phone=phone, password=password
+        )
         user.is_admin = True
         user.is_staff = True
         user.active = True
         user.save(using=self._db)
         return user
+
 
 class UserTag(models.Model):
     tag_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -69,9 +74,10 @@ class UserTag(models.Model):
     def __str__(self):
         return self.name
 
+
 class CustomUser(AbstractBaseUser):
     """
-    This class represents the users on our site. A custom user is needed because of 
+    This class represents the users on our site. A custom user is needed because of
     our additional custom fields not in Django's default User. AbstractBaseUser provides a
     core implementation of the User model and features such as hashed passwords.
     The primary attributes of a user are username, password, email, and first & last name.
@@ -82,16 +88,11 @@ class CustomUser(AbstractBaseUser):
         (2, _('Advertisements'))
     )
 
-    MEMBER_STATUS = (
-        (0, _('Active')),
-        (1, _('Inactive')),
-        (2, _('Blocked'))
-    )
-
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
-        ('French', 'French')
+        ('Thai', 'Thai'),
+        ('Vietnamese', 'Vietnamese'),
     )
 
     # add additional fields in here
@@ -112,8 +113,8 @@ class CustomUser(AbstractBaseUser):
         blank=True
     )
     user_tag = models.ManyToManyField(UserTag, blank=True, through='UserWithTag')
-    user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
-    user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
+    # user_deposit_channel = models.ManyToManyField(DepositChannel, blank=True, through='accounting.DepositAccessManagement', verbose_name='Deposit Channel')
+    # user_withdraw_channel = models.ManyToManyField(WithdrawChannel, blank=True, through='accounting.WithdrawAccessManagement', verbose_name='Withdraw Channel')
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=25)
@@ -127,20 +128,23 @@ class CustomUser(AbstractBaseUser):
     language = models.CharField(max_length=20, choices=LANGUAGE, default='English')
 
     # verification
-    email_verified = models.BooleanField(default=False)
-    phone_verified = models.BooleanField(default=False)
-    id_verified = models.BooleanField(default=False)
-    address_verified = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False, null=True, blank=True)
+    phone_verified = models.BooleanField(default=False, null=True, blank=True)
+    id_verified = models.BooleanField(default=False, null=True, blank=True)
+    address_verified = models.BooleanField(default=False, null=True, blank=True)
 
     # referral program
     referral_code = models.CharField(max_length=10, blank=True, null=True)
+    # referrer's path append user.pk/ generate a referral path
+    referral_path = models.CharField(max_length=1000, blank=True, null=True)
     referred_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, related_name='referees')
+    referred_by_channel = models.ForeignKey('users.ReferChannel', null=True, blank=True, on_delete=models.CASCADE)
     reward_points = models.IntegerField(default=0)
     vip_level = models.ForeignKey('users.Segmentation', on_delete=models.CASCADE, null=True)
 
     # balance = models.FloatField(default=0)
     activation_code = models.CharField(max_length=255, default='', blank=True)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
@@ -152,14 +156,14 @@ class CustomUser(AbstractBaseUser):
     contact_option = models.CharField(max_length=6, choices=CONTACT_OPTIONS, blank=True)
     deposit_limit = models.FloatField(default=100)
     promo_code = models.IntegerField(blank=True, null=True)
-    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True,default=0)
+    currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, blank=True, default=0)
     login_times = models.IntegerField(default=0)
 
     reset_password_code = models.CharField(max_length=4, blank=True)
     user_attribute = models.SmallIntegerField(_('User Attribute'), choices=USER_ATTRIBUTE, default=0)
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
-    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)      # first time deposit
+    ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)  # first time deposit
     verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='')
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
@@ -172,21 +176,28 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-
+    onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
+    ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=2, default=0)
+    ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=2, default=0)
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
     user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True, blank=True)
     user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)
 
-    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True, blank=True)
+    affiliate_status = models.CharField(_('Affiliate_status'), max_length=50, choices=AFFILIATE_STATUS, null=True,
+                                        blank=True)
     affiliate_level = models.CharField(_('Affiliate_level'), max_length=50, choices=AFFILIATE_LEVEL, default='Normal')
     transerfer_between_levels = models.BooleanField(default=False)
     id_image = models.CharField(max_length=250, blank=True)
-    managed_by = models.ForeignKey('self', blank=True, null=True, on_delete = models.SET_NULL, related_name='manage')
+    affiliate_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL,
+                                             related_name='AffiliateManager')
+    vip_managed_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL,
+                                       related_name='VIPManager')
 
-    #commission
-    commission_status = models.BooleanField(default=False)               # for current month
+    # commission
+    commission_status = models.BooleanField(default=False)  # for current month
     commission_setting = models.CharField(max_length=50, choices=COMMISSION_SET, default='System')
 
     temporary_block_time = models.DateTimeField(null=True, blank=True)
@@ -199,7 +210,7 @@ class CustomUser(AbstractBaseUser):
 
     activity_check = models.SmallIntegerField(choices=ACTIVITY_CHECK, default=2)
 
-    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)   # only for admin user market
+    ibetMarkets = models.CharField(max_length=100, null=True, blank=True)  # only for admin user market
     letouMarkets = models.CharField(max_length=100, null=True, blank=True)  # only for admin user market
     department = models.SmallIntegerField(null=True, blank=True)
 
@@ -216,6 +227,9 @@ class CustomUser(AbstractBaseUser):
     security_question = models.SmallIntegerField(choices=SECURITY_QUESTION, blank=True, null=True)
     security_answer = models.CharField(_('Security answer'), max_length=128, blank=True, null=True)
 
+    # favorite payment method
+    favorite_payment_method = models.CharField(max_length=128, blank=True, null=True)
+
     created_time = models.DateTimeField(
         _('Created Time'),
         auto_now_add=True,
@@ -227,10 +241,10 @@ class CustomUser(AbstractBaseUser):
         editable=False,
     )
 
-    objects = MyUserManager() # Links our custom UserManager to our CustomUser model.
+    objects = MyUserManager()  # Links our custom UserManager to our CustomUser model.
 
-    USERNAME_FIELD = 'username' # field to be used as unique identifier for CustomUser
-    REQUIRED_FIELDS = ['email', 'phone'] # fields prompted for when creating superuser
+    USERNAME_FIELD = 'username'  # field to be used as unique identifier for CustomUser
+    REQUIRED_FIELDS = ['email', 'phone']  # fields prompted for when creating superuser
 
     class Meta:
         verbose_name_plural = _('Customer User')
@@ -275,32 +289,48 @@ class CustomUser(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
-class Commission(models.Model):
 
+# User Personal Commission
+class PersonalCommissionLevel(models.Model):
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
-    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20,
+                                                         decimal_places=2, default=0)
     commission_level = models.IntegerField(default=1)
     active_downline_needed = models.IntegerField(default=6)
     monthly_downline_ftd_needed = models.IntegerField(default=6)
+    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
             # Get the maximum display_id value from the database
-            last_id = Commission.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))['largest']
+            last_id = PersonalCommissionLevel.objects.filter(user_id=self.user_id).aggregate(largest=models.Max('commission_level'))[
+                'largest']
 
             # aggregate can return None! Check it first.
             # If it isn't none, just use the last ID specified (which should be the greatest) and add one to it
             if last_id is not None:
                 self.commission_level = last_id + 1
 
-        super(Commission, self).save(*args, **kwargs)
+        super(PersonalCommissionLevel, self).save(*args, **kwargs)
+
+
+# System default Commission
+class SystemCommissionLevel(models.Model):
+    commission_level = models.IntegerField(unique=True)
+    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    active_downline_needed = models.IntegerField(default=0)
+    monthly_downline_ftd_needed = models.IntegerField(default=0)
+    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    operation_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    payment_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
 
 # one user can have up to 10 referral channels
 class ReferChannel(models.Model):
     # refer_channel_code is ReferChannel.pk
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     refer_channel_name = models.CharField(max_length=100)
     # time of this channel was created
     generated_time = models.DateTimeField(_('Created Time'), auto_now_add=True)
@@ -313,7 +343,6 @@ class ReferChannel(models.Model):
 
 
 class UserWithTag(models.Model):
-
     STATUS_CHOICES = (
         (0, _('pending')),
         (1, _('approved')),
@@ -324,8 +353,9 @@ class UserWithTag(models.Model):
 
     def __str__(self):
         return '{0}'.format(self.tag)
+
     class Meta:
-        unique_together = (('user','tag'),)
+        unique_together = (('user', 'tag'),)
         verbose_name = "Tag"
         verbose_name_plural = _('Assign tag to user')
 
@@ -334,58 +364,18 @@ class Status(models.Model):
     status_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     notes = models.CharField(max_length=200)
+
     def __str__(self):
         return '{0}'.format(self.name)
-
-
-class Category(models.Model):
-    category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=50)
-    name_zh = models.CharField(max_length=50, null=True, blank=True)
-    name_fr = models.CharField(max_length=50, null=True, blank=True)
-    parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    notes = models.CharField(max_length=200)
-    def __str__(self):
-        return '{0}, parent: {1}'.format(self.name, self.parent_id)
-
-
-class Game(models.Model):
-    """
-    Note: there is another Game model under ibet_apps/games/models.py.
-    """
-    name = models.CharField(max_length=50)
-    name_zh = models.CharField(max_length=50, null=True, blank=True)
-    name_fr = models.CharField(max_length=50, null=True, blank=True)
-    category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
-    start_time = models.DateTimeField('Start Time', null=True, blank=True)
-    end_time = models.DateTimeField('End Time', null=True, blank=True)
-    opponent1 = models.CharField(max_length=200, null=True, blank=True)
-    opponent2 = models.CharField(max_length=200, null=True, blank=True)
-    description = models.CharField(max_length=200)
-    description_zh = models.CharField(max_length=200, null=True, blank=True)
-    description_fr = models.CharField(max_length=200, null=True, blank=True)
-    status_id = models.ForeignKey(Status, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='game_image', blank=True)
-    image_url = models.CharField(max_length=500, null=True, blank=True)
-    game_url = models.CharField(max_length=1000, null=True, blank=True)
-    #game_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    #category = models.CharField(max_length=20)
-
-    def __str__(self):
-        return '{0}: {1}'.format(self.name, self.category_id)
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular game instance.
-        """
-        return reverse('game-detail', args=[str(self.id)])
 
 
 class Language(models.Model):
     """
     Model representing a Language (e.g. English, French, Japanese, etc.)
     """
-    name = models.CharField(max_length=200, help_text="Enter the book's natural language (e.g. English, French, Japanese etc.)")
+    name = models.CharField(max_length=200,
+                            help_text="Enter the book's natural language (e.g. English, French, Japanese etc.)")
+
     # name = models.CharField(max_length=200, choices= ((u'en', u'English'), (u'zh', u'Chinese',), (u'fr', u'Franch')))
     def __str__(self):
         """
@@ -393,8 +383,8 @@ class Language(models.Model):
         """
         return self.name
 
-class NoticeMessage(models.Model):
 
+class NoticeMessage(models.Model):
     start_time = models.DateTimeField('Start Time', blank=False)
     end_time = models.DateTimeField('End Time', blank=False)
     message = models.CharField(max_length=200, default='')
@@ -407,6 +397,7 @@ class NoticeMessage(models.Model):
         """
         return self.message
 
+
 class Config(models.Model):
     name = models.CharField(max_length=50, default='General')
     referral_award_points = models.IntegerField(default=5)
@@ -418,21 +409,25 @@ class Config(models.Model):
     def __str__(self):
         return self.name
 
-class UserAction(models.Model):
 
+class UserAction(models.Model):
     ip_addr = models.GenericIPAddressField(_('Action Ip'), blank=True, null=True)
     event_type = models.SmallIntegerField(choices=EVENT_CHOICES, verbose_name=_('Event Type'))
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'))
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
-    browser = models.CharField(_('Browser'), max_length=50, blank=True, null=True)
+    browser = models.CharField(_('Browser'), max_length=200, blank=True, null=True)
     refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
     # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
+    result = models.CharField(max_length=10, null=True, blank=True)
+    ip_location = JSONField(null=True, default=dict)
+    other_info = JSONField(null=True, default=dict)
     created_time = models.DateTimeField(
         _('Created Time'),
         default=timezone.now,
         editable=False,
     )
+
     class Meta:
         verbose_name_plural = _('User action history')
 
@@ -450,7 +445,6 @@ class UserActivity(models.Model):
 
 
 class Limitation(models.Model):
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
@@ -471,118 +465,13 @@ class Limitation(models.Model):
         auto_now_add=True,
         editable=False,
     )
-class GameRequestsModel(models.Model):
-
-    Success_Status = [
-        ('1', '1'),
-        ('0', '0'),
-    ]
-
-    # GB Sports and AG
-
-    MemberID       = models.CharField(max_length=30)                 # Same as Username
-    TransType      = models.CharField(max_length=30)                 # Transaction Type
-    time            = models.CharField(max_length=100, blank=True)   # Current Time
-
-    # GB Sports only
-
-    Method         = models.CharField(max_length=30)
-    Success        = models.CharField(choices=Success_Status, max_length=1)
-
-    ThirdPartyCode = models.CharField(max_length=30)
-    BetTotalCnt    = models.CharField(max_length=30)
-    BetTotalAmt    = models.CharField(max_length=30)
-    BetID          = models.CharField(max_length=20)
-    SettleID       = models.CharField(max_length=20)
-    BetGrpNO       = models.CharField(max_length=50)
-    TPCode         = models.CharField(max_length=30)
-    GBSN           = models.CharField(max_length=30)
-    CurCode        = models.CharField(max_length=30)
-    BetType        = models.CharField(max_length=20)
-    BetTypeParam1  = models.CharField(max_length=20)
-    BetTypeParam2  = models.CharField(max_length=20)
-    Wintype        = models.CharField(max_length=20)
-    HxMGUID        = models.CharField(max_length=20)
-    InitBetAmt     = models.CharField(max_length=30)
-    RealBetAmt     = models.CharField(max_length=30)
-    HoldingAmt     = models.CharField(max_length=30)
-    InitBetRate    = models.CharField(max_length=30)
-    RealBetRate    = models.CharField(max_length=20)
-    PreWinAmt      = models.CharField(max_length=30)
-    BetResult      = models.CharField(max_length=30)
-    WLAmt          = models.CharField(max_length=30)
-    RefundBetAmt   = models.CharField(max_length=30)
-    TicketBetAmt   = models.CharField(max_length=30)
-    TicketResult   = models.CharField(max_length=30)
-    TicketWLAmt    = models.CharField(max_length=30)
-    SettleDT       = models.CharField(max_length=30)
-
-    # AG only
-
-    sessionToken    = models.CharField(max_length=100, blank=True)
-    currency        = models.CharField(max_length=100, blank=True)
-    value           = models.CharField(max_length=100, blank=True)
-    agentCode       = models.CharField(max_length=100, blank=True)
-    transactionID   = models.CharField(max_length=100, blank=True)
-    platformType    = models.CharField(max_length=100, blank=True)
-    Round           = models.CharField(max_length=100, blank=True)
-    gametype        = models.CharField(max_length=100, blank=True)
-    gameCode        = models.CharField(max_length=100, blank=True)
-    tableCode       = models.CharField(max_length=100, blank=True)
-    transactionCode = models.CharField(max_length=100, blank=True)
-    deviceType      = models.CharField(max_length=100, blank=True)
-    playtype        = models.CharField(max_length=100, blank=True)
-    netAmount       = models.CharField(max_length=100, blank=True)
-    validBetAmount  = models.CharField(max_length=100, blank=True)
-    billNo          = models.CharField(max_length=100, blank=True)
-    ticketStatus    = models.CharField(max_length=100, blank=True)
-    gameResult      = models.CharField(max_length=100, blank=True)
-    finish          = models.CharField(max_length=100, blank=True)
-    remark          = models.CharField(max_length=100, blank=True)
-    amount          = models.CharField(max_length=100, blank=True)
-    gameId          = models.CharField(max_length=100, blank=True)
-    roundId         = models.CharField(max_length=100, blank=True)
-
-    # Yggdrasil
-
-    organization    = models.CharField(max_length=100, blank=True)
-    version         = models.CharField(max_length=100, blank=True)
-    reference       = models.CharField(max_length=100, blank=True)
-    subreference    = models.CharField(max_length=100, blank=True)
-    description     = models.CharField(max_length=100, blank=True)
-    prepaidticketid = models.CharField(max_length=100, blank=True)
-    prepaidvalue    = models.CharField(max_length=100, blank=True)
-    prepaidcost     =models.CharField(max_length=100, blank=True)
-    prepaidref      = models.CharField(max_length=100, blank=True)
-    jackpotcontribution = models.CharField(max_length=100, blank=True)
-    isJackpotWin    = models.CharField(max_length=100, blank=True)
-    bonusprize      = models.CharField(max_length=100, blank=True)
-    tickets         = models.CharField(max_length=100, blank=True)
-    singleWin       = models.CharField(max_length=100, blank=True)
-    totalWin        = models.CharField(max_length=100, blank=True)
-    roundCount      = models.CharField(max_length=100, blank=True)
-    ruleType        = models.CharField(max_length=100, blank=True)
-    cash            = models.CharField(max_length=100, blank=True)
-    bonus           = models.CharField(max_length=100, blank=True)
-    campaignref     = models.CharField(max_length=100, blank=True)
-    lang            = models.CharField(max_length=100, blank=True)
-    last            = models.CharField(max_length=100, blank=True)
-
-    # SA
-
-    txnid           = models.CharField(max_length=100, blank=True)
-    hostid          = models.CharField(max_length=100, blank=True)
-    txn_reverse_id  = models.CharField(max_length=100, blank=True)
-
-
-
-    def __str__(self):
-        return  self.MemberID + ' ' + self.TransType
 
 
 # Member VIP System
+
 class Segmentation(models.Model):
     name = models.CharField(max_length=50)
+    level = models.IntegerField()
     turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
     platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
@@ -592,24 +481,19 @@ class Segmentation(models.Model):
     product_turnover_bonuses = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.level)
 
 
-@receiver(post_save, sender=CustomUser)
-def new_user_handler(sender, **kwargs):
-    if kwargs['created']:
-        user = kwargs['instance']
-        try:
-            with transaction.atomic():
-                # generate a referral code for new user
-                referral_code = str(utils.admin_helper.generate_unique_referral_code(user.pk))
-                user.referral_code = referral_code
-                user.save()
-                # generate a default referral link for new user
-                link = ReferChannel.objects.create(
-                    user_id=user,
-                    refer_channel_name='default'
-                )
-                logger.info("Auto created refer link code " + str(link.pk) + " for new user " + str(user.username))
-        except DatabaseError as e:
-            logger.error("Error creating referral code and default referral channel for new user: ", e)
+class UserWallet(models.Model):
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    provider = models.ForeignKey('games.GameProvider', on_delete=models.CASCADE)
+    wallet_amount = models.DecimalField(_('Wallet'), max_digits=20, decimal_places=4, default=0)
+
+
+class UserBonusWallet(models.Model):
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    category = models.ForeignKey('games.Category', on_delete=models.CASCADE)
+    wallet_amount = models.DecimalField(_('Wallet'), max_digits=20, decimal_places=4, default=0)
+
+    class Meta:
+        unique_together = ('user', 'category',)

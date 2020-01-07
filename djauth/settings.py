@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'users.apps.UsersConfig', # new
     'operation.apps.OperationConfig',
     'bonus.apps.BonusConfig',
@@ -186,6 +187,7 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 #     EU:  eudev / euprod
 #
 
+TESTING = sys.argv[1:2] == ['test']
 
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
@@ -213,7 +215,7 @@ elif "ENV" in os.environ:
     db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
     
     print("DB HOST: " + db_data['RDS_HOSTNAME'])
-    
+    # print(db_data)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -227,9 +229,11 @@ elif "ENV" in os.environ:
 
     print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
     REDIS = {
-        "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
+        # "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
+        "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
         "PORT": 6379
     }
+    # print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
 
 
 # Password validation
@@ -364,34 +368,31 @@ if os.getenv("ENV") == "local":
         },
     }
 else:
-    print("AWS Logging to sys.stderr")
+    print("AWS Logging to django-logger.log")
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
             'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
+                'format': "[%(asctime)s] [%(levelname)s] [%(pathname)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
             },
             'simple': {
                 'format': '%(levelname)s %(message)s'
             },
         }, 
         'handlers': {
-            'stderr': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'stream': sys.stderr,
+            'file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': '/opt/python/log/django-logger.log',
+                'formatter': 'verbose',
             }
         },
         'loggers': {
             'django': {
-                'handlers': ['stderr'],
-                'level': 'DEBUG',
-            },
-            'django.template': {
-                'handlers': ['stderr'],
-                'level': 'INFO',
+                'handlers': ['file'],
+                'level': 'ERROR',
                 'propagate': True,
             },
         }

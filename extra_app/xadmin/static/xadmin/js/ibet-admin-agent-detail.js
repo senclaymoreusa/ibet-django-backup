@@ -18,27 +18,92 @@
         var affiliate_id = $('#affiliate-id').val();
         var admin_user = $('#admin_user').val();
 
+        $(function () {
+            $('#min_date').datepicker({
+                autoclose: true,
+                todayHighlight: true,
+                endDate: new Date()
+            }).val('');
+            $('#max_date').datepicker({
+                autoclose: true,
+                todayHighlight: true,
+                endDate: new Date()
+            }).val('');
+        });
+
         // DOWNLINE LIST TABLE
         var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
             responsive: true,
-            dom: 'B<ftilp>',
+            dom: '<<t>Bpil>',
             buttons: [
                 'csv'
             ],
             "columnDefs": [{
                 "searchable": false, "targets": [0, 1],
             }],
+        var downlineListTable = $('#downline-list-table').DataTable({
+            "serverSide": true,
             "language": {
                 "info": " _START_ - _END_ of _TOTAL_",
                 "infoEmpty": " 0 - 0 of 0",
                 "infoFiltered": "",
                 "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+                    "next": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-right'></i></button>",
+                    "previous": "<button type='button' class='btn default' style='border:solid 1px #bdbdbd;'><i class='fas fa-caret-left'></i></button>"
                 },
                 "lengthMenu": "_MENU_",
             },
+            "columnDefs": [
+                {
+                    "orderable": false,
+                    "targets": 0
+                }
+            ],
+            "ajax": {
+                type: 'GET',
+                url: agent_detail_url,
+                data: {
+                    'type': 'downlinePerformance',
+                    'affiliateId': affiliate_id,
+                    'accountType': function() {var type=$('#account_type_filter :selected').val(); return type;},
+                    'channel': function() {var channel=$('#channel_filter :selected').val(); return channel;},
+                    'minDate': function () { return $('#min_date').val(); },
+                    'maxDate': function () { return $('#max_date').val(); },
+                },
+            },
+            columns: [
+                {data: 'player_id'},
+                {data: 'registration_date', "render": function(data, type, row, meta){
+                        return formatDatetime(data);
+                }},
+                {data: 'last_login', "render": function(data, type, row, meta){
+                        return formatDatetime(data);
+                }},
+                {data: 'channel'},
+                {data: 'ftd', "render": function(data, type, row, meta){
+                        return formatDatetime(data);
+                }},
+                {data: 'total_deposit'},
+                {data: 'total_withdrawal'},
+                {data: 'total_bonus'},
+                {data: 'total_adjustment'},
+                {data: 'balance'},
+                {data: 'turnover'},
+            ],
         });
+
+        $('#account_type_filter, #channel_filter, #min_date, #max_date').on('change', function () {
+            downlineListTable.draw();
+        });
+
+        function formatDatetime(data){
+            if(data === 'None'){
+                data = '';
+            }else{
+                data = moment(data).format('MMM DD YYYY, HH:mm');
+            }
+            return data;
+        }
 
         var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
             responsive: true,
@@ -61,32 +126,6 @@
             },
         })
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
-
-        // date range search
-        $.fn.dataTable.ext.search.push(
-            function (settings, data, dataIndex) {
-                var min = $('#min').datepicker("getDate");
-                var max = $('#max').datepicker("getDate");
-
-                var dateParts = data[2].split("/");
-                var newDate = dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]
-                var startDate = new Date(newDate);
-
-                if (min == null && max == null) { return true; }
-                if (min == null && startDate <= max) { return true; }
-                if (max == null && startDate >= min) { return true; }
-                if (startDate <= max && startDate >= min) { return true; }
-                return false;
-            }
-        );
-
-        $("#min").datepicker({ onSelect: function () { downlineListTable.draw(); }, changeMonth: true, changeYear: true });
-        $("#max").datepicker({ onSelect: function () { downlineListTable.draw(); }, changeMonth: true, changeYear: true });
-
-        // Event listener to the two range filtering inputs to redraw on input
-        $('#min, #max').change(function () {
-            downlineListTable.draw();
-        });
 
         // ACTIVITY
         $('#activity-type').change(function () {
@@ -124,7 +163,7 @@
             e.preventDefault();
             var message = $('#notes-input').val();
             if (!message) {
-                alert("Input cannout be empty");
+                alert("Input cannot be empty");
             }else{
                 updateNote(message);
             }
@@ -163,7 +202,6 @@
             }
         });
 
-
         $(document).on("click", "#refer_link_remove", function () {
             var refer_link_id = $(this).parent().parent().find('#refer_link_id').val();
             var refer_row = $(this).closest('.row')
@@ -197,11 +235,11 @@
         });
 
         function checkCommissionLevelEmpty() {
-            var $empty = $(".commission_levels input[required]").filter(function () {
+            var empty = $(".commission_levels input[required]").filter(function () {
                 return !this.value.trim();
             }),
-                valid = $empty.length == 0,
-                items = $empty.map(function () {
+                valid = empty.length == 0,
+                items = empty.map(function () {
                     return this.placeholder
                 }).get();
 
@@ -215,6 +253,16 @@
                 return false;
             }
         }
+
+        $(document).on("click", '#copy-link', function(){
+            var link = $('#promotion-link').text();
+            copyToClipboard(link);
+        });
+
+        $(document).on("click", '#copy-link-list', function(){
+            var link = $(this).parent().parent().find('#promotion-link-list').text();
+            copyToClipboard(link);
+        });
 
         $(document).on("click", "#delete_commission_level_btn", function () {
             var current_level = $(this).parent().parent().find('#commission_level_label').html();
@@ -244,8 +292,9 @@
                     level_detail['downline_ftd'] = $(this).find('#downline_monthly_ftd').val();
                     level_details.push(level_detail);
                 });
+                var manager = $('#manager_assign_chosen a span').html()
                 var affiliate_detail = [];
-                affiliate_detail.push($('#affiliate-manager').val());
+                affiliate_detail.push(manager);
                 if ($('#affiliate-level-normal').is(':checked')) {
                     affiliate_detail.push("Normal");
                 } else {
@@ -266,7 +315,7 @@
                 } else {
                     affiliate_detail.push("No");
                 }
-                var manager = $('#affiliate-manager').val()
+
                 $.ajax({
                     type: 'POST',
                     url: agent_detail_url,
@@ -276,7 +325,7 @@
                         'affiliate_detail[]': affiliate_detail,
                         'level_details': JSON.stringify(level_details),
                         'affiliate_id': affiliate_id,
-                        'manager':manager
+                        'manager': manager,
                     },
                     success: function (data) {
                         location.reload();
@@ -302,37 +351,9 @@
             });
         }
 
-        $('#affiliate-manager').keyup(function () {
-            var text = $('#affiliate-manager').val();
-            $("#affiliate-manager").autocomplete({
-                source: function (request, response) {
-                    $.ajax({
-                        dataType: 'json',
-                        type: 'GET',
-                        url: agent_detail_url,
-                        data: {
-                            'type': 'search_affiliate_manager',
-                            'text': text
-                        },
-                        success: function (data) {
-                            response(data);
-                        }
-                    });
-                },
-                minLength: 1,
-                //select
-                select: function (e, ui) {
-                    // alert(ui.item.value);
-                },
-                open: function () {
-                    $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
-                },
-                close: function () {
-                    $(this).removeClass("ui-corner-top").addClass("ui-corner-all");
-                }
-            });
-        });
+        $('.manager-assign').chosen({ width: "70%" });
     });
+
     function copyToClipboard(value) {
         var aux = document.createElement("input");
         aux.setAttribute("value", value);

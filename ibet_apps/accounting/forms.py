@@ -2,9 +2,11 @@ from django import forms
 from django.forms import ModelForm
 
 # from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import *
+from accounting.models import *
 
 # from django.contrib.auth import get_user_model
+
+
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
@@ -15,7 +17,7 @@ class TransactionForm(forms.ModelForm):
             "status",
             "request_time",
             "arrive_time",
-            "review_status",
+            "status",
             "remark",
         )
 
@@ -39,17 +41,17 @@ class DepositReviewForm(forms.ModelForm):
             "status",
             "request_time",
             "arrive_time",
-            "review_status",
+            "status",
             "remark",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["user_id"].disabled = True
-        self.fields["amount"].disabled = True
-        self.fields["status"].disabled = True
-        self.fields["request_time"].disabled = True
-        self.fields["arrive_time"].disabled = True
+        # self.fields["user_id"].disabled = True
+        # self.fields["amount"].disabled = True
+        # self.fields["status"].disabled = True
+        # self.fields["request_time"].disabled = True
+        # self.fields["arrive_time"].disabled = True
 
 
 class WithdrawReviewForm(DepositReviewForm):

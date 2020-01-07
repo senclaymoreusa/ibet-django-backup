@@ -1,7 +1,8 @@
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.core import serializers
+from django.db.models import Q
 
-from games.models import GameBet
+from games.models import GameBet, GameProvider, Category
 from users.models import CustomUser
 
 from django.utils import timezone
@@ -23,14 +24,15 @@ def getProvidersAndCategories(request):
             "categories": list(c.values())
         })
 
+
 def getBetHistory(request):
     # filter by: date range (start/end),
     # provider,
     # category,
     # status (open/closed)
 
-    try:
-        if request.method == "GET":
+    if request.method == "GET":
+        try:
             user_id = request.GET.get("userid")
             if not user_id:
                 return HttpResponse(status=404)
@@ -93,8 +95,10 @@ def getBetHistory(request):
                 'results': bet_data,
                 'full_raw_data': list(all_bets.values())
             })
+        except Exception as e:
+            logger.error("(Error) Getting bet history error: ", e)
+            return JsonResponse({
+                'success': False,
+                'message': "There is something wrong"
+            })
 
-        return JsonResponse({
-            'results': bet_data,
-            'full_raw_data': list(all_bets.values)
-        })

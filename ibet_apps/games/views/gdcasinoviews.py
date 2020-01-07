@@ -12,6 +12,10 @@ import xml.etree.ElementTree as ET
 from time import gmtime, strftime, strptime
 from rest_framework.authtoken.models import Token
 from games.helper import *
+import datetime
+from datetime import date
+from django.utils import timezone
+import random
 logger = logging.getLogger('django')
 
 #soap
@@ -28,11 +32,7 @@ from django.core.exceptions import  ObjectDoesNotExist
 from spyne.error import ResourceNotFoundError,Fault
 from spyne.model.complex import ComplexModel, XmlAttribute, Array
 
-try:
-    PROVIDER = GameProvider.objects.get(provider_name="GD Casino")
-except ObjectDoesNotExist:
-    logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
-
+from django.db import transaction
 class Container(ComplexModel):
     # __namespace__ = 'https://testgdgame-namespace.org'
     StatusCode = Integer
@@ -151,6 +151,7 @@ class CancelRequest(ComplexModel):
 class LiveDealerSoapService(ServiceBase):
     @rpc(GetUserBalanceRequest,  _body_style='bare', _returns=Container)
     def GetUserBalance(ctx,request):
+        
         userId = request.userId
         loginToken = request.loginToken
         currency = request.currency
@@ -171,47 +172,111 @@ class LiveDealerSoapService(ServiceBase):
             res.UserBalance = 0
             return res
 
+    
     @rpc(DebitRequest, _body_style='bare', _returns=Container)
     def Debit(crx, request):
+        
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
+        except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
+                                        )
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+
         res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             userBalance = user.main_wallet - request.amount
+            CATEGORY = request.gameType
+            if CATEGORY == '6':
+                category = 'Baccarat'
+            elif CATEGORY == '28':
+                category = 'Roulette'
+            elif CATEGORY == '29':
+                category = 'Sicbo'
+            elif CATEGORY == '100':
+                category = 'Games'
+            try:
+                cate = Category.objects.get(name='Live Casino')
+            except:
+                logger.error("missing category.")
+
+            token = Token.objects.get(user=user)
             
-            if userBalance > 0:
-                token = Token.objects.get(user=user)
-                user.main_wallet = userBalance
-                user.save()
-                
-                CATEGORY = request.gameType
-                if CATEGORY == '6':
-                    category = 'Baccarat'
-                elif CATEGORY == '28':
-                    category = 'Roulette'
-                elif CATEGORY == '29':
-                    category = 'Sicbo'
-                elif CATEGORY == '100':
-                    category = 'Slots'
-                cate = Category.objects.get(name=category)
-                
-                if str(token) == request.loginToken:
-                    res.StatusCode = 0
-                    GameBet.objects.create(provider=PROVIDER,   
-                                        category=cate,
-                                        username=user, 
-                                        currency=request.currency, 
-                                        market=ibetCN,
-                                        ref_no=request.transactionId,
-                                        amount_wagered=request.amount,
-                                        )
-                else:
-                    res.StatusCode = 2
-                res.UserBalance = userBalance
-                return res
+            if request.gameId == GDCASINO_FISHING_GAMEID:
+                if CATEGORY == '100': #fishing
+                    if str(token) == request.loginToken:
+                        res.StatusCode = 0
+                        GameBet.objects.create(provider=PROVIDER,   
+                                            category=cate,
+                                            transaction_id=trans_id,
+                                            game_name=request.gameId,
+                                            user=user,
+                                            user_name=user.username, 
+                                            currency=user.currency, 
+                                            market=ibetCN,
+                                            ref_no=request.linkId,
+                                            amount_wagered=decimal.Decimal(request.amount),
+                                            other_data={
+                                                'provider_trans_id': request.transactionId
+                                                }
+                                            )    
+                    else:
+                        res.StatusCode = 2
+                    res.UserBalance = userBalance
+                    user.main_wallet = userBalance
+                    user.save()
+                    return res
             else:
-                res.UserBalance = user.main_wallet
-                res.StatusCode = 7
-                return res
+                
+                if userBalance >= 0:
+                    with transaction.atomic():
+                        
+                    
+                        if CATEGORY == '100': #slot
+                            res.StatusCode = 0
+                            GameBet.objects.create(provider=PROVIDER,
+                                        transaction_id=trans_id,
+                                        category=cate,
+                                        user=user,
+                                        user_name=user.username,  
+                                        currency=user.currency, 
+                                        market=ibetCN,
+                                        ref_no=request.linkId,
+                                        amount_wagered=decimal.Decimal(request.amount),
+                                        other_data={
+                                                'provider_trans_id': request.transactionId
+                                                }
+                                        )
+                        else:
+                            
+                            # if str(token) == request.loginToken:
+                                
+                            res.StatusCode = 0
+                            GameBet.objects.create(provider=PROVIDER, 
+                                                game_name=request.gameId,  
+                                                transaction_id=trans_id,
+                                                category=cate,
+                                                user=user,
+                                                user_name=user.username,  
+                                                currency=user.currency, 
+                                                market=ibetCN,
+                                                ref_no=request.transactionId,
+                                                amount_wagered=decimal.Decimal(request.amount),
+                                                )
+                            # else:
+                            #     res.StatusCode = 2
+                        user.main_wallet = userBalance
+                        user.save()
+                    res.UserBalance = userBalance
+                    return res
+                else:
+                    res.UserBalance = user.main_wallet
+                    res.StatusCode = 7
+                    return res
             
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
@@ -221,71 +286,222 @@ class LiveDealerSoapService(ServiceBase):
 
     @rpc(CreditRequest,_body_style='bare', _returns=Container)
     def Credit(crx,request):  
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
+        except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
+                                        )
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+
         res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
-            userBalance = user.main_wallet + request.amount
-            token = Token.objects.get(user=user)
-            user.main_wallet = userBalance
-            user.save()
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             
-            CATEGORY = request.gameType
-            if CATEGORY == '6':
-                category = 'Baccarat'
-            elif CATEGORY == '28':
-                category = 'Roulette'
-            elif CATEGORY == '29':
-                category = 'Sicbo'
-            elif CATEGORY == '100':
-                category = 'Slots'
-            cate = Category.objects.get(name=category)
-            try:
-                betTrans = GameBet.objects.get(provider=PROVIDER, category=cate,ref_no=request.transactionId,username=user)
-                if str(token) == request.loginToken:
+            token = Token.objects.get(user=user)
+            with transaction.atomic():
+                userBalance = user.main_wallet + request.amount
+                
+            
+                CATEGORY = request.gameType
+                if CATEGORY == '6':
+                    category = 'Baccarat'
+                elif CATEGORY == '28':
+                    category = 'Roulette'
+                elif CATEGORY == '29':
+                    category = 'Sicbo'
+                elif CATEGORY == '100':
+                    category = 'Games'
+                try:
+                    cate = Category.objects.get(name='Live Casino')
+                except:
+                    logger.error("missing category.")
+
+                if CATEGORY == '100':
+                
+                    if request.gameId == GDCASINO_FISHING_GAMEID:
+                        if int(request.winLoss) < 0:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                    transaction_id=trans_id,
+                                                    category=cate,
+                                                    user=user,
+                                                    user_name=user.username,  
+                                                    game_name=request.gameId,
+                                                    currency=user.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.linkId,
+                                                    amount_wagered=decimal.Decimal(request.amount),
+                                                    amount_won=request.winLoss,
+                                                    outcome=1,
+                                                    resolved_time=timezone.now(),
+                                                    other_data={
+                                                        'provider_trans_id': request.transactionId
+                                                        }
+                                                    )
+                        else:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                    category=cate,
+                                                    transaction_id=trans_id,
+                                                    user=user,
+                                                    user_name=user.username, 
+                                                    game_name=request.gameId,
+                                                    currency=user.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.linkId,
+                                                    amount_wagered=decimal.Decimal(request.amount),
+                                                    amount_won=request.winLoss,
+                                                    outcome=0,
+                                                    resolved_time=timezone.now(),
+                                                    other_data={
+                                                        'provider_trans_id': request.transactionId
+                                                        }
+                                                    )
+                        
+                    else:
+                        if int(request.amount) < 0:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                        category=cate,
+                                                        user=user,
+                                                        user_name=user.username,  
+                                                        transaction_id=trans_id,
+                                                        currency=user.currency, 
+                                                        market=ibetCN,
+                                                        ref_no=request.linkId,
+                                                        amount_won=request.amount,
+                                                        outcome=1,
+                                                        resolved_time=timezone.now(),
+                                                        other_data={
+                                                            'provider_trans_id': request.transactionId
+                                                            }
+                                                        )
+                        else:
+                            GameBet.objects.create(provider=PROVIDER,   
+                                                        category=cate,
+                                                        user=user,
+                                                        user_name=user.username, 
+                                                        transaction_id=trans_id,
+                                                        currency=user.currency, 
+                                                        market=ibetCN,
+                                                        ref_no=request.linkId,
+                                                        amount_won=request.amount,
+                                                        outcome=0,
+                                                        resolved_time=timezone.now(),
+                                                        other_data={
+                                                            'provider_trans_id': request.transactionId
+                                                            }
+                                                        )
+                    
+                        res.UserBalance = userBalance
+                        res.StatusCode = 0
+                    user.main_wallet = userBalance
+                    user.save()
+                    return res
+                else: 
+                    # try:
+                    #     betTrans = GameBet.objects.get(provider=PROVIDER, category=cate,ref_no=request.transactionId,username=user)
+                        
+                    #     if str(token) == request.loginToken:
+                    #         with transaction.atomic():
+                    #             res.StatusCode = 0
+                    #             betTrans.amount_won = request.amount
+                    #             betTrans.outcome = 0
+                    #             betTrans.save()
+                    #     else:
+                    #         res.StatusCode = 2
+                    #     res.UserBalance = userBalance
+                    #     return res
+                    # except ObjectDoesNotExist as e:
+                    #     res.StatusCode = -1
+                    #     res.UserBalance = userBalance
+                    #     return res
+                    # if str(token) == request.loginToken:
                     res.StatusCode = 0
-                    betTrans.amount_won = request.amount
-                    betTrans.outcome = 0
-                    betTrans.save()
-                else:
-                    res.StatusCode = 2
-                res.UserBalance = userBalance
-                return res
-            except ObjectDoesNotExist as e:
-                res.StatusCode = -1
-                res.UserBalance = userBalance
-                return res
+                    if int(request.amount) < 0:
+                        
+                        GameBet.objects.create(provider=PROVIDER,   
+                                                    category=cate,
+                                                    user=user,
+                                                    user_name=user.username, 
+                                                    transaction_id=trans_id,
+                                                    currency=user.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.transactionId,
+                                                    amount_won=request.amount,
+                                                    outcome=1,
+                                                    resolved_time=timezone.now(),
+                                                    )
+                    else:
+                        GameBet.objects.create(provider=PROVIDER,   
+                                                    category=cate,
+                                                    user=user,
+                                                    user_name=user.username, 
+                                                    transaction_id=trans_id,
+                                                    currency=user.currency, 
+                                                    market=ibetCN,
+                                                    ref_no=request.transactionId,
+                                                    amount_won=request.amount,
+                                                    outcome=0,
+                                                    resolved_time=timezone.now(),
+                                                    )
+                    user.main_wallet = userBalance
+                    user.save()
+                    # else:
+                    #     res.StatusCode = 2
+        
+                    res.UserBalance = userBalance
+                    return res
+                   
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
             res.UserBalance = 0
             return res
     
     @rpc(TipRequest,_body_style='bare', _returns=Container)
-    def Tip(crx, request):  
+    def Tip(crx, request): 
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
+        except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
+                                        )
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+ 
         res = Container()
         try:
             user = CustomUser.objects.get(username=request.userId)
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             userBalance = user.main_wallet - request.amount
             
             if userBalance > 0:
                 token = Token.objects.get(user=user)
-                user.main_wallet = userBalance
-                user.save()
                 
-                cate = Category.objects.get(name='LIVE-CASINO')
-                
-                if str(token) == request.loginToken:
+                try:
+                    cate = Category.objects.get(name='Live Casino')
+                except:
+                   logger.error("missing category.")
+
+                with transaction.atomic():
+                    # if str(token) == request.loginToken:
                     GameBet.objects.create(provider=PROVIDER,   
                                         category=cate,
-                                        username=user, 
-                                        currency=request.currency, 
+                                        user=user,
+                                        user_name=user.username, 
+                                        transaction_id=trans_id,
+                                        currency=user.currency, 
                                         market=ibetCN,
                                         ref_no=request.transactionId,
-                                        amount_wagered=request.amount,
+                                        amount_wagered=decimal.Decimal(request.amount),
                                         bet_type=TIP,
                                         )
                     res.StatusCode = 0
-                else:
-                    res.StatusCode = 2
+                    user.main_wallet = userBalance
+                    user.save()
+                    # else:
+                    #     res.StatusCode = 2
+                
                 res.UserBalance = userBalance
                 return res
             else:
@@ -299,49 +515,63 @@ class LiveDealerSoapService(ServiceBase):
     
     @rpc(CancelRequest,_body_style='bare', _returns=Container)
     def Cancel(crx, request): 
+        try:
+            PROVIDER = GameProvider.objects.get(provider_name=GD_PROVIDER)
+        except ObjectDoesNotExist:
+            PROVIDER = GameProvider.objects.create(provider_name=GD_PROVIDER,
+                                        type=GAME_TYPE_LIVE_CASINO,
+                                        market='letouCN, letouTH, letouVN'
+                                        )
+            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         res = Container() 
         try:
             user = CustomUser.objects.get(username=request.userId)
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
             userBalance = user.main_wallet + request.amount
             token = Token.objects.get(user=user)
-            user.main_wallet = userBalance
-            user.save()
-            
-            
-            try: 
-                record = GameBet.objects.get(ref_no=request.transactionId,
-                                              amount_wagered=request.amount,
-                                              currency=request.currency,
-                                              username=user)
-                record.delete()
-                res.StatusCode = 0
-                res.UserBalance = userBalance
-                return res
-            except ObjectDoesNotExist as e:
-                res.StatusCode = -1
-                res.UserBalance = userBalance
-                return res                    
+            try:
+                cate = Category.objects.get(name='Live Casino')
+            except:
+                logger.error("missing category.")
+                
+            with transaction.atomic():
+                GameBet.objects.create(provider=PROVIDER,   
+                                        category=cate,
+                                        user=user,
+                                        user_name=user.username, 
+                                        transaction_id=trans_id,
+                                        currency=user.currency, 
+                                        market=ibetCN,
+                                        ref_no=request.transactionId,
+                                        amount_wagered=decimal.Decimal(request.amount),
+                                        outcome=3
+                                        )
+                user.main_wallet = userBalance
+                user.save()
+            res.StatusCode = 0
+            res.UserBalance = userBalance
+            return res
+            # try: 
+            #     record = GameBet.objects.get(ref_no=request.transactionId,
+            #                                   amount_wagered=decimal.Decimal(request.amount),
+            #                                   currency=request.currency,
+            #                                   username=user)
+            #     record.delete()
+            #     user.main_wallet = userBalance
+            #     user.save()
+            #     res.StatusCode = 0
+            #     res.UserBalance = userBalance
+            #     return res
+            # except ObjectDoesNotExist as e:
+            #     res.StatusCode = -1
+            #     res.UserBalance = userBalance
+            #     return res                    
             
         except ObjectDoesNotExist as e:
             res.StatusCode = -1
             res.UserBalance = 0
             return res
 
-class SlotSoapService(ServiceBase):
-    @rpc(Unicode(nillable=True),Unicode(nillable=True), _returns=Container)
-    def GetUserBalance(ctx, userId, currency):
-        res = Container()
-        try:
-            user = CustomUser.objects.get(username=userId)
-            userBalance = user.main_wallet
-            token = Token.objects.get(user=user)
-            
-            res.StatusCode = 0
-            res.UserBalance = userBalance
-            return res
-            
-        except ObjectDoesNotExist as e:
-            raise ObjectNotFoundError(e)
 
 def on_method_return_string(ctx):
     ctx.out_string[0] = ctx.out_string[0].replace(b'tns:', b'')

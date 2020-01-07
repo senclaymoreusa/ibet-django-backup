@@ -19,7 +19,7 @@ class UserAdmin(BaseUserAdmin):
 	list_filter = ('is_admin',)
 
 	fieldsets = (
-			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'language', 'block', 'referred_by', 'referral_code', 'reward_points', 'main_wallet', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code', 'product_attribute','contact_methods', 'social_media', 'permanent_block_time', 'permanent_block_interval', 'temporary_block_time', 'temporary_block_interval', 'user_application_time', 'security_question', 'security_answer', 'vip_level')}),
+			(None, {'fields': ('username','email','password', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'language', 'block', 'referred_by', 'referral_code', 'reward_points', 'main_wallet','onebook_wallet', 'ea_wallet', 'ky_wallet', 'active', 'activation_code', 'gender', 'title', 'over_eighteen', 'odds_display', 'preferred_team', 'contact_option', 'deposit_limit', 'promo_code', 'currency', 'reset_password_code', 'product_attribute','contact_methods', 'social_media', 'permanent_block_time', 'permanent_block_interval', 'temporary_block_time', 'temporary_block_interval', 'user_application_time', 'security_question', 'security_answer')}),
 			('Permissions', {'fields': ('is_admin', 'is_staff')})
 		)
 	search_fields = ('username','email')
@@ -30,18 +30,17 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(CustomUser, UserAdmin)
 admin.site.unregister(Group)
 admin.site.register(Language)
-admin.site.register(Category)
 admin.site.register(Status)
-admin.site.register(Game)
 admin.site.register(Config)
 admin.site.register(NoticeMessage)
+admin.site.register(UserWallet)
 
-admin.site.register(GameRequestsModel)
 admin.site.register(Limitation)
-admin.site.register(Commission)
+admin.site.register(PersonalCommissionLevel)
 admin.site.register(ReferChannel)
 admin.site.register(UserAction)
 admin.site.register(Segmentation)
+admin.site.register(SystemCommissionLevel)
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm

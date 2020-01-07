@@ -1,0 +1,320 @@
+body, label{
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+table {
+    width: 100%;
+}
+
+#search_row {
+    margin-top: 30px;
+}
+
+#bonus_search {
+    float: right;
+    margin-right:100px;
+}
+
+#bonus_table {
+    margin-top: 30px;
+    margin-bottom: 90px;
+}
+
+.dataTables_filter {
+    display: inline;
+}
+
+#bonus_table_filter {
+    float: right;
+    margin-bottom: 20px;
+    margin-top: -50px;
+}
+
+#bonus_table_paginate a button{
+    padding-left: 15px;
+}
+
+#bonus_type_filter, #bonus_status_filter {
+    width: 140px;
+    height: 33px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+/* new bonus pages */
+#new-bonus-pages .modal-dialog {
+    width: 40%;
+}
+
+#bonus-01 input {
+    height: 33px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+#new-bonus-pages #bonus-duration input {
+    margin-right: -5px;
+}
+
+#new-bonus-pages .bonus-duration-title {
+    width: 49px;
+    height: 33px;
+    border: solid 1px #bdbdbd;
+    background-color: #eaeaea;
+    text-align: center;
+}
+
+#bonus-detail-01 label {
+    margin-top: 20px;
+}
+
+.new-bonus-btn-group {
+    margin-top: 20px;
+}
+
+#bonus-02 input, #bonus-detail-triggered-03 input {
+    margin: 15px 0 10px 10px;
+}
+
+.wager-reqs {
+    background-color: #f3f3f3;
+    width: 280px;
+    height: 41px;
+    margin: 0 0 10px 0;
+    padding: 10px 0 0 7px;
+}
+
+#wager-reqs {
+    font-family: Helvetica;
+    font-size: 11px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+}
+
+#wager-reqs .col-md-7 {
+    padding-right: 0px;
+}
+
+.input-front {
+    height: 33px;
+    width: 33px;
+    margin-top: -6px;
+    margin-right: -5px;
+    border: solid 1px #bdbdbd;
+}
+
+.input-behind {
+    height: 33px;
+    width: 96px;
+    margin-top: -6px;
+    background-color: #eaeaea;
+    border: solid 1px #bdbdbd;
+}
+
+.control-row {
+    margin: 5px 0 0 0;
+    padding: 12px 0 0 0;
+    width: 373px;
+    height: 41.3px;
+    background-color: #f3f3f3;
+}
+
+#bonus-amount {
+    height: 33px;
+    width: 128px;
+    margin: 10px 0 10px 0;
+}
+
+#new-bonus-pages p {
+    font-size: 13px;
+    margin: 20px 0 20px 0;
+}
+
+.eligibility-select-box, .excluded-select-box, .bonus-input {
+    width: 242px;
+    height: 32px;
+    border-radius: 4px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+}
+
+.bonus-label {
+    margin-top: 20px;
+}
+
+.model-header-text {
+    font-family: Helvetica;
+    font-size: 18px;
+    font-weight: bold;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #0e0e0e;
+}
+
+.modal-header .close {
+    margin-top: 0px;
+}
+
+.bonus-select {
+    padding: 0 0 10px 10px;
+    border: 1px #dadada solid;
+}
+
+.bonus-control-measure {
+    width: 94px;
+    height: 33px;
+    border: solid 1px #bdbdbd;
+    background-color: #ffffff;
+    margin-top: -8px;
+    text-align: center;
+}
+
+.bonus-delivery {
+    margin: 20px 0 30px 0;
+}
+
+.delivery-choice {
+    margin: 20px 0 30px 0;
+}
+
+.bonus-delivery input {
+    margin-right: 10px;
+}
+
+.new-bonus-btn-group button {
+    margin-right: 10px;
+}
+
+.bonus-type {
+    display: none;
+    margin-left: 20px;
+}
+
+#provider_selector_chosen {
+    margin: 10px;
+}
+
+#provider_selector_chosen ul{
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+#provider_selector_chosen .chosen-drop {
+    border: #cccccc;
+    border-radius: 4px;
+}
+
+.chosen-choices {
+    border-radius: 4px;
+}
+
+.wager-unselected {
+    width:172px;
+    font-size: 9px;
+    border: none;
+    margin: 4px 0 0 -30px;
+    background-color: #f3f3f3;
+}
+
+.delivery-choice input {
+    margin-right: 5px;
+}
+
+.deposit-amount-type {
+    margin: 20px -20px 20px -20px;
+    padding: 15px;
+    background-color: #f3f3f3;
+    border: solid 1px #c6c6c6;
+    font-size: 11px;
+}
+
+.deposit-amount-type input {
+    height: 33px;
+    border: solid 1px #bdbdbd;
+}
+
+.deposit-amount-type .disabled-input {
+    width: 33px;
+    border: solid 1px #bdbdbd;
+    background-color: #eaeaea;
+    text-align: center;
+    margin-left: -4px;
+}
+
+.up-arrow {
+    position: relative;
+    text-decoration: none;
+    border-radius: 2px;
+}
+.up-arrow:before {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 100%;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-bottom-color: #bdbdbd;
+}
+
+.up-arrow:after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 100%;
+    width: 0;
+    height: 0;
+    border: 9px solid transparent;
+    border-bottom-color: #f3f3f3;
+}
+
+#deposit-tiered .row .col-md-2 , #turnover-tiered .row .col-md-2 {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+#deposit-tiered .row .col-md-2 , #turnover-tiered .row .col-md-1 {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.bonus-payout {
+    margin: 20px 0 30px 0;
+}
+
+
+/* BONUS TRANSACTIONS PAGE */
+#bonus-transactions-table {
+    margin-top: 30px;
+    margin-bottom: 90px;
+    font-family: Helvetica;
+    font-size: 13px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #4a4a4a;
+}
+
+#bonus-delivery-btn {
+    background-color: #428bca;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border-color: #428bca;
+}

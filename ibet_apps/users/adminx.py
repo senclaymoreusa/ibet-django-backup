@@ -3,7 +3,7 @@ import xadmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import  CustomUser, UserTag, UserWithTag, Category, UserAction
+from .models import  CustomUser, UserTag, UserWithTag, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
 from users.views.adminview import *
 from users.views.views import *
@@ -52,6 +52,22 @@ class GlobalSettings(object):
                 )
             },
             {
+                'title': _('Bonuses'),
+                'icon': 'fa fa-ravelry',
+                'menus': (
+                    {
+                        'title': _('Bonus records'),
+                        'url': '/xadmin/bonus_records/',
+                        'icon': 'fas fa-power-off'
+                    },
+                    {
+                        'title': _('Bonus transactions'),
+                        'url': '/xadmin/bonus_transactions/',
+                        'icon': 'fas fa-clock-o'
+                    },
+                )
+            },
+            {
                 'title': _('Affiliate'),
                 'icon': 'fa fa-smile-o',
                 'url': '/xadmin/agentview',
@@ -86,17 +102,17 @@ class GlobalSettings(object):
                 'menus': (
                     {
                         'title': _('Deposits'),
-                        'url': '/xadmin/deposit',
+                        'url': '/xadmin/deposit/0?show=20',
                         'icon': 'fa fa-arrow-right'
                     },
                     {
                         'title': _('Withdrawals'),
-                        'url': '/xadmin/withdrawal',
+                        'url': '/xadmin/withdraw/0?show=20',
                         'icon': 'fa fa-arrow-left'
                     },
                     {
-                        'title': _('Settings'),
-                        'url': '/xadmin/channel_list',
+                        'title': 'Payment Configuration',
+                        'url': '/xadmin/payment_config',
                         'icon': 'fa fa-cog'
                     },
                 )
