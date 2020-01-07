@@ -189,13 +189,11 @@ def confirmWithdrawRequest(request):
             return HttpResponse("false")
 
         except ObjectDoesNotExist as e:
-            logger.error("FATAL__ERROR::Help2Pay::Withdraw checksum does not match")
-            logger.error(repr(e))
+            logger.error("Help2Pay::Withdraw checksum does not match")
             logger.error(f"transaction id {trans_id} does not exist")
             return HttpResponse("false")
         except Exception as e:
-            logger.error("FATAL__ERROR::Help2Pay::Exception occured during withdraw process")
-            logger.error(repr(e))
+            logger.critical("FATAL__ERROR::Help2Pay::Exception occured during withdraw process", exc_info=True, stack_info=True)
             return HttpResponse("false")
 
 def withdrawResult(request):
@@ -317,8 +315,7 @@ class SubmitPayout(View):
                     can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
                 except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-                    logger.error("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request")
-                    logger.error(repr(e))
+                    logger.critical("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request", exc_info=1, stack_info=1)
                     traceback.print_exc(file=sys.stdout)
                     return HttpResponse(status=500)
             else:
@@ -362,8 +359,6 @@ class SubmitPayout(View):
         except ObjectDoesNotExist as e:
             logger.error(repr(e))
             return HttpResponse(status=500)
-
-
 
 
 

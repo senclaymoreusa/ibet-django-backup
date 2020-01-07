@@ -528,7 +528,7 @@ def capture_transaction(request):
 
             return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
         except Exception as e:
-            logger.error("FATAL__ERROR::AstroPay deposit failed::" + repr(e))
+            logger.critical("FATAL__ERROR::AstroPay deposit failed::" + repr(e), exc_info=True, stack_info=True)
 
 async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(

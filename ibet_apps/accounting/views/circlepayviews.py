@@ -68,8 +68,7 @@ def create_deposit(request):
                 "transaction_id": transaction_id
             })
         except Exception as e:
-            logger.error("FATAL__ERROR::CirclePay::Unable to create deposit")
-            logger.error(repr(e))
+            logger.critical("FATAL__ERROR::CirclePay::Unable to create deposit", exc_info=True, stack_info=1)
             return JsonResponse({
                 "success": False,
                 "message": "Exception occured"
@@ -123,8 +122,7 @@ def confirm_payment(request):
                 "message": "Received confirmation of payment"
             })
         except ObjectDoesNotExist as e:
-            logger.error("FATAL__ERROR::CirclePay::Unable to confirm payment")
-            logger.error(repr(e))
+            logger.critical("FATAL__ERROR::CirclePay::Unable to confirm payment", exc_info=1, stack_info=1)
             return JsonResponse({"message": "Could not find matching transaction"})
 
 

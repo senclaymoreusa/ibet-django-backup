@@ -67,7 +67,7 @@ def create_deposit(request):
         if r.status_code == 200:
             res_json = r.json()
         else:
-            logger.error("Warning::ScratchCard::ScratchCard servers returned status that wasn't 200")
+            logger.warning("Warning::ScratchCard::ScratchCard servers returned status that wasn't 200")
             
         if res_json["status"] == 6:
             user_id = CustomUser.objects.get(username=request.user.username)
@@ -176,7 +176,14 @@ def confirm_transaction(request):
                 "message": "received response"
             })
         except ObjectDoesNotExist as e:
-            logger.error("FATAL__ERROR::ScratchCard::Matching transaction not found")
-            logger.error(e)
-            logger.info("matching transaction not found / does not exist")
-            return JsonResponse({"message": "Could not find matching transaction"})
+            logger.critical("FATAL__ERROR::ScratchCard::Matching transaction not found", exc_info=1, stack_info=1)
+            return JsonResponse({
+                "success": False,
+                "message": "Could not find matching transaction"
+            })
+        except Exception as e:
+            logger.exception("Exception occurred::"+repr(e))
+            return JsonResponse({
+                "success": False,
+                "message": "There was an exception"
+            })
