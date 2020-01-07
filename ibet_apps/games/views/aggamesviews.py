@@ -65,11 +65,6 @@ def agftp(request):
             logger.error("(FETAL_ERROR)There is something wrong with redis connection.")
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        last_file = redis.get_ag_last_file()
-        print(last_file)
-        processed = True
-        if last_file is None:
-            processed = False
 
         try:
             folders = ftp.nlst()
@@ -96,12 +91,14 @@ def agftp(request):
                     else:
                         raise
                 
+                
                 for file in files:
-                    if last_file == file:
-                        processed = False
+                    # print(file)
 
-                    if last_file == file or processed:
-                        continue
+                    if redis.check_ag_added_file(file) is False:   #if the file is not existed in redis
+                        redis.set_ag_added_file(file)              #then add the file into redis
+                    else:
+                        continue                                   #if it is already existed then go to next index
 
                     logger.info('writing file to local: ' + file)
                     localFile = open(file, 'wb')
@@ -224,9 +221,6 @@ def agftp(request):
                                                     market=ibetCN,
                                                     resolved_time=timezone.now(),
                                                     )
-                    last_file = str(file).split('.')[0]
-                    print(last_file)
-                    redis.set_ag_last_file(last_file)
                 ftp.cwd('..')
             ftp.cwd('..')
         ftp.quit()

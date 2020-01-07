@@ -6,7 +6,7 @@ REDIS_KEY_PREFIX_BONUS_BY_DEVICE = 'bonuses_by_device:'
 REDIS_KEY_PREFIX_DEVICES_BY_USER = 'devices_by_user:'
 REDIS_KEY_PREFIX_USERS_BY_DEVICE = 'users_by_device:'
 REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS = 'onebook_history:'
-REDIS_KEY_PREFIX_AG_BET_DETAILS = 'AG_history:'
+REDIS_KEY_PREFIX_AG_FILES = 'AG_files:'
 
 def getBonusByDeviceRedisKey(device_id):
     return REDIS_KEY_PREFIX_BONUS_BY_DEVICE + str(device_id)
@@ -20,8 +20,8 @@ def getUsersByDeviceRedisKey(device_id):
 def getOnebookBetDetailsRedisKey():
     return REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS
 
-def getAGBetDetailsRedisKey():
-    return REDIS_KEY_PREFIX_AG_BET_DETAILS
+def getAGFileHistoryRedisKey():
+    return REDIS_KEY_PREFIX_AG_FILES
 
 class RedisHelper():
     
@@ -74,10 +74,11 @@ class RedisHelper():
     def get_latest_timestamp(self, key):
         return self.r.get(key)
 
-    def set_ag_last_file(self, filename):
-        ag_bet_history = getAGBetDetailsRedisKey()
-        return self.r.sadd(ag_bet_history, filename)
+
+    def set_ag_added_file(self, ag_file):
+        ag_file = getAGFileHistoryRedisKey()
+        return self.r.sadd(ag_file, ag_file)
     
-    def get_ag_last_file(self):
-        ag_bet_history = getAGBetDetailsRedisKey()
-        return self.r.get(ag_bet_history)
+    def check_ag_added_file(self, ag_file):
+        ag_file = getAGFileHistoryRedisKey()
+        return self.r.sismember(ag_file, ag_file)
