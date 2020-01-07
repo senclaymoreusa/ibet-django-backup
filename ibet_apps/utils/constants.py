@@ -645,19 +645,7 @@ PAYPAL_CLIENT_SECRET = 'ENKmcu7Sci-RHW2gHvzmeUbZvSaCuwRiEirKH0_TkYo4AZWbVnfevS-h
 PAYPAL_SANDBOX_URL = 'https://api.sandbox.paypal.com/'
 
 
-if os.getenv("ENV") != "local":
-    # fetch prod credentials from s3
-    ASTROPAY_URL = "https://api.astropaycard.com"
-    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
-    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
-    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
-    # print(ASTROPAY_X_LOGIN, ASTROPAY_X_TRANS_KEY, ASTROPAY_SECRET)
-else:
-    # astroPay sandbox keys:
-    ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
-    ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
-    ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
-    ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+
 
 
 # fgo
@@ -724,16 +712,18 @@ PT_BASE_URL = keys["PT"]["PT_BASE_URL"]
 ENTITY_KEY = keys["PT"]["ENTITY_KEY"]
 
 
-HELP2PAY_MERCHANT_THB = "M0513"
-HELP2PAY_MERCHANT_VND = "M0514"
-HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
-HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+
 
 if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     API_DOMAIN = "https://payment-testing.claymoreeuro.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
+    HELP2PAY_BANK = 'KKR'
+    HELP2PAY_MERCHANT_THB = "M0513"
+    HELP2PAY_MERCHANT_VND = "M0514"
+    HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+    HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
@@ -742,12 +732,22 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     QT_PASS_KEY = keys["QTGAMES"]["PRODUCTION"]["PASS_KEY"]
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
-    H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0513"
+    H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
+    ASTROPAY_URL = "https://api.astropaycard.com"
+    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
+    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
+    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
+    ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    HELP2PAY_BANK = 'KKR'
+    HELP2PAY_MERCHANT_THB = "M0513"
+    HELP2PAY_MERCHANT_VND = "M0514"
+    HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+    HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
@@ -757,11 +757,21 @@ elif "dev" in os.getenv("ENV"):
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    ASTROPAY_URL = "https://api.astropaycard.com"
+    ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
+    ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
+    ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
+    ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
 else:
-    API_DOMAIN = "https://cf61d044.ngrok.io/"
+    API_DOMAIN = "http://3fb2738f.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
+    HELP2PAY_BANK = 'KKR'
+    HELP2PAY_MERCHANT_THB = "M0513"
+    HELP2PAY_MERCHANT_VND = "M0514"
+    HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
+    HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
@@ -771,17 +781,18 @@ else:
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
+    ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
+    ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
+    ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
+    ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
 
-BackURI = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://128dbbc7.ngrok.io/accounting/api/help2pay/deposit_success"
+BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
+REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
 
-
+HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/request_withdraw"
 
 GAME_FILTER_OPTION = [
-    {
-        'name': 'Games Category',
-        'data': ['New', 'Popular', 'Table Games', 'Slots', 'All Games']
-    },
     {
         'name': 'Jackpot',
         'data': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots']
@@ -806,6 +817,16 @@ GAME_FILTER_OPTION = [
         'data': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
     },
 ]
+
+
+GAME_FILTER_OPTIONS = {
+    'Providers': [],
+    'Features': ['Megaways', 'Pay Both Ways', 'Bonus Feature', 'Free Spins', 'Double Or Nothing Feature'],
+    'Theme': ['Egypt', 'Oriental', 'Mythology', 'Animal', 'Adventure', 'Fruit', 'Western', 'Film/Tv', 'Music', 'Sports',
+            'Space', 'Holidays', 'Dark/ Halloween', 'Vegas'],
+    'Jackpot': ['Daily Jackpots', 'Fixed Jackpots', 'Progressive Jackpot', 'Multiple Jackpots'],
+    'Sort': ['Name', 'Popularity', 'Jackpot Size Asc', 'Jackpot Size Desc']
+}
 
 # Notification
 MESSAGE_REJECTED = 0
@@ -1482,7 +1503,6 @@ GPT_PROVIDER = "GPT"
 OPUS_PROVIDER = "OPUS"
 BBIN_PROVIDER = "BBIN"
 PT_PROVIDER = "PT"
-
 
 
 
