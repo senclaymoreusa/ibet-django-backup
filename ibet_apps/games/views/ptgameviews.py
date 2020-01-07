@@ -268,7 +268,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                 
                     return False
         else :
-            logger.error("FATAL__ERROR: in PT game transfer status code.")
+            logger.error("FATAL__ERROR: PT game transfer status code.")
             return False
     finally:
         # delete the file.
@@ -327,7 +327,7 @@ class GetBetHistory(APIView):
             'X_ENTITY_KEY': ENTITY_KEY
 
         }
-        rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
+        # rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
         
         
         if rr.status_code == 200 :    
