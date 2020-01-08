@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
+
+from bonus.bonus_helper import checkFTD
 from utils.constants import *
 import utils.helpers as helpers
 
@@ -195,9 +197,9 @@ class submitDeposit(generics.GenericAPIView):
                     amount=amount,
                     user_id=CustomUser.objects.get(pk=userid),
                     currency= int(currency),
-                    transaction_type=0, 
-                    channel=4,
-                    status=2,
+                    transaction_type=TRANSACTION_DEPOSIT,
+                    channel=ASIAPAY,
+                    status=TRAN_CREATE_TYPE,
                     method=bankidConversion[BankID],
                     request_time=timezone.now(),
                     
@@ -365,9 +367,9 @@ class submitCashout(generics.GenericAPIView):
                 amount=amount,
                 user_id=CustomUser.objects.get(pk=userid),
                 currency= int(currency),
-                transaction_type=1, 
-                channel=4,
-                status=2,
+                transaction_type=TRANSACTION_WITHDRAWAL,
+                channel=ASIAPAY,
+                status=TRAN_CREATE_TYPE,
                 method=cashoutMethod,
                 request_time=timezone.now(),
             )
@@ -500,15 +502,36 @@ def depositArrive(request):
         try:
             trans = Transaction.objects.get(transaction_id=OrderID)
             # print(trans)
-            if StatusCode == '001':  
-                trans.status = 0
-                trans.arrive_time = timezone.now()
-                trans.remark = 'Transaction success'
-                trans.qrcode = ''
-                trans.save()
+            if StatusCode == '001':
+                with transaction.atomic():
+                    trans.status = TRAN_SUCCESS_TYPE
+                    arrive_time = timezone.now()
+                    trans.arrive_time = arrive_time
+                    trans.remark = 'Transaction success'
+                    trans.qrcode = ''
+                    trans.save()
+
+                    # update user first deposit time
+                    # check if qualified first deposit bonus
+                    if checkFTD(trans):
+                        user = trans.user_id
+                        user.ftd_time = arrive_time
+                        user.save()
+                        logger.info("Update player {}'s first deposit time {}".format(user.username, arrive_time))
+
+                    # check if qualified next deposit bonus
+                    # else:
+
+
+
+
+
+
+
+
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
-                trans.status = 1
+                trans.status = TRAN_FAIL_TYPE
                 trans.remark = 'Transaction failed'
                 trans.qrcode = ''
                 trans.save()

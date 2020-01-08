@@ -238,6 +238,11 @@ class BonusView(View):
                         type = req_data.get('trigger_type')
                     type = BONUS_TYPE_VALUE_DICT.get(type)
 
+                    ftd_bonus = False    # first time deposit bonus
+                    if type == BONUS_TYPE_DEPOSIT and req_data.get('trigger_subtype') == 'first':
+                        # add a successful deposit must have
+                        ftd_bonus = True
+
                     bonus_amount_list = req_data.get('bonus_amount_list')
 
                     max_user_amount = req_data.get('max_user_amount')
@@ -312,6 +317,9 @@ class BonusView(View):
                             requirements = req_data['requirements']
 
                             must_have = requirements.get('must_have')
+                            if not ftd_bonus and BONUS_VALID_DEPOSIT not in must_have:
+                                must_have.append(BONUS_VALID_DEPOSIT)
+
                             aggregate_method = requirements['aggregate_method']
                             time_limit = None
                             if requirements['time_limit']:
@@ -465,7 +473,7 @@ class UserBonusEventView(View):
             result = {}
             ube_filter = Q()
 
-            total = UserBonusEvent.objects.all().count()
+            total = UserBonusEvent.objects.filter(bonus_parent__isnull=False).count()
 
             if min_date and max_date:
                 ube_filter &= (Q(delivery_time__gte=dateToDatetime(min_date)) & Q(

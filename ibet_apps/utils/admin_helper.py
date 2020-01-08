@@ -11,7 +11,7 @@ from users.models import CustomUser, UserAction, SystemCommissionLevel, Personal
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
-from games.models import GameBet
+from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
@@ -395,6 +395,7 @@ BONUS_DELIVERY_VALUE_DICT = {
 }
 
 # hard code for deposit tiered amount setting
+# deposit amount upper bound, bonus rate, max bonus amount, turnover multiple
 DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
                           [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
 
