@@ -100,10 +100,10 @@ def agftp(request):
                     else:
                         continue                                   #if it is already existed then go to next index
 
-                    logger.info('writing file to local: ' + file)
-                    localFile = open(file, 'wb')
-                    ftp.retrbinary('RETR ' + file, localFile.write)
-                    localFile.close()
+                    # logger.info('writing file to local: ' + file)
+                    # localFile = open(file, 'wb')
+                    # ftp.retrbinary('RETR ' + file, localFile.write)
+                    # localFile.close()
 
                     
                     r = BytesIO()
@@ -111,9 +111,10 @@ def agftp(request):
                     rdata = r.getvalue().decode("utf-8")
                     xml = '<root>'+rdata+'</root>'
 
-                    s3client = boto3.client("s3")
-                    s3client.upload_file(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
-                    logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + file)
+                    writeToS3(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
+                    # s3client = boto3.client("s3")
+                    # s3client.upload_file(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
+                    # logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + file)
                     
                     root = ET.fromstring(xml)
                     for child in root:
