@@ -566,7 +566,7 @@ def getBetDetail(request):
                         # sleep(delay)  
                         # print("sleep")  
                     else:
-                        logger.info("BetDetails is not existed.")
+                        redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
                         break
                 else:
                     redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop

@@ -8,6 +8,9 @@ from users.models import CustomUser
 from django.utils import timezone
 from datetime import datetime
 import pytz
+import logging
+
+logger = logging.getLogger("django")
 
 
 def getProvidersAndCategories(request):
@@ -25,48 +28,70 @@ def getBetHistory(request):
     # provider,
     # category,
     # status (open/closed)
-    if request.method == "GET":
-        username = request.GET.get("userid")
-        if not username:
-            return HttpResponse(status=404)
 
-        user = CustomUser.objects.get(username=username)
+    try:
+        if request.method == "GET":
+            user_id = request.GET.get("userid")
+            if not user_id:
+                return HttpResponse(status=404)
 
-        all_bets = GameBet.objects.select_related().filter(user=user).order_by('-bet_time')
+            if not request.GET.get("start") and not request.GET.get("end"):
+                logger.info("Getting bet history: You have to select start or end date")
+                return JsonResponse({
+                    'success': False,
+                    'results': "You have to select start or end date"
+                })
 
-        if request.GET.get("status") and request.GET.get("status") == "open":
-            all_bets = all_bets.filter(resolved_time__isnull=True)
-        if request.GET.get("status") and request.GET.get("status") == "closed":
-            all_bets = all_bets.filter(resolved_time__isnull=False)
+            user = CustomUser.objects.get(pk=user_id)
 
-        if request.GET.get("provider"):
-            provider = request.GET.get("provider")
-            all_bets = all_bets.filter(provider=provider)
-        
-        if request.GET.get("start"):
-            startStr = request.GET.get("start")
-            startDate = datetime.strptime(startStr, "%Y-%m-%d")
+            all_bets = GameBet.objects.select_related().filter(user=user).order_by('-bet_time')
 
-            all_bets = all_bets.filter(bet_time__gte=pytz.utc.localize(startDate))
+            if request.GET.get("status") and request.GET.get("status") == "open":
+                all_bets = all_bets.filter(resolved_time__isnull=True)
+            if request.GET.get("status") and request.GET.get("status") == "closed":
+                all_bets = all_bets.filter(resolved_time__isnull=False)
 
-        if request.GET.get("end"):
-            endStr = request.GET.get("end")
-            endDate = datetime.strptime(endStr, "%Y-%m-%d")
-            all_bets = all_bets.filter(bet_time__lte=pytz.utc.localize(endDate))
+            if request.GET.get("provider"):
+                provider = request.GET.get("provider")
+                all_bets = all_bets.filter(provider=GameProvider.objects.get(pk=provider))
 
-        bet_data = []
-        for bet in all_bets:
-            data = dict()
-            data["amount_wagered"] = bet.amount_wagered
-            data["amount_won"] = bet.amount_won
-            data["outcome"] = bet.get_outcome_display()
-            data["date"] = bet.bet_time
-            data["category"] = bet.category.name
-            data["provider"] = bet.provider.provider_name
-            bet_data.append(data)
+            if request.GET.get("category"):
+                category = request.GET.get("category")
+                all_bets = all_bets.filter(category_id=Category.objects.get(pk=category))
+            
+            if request.GET.get("start"):
+                startStr = request.GET.get("start")
+                startDate = datetime.strptime(startStr, "%Y/%m/%d")
 
+                all_bets = all_bets.filter(bet_time__gte=pytz.utc.localize(startDate))
+
+            if request.GET.get("end"):
+                endStr = request.GET.get("end")
+                endDate = datetime.strptime(endStr, "%Y/%m/%d")
+                all_bets = all_bets.filter(bet_time__lte=pytz.utc.localize(endDate))
+
+            bet_data = []
+            for bet in all_bets:
+                data = dict()
+                data["amount_wagered"] = bet.amount_wagered
+                data["amount_won"] = bet.amount_won
+                data["outcome"] = bet.get_outcome_display()
+                data["date"] = bet.bet_time
+                data["category"] = bet.category.name
+                data["provider"] = bet.provider.provider_name
+                bet_data.append(data)
+
+            logger.info("Successfully get bet history")
+            return JsonResponse({
+                'success': True,
+                'results': bet_data,
+                'full_raw_data': list(all_bets.values())
+            })
+
+    except Exception as e:
+        logger.error("(Error) Getting bet history error: ", e)
         return JsonResponse({
-            'success': True,
-            'results': bet_data,
-            'full_raw_data': list(all_bets.values())
+            'success': False,
+            'message': "There is something wrong"
         })
+
