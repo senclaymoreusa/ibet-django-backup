@@ -208,42 +208,46 @@ def withdrawResult(request):
                 transaction_id=trans_id,
                 amount=amount
             )
-        except ObjectDoesNotExist as e:
-            logger.error(repr(e))
-            logger.error(f"transaction id {trans_id} does not exist")
-            return HttpResponse("false")  
 
-        if update_data.order_id != '0':  # attempting to confirm the same transaction twice
-            logger.info("Callback was sent twice for Deposit #" + str(trans_id))
-            return JsonResponse({
-                "error": "Transaction was already modified from 3rd party callback",
-                "message": "Transaction already exists"
-            })
-        result = "Pending"
-        if trans_status == '000':
-            update_data.status = 0
-            result = "Success"
-            helpers.addOrWithdrawBalance(update_data.user_id, amount, 'withdraw')
-        elif trans_status == '001':
-            update_data.status = 1
-            result = "Failed"
-        elif trans_status == '006':
-            update_data.status = 4
-            result = "Approved"
-        elif trans_status == '007':
-            update_data.status = 8
-            result = "Rejected"
-        elif trans_status == '009':
-            update_data.status = 3
+            if update_data.order_id != '0':  # attempting to confirm the same transaction twice
+                logger.info("Callback was sent twice for Deposit #" + str(trans_id))
+                return JsonResponse({
+                    "error": "Transaction was already modified from 3rd party callback",
+                    "message": "Transaction already exists"
+                })
             result = "Pending"
+            if trans_status == '000':
+                update_data.status = 0
+                result = "Success"
+                helpers.addOrWithdrawBalance(update_data.user_id, amount, 'withdraw')
+            elif trans_status == '001':
+                update_data.status = 1
+                result = "Failed"
+            elif trans_status == '006':
+                update_data.status = 4
+                result = "Approved"
+            elif trans_status == '007':
+                update_data.status = 8
+                result = "Rejected"
+            elif trans_status == '009':
+                update_data.status = 3
+                result = "Pending"
 
-        update_data.order_id = withdrawID
-        update_data.arrive_time = timezone.now()
-        update_data.last_updated = timezone.now()
-        update_data.remark = result
-        update_data.save()
+            update_data.order_id = withdrawID
+            update_data.arrive_time = timezone.now()
+            update_data.last_updated = timezone.now()
+            update_data.remark = result
+            update_data.save()
+            
+            return HttpResponse("true")
+
+        except ObjectDoesNotExist as e:
+            logger.error(f"transaction id {trans_id} does not exist", exc_info=1, stack_info=1)
+            return HttpResponse("false")  
+        except Exception as e:
+            logger.exception("Help2Pay::withdrawResult::Exception Occurred", exc_info=1, stack_info=1)
+            return HttpResponse("false")
         
-        return HttpResponse("true")
 
 # user submits withdraw request
 class SubmitPayout(View):
