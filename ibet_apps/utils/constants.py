@@ -141,7 +141,7 @@ STATE_CHOICES = (
     (TRAN_FAIL_TYPE, 'Failed'),
     (TRAN_CREATE_TYPE, 'Created'),
     (TRAN_PENDING_TYPE, 'Pending'),
-    (TRAN_APPROVED_TYPE, 'Approved'),
+    (TRAN_APPROVED_TYPE, 'Approved'),    # not being used 
     (TRAN_CANCEL_TYPE, 'Canceled'),
     (TRAN_COMPLETED_TYPE, 'Completed'),
     (TRAN_RESEND_TYPE, 'Resent'),

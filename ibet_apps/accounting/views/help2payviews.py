@@ -234,7 +234,7 @@ def confirmWithdrawRequest(request):
                 if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
                     withdraw_txn.arrive_time = timezone.now()
                     withdraw_txn.last_updated = timezone.now()
-                    withdraw_txn.status=TRAN_APPROVED_TYPE
+                    withdraw_txn.status=TRAN_SUCCESS_TYPE
                     withdraw_txn.save()
                     return HttpResponse("true")
                 else:
