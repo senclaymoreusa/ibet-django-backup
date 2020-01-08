@@ -401,28 +401,29 @@ class NotificationView(CommAdminView):
         serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():
-            notification = serializer.save()
-            logger.info("Save notification message")
-            # # store notification data in NotificationLog
-            for group in groups:
-                group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
-                group.time_used = group.time_used + 1
-                group.save()
-                NotificationToGroup.objects.create(notification=notification, group=group)
-                group_users = UserToUserGroup.objects.filter(group=group)
-                for group_user in group_users:
-                    NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=group_user.user)
+            with transaction.atomic():
+                notification = serializer.save()
+                logger.info("Save notification message")
+                # # store notification data in NotificationLog
+                for group in groups:
+                    group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
+                    group.time_used = group.time_used + 1
+                    group.save()
+                    NotificationToGroup.objects.create(notification=notification, group=group)
+                    group_users = UserToUserGroup.objects.filter(group=group)
+                    for group_user in group_users:
+                        NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=group_user.user)
 
                 
-            for notifier in notifiers:
-                NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(username=notifier))
+                for notifier in notifiers:
+                    NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(username=notifier))
 
-            logger.info("Save notification log")
+                logger.info("Save notification log")
 
-            if(notification.status == MESSAGE_APPROVED):
-                send_message(notification.pk)
+                if(notification.status == MESSAGE_APPROVED):
+                    send_message(notification.pk)
 
-            return HttpResponseRedirect(reverse('xadmin:notification'))
+                return HttpResponseRedirect(reverse('xadmin:notification'))
         else:
             logger.error(serializer.errors)
             return HttpResponse(serializer.errors)
@@ -657,14 +658,15 @@ class MessageUserGroupView(CommAdminView):
 
                 serializer = MessageUserGroupSerializer(data=data)
                 if serializer.is_valid():
-                    group = serializer.save()
-                    logger.info("saved message user group")
-                    for pk in pk_list:
-                        user = CustomUser.objects.get(pk=int(pk))
-                        log = UserToUserGroup.objects.create(group=group, user=user)
-                        
-                    logger.info("saved message user group log")
-                    return HttpResponseRedirect(reverse('xadmin:messagegroups'))
+                    with transaction.atomic():
+                        group = serializer.save()
+                        logger.info("saved message user group")
+                        for pk in pk_list:
+                            user = CustomUser.objects.get(pk=int(pk))
+                            log = UserToUserGroup.objects.create(group=group, user=user)
+                            
+                        logger.info("saved message user group log")
+                        return HttpResponseRedirect(reverse('xadmin:messagegroups'))
                 else:
                     logger.error(serializer.errors['name'][0])
                     return HttpResponse(json.dumps({ "error": serializer.errors['name'][0], "errorCode": 1}), content_type='application/json')
@@ -940,13 +942,15 @@ class CampaignView(CommAdminView):
             groups = json.loads(groups)
             creator = CustomUser.objects.get(username=self.user.username)
             objs = []
-            campaign = Campaign.objects.create(name=campaignName, creator=creator)
-            # print(groups)
-            for groupName in groups:
-                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
-                CampaignToGroup.objects.create(campaign=campaign, group=group)
 
-            return HttpResponse("success")
+            with transaction.atomic():
+                campaign = Campaign.objects.create(name=campaignName, creator=creator)
+                # print(groups)
+                for groupName in groups:
+                    group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                    CampaignToGroup.objects.create(campaign=campaign, group=group)
+
+                return HttpResponse("success")
         
         elif postType == "delete_campaign":
             campaignName = request.POST.get('campaignName')
@@ -1062,14 +1066,15 @@ class NotificationAPIView(GenericAPIView):
         serializer = NotificationSerializer(data=data)
 
         if serializer.is_valid():
-            notification = serializer.save()
-            logger.info("Save notification message")
-            # store notification data in NotificationLog
-            log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, group_id = notification.topic)
+            with transaction.atomic():
+                notification = serializer.save()
+                logger.info("Save notification message")
+                # store notification data in NotificationLog
+                log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, group_id = notification.topic)
 
-            log.save()
-            logger.info("Save notification log")
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+                log.save()
+                logger.info("Save notification log")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             logger.error("can not create notification message: ", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
