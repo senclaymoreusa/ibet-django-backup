@@ -13,6 +13,9 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
+PTKEY = b""
+PTPEM = b""
+
 print("env:" +os.getenv("ENV"))
 print("datetime:" + str(datetime.datetime.now()))
 print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
@@ -20,10 +23,17 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
+    PTKEY= utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
+    PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
+    
+   
 else:
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-
+    PTKEY = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
+    PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
+  
+   
 GENDER_CHOICES = (
     ('Male', 'Male'),
     ('Female', 'Female')
@@ -692,6 +702,14 @@ USERNAME = keys["MG"]["USERNAME"]
 PASSWORD = keys["MG"]['PASSWORD']
 
 # LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
+
+#PTgame
+PT_STATUS_SUCCESS = 0
+PT_GENERAL_ERROR = 1
+PT_BALANCE_ERROR = 2
+PT_NEWPLAYER_ALERT = 3
+PT_BASE_URL = keys["PT"]["PT_BASE_URL"]
+ENTITY_KEY = keys["PT"]["ENTITY_KEY"]
 
 
 
