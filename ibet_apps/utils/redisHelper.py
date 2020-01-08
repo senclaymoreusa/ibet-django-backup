@@ -75,10 +75,10 @@ class RedisHelper():
         return self.r.get(key)
 
 
-    def set_ag_added_file(self, ag_file):
+    def set_ag_added_file(self, ftp_file):
         ag_file = getAGFileHistoryRedisKey()
-        return self.r.sadd(ag_file, ag_file)
+        return self.r.sadd(ag_file, ftp_file)
     
-    def check_ag_added_file(self, ag_file):
+    def check_ag_added_file(self, ftp_file):
         ag_file = getAGFileHistoryRedisKey()
-        return self.r.sismember(ag_file, ag_file)
+        return self.r.sismember(ag_file, ftp_file)

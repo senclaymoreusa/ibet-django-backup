@@ -112,14 +112,9 @@ def agftp(request):
                     xml = '<root>'+rdata+'</root>'
 
                     s3client = boto3.client("s3")
-                    try:
-                        s3client.upload_file(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
-                        logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + file)
-                    except ClientError as e:
-                        logger.error(e)
-                        return HttpResponse(ERROR_CODE_FAIL)
-    
-
+                    s3client.upload_file(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
+                    logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + file)
+                    
                     root = ET.fromstring(xml)
                     for child in root:
                         dataType = child.attrib['dataType']
