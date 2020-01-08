@@ -151,7 +151,7 @@ class Transaction(models.Model):
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("Member")
     )
-    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order ID")) #third party refo
+    order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order ID")) #third party ref no
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name=_("Apply Amount")
     )
