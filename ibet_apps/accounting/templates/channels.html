@@ -14,6 +14,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-datatable.css' %}" />
     <!-- css for flag icons <link rel="stylesheet" type="text/css" href="{% static 'css/flag-icon.css' %}"></link> -->
 
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
         type="text/css" />
@@ -165,7 +169,7 @@
 
     <!-- PSP config modal -->
     <div class="modal fade" id="edit-psp" role="dialog">
-        <div id="override" class="modal-dialog">
+        <div id="override" class="modal-dialog" style="width: 35%">
             <!-- Modal content -->
             {% include "payment_modal.html" %}
         </div>
@@ -236,19 +240,16 @@
 
         // filter by status
         $('#status-filter').on('change', (event) => {
-            console.log(`status changed to ${event.target.value}!`);
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('status', event.target.value);
             window.location = BASEURL+queryString.toString();
         });
         $('#type-filter').on('change', (event) => {
-            console.log(`type changed to ${event.target.value}!`);
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('type', event.target.value);
             window.location = BASEURL+queryString.toString();
         })
         $('#market-filter').on('change', (event) => {
-            console.log(`market changed to ${event.target.value}!`);
             let queryString = new URLSearchParams(window.location.search);
             queryString.set('market', event.target.value);
             window.location = BASEURL+queryString.toString();           
@@ -258,13 +259,11 @@
         $('#search-btn').on('click', function () {
             let searchTerm = document.getElementById('search').value;
 
-            console.log("searching for: " + searchTerm);
             let queryString = new URLSearchParams(window.location.search);
 
             // search by payment provider
             if (searchTerm) {
                 queryString.set('search', searchTerm);
-                console.log(queryString.toString());
                 window.location = BASEURL+queryString.toString();
             }
             else window.location = BASEURL;
@@ -274,7 +273,6 @@
             document.getElementById('search').value = '';
         });
     }
-
     function initCSRF() {
          let csrftoken = $.cookie("csrftoken");
 
@@ -290,6 +288,80 @@
             }
         });
     }
+    
+    function timeInput(bound, downtime) {
+        let inputs = document.createElement("div");
+        inputs.setAttribute("class", "input-group date");
+        inputs.setAttribute("id", "downtime_"+bound);
+        
+        let input = document.createElement("input");
+        input.setAttribute("type", "text");
+        input.setAttribute("class", "form-control");
+        input.setAttribute("id", "dt-"+bound);
+        input.setAttribute("value", downtime);
+        input.disabled = true;
+        
+        let span = document.createElement("span");
+        span.setAttribute("class", "input-group-addon");
+        span.innerText = bound;
+        inputs.appendChild(span);
+        inputs.appendChild(input);
+        return inputs;
+    }
+    function createDate(date, show=true) {
+        let select = document.createElement("select");
+        select.setAttribute("class", "freq-input-inner");
+        select.disabled = true;
+        if (!show) select.style.display = "none";
+        let option = document.createElement("option");
+        option.setAttribute("value", date);
+        option.innerText = date;
+        option.selected = true;
+        select.appendChild(option);
+        return select;
+    }
+    function createFreq(freq) {
+        let select = document.createElement("select");
+        select.setAttribute("class", "freq-input-inner");
+        select.disabled = true;
+        let option = document.createElement("option");
+        option.setAttribute("value", freq);
+        option.innerText = freq;
+        option.selected = true;
+        select.appendChild(option);
+        return select;
+    }
+    function downtimeRow(downtime, freq) {
+        let node = document.createElement("div");
+        node.setAttribute("class", "freq-inputs ");
+        node.setAttribute("id", downtime.id);
+
+        let frequency = createFreq(freq);
+        node.appendChild(frequency);
+
+        if (downtime.date) {
+            let date = createDate(downtime.date);
+            node.appendChild(date);
+        }
+        else {
+            let date = createDate("", false);
+            node.appendChild(date);
+        }
+
+        let fromInput = timeInput("From", downtime.start);
+        let toInput = timeInput("To", downtime.end);
+
+        let delButton = document.createElement("button");
+        delButton.setAttribute("class", "del-freq");
+        delButton.setAttribute("data-id", downtime.id);
+        delButton.innerText = "-";
+        
+        node.appendChild(fromInput);
+        node.appendChild(toInput);
+        node.appendChild(delButton);
+        return node;
+    }
+
     function setProviderFields(data, psp_type) {
         convMarket = {
             0:'ibet-vn',
@@ -300,12 +372,63 @@
             5:'letou-cn'
         }
 
-        market = convMarket[data.fields.market]
-        document.getElementById('psp-method').innerHTML = data.fields.method;
-        document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1);
-        document.getElementById('psp-channel').innerHTML = data.fields.channel;
-        document.getElementById('psp-market').innerHTML = market;
-        document.getElementById('psp-supplier').innerHTML = data.fields.supplier;
+        let market = convMarket[data.fields.market];
+        document.getElementById('psp-method').innerHTML = data.fields.method || "N/A";
+        document.getElementById('psp-type').innerHTML = psp_type[0].toUpperCase() + psp_type.slice(1) || "N/A";
+        document.getElementById('psp-channel').innerHTML = data.fields.channel || "N/A";
+        document.getElementById('psp-market').innerHTML = market || "N/A";
+        document.getElementById('psp-supplier').innerHTML = data.fields.supplier || "N/A";
+        
+        let all_downtime = data.fields.all_downtime;
+        let dt_section = document.getElementById('all-dt');
+
+        // remove rows if pre-populated
+        while (dt_section.childNodes.length > 2) {
+            dt_section.removeChild(dt_section.childNodes[0]);
+        }
+
+        // generate rows for each existing scheduled downtime
+        for (let i = 0; i < all_downtime.once.length; i++) {
+            let row = downtimeRow(all_downtime.once[i], "Once");
+            dt_section.insertBefore(row, dt_section.firstChild);
+        }
+        for (let i = 0; i < all_downtime.daily.length; i++) {
+            let row = downtimeRow(all_downtime.daily[i], "Daily");
+            dt_section.insertBefore(row, dt_section.firstChild);
+        }
+        for (let i = 0; i < all_downtime.monthly.length; i++) {
+            let row = downtimeRow(all_downtime.monthly[i], "Monthly");
+            dt_section.insertBefore(row, dt_section.firstChild);
+        }
+        
+        document.getElementById('add-freq').setAttribute('data-pk', data.pk);
+        document.getElementById('add-freq').setAttribute('data-type', psp_type);
+        $('.del-freq').on('click', function(event) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "xadmin:del_downtime" %}',
+                data: {
+                    'dt_id': $(this).data('id'),
+                    'psp_id': data.pk,
+                    'psp_type': psp_type
+                },
+                success: (data) => {
+                    let selector = "#" + $(this).data('id');
+                    $(selector).fadeOut();
+                }
+            })
+        });
+
+
+        document.getElementById('min-dep').value = data.fields.min_amount;
+        document.getElementById('max-dep').value = data.fields.max_amount;
+        // set txn fees
+        document.getElementById('txn-fee-input').value = data.fields.transaction_fee;
+        document.getElementById('txn-fee-per-input').value = data.fields.transaction_fee_per;
+        // set black/white list
+        document.getElementById('blacklist-input').value = data.fields.blacklist["blacklist"].length;
+        document.getElementById('whitelist-input').value = data.fields.whitelist["whitelist"].length;
+
     }
 
     $(document).ready(function () {
@@ -329,8 +452,6 @@
 
         $(".confirm-settlement-btn").on('click', function(event) {
             var psp_id = event.target.id;
-            console.log(psp_id);
-            console.log('{% url "xadmin:get_psp" %}')
 
             $.ajax({
                 type: 'GET',
@@ -340,7 +461,6 @@
                     'type': $(this).data('psp')
                 },
                 success: (data) => {
-                    console.log(typeof data);
                     setProviderFields(data[0], $(this).data('psp'));
                 }
             })
