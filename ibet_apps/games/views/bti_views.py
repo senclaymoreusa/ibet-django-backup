@@ -794,6 +794,7 @@ def AddCustomersToSegment(session_id, segment_name):
 
 def GiveFreeBet(session_id, user_object, amount, withdraw_times, ref_id, expiration, currency):
     path = f"/data/givefreebettocustomer/ch={session_id}"
+    header = {'RequestTarget': 'AJAXService'}
     payload = {
         "MerchantCode": user_object.pk,
         "Login": user_object.username,
@@ -812,14 +813,16 @@ def GiveFreeBet(session_id, user_object, amount, withdraw_times, ref_id, expirat
         return True
     return False
 
-def GetFreeBet(session_id, userid):
+def GetFreeBets(session_id, userid):
     path = f"/data/getfreebetsforcustomer/ch={session_id}"
-    payload = {
-        "MerchantCodes": userid
-    }
+    header = {'RequestTarget': 'AJAXService'}
+    payload = {"MerchantCodes": userid}
+    r = requests.post(BTI_FREEBET_URL + path, headers=header, json=payload)
+
     if r.status_code == 200 and r.json()[0]["Value"]["Value"] == "Ok":
         return True
     return False
+
 
 ######
 # helper functions
