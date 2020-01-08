@@ -340,6 +340,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet"
     type="text/css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet" type="text/css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
@@ -375,7 +376,6 @@
                     }
                 }
             }
-            console.log(params.get('show'))
             if (params.get('show')) {
                 let numPages = document.getElementById('num-per-page-select');
 
@@ -415,8 +415,6 @@
             let fromDate = document.getElementById('min').value;
             let toDate = document.getElementById('max').value;
 
-            console.log("searching for: " + searchTerm);
-            console.log("date range: " + fromDate + ", " + toDate);
 
             let queryString = new URLSearchParams(window.location.search);
             if (searchTerm) queryString.set('search_params', searchTerm);
@@ -478,7 +476,6 @@
             try {
                 date = $.datepicker.parseDate( dateFormat, element.value );
             } catch( error ) {
-                console.log("date error");
                 date = null;
             }
             return date;
@@ -497,7 +494,6 @@
             let row = $(this).closest('tr');
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
-            console.log(data);
 
             showDepositDetail(data);
             // showBankDetail(data);
@@ -573,7 +569,6 @@
 
         // fill in deposit details of modal
         function showDepositDetail (data) {
-            // console.log("show deposit detail");
             let txnDetails = $("#trans_deposit_detail");
             txnDetails.empty();
             let content = "";
@@ -647,40 +642,3 @@
 </script>
 
 {% endblock %}
-
-/*
-$('#deposit-review-appnext, #deposit-review-rejnext').on('click', function (event) {
-    // Get data from the first row
-    let dep_trans_no = $("#dep_trans_no").val();
-    let dep_row_index = $("#dep_row_index").val();
-
-    let audit_result = event.target.id;
-
-
-    console.log(dep_trans_no);  // transaction pk in db
-    console.log(dep_row_index);  // location of transaction row in admin page
-    console.log(audit_result);  // approve / reject
-
-    if (dep_row_index % pagination_num == 0) {
-        table.page('next').draw('page');
-        dep_row_index = dep_row_index % pagination_num;
-    } else if (dep_row_index > pagination_num) {
-        dep_row_index = dep_row_index % pagination_num;
-    }
-
-    $.ajax({
-        type: 'POST',
-        url: "{% url 'xadmin:confirm_settlement' %}",
-        data: {
-            'type': 'reviewTransaction',
-            'dep_trans_no': dep_trans_no,
-            'result': audit_result,
-        },
-        success: function (data) {
-            // auto open next row audit btn
-            $('#deposits-table tbody tr').eq(dep_row_index).find('#edit-pending-detail-btn').click();
-        }
-    })
-
-})
-*/
