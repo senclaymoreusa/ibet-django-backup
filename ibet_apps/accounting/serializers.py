@@ -52,7 +52,7 @@ class submitPayoutSerialize(serializers.Serializer):
     language       = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
     method            = serializers.CharField(required=True)
-    
+    withdraw_password = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
@@ -186,6 +186,7 @@ class asiapayCashoutSerialize(serializers.Serializer):
     CashCardNumber     = serializers.CharField(required=True)
     CashCardChName     = serializers.CharField(required=True)
     CashBankDetailName     = serializers.CharField(required=True)
+    withdraw_password   = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
