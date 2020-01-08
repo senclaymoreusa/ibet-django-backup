@@ -812,8 +812,18 @@ def GiveFreeBet(session_id, user_object, amount, withdraw_times, ref_id, expirat
         return True
     return False
 
+def GetFreeBet(session_id, userid):
+    path = f"/data/getfreebetsforcustomer/ch={session_id}"
+    payload = {
+        "MerchantCodes": userid
+    }
+    if r.status_code == 200 and r.json()[0]["Value"]["Value"] == "Ok":
+        return True
+    return False
 
-
+######
+# helper functions
+#####
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
         user = CustomUser.objects.get(username=username)
