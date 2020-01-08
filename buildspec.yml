@@ -11,6 +11,8 @@ phases:
   pre_build:
     commands:
       - echo "Before running tests"
+      - mkdir -p /opt/python/log
+      - touch /opt/python/log/django-logger.log
       - pip install -r requirements.txt
     finally:
       - echo This always runs after installing requirements

@@ -720,6 +720,8 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
+    GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["PRODUCTION"]["MERCHANT_CODE"]
+    GDCASINO_NAMESPACE = keys["GD_CASINO"]["PRODUCTION"]["NAMESPACE"]
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -744,6 +746,8 @@ elif "dev" in os.getenv("ENV"):
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
     ASTROPAY_SECRET = keys["ASTROPAY"]["SECRET"]
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
+    GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
+    GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
 else:
     API_DOMAIN = "http://3fb2738f.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -768,6 +772,8 @@ else:
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
     ASTROPAY_SECRET = "RJLuSCDcd6mj7SoinVzkH7g2ueJRlScH"
     ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
+    GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
+    GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
 
 BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
 REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
@@ -1364,7 +1370,6 @@ BONUS_AGGREGATE_METHOD_CHOICES = (
 
 GDCASINO_URL = keys["GD_CASINO"]["URL"]
 GDCASINO_API_URL = keys["GD_CASINO"]["API_URL"]
-GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["MERCHANT_CODE"]
 GDCASINO_MERCHANT_ACCESS_KEY = keys["GD_CASINO"]["MERCHANT_ACCESS_KEY"]
 GDCASINO_FISHING_GAMEID = keys["GD_CASINO"]["FISHING_GAMEID"]
 
