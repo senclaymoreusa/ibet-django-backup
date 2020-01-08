@@ -71,6 +71,7 @@ from operation.views import send_sms
 from itertools import islice
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+from rest_framework.authtoken.models import Token
 
 import datetime
 import logging
@@ -489,7 +490,8 @@ class LogoutView(APIView):
         return self.logout(request)
 
     def logout(self, request):
-        self.user = request.user
+        token = request.GET.get('token')
+        self.user = Token.objects.get(key=token).user
         try:
             request.user.auth_token.delete()
         except (AttributeError, ObjectDoesNotExist):
