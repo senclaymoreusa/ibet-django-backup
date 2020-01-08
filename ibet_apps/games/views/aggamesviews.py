@@ -91,7 +91,8 @@ def agftp(request):
                     else:
                         raise
                 
-                
+                latest_time = None
+                latest_name = None
                 for file in files:
                     # print(file)
 
@@ -100,21 +101,18 @@ def agftp(request):
                     else:
                         continue                                   #if it is already existed then go to next index
 
-                    # logger.info('writing file to local: ' + file)
-                    # localFile = open(file, 'wb')
-                    # ftp.retrbinary('RETR ' + file, localFile.write)
-                    # localFile.close()
+                    time = ftp.voidcmd("MDTM " + file)
+                    if (latest_time is None) or (time > latest_time):
+                        latest_name = file
+                        latest_time = time
 
                     
                     r = BytesIO()
-                    read = ftp.retrbinary('RETR ' + file, r.write)
+                    read = ftp.retrbinary('RETR ' + latest_name, r.write)
                     rdata = r.getvalue().decode("utf-8")
                     xml = '<root>'+rdata+'</root>'
 
-                    writeToS3(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
-                    # s3client = boto3.client("s3")
-                    # s3client.upload_file(file, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(file))
-                    # logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + file)
+                    writeToS3(latest_name, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(latest_name))
                     
                     root = ET.fromstring(xml)
                     for child in root:
