@@ -100,6 +100,11 @@
                         <th scope="col">FLAT FEE</th>
                         <th scope="col">% FEE</th>
                         <th scope="col">REQUIRED VERIFICATIONS</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">RISK LEVEL</th>
+                        <th scope="col">PLAYER STATUS</th>
+                        <th scope="col">WHITELIST COUNT</th>
+                        <th scope="col">BLACKLIST COUNT</th>
                         <th scope="col">SCHEDULED DOWNTIME</th>
                         <th scope="col">STATUS</th>
                         <th scope="col">CONFIG</th>
@@ -118,13 +123,18 @@
                         <td>{{ psp.transaction_fee }}</td>
                         <td>{{ psp.transaction_fee_per }}</td>
                         <td>{{ psp.req_ver }}</td>
+                        <td>{{ psp.player_segment }}</td>
+                        <td>{{ psp.block_risk_level }}</td>
+                        <td>{{ psp.limit_access }}</td>
+                        <td>{{ psp.whitelist.whitelist|length }}</td>
+                        <td>{{ psp.blacklist.blacklist|length }}</td>
                         {% if psp.downtime_start and psp.downtime_end %}
                         <td>{{ psp.downtime_start }} - {{ psp.downtime_end }}</td>
                         {% else %}
                         <td></td> 
                         {% endif %}
                         <td>{{ psp.get_status_display }}</td>
-                        <td>                            
+                        <td>                           
                             <button id="{{ psp.pk }}" data-psp="deposit" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
                                 <!-- <span class="glyphicon glyphicon-search"></span> -->
                                 Edit

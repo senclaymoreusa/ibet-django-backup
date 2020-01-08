@@ -131,8 +131,9 @@ class scheduleDowntime(CommAdminView):
                 new_downtime['date'] = date
             
             # clean out all old downtime entries
-            cleanDowntime(psp.all_downtime['once'])
-            
+            res = cleanDowntime(psp.all_downtime['once'])
+            logger.info("Cleaning out old downtime entries...")
+            logger.info(res)
             # create new downtime entry
             psp.all_downtime[freq].append(new_downtime)
             psp.save()
@@ -189,7 +190,7 @@ def cleanDowntime(downtimeArr):
         if now > endDate:
             res.append(dt['id'])
             del downtimeArr[i]
-    return JsonResponse({
+    return {
         'success': True,
         'deleted': res
-    })
+    }
