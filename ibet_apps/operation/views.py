@@ -967,30 +967,32 @@ class CampaignView(CommAdminView):
                 groups = request.POST.get('tags')
                 campaignId = request.POST.get('id')
                 groups = json.loads(groups)
-                camp = Campaign.objects.get(pk=campaignId)
-                camp.name = campaignName
-                camp.save()
 
-                CampaignToGroup.objects.filter(campaign=camp).delete()
+                with transaction.atomic():
+                    camp = Campaign.objects.get(pk=campaignId)
+                    camp.name = campaignName
+                    camp.save()
 
-                for groupName in groups:
-                    group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
-                    # print(group)
-                    CampaignToGroup.objects.create(campaign=camp, group=group)
+                    CampaignToGroup.objects.filter(campaign=camp).delete()
+
+                    for groupName in groups:
+                        group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                        # print(group)
+                        CampaignToGroup.objects.create(campaign=camp, group=group)
                 
-                # oldIds = []
-                # oldCampaignName = Campaign.objects.get(pk=ids[0])
-                # oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
-                # CampaignToGroup.objects.filter()
-                # for i in ids:
-                #     campaign = Campaign.objects.get(pk=i)
-                #     if campaign.group.name in groups:
-                #         campaign.name = campaignName
-                #         campaign.save()
-                #     else:
-                #         campaign.delete()
+                    # oldIds = []
+                    # oldCampaignName = Campaign.objects.get(pk=ids[0])
+                    # oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
+                    # CampaignToGroup.objects.filter()
+                    # for i in ids:
+                    #     campaign = Campaign.objects.get(pk=i)
+                    #     if campaign.group.name in groups:
+                    #         campaign.name = campaignName
+                    #         campaign.save()
+                    #     else:
+                    #         campaign.delete()
 
-                return HttpResponse("success update")
+                    return HttpResponse("success update")
         except Exception as e:
             logger.error("Admin Campaign View Error -- {}".format(repr(e))))
             return HttpResponse(status=400)
