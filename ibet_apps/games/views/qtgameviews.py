@@ -198,11 +198,11 @@ class GameLaunch(APIView):
                     
             else:
                 logger.error(authData)
-                return Response(tr)
+                return HttpResponse(tr)
             
         except Exception as e:
             logger.error("Error: " + str(e))
-            return Response(tr)
+            return HttpResponse(tr)
             
 #         except requests.exceptions.HTTPError as he:
 #             logger.error("HTTP Error: " + str(he))
