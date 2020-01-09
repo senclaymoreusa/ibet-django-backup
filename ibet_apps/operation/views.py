@@ -400,33 +400,37 @@ class NotificationView(CommAdminView):
 
         serializer = NotificationSerializer(data=data)
 
-        if serializer.is_valid():
-            with transaction.atomic():
-                notification = serializer.save()
-                logger.info("Save notification message")
-                # # store notification data in NotificationLog
-                for group in groups:
-                    group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
-                    group.time_used = group.time_used + 1
-                    group.save()
-                    NotificationToGroup.objects.create(notification=notification, group=group)
-                    group_users = UserToUserGroup.objects.filter(group=group)
-                    for group_user in group_users:
-                        NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=group_user.user)
+        try:
+            if serializer.is_valid():
+                with transaction.atomic():
+                    notification = serializer.save()
+                    logger.info("Save notification message")
+                    # # store notification data in NotificationLog
+                    for group in groups:
+                        group = UserGroup.objects.get(name=group, groupType=MESSAGE_GROUP)
+                        group.time_used = group.time_used + 1
+                        group.save()
+                        NotificationToGroup.objects.create(notification=notification, group=group)
+                        group_users = UserToUserGroup.objects.filter(group=group)
+                        for group_user in group_users:
+                            NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=group_user.user)
 
-                
-                for notifier in notifiers:
-                    NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(username=notifier))
+                    
+                    for notifier in notifiers:
+                        NotificationToUsers.objects.get_or_create(notification_id=notification, notifier_id=CustomUser.objects.get(username=notifier))
 
-                logger.info("Save notification log")
+                    logger.info("Save notification log")
 
-                if(notification.status == MESSAGE_APPROVED):
-                    send_message(notification.pk)
+                    if(notification.status == MESSAGE_APPROVED):
+                        send_message(notification.pk)
 
-                return HttpResponseRedirect(reverse('xadmin:notification'))
-        else:
-            logger.error(serializer.errors)
-            return HttpResponse(serializer.errors)
+                    return HttpResponseRedirect(reverse('xadmin:notification'))
+                else:
+                    logger.error(serializer.errors)
+                    return HttpResponse(serializer.errors)
+        except Exception as e:
+            logger.error("Admin Notification View Error -- {}".format(repr(e)))
+            return HttpResponse(repr(e))
 
 
 class NotificationDetailView(CommAdminView):
