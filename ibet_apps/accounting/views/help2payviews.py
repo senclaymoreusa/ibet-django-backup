@@ -248,25 +248,6 @@ def withdrawResult(request):
             logger.exception("Help2Pay::withdrawResult::Exception Occurred", exc_info=1, stack_info=1)
             return HttpResponse("false")
         
-        else:
-            
-            try:
-                trans_id = request.GET.get("transId")
-                checksum = request.GET.get("key")
-                withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
-                if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
-                    withdraw_txn.arrive_time = timezone.now()
-                    withdraw_txn.last_updated = timezone.now()
-                    withdraw_txn.status=TRAN_SUCCESS_TYPE
-                    withdraw_txn.save()
-                    return HttpResponse("true")
-                else:
-                    return HttpResponse("false")
-            except ObjectDoesNotExist as e:
-                logger.error(repr(e))
-                logger.error(f"transaction id {trans_id} does not exist")
-                return HttpResponse("false")  
-
 # user submits withdraw request
 class SubmitPayout(View):
     def get(self, request):
@@ -288,7 +269,7 @@ class SubmitPayout(View):
             trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             ip = helpers.get_client_ip(request)
-            bank = HELP2PAY_BANK
+            bank = request.POST.get("bank")
             
             user_id=user.pk
             currency = user.currency
@@ -317,7 +298,6 @@ class SubmitPayout(View):
             
             checksum = MD5(secretMsg)
        
-            db_currency_code = 2 if currency == 2 else 7
             if check_password(withdraw_password, user.withdraw_password):
                 try:    
                     withdraw_request = Transaction(
