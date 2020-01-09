@@ -840,30 +840,19 @@ class UserListView(CommAdminView):
         context['title'] = title
         context['time'] = timezone.now()
         context['status'] = dict(MEMBER_STATUS)
-        # if search:
-        #     count = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))).count()
-        #     customUser = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)))[offset:offset+pageSize]
-
-        #     if count == 0:
-        #         count = CustomUser.objects.filter(block=block).count()
-        #         customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
-        #         context['searchError'] = _("No search data")
-
-        # else:
-        #     count = CustomUser.objects.filter(block=block).count()
-        #     customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
 
         user_filter = Q()
 
-        if status:
+        if status and status != '-1':
             user_filter &= Q(member_status=status)
         
         if search:
             user_filter &= (Q(pk__contains=search)|Q(username__icontains=search)|Q(email__icontains=search)|Q(phone__contains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
 
-        customUser = CustomUser.objects.filter(user_filter)
+        customUser = CustomUser.objects.filter(user_filter).order_by('username')
         count = customUser.count()
 
+        customUser = customUser[offset:offset+pageSize]
 
         if offset == 0:
             context['isFirstPage'] = True
