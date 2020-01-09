@@ -37,6 +37,7 @@ class GetEaBetHistory(View):
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
         last_file = redis.get_ea_last_file()
+        last_file = last_file.decode("utf-8")
         processed = True
         if last_file is None:
             processed = False
@@ -58,7 +59,11 @@ class GetEaBetHistory(View):
             # print('writing file to local: ' + localFileName)
 
             s3client = boto3.client("s3")
-            s3client.upload_file(localFileName, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(localFileName))
+            try:
+                s3client.upload_file(localFileName, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(localFileName))
+                print("success")
+            except Exception as e:
+                print("error", e)
             logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + localFileName)
 
             with open(localFileName, 'r') as f:
