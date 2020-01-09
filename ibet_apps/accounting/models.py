@@ -180,7 +180,7 @@ class Transaction(models.Model):
     )
     method = models.CharField(max_length=200, blank=True, verbose_name=_("Method"))
     channel = models.SmallIntegerField(
-        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment"), null=True
+        choices=CHANNEL_CHOICES, default=None, verbose_name=_("Payment"), null=True
     )
     last_updated = models.DateTimeField(
         default=timezone.now, verbose_name=_("Status Last Updated")
