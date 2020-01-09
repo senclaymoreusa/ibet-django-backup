@@ -59,8 +59,9 @@ class GameLaunchView(View):
             # Case where user has never played PNG games before
             except:
                 PNGTicket.objects.create(png_ticket=png_ticket, user_obj=user_obj)
-
-            return HttpResponse("PNGTicket created or updated")
+            
+            json_to_return = { "ticket" : str(png_ticket) }
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         except Exception as e:
             logger.error("PLAY'nGO GameLaunchView: " + str(e))
@@ -99,6 +100,7 @@ def png_authenticate(data):
             
             if checkUserBlock(user_obj):
                 status_code = PNG_STATUS_ACCOUNTDISABLED
+                status_message = "Account Disabled"
 
             # Compose response dictionary and convert to response XML
             res_dict = {
