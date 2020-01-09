@@ -25,15 +25,20 @@ class GetEaBetHistory(View):
 
     def get(self, request, *args, **kwargs):
         logger.info("connecting ea ftp")
-        ftp_connection = ftpClient.ftpConnect()
-        fileList = []
-        ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', fileList.append)
+        try:
+            ftp_connection = ftpClient.ftpConnect()
+        except Exception as e:
+            logger.error("(FETAL_ERROR) There is something wrong with ftp connection.", e)
+            return HttpResponse({'status': 'There is something wrong with ftp connection.' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        file_list = []
+        ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', file_list.append)
         try:
             r = RedisClient().connect()
             redis = RedisHelper()
             logger.info("connecting redis")
-        except:
-            logger.error("(FETAL_ERROR) There is something wrong with redis connection.")
+        except Exception as e:
+            logger.error("(FETAL_ERROR) There is something wrong with redis connection.", e)
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
         last_file = redis.get_ea_last_file()
@@ -42,31 +47,28 @@ class GetEaBetHistory(View):
         if last_file is None:
             processed = False
 
-        for f in fileList:
-            localFileName = f.split('/')[-1]
+        for f in file_list:
 
-            if last_file == localFileName:
+            local_file_name = f.split('/')[-1]
+            if last_file == local_file_name:
                 processed = False
-
-            if last_file == localFileName or processed:
+            if last_file == local_file_name or processed:
                 continue
 
-            logger.info('writing file to local: ' + localFileName)
-            localFile = open(localFileName, 'wb')
+            logger.info('writing file to local: ' + local_file_name)
+            localFile = open(local_file_name, 'wb')
             ftp_connection.ftp_session.retrbinary('RETR ' + f, localFile.write)
             localFile.close()
 
-            # print('writing file to local: ' + localFileName)
-
             s3client = boto3.client("s3")
             try:
-                s3client.upload_file(localFileName, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(localFileName))
-                print("success")
+                s3client.upload_file(local_file_name, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(local_file_name))
             except Exception as e:
-                print("error", e)
-            logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + localFileName)
+                logger.info("Uploading to S3 error", e)
+            
+            logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + local_file_name)
 
-            with open(localFileName, 'r') as f:
+            with open(local_file_name, 'r') as f:
                 data = xmltodict.parse(f.read())
                 # print(data)
                 if 'gameinfo' in data and data['gameinfo'] and 'game' in data['gameinfo']:
@@ -88,11 +90,12 @@ class GetEaBetHistory(View):
                     logger.info('There is no bet history between this time range')
 
                 
-            os.remove(localFileName)
+            os.remove(local_file_name)
 
 
         last_file = fileList[-1]
-        redis.set_ea_last_file(last_file)
+        last_file_name = last_file.split('/')[-1]
+        redis.set_ea_last_file(last_file_name)
         logger.info('finished writting last file {} to s3'.format(last_file))
 
 
