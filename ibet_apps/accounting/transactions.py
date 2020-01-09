@@ -119,7 +119,6 @@ def save_transaction(request):
         if data['type'] == 0:
             status = 3
         try:
-
             txn = Transaction(
                 transaction_id=txn_id,
                 user_id=user,

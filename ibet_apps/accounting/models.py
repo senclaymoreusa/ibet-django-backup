@@ -89,6 +89,7 @@ class ThirdParty(models.Model):
     limit_access = models.BooleanField(default=False)
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
     player_segment = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
+    allowed_statuses = models.SmallIntegerField(choices=ALLOWED_STATUSES, null=True, blank=True)
 
     # payment method risk / settlement settings
     risk_review = models.BooleanField(default=True)

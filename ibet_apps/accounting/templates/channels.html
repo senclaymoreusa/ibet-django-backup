@@ -125,7 +125,7 @@
                         <td>{{ psp.req_ver }}</td>
                         <td>{{ psp.player_segment }}</td>
                         <td>{{ psp.block_risk_level }}</td>
-                        <td>{{ psp.limit_access }}</td>
+                        <td>{{ psp.get_allowed_statuses_display }}</td>
                         <td>{{ psp.whitelist.whitelist|length }}</td>
                         <td>{{ psp.blacklist.blacklist|length }}</td>
                         {% if psp.downtime_start and psp.downtime_end %}
