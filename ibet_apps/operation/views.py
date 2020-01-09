@@ -939,57 +939,61 @@ class CampaignView(CommAdminView):
 
     def post(self, request, *arg, **kwargs):
         postType = request.POST.get('type')
-        
-        if postType == "create_new_campaign":
-            campaignName = request.POST.get('campaign_name')
-            groups = request.POST.get('tags')
-            groups = json.loads(groups)
-            creator = CustomUser.objects.get(username=self.user.username)
-            objs = []
 
-            with transaction.atomic():
-                campaign = Campaign.objects.create(name=campaignName, creator=creator)
-                # print(groups)
+        try:
+            if postType == "create_new_campaign":
+                campaignName = request.POST.get('campaign_name')
+                groups = request.POST.get('tags')
+                groups = json.loads(groups)
+                creator = CustomUser.objects.get(username=self.user.username)
+                objs = []
+
+                with transaction.atomic():
+                    campaign = Campaign.objects.create(name=campaignName, creator=creator)
+                    # print(groups)
+                    for groupName in groups:
+                        group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
+                        CampaignToGroup.objects.create(campaign=campaign, group=group)
+
+                    return HttpResponse("success")
+            
+            elif postType == "delete_campaign":
+                campaignName = request.POST.get('campaignName')
+                Campaign.objects.filter(name=campaignName).delete()
+                return HttpResponse("success delete")
+
+            elif postType == "update_campaign":
+                campaignName = request.POST.get('campaign_name')
+                groups = request.POST.get('tags')
+                campaignId = request.POST.get('id')
+                groups = json.loads(groups)
+                camp = Campaign.objects.get(pk=campaignId)
+                camp.name = campaignName
+                camp.save()
+
+                CampaignToGroup.objects.filter(campaign=camp).delete()
+
                 for groupName in groups:
                     group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
-                    CampaignToGroup.objects.create(campaign=campaign, group=group)
+                    # print(group)
+                    CampaignToGroup.objects.create(campaign=camp, group=group)
+                
+                # oldIds = []
+                # oldCampaignName = Campaign.objects.get(pk=ids[0])
+                # oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
+                # CampaignToGroup.objects.filter()
+                # for i in ids:
+                #     campaign = Campaign.objects.get(pk=i)
+                #     if campaign.group.name in groups:
+                #         campaign.name = campaignName
+                #         campaign.save()
+                #     else:
+                #         campaign.delete()
 
-                return HttpResponse("success")
-        
-        elif postType == "delete_campaign":
-            campaignName = request.POST.get('campaignName')
-            Campaign.objects.filter(name=campaignName).delete()
-            return HttpResponse("success delete")
-
-        elif postType == "update_campaign":
-            campaignName = request.POST.get('campaign_name')
-            groups = request.POST.get('tags')
-            campaignId = request.POST.get('id')
-            groups = json.loads(groups)
-            camp = Campaign.objects.get(pk=campaignId)
-            camp.name = campaignName
-            camp.save()
-
-            CampaignToGroup.objects.filter(campaign=camp).delete()
-
-            for groupName in groups:
-                group = UserGroup.objects.get(name=groupName, groupType=MESSAGE_GROUP)
-                # print(group)
-                CampaignToGroup.objects.create(campaign=camp, group=group)
-            
-            # oldIds = []
-            # oldCampaignName = Campaign.objects.get(pk=ids[0])
-            # oldIds.append(Campaign.objects.filter(name=oldCampaignName).pk)
-            # CampaignToGroup.objects.filter()
-            # for i in ids:
-            #     campaign = Campaign.objects.get(pk=i)
-            #     if campaign.group.name in groups:
-            #         campaign.name = campaignName
-            #         campaign.save()
-            #     else:
-            #         campaign.delete()
-
-            return HttpResponse("success update")
+                return HttpResponse("success update")
+        except Exception as e:
+            logger.error("Admin Campaign View Error -- {}".format(repr(e))))
+            return HttpResponse(status=400)
 
 
 class AWSTopicView(CommAdminView):
@@ -1069,19 +1073,23 @@ class NotificationAPIView(GenericAPIView):
 
         serializer = NotificationSerializer(data=data)
 
-        if serializer.is_valid():
-            with transaction.atomic():
-                notification = serializer.save()
-                logger.info("Save notification message")
-                # store notification data in NotificationLog
-                log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, group_id = notification.topic)
+        try:
+            if serializer.is_valid():
+                with transaction.atomic():
+                    notification = serializer.save()
+                    logger.info("Save notification message")
+                    # store notification data in NotificationLog
+                    log = NotificationLog(notification_id=notification, actor_id=notification.notifiers, group_id = notification.topic)
 
-                log.save()
-                logger.info("Save notification log")
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            logger.error("can not create notification message: ", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    log.save()
+                    logger.info("Save notification log")
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                logger.error("can not create notification message: ", serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error("Notification Api Error -- {}".format(repr(e)))
+            return Response(repr(e), status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateNotificationAPIView(CreateAPIView):
