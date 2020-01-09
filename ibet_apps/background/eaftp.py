@@ -28,7 +28,7 @@ class GetEaBetHistory(View):
         try:
             ftp_connection = ftpClient.ftpConnect()
         except Exception as e:
-            logger.error("(FETAL_ERROR) There is something wrong with ftp connection.", e)
+            logger.critical("(FETAL_ERROR) There is something wrong with ftp connection.", e)
             return HttpResponse({'status': 'There is something wrong with ftp connection.' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         file_list = []
@@ -38,7 +38,7 @@ class GetEaBetHistory(View):
             redis = RedisHelper()
             logger.info("connecting redis")
         except Exception as e:
-            logger.error("(FETAL_ERROR) There is something wrong with redis connection.", e)
+            logger.critical("(FETAL_ERROR) There is something wrong with redis connection.", e)
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
         last_file = redis.get_ea_last_file()
@@ -64,7 +64,7 @@ class GetEaBetHistory(View):
             try:
                 s3client.upload_file(local_file_name, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(local_file_name))
             except Exception as e:
-                logger.info("Uploading to S3 error", e)
+                logger.warning("Uploading to S3 error", e)
             
             logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + local_file_name)
 
@@ -138,7 +138,7 @@ def gameHistoryToDatabase(bet_detail, game_code):
         provider = GameProvider.objects.get(provider_name=EA_PROVIDER)
         category = Category.objects.get(name='Live Casino')
     except Exception as e:
-        logger.error("(FATAL__ERROR) There is missing EA provider or category", e)
+        logger.critical("(FATAL__ERROR) There is missing EA provider or category", e)
 
     for i in bet_detail:
         game_code_id = i['@code']
