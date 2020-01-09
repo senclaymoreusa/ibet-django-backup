@@ -1564,6 +1564,8 @@ GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
+GB_GeneralKey = keys["GB"]["GeneralKey"]
+GB_SecretKey = keys["GB"]["SecretKey"]
 
 # QT
 QT_STATUS_SUCCESS = 0

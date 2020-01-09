@@ -540,7 +540,7 @@ class GenerateGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": "kvZES8",
+            "AuthKey": GB_GeneralKey,
             "Params": {
                 "MemberID": self.request.user.username,
                 "TPUniqueID": str(TPUniqueID) 
@@ -568,7 +568,7 @@ class GenerateGameURL(APIView):
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": "kvZES8",
+                "AuthKey": GB_GeneralKey,
                 "Params": {
                     "MemberID": self.request.user.username,
                     "FirstName": self.request.user.first_name,
@@ -593,8 +593,9 @@ class GenerateGameURL(APIView):
 
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
+        
         res = res[2:-2]
-
+        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto' }
         
         if game == 'GB Sports':
@@ -621,7 +622,7 @@ class GenerateFakeUserGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": "kvZES8",
+            "AuthKey": GB_GeneralKey,
             "Params": {
                 "MemberID": 'Fakeuser',
                 "TPUniqueID": str(TPUniqueID) 
@@ -638,7 +639,7 @@ class GenerateFakeUserGameURL(APIView):
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": "kvZES8",
+                "AuthKey": GB_GeneralKey,
                 "Params": {
                     "MemberID": 'Fakeuser',
                     "FirstName": 'Fake',
@@ -663,8 +664,9 @@ class GenerateFakeUserGameURL(APIView):
 
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
+        print(res)
         res = res[2:-2]
-       
+        print(res)
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 
         if game == 'GB Sports':
