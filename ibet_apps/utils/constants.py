@@ -719,7 +719,6 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
-    HELP2PAY_BANK = 'KKR'
     HELP2PAY_MERCHANT_THB = "M0513"
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
@@ -745,7 +744,6 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-    HELP2PAY_BANK = 'KKR'
     HELP2PAY_MERCHANT_THB = "M0513"
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
@@ -771,7 +769,6 @@ else:
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-    HELP2PAY_BANK = 'KKR'
     HELP2PAY_MERCHANT_THB = "M0513"
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
