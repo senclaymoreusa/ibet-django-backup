@@ -448,71 +448,87 @@ def cancel_cashout_card(request):
 @permission_classes((IsAuthenticated,))
 def capture_transaction(request):
     if (request.method == "POST"):
-        
-        requestURL = ASTROPAY_URL + "/verif/validator"
-        
-        # need to parse card num, code, exp date, amount, and currency from POST body
-        body = json.loads(request.body)
-        userid = request.user.username
-        
-        if checkUserBlock(CustomUser.objects.get(username=userid)):
-            errorMessage = _('The current user is blocked!')
-            data = {
-                "errorCode": ERROR_CODE_BLOCK,
-                "errorMsg": {
-                    "detail": [errorMessage]
-                }
-            }
-            return Response(data)
-
-        # etc.
-        card_num = body.get("card_num")
-        card_code = body.get("card_code")
-        exp_date = body.get("exp_date")
-        amount = body.get("amount")
-        currency = "BRL"
-
-        orderId = user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
-
-        params = {
-            "x_login": ASTROPAY_X_LOGIN,
-            "x_trans_key": ASTROPAY_X_TRANS_KEY,
-            "x_type": "AUTH_CAPTURE",
-            "x_card_num": card_num,
-            "x_card_code": card_code,
-            "x_exp_date": exp_date,
-            "x_amount": amount,
-            "x_currency": currency,  # we are only using this API for thailand
-            "x_unique_id": request.user.username,
-            "x_invoice_num": orderId,
-        }
-
-        r = requests.post(requestURL, data=params)
-
-        responseData = r.text.split("|")
-        logger.info(responseData)
-        if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
-            logger.info("contact AstroPay servers success and deposit success!")
+        try:
+            requestURL = ASTROPAY_URL + "/verif/validator"
             
-            tranDict = {
-                'order_id':(orderId)[0:20],
-                'transaction_id':userid,
-                'amount':amount,
-                'user_id':CustomUser.objects.get(username=userid),
-                'currency':2,
-                'transaction_type':0,
-                'channel':2,
-                'status':0,
-                'method':"AstroPay",
-                'arrive_time': timezone.now(),
-                'product': "None",
-            }
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)            
-            loop.run_until_complete(createDeposit(**tranDict))
-        
-        return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
+            # need to parse card num, code, exp date, amount, and currency from POST body
+            body = json.loads(request.body)
+            userid = request.user.username
+            
+            if checkUserBlock(CustomUser.objects.get(username=userid)):
+                errorMessage = _('The current user is blocked!')
+                data = {
+                    "errorCode": ERROR_CODE_BLOCK,
+                    "errorMsg": {
+                        "detail": [errorMessage]
+                    }
+                }
+                return Response(data)
 
+            # etc.
+            card_num = body.get("card_num")
+            card_code = body.get("card_code")
+            exp_date = body.get("exp_date")
+            amount = body.get("amount")
+            currency = "THB"
+
+            orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+
+            params = {
+                "x_login": ASTROPAY_X_LOGIN,
+                "x_trans_key": ASTROPAY_X_TRANS_KEY,
+                "x_type": "AUTH_CAPTURE",
+                "x_card_num": card_num,
+                "x_card_code": card_code,
+                "x_exp_date": exp_date,
+                "x_amount": amount,
+                "x_currency": currency,  # we are only using this API for thailand
+                "x_unique_id": request.user.username,
+                "x_invoice_num": orderId,
+            }
+
+            r = requests.post(requestURL, data=params)
+
+            responseData = r.text.split("|")
+            logger.info(responseData)
+            if (r.status_code == 200) and (r.text[0:5] == "1|1|1"):  # create transaction record when successfully approved
+                logger.info("contacted AstroPay servers success and deposit success!")
+                
+                # Transaction.objects.create(
+                #     order_id=orderId,
+                #     transaction_id=
+                #     amount=amount,
+                #     user_id=CustomUser.objects.get(username=
+                #     currency=
+                #     transaction_type=
+                #     channel=
+                #     status=
+                #     method=
+                #     arrive_time=
+                # )
+
+                tranDict = {
+                    'order_id':(orderId)[0:20],
+                    'transaction_id':userid,
+                    'amount':amount,
+                    'user_id':CustomUser.objects.get(username=userid),
+                    'currency':2,
+                    'transaction_type':0,
+                    'channel':2,
+                    'status':0,
+                    'method':"AstroPay",
+                    'arrive_time': timezone.now(),
+                    'product': "None",
+                }
+                # loop = asyncio.new_event_loop()
+                # asyncio.set_event_loop(loop)            
+                # loop.run_until_complete(createDeposit(**tranDict))
+            else:
+                logger.error("successfully contacted AstroPay servers but deposit was unsuccessful")
+
+            return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
+        except Exception as e:
+            logger.critical("FATAL__ERROR::AstroPay deposit failed::" + repr(e), exc_info=True, stack_info=True)
 
 async def createDeposit(**tranDict):
     task1 = asyncio.ensure_future(

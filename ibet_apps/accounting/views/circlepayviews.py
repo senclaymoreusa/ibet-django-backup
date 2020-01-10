@@ -31,47 +31,55 @@ def create_deposit(request):
         return HttpResponse("You are at the endpoint for CirclePay reserve payment.")
     
     if request.method == "POST":  # can only allow post requests
-        user_id = CustomUser.objects.get(username=request.user.username)
-        if checkUserBlock(user_id):
-                errorMessage = _('The current user is blocked!')
-                data = {
-                    "errorCode": ERROR_CODE_BLOCK,
-                    "errorMsg": {
-                        "detail": [errorMessage]
+        try:
+            user_id = CustomUser.objects.get(username=request.user.username)
+            if checkUserBlock(user_id):
+                    errorMessage = _('The current user is blocked!')
+                    data = {
+                        "errorCode": ERROR_CODE_BLOCK,
+                        "errorMsg": {
+                            "detail": [errorMessage]
+                        }
                     }
-                }
-                return JsonResponse(data)
-        body = json.loads(request.body)
-        logger.info(body["trans_id"])
-        amount = body["amount"]
-        transaction_id = body["trans_id"]
+                    return JsonResponse(data)
+            body = json.loads(request.body)
+            logger.info(body["trans_id"])
+            amount = body["amount"]
+            transaction_id = body["trans_id"]
+            
+            obj, created = Transaction.objects.get_or_create(
+                user_id=user_id,
+                transaction_id=transaction_id,
+                amount=float(amount),
+                method="CirclePay",
+                channel=7,  # CirclePay
+                currency=8,  # VND
+                transaction_type=0,  # DEPOSIT
+                status=2,  # CREATED
+                request_time=timezone.now(),
+                last_updated=timezone.now()
+            )
 
-        
-        obj, created = Transaction.objects.get_or_create(
-            user_id=user_id,
-            transaction_id=transaction_id,
-            amount=float(amount),
-            method="CirclePay",
-            channel=7,  # CirclePay
-            currency=8,  # VND
-            transaction_type=0,  # DEPOSIT
-            status=2,  # CREATED
-            request_time=timezone.now(),
-            last_updated=timezone.now()
-        )
+            return JsonResponse({
+                "success": True,
+                "record_created": created,
+                "message": "Created new record" if created else "Did not create new record",
+                "user": request.user.username,
+                "transaction_id": transaction_id
+            })
+        except Exception as e:
+            logger.critical("FATAL__ERROR::CirclePay::Unable to create deposit", exc_info=True, stack_info=1)
+            return JsonResponse({
+                "success": False,
+                "message": "Exception occured"
+            })
 
-        return JsonResponse({
-            "record_created": created,
-            "message": "Created new record" if created else "Failed to create new record",
-            "user": request.user.username,
-            "transaction_id": transaction_id
-        })
 
 
 def confirm_payment(request):
     if request.method == "GET":
         logger.info("Hello GET")
-        return HttpResponse("You are at the endpoint for CirclePay confirm payment")
+        return HttpResponse(status=404)
     if request.method == "POST":
         logger.info("[" + str(datetime.datetime.now()) + "] Received confirm_payment() callback from CirclePay")
         transaction_data = json.loads(request.body)
@@ -109,15 +117,17 @@ def confirm_payment(request):
             matching_transaction.save()
 
             # update transaction record status
-            return JsonResponse({"message": "Received confirmation of payment"})
+            return JsonResponse({
+                "success": True,
+                "message": "Received confirmation of payment"
+            })
         except ObjectDoesNotExist as e:
-            logger.error(e)
+            logger.critical("FATAL__ERROR::CirclePay::Unable to confirm payment", exc_info=1, stack_info=1)
             return JsonResponse({"message": "Could not find matching transaction"})
 
 
 def check_transaction(request):
     if request.method == "POST":
-
         body = json.loads(request.body)
         trans_id = body["trans_id"]
         url = CIRCLEPAY_CHECK_STATUS_URL + trans_id

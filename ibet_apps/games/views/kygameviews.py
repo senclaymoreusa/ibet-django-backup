@@ -334,6 +334,7 @@ def kyTransfer(user, amount, wallet, method):
                         transfer_to='ky',
                         product=1,
                         transaction_type=TRANSACTION_TRANSFER,
+                        channel=None,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True
@@ -352,6 +353,7 @@ def kyTransfer(user, amount, wallet, method):
                         transfer_to=wallet,
                         product=1,
                         transaction_type=TRANSACTION_TRANSFER,
+                        channel=None,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True

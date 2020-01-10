@@ -293,6 +293,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         transfer_to='AG',
                                         product=0,
                                         transaction_type=TRANSACTION_TRANSFER,
+                                        channel=None,
                                         status=TRAN_SUCCESS_TYPE)
                                 else:
                                     Transaction.objects.create(transaction_id=trans_id,
@@ -303,6 +304,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         transfer_from='AG',
                                         transfer_to=fund_wallet,
                                         product=0,
+                                        channel=None,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
                                 # print("confirm")
@@ -327,6 +329,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                                 transfer_from=fund_wallet,
                                                 transfer_to='AG',
                                                 product=0,
+                                                channel=None,
                                                 transaction_type=TRANSACTION_TRANSFER,
                                                 status=TRAN_SUCCESS_TYPE)
                                         else:
@@ -338,6 +341,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                                 transfer_from='AG',
                                                 transfer_to=fund_wallet,
                                                 product=0,
+                                                channel=None,
                                                 transaction_type=TRANSACTION_TRANSFER,
                                                 status=TRAN_SUCCESS_TYPE)
                                         return CODE_SUCCESS
