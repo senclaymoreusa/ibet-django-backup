@@ -53,7 +53,7 @@ class AgentView(CommAdminView):
 
                             'winorloss': calculateNGR(user, start_date, end_date, None),
                             'commission': tran.amount,
-                            'status': "Released" if tran.status == TRAN_APPROVED_TYPE else "Pending",
+                            'status': "Released" if tran.status == TRAN_SUCCESS_TYPE else "Pending",
                             'release_time': str(utcToLocalDatetime(tran.arrive_time)),
                             'operator': tran.release_by.username if tran.release_by else "",
                             'operator_pk': tran.release_by.pk if tran.release_by else "",
@@ -305,7 +305,7 @@ class AgentView(CommAdminView):
                             admin_user = CustomUser.objects.get(username=admin)
                             user = current_trans.user_id
                             user.main_wallet += current_trans.amount
-                            current_trans.status = TRAN_APPROVED_TYPE
+                            current_trans.status = TRAN_SUCCESS_TYPE
                             current_trans.review_status = REVIEW_APP
                             current_trans.arrive_time = timezone.now()
                             current_trans.release_by = admin_user

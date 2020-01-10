@@ -248,7 +248,6 @@ def withdrawResult(request):
             logger.exception("Help2Pay::withdrawResult::Exception Occurred", exc_info=1, stack_info=1)
             return HttpResponse("false")
         
-
 # user submits withdraw request
 class SubmitPayout(View):
     def get(self, request):
