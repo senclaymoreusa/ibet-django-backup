@@ -6,9 +6,6 @@ from utils.constants import *
 # begin FREEBET API calls
 ###########################################################################################
 def CreateChannel():
-    BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
-    BTI_AGENT_USERNAME = "WKIBPH"
-    BTI_AGENT_PW = "Tr6saneyu"
     username = BTI_AGENT_USERNAME
     password = BTI_AGENT_PW
     header = {'RequestTarget': 'AJAXService'}
@@ -57,15 +54,14 @@ def AddCustomersToSegment(session_id, segment_name):
     return False
 
 # give freeebet to user
-def GiveFreeBet(session_id, user_object, amount):
+def GiveFreeBet(session_id, user_object, amount, coupon_code):
     BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
     path = f"/data/givefreebettocustomer/ch={session_id}"
     header = {'RequestTarget': 'AJAXService', 'content-type': 'application/json'}
-    payload = '\"{\\"MerchantCode\\":\\"btiTest123\\",\\"Amount\\":' + str(amount) + ',\\"CouponCode\\":\\"WKxCqA\\"}\"'
-    print(payload)
-    # payload = '{"MerchantCode": "' + user_object.username + '","Amount": ' + amount + ',"CouponCode": "Sg6z2o" }'
+    payload = '\"{\\"MerchantCode\\":\\"' + user_object.username + '\\",\\"Amount\\":' + str(amount) + ',\\"CouponCode\\":\\"' + coupon_code + '\\"}\"'
+
     r = requests.post(BTI_FREEBET_URL + path, headers=header, data=payload)
-    print(r.json())
+
     if r.status_code == 200 and r.json()[0]["Value"]["Value"].lower() == "ok":
         return True
     return False
