@@ -1578,4 +1578,4 @@ IMES_PROVIDER = "IMES"
 #BTI
 BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
 BTI_AGENT_USERNAME = "WKIBPH"
-BIT_AGENT_PW = "Tr6saneyu"
+BTI_AGENT_PW = "Tr6saneyu"
