@@ -60,6 +60,7 @@ def get_qr_code(request):
                 }
             }
             return Response(data)
+
         logger.info(payload)
         for x in range(3):
             if os.getenv("ENV") == "local":
@@ -95,6 +96,7 @@ def get_qr_code(request):
                 return HttpResponse(r.text)
             elif r.status_code == 500:
                 sleep(5)
+            logger.warning("Warning::Payzod::Failed to reach Payzod servers")
             return HttpResponse("Failed to reach Payzod servers")
 
 
@@ -154,7 +156,7 @@ def confirm_payment(request):
 
 
         except ObjectDoesNotExist as e:
-            logger.error(e)
+            logger.critical("FATAL__ERROR::Payzod::Payment confirmation failed", exc_info=1, stack_info=1)
             return JsonResponse({"message": "Could not find matching transaction"})
 
     return HttpResponse("Invalid Request")
