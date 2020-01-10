@@ -229,7 +229,6 @@ class BonusView(View):
             response = JsonResponse({"error": "Error getting new bonus details"})
             response.status_code = 400
             return response
-        print(req_data)
 
         try:
             if bonus is None:
