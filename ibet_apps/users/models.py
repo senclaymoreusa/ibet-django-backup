@@ -174,12 +174,12 @@ class CustomUser(AbstractBaseUser):
     # The following 3 fields store the user's money for playing games. main_wallet is the primary wallet used.
     # balance = main_wallet + other_game_wallet
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
-    other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=2, default=0)
+    other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=4, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
     onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=2, default=0)
-    ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=2, default=0)
-    ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=2, default=0)
+    ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=4, default=0)
+    ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=4, default=0)
+    ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=4, default=0)
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
     user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
@@ -293,13 +293,13 @@ class CustomUser(AbstractBaseUser):
 # User Personal Commission
 class PersonalCommissionLevel(models.Model):
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=2, default=0)
+    commission_percentage = models.DecimalField(_('commission Percentage'), max_digits=20, decimal_places=4, default=0)
     downline_commission_percentage = models.DecimalField(_('Downline commission Percentage'), max_digits=20,
-                                                         decimal_places=2, default=0)
+                                                         decimal_places=4, default=0)
     commission_level = models.IntegerField(default=1)
     active_downline_needed = models.IntegerField(default=6)
     monthly_downline_ftd_needed = models.IntegerField(default=6)
-    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    ngr = models.DecimalField(max_digits=20, decimal_places=4, default=0)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
@@ -318,13 +318,13 @@ class PersonalCommissionLevel(models.Model):
 # System default Commission
 class SystemCommissionLevel(models.Model):
     commission_level = models.IntegerField(unique=True)
-    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    commission_percentage = models.DecimalField(max_digits=5, decimal_places=4, default=0)
+    downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=4, default=0)
     active_downline_needed = models.IntegerField(default=0)
     monthly_downline_ftd_needed = models.IntegerField(default=0)
-    ngr = models.DecimalField(max_digits=20, decimal_places=2, default=0)
-    operation_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    payment_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    ngr = models.DecimalField(max_digits=20, decimal_places=4, default=0)
+    operation_fee = models.DecimalField(max_digits=5, decimal_places=4, default=0)
+    payment_fee = models.DecimalField(max_digits=5, decimal_places=4, default=0)
 
 
 # one user can have up to 10 referral channels
@@ -417,7 +417,7 @@ class UserAction(models.Model):
     device = models.CharField(_('Device'), max_length=50, blank=True, null=True)
     browser = models.CharField(_('Browser'), max_length=200, blank=True, null=True)
     refer_url = models.CharField(_('Refer URL'), max_length=255, blank=True, null=True)
-    # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=2, blank=True, null=True)
+    # dollar_amount = models.DecimalField(_('Amount'), max_digits=20, decimal_places=4, blank=True, null=True)
     page_id = models.IntegerField(_('Page'), blank=True, null=True)
     result = models.CharField(max_length=10, null=True, blank=True)
     ip_location = JSONField(null=True, default=dict)
@@ -447,8 +447,8 @@ class UserActivity(models.Model):
 class Limitation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('User'), related_name="limit_user")
     limit_type = models.SmallIntegerField(choices=LIMIT_TYPE, default=0)
-    amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
-    temporary_amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
+    amount = models.DecimalField(decimal_places=4, max_digits=20, null=True, blank=True)
+    temporary_amount = models.DecimalField(decimal_places=4, max_digits=20, null=True, blank=True, default=0)
     product = models.SmallIntegerField(choices=GAME_PRODUCT, default=0, null=True)
     interval = models.SmallIntegerField(choices=TEMPORARY_INTERVAL, default=0, null=True)
     expiration_time = models.DateTimeField(null=True, blank=True)
@@ -472,11 +472,11 @@ class Limitation(models.Model):
 class Segmentation(models.Model):
     name = models.CharField(max_length=50)
     level = models.IntegerField()
-    turnover_threshold = models.DecimalField(max_digits=20, decimal_places=2)
-    annual_threshold = models.DecimalField(max_digits=20, decimal_places=2)
-    platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=2)
-    deposit_amount_daily = models.DecimalField(max_digits=20, decimal_places=2)
-    deposit_amount_monthly = models.DecimalField(max_digits=20, decimal_places=2)
+    turnover_threshold = models.DecimalField(max_digits=20, decimal_places=4)
+    annual_threshold = models.DecimalField(max_digits=20, decimal_places=4)
+    platform_turnover_daily = models.DecimalField(max_digits=20, decimal_places=4)
+    deposit_amount_daily = models.DecimalField(max_digits=20, decimal_places=4)
+    deposit_amount_monthly = models.DecimalField(max_digits=20, decimal_places=4)
     general_bonuses = models.BooleanField(default=False)
     product_turnover_bonuses = models.BooleanField(default=False)
 
