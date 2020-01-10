@@ -1560,12 +1560,18 @@ SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
 # GB_PROVIDER = keys["GB"]["PROVIDER"]
-GB_URL = keys["GB"]["URL"]
+# GB_URL = keys["GB"]["URL"]
+# GB_API_URL = keys["GB"]["API_URL"]
+# GB_SPORT_URL = keys["GB"]["SPORT_URL"]
+# GB_OTHER_URL = keys["GB"]["OTHER_URL"]
+# GB_GeneralKey = keys["GB"]["GeneralKey"]
+# GB_SecretKey = keys["GB"]["SecretKey"]
+GB_URL =  "http://api.gbb2b.com/GBGameAPI/API.aspx"
 GB_API_URL = keys["GB"]["API_URL"]
-GB_SPORT_URL = keys["GB"]["SPORT_URL"]
-GB_OTHER_URL = keys["GB"]["OTHER_URL"]
-GB_GeneralKey = keys["GB"]["GeneralKey"]
-GB_SecretKey = keys["GB"]["SecretKey"]
+GB_SPORT_URL = "http://163.claymoreasia.com/sports/asia/index.aspx"
+GB_OTHER_URL = "http://163.claymoreusa.com"
+GB_GeneralKey = "7rk2wN"
+GB_SecretKey = "BWtn3U"
 
 # QT
 QT_STATUS_SUCCESS = 0

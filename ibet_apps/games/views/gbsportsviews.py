@@ -528,7 +528,7 @@ class GenerateGameURL(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
-
+        print("hello")
         game = self.request.GET['game']
         language = langConversion[self.request.user.language]
         
@@ -604,7 +604,7 @@ class GenerateGameURL(APIView):
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
-
+        print(url)
         return Response({'game_url': url})
 
 class GenerateFakeUserGameURL(APIView):
@@ -656,7 +656,7 @@ class GenerateFakeUserGameURL(APIView):
             })
 
             create_user_data = create_user_data.json()
-
+            
             GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
 
         else:
@@ -664,9 +664,9 @@ class GenerateFakeUserGameURL(APIView):
 
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
-        print(res)
+        
         res = res[2:-2]
-        print(res)
+        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 
         if game == 'GB Sports':
