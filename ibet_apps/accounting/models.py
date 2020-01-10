@@ -164,7 +164,7 @@ class Transaction(models.Model):
     )
     order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order ID")) #third party ref no
     amount = models.DecimalField(
-        max_digits=10, decimal_places=4, verbose_name=_("Apply Amount")
+        max_digits=20, decimal_places=4, verbose_name=_("Apply Amount")
     )
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
