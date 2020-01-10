@@ -28,7 +28,7 @@ class GetEaBetHistory(View):
         try:
             ftp_connection = ftpClient.ftpConnect()
         except Exception as e:
-            logger.critical("(FETAL_ERROR) There is something wrong with ftp connection.", e)
+            logger.critical("(FATAL_ERROR) There is something wrong with ftp connection.", e)
             return HttpResponse({'status': 'There is something wrong with ftp connection.' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         file_list = []
@@ -38,7 +38,7 @@ class GetEaBetHistory(View):
             redis = RedisHelper()
             logger.info("connecting redis")
         except Exception as e:
-            logger.critical("(FETAL_ERROR) There is something wrong with redis connection.", e)
+            logger.critical("(FATAL_ERROR) There is something wrong with redis connection.", e)
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
         last_file = redis.get_ea_last_file()
