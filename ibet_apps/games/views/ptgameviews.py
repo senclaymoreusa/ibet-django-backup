@@ -244,6 +244,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                         transfer_to='pt',
                         product=1,
                         transaction_type=TRANSACTION_TRANSFER,
+                        channel=None,
                         status=TRAN_SUCCESS_TYPE
                     )
                 
@@ -260,6 +261,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                         transfer_to=wallet,
                         product=1,
                         transaction_type=TRANSACTION_TRANSFER,
+                        channel=None,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True
