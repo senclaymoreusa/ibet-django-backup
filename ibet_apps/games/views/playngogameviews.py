@@ -9,7 +9,7 @@ from django.utils import timezone
 
 # iBet
 from users.models import CustomUser
-from games.models import GameBet, GameProvider, Category
+from games.models import GameBet, GameProvider, Category, PNGTicket
 from utils.constants import *
 from utils.aws_helper import getThirdPartyKeys
 from users.views.helper import checkUserBlock
