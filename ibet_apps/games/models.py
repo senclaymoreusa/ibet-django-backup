@@ -73,7 +73,7 @@ class Game(models.Model):
     image_url = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
-    popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    popularity = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
     smallgame_id = models.CharField(max_length=200, null=True, blank=True)
     is_free = models.NullBooleanField(default=None)
@@ -110,13 +110,13 @@ class GameBet(models.Model):
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
-    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
+    amount_wagered = models.DecimalField(max_digits=12, decimal_places=4, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
     user_name = models.CharField(max_length=255, blank=True, null=True)
 
-    amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
+    amount_won = models.DecimalField(max_digits=12, decimal_places=4, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
+    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=4) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
     transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)

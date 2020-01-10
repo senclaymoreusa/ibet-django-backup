@@ -1,12 +1,13 @@
 import requests,json, os, datetime, time, hmac, hashlib, base64, logging, uuid, random
 
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.hashers import make_password, check_password
 from django.views import View, generic
 from django.utils import timezone
 from django.db import DatabaseError, transaction
 from django.conf import settings
-
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import status, generics, parsers, renderers
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
@@ -443,8 +444,13 @@ class submitPayout(generics.GenericAPIView):
         amount =self.request.POST.get('amount')
         language = self.request.POST.get('language')
         userId = self.request.POST.get('user_id')
-        user = CustomUser.objects.get(username=userId)
-        trans_id = userId+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
+        withdraw_password = self.request.POST.get("withdraw_password")
+        try:
+            user = CustomUser.objects.get(username=userId)
+        except ObjectDoesNotExist:
+            logger.error("The  user is not existed.")
+            return Response({"error":"The  user is not existed."}) 
+        trans_id = user.username+strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         mymethod = self.request.POST.get('method')
         list = [merchantId, trans_id, amount, currency, dateTime, userId]
         message = '|'.join(str(x) for x in list)
@@ -467,39 +473,47 @@ class submitPayout(generics.GenericAPIView):
                 }
             }
             return Response(data)
-        r = requests.post(url, headers=headers, data = {
-            'orderId' : trans_id,
-            'amount' : amount,
-            'currency' : currency,
-            'dateTime': dateTime,
-            'language': language,
-            'userId': userId,
-            'depositorTier': '0',
-            'payoutMethod':  mymethod,
-            'withdrawerEmail': user.email,
-            'withdrawerName': user.first_name + " " + user.last_name,
-            'redirectUrl': REDIRECTURL,
-            'withdrawerEmail':user.email,
-            'callbackUrl':CALLBACK_URL,
-            'messageAuthenticationCode': my_hmac,
-        })
-        
-        rdata = r.json()
+        if check_password(withdraw_password, user.withdraw_password):
+            r = requests.post(url, headers=headers, data = {
+                'orderId' : trans_id,
+                'amount' : amount,
+                'currency' : currency,
+                'dateTime': dateTime,
+                'language': language,
+                'userId': userId,
+                'depositorTier': '0',
+                'payoutMethod':  mymethod,
+                'withdrawerEmail': user.email,
+                'withdrawerName': user.first_name + " " + user.last_name,
+                'redirectUrl': REDIRECTURL,
+                'withdrawerEmail':user.email,
+                'callbackUrl':CALLBACK_URL,
+                'messageAuthenticationCode': my_hmac,
+            })
+            
+            rdata = r.json()
+            
+        else:
+            logger.error("withdraw password is not correct.")    
+            return JsonResponse({
+                'status_code': ERROR_CODE_INVALID_INFO,
+                'message': 'Withdraw password is not correct.'
+            })
         if r.status_code == 201:  
             user = CustomUser.objects.get(username=rdata['payoutTransaction']['userId'])
-         
+            cur_status = 0
             for x in Transaction._meta.get_field('currency').choices:
                 if rdata["payoutTransaction"]["currency"] == x[1]:
                     cur_val = x[0]
 
-            for y in Transaction._meta.get_field('status').choices:
-                if rdata["payoutTransaction"]["status"] ==y[1]:
-                    cur_status = y[0] 
+            # for y in Transaction._meta.get_field('status').choices:
+            #     if rdata["payoutTransaction"]["status"] ==y[1]:
+            #         cur_status = y[0] 
             create = Transaction.objects.create(
                 transaction_id= rdata["payoutTransaction"]['orderId'],
                 order_id=rdata["payoutTransaction"]["transactionId"],
                 amount=rdata["payoutTransaction"]["amount"],
-                status=cur_status,
+                status=statusConversion[rdata["payoutTransaction"]["status"]],
                 user_id=user,
                 method= rdata["payoutTransaction"]["payoutMethod"],
                 currency= cur_val,

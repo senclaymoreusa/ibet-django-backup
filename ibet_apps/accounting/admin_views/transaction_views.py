@@ -101,7 +101,10 @@ class GetTransactions(CommAdminView):
             trans_data["pk"] = trans.pk
             trans_data["status"] = trans.get_status_display()
             if trans.bank_info:
-                trans_data["bank_info"] = trans.bank_info.get('bank') or ''
+                trans_data["bank"] = trans.bank_info.get('bank') or ''
+                trans_data["acc_no"] = trans.bank_info.get('bank_acc_no') or ''
+                trans_data["name"] = trans.bank_info.get('real_name') or ''
+            trans_data["reviewer"] = trans.release_by or ''
 
             trans_data["risk_level"] = trans.user_id.get_risk_level_display()
             # trans_data["player_segment"] = trans.user_id.player_segment
