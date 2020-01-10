@@ -425,9 +425,9 @@ class NotificationView(CommAdminView):
                         send_message(notification.pk)
 
                     return HttpResponseRedirect(reverse('xadmin:notification'))
-                else:
-                    logger.error(serializer.errors)
-                    return HttpResponse(serializer.errors)
+            else:
+                logger.error(serializer.errors)
+                return HttpResponse(serializer.errors)
         except Exception as e:
             logger.error("Admin Notification View Error -- {}".format(repr(e)))
             return HttpResponse(repr(e))
@@ -994,7 +994,7 @@ class CampaignView(CommAdminView):
 
                     return HttpResponse("success update")
         except Exception as e:
-            logger.error("Admin Campaign View Error -- {}".format(repr(e))))
+            logger.error("Admin Campaign View Error -- {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
