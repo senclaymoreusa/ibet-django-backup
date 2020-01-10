@@ -6,12 +6,10 @@ from utils.constants import *
 # begin FREEBET API calls
 ###########################################################################################
 def CreateChannel():
-    username = BTI_AGENT_USERNAME
-    password = BTI_AGENT_PW
     header = {'RequestTarget': 'AJAXService'}
     payload = {
-        "agentUserName": username,
-        "agentPassword": password
+        "agentUserName": BTI_AGENT_USERNAME,
+        "agentPassword": BTI_AGENT_PW
     }
     r = requests.post(BTI_FREEBET_URL + "/channelservice/createchannel", headers=header, json=payload)
     if r.status_code == 200:
@@ -55,7 +53,6 @@ def AddCustomersToSegment(session_id, segment_name):
 
 # give freeebet to user
 def GiveFreeBet(session_id, user_object, amount, coupon_code):
-    BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
     path = f"/data/givefreebettocustomer/ch={session_id}"
     header = {'RequestTarget': 'AJAXService', 'content-type': 'application/json'}
     payload = '\"{\\"MerchantCode\\":\\"' + user_object.username + '\\",\\"Amount\\":' + str(amount) + ',\\"CouponCode\\":\\"' + coupon_code + '\\"}\"'
