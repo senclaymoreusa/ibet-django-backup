@@ -49,7 +49,7 @@ class Bonus(models.Model):
     # bonus 2.0)
     delivery = models.SmallIntegerField(choices=DELIVERY_CHOICES, default=0, null=True)  # release method (bonus 2.0)
 
-    max_user_amount = models.FloatField(null=True, blank=True)  # the maximum amount a player can get reward for this
+    # max_user_amount = models.FloatField(null=True, blank=True)  # the maximum amount a player can get reward for this
     # bonus (bonus 3.0)
     max_amount = models.FloatField(null=True, blank=True)  # maximum amount of bonus could be released (bonus 3.0)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)  # for tiered bonus (bonus 3.0)

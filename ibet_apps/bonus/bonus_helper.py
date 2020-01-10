@@ -2,11 +2,12 @@ import datetime
 import logging
 
 from django.db.models import Q
+from django.utils import timezone
 
 from accounting.models import Transaction
 from bonus.models import UserBonusEvent, Bonus, Requirement
 from utils.constants import TRANSACTION_DEPOSIT, TRAN_SUCCESS_TYPE, BONUS_ACTIVE, BONUS_TYPE_DEPOSIT, \
-    BONUS_VALID_DEPOSIT
+    BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED
 
 logger = logging.getLogger('django')
 
@@ -24,7 +25,7 @@ def getBonusExpiredTime(bonus):
 '''
 
 
-def checkFTD(deposit):
+def checkAndUpdateFTD(deposit):
     if not deposit:
         logger.info("Invalid input for checking user First Deposit Time")
         return False
@@ -41,51 +42,103 @@ def checkFTD(deposit):
                                   & Q(status=TRAN_SUCCESS_TYPE)).exsit():
         return False
 
+    user = deposit.user_id
+    user.ftd_time = deposit.arrive_time
+    user.save()
+    logger.info("Update player {}'s first deposit time {}".format(user.username, deposit.arrive_time))
     return True
 
 
-def getValidFirstDepositBonus(user, deposit_amount, current_time):
-
+def getValidFTD(user, deposit_amount, current_time):
     active_ube = UserBonusEvent.objects.filter(Q(owner=user)
-                                               & Q(status=BONUS_ACTIVE)
+                                               & Q(status=BONUS_START)
                                                & Q(completion_time__isnull=True))
-
-    deposit_tiered_parent = getTieredBonusParent(BONUS_TYPE_DEPOSIT)
-
     valid_ube = None
+    valid_ube_wager = False
+    deposit_tiered_parents = getTieredBonusParent(BONUS_TYPE_DEPOSIT)
 
     for ube in active_ube:
+
         bonus = ube.bonus
+        wager_reqs = False  # bonus event has wager requirements or not
+        amount_threshold = 0  # the minimum deposit money to receive this bonus
+        ube_amount = 0  # bonus amount for this transaction
         reqs = Requirement.objects.filter(bonus=bonus)
 
-        # bonus is not valid
+        # skip invalid ube which bonus is not matched
         if bonus.start_time > current_time \
                 or getBonusExpiredTime(bonus) < current_time \
                 or bonus.status != BONUS_ACTIVE \
                 or bonus.type != BONUS_TYPE_DEPOSIT \
                 or reqs.filter(must_have=BONUS_VALID_DEPOSIT).exsit() \
-                or bonus in deposit_tiered_parent:
+                or (bonus in deposit_tiered_parents):
             continue
 
-        # deposit amount not achieved threshold
-        # check requirements, skip must have
+        for req in reqs:
+            # skip must have reqs
+            if req.must_have:
+                continue
 
+            if amount_threshold == 0:
+                amount_threshold = req.amount_threshold
+            if req.turnover_multiplier and req.turnover_multiplier != -1:
+                wager_reqs = True
+                break
 
-        # 要返回一个ube amount最大的bonus
+        if deposit_amount < amount_threshold:
+            continue
+
+        # compare bonus amount and percentage, return a max_amount one
+        if not valid_ube:
+            valid_ube = ube
+        else:
+            if bonus.amount and bonus.amount > ube_amount:
+                ube_amount = bonus.amount
+                valid_ube = ube
+                valid_ube_wager = wager_reqs
+
+            if bonus.percentage:
+                bonus_amount = float(bonus.percentage) * 0.01 * deposit_amount
+                if bonus_amount > ube_amount:
+                    ube_amount = bonus_amount
+                    valid_ube = ube
+                    valid_ube_wager = wager_reqs
+
+    # find a valid first deposit bonus for user
+    if valid_ube:
+        completed_time = timezone.now()
+        if not valid_ube_wager:
+            # can be released
+            new_ube = UserBonusEvent.objects.create(
+                owner=user,
+                bonus=valid_ube.bonus,
+                amount=ube_amount,
+                status=BONUS_COMPLETED,
+                delivery_time=completed_time,
+                completed_time=completed_time,
+            )
+            logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
+        else:
+            new_ube = UserBonusEvent.objects.create(
+                owner=user,
+                bonus=valid_ube.bonus,
+                amount=ube_amount,
+                status=BONUS_ACTIVE,
+                delivery_time=completed_time,
+                completed_time=completed_time
+            )
+            logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
+        return valid_ube.bonus
 
     return None
 
 
 # type: BONUS_TYPE_DEPOSIT or BONUS_TYPE_TURNOVER
-def getTieredBonusParent(type):
+def getTieredBonusParent(bonus_type):
     parent_list = list()
-    bonuses = Bonus.objects.filter(type=type)
+    bonuses = Bonus.objects.filter(type=bonus_type)
     for bonus in bonuses:
         if bonus.parent and bonus.parent not in parent_list:
             parent_list.append(bonus.parent)
 
     return parent_list
-
-
-def checkValidNextDepositBonus(user, current_time, bonus_type):
-    return False

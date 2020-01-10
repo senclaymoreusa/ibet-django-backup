@@ -37,7 +37,7 @@ class BonusSearchView(View):
     def get(self, request, *args, **kwargs):
         bonuses = {}
         result = {}
-        bonus_all = Bonus.objects.all()
+        bonus_all = Bonus.objects.filter(parent__isnull=True)
 
         try:
             request_type = request.GET.get('type')
@@ -137,9 +137,9 @@ class BonusSearchView(View):
                     'amount__sum'] or 0,
                 UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Count('amount'))[
                     'amount__count'],
-                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Sum('amount'))[
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_RELEASED).aggregate(Sum('amount'))[
                     'amount__sum'] or 0,
-                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Count('amount'))[
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_RELEASED).aggregate(Count('amount'))[
                     'amount__count']
             )
 
@@ -229,6 +229,7 @@ class BonusView(View):
             response = JsonResponse({"error": "Error getting new bonus details"})
             response.status_code = 400
             return response
+        print(req_data)
 
         try:
             if bonus is None:
@@ -245,11 +246,11 @@ class BonusView(View):
 
                     bonus_amount_list = req_data.get('bonus_amount_list')
 
-                    max_user_amount = req_data.get('max_user_amount')
+                    # max_user_amount = req_data.get('max_user_amount')
                     max_amount = req_data.get('max_target_user_amount')
 
-                    if max_user_amount:
-                        max_user_amount = float(max_user_amount)
+                    # if max_user_amount:
+                    #     max_user_amount = float(max_user_amount)
 
                     if max_amount:
                         max_amount = float(max_amount)
@@ -283,7 +284,7 @@ class BonusView(View):
                             max_total_times=int(req_data.get('max_total_times')),
                             max_relevant_times=int(req_data.get('max_associated_accounts')),
                             max_users=int(req_data.get('max_user')),
-                            max_user_amount=max_user_amount,  # None is unlimited
+                            # max_user_amount=max_user_amount,  # None is unlimited
                             max_amount=max_amount,  # None is unlimited
                             delivery=BONUS_DELIVERY_VALUE_DICT.get(req_data.get('delivery_method')),
                             ## TODO: Need to deal with campaign if that's decided to be a P0 feature
@@ -317,7 +318,7 @@ class BonusView(View):
                             requirements = req_data['requirements']
 
                             must_have = requirements.get('must_have')
-                            if not ftd_bonus and BONUS_VALID_DEPOSIT not in must_have:
+                            if (not ftd_bonus) and must_have and (BONUS_VALID_DEPOSIT not in must_have):
                                 must_have.append(BONUS_VALID_DEPOSIT)
 
                             aggregate_method = requirements['aggregate_method']
@@ -338,42 +339,43 @@ class BonusView(View):
 
                             # this bonus has no wager requirements on this product, and the bonus money cannot be
                             # applied on this product
-                            for wager in wager_dict:
-                                wager_cates = BONUS_GAME_CATEGORY[wager]
-                                amount_threshold = 0
-                                if 'amount_threshold' in bonus_amount_list[curr_idx].keys():
-                                    amount_threshold = bonus_amount_list[curr_idx]['amount_threshold']
+                            if wager_dict:
+                                for wager in wager_dict:
+                                    wager_cates = BONUS_GAME_CATEGORY[wager]
+                                    amount_threshold = 0
+                                    if 'amount_threshold' in bonus_amount_list[curr_idx].keys():
+                                        amount_threshold = bonus_amount_list[curr_idx]['amount_threshold']
 
-                                if float(wager_dict[wager]) == -1:
-                                    continue
-                                wager_req = Requirement(
-                                    aggregate_method=aggregate_method,
-                                    time_limit=time_limit,
-                                    turnover_multiplier=int(wager_dict[wager]),
-                                    amount_threshold=amount_threshold,
-                                    bonus=bonus_obj,
-                                )
-
-                                wager_req.save()
-                                logger.info("Create a new wager Requirement for " + str(bonus_obj.name))
-                                # add requirement category and bonus category
-
-                                for cate in wager_cates:
-                                    wager_cate_obj = Category.objects.get(name=cate)
-
-                                    rc_obj = RequirementCategory(
-                                        requirement=wager_req,
-                                        category=wager_cate_obj
-                                    )
-                                    rc_obj.save()
-                                    logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
-
-                                    bc_obj = BonusCategory(
+                                    if float(wager_dict[wager]) == -1:
+                                        continue
+                                    wager_req = Requirement(
+                                        aggregate_method=aggregate_method,
+                                        time_limit=time_limit,
+                                        turnover_multiplier=int(wager_dict[wager]),
+                                        amount_threshold=amount_threshold,
                                         bonus=bonus_obj,
-                                        category=wager_cate_obj,
                                     )
-                                    bc_obj.save()
-                                    logger.info("Create a new BonusCategory for " + str(bonus_obj.name))
+
+                                    wager_req.save()
+                                    logger.info("Create a new wager Requirement for " + str(bonus_obj.name))
+                                    # add requirement category and bonus category
+
+                                    for cate in wager_cates:
+                                        wager_cate_obj = Category.objects.get(name=cate)
+
+                                        rc_obj = RequirementCategory(
+                                            requirement=wager_req,
+                                            category=wager_cate_obj
+                                        )
+                                        rc_obj.save()
+                                        logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
+
+                                        bc_obj = BonusCategory(
+                                            bonus=bonus_obj,
+                                            category=wager_cate_obj,
+                                        )
+                                        bc_obj.save()
+                                        logger.info("Create a new BonusCategory for " + str(bonus_obj.name))
 
                         # add target user group
                         if 'players' in req_data.keys():
@@ -413,7 +415,7 @@ class BonusView(View):
 
                     # add target user group
         except Exception as e:
-            logger.error("Error creating new bonus details " + str(e))
+            logger.error("Error creating new bonus details ", e)
             response = JsonResponse({"error": "Error creating new bonus, please try again!"})
             response.status_code = 400
             return response
@@ -473,7 +475,7 @@ class UserBonusEventView(View):
             result = {}
             ube_filter = Q()
 
-            total = UserBonusEvent.objects.filter(bonus_parent__isnull=False).count()
+            total = UserBonusEvent.objects.filter(~Q(status=BONUS_START)).count()
 
             if min_date and max_date:
                 ube_filter &= (Q(delivery_time__gte=dateToDatetime(min_date)) & Q(

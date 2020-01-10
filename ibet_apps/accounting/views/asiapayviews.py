@@ -11,7 +11,7 @@ from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 
-from bonus.bonus_helper import checkFTD
+from bonus.bonus_helper import getValidFTD, checkAndUpdateFTD
 from utils.constants import *
 import utils.helpers as helpers
 
@@ -511,23 +511,9 @@ def depositArrive(request):
                     trans.qrcode = ''
                     trans.save()
 
-                    # update user first deposit time
-                    # check if qualified first deposit bonus
-                    if checkFTD(trans):
-                        user = trans.user_id
-                        user.ftd_time = arrive_time
-                        user.save()
-                        logger.info("Update player {}'s first deposit time {}".format(user.username, arrive_time))
-
-                    # check if qualified next deposit bonus
-                    # else:
-
-
-
-
-
-
-
+                    # check if user has valid first deposit bonus and update the status
+                    if checkAndUpdateFTD(trans):
+                        valid_ube = getValidFTD(trans.user_id, trans.amount, arrive_time)
 
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:

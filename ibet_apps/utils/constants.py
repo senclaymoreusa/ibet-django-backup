@@ -1337,16 +1337,18 @@ BONUS_STATUS_CHOICES = (
 
 BONUS_ISSUED = 0        # bonus credited to player account
 BONUS_CLAIMED = 1       # bonus pushed directly pr player clicked "claim"
-BONUS_ACTIVE = 2        # player starts to play toward requirements
-BONUS_COMPLETED = 3     # player meets turnover requirements
-BONUS_EXPIRED = 4       # player fails to meet turnover requirements in allocated period or player fails to activate the bonus in allocated time
-BONUS_CANCELLED = 5     # bonus is cancelled at any stage either on player or admin side
-BONUS_PENDING = 6       # bonus pushed directly pr player clicked "claim" due to another bonus of the same type being active
-BONUS_RELEASED = 7      # bonus is released and wagering is cancelled by an admin user clicking 'release'
+BONUS_START = 2         # player starts to meet deposit and turnover requirement
+BONUS_ACTIVE = 3        # player starts to play toward wager requirements
+BONUS_COMPLETED = 4     # player meets turnover requirements
+BONUS_EXPIRED = 5       # player fails to meet turnover requirements in allocated period or player fails to activate the bonus in allocated time
+BONUS_CANCELLED = 6     # bonus is cancelled at any stage either on player or admin side
+BONUS_PENDING = 7       # bonus pushed directly pr player clicked "claim" due to another bonus of the same type being active
+BONUS_RELEASED = 8      # bonus is released and wagering is cancelled by an admin user clicking 'release'
 
 USER_BONUS_EVENT_TYPE_CHOICES = (
     (BONUS_ISSUED, 'ISSUED'),
     (BONUS_CLAIMED, 'CLAIMED'),
+    (BONUS_START, 'START'),
     (BONUS_ACTIVE, 'ACTIVE'),
     (BONUS_COMPLETED, 'COMPLETED'),
     (BONUS_EXPIRED, 'EXPIRED'),
@@ -1367,11 +1369,11 @@ BONUS_AGGREGATE_MAX = 3
 BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
-    (0, 'SUM'),
-    (1, 'COUNT'),
-    (2, 'AVERAGE'),
-    (3, 'MAX'),
-    (4, 'LATEST'),
+    (BONUS_AGGREGATE_SUM, 'SUM'),
+    (BONUS_AGGREGATE_COUNT, 'COUNT'),
+    (BONUS_AGGREGATE_AVERAGE, 'AVERAGE'),
+    (BONUS_AGGREGATE_MAX, 'MAX'),
+    (BONUS_AGGREGATE_LATEST, 'LATEST'),
 )
 
 #GD CASINO
