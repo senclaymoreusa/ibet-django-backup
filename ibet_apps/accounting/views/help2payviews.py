@@ -343,7 +343,6 @@ class SubmitPayout(View):
                 r = requests.post(payoutURL, data=data)
                 
                 if r.status_code == 200:
-
                     return HttpResponse(r.content)
                 else:
                     return JsonResponse({

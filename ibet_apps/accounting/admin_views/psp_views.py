@@ -129,14 +129,29 @@ class scheduleDowntime(CommAdminView):
             }
             if freq == 'monthly' and date:
                 new_downtime['date'] = date
-            
+            print(start,end)
             # clean out all old downtime entries
             res = cleanDowntime(psp.all_downtime['once'])
             logger.info("Cleaning out old downtime entries...")
             logger.info(res)
             # create new downtime entry
-            psp.downtime_start = datetime.datetime.strptime(start, "%Y/%m/%d %H:%M%p")
-            psp.downtime_end = datetime.datetime.strptime(end, "%Y/%m/%d %H:%M%p")
+            if freq == 'once':
+                psp.downtime_start = datetime.datetime.strptime(start, "%Y/%m/%d %H:%M%p")
+                psp.downtime_end = datetime.datetime.strptime(end, "%Y/%m/%d %H:%M%p")
+            elif freq == 'monthly':
+                this_month = datetime.datetime.now()
+                h = hourToInt(start)
+                print(date,h)
+                this_month = this_month.replace(day=int(date), hour=h, minute=0)
+                psp.downtime_start = this_month
+                h = hourToInt(end)
+                this_month = this_month.replace(hour=h)
+                psp.downtime_end = this_month
+            else:
+                today = datetime.datetime.now()
+                if start[-2:] == 'pm':
+                    psp.downtime_start = today.replace(hour=start)
+
             psp.all_downtime[freq].append(new_downtime)
             psp.save()
             return JsonResponse({
@@ -144,7 +159,7 @@ class scheduleDowntime(CommAdminView):
                 "downtime_added": str(start) + " to " + str(end)
             })
         except Exception as e:
-            logger.error(repr(e))
+            logger.error(repr(e), exc_info=1)
             return JsonResponse({
                 "success": False,
                 "downtime_added": None
@@ -188,7 +203,7 @@ def cleanDowntime(downtimeArr):
     res = []
     now = datetime.datetime.now()
     for i, dt in enumerate(downtimeArr):
-        endDate = datetime.datetime.strptime(dt['end'], "%d/%m/%y %H:%M%p")
+        endDate = datetime.datetime.strptime(dt['end'], "%Y/%m/%d %H:%M%p")
         if now > endDate:
             res.append(dt['id'])
             del downtimeArr[i]
@@ -196,3 +211,9 @@ def cleanDowntime(downtimeArr):
         'success': True,
         'deleted': res
     }
+
+def hourToInt(s):
+    if s[-2:] == 'pm':
+        return int(s[0:2]) + 12 if len(s) == 7 else int(s[0]) + 12
+    if s[-2:] == 'am':
+        return int(s[0:2]) if len(s) == 7 else int(s[0])
