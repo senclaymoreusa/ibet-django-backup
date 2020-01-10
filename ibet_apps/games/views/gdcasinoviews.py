@@ -59,7 +59,7 @@ class ObjectNotFoundError(ResourceNotFoundError):
 
 class GetUserBalanceRequest(ComplexModel):
     __type_name__ = 'GetUserBalance'
-    __namespace__ = GDCASINO_NAMESPACE
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('currency', Unicode),
@@ -104,7 +104,7 @@ class DebitRequest(ComplexModel):
 
 class CreditRequest(ComplexModel):
     __type_name__ = 'Credit'
-    __namespace__ = GDCASINO_NAMESPACE
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('gameId', Unicode),
@@ -123,7 +123,7 @@ class CreditRequest(ComplexModel):
     ]
 class TipRequest(ComplexModel):
     __type_name__ = 'Tip'
-    __namespace__ = GDCASINO_NAMESPACE
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('transactionId', Unicode),
@@ -136,7 +136,7 @@ class TipRequest(ComplexModel):
     ]
 class CancelRequest(ComplexModel):
     __type_name__ = 'Cancel'
-    __namespace__ = GDCASINO_NAMESPACE
+    __namespace__ = 'https://testgdgame-namespace.org'
     _type_info = [
         ('userId', Unicode),
         ('gameId', Unicode),
