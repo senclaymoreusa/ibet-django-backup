@@ -581,7 +581,7 @@ LiveDealerSoapService.event_manager.add_listener('method_return_string', on_meth
 
 soap_app = Application(
     [LiveDealerSoapService],
-    tns='https://testgdgame-namespace.org',
+    tns=GDCASINO_NAMESPACE,
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11(),
     
