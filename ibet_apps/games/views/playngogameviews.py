@@ -47,8 +47,9 @@ class GameLaunchView(View):
     """
     def get(self, request, *args, **kwargs):
         try:
+            user_id = request.GET.get("userid")
             png_ticket = uuid.uuid4()
-            user_obj = CustomUser.objects.get(username="kevin")
+            user_obj = CustomUser.objects.get(pk=user_id)
 
             # Case where user's existing PNGTicket needs to be updated
             try:
