@@ -135,6 +135,8 @@ class scheduleDowntime(CommAdminView):
             logger.info("Cleaning out old downtime entries...")
             logger.info(res)
             # create new downtime entry
+            psp.downtime_start = datetime.datetime.strptime(start, "%Y/%m/%d %H:%M%p")
+            psp.downtime_end = datetime.datetime.strptime(end, "%Y/%m/%d %H:%M%p")
             psp.all_downtime[freq].append(new_downtime)
             psp.save()
             return JsonResponse({
