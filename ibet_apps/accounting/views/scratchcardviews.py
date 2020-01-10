@@ -30,7 +30,7 @@ logger = logging.getLogger('django')
 def create_deposit(request):
     if request.method == "GET":
         # print(request.META['HTTP_REFERER'])
-        return HttpResponse("You are at the endpoint for ScratchCard reserve payment.")
+        return HttpResponse(status=404)
 
     if request.method == "POST":  # can only allow post requests
         logger.info("Creating Deposit...")
@@ -54,6 +54,7 @@ def create_deposit(request):
                 }
             }
             return JsonResponse(data)
+
         r = requests.get(SCRATCHCARD_URL, params={
             'partner': SCRATCHCARD_PARTNER_ID,
             'pin': pin,
@@ -63,12 +64,11 @@ def create_deposit(request):
             'sign': sign,
             'partner_tran_id': trans_id
         })
-        res_json = r.json()
-        # print(r.url)
-        # print(r.status_code)
-        # print(res_json)
-        # print(request.user.username)
-
+        if r.status_code == 200:
+            res_json = r.json()
+        else:
+            logger.warning("Warning::ScratchCard::ScratchCard servers returned status that wasn't 200")
+            
         if res_json["status"] == 6:
             user_id = CustomUser.objects.get(username=request.user.username)
             obj, created = Transaction.objects.get_or_create(
@@ -171,8 +171,19 @@ def confirm_transaction(request):
             matching_transaction.arrive_time = timezone.now()
             matching_transaction.last_updated = timezone.now()
             matching_transaction.save()
-            return JsonResponse({"msg": "received response"})
+            return JsonResponse({
+                "success": True,
+                "message": "received response"
+            })
         except ObjectDoesNotExist as e:
-            logger.error(e)
-            logger.info("matching transaction not found / does not exist")
-            return JsonResponse({"message": "Could not find matching transaction"})
+            logger.critical("FATAL__ERROR::ScratchCard::Matching transaction not found", exc_info=1, stack_info=1)
+            return JsonResponse({
+                "success": False,
+                "message": "Could not find matching transaction"
+            })
+        except Exception as e:
+            logger.exception("Exception occurred::"+repr(e))
+            return JsonResponse({
+                "success": False,
+                "message": "There was an exception"
+            })

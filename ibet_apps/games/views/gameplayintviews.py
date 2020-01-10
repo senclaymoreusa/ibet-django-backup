@@ -115,7 +115,7 @@ class ValidateUserAPI(View):
             res["cust_name"] = user.username
             res["currency_code"] = "currency_code"
             res["language"] = "language"
-            res["country"] = country
+            res["country"] = user.country
             res["ip"] = "ip"
             res["date_of_birth"] = "date_of_birth"
             res["test_cust"] = True
@@ -131,6 +131,7 @@ class ValidateUserAPI(View):
             # res["date_of_birth"] = "date_of_birth"
             # res["test_cust"] = True
         except Exception as e:
+            print(repr(e))
             res["error_code"] = -1
             res["err_message"] = "Unknown Error"
 

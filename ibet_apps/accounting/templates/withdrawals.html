@@ -18,7 +18,7 @@
 
 <body>
 
-<div class="panel panel-default">
+<div class="panel panel-default" style="overflow-x: scroll;">
     <div class="panel-heading">
         <h2 class="panel-title">
             Withdrawal
@@ -96,7 +96,10 @@
                     <col style="width: 130px"> <!--  // created time -->
                     <col style="width: 130px"> <!--  // resolved time -->
                     <col style="width: 100px"> <!--  // bank -->
+                    <col style="width: 100px"> <!--  // account holder -->
+                    <col style="width: 100px"> <!--  // account no. -->
                     <col style="width: 85px">  <!-- // amount -->
+                    <col style="width: 100px"> <!--  // reviewer -->
                     <col style="width: 78px">  <!-- // status -->
                     <col style="width: 80px">  <!-- // button -->
                 </colgroup>
@@ -115,7 +118,10 @@
                         <th scope="col">CREATED TIME</th>
                         <th scope="col">RESOLVE TIME</th>
                         <th scope="col">BANK</th>
+                        <th scope="col">ACCOUNT HOLDER</th>
+                        <th scope="col">ACCOUNT NO.</th>
                         <th scope="col">AMOUNT</th>
+                        <th scope="col">REVIEWER</th>
                         <th scope="col">STATUS</th>
                         <th scope="col"></th>
                         <th scope="col" style="display: none;">pk</th>
@@ -137,7 +143,10 @@
                         <td>{{ tran.app_time }}</td>
                         <td>{{ tran.arr_time }}</td>
                         <td>{{ tran.bank }}</td>
+                        <td>{{ tran.acc_no }}</td>
+                        <td>{{ tran.name }}</td>
                         <td>{{ tran.amount }}</td>
+                        <td>{{ tran.reviewer }}</td>
                         <td>{{ tran.status }}</td>
                         {% if tran.status == 'Review' %}
                             {% if tran.channel == 'Qaicash' or tran.channel == 'Help2Pay' %}
@@ -420,8 +429,6 @@
             let fromDate = document.getElementById('min').value;
             let toDate = document.getElementById('max').value;
 
-            console.log("searching for: " + searchTerm);
-            console.log("date range: " + fromDate + ", " + toDate);
 
             let queryString = new URLSearchParams(window.location.search);
             if (searchTerm) queryString.set('search_params', searchTerm);
@@ -483,7 +490,6 @@
             try {
                 date = $.datepicker.parseDate( dateFormat, element.value );
             } catch( error ) {
-                console.log("date error");
                 date = null;
             }
             return date;
@@ -502,7 +508,6 @@
             let row = $(this).closest('tr');
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
-            console.log(data);
             // transaction pk: data[12]
             // bank account: data[13]
             showTransactionDetail(data);
@@ -711,7 +716,6 @@
         let remark = $('#notes').val();
         let txnId = $('#trans_withdraw_detail p').first().html();
         let userId = $('#member-details p').first().html();
-        // console.log(remark, txnId, userId);
         
         $.ajax({
             method: 'POST',
@@ -723,8 +727,6 @@
                 decision: decision
             },
             success: (data) => {
-                // console.log('success! data:');
-                // console.log(data);
                 let response = `<p>${data}</p>`
                 response+= '<p>Page refreshing in 3 seconds...</p>'
                 $('.modal-body').html(response);

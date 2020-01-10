@@ -17,6 +17,7 @@ import random
 import hashlib 
 import logging
 import datetime
+from datetime import timedelta
 from django.utils import timezone
 import uuid
 from  games.models import *
@@ -73,25 +74,30 @@ class InplayLoginAPI(View):
             sessionToken = Token.objects.get(user_id=user)
             post_data['Token'] = str(sessionToken)
 
+            # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
             post_data['TimeStamp'] = str(time_stamp)
             print(post_data)
 
             url = IMES_URL + "api/login"
-            
-            res = requests.post(url, data=post_data)
+            headers = {'Content-type': 'application/json'}
+            res = requests.post(url, data=json.dumps(post_data), headers=headers)
+
             res = res.json()
 
             return HttpResponse(json.dumps(res), content_type='application/json')
+        except ObjectDoesNotExist:
+            logger.info("User: {} does not exist".format(username))
 
-            # if res['StatusCode'] == 0:
-            #     return HttpResponse(status=200)
-            # else:
-            #     return HttpResponse(status=400)
+            res = {}
+            res["statusCode"] = 101 # Invalid User
+            res["statusDesc"] = "Invalid User"
+
+            return HttpResponse(json.dumps(res), content_type="application/json", status=200)
         except Exception as e:
-            logger.error("IMES Login Error: {}".format(repr(e)))
-            return HttpResponse("Login Error", content_type='text/plain', status=200)
+            logger.error("FATAL__ERROR: IMES Login Error -- {}".format(repr(e)))
+            return HttpResponse("Login Error", content_type='text/plain', status=400)
 
 
 class ValidateTokenAPI(View):
@@ -99,40 +105,41 @@ class ValidateTokenAPI(View):
         try:
             token = request.GET.get("token")
             res = {}
-            try:
-                user = Token.objects.get(key=token).user
 
-                res["memberCode"] = user.username
-                if user.currency == CURRENCY_CNY:
-                    res["CurrencyCode"] = "RMB"
-                if user.currency == CURRENCY_USD:
-                    res["CurrencyCode"] = "USD"
-                if user.currency == CURRENCY_THB:
-                    res["CurrencyCode"] = "THB"
-                if user.currency == CURRENCY_IDR:
-                    res["CurrencyCode"] = "IDR"
-                if user.currency == CURRENCY_HKD:
-                    res["CurrencyCode"] = "HKD"
-                if user.currency == CURRENCY_AUD:
-                    res["CurrencyCode"] = "AUD"
-                if user.currency == CURRENCY_MYR:
-                    res["CurrencyCode"] = "MYR"
-                if user.currency == CURRENCY_MMK:
-                    res["CurrencyCode"] = "MMK"
-                if user.currency == CURRENCY_EUR:
-                    res["CurrencyCode"] = "EUR"
-                if user.currency == CURRENCY_GBP:
-                    res["CurrencyCode"] = "GBP"
-                if user.currency == CURRENCY_NOK:
-                    res["CurrencyCode"] = "NOK"
+            user = Token.objects.get(key=token).user
 
-                # res["IPAddress"] = "127.0.0.1"
-                res["statusCode"] = 100
-                res["statusDesc"] = "Success"
-            except ObjectDoesNotExist as e:
-                logger.info(token + " : {}".format(repr(e)))
-                res["statusCode"] = 101 # Invalid User
-                res["statusDesc"] = "Invalid User"
+            res["memberCode"] = user.username
+            if user.currency == CURRENCY_CNY:
+                res["CurrencyCode"] = "RMB"
+            if user.currency == CURRENCY_USD:
+                res["CurrencyCode"] = "USD"
+            if user.currency == CURRENCY_THB:
+                res["CurrencyCode"] = "THB"
+            if user.currency == CURRENCY_IDR:
+                res["CurrencyCode"] = "IDR"
+            if user.currency == CURRENCY_HKD:
+                res["CurrencyCode"] = "HKD"
+            if user.currency == CURRENCY_AUD:
+                res["CurrencyCode"] = "AUD"
+            if user.currency == CURRENCY_MYR:
+                res["CurrencyCode"] = "MYR"
+            if user.currency == CURRENCY_MMK:
+                res["CurrencyCode"] = "MMK"
+            if user.currency == CURRENCY_EUR:
+                res["CurrencyCode"] = "EUR"
+            if user.currency == CURRENCY_GBP:
+                res["CurrencyCode"] = "GBP"
+            if user.currency == CURRENCY_NOK:
+                res["CurrencyCode"] = "NOK"
+
+            res["statusCode"] = 100
+            res["statusDesc"] = "Success"
+        except ObjectDoesNotExist as e:
+            logger.info(str(token) + " : {}".format(repr(e)))
+
+            res = {}
+            res["statusCode"] = 101 # Invalid User
+            res["statusDesc"] = "Invalid User"
 
             return HttpResponse(json.dumps(res), content_type="application/json", status=200)
         except Exception as e:
@@ -149,7 +156,6 @@ class InplayGetBalanceAPI(View):
     def get(self, request, *arg, **kwargs):
         balance_package = request.GET.get("balancePackage")
         date_sent = request.GET.get("dateSent")
-        # balance_package = "ZwgZhGFWmUv5vDi5q2ruVNc3lf+JmmxTctAdoxbVdOUeW+RbwyYE95B0M4EiVX/k"
         try:
             balance_package = balance_package.replace(' ', '+')
             data = des3Decryption(balance_package)
@@ -187,7 +193,6 @@ class InplayGetApprovalAPI(View):
         balance_package = request.GET.get('balancePackage')
         package_id = request.GET.get('packageid')
         date_sent = request.GET.get('dateSent')
-
         try:
             # balance_package = "ZwgZhGFWmUv5vDi5q2ruVAUij5STfGZ6ctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
             balance_package = balance_package.replace(' ', '+')
@@ -219,7 +224,7 @@ class InplayGetApprovalAPI(View):
                 cipher_text = des3Encryption(response)
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
         except Exception as e:
-            logger.error("IMES Get Approval Error: {}".format(repr(e)))
+            logger.error("FATAL__ERROR: IMES Get Approval Error -- {}".format(repr(e)))
             
             response = {}
             response["StatusCode"] = -100
@@ -250,26 +255,31 @@ class InplayDeductBalanceAPI(View):
                 if user.main_wallet > amount:
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                    provider = GameProvider.objects.get_or_create(provider_name=IMES_PROVIDER, type=0, market=ibetCN)
-                    category = Category.objects.get_or_create(name='SPORTS')
+                    provider = GameProvider.objects.get(provider_name=IMES_PROVIDER)
+                    category = Category.objects.get(name='Sports')
+
+                    with transaction.atomic():
  
-                    GameBet.objects.create(
-                        provider=provider[0],
-                        category=category[0],
-                        user=user,
-                        user_name=user.username,
-                        amount_wagered=decimal.Decimal(amount),
-                        transaction_id=trans_id,
-                        market=ibetCN,
-                        ref_no=package_id
-                    )
+                        GameBet.objects.create(
+                            provider=provider,
+                            category=category,
+                            user=user,
+                            user_name=user.username,
+                            amount_wagered=decimal.Decimal(amount),
+                            transaction_id=trans_id,
+                            market=ibetCN,
+                            ref_no=package_id
+                        )
+
+                        user.main_wallet = user.main_wallet - decimal.Decimal(amount)
+                        user.save()
                     
-                    # res["DateReceived"] = str(timezone.now())
-                    # res["DateSent"] = str(timezone.now())
-                    response["StatusCode"] = 100
-                    response["StatusMessage"] = "Success"
-                    response["PackageId"] = package_id
-                    response["Balance"] = float(user.main_wallet)
+                        # res["DateReceived"] = str(timezone.now())
+                        # res["DateSent"] = str(timezone.now())
+                        response["StatusCode"] = 100
+                        response["StatusMessage"] = "Success"
+                        response["PackageId"] = package_id
+                        response["Balance"] = float(user.main_wallet)
                 else:
                     response["StatusCode"] = -100
                     response["StatusMessage"] = "Not enough balance"
@@ -303,8 +313,8 @@ class InplayUpdateBalanceAPI(View):
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
             if data["EventTypeId"] == '4002':
-                provider = GameProvider.objects.get_or_create(provider_name=IMES_PROVIDER, type=0, market=ibetCN)
-                category = Category.objects.get_or_create(name='SPORTS')
+                provider = GameProvider.objects.get(provider_name=IMES_PROVIDER)
+                category = Category.objects.get(name='Sports')
 
                 match_no = data["MatchNo"]
                 bet_detail_list = data["BetDetailList"]
@@ -318,27 +328,32 @@ class InplayUpdateBalanceAPI(View):
 
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                    GameBet.objects.get_or_create(
-                        provider = provider[0],
-                        category = category[0],
-                        # game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
-                        # game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
-                        user = user,
-                        user_name = user.username,
-                        amount_wagered = decimal.Decimal(amount),
-                        # amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
-                        # # outcome = models.BooleanField() # true = win, false = lost
-                        # outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-                        # odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
-                        # bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
-                        # line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
-                        transaction_id = trans_id,
-                        # currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
-                        market = ibetCN,
-                        ref_no = bet_no
-                        # resolved_time = models.DateTimeField(null=True, blank=True)
-                        # other_data = JSONField(null=True, default=dict)
-                    )
+                    with transaction.atomic():
+
+                        GameBet.objects.get_or_create(
+                            provider = provider,
+                            category = category,
+                            # game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True) # small game
+                            # game_name = models.CharField(max_length=200, blank=True, null=True) # subset of category, (e.g within basketball, there's NBA, FIBA, euroleague, within soccer there's euroleague, premier league, etc.) 
+                            user = user,
+                            user_name = user.username,
+                            # amount_wagered = decimal.Decimal(amount),
+                            amount_won = decimal.Decimal(amount),
+                            # # outcome = models.BooleanField() # true = win, false = lost
+                            # outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
+                            # odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
+                            # bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
+                            # line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
+                            transaction_id = trans_id,
+                            # currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency"))
+                            market = ibetCN,
+                            ref_no = bet_no,
+                            resolved_time = timezone.now(),
+                            other_data = json.dumps({"bet_no" : bet_no})
+                        )
+
+                        user.main_wallet = user.main_wallet + decimal.Decimal(amount)
+                        user.save()
 
                 res = {}
 
