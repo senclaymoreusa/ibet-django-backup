@@ -105,7 +105,7 @@ urlpatterns = [
     path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
-    # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+    path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
     # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
