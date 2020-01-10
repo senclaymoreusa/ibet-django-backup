@@ -270,7 +270,7 @@ class SubmitPayout(View):
             trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             ip = helpers.get_client_ip(request)
-            bank = HELP2PAY_BANK
+            bank = request.POST.get("bank")
             
             user_id=user.pk
             currency = user.currency
@@ -299,7 +299,6 @@ class SubmitPayout(View):
             
             checksum = MD5(secretMsg)
        
-            db_currency_code = 2 if currency == 2 else 7
             if check_password(withdraw_password, user.withdraw_password):
                 try:    
                     withdraw_request = Transaction(
