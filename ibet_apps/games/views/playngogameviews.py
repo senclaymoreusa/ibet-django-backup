@@ -40,7 +40,7 @@ def setup_models():
     
     return (PROVIDER, CATEGORY)
 
-class GameLaunchView(View):
+class GetPNGTicket(View):
     """
     Test class to simulate a game launch
     """

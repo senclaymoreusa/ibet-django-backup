@@ -67,7 +67,7 @@ urlpatterns = [
 
     # Play n Go
     path('api/playngo', csrf_exempt(playngogameviews.RootView.as_view()), name="png_root"),
-    # path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
+    path('api/playngo/get_png_ticket', csrf_exempt(playngogameviews.GetPNGTicket.as_view()), name="png_launch"),
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
