@@ -47,7 +47,7 @@ def addOrWithdrawBalance(username, balance, type_balance):
                 return True
 
     except (Exception, ObjectDoesNotExist) as e:
-        print(repr(e))
+        logger.critical("FATAL__ERROR::addOrWithdrawBalance::Unable to update user's balance", exc_info=1, stack_info=1)
         logger.error(repr(e))
         # logger.error(f"user {username} does not exist")
         return False

@@ -10,6 +10,7 @@ from games.views.eagameviews import requestEADeposit, requestEAWithdraw
 from games.views.onebookviews import fundTransfer
 from games.views.kygameviews import kyTransfer
 from games.views.aggamesviews import agFundTransfer
+from games.views.ptgameviews import ptTransfer
 
 logger = logging.getLogger('django')
 
@@ -34,6 +35,10 @@ class TransferDeposit():
 
     def AGDeposit(self):
         return agFundTransfer(self.user, self.from_wallet, self.amount, "IN")
+    
+    def PTDeposit(self):
+        return ptTransfer(self.user, self.amount, self.from_wallet, 0)
+
 
     
 class TransferWithdraw():
@@ -58,3 +63,6 @@ class TransferWithdraw():
 
     def AGWithdraw(self):
         return agFundTransfer(self.user, self.to_wallet, self.amount, "OUT")
+
+    def PTWithdraw(self):
+        return ptTransfer(self.user, self.amount, self.to_wallet, 1)
