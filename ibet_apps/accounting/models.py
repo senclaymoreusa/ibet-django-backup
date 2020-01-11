@@ -49,10 +49,10 @@ class ThirdParty(models.Model):
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
     )
     min_amount = models.DecimalField(
-        max_digits=20, decimal_places=2, default=0, verbose_name=_("Min Amount")
+        max_digits=20, decimal_places=4, default=0, verbose_name=_("Min Amount")
     )
     max_amount = models.DecimalField(
-        max_digits=20, decimal_places=2, default=0, verbose_name=_("Max Amount")
+        max_digits=20, decimal_places=4, default=0, verbose_name=_("Max Amount")
     )
 
     # switch = models.SmallIntegerField(choices=THIRDPARTY_STATUS_CHOICES, default=0)
@@ -61,7 +61,7 @@ class ThirdParty(models.Model):
     # flat fee for each transaction
     transaction_fee = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=4,
         default=0,
         blank=True,
         verbose_name=_("Transaction Fee"),
@@ -69,7 +69,7 @@ class ThirdParty(models.Model):
     # % fee for each transaction
     transaction_fee_per = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=4,
         default=0,
         blank=True,
         verbose_name=_("Transaction Fee Percentage"),
@@ -82,8 +82,8 @@ class ThirdParty(models.Model):
     market = models.SmallIntegerField(choices=MARKET_CHOICES)
 
     # the maximum number of money to be routed to this channel (%)
-    volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
-    new_user_volume = models.DecimalField(max_digits=20, decimal_places=2, default=100)
+    volume = models.DecimalField(max_digits=20, decimal_places=4, default=100)
+    new_user_volume = models.DecimalField(max_digits=20, decimal_places=4, default=100)
 
     # control new users volume
     limit_access = models.BooleanField(default=False)
@@ -164,7 +164,7 @@ class Transaction(models.Model):
     )
     order_id = models.CharField(max_length=200, default=0, verbose_name=_("Order ID")) #third party ref no
     amount = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Apply Amount")
+        max_digits=20, decimal_places=4, verbose_name=_("Apply Amount")
     )
     currency = models.SmallIntegerField(
         choices=CURRENCY_CHOICES, default=0, verbose_name=_("Currency")
@@ -180,7 +180,7 @@ class Transaction(models.Model):
     )
     method = models.CharField(max_length=200, blank=True, verbose_name=_("Method"))
     channel = models.SmallIntegerField(
-        choices=CHANNEL_CHOICES, default=0, verbose_name=_("Payment")
+        choices=CHANNEL_CHOICES, verbose_name=_("Payment"), null=True
     )
     last_updated = models.DateTimeField(
         default=timezone.now, verbose_name=_("Status Last Updated")
