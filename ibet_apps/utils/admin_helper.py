@@ -35,7 +35,7 @@ before_last_month = this_month + relativedelta(months=-2)
 
 def getCommissionTrans():
     commission_tran = Transaction.objects.filter(
-        transaction_type=TRANSACTION_COMMISSION)
+        Q(transaction_type=TRANSACTION_COMMISSION) & Q(channel=None))
     return commission_tran
 
 

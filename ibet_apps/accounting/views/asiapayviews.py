@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View, generic
 from users.models import CustomUser
 from accounting.models import Transaction, ThirdParty, DepositChannel, WithdrawChannel, DepositAccessManagement, WithdrawAccessManagement
@@ -12,7 +12,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from utils.constants import *
 import utils.helpers as helpers
-
+from django.contrib.auth.hashers import make_password, check_password
+from django.core.exceptions import  ObjectDoesNotExist
 #from djauth.third_party_keys import *
 from rest_framework import generics
 from accounting.serializers import asiapayDepositSerialize, asiapayCashoutSerialize,asiapayDepositFinishSerialize,asiapayOrderStatusFinishSerialize,asiapayExchangeRateFinishSerialize,asiapayDepositArriveSerialize,asiapayPayoutArriveSerialize
@@ -262,7 +263,11 @@ class submitCashout(generics.GenericAPIView):
         uID = "n" + userid
         UserIP=helpers.get_client_ip(request)
         TraceID = strftime("%Y%m%d%H%M%S", gmtime())
-        user = CustomUser.objects.get(pk=userid)
+        try:
+            user = CustomUser.objects.get(pk=userid)
+        except ObjectDoesNotExist:
+            logger.error("The  user is not existed.")
+            return Response({"error":"The  user is not existed."}) 
         trans_id = user.username+strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         #OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
@@ -278,6 +283,7 @@ class submitCashout(generics.GenericAPIView):
         logger.info(SignCode)
         currency = self.request.POST.get("currency")
         cashoutMethod = self.request.POST.get("cashoutMethod")
+        withdraw_password = self.request.POST.get("withdraw_password")
         if checkUserBlock(user):
             errorMessage = _('The current user is blocked!')
             data = {
@@ -325,36 +331,43 @@ class submitCashout(generics.GenericAPIView):
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
         logger.info("sign:" + encryptDES(eString, sign_encryptKey, myIv))
         logger.info("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
-        r = requests.post(url + "/standard/getway/" + cashoutMethod, data={
-            'rStr':'',
-            'Sign': encryptDES(eString, sign_encryptKey, myIv),
-            'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
-            'TraceID': TraceID,
-            'OrderID':"W" + trans_id,
-            'cID':ASIAPAY_CID,
-            'uID':uID,
-            'cPass': ASIAPAY_CPASS,
-            'UserIP':UserIP,
-            'DesTime':DesTime,
-            'CashCardNumber':CashCardNumber,
-            'CashCardChName':CashCardChName,
-            'CashBankPro':CashBankPro,
-            'CashBankName':CashBankName,
-            'CashBankCity':CashBankCity,
-            'CashBankDetailName':CashBankDetailName,
-            'NoticeUrl':'',
-            'CashMoney':amount,
-            'CashMobile':'',
-            'CashType':'1',
-            'RealID':'',
-            'ResType':'xml',
-            'SafeLevel':0,
-            'SignCode':MD5(SignCode),
-            'tempparam':''
-        })
-        rdata = r.text
-        logger.info(rdata)
-    
+        
+        if check_password(withdraw_password, user.withdraw_password):
+            r = requests.post(url + "/standard/getway/" + cashoutMethod, data={
+                'rStr':'',
+                'Sign': encryptDES(eString, sign_encryptKey, myIv),
+                'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
+                'TraceID': TraceID,
+                'OrderID':"W" + trans_id,
+                'cID':ASIAPAY_CID,
+                'uID':uID,
+                'cPass': ASIAPAY_CPASS,
+                'UserIP':UserIP,
+                'DesTime':DesTime,
+                'CashCardNumber':CashCardNumber,
+                'CashCardChName':CashCardChName,
+                'CashBankPro':CashBankPro,
+                'CashBankName':CashBankName,
+                'CashBankCity':CashBankCity,
+                'CashBankDetailName':CashBankDetailName,
+                'NoticeUrl':'',
+                'CashMoney':amount,
+                'CashMobile':'',
+                'CashType':'1',
+                'RealID':'',
+                'ResType':'xml',
+                'SafeLevel':0,
+                'SignCode':MD5(SignCode),
+                'tempparam':''
+            })
+            rdata = r.text
+            logger.info(rdata)
+        else:
+            logger.error("withdraw password is not correct.")    
+            return JsonResponse({
+                'status_code': ERROR_CODE_INVALID_INFO,
+                'message': 'Withdraw password is not correct.'
+            })
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text.split('|')[0]
