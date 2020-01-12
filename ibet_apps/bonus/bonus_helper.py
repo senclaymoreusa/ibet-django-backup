@@ -124,7 +124,6 @@ def getValidFTD(user, deposit_amount, current_time):
                 delivered_by=user
             )
             logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
-            # if tiered bonus, needs to update others to cancelled
         else:
             new_ube = UserBonusEvent.objects.create(
                 owner=user,
