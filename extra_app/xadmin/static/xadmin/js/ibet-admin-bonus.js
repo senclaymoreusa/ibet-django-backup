@@ -639,7 +639,7 @@ $(document).ready(function() {
                             });
                             wagerList.push({
                                 "casino": $(this).find('.dt-casino').val(),
-                                "live_casino": $(this).find('.dt-live-casino').val(),
+                                "live-casino": $(this).find('.dt-live-casino').val(),
                                 "sports": $(this).find('.dt-sports').val(),
                                 "lottery": $(this).find('.dt-lottery').val(),
                             })

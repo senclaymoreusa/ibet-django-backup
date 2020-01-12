@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from accounting.models import Transaction
 from bonus.models import UserBonusEvent, Bonus, Requirement
-from users.models import CustomUser
 from utils.constants import TRANSACTION_DEPOSIT, TRAN_SUCCESS_TYPE, BONUS_TYPE_DEPOSIT, \
     BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED, BONUS_STATUS_ACTIVE, BONUS_ACTIVE
 
@@ -20,7 +19,6 @@ def getBonusExpiredTime(bonus):
     return expired_time
 
 
-# type: BONUS_TYPE_DEPOSIT or BONUS_TYPE_TURNOVER
 def getTieredBonusParent(bonus_type):
     parent_list = list()
     bonuses = Bonus.objects.filter(type=bonus_type)
@@ -29,11 +27,6 @@ def getTieredBonusParent(bonus_type):
             parent_list.append(bonus.parent)
 
     return parent_list
-
-'''
-@param date: user object, transaction of deposit object
-@return: true if this is the user's first time deposit
-'''
 
 
 def checkAndUpdateFTD(deposit):

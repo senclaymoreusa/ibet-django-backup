@@ -404,7 +404,7 @@ DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13
 BONUS_GAME_CATEGORY = {
     'casino': ['Games', 'Table Games'],
     'sports': ['Sports'],
-    'live_casino': ['Live Casino'],
+    'live-casino': ['Live Casino'],
     'lottery': ['Lotteries'],
 }
 

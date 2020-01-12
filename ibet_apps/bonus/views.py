@@ -414,7 +414,7 @@ class BonusView(View):
 
                     # add target user group
         except Exception as e:
-            logger.error("Error creating new bonus details ", e)
+            logger.error("Error creating new bonus details ", str(e))
             response = JsonResponse({"error": "Error creating new bonus, please try again!"})
             response.status_code = 400
             return response
