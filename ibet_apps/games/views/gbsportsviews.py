@@ -613,7 +613,7 @@ class GenerateFakeUserGameURL(APIView):
     def get(self, request, *args, **kwargs):
 
         game = self.request.GET['game']
-
+        language = self.request.GET['language']
         TPUniqueID = uuid.uuid4()
 
         data = requests.post(GB_URL, json = {
@@ -668,11 +668,11 @@ class GenerateFakeUserGameURL(APIView):
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 
         if game == 'GB Sports':
-            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res, language)
         elif game == 'GB ESports':
-            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001&sc=00111'.format(res)
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res, language)
         else:
-            url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
+            url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
         return Response({'game_url': url})
 
