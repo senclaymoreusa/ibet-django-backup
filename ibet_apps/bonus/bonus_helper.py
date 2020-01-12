@@ -38,19 +38,13 @@ def checkAndUpdateFTD(deposit):
 
     # check if user's ftd_time already has value
     if not user.ftd_time:
+        user = deposit.user_id
+        user.ftd_time = deposit.arrive_time
+        user.save()
+        logger.info("Update player {}'s first deposit time {}".format(user.username, deposit.arrive_time))
         return True
 
-    # check if this is the user's first time deposit
-    if Transaction.objects.filter(Q(arrive_time__lt=deposit.arrive_time)
-                                  & Q(transaction_type=TRANSACTION_DEPOSIT)
-                                  & Q(status=TRAN_SUCCESS_TYPE)).exists():
-        return False
-
-    user = deposit.user_id
-    user.ftd_time = deposit.arrive_time
-    user.save()
-    logger.info("Update player {}'s first deposit time {}".format(user.username, deposit.arrive_time))
-    return True
+    return False
 
 
 def getValidFTD(user, deposit_amount, current_time):
