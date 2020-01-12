@@ -474,7 +474,7 @@ class UserBonusEventView(View):
             result = {}
             ube_filter = Q()
 
-            total = UserBonusEvent.objects.filter(~Q(status=BONUS_START)).count()
+            total = UserBonusEvent.objects.all().count()
 
             if min_date and max_date:
                 ube_filter &= (Q(delivery_time__gte=dateToDatetime(min_date)) & Q(

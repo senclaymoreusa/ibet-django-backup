@@ -360,11 +360,11 @@ def bonusValueToKey(bonuses):
     if bonuses['start_time']:
         bonuses['start_time'] = datetime.datetime.strptime(bonuses['start_time'], '%Y-%m-%dT%H:%M:%SZ')
         bonuses['start_time'] = utcToLocalDatetime(bonuses['start_time'])
-        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %m %Y')
+        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %d %Y')
     if bonuses['end_time']:
         bonuses['end_time'] = datetime.datetime.strptime(bonuses['end_time'], '%Y-%m-%dT%H:%M:%SZ')
         bonuses['end_time'] = utcToLocalDatetime(bonuses['end_time'])
-        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %m %Y')
+        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %d %Y')
     return bonuses
 
 
@@ -374,11 +374,11 @@ def ubeValueToKey(ube):
         ube['delivery_time'] = datetime.datetime.strptime(ube['delivery_time'],
                                                           '%Y-%m-%dT%H:%M:%S.%fZ')  # for auto add field
         ube['delivery_time'] = utcToLocalDatetime(ube['delivery_time'])
-        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %m %Y')
+        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %d %Y')
     if ube['completion_time']:
-        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%SZ')
+        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%S.%fZ')
         ube['completion_time'] = utcToLocalDatetime(ube['completion_time'])
-        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %m %Y')
+        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %d %Y')
     return ube
 
 
@@ -404,7 +404,7 @@ DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13
 BONUS_GAME_CATEGORY = {
     'casino': ['Games', 'Table Games'],
     'sports': ['Sports'],
-    'live-casino': ['Live Casino'],
+    'live_casino': ['Live Casino'],
     'lottery': ['Lotteries'],
 }
 

@@ -6,8 +6,9 @@ from django.utils import timezone
 
 from accounting.models import Transaction
 from bonus.models import UserBonusEvent, Bonus, Requirement
-from utils.constants import TRANSACTION_DEPOSIT, TRAN_SUCCESS_TYPE, BONUS_ACTIVE, BONUS_TYPE_DEPOSIT, \
-    BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED
+from users.models import CustomUser
+from utils.constants import TRANSACTION_DEPOSIT, TRAN_SUCCESS_TYPE, BONUS_TYPE_DEPOSIT, \
+    BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED, BONUS_STATUS_ACTIVE, BONUS_ACTIVE
 
 logger = logging.getLogger('django')
 
@@ -18,6 +19,16 @@ def getBonusExpiredTime(bonus):
         expired_time = min(expired_time, bonus.start_time + datetime.timedelta(days=bonus.expiration_days))
     return expired_time
 
+
+# type: BONUS_TYPE_DEPOSIT or BONUS_TYPE_TURNOVER
+def getTieredBonusParent(bonus_type):
+    parent_list = list()
+    bonuses = Bonus.objects.filter(type=bonus_type)
+    for bonus in bonuses:
+        if bonus.parent and bonus.parent not in parent_list:
+            parent_list.append(bonus.parent)
+
+    return parent_list
 
 '''
 @param date: user object, transaction of deposit object
@@ -50,27 +61,28 @@ def checkAndUpdateFTD(deposit):
 
 
 def getValidFTD(user, deposit_amount, current_time):
-    active_ube = UserBonusEvent.objects.filter(Q(owner=user)
-                                               & Q(status=BONUS_START)
-                                               & Q(completion_time__isnull=True))
+    active_ube = UserBonusEvent.objects.filter(owner=user).order_by('bonus','-delivery_time').distinct('bonus')
+
     valid_ube = None
     valid_ube_wager = False
     deposit_tiered_parents = getTieredBonusParent(BONUS_TYPE_DEPOSIT)
 
     for ube in active_ube:
 
+        if ube.status != BONUS_START :
+            continue
         bonus = ube.bonus
         wager_reqs = False  # bonus event has wager requirements or not
         amount_threshold = 0  # the minimum deposit money to receive this bonus
         ube_amount = 0  # bonus amount for this transaction
         reqs = Requirement.objects.filter(bonus=bonus)
-
         # skip invalid ube which bonus is not matched
+
         if bonus.start_time > current_time \
                 or getBonusExpiredTime(bonus) < current_time \
-                or bonus.status != BONUS_ACTIVE \
+                or bonus.status != BONUS_STATUS_ACTIVE \
                 or bonus.type != BONUS_TYPE_DEPOSIT \
-                or reqs.filter(must_have=BONUS_VALID_DEPOSIT).exsit() \
+                or reqs.filter(must_have=BONUS_VALID_DEPOSIT).exists() \
                 or (bonus in deposit_tiered_parents):
             continue
 
@@ -115,9 +127,11 @@ def getValidFTD(user, deposit_amount, current_time):
                 amount=ube_amount,
                 status=BONUS_COMPLETED,
                 delivery_time=completed_time,
-                completed_time=completed_time,
+                completion_time=completed_time,
+                delivered_by=user
             )
             logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
+            # if tiered bonus, needs to update others to cancelled
         else:
             new_ube = UserBonusEvent.objects.create(
                 owner=user,
@@ -125,20 +139,10 @@ def getValidFTD(user, deposit_amount, current_time):
                 amount=ube_amount,
                 status=BONUS_ACTIVE,
                 delivery_time=completed_time,
-                completed_time=completed_time
+                completion_time=completed_time,
+                delivered_by=user
             )
             logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
         return valid_ube.bonus
 
     return None
-
-
-# type: BONUS_TYPE_DEPOSIT or BONUS_TYPE_TURNOVER
-def getTieredBonusParent(bonus_type):
-    parent_list = list()
-    bonuses = Bonus.objects.filter(type=bonus_type)
-    for bonus in bonuses:
-        if bonus.parent and bonus.parent not in parent_list:
-            parent_list.append(bonus.parent)
-
-    return parent_list
