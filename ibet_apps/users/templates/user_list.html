@@ -73,35 +73,39 @@
         <li id="close-accounts"><a data-toggle="tab"  class="tab-label" href="#close-account">CLOSE ACCOUNTS</a></li>
     </ul> -->
 
-    <div class="tab-content">
+    <div class="tab-content wrapper" style="width: 1530px">
         <div id="active-account" class="tab-pane fade in active">
             <table class="custom-user">
             <!-- <table style='overflow-x: scroll;'> -->
                 <thead class="thead-dark">
                     <tr>
-                        <th style="width: 3%;">#</th>
-                        <th style="width: 6%;">MEMBER ID</th>
-                        <th style="width: 8%;">USERNAME</th>
-                        <th style="width: 7%;">SOURCE</th>
-                        <th style="width: 11.5%;">REGISTRATION DATE</th>
-                        <th style="width: 11.5%;">FTD DATE</th>
-                        <th >BALANCE($)</th>
-                        <th >4 CODE ADDRESS</th>
-                        <th style="word-break: break-word; width:7%;">DEPOSIT/ TURNOVER</th>
-                        <th style="word-break: break-word; width:7%;">BONUS/ TURNOVER</th>
-                        <th >COUNTRIBUTION ($)</th>
-                        <th >ACTIVE DAYS</th>
-                        <th >IS ADMIN</th>
+                        <th style="width:85px;">PLAYER ID</th>
+                        <th style="width:120px;">USERNAME</th>
+                        <th style="width:126px;">PLAYER SOURCE</th>
+                        <th style="width:126px;">MANAGER</th>
+                        <th style="width:126px;">REGISTRATION DATE</th>
+                        <th style="width:126px;">FTD DATE</th>
+                        <th style="width:126px;">FTD AMOUNT</th>
+                        <th style="width:126px;">BALANCE</th>
+                        <th style="width:300px;">4 CODE ADDRESS</th>
+                        <th style="word-break: break-word; width:399px;">DEPOSIT/ TURNOVER</th>
+                        <th style="word-break: break-word; width:600px;">BONUS/ TURNOVER</th>
+                        <th style="width:126px;">COUNTRIBUTION</th>
+                        <th style="width:126px;">ACTIVE DAYS</th>
+                        <th style="width:126px;">STATUS</th>
+                        <th style="width:126px;">STATUS CHANGED</th>
+                        <th style="width:126px;">CHANGED BY</th>
+                        <th style="width:126px;">CLOSURE REASON</th>
                     </tr>
                 </thead>
                 <tbody id='user_list_tbody'>
                     {% for user in user_data %} 
                     <tr>
-                        <td>{{ forloop.counter }}</td>
                         <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.id }}</a></td>
                         <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
                         <!-- <td>{{ trans }}</td> -->
                         <td>{{ user.source }}</td>
+                        <td></td>
                         {% if user.time_of_registration %}
                             <td>{{ user.time_of_registration }}</td>
                         {% else %}
@@ -112,26 +116,54 @@
                         {% else %}
                             <td></td>
                         {% endif %}
+                        <td></td>
                         <td>{{ user.balance|floatformat:2 }}</td>
                         <td>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fa fa-phone" style="margin-left: -3px;"></i>
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fas fa-university" style="margin-left: -3px;"></i>
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fas fa-id-card" style="margin-left: -4px;"></i>
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fa fa-globe" style="margin-left: -3px;"></i>
-                            </button>
+                            {% if user.phone %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-phone" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-phone" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
+                            {% if user.address %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Address</div><div>{{ user.address }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-home" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>Address</div><div>{{ user.address }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-home" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
+                            {% if user.id_card %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>User ID</div><div>{{ user.id_card }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fas fa-id-card" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>User ID</div><div>{{ user.id_card }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fas fa-id-card" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
+                            {% if user.last_login_ip.ip_addr %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-globe" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-globe" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
                         </td>
                         <td>{{ user.deposit_turnover }}</td>
-                        <td>{{ user.bonus_turnover }}</td>
+                        <td>{{ user.bonus_turnover }}<button id="bonus_turnover_button" type='button' class="btn btn-primary" style="display: inline-block; float: right;"><span class="glyphicon glyphicon-search"></span></td>
                         <td>{{ user.contribution }}</td>
                         <td>{{ user.active_days }}</td>
-                        <td>{{ user.is_admin }}</td>
+                        <td>{{ user.member_status }}</td>
+                        <td>{{ user.status_changed }}</td>
+                        <td>{{ user.changed_by }}</td>
+                        <td>{{ user.closure_reason }}</td>
                         <!-- <td> -->
                             <!-- <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
                             <span style="margin-left: -3px;">W</span>

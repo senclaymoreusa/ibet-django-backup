@@ -25,6 +25,7 @@ from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
 from users.views.helper import *
+from games.models import GameBet
 
 import requests
 import logging
@@ -878,16 +879,20 @@ class UserListView(CommAdminView):
             userDict['verfication_time'] = user.verfication_time
             userDict['id_location'] = user.id_location
             userDict['phone'] = user.phone
-            userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
+            userDict['address'] = user.get_user_address()
+            # userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
             userDict['deposit_turnover'] = ''
             userDict['bonus_turnover'] = ''
             userDict['contribution'] = 0
             depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
             withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
-            betTims = Transaction.objects.filter(user_id=user, transaction_type=2).count()
-            activeDays = int(depositTimes) + int(withdrawTimes) + int(betTims)
-            userDict['active_days'] = ''
-            userDict['bet_platform'] = user.product_attribute
+            betTims = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
+            activeDays = int(betTims)
+            userDict['active_days'] = activeDays
+            userDict['member_status'] = user.get_member_status_display() if user.get_member_status_display() else ""
+            userDict['status_changed'] = ''
+            userDict['changed_by'] = ''
+            userDict['closure_reason'] = ''
 
 
             userDict['last_login_time'] = user.last_login_time
