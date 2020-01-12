@@ -43,7 +43,7 @@ def checkAndUpdateFTD(deposit):
     # check if this is the user's first time deposit
     if Transaction.objects.filter(Q(arrive_time__lt=deposit.arrive_time)
                                   & Q(transaction_type=TRANSACTION_DEPOSIT)
-                                  & Q(status=TRAN_SUCCESS_TYPE)).exsit():
+                                  & Q(status=TRAN_SUCCESS_TYPE)).exists():
         return False
 
     user = deposit.user_id
