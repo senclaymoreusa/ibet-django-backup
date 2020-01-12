@@ -135,7 +135,7 @@ def getValidFTD(user, deposit_amount, current_time):
                 completion_time=completed_time,
                 delivered_by=user
             )
-            logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
+            logger.info("{} first deposit bonus {} status changed to active".format(user.username, new_ube.bonus.name))
         return valid_ube.bonus
 
     return None
