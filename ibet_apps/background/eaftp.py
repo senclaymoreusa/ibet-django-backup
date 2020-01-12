@@ -93,7 +93,7 @@ class GetEaBetHistory(View):
             os.remove(local_file_name)
 
 
-        last_file = fileList[-1]
+        last_file = file_list[-1]
         last_file_name = last_file.split('/')[-1]
         redis.set_ea_last_file(last_file_name)
         logger.info('finished writting last file {} to s3'.format(last_file))

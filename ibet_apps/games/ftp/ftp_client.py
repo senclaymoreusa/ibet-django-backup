@@ -3,12 +3,14 @@ from io import StringIO
 from utils.constants import * 
 from time import sleep
 import logging
+import datetime
 
 logger = logging.getLogger('django')
 
 
 class EaFTP():
     _instance = None
+    last_connection_time = None
 
     def __init__(self):
         i = 0
@@ -34,6 +36,8 @@ class AgFTP():
         # self.ftp_session.login(EA_FTP_USERNAME, EA_FTP_PASSWORD)
 
 def ftpConnect():
-    if EaFTP._instance is None:
+    current_time = datetime.datetime.now().timestamp()
+    if EaFTP._instance is None or current_time - EaFTP.last_connection_time > 3600:      # refresh the connection
         EaFTP._instance = EaFTP()
+        EaFTP.last_connection_time = current_time
     return EaFTP._instance
