@@ -104,6 +104,7 @@ def getValidFTD(user, deposit_amount, current_time):
                     valid_ube_wager = wager_reqs
 
     # find a valid first deposit bonus for user
+    ## TODO: delivered_by needs to update to System
     if valid_ube:
         completed_time = timezone.now()
         if not valid_ube_wager:
