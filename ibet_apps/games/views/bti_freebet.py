@@ -5,7 +5,7 @@ from utils.constants import *
 ###########################################################################################
 # begin FREEBET API calls
 ###########################################################################################
-def CreateChannel():
+def createChannel():
     header = {'RequestTarget': 'AJAXService'}
     payload = {
         "agentUserName": BTI_AGENT_USERNAME,
@@ -18,7 +18,7 @@ def CreateChannel():
         return session_id
     return None
 
-def CloseChannel(session_id):
+def closeChannel(session_id):
     header = {'RequestTarget': 'AJAXService'}
     r = requests.post(BTI_FREEBET_URL + "/channelservice/closechannel/ch=" + session_id, headers=header)
     if r.status_code == 200:
@@ -26,7 +26,7 @@ def CloseChannel(session_id):
     return False
 
 # provider says this API is not working right now
-def AddSegment(session_id, segment_name):
+def addSegment(session_id, segment_name):
     header = {'RequestTarget': 'AJAXService'}
     payload = {
         'sessionID': session_id,
@@ -38,7 +38,7 @@ def AddSegment(session_id, segment_name):
         return True
     return False
 # provider says this API is not working right now
-def AddCustomersToSegment(session_id, segment_name):
+def addCustomersToSegment(session_id, segment_name):
     header = {'RequestTarget': 'AJAXService'}
     payload = {
         'sessionID': session_id,
@@ -52,7 +52,7 @@ def AddCustomersToSegment(session_id, segment_name):
     return False
 
 # give freeebet to user
-def GiveFreeBet(session_id, user_object, amount, coupon_code):
+def giveFreeBet(session_id, user_object, amount, coupon_code):
     path = f"/data/givefreebettocustomer/ch={session_id}"
     header = {'RequestTarget': 'AJAXService', 'content-type': 'application/json'}
     payload = '\"{\\"MerchantCode\\":\\"' + user_object.username + '\\",\\"Amount\\":' + str(amount) + ',\\"CouponCode\\":\\"' + coupon_code + '\\"}\"'
@@ -63,7 +63,7 @@ def GiveFreeBet(session_id, user_object, amount, coupon_code):
         return True
     return False
 
-def GetFreeBets(session_id, userid):
+def getFreeBets(session_id, userid):
     path = f"/data/getfreebetsforcustomer/ch={session_id}"
     header = {'RequestTarget': 'AJAXService'}
     payload = {"MerchantCodes": userid}
