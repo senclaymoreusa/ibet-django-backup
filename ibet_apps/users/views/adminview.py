@@ -1172,3 +1172,38 @@ class UserProfileView(CommAdminView):
 
             logger.info("Finished update admin user profile")
             return response
+
+
+
+class GetUserInfo(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            user_id = request.GET.get('user_id', '')
+            user = CustomUser.objects.get(pk=user_id)
+            name =  user.first_name + " " + user.last_name if user.first_name else user.last_name
+            response = {
+                'userId': user.pk,
+                'username': user.username,
+                'name': name,
+                'idNumber': '',
+                'birthday': user.date_of_birth,
+                'status': user.member_status if user.member_status else '',
+                'playerSegment': user.vip_level.level if user.vip_level else '',
+                'riskLevel': user.risk_level,
+                'manager': user.vip_managed_by.username if user.vip_managed_by else '',
+                'email': user.email,
+                'phone': user.phone,
+                'address': user.street_address_1 + ( " " + user.street_address_2 if user.street_address_2 else ""),
+                'city': user.city,
+                'zipcode': user.zipcode,
+                'country': user.country,
+                'idApplicationTime': user.verfication_time if user.verfication_time else "",
+                'idReviewTime': user.verfication_time if  user.verfication_time else "",
+                'idReviewer': '',
+            }
+            return HttpResponse(json.dumps(response), content_type="application/json")
+        except Exception as e:
+            response = {}
+            return HttpResponse(response, content_type="application/json", status=404)
