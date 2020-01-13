@@ -92,7 +92,8 @@ urlpatterns += [
     path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount"),
 
     # admin API
-    path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info')
+    path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
+    path('api/admin/get-user-transctions', GetUserTransaction.as_view(), name="get_user_transactions"),
 
 
     

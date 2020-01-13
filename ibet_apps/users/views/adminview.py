@@ -205,10 +205,11 @@ class UserDetailView(CommAdminView):
             channelMap[t[0]] = t[1]
 
 
-        if Transaction.objects.filter(user_id=customUser).count() == 0:
+        transactions_list = Transaction.objects.filter(user_id=customUser).order_by('-request_time')
+        if transactions_list.count() == 0:
             context['userTransactions'] = ''
         else:
-            transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
+            transactions = transactions_list.order_by("-request_time")[:20]
             transactions = serializers.serialize('json', transactions)
             transactions = json.loads(transactions)
             trans = []
@@ -219,12 +220,13 @@ class UserDetailView(CommAdminView):
                     time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
                 time = time.strftime("%B %d, %Y, %I:%M %p")
                 transDict = {
-                    'transactionId': str(tran['pk']),
+                    'transactionId': str(tran['fields']['transaction_id']),
                     'category': str(transTypeMap[tran['fields']['transaction_type']]),
                     'transType': transTypeMap[tran['fields']['transaction_type']],
                     'transTypeCode': tran['fields']['transaction_type'],
                     'product': productMap[tran['fields']['product']],
-                    'toWhichWallet': str(tran['fields']['transfer_to']),
+                    'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                    'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
                     'currency': currencyMap[tran['fields']['currency']],
                     'time': time,
                     'amount': tran['fields']['amount'],
@@ -250,11 +252,13 @@ class UserDetailView(CommAdminView):
         else:
             context['isLastPage'] = False
 
-        depositAmount = Transaction.objects.filter(user_id=customUser, transaction_type=0).aggregate(Sum('amount'))
-        withdrawAmount = Transaction.objects.filter(user_id=customUser, transaction_type=1).aggregate(Sum('amount'))
-        depositCount = Transaction.objects.filter(user_id=customUser, transaction_type=0).count()
-        withdrawCount = Transaction.objects.filter(user_id=customUser, transaction_type=1).count()
-        bonusAmount = Transaction.objects.filter(user_id=customUser, transaction_type=6).aggregate(Sum('amount'))
+        deposit_trans = transactions_list.filter(transaction_type=0)
+        withdraw_trans = transactions_list.filter(transaction_type=1)
+        depositAmount = deposit_trans.aggregate(Sum('amount'))
+        withdrawAmount = withdraw_trans.aggregate(Sum('amount'))
+        depositCount = deposit_trans.count()
+        withdrawCount = withdraw_trans.count()
+        bonusAmount = transactions_list.filter(transaction_type=6).aggregate(Sum('amount'))
 
         if bonusAmount['amount__sum'] is None:
             bonusAmount['amount__sum'] = 0
@@ -283,7 +287,7 @@ class UserDetailView(CommAdminView):
             context['relativeAccount'] = self.account_by_ip(userLastLogin.ip_addr, userLastLogin.user)
         # print(str(context['relativeAccount']))
 
-        deposits = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first()
+        deposits = deposit_trans.order_by('-request_time').first()
         if deposits:
             deposits = serializers.serialize('json', [deposits])
             deposits = json.loads(deposits)
@@ -315,7 +319,7 @@ class UserDetailView(CommAdminView):
         else:
             context['lastDeposits'] = {}
 
-        withdraws = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
+        withdraws = withdraw_trans.order_by('-request_time').first() 
         if withdraws:
             withdraws = serializers.serialize('json', [withdraws])
             withdraws = json.loads(withdraws)
@@ -495,72 +499,6 @@ class UserDetailView(CommAdminView):
                 actDict['message'] = act['fields']['message']
                 response.append(actDict)
             # print(str(response))
-
-            return HttpResponse(json.dumps(response), content_type='application/json')
-
-        elif post_type == 'get_user_transactions':
-            time_from = request.POST.get('from')
-            time_to = request.POST.get('to')
-            pageSize = int(request.POST.get('pageSize'))
-            fromItem = int(request.POST.get('fromItem'))
-            endItem = fromItem + pageSize
-            category = request.POST.get('transaction_category')
-            user = CustomUser.objects.get(pk=user_id)
-
-            if time_from == 'Invalid date':
-                time_from = datetime.datetime(2000, 1, 1)
-            if time_to == 'Invalid date':
-                time_to = datetime.datetime(2400, 1, 1)
-
-            logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
-            logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
-            
-            if category == 'all':
-                transactions = Transaction.objects.filter(
-                    Q(user_id=user) & Q(request_time__range=[time_from, time_to])
-                ).order_by('-request_time')[fromItem:endItem]
-                count = Transaction.objects.filter(Q(user_id=user) & Q(request_time__range=[time_from, time_to])).count()
-            else:
-                transactions = Transaction.objects.filter(
-                    Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])
-                ).order_by('-request_time')[fromItem:endItem]
-                count = Transaction.objects.filter(Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])).count()
-
-            response = {}
-            if endItem >= count:
-                response['isLastPage'] = True
-            else:
-                response['isLastPage'] = False
-
-            if fromItem == 0:
-                response['isFirstPage'] = True
-            else:
-                response['isFirstPage'] = False
-
-            transactionsJson = serializers.serialize('json', transactions)
-            transactionsList = json.loads(transactionsJson)
-            statusMap = {}
-            for t in Transaction._meta.get_field('status').choices:
-                statusMap[t[0]] = t[1]
-
-            currencyMap = {}
-            for t in Transaction._meta.get_field('currency').choices:
-                currencyMap[t[0]] = t[1]
-
-            for tran in transactionsList:
-                tran['fields']['status'] = statusMap[tran['fields']['status']]
-                tran['fields']['currency'] = currencyMap[tran['fields']['currency']]
-                try:
-                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                except:
-                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
-                tran['fields']['time'] = time
-    
-                
-            
-            # transactionsJson = json.dumps(transactionsList)
-            response['transactions'] = transactionsList
 
             return HttpResponse(json.dumps(response), content_type='application/json')
 
@@ -1207,3 +1145,114 @@ class GetUserInfo(View):
         except Exception as e:
             response = {}
             return HttpResponse(response, content_type="application/json", status=404)
+
+
+
+class GetUserTransaction(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user_id = request.GET.get('user_id')
+            time_from = request.GET.get('from')
+            time_to = request.GET.get('to')
+            pageSize = int(request.GET.get('pageSize'))
+            fromItem = int(request.GET.get('fromItem'))
+            endItem = fromItem + pageSize
+            category = request.GET.get('category')
+            product = request.GET.get('product')
+            
+            transaction_filter = Q(user_id__pk=user_id)
+
+            current_tz = timezone.get_current_timezone()
+            tz = pytz.timezone(str(current_tz))
+
+            if time_from:
+                time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
+                aware = time_from.replace(tzinfo=tz)
+                time_from = aware.astimezone(pytz.UTC)
+                min_time_from = datetime.datetime.combine(time_from, datetime.time.min) 
+                transaction_filter &= Q(request_time__gte=min_time_from)
+
+            if time_to:
+                time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
+                # max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
+                aware = time_to.replace(tzinfo=tz)
+                time_to = aware.astimezone(pytz.UTC)
+                max_time_from = datetime.datetime.combine(time_to, datetime.time.max)
+                transaction_filter &= Q(request_time__lte=max_time_to)
+
+            # logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+            # logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
+            
+            if category and category != 'all':
+                transaction_filter &= Q(transaction_type=category)
+
+            if product and product != 'all':
+                transaction_filter &= Q(product=product)
+            
+
+            all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+            response = {}
+            if endItem >= all_transactions.count():
+                response['isLastPage'] = True
+            else:
+                response['isLastPage'] = False
+
+            if fromItem == 0:
+                response['isFirstPage'] = True
+            else:
+                response['isFirstPage'] = False
+
+
+            all_transactions = all_transactions[fromItem: endItem]
+            transactions_json = serializers.serialize('json', all_transactions)
+            transactions_list = json.loads(transactions_json)
+
+            # for tran in transactions_list:
+            #     tran['fields']['status'] = statusMap[tran['fields']['status']]
+            #     tran['fields']['currency'] = currencyMap[tran['fields']['currency']]
+            #     try:
+            #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            #     except:
+            #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+            #     time = time.strftime("%B %d, %Y, %I:%M %p")
+            #     tran['fields']['time'] = time
+            
+
+            trans = []
+            for tran in transactions_list:
+                try:
+                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                transDict = {
+                    'transactionId': str(tran['fields']['transaction_id']),
+                    'category': str(dict(TRANSACTION_TYPE_CHOICES).get(tran['fields']['transaction_type'])),
+                    'transTypeCode': tran['fields']['transaction_type'],
+                    'product': str(dict(GAME_TYPE_CHOICES).get(tran['fields']['product'])),
+                    'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                    'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
+                    'currency': str(dict(CURRENCY_CHOICES).get(tran['fields']['currency'])),
+                    'time': time,
+                    'amount': tran['fields']['amount'],
+                    'balance': tran['fields']['amount'],
+                    'status': str(dict(STATE_CHOICES).get(tran['fields']['status'])),
+                    
+                    # 'bank': str(tran['fields']['bank']),
+                    'bank': "",
+                    'channel':  str(dict(CHANNEL_CHOICES).get(tran['fields']['channel'])),
+                    'method': tran['fields']['method'],
+                }
+                # transDict = serializers.serialize('json')
+                trans.append(transDict)
+
+                
+            response['transactions'] = trans
+            # transactionsJson = json.dumps(transactionsList)
+            
+            return HttpResponse(json.dumps(response), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Admin getting user transaction error: ", e)
+            return HttpResponse(status=404)
