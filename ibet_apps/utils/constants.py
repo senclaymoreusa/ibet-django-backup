@@ -732,8 +732,8 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
-    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
-    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
+    BackURI = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
