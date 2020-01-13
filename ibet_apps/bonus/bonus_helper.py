@@ -75,7 +75,7 @@ def getValidFTD(user, deposit_amount, current_time):
 
         for req in reqs:
             # skip must have reqs
-            if req.must_have:
+            if req.must_have is not None:
                 continue
 
             if amount_threshold == 0:
