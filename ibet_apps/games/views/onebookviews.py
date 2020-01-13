@@ -272,6 +272,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             transfer_to='Onebook',
                                             product=0,
                                             transaction_type=TRANSACTION_TRANSFER,
+                                            channel=None,
                                             status=TRAN_SUCCESS_TYPE)
                     return CODE_SUCCESS
                 except Exception as e:
@@ -292,6 +293,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             transfer_to=fund_wallet,
                                             product=0,
                                             transaction_type=TRANSACTION_TRANSFER,
+                                            channel=None,
                                             status=TRAN_SUCCESS_TYPE)
                     return CODE_SUCCESS
                 except Exception as e:

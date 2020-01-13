@@ -15,6 +15,8 @@ from utils.constants import *
 
 import simplejson as json
 import logging
+import datetime
+import uuid
 
 logger = logging.getLogger("django")
 
@@ -43,7 +45,7 @@ class GetPaymentChannels(CommAdminView):
         withdraw_psp = []
         
         if not psp_type or psp_type == "all":
-            deposit_psp = DepositChannel.objects.all()
+            deposit_psp = DepositChannel.objects.all().order_by("channel")
             withdraw_psp = WithdrawChannel.objects.all()
         if psp_type == "deposit":
             deposit_psp = DepositChannel.objects.all()
@@ -79,10 +81,13 @@ class GetPaymentChannels(CommAdminView):
         context["title"] = title
         context["time"] = timezone.now()
         
-        
         context["deposits"] = deposit_psp
         context["withdraws"] = withdraw_psp
-
+        context["days"] = range(1,32)
+        context["player_segments"] = ["ALL", "Normal", 1, 2, 3, 4, 5]
+        context["risk_levels"] = ["ALL", "Very low", "Low", "Medium", "High", "Very high", "VIP", "Business"]
+        context["statuses"] = ["ALL", "Normal", "Suspicious", "Restricted"]
+        
         return render(request, "channels.html", context)
 
 class GetPSP(CommAdminView):
@@ -97,3 +102,94 @@ class GetPSP(CommAdminView):
             
         provider = serializers.serialize('json', provider)
         return HttpResponse(provider, content_type='application/json')
+
+class scheduleDowntime(CommAdminView):
+    def post(self, request):
+        psp_pk = request.POST.get('pk')
+        start = request.POST.get('from')
+        end = request.POST.get('to')
+        psp_type = request.POST.get('psp_type')
+        freq = request.POST.get('frequency')
+        date = request.POST.get('date')
+        if not (start and end):
+            return JsonResponse({
+                "success": False,
+                "error": "1"
+            })
+        try:
+            if psp_type == "deposit": psp = DepositChannel.objects.get(pk=psp_pk)
+            else: psp = WithdrawChannel.objects.get(pk=psp_pk)
+        except Exception as e:
+            logger.error("Attempting to modify unknown PSP")
+        try:
+            new_downtime = {
+                "id": str(uuid.uuid1()),                            
+                "start": start,
+                "end": end
+            }
+            if freq == 'monthly' and date:
+                new_downtime['date'] = date
+            
+            # clean out all old downtime entries
+            cleanDowntime(psp.all_downtime['once'])
+            
+            # create new downtime entry
+            psp.all_downtime[freq].append(new_downtime)
+            psp.save()
+            return JsonResponse({
+                "success": True,
+                "downtime_added": str(start) + " to " + str(end)
+            })
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                "success": False,
+                "downtime_added": None
+            })
+class removeDowntime(CommAdminView):
+    def post(self, request):
+        psp_type = request.POST.get('psp_type')
+        downtimeId = request.POST.get('dt_id')
+        psp = request.POST.get('psp_id')
+
+        try:
+            if psp_type == "deposit": psp = DepositChannel.objects.get(pk=psp)
+            else: psp = WithdrawChannel.objects.get(pk=psp)
+            res = {}
+            for i in range(len(psp.all_downtime['once'])):
+                if psp.all_downtime['once'][i]['id'] == downtimeId:
+                    res['deleted'] = psp.all_downtime['once'][i]
+                    del psp.all_downtime['once'][i]
+
+            for i in range(len(psp.all_downtime['daily'])):
+                if psp.all_downtime['daily'][i]['id'] == downtimeId:
+                    res['deleted'] = psp.all_downtime['daily'][i]
+                    del psp.all_downtime['daily'][i]
+
+            for i in range(len(psp.all_downtime['monthly'])):
+                if psp.all_downtime['monthly'][i]['id'] == downtimeId:
+                    res['deleted'] = psp.all_downtime['monthly'][i]
+                    del psp.all_downtime['monthly'][i]
+            psp.save()
+            res['success'] = True
+            return JsonResponse(res)
+
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'error': repr(e)
+            })
+
+def cleanDowntime(downtimeArr):
+    res = []
+    now = datetime.datetime.now()
+    for i, dt in enumerate(downtimeArr):
+        endDate = datetime.datetime.strptime(dt['end'], "%d/%m/%y %H:%M%p")
+        if now > endDate:
+            res.append(dt['id'])
+            del downtimeArr[i]
+    return JsonResponse({
+        'success': True,
+        'deleted': res
+    })

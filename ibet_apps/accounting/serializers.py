@@ -7,8 +7,8 @@ class depositMethodSerialize(serializers.Serializer):
     thirdParty_name = serializers.ChoiceField(choices=CHANNEL_CHOICES, default=2)
     currency = serializers.ChoiceField(choices=CURRENCY_CHOICES, default=0)
     method = serializers.CharField(required=True)
-    min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
-    max_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
+    min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=4)
+    max_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=4)
 
     def create(self, validated_data):
         p, created = DepositChannel.objects.get_or_create(**validated_data)
@@ -27,15 +27,15 @@ class bankLimitsSerialize(serializers.Serializer):
     thirdParty_name = serializers.IntegerField(required=True, min_value=0, max_value=5)
     currency = serializers.CharField(required=True)
     method = serializers.CharField(required=True)
-    min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
-    max_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=2)
+    min_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=4)
+    max_amount = serializers.DecimalField(required=True, max_digits=None, decimal_places=4)
     def create(self, validated_data):
         return DepositChannel.objects.get_or_create(**validated_data)
 
     
 class submitDepositSerialize(serializers.Serializer):
     
-    amount            = serializers.DecimalField(max_digits = 10, decimal_places=2, required=True)
+    amount            = serializers.DecimalField(max_digits = 10, decimal_places=4, required=True)
     currency        = serializers.CharField(required=True)
     language       = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
@@ -47,12 +47,12 @@ class submitDepositSerialize(serializers.Serializer):
 
 class submitPayoutSerialize(serializers.Serializer):
     order_id         = serializers.CharField(required=True)
-    amount            = serializers.DecimalField(max_digits = 10, decimal_places=2, required=True)
+    amount            = serializers.DecimalField(max_digits = 10, decimal_places=4, required=True)
     currency        = serializers.CharField(required=True)
     language       = serializers.CharField(required=True)
     user_id        = serializers.CharField(required=True)
     method            = serializers.CharField(required=True)
-    
+    withdraw_password = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
@@ -186,6 +186,7 @@ class asiapayCashoutSerialize(serializers.Serializer):
     CashCardNumber     = serializers.CharField(required=True)
     CashCardChName     = serializers.CharField(required=True)
     CashBankDetailName     = serializers.CharField(required=True)
+    withdraw_password   = serializers.CharField(required=True)
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
