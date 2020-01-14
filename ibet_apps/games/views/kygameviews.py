@@ -332,7 +332,7 @@ def kyTransfer(user, amount, wallet, method):
                         currency=user.currency,
                         transfer_from=wallet,
                         transfer_to='ky',
-                        product=1,
+                        product=GAME_TYPE_TABLE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE
@@ -351,7 +351,7 @@ def kyTransfer(user, amount, wallet, method):
                         currency=user.currency,
                         transfer_from='ky',
                         transfer_to=wallet,
-                        product=1,
+                        product=GAME_TYPE_TABLE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE

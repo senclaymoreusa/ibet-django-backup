@@ -268,7 +268,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             currency=user.currency,
                                             transfer_from=fund_wallet,
                                             transfer_to='Onebook',
-                                            product=0,
+                                            product=GAME_TYPE_SPORTS,
                                             transaction_type=TRANSACTION_TRANSFER,
                                             channel=None,
                                             status=TRAN_SUCCESS_TYPE)
@@ -284,7 +284,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             currency=user.currency,
                                             transfer_from='Onebook',
                                             transfer_to=fund_wallet,
-                                            product=0,
+                                            product=GAME_TYPE_SPORTS,
                                             transaction_type=TRANSACTION_TRANSFER,
                                             channel=None,
                                             status=TRAN_SUCCESS_TYPE)
@@ -320,7 +320,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             currency=user.currency,
                                                             transfer_from=fund_wallet,
                                                             transfer_to='Onebook',
-                                                            product=0,
+                                                            product=GAME_TYPE_SPORTS,
                                                             transaction_type=TRANSACTION_TRANSFER_OUT,
                                                             status=TRAN_SUCCESS_TYPE)
                                 elif direction == '0':
@@ -334,7 +334,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             currency=user.currency,
                                                             transfer_from='Onebook',
                                                             transfer_to=fund_wallet,
-                                                            product=0,
+                                                            product=GAME_TYPE_SPORTS,
                                                             transaction_type=TRANSACTION_TRANSFER_IN,
                                                             status=TRAN_SUCCESS_TYPE)
                                 # user.save()         
