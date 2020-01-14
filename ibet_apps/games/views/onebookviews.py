@@ -43,15 +43,12 @@ convertCurrency = {
 outcomeConversion = {
     "won": 0,
     "lose": 1,
-    "running": 4,
-    "draw":5,
-    "half lose":6,
-    "half won" : 10,
-    "reject": 11,
-    "waiting":12,
-    "waiting running": 13,
+    "draw":2,
+    "half lose":1,
+    "half won" : 0,
+    "reject": 3,
     "void": 3,
-    "refund": 14
+    "refund": 3
 }
 def createMember(username, oddsType):
     try:
@@ -550,43 +547,47 @@ def getBetDetail(request):
                             trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
                             user = CustomUser.objects.get(username=username)
                             transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                            outcome = rdata["Data"]["BetDetails"][i]["ticket_status"]
                             if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
                                 
-                                GameBet.objects.create(provider=PROVIDER,
-                                                    category=cate,
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    transaction_id=transid,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    ref_no=trans_id,
-                                                    market=ibetCN,
-                                                    other_data=rdata
-                                                    )
-                            else:
-                                
-                                resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                                if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
                                     
-                                GameBet.objects.get_or_create(provider=PROVIDER,
-                                                    category=cate,
-                                                    transaction_id=transid,
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    resolved_time=utcToLocalDatetime(resolve),
-                                                    ref_no=trans_id,
-                                                    market=ibetCN,
-                                                    other_data=rdata,
-                                                    )
+                                    GameBet.objects.create(provider=PROVIDER,
+                                                        category=cate,
+                                                        user=user,
+                                                        user_name=user.username,
+                                                        transaction_id=transid,
+                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                        outcome=outcomeConversion[outcome],
+                                                        ref_no=trans_id,
+                                                        market=ibetCN,
+                                                        other_data=rdata
+                                                        )
+
+                            else:
+                                if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
+                                    resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                                        
+                                    GameBet.objects.get_or_create(provider=PROVIDER,
+                                                        category=cate,
+                                                        transaction_id=transid,
+                                                        user=user,
+                                                        user_name=user.username,
+                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                        outcome=outcomeConversion[outcome],
+                                                        resolved_time=utcToLocalDatetime(resolve),
+                                                        ref_no=trans_id,
+                                                        market=ibetCN,
+                                                        other_data=rdata,
+                                                        )
                         
                         # sleep(delay)  
                         # print("sleep")  
