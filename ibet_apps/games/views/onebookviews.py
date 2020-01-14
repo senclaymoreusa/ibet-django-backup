@@ -163,7 +163,7 @@ class CreateMember(APIView):
             
             return Response(rdata)
         except ObjectDoesNotExist as e:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The user does not exist."}) 
 
 def createMember(user,currency,oddsType):
 
@@ -469,7 +469,7 @@ class FundTransfer(APIView):
                 else:    
                     return Response({"error":"Request failed"})      
         except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The user does not exist."}) 
 
 
 

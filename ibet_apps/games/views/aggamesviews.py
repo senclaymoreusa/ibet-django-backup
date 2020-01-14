@@ -55,14 +55,14 @@ def agftp(request):
 
     try:
         ftp = ftplib.FTP()
-        ftp.connect("xe.gdcapi.com")
-        ftp.login("EV3.ibet", "GelPNvJlXt")
+        ftp.connect(AG_FTP)
+        ftp.login(AG_FTP_USERNAME, AG_FTP_PASSWORD)
         
         try:
             r = RedisClient().connect()
             redis = RedisHelper()
         except:
-            logger.error("(FETAL_ERROR)There is something wrong with redis connection.")
+            logger.error("(FATAL_ERROR)There is something wrong with redis connection.")
             return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -220,7 +220,7 @@ def agftp(request):
         ftp.quit()
         return HttpResponse(CODE_SUCCESS)
     except ftplib.error_temp:
-        logger.error("(FETAL_ERROR)Cannot connect with ftp.")
+        logger.error("(FATAL_ERROR)Cannot connect with ftp.")
         return HttpResponse(ERROR_CODE_FAIL)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
@@ -278,9 +278,9 @@ def getBalance(request):
         else:
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        logger.info("The user is not existed.")
-        logger.critical("The user is not existed.")
-        return Response({"error":"The user is not existed."}) 
+        logger.info("The user does not exist.")
+        logger.critical("The user does not exist.")
+        return Response({"error":"The user does not exist."}) 
 
 
 def prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno):    

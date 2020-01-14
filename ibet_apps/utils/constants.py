@@ -1597,5 +1597,10 @@ AG_CAGENT = "EV3_AGIN"
 AG_MD5 = "2YgQUaUZfDDt"
 AG_DES = "MJp7ScbZ"
 AG_DM = "http://ibet.com"
+AG_FTP_USERNAME = "EV3.ibet"
+AG_FTP_PASSWORD = "GelPNvJlXt"
+AG_FTP = "xe.gdcapi.com"
 #IMES
 IMES_PROVIDER = "IMES"
+
+
