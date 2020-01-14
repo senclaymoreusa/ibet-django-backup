@@ -139,7 +139,7 @@ class BalanceView(View):
                                 "error_code": 10003,
                                 "message": "Specified user does not exist."
                              }
-            logger.info("AllBet BalanceView: User " + str(player_account_name) + " does not exist.")
+            logger.error("AllBet BalanceView: User " + str(player_account_name) + " does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         try:
@@ -214,7 +214,7 @@ def placeBet(client, transaction_id, amount, bet_details):
                 "error_code": 10007,
                 "message": "Error: transaction ID already used."
             }
-            logger.info("AllBet TransferView: Bet transaction ID already used.")
+            logger.error("AllBet TransferView: Bet transaction ID already used.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     except:
         pass
@@ -239,7 +239,7 @@ def placeBet(client, transaction_id, amount, bet_details):
             "error_code": 40000,
             "message": "Error: Total bet amount does not add up to the bet amounts in details parameter."
         }
-        logger.info("AllBet TransferView: Total bet amount does not add up to the bet amounts in details parameter.")
+        logger.error("AllBet TransferView: Total bet amount does not add up to the bet amounts in details parameter.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     # Illegal operation: total bet amount is 0 or negative.
@@ -317,7 +317,7 @@ def placeBet(client, transaction_id, amount, bet_details):
                 "error_code": 10003,
                 "message": "Specified user does not exist."
             }
-            logger.info("AllBet TransferView: Specified user does not exist.")
+            logger.error("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         logger.error("AllBet TransferView Error: Unspecified issue in placeBet function - " + str(e))
@@ -339,7 +339,7 @@ def settleBet(client, transaction_id, amount, settle_details):
                 "error_code": 10007,
                 "message": "Error: transaction ID already used."
             }
-            logger.info("AllBet TransferView: Cannot settle since Transaction ID is already used.")
+            logger.error("AllBet TransferView: Cannot settle since Transaction ID is already used.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     except:
         pass
@@ -357,7 +357,7 @@ def settleBet(client, transaction_id, amount, settle_details):
                 "error_code": 10006,
                 "message": "Error: Attempted to settle a bet that does not exist."
             }
-            logger.info("AllBet TransferView: Attempted to settle a bet that does not exist.")
+            logger.error("AllBet TransferView: Attempted to settle a bet that does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     if settle_details_total_amount != amount:
@@ -365,7 +365,7 @@ def settleBet(client, transaction_id, amount, settle_details):
             "error_code": 40000,
             "message": "Error: Total settle amount does not add up to the settle amount in details parameter."
         }
-        logger.info("AllBet TransferView: Total settle amount does not add up to the settle amount in details parameter.")
+        logger.error("AllBet TransferView: Total settle amount does not add up to the settle amount in details parameter.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
     try:
@@ -430,7 +430,7 @@ def settleBet(client, transaction_id, amount, settle_details):
                 "error_code": 10003,
                 "message": "Specified user does not exist."
             }
-            logger.info("AllBet TransferView: Specified user does not exist.")
+            logger.error("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         logger.error("AllBet TransferView Error: Unspecified issue in settleBet function - " + str(e))
@@ -448,7 +448,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                     "error_code": 10007,
                     "message": "Error: transaction ID already used."
                 }
-                logger.info("AllBet TransferView: Cannot cancel since Transaction ID is already used.")
+                logger.error("AllBet TransferView: Cannot cancel since Transaction ID is already used.")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
         except:
             pass
@@ -461,7 +461,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                 "error_code": 10003,
                 "message": "Specified user does not exist."
             }
-            logger.info("AllBet TransferView: Specified user does not exist.")
+            logger.error("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -496,7 +496,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                         "error_code": 40000,
                         "message": "Error: Bet amount and cancel amount do not match."
                     }
-                    logger.info("AllBet TransferView: Bet amount and cancel amount do not match.")
+                    logger.error("AllBet TransferView: Bet amount and cancel amount do not match.")
                     return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             except ObjectDoesNotExist:
@@ -504,7 +504,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                     "error_code": 10006,
                     "message": "Error: Attempted to cancel a bet that does not exist."
                 }
-                logger.info("AllBet TransferView: Attempted to cancel a bet that does not exist.")
+                logger.error("AllBet TransferView: Attempted to cancel a bet that does not exist.")
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -513,7 +513,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                 "error_code": 40000,
                 "message": "Error: Total cancel amount does not add up to the cancel amount in details parameter."
             }
-            logger.info("AllBet TransferView: Total cancel amount does not add up to the cancel amount in details parameter.")
+            logger.error("AllBet TransferView: Total cancel amount does not add up to the cancel amount in details parameter.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -579,7 +579,7 @@ def resettleBet(client, transaction_id, amount, resettle_details):
             "error_code": 10006,
             "message": "Error: Attempted to re-settle non-existing bet."
         }
-        logger.info("AllBet TransferView: Attempted to re-settle non-existing bet.")
+        logger.error("AllBet TransferView: Attempted to re-settle non-existing bet.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
@@ -591,7 +591,7 @@ def resettleBet(client, transaction_id, amount, resettle_details):
                 "error_code": 10007,
                 "message": "Error: transaction ID already used."
             }
-            logger.info("AllBet TransferView: Cannot re-settle since Transaction ID is already used.")
+            logger.error("AllBet TransferView: Cannot re-settle since Transaction ID is already used.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
     except:
         pass
@@ -604,7 +604,7 @@ def resettleBet(client, transaction_id, amount, resettle_details):
             "error_code": 10003,
             "message": "Specified user does not exist."
         }
-        logger.info("AllBet TransferView: Specified user does not exist.")
+        logger.error("AllBet TransferView: Specified user does not exist.")
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
