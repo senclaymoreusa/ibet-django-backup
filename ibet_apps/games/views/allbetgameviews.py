@@ -320,7 +320,7 @@ def placeBet(client, transaction_id, amount, bet_details):
             logger.error("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-        logger.error("AllBet TransferView Error: Unspecified issue in placeBet function - " + str(e))
+        logger.error("AllBet TransferView: FATAL__ERROR in placeBet function - " + str(e))
         return HttpResponse(str(e))
 
 
@@ -433,7 +433,7 @@ def settleBet(client, transaction_id, amount, settle_details):
             logger.error("AllBet TransferView: Specified user does not exist.")
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
-        logger.error("AllBet TransferView Error: Unspecified issue in settleBet function - " + str(e))
+        logger.error("AllBet TransferView: FATAL__ERROR in settleBet function - " + str(e))
         return HttpResponse(str(e))
 
 
@@ -565,7 +565,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
 
     except Exception as e:
         # Generic
-        logger.error("AllBet TransferView Error: Unspecified issue in cancelBet function - " + str(e))
+        logger.error("AllBet TransferView: FATAL__ERROR in cancelBet function - " + str(e))
         return HttpResponse(str(e))
 
 
@@ -672,7 +672,7 @@ def resettleBet(client, transaction_id, amount, resettle_details):
             "error_code": 50000,
             "message": "AllBet transfer error: " + str(e)
         }
-        logger.error("AllBet transfer Error: " + str(e))
+        logger.error("AllBet TransferView: FATAL__ERROR in resettleBet function - " + str(e))
         return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
