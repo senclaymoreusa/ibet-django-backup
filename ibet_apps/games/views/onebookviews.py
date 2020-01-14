@@ -78,9 +78,9 @@ def createMember(username, oddsType):
         for x in range(3):
             r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
                 "vendor_id": ONEBOOK_VENDORID,
-                "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                "Vendor_Member_ID": username,  #will remove _test when go production, + "_test"
                 "OperatorId": ONEBOOK_OPERATORID,
-                "UserName": username + "_test",  #will remove _test when go production
+                "UserName": username ,  #will remove _test when go production, + "_test"
                 "OddsType": oddsType,
                 "Currency": currency,
                 "MaxTransfer": ONEBOOK_MAXTRANSFER,
@@ -129,9 +129,9 @@ class CreateMember(APIView):
             for x in range(3):
                 r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
                     "vendor_id": ONEBOOK_VENDORID,
-                    "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                    "Vendor_Member_ID": username,  #will remove _test when go production, + "_test"
                     "OperatorId": ONEBOOK_OPERATORID,
-                    "UserName": username + "_test",  #will remove _test when go production
+                    "UserName": username,  #will remove _test when go production, + "_test"
                     "OddsType": oddsType,
                     "Currency": currency,
                     "MaxTransfer": ONEBOOK_MAXTRANSFER,
@@ -237,7 +237,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                 "wallet_id":wallet_id,
             })
             rdata = r.json()
-            print(rdata)
+            #print(rdata)
             logger.info(rdata)
             if r.status_code == 200:
                 success = True
@@ -258,7 +258,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
             # amount = Decimal(amount.replace(',',''))
             
             if direction == '1':
-                print("dirction is 1")
+                #print("dirction is 1")
                 #deposit
                 # wallet = wallet - amount
                 # user.onebook_wallet = user.onebook_wallet + amount
@@ -277,7 +277,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                     return CODE_SUCCESS
                 except Exception as e:
                     logger.error("request transfer to Onebook: ", e)
-                    print("request transfer to Onebook: ", e)
+                    #print("request transfer to Onebook: ", e)
                     return ERROR_CODE_FAIL
             elif direction == '0':                                                            
                 #withdraw
@@ -298,7 +298,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                     return CODE_SUCCESS
                 except Exception as e:
                     logger.error("request transfer from Onebook: ", e)
-                    print("request transfer from Onebook: ", e)
+                    #print("request transfer from Onebook: ", e)
                     return ERROR_CODE_FAIL
             # user.save()
     
@@ -338,7 +338,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                     return CODE_SUCCESS
                                 except Exception as e:
                                     logger.error("request transfer to Onebook: ", e)
-                                    print("request transfer to Onebook: ", e)
+                                    #print("request transfer to Onebook: ", e)
                                     return ERROR_CODE_FAIL
                             elif direction == '0':
                                 #withdraw
@@ -359,7 +359,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                             # user.save() 
                                 except Exception as e:
                                     logger.error("request transfer from Onebook: ", e)
-                                    print("request transfer from Onebook: ", e)
+                                    #print("request transfer from Onebook: ", e)
                                     return ERROR_CODE_FAIL      
                             
                             break
@@ -701,7 +701,7 @@ class Login(APIView):
             for x in range(3):
                 r = requests.post(ONEBOOK_API_URL + "Login/", headers=headers, data={
                     "vendor_id": ONEBOOK_VENDORID,
-                    "vendor_member_id": username + '_test',
+                    "vendor_member_id": username, # + '_test'
                 })
                 rdata = r.json()
                 

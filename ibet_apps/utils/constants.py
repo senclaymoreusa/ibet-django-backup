@@ -741,8 +741,8 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["PRODUCTION"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["PRODUCTION"]["NAMESPACE"]
-    ONEBOOK_API_URL = keys["ONEBOOK"]["PRODUCTION"]["API_URL"]
-    ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["PRODUCTION"]["IFRAME_URL"]
+    ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
+    ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
