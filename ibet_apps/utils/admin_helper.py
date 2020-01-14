@@ -11,7 +11,7 @@ from users.models import CustomUser, UserAction, SystemCommissionLevel, Personal
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
-from games.models import GameBet
+from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
@@ -206,9 +206,41 @@ def getCommissionRate(affilliate, start_time, end_time):
 
 
 # TODO: functions need to be updated
-#Sum total of Bet amount within the reporting period
+# Sum total of Bet amount within the reporting period
 def calculateTurnover(user, start_time, end_time, product):
+    if not user:
+        return 0
+
+    turnover_filter = Q(user=user)
+
+    # if start_time:
+    #     turnover_filter &= Q(resolved_time__gte=start_time)
+    # if end_time:
+    #     turnover_filter &= Q(resolved_time__lte=end_time)
+
+    if product:
+        try:
+            product = Category.objects.get(name=product)
+            turnover_filter &= Q(product=product)
+        except Exception as e:
+            logger.info("Warning cannot find corresponding Game Category" + str(e))
+
+    user_bets = GameBet.objects.filter(turnover_filter)
+
+    bets = user_bets.order_by('ref_no', 'bet_time').distinct('ref_no')  #include tip
+
+    # exclude
+
+    # exclude rollback bets
+
+
+
+
     return 0
+
+user = CustomUser.objects.get(username='wluuuu')
+bets = GameBet.objects.order_by('ref_no', 'bet_time').distinct('ref_no')
+print(bets)
 
 
 def calculateGGR(user, start_time, end_time, product):
@@ -236,11 +268,15 @@ def getTransactionAmount(user, start_time, end_time, type, product):
     if type:
         trans_filter &= Q(transaction_type=type)
     if product:
-        trans_filter &= Q(product=product)
+        try:
+            product = Category.objects.get(name=product)
+            trans_filter &= Q(product=product)
+        except Exception as e:
+            logger.info("Warning cannot find corresponding Game Category" + str(e))
 
     trans = Transaction.objects.filter(trans_filter)
     count = trans.count()
-    amount = trans.aggregate(Sum('amount'))
+    amount = trans.aggregate(Sum('amount'))['amount__sum']
 
     return count, amount
 
