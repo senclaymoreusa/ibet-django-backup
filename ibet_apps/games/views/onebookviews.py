@@ -78,9 +78,9 @@ def createMember(username, oddsType):
         for x in range(3):
             r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
                 "vendor_id": ONEBOOK_VENDORID,
-                "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                "Vendor_Member_ID": username,  #will remove _test when go production, + "_test"
                 "OperatorId": ONEBOOK_OPERATORID,
-                "UserName": username + "_test",  #will remove _test when go production
+                "UserName": username ,  #will remove _test when go production, + "_test"
                 "OddsType": oddsType,
                 "Currency": currency,
                 "MaxTransfer": ONEBOOK_MAXTRANSFER,
@@ -129,9 +129,9 @@ class CreateMember(APIView):
             for x in range(3):
                 r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
                     "vendor_id": ONEBOOK_VENDORID,
-                    "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                    "Vendor_Member_ID": username,  #will remove _test when go production, + "_test"
                     "OperatorId": ONEBOOK_OPERATORID,
-                    "UserName": username + "_test",  #will remove _test when go production
+                    "UserName": username,  #will remove _test when go production, + "_test"
                     "OddsType": oddsType,
                     "Currency": currency,
                     "MaxTransfer": ONEBOOK_MAXTRANSFER,
@@ -170,14 +170,15 @@ def createMember(user,currency,oddsType):
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
         "vendor_id": ONEBOOK_VENDORID,
-        "Vendor_Member_ID": user.username + "_test",  #will remove _test when go production
+        "Vendor_Member_ID": user.username,  #will remove _test when go production,  + "_test"
         "OperatorId": ONEBOOK_OPERATORID,
-        "UserName": user.username + "_test",  #will remove _test when go production
+        "UserName": user.username,  #will remove _test when go production,  + "_test"
         "OddsType": oddsType,
         "Currency": currency,
         "MaxTransfer": ONEBOOK_MAXTRANSFER,
-        "MinTransfer": ONEBOOK_MINTRANSFER,
+        "MinTransfer": ONEBOOK_MINTRANSFER, #ONEBOOK_MINTRANSFER
     })
+    
     rdata = r.json()
     logger.info(rdata)
     # print(rdata)
@@ -228,7 +229,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
         for x in range(3):
             r = requests.post(ONEBOOK_API_URL + "FundTransfer/", headers=headers, data={
                 "vendor_id": ONEBOOK_VENDORID,
-                "Vendor_Member_ID": username + "_test",  #will remove _test when go production
+                "Vendor_Member_ID": username,  #will remove _test when go production, + "_test"
                 "vendor_trans_id": trans_id,
                 "amount": amount,
                 "currency": currency,
@@ -236,7 +237,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                 "wallet_id":wallet_id,
             })
             rdata = r.json()
-            # print(rdata)
+            #print(rdata)
             logger.info(rdata)
             if r.status_code == 200:
                 success = True
@@ -255,12 +256,13 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
             return ERROR_CODE_FAIL
         if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
             # amount = Decimal(amount.replace(',',''))
-            with transaction.atomic():
-                if direction == '1':
-                    #deposit
-                    # wallet = wallet - amount
-                    # user.onebook_wallet = user.onebook_wallet + amount
-                    
+            
+            if direction == '1':
+                #print("dirction is 1")
+                #deposit
+                # wallet = wallet - amount
+                # user.onebook_wallet = user.onebook_wallet + amount
+                try:
                     Transaction.objects.create(transaction_id=trans_id,
                                             user_id=user,
                                             order_id=trans_id,
@@ -272,11 +274,16 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             transaction_type=TRANSACTION_TRANSFER,
                                             channel=None,
                                             status=TRAN_SUCCESS_TYPE)
-                
-                elif direction == '0':                                                            
-                    #withdraw
-                    # wallet = wallet + amount
-                    # user.onebook_wallet = user.onebook_wallet - amount
+                    return CODE_SUCCESS
+                except Exception as e:
+                    logger.error("request transfer to Onebook: ", e)
+                    #print("request transfer to Onebook: ", e)
+                    return ERROR_CODE_FAIL
+            elif direction == '0':                                                            
+                #withdraw
+                # wallet = wallet + amount
+                # user.onebook_wallet = user.onebook_wallet - amount
+                try:
                     Transaction.objects.create(transaction_id=trans_id,
                                             user_id=user,
                                             order_id=trans_id,
@@ -288,9 +295,14 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             transaction_type=TRANSACTION_TRANSFER,
                                             channel=None,
                                             status=TRAN_SUCCESS_TYPE)
-                # user.save()
-        
-            return CODE_SUCCESS
+                    return CODE_SUCCESS
+                except Exception as e:
+                    logger.error("request transfer from Onebook: ", e)
+                    #print("request transfer from Onebook: ", e)
+                    return ERROR_CODE_FAIL
+            # user.save()
+    
+            
         elif rdata['Data']['status'] == 1 :
             
             return ERROR_CODE_FAIL   
@@ -307,12 +319,12 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                     try:
                         rcode = rrdata['error_code']
                         if rcode == 0:  #transfer success, will update user's balance
-                            with transaction.atomic():
-                                if direction == '1':
-                                #deposit
-                                    # wallet = wallet - amount
-                                    # user.onebook_wallet = user.onebook_wallet + amount
-                                    
+                            
+                            if direction == '1':
+                            #deposit
+                                # wallet = wallet - amount
+                                # user.onebook_wallet = user.onebook_wallet + amount
+                                try:
                                     Transaction.objects.create(transaction_id=trans_id,
                                                             user_id=user,
                                                             order_id=trans_id,
@@ -323,10 +335,16 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             product=GAME_TYPE_SPORTS,
                                                             transaction_type=TRANSACTION_TRANSFER_OUT,
                                                             status=TRAN_SUCCESS_TYPE)
-                                elif direction == '0':
-                                    #withdraw
-                                    # wallet = wallet + amount
-                                    # user.onebook_wallet = user.onebook_wallet - amount
+                                    return CODE_SUCCESS
+                                except Exception as e:
+                                    logger.error("request transfer to Onebook: ", e)
+                                    #print("request transfer to Onebook: ", e)
+                                    return ERROR_CODE_FAIL
+                            elif direction == '0':
+                                #withdraw
+                                # wallet = wallet + amount
+                                # user.onebook_wallet = user.onebook_wallet - amount
+                                try:
                                     Transaction.objects.create(transaction_id=trans_id,
                                                             user_id=user,
                                                             order_id=trans_id,
@@ -337,8 +355,13 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             product=GAME_TYPE_SPORTS,
                                                             transaction_type=TRANSACTION_TRANSFER_IN,
                                                             status=TRAN_SUCCESS_TYPE)
-                                # user.save()         
-                            return CODE_SUCCESS
+                                    return CODE_SUCCESS
+                            # user.save() 
+                                except Exception as e:
+                                    logger.error("request transfer from Onebook: ", e)
+                                    #print("request transfer from Onebook: ", e)
+                                    return ERROR_CODE_FAIL      
+                            
                             break
                         elif rcode == (1 or 2 or 7 or 10) : #transfer failed, will not update user's balance
                             return ERROR_CODE_FAIL
@@ -361,12 +384,12 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
         return ERROR_CODE_FAIL
 
 
-# class test(View):
-#     def get(self, request, *args, **kwargs):
-#         user = CustomUser.objects.get(username="angela")
-#         response = createMember(user, 20, "2")
-        
-#         return HttpResponse(response)
+class test(View):
+    def get(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(username="angela01")
+        #response = createMember(user, 13, "2")
+        response = fundTransfer(user, "1", "main", "1", "1", "2")
+        return HttpResponse(response)
 
     
 # def test01(request, username):
@@ -678,7 +701,7 @@ class Login(APIView):
             for x in range(3):
                 r = requests.post(ONEBOOK_API_URL + "Login/", headers=headers, data={
                     "vendor_id": ONEBOOK_VENDORID,
-                    "vendor_member_id": username + '_test',
+                    "vendor_member_id": username, # + '_test'
                 })
                 rdata = r.json()
                 

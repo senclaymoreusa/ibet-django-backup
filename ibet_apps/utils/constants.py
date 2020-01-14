@@ -743,6 +743,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["PRODUCTION"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["PRODUCTION"]["NAMESPACE"]
+    
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -770,6 +771,7 @@ elif "dev" in os.getenv("ENV"):
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
+    
 else:
     API_DOMAIN = "http://3fb2738f.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -797,6 +799,7 @@ else:
     ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
+    
 
 
 
@@ -1553,9 +1556,10 @@ ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
 ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
 ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
 ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
+ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
 ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
-ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
+
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
 
