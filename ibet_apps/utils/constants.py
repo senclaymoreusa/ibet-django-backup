@@ -732,6 +732,8 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
+    BackURI = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -757,6 +759,8 @@ elif "dev" in os.getenv("ENV"):
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -782,6 +786,8 @@ else:
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
@@ -790,8 +796,7 @@ else:
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
 
-BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
+
 
 HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
 
