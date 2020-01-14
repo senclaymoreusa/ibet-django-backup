@@ -390,10 +390,19 @@ class LoginView(GenericAPIView):
         #    item['key'] if 'key' in item else None
         try:
             statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
-            result = self.iovationData['result']
-            device = self.iovationData['details']['device']['os'] if 'device' in self.iovationData['details'] else ''
-            browser = self.iovationData['details']['device']['browser'] if 'device' in self.iovationData['details'] else ''
-            ipLocation = self.iovationData['details']['realIp']['ipLocation'] if 'ipLocation' in self.iovationData['details']['realIp'] else None
+            result = self.iovationData['result'] if 'result' in self.iovationData else ''
+            if 'details' in self.iovationData and 'device' in self.iovationData['details']:
+                device = self.iovationData['details']['device']['os'] 
+            else:
+                device = ''
+            if 'details' in self.iovationData and 'device' in self.iovationData['details']:
+                browser = self.iovationData['details']['device']['browser'] 
+            else:
+                browser = ''
+            if 'details' in self.iovationData and 'realIp' in self.iovationData['details']:
+                ipLocation = self.iovationData['details']['realIp']['ipLocation'] 
+            else:
+                ipLocation = None
             otherData = self.iovationData
            
 
