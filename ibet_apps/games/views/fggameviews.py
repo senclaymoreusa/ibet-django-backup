@@ -104,14 +104,15 @@ class FGLogin(APIView):
                 logger.info("get sessionkey successful.")
                 
                 try:
-                    user = FGSession.objects.get(user=pk)
-                    user.session_key=sessionKey
-                    user.save()
+                    fguser = FGSession.objects.get(user=user)
+                    fguser.session_key = sessionKey
+                    fguser.party_id = partyId
+                    fguser.save()
                     logger.info("fg update sessionkey.")
                 except:
                     
-                    pk = CustomUser.objects.get(pk=pk)        
-                    FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId, uuid=uuid)   
+                    # user = CustomUser.objects.get(pk=pk)        
+                    FGSession.objects.create(user=user,session_key=sessionKey,party_id=partyId, uuid=uuid)   
                     logger.info("fg create sessionkey.")
 
             except:
