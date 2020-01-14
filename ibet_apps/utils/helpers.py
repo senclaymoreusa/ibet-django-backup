@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db import DatabaseError, transaction
 from django.core.exceptions import ObjectDoesNotExist
-from users.models import CustomUser
+from users.models import CustomUser, Config
 
 logger = logging.getLogger("django")
 
