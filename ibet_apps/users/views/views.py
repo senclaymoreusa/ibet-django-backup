@@ -71,6 +71,7 @@ from operation.views import send_sms
 from itertools import islice
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+from rest_framework.authtoken.models import Token
 
 import datetime
 import logging
@@ -389,10 +390,19 @@ class LoginView(GenericAPIView):
         #    item['key'] if 'key' in item else None
         try:
             statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
-            result = self.iovationData['result']
-            device = self.iovationData['details']['device']['os'] if 'device' in self.iovationData['details'] else ''
-            browser = self.iovationData['details']['device']['browser'] if 'device' in self.iovationData['details'] else ''
-            ipLocation = self.iovationData['details']['realIp']['ipLocation'] if 'ipLocation' in self.iovationData['details']['realIp'] else None
+            result = self.iovationData['result'] if 'result' in self.iovationData else ''
+            if 'details' in self.iovationData and 'device' in self.iovationData['details']:
+                device = self.iovationData['details']['device']['os'] 
+            else:
+                device = ''
+            if 'details' in self.iovationData and 'device' in self.iovationData['details']:
+                browser = self.iovationData['details']['device']['browser'] 
+            else:
+                browser = ''
+            if 'details' in self.iovationData and 'realIp' in self.iovationData['details']:
+                ipLocation = self.iovationData['details']['realIp']['ipLocation'] 
+            else:
+                ipLocation = None
             otherData = self.iovationData
            
 
@@ -421,7 +431,7 @@ class LoginView(GenericAPIView):
                 loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
-            logger.error("cannot get users device info in iovation", e)
+            logger.error("FATAL__ERROR: cannot get users device info in login iovation", e)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -489,7 +499,8 @@ class LogoutView(APIView):
         return self.logout(request)
 
     def logout(self, request):
-        self.user = request.user
+        token = request.GET.get('token')
+        self.user = Token.objects.get(key=token).user
         try:
             request.user.auth_token.delete()
         except (AttributeError, ObjectDoesNotExist):

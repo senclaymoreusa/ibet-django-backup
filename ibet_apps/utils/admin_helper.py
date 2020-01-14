@@ -35,7 +35,7 @@ before_last_month = this_month + relativedelta(months=-2)
 
 def getCommissionTrans():
     commission_tran = Transaction.objects.filter(
-        transaction_type=TRANSACTION_COMMISSION)
+        Q(transaction_type=TRANSACTION_COMMISSION) & Q(channel=None))
     return commission_tran
 
 
@@ -49,7 +49,7 @@ def getCommissionTrans():
 def getPlayers(affiliates):
     player_list = None
     if affiliates in [None, '']:
-        logger.info("Invalid input for getting affiliates' player list.")
+        logger.info("Warning input for getting downline list!")
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
@@ -288,7 +288,7 @@ source_string = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 limit_user = 36 ** limit_digit
 
 
-# encode
+# Encode Referral Code
 def generateUniqueReferralCode(user_id):
     code = ''
     if user_id in range(0, limit_user):
@@ -298,20 +298,20 @@ def generateUniqueReferralCode(user_id):
             code += str(source_string[mod])
             user_id /= 36
             i += 1
-        return code
 
     else:
-        logger.error("Error create referral code for user")
-        raise ValueError("Please enter an integer bigger than 0 and smaller than 36^%s" % limit_digit)
+        logger.error("FATAL__ERROR creating referral code for user")
+    return code
 
 
-# decode
+# Decode Referral Code
 def decodeReferralCode(code):
     user_id = 0
     code = code.upper()
+    # Invalid Referral Code
     if len(code) != limit_digit:
-        logger.error("Error referral code format")
-        raise ValueError("Please enter a valid referral code")
+        logger.info("Error referral code length")
+        return None
     else:
         i = 0
         while i in range(0, limit_digit):

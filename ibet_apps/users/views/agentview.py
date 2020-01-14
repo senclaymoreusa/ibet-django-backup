@@ -53,7 +53,7 @@ class AgentView(CommAdminView):
 
                             'winorloss': calculateNGR(user, start_date, end_date, None),
                             'commission': tran.amount,
-                            'status': "Released" if tran.status == TRAN_APPROVED_TYPE else "Pending",
+                            'status': "Released" if tran.status == TRAN_SUCCESS_TYPE else "Pending",
                             'release_time': str(utcToLocalDatetime(tran.arrive_time)),
                             'operator': tran.release_by.username if tran.release_by else "",
                             'operator_pk': tran.release_by.pk if tran.release_by else "",
@@ -305,7 +305,7 @@ class AgentView(CommAdminView):
                             admin_user = CustomUser.objects.get(username=admin)
                             user = current_trans.user_id
                             user.main_wallet += current_trans.amount
-                            current_trans.status = TRAN_APPROVED_TYPE
+                            current_trans.status = TRAN_SUCCESS_TYPE
                             current_trans.review_status = REVIEW_APP
                             current_trans.arrive_time = timezone.now()
                             current_trans.release_by = admin_user
@@ -343,7 +343,7 @@ class AgentView(CommAdminView):
                             try:
                                 referral_path = str(user.referred_by.referral_path) + referral_path
                             except Exception as e:
-                                logger.error("Error referrer's referral_path " + str(e))
+                                logger.error("Error getting referrer's referral_path " + str(e))
                         user.referral_path = referral_path
                         user.save()
                         affiliate_default_commission = PersonalCommissionLevel.objects.create(
@@ -364,7 +364,7 @@ class AgentView(CommAdminView):
                         )
 
             except IntegrityError as e:
-                logger.error("Error handle affiliate application " + str(e))
+                logger.error("Error handling affiliate application " + str(e))
 
             return HttpResponse(status=200)
 
@@ -388,7 +388,7 @@ class AgentView(CommAdminView):
                 )
                 admin_activity.save()
             except Exception as e:
-                logger.info('Error getting admin user object: ' + str(e))
+                logger.error('Error getting admin user object: ' + str(e))
 
             try:
                 with transaction.atomic():

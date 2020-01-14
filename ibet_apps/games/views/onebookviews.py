@@ -268,8 +268,9 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             currency=user.currency,
                                             transfer_from=fund_wallet,
                                             transfer_to='Onebook',
-                                            product=0,
+                                            product=GAME_TYPE_SPORTS,
                                             transaction_type=TRANSACTION_TRANSFER,
+                                            channel=None,
                                             status=TRAN_SUCCESS_TYPE)
                 
                 elif direction == '0':                                                            
@@ -283,8 +284,9 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             currency=user.currency,
                                             transfer_from='Onebook',
                                             transfer_to=fund_wallet,
-                                            product=0,
+                                            product=GAME_TYPE_SPORTS,
                                             transaction_type=TRANSACTION_TRANSFER,
+                                            channel=None,
                                             status=TRAN_SUCCESS_TYPE)
                 # user.save()
         
@@ -318,7 +320,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             currency=user.currency,
                                                             transfer_from=fund_wallet,
                                                             transfer_to='Onebook',
-                                                            product=0,
+                                                            product=GAME_TYPE_SPORTS,
                                                             transaction_type=TRANSACTION_TRANSFER_OUT,
                                                             status=TRAN_SUCCESS_TYPE)
                                 elif direction == '0':
@@ -332,7 +334,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             currency=user.currency,
                                                             transfer_from='Onebook',
                                                             transfer_to=fund_wallet,
-                                                            product=0,
+                                                            product=GAME_TYPE_SPORTS,
                                                             transaction_type=TRANSACTION_TRANSFER_IN,
                                                             status=TRAN_SUCCESS_TYPE)
                                 # user.save()         
@@ -566,7 +568,7 @@ def getBetDetail(request):
                         # sleep(delay)  
                         # print("sleep")  
                     else:
-                        logger.info("BetDetails is not existed.")
+                        redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
                         break
                 else:
                     redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
