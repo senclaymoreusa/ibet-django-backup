@@ -41,7 +41,7 @@ def getCommissionTrans():
 
 '''
 @param affiliates: affiliate object or queryset
-@return: players list(users referred by affiliates)
+@return: players list(users referred by affiliate)
 '''
 
 
@@ -66,7 +66,7 @@ def getPlayers(affiliates):
 
 '''
 @param affiliates: affiliate object or queryset
-@return: downline list(affiliates referred by affiliates)
+@return: downline list(affiliates referred by affiliate)
 '''
 
 
@@ -184,6 +184,7 @@ def calculateNewPlayer(user_group, start_time, end_time, free_bets):
 
 def getCommissionRate(affilliate, start_time, end_time):
     if not affilliate:
+        logger.info("Error input for getting commission rate !")
         return 0
 
     downlines = getDownlines(affilliate)
@@ -205,18 +206,13 @@ def getCommissionRate(affilliate, start_time, end_time):
     return 0
 
 
-# TODO: functions need to be updated
 # Sum total of Bet amount within the reporting period
 def calculateTurnover(user, start_time, end_time, product):
     if not user:
+        logger.info("Error input for calculating turnover !")
         return 0
 
-    turnover_filter = Q(user=user)
-
-    # if start_time:
-    #     turnover_filter &= Q(resolved_time__gte=start_time)
-    # if end_time:
-    #     turnover_filter &= Q(resolved_time__lte=end_time)
+    turnover_filter = Q(user=user) & Q(resolved_time__isnull=False)
 
     if product:
         try:
@@ -227,20 +223,11 @@ def calculateTurnover(user, start_time, end_time, product):
 
     user_bets = GameBet.objects.filter(turnover_filter)
 
-    bets = user_bets.order_by('ref_no', 'bet_time').distinct('ref_no')  #include tip
-
-    # exclude
+    bets = user_bets.order_by('ref_no', '-resolved_time').distinct('ref_no')  #include tip
 
     # exclude rollback bets
 
-
-
-
     return 0
-
-user = CustomUser.objects.get(username='wluuuu')
-bets = GameBet.objects.order_by('ref_no', 'bet_time').distinct('ref_no')
-print(bets)
 
 
 def calculateGGR(user, start_time, end_time, product):

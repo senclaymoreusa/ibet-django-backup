@@ -187,7 +187,7 @@ def getVIPData(queryset, start_time, end_time, type):
             'id_verified': vip.id_verified,
             'affiliate_id': referee,  # the affiliate who referred this VIP user
             'ggr': calculateGGR(vip, start_time, end_time),
-            'turnover': calculateTurnover(vip, start_time, end_time),
+            'turnover': calculateTurnover(vip, start_time, end_time, None),
             'deposit': deposit_amount,
             'deposit_count': deposit_count,
             'ave_deposit': ave_deposit,
