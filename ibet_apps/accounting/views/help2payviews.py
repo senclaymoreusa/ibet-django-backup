@@ -148,6 +148,11 @@ class DepositResult(generics.GenericAPIView):
             update_data.status = 0
             result = "Success"
             helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('Amount'), 'add')
+            if not helpers:
+                return Response({
+                    'message': 'There was an error with updating the user balance',
+                    'success': False
+                })
         elif trans_status == '001':
             update_data.status = 1
             result = "Failed"
@@ -176,22 +181,38 @@ class DepositResult(generics.GenericAPIView):
 # help2pay requests withdraw info from user
 def confirmWithdrawRequest(request):
     if request.method == "POST":
-        
-        if 'Status' in request.POST:
-            try:
-                trans_id = request.POST.get("TransactionID")
-                amount = request.POST.get("Amount")
-                trans_status = request.POST.get("Status")
-                withdrawID = request.POST.get('ID')
+        try:
+            trans_id = request.GET.get("transId")
+            checksum = request.GET.get("key")
+            withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
+            if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
+                withdraw_txn.arrive_time = timezone.now()
+                withdraw_txn.last_updated = timezone.now()
+                withdraw_txn.status=TRAN_APPROVED_TYPE
+                withdraw_txn.save()
+                return HttpResponse("true")
+            return HttpResponse("false")
 
-                update_data = Transaction.objects.get(
-                    transaction_id=trans_id,
-                    amount=amount
-                )
-            except ObjectDoesNotExist as e:
-                logger.error(repr(e))
-                logger.error(f"transaction id {trans_id} does not exist")
-                return HttpResponse("false")  
+        except ObjectDoesNotExist as e:
+            logger.error("Help2Pay::Withdraw checksum does not match")
+            logger.error(f"transaction id {trans_id} does not exist")
+            return HttpResponse("false")
+        except Exception as e:
+            logger.critical("FATAL__ERROR::Help2Pay::Exception occured during withdraw process", exc_info=True, stack_info=True)
+            return HttpResponse("false")
+
+def withdrawResult(request):
+    if request.method == "POST":
+        try:
+            trans_id = request.POST.get("TransactionID")
+            amount = request.POST.get("Amount")
+            trans_status = request.POST.get("Status")
+            withdrawID = request.POST.get('ID')
+
+            update_data = Transaction.objects.get(
+                transaction_id=trans_id,
+                amount=amount
+            )
 
             if update_data.order_id != '0':  # attempting to confirm the same transaction twice
                 logger.info("Callback was sent twice for Deposit #" + str(trans_id))
@@ -224,26 +245,14 @@ def confirmWithdrawRequest(request):
             update_data.save()
             
             return HttpResponse("true")
-        
-        else:
-            
-            try:
-                trans_id = request.GET.get("transId")
-                checksum = request.GET.get("key")
-                withdraw_txn = Transaction.objects.get(transaction_id=trans_id)
-                if withdraw_txn.other_data['checksum'].upper() == checksum.upper():
-                    withdraw_txn.arrive_time = timezone.now()
-                    withdraw_txn.last_updated = timezone.now()
-                    withdraw_txn.status=TRAN_APPROVED_TYPE
-                    withdraw_txn.save()
-                    return HttpResponse("true")
-                else:
-                    return HttpResponse("false")
-            except ObjectDoesNotExist as e:
-                logger.error(repr(e))
-                logger.error(f"transaction id {trans_id} does not exist")
-                return HttpResponse("false")  
 
+        except ObjectDoesNotExist as e:
+            logger.error(f"transaction id {trans_id} does not exist", exc_info=1, stack_info=1)
+            return HttpResponse("false")  
+        except Exception as e:
+            logger.exception("Help2Pay::withdrawResult::Exception Occurred", exc_info=1, stack_info=1)
+            return HttpResponse("false")
+        
 # user submits withdraw request
 class SubmitPayout(View):
     def get(self, request):
@@ -265,7 +274,7 @@ class SubmitPayout(View):
             trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             ip = helpers.get_client_ip(request)
-            bank = HELP2PAY_BANK
+            bank = request.POST.get("bank")
             
             user_id=user.pk
             currency = user.currency
@@ -294,7 +303,6 @@ class SubmitPayout(View):
             
             checksum = MD5(secretMsg)
        
-            db_currency_code = 2 if currency == 2 else 7
             if check_password(withdraw_password, user.withdraw_password):
                 try:    
                     withdraw_request = Transaction(
@@ -314,7 +322,7 @@ class SubmitPayout(View):
                     can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
                 except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-                    logger.error(repr(e))
+                    logger.critical("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request", exc_info=1, stack_info=1)
                     traceback.print_exc(file=sys.stdout)
                     return HttpResponse(status=500)
             else:
@@ -343,7 +351,6 @@ class SubmitPayout(View):
                 r = requests.post(payoutURL, data=data)
                 
                 if r.status_code == 200:
-
                     return HttpResponse(r.content)
                 else:
                     return JsonResponse({
@@ -359,8 +366,6 @@ class SubmitPayout(View):
         except ObjectDoesNotExist as e:
             logger.error(repr(e))
             return HttpResponse(status=500)
-
-
 
 
 

@@ -40,15 +40,15 @@ def setup_models():
     
     return (PROVIDER, CATEGORY)
 
-
-class GameLaunchView(View):
+class GetPNGTicket(View):
     """
     Test class to simulate a game launch
     """
     def get(self, request, *args, **kwargs):
         try:
+            user_id = request.GET.get("userid")
             png_ticket = uuid.uuid4()
-            user_obj = CustomUser.objects.get(username="kevin")
+            user_obj = CustomUser.objects.get(pk=user_id)
 
             # Case where user's existing PNGTicket needs to be updated
             try:
@@ -59,8 +59,9 @@ class GameLaunchView(View):
             # Case where user has never played PNG games before
             except:
                 PNGTicket.objects.create(png_ticket=png_ticket, user_obj=user_obj)
-
-            return HttpResponse("PNGTicket created or updated")
+            
+            json_to_return = { "ticket" : str(png_ticket) }
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         except Exception as e:
             logger.error("PLAY'nGO GameLaunchView: " + str(e))
@@ -82,6 +83,7 @@ def png_authenticate(data):
 
         try:
             existing_ticket = PNGTicket.objects.get(png_ticket=session_token)
+            # user_obj = Token.objects.get(key=session_token).user
             user_obj = existing_ticket.user_obj
             # print("user_obj.username: " + user_obj.username)
 
@@ -99,6 +101,7 @@ def png_authenticate(data):
             
             if checkUserBlock(user_obj):
                 status_code = PNG_STATUS_ACCOUNTDISABLED
+                status_message = "Account Disabled"
 
             # Compose response dictionary and convert to response XML
             res_dict = {

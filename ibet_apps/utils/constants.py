@@ -13,6 +13,9 @@ from django.utils.translation import ugettext_lazy as _
 AWS_S3_ADMIN_BUCKET = ""
 keys = {}
 load_dotenv()
+PTKEY = b""
+PTPEM = b""
+
 print("env:" +os.getenv("ENV"))
 print("datetime:" + str(datetime.datetime.now()))
 print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.getenv("ENV") + " env.")
@@ -20,10 +23,17 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
+    PTKEY= utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
+    PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
+    
+   
 else:
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
-
+    PTKEY = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
+    PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
+  
+   
 GENDER_CHOICES = (
     ('Male', 'Male'),
     ('Female', 'Female')
@@ -131,7 +141,7 @@ STATE_CHOICES = (
     (TRAN_FAIL_TYPE, 'Failed'),
     (TRAN_CREATE_TYPE, 'Created'),
     (TRAN_PENDING_TYPE, 'Pending'),
-    (TRAN_APPROVED_TYPE, 'Approved'),
+    (TRAN_APPROVED_TYPE, 'Approved'),    # not being used 
     (TRAN_CANCEL_TYPE, 'Canceled'),
     (TRAN_COMPLETED_TYPE, 'Completed'),
     (TRAN_RESEND_TYPE, 'Resent'),
@@ -693,6 +703,14 @@ PASSWORD = keys["MG"]['PASSWORD']
 
 # LAUNCH_URL = 'https://lsl.omegasys.eu/ps/game/GameContainer.action'
 
+#PTgame
+PT_STATUS_SUCCESS = 0
+PT_GENERAL_ERROR = 1
+PT_BALANCE_ERROR = 2
+PT_NEWPLAYER_ALERT = 3
+PT_BASE_URL = keys["PT"]["PT_BASE_URL"]
+ENTITY_KEY = keys["PT"]["ENTITY_KEY"]
+
 
 
 
@@ -701,7 +719,6 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["PRODUCTION"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["PRODUCTION"]["VN"]
     HELP2PAY_URL = "https://api.racethewind.net/MerchantTransfer"
-    HELP2PAY_BANK = 'KKR'
     HELP2PAY_MERCHANT_THB = "M0513"
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
@@ -715,6 +732,8 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
+    BackURI = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -727,7 +746,6 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-    HELP2PAY_BANK = 'KKR'
     HELP2PAY_MERCHANT_THB = "M0513"
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
@@ -741,6 +759,8 @@ elif "dev" in os.getenv("ENV"):
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -753,7 +773,6 @@ else:
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
-    HELP2PAY_BANK = 'KKR'
     HELP2PAY_MERCHANT_THB = "M0513"
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
@@ -767,6 +786,8 @@ else:
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
@@ -775,10 +796,9 @@ else:
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
 
-BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
 
-HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/request_withdraw"
+
+HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
 
 GAME_FILTER_OPTION = [
     {

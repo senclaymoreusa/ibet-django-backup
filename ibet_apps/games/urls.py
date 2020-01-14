@@ -17,6 +17,7 @@ import games.views.bti_views as bti
 import games.views.sagameviews as sagameviews
 import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
+import games.views.ptgameviews as ptgameviews
 import games.views.aggamesviews as aggamesviews
 from games.views.views import *
 
@@ -66,7 +67,7 @@ urlpatterns = [
 
     # Play n Go
     path('api/playngo', csrf_exempt(playngogameviews.RootView.as_view()), name="png_root"),
-    path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
+    path('api/playngo/get_png_ticket', csrf_exempt(playngogameviews.GetPNGTicket.as_view()), name="png_launch"),
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
@@ -86,7 +87,11 @@ urlpatterns = [
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
+    # playtech
 
+    path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),
+    path('api/pt/transfer_test', ptgameviews.PTTransferTest.as_view(), name = 'pt_transfer'),
+    path('api/pt/get_record', ptgameviews.GetBetHistory.as_view(), name = 'pt_get_record'),
 
     # kaiyuan gaming
     path('api/ky/games/', csrf_exempt(kygameviews.KaiyuanAPI.as_view()), name="ky_games"),

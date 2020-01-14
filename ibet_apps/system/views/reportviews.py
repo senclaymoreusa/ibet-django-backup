@@ -182,7 +182,7 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         max_pub_date_time = tz.localize(datetime.combine(date, time.max))
         transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
         deposits = transactions.filter(transaction_type=TRANSACTION_DEPOSIT, status=TRAN_SUCCESS_TYPE)
-        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL, status=TRAN_APPROVED_TYPE)
+        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL, status=TRAN_SUCCESS_TYPE)
 
         dateStr = date.strftime("%b %e %Y")
         dataPerUnit = {
