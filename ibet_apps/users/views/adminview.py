@@ -248,7 +248,7 @@ class UserDetailView(CommAdminView):
         if bet_history_list.count() <= 20:
             context['betIsLastPage'] = True
         else:
-            context['betIsLastPage'] = True
+            context['betIsLastPage'] = False
 
         if bet_history_list.count() == 0:
             context['userBetHistory'] = ''
@@ -291,6 +291,7 @@ class UserDetailView(CommAdminView):
         userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
         context['userLastIpAddr'] = userLastLogin
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
+        context['activeTime'] = GameBet.objects.filter(user=customUser, amount_wagered__gte=0).count()
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
@@ -868,8 +869,8 @@ class UserListView(CommAdminView):
             userDict['deposit_turnover'] = ''
             userDict['bonus_turnover'] = ''
             userDict['contribution'] = 0
-            depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
-            withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
+            # depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            # withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
             betTims = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
             activeDays = int(betTims)
             userDict['active_days'] = activeDays
@@ -890,7 +891,7 @@ class UserListView(CommAdminView):
             userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
             userDict['last_login_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
 
-            if user.is_admin is True:
+            if user.is_admin:
                 userDict['is_admin'] = 'Yes'
             else:
                 userDict['is_admin'] = 'No'
@@ -898,7 +899,6 @@ class UserListView(CommAdminView):
             user_data.append(userDict)
         
         context['user_data'] = user_data
-
 
         return render(request, 'user_list.html', context)
 
