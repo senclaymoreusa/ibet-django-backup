@@ -31,7 +31,7 @@ def addOrWithdrawBalance(username, balance, type_balance):
                 referrer = user.referred_by
 
                 logger.info("User's new balance is: " + str(new_balance))
-                
+
                 if referrer:
                     referr_object = get_user_model().objects.filter(username=referrer.username)
                     data = Config.objects.all()[0]
