@@ -176,7 +176,7 @@ def createMember(user,currency,oddsType):
         "OddsType": oddsType,
         "Currency": currency,
         "MaxTransfer": ONEBOOK_MAXTRANSFER,
-        "MinTransfer": '1', #ONEBOOK_MINTRANSFER
+        "MinTransfer": ONEBOOK_MINTRANSFER, #ONEBOOK_MINTRANSFER
     })
     
     rdata = r.json()
@@ -196,7 +196,7 @@ def createMember(user,currency,oddsType):
 def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
     
     trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
-    print(trans_id)
+    
     
     if user.currency == CURRENCY_CNY:
         currency = 13
