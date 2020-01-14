@@ -18,6 +18,7 @@ import datetime
 from django.http import HttpResponseRedirect, HttpResponse
 from users.views.helper import set_loss_limitation, set_deposit_limitation, set_temporary_timeout, set_permanent_timeout, get_old_limitations
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
 from system.models import UserToUserGroup
 from django.views import View
 from django.contrib.auth import update_session_auth_hash
@@ -25,7 +26,7 @@ from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
 from users.views.helper import *
-from games.models import GameBet
+from games.models import GameBet, Category
 
 import requests
 import logging
@@ -204,8 +205,8 @@ class UserDetailView(CommAdminView):
         for t in Transaction._meta.get_field('channel').choices:
             channelMap[t[0]] = t[1]
 
-
-        transactions_list = Transaction.objects.filter(user_id=customUser).order_by('-request_time')
+        # transaction
+        transactions_list = Transaction.objects.filter(user_id=customUser)
         if transactions_list.count() == 0:
             context['userTransactions'] = ''
         else:
@@ -241,6 +242,51 @@ class UserDetailView(CommAdminView):
                 trans.append(transDict)
             context['userTransactions'] = trans
             
+        # bet hisotry
+        bet_history_list = GameBet.objects.filter(user=customUser)
+
+        if bet_history_list.count() <= 20:
+            context['betIsLastPage'] = True
+        else:
+            context['betIsLastPage'] = True
+
+        if bet_history_list.count() == 0:
+            context['userBetHistory'] = ''
+        else:
+            bet_history = bet_history_list.order_by("-bet_time")[:20]
+            bet_history = serializers.serialize('json', bet_history)
+            bet_history = json.loads(bet_history)
+
+            bet_list = []
+
+            for i in bet_history:
+                try:
+                    time = datetime.datetime.strptime(i['fields']['bet_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(i['fields']['bet_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                betDict = {
+                    'pk': i['pk'],
+                    'transactionId': str(i['fields']['transaction_id']),
+                    'category': 'Bet',
+                    # 'transType': transTypeMap[tran['fields']['transaction_type']],
+                    # 'transTypeCode': tran['fields']['transaction_type'],
+                    'product': str(Category.objects.get(pk=i['fields']['category']).name),
+                    # 'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                    # 'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
+                    'currency': currencyMap[i['fields']['currency']],
+                    'time': time,
+                    'amount_won': i['fields']['amount_won'] if i['fields']['amount_won'] else "",
+                    'amount_wagered': i['fields']['amount_wagered'] ,
+                    'status': 'Open' if not i['fields']['resolved_time'] else 'Close',
+                    # 'bank': str(tran['fields']['bank']),
+                    'bank': "",
+                    # 'channel': channelMap[tran['fields']['channel']],
+                    # 'method': tran['fields']['method'],
+                }
+                bet_list.append(betDict)
+            context['userBetHistory'] = bet_list
+
 
         userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
         context['userLastIpAddr'] = userLastLogin
@@ -1152,6 +1198,7 @@ class GetUserTransaction(View):
 
     def get(self, request, *args, **kwargs):
         try:
+            trans_type = request.GET.get('type')
             user_id = request.GET.get('user_id')
             time_from = request.GET.get('from')
             time_to = request.GET.get('to')
@@ -1161,98 +1208,208 @@ class GetUserTransaction(View):
             category = request.GET.get('category')
             product = request.GET.get('product')
             
-            transaction_filter = Q(user_id__pk=user_id)
 
-            current_tz = timezone.get_current_timezone()
-            tz = pytz.timezone(str(current_tz))
+            if trans_type == "transaction":
+                # print(user_id, time_from, time_to, pageSize, fromItem, endItem, category, product)
 
-            if time_from:
-                time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
-                aware = time_from.replace(tzinfo=tz)
-                time_from = aware.astimezone(pytz.UTC)
-                min_time_from = datetime.datetime.combine(time_from, datetime.time.min) 
-                transaction_filter &= Q(request_time__gte=min_time_from)
+                transaction_filter = Q(user_id__pk=user_id)
 
-            if time_to:
-                time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
-                # max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
-                aware = time_to.replace(tzinfo=tz)
-                time_to = aware.astimezone(pytz.UTC)
-                max_time_from = datetime.datetime.combine(time_to, datetime.time.max)
-                transaction_filter &= Q(request_time__lte=max_time_to)
+                current_tz = timezone.get_current_timezone()
+                tz = pytz.timezone(str(current_tz))
 
-            # logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
-            # logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
-            
-            if category and category != 'all':
-                transaction_filter &= Q(transaction_type=category)
+                if time_from:
+                    time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
+                    aware = time_from.replace(tzinfo=tz)
+                    time_from = aware.astimezone(pytz.UTC)
+                    min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min))
+                    transaction_filter &= Q(request_time__gte=min_time_from)
 
-            if product and product != 'all':
-                transaction_filter &= Q(product=product)
-            
+                if time_to:
+                    time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
+                    # max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
+                    aware = time_to.replace(tzinfo=tz)
+                    time_to = aware.astimezone(pytz.UTC)
+                    max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))
+                    transaction_filter &= Q(request_time__lte=max_time_to)
 
-            all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
-            response = {}
-            if endItem >= all_transactions.count():
-                response['isLastPage'] = True
-            else:
-                response['isLastPage'] = False
-
-            if fromItem == 0:
-                response['isFirstPage'] = True
-            else:
-                response['isFirstPage'] = False
-
-
-            all_transactions = all_transactions[fromItem: endItem]
-            transactions_json = serializers.serialize('json', all_transactions)
-            transactions_list = json.loads(transactions_json)
-
-            # for tran in transactions_list:
-            #     tran['fields']['status'] = statusMap[tran['fields']['status']]
-            #     tran['fields']['currency'] = currencyMap[tran['fields']['currency']]
-            #     try:
-            #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            #     except:
-            #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
-            #     time = time.strftime("%B %d, %Y, %I:%M %p")
-            #     tran['fields']['time'] = time
-            
-
-            trans = []
-            for tran in transactions_list:
-                try:
-                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                except:
-                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
-                transDict = {
-                    'transactionId': str(tran['fields']['transaction_id']),
-                    'category': str(dict(TRANSACTION_TYPE_CHOICES).get(tran['fields']['transaction_type'])),
-                    'transTypeCode': tran['fields']['transaction_type'],
-                    'product': str(dict(GAME_TYPE_CHOICES).get(tran['fields']['product'])),
-                    'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
-                    'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
-                    'currency': str(dict(CURRENCY_CHOICES).get(tran['fields']['currency'])),
-                    'time': time,
-                    'amount': tran['fields']['amount'],
-                    'balance': tran['fields']['amount'],
-                    'status': str(dict(STATE_CHOICES).get(tran['fields']['status'])),
-                    
-                    # 'bank': str(tran['fields']['bank']),
-                    'bank': "",
-                    'channel':  str(dict(CHANNEL_CHOICES).get(tran['fields']['channel'])),
-                    'method': tran['fields']['method'],
-                }
-                # transDict = serializers.serialize('json')
-                trans.append(transDict)
-
+                # logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+                # logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
                 
-            response['transactions'] = trans
-            # transactionsJson = json.dumps(transactionsList)
-            
-            return HttpResponse(json.dumps(response), content_type='application/json')
+                if category and category != 'all':
+                    transaction_filter &= Q(transaction_type=category)
+
+                if product and product != 'all':
+                    transaction_filter &= Q(product=product)
+                
+
+                all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+                response = {}
+                if endItem >= all_transactions.count():
+                    response['isLastPage'] = True
+                else:
+                    response['isLastPage'] = False
+
+                if fromItem == 0:
+                    response['isFirstPage'] = True
+                else:
+                    response['isFirstPage'] = False
+
+
+                all_transactions = all_transactions[fromItem: endItem]
+                transactions_json = serializers.serialize('json', all_transactions)
+                transactions_list = json.loads(transactions_json)
+
+                # for tran in transactions_list:
+                #     tran['fields']['status'] = statusMap[tran['fields']['status']]
+                #     tran['fields']['currency'] = currencyMap[tran['fields']['currency']]
+                #     try:
+                #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                #     except:
+                #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                #     time = time.strftime("%B %d, %Y, %I:%M %p")
+                #     tran['fields']['time'] = time
+                
+
+                trans = []
+                for tran in transactions_list:
+                    try:
+                        time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    except:
+                        time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = time.strftime("%B %d, %Y, %I:%M %p")
+                    transDict = {
+                        'transactionId': str(tran['fields']['transaction_id']),
+                        'category': str(dict(TRANSACTION_TYPE_CHOICES).get(tran['fields']['transaction_type'])),
+                        'transTypeCode': tran['fields']['transaction_type'],
+                        'product': str(dict(GAME_TYPE_CHOICES).get(tran['fields']['product'])),
+                        'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                        'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
+                        'currency': str(dict(CURRENCY_CHOICES).get(tran['fields']['currency'])),
+                        'time': time,
+                        'amount': tran['fields']['amount'],
+                        'balance': tran['fields']['amount'],
+                        'status': str(dict(STATE_CHOICES).get(tran['fields']['status'])),
+                        
+                        # 'bank': str(tran['fields']['bank']),
+                        'bank': "",
+                        'channel':  str(dict(CHANNEL_CHOICES).get(tran['fields']['channel'])),
+                        'method': tran['fields']['method'],
+                    }
+                    # transDict = serializers.serialize('json')
+                    trans.append(transDict)
+
+                    
+                response['transactions'] = trans
+                # transactionsJson = json.dumps(transactionsList)
+                
+                return HttpResponse(json.dumps(response), content_type='application/json')
+            else:
+                response = {}
+
+                bet_filter = Q(user__pk=user_id)
+
+                current_tz = timezone.get_current_timezone()
+                tz = pytz.timezone(str(current_tz))
+
+                if time_from:
+                    time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
+                    aware = time_from.replace(tzinfo=tz)
+                    time_from = aware.astimezone(pytz.UTC)
+                    min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min))
+                    bet_filter &= Q(bet_time__gte=min_time_from)
+
+                if time_to:
+                    time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
+                    # max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
+                    aware = time_to.replace(tzinfo=tz)
+                    time_to = aware.astimezone(pytz.UTC)
+                    max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))
+                    bet_filter &= Q(bet_time__lte=max_time_to)
+
+                # logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+                # logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
+
+                if product and product != 'all':
+                    bet_filter &= Q(category__name=product)
+
+                all_bet_objs = GameBet.objects.filter(bet_filter).order_by('-bet_time')
+                response = {}
+                if endItem >= all_bet_objs.count():
+                    response['isLastPage'] = True
+                else:
+                    response['isLastPage'] = False
+
+                if fromItem == 0:
+                    response['isFirstPage'] = True
+                else:
+                    response['isFirstPage'] = False
+
+
+                all_bet_objs = all_bet_objs[fromItem: endItem]
+                # transactions_json = serializers.serialize('json', all_transactions)
+                # transactions_list = json.loads(transactions_json)
+
+                bet_list = []
+                for bet in all_bet_objs:
+                    betDict = {
+                        'pk': bet.pk,
+                        'transactionId': bet.transaction_id,
+                        'category': 'Bet',
+                        'product': str(bet.category),
+                        'currency': bet.get_currency_display(),
+                        'bet_time':  bet.bet_time.strftime("%B %d, %Y, %I:%M %p") if bet.bet_time else "",
+                        'resolved_time': bet.resolved_time.strftime("%B %d, %Y, %I:%M %p") if bet.resolved_time else "",
+                        'amount_won': bet.amount_won if bet.amount_won else "0.0000",
+                        'amount_wagered': bet.amount_wagered if bet.amount_wagered else "0.0000",
+                        'status': 'Open' if not bet.resolved_time else 'Close',
+                    }
+                    # transDict = serializers.serialize('json')
+                    bet_list.append(betDict)
+
+                response['transactions'] = bet_list
+
+                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+
 
         except Exception as e:
             logger.error("Admin getting user transaction error: ", e)
+            return HttpResponse(status=404)
+
+
+
+class GetBetHistoryDetail(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            bet_id = request.GET.get('bet_id')
+
+            bet_obj = GameBet.objects.get(pk=bet_id)
+
+            # try:
+            #     bet_time = datetime.datetime.strptime(bet_obj.bet_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # except:
+            #     bet_time = datetime.datetime.strptime(bet_obj.bet_time, "%Y-%m-%dT%H:%M:%SZ")
+            bet_time = bet_obj.bet_time.strftime("%B %d, %Y, %I:%M %p")
+
+            # try:
+            #     resolved_time = datetime.datetime.strptime(bet_obj.resolved_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # except:
+            #     resolved_time = datetime.datetime.strptime(bet_obj.resolved_time, "%Y-%m-%dT%H:%M:%SZ")
+            resolved_time = bet_obj.resolved_time.strftime("%B %d, %Y, %I:%M %p")
+
+            response = {
+                'bet_id': bet_obj.transaction_id,
+                'amount_won': bet_obj.amount_won,
+                'amount_wagered': bet_obj.amount_wagered,
+                'bet_time': bet_time,
+                'resolved_time': resolved_time,
+                'outcome': bet_obj.get_outcome_display() if bet_obj.get_outcome_display() else "None",
+                'user': bet_obj.user.username,
+                'status': "Close" if bet_obj.resolved_time else "Open"
+            }
+
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Admin getting user bet deatil: ", e)
             return HttpResponse(status=404)

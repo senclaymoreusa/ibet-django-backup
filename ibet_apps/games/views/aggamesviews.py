@@ -291,7 +291,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         currency=user.currency,
                                         transfer_from=fund_wallet,
                                         transfer_to='AG',
-                                        product=0,
+                                        product=GAME_TYPE_LIVE_CASINO,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         channel=None,
                                         status=TRAN_SUCCESS_TYPE)
@@ -303,7 +303,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         currency=user.currency,
                                         transfer_from='AG',
                                         transfer_to=fund_wallet,
-                                        product=0,
+                                        product=GAME_TYPE_LIVE_CASINO,
                                         channel=None,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
@@ -328,7 +328,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                                 currency=user.currency,
                                                 transfer_from=fund_wallet,
                                                 transfer_to='AG',
-                                                product=0,
+                                                product=GAME_TYPE_LIVE_CASINO,
                                                 channel=None,
                                                 transaction_type=TRANSACTION_TRANSFER,
                                                 status=TRAN_SUCCESS_TYPE)
@@ -340,7 +340,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                                 currency=user.currency,
                                                 transfer_from='AG',
                                                 transfer_to=fund_wallet,
-                                                product=0,
+                                                product=GAME_TYPE_LIVE_CASINO,
                                                 channel=None,
                                                 transaction_type=TRANSACTION_TRANSFER,
                                                 status=TRAN_SUCCESS_TYPE)
