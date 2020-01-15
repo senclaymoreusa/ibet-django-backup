@@ -148,6 +148,11 @@ class DepositResult(generics.GenericAPIView):
             update_data.status = 0
             result = "Success"
             helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('Amount'), 'add')
+            if not helpers:
+                return Response({
+                    'message': 'There was an error with updating the user balance',
+                    'success': False
+                })
         elif trans_status == '001':
             update_data.status = 1
             result = "Failed"

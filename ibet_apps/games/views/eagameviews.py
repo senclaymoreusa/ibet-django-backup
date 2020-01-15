@@ -183,7 +183,7 @@ def requestEADeposit(user, amount, from_wallet):
                     currency=user_currency,
                     transfer_from=from_wallet,
                     transfer_to="EA",
-                    product=2,
+                    product=GAME_TYPE_LIVE_CASINO,
                     channel=None,
                     transaction_type=TRANSACTION_TRANSFER,
                     status=TRAN_PENDING_TYPE
@@ -419,7 +419,7 @@ def requestEAWithdraw(user, amount, to_wallet):
                     currency=user_currency,
                     transfer_from="EA",
                     transfer_to=to_wallet,
-                    product=2,
+                    product=GAME_TYPE_LIVE_CASINO,
                     channel=None,
                     transaction_type=TRANSACTION_TRANSFER,
                     status=TRAN_PENDING_TYPE

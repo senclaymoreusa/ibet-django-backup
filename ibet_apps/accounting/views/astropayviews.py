@@ -470,7 +470,7 @@ def capture_transaction(request):
             card_code = body.get("card_code")
             exp_date = body.get("exp_date")
             amount = body.get("amount")
-            currency = "THB"
+            currency = body.get("currency")
 
             orderId = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0,10000000))
 
@@ -482,7 +482,7 @@ def capture_transaction(request):
                 "x_card_code": card_code,
                 "x_exp_date": exp_date,
                 "x_amount": amount,
-                "x_currency": currency,  # we are only using this API for thailand
+                "x_currency": currency,  # we are only using this API for thailand and china, values should either be THB or CNY
                 "x_unique_id": request.user.username,
                 "x_invoice_num": orderId,
             }
@@ -525,6 +525,8 @@ def capture_transaction(request):
                 # loop.run_until_complete(createDeposit(**tranDict))
             else:
                 logger.error("successfully contacted AstroPay servers but deposit was unsuccessful")
+                logger.error("response data:")
+                logger.error(responseData)
 
             return JsonResponse({"request_body": body, "response_msg": r.text, "data": responseData})
         except Exception as e:
