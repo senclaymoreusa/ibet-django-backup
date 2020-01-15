@@ -69,7 +69,7 @@ def getBetHistory(request):
             if request.GET.get("end"):
                 endStr = request.GET.get("end")
                 endDate = datetime.strptime(endStr, "%Y/%m/%d")
-                all_bets = all_bets.filter(bet_time__lte=pytz.utc.localize(endDate))
+                all_bets = all_bets.filter(bet_time__lt=pytz.utc.localize(endDate.replace(day=endDate.day+1)))
             
             # all_bets.group_by = ['ref_no']
 

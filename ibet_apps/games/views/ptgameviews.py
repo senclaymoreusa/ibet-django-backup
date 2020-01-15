@@ -242,7 +242,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                         currency=user.currency,
                         transfer_from=wallet,
                         transfer_to='pt',
-                        product=1,
+                        product=GAME_TYPE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE
@@ -259,7 +259,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                         currency=user.currency,
                         transfer_from='pt',
                         transfer_to=wallet,
-                        product=1,
+                        product=GAME_TYPE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE
