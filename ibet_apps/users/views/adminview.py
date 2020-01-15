@@ -235,8 +235,8 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[tran['fields']['status']],
                     # 'bank': str(tran['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[tran['fields']['channel']],
-                    'method': tran['fields']['method'],
+                    'channel': channelMap[tran['fields']['channel']] if tran['fields']['channel'] else "",
+                    'method': tran['fields']['method'] if tran['fields']['method'] else "",
                 }
                 # transDict = serializers.serialize('json')
                 trans.append(transDict)
