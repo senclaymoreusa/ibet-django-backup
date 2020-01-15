@@ -49,179 +49,6 @@ def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
-@api_view(['POST'])
-@permission_classes((AllowAny,))        
-def agftp(request): 
-
-    try:
-        ftp = ftplib.FTP()
-        ftp.connect("xe.gdcapi.com")
-        ftp.login("EV3.ibet", "GelPNvJlXt")
-        
-        try:
-            r = RedisClient().connect()
-            redis = RedisHelper()
-        except:
-            logger.error("(FETAL_ERROR)There is something wrong with redis connection.")
-            return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-        try:
-            folders = ftp.nlst()
-            
-        except ftplib.error_perm as resp:
-            if str(resp) == "550 No files found":
-                logger.info("No files in this directory")
-                return HttpResponse(ERROR_CODE_NOT_FOUND) 
-            else:
-                raise
-        for folder in folders:
-            ftp.cwd(folder) 
-
-            small_folders = ftp.nlst()
-            
-            for sf in small_folders:
-                ftp.cwd(sf) 
-                try:
-                    files = ftp.nlst()
-                except ftplib.error_perm as resp:
-                    if str(resp) == "550 No files found":
-                        logger.info("No files in this directory")
-                        return HttpResponse(ERROR_CODE_NOT_FOUND) 
-                    else:
-                        raise
-                
-                latest_time = None
-                latest_name = None
-                for file in files:
-                    # print(file)
-
-                    if redis.check_ag_added_file(file) is False:   #if the file is not existed in redis
-                        redis.set_ag_added_file(file)              #then add the file into redis
-                    else:
-                        continue                                   #if it is already existed then go to next index
-
-                    time = ftp.voidcmd("MDTM " + file)
-                    if (latest_time is None) or (time > latest_time):
-                        latest_name = file
-                        latest_time = time
-
-                    
-                    r = BytesIO()
-                    read = ftp.retrbinary('RETR ' + latest_name, r.write)
-                    rdata = r.getvalue().decode("utf-8")
-                    xml = '<root>'+rdata+'</root>'
-
-                    writeToS3(latest_name, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(latest_name))
-                    
-                    root = ET.fromstring(xml)
-                    for child in root:
-                        dataType = child.attrib['dataType']
-                        
-                        if dataType == 'HSR': #捕鱼王場景的下注记录
-                            playerName = child.attrib['playerName']
-                            tradeNo = child.attrib['tradeNo']
-                            transferAmount = child.attrib['transferAmount']
-                            flag = child.attrib['flag']
-                            SceneStartTime = child.attrib['SceneStartTime']
-                            SceneEndTime = child.attrib['SceneEndTime']
-                            netAmount = child.attrib['netAmount']
-                            gameType = child.attrib['gameType']
-
-                            try:
-                                user = CustomUser.objects.get(username=playerName)
-                            except ObjectDoesNotExist:
-                                logger.info("This user is not existed.")
-                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
-
-                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
-                                                    category=Category.objects.get(name='Live Casino'),
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    transaction_id=trans_id,
-                                                    amount_wagered=transferAmount,
-                                                    currency=user.currency,
-                                                    amount_won=transferAmount,
-                                                    ref_no=tradeNo,
-                                                    market=ibetCN,
-                                                    bet_time=utcToLocalDatetime(SceneStartTime),
-                                                    resolved_time=utcToLocalDatetime(SceneEndTime),
-                                                    )
-                            
-
-                            
-                        elif dataType == 'BR': #下注记录详情
-                            playerName = child.attrib['playerName']
-                            billNo = child.attrib['billNo']
-                            betAmount = child.attrib['betAmount']
-                            flag = child.attrib['flag']
-                            betTime = child.attrib['betTime']
-                            gameCode = child.attrib['gameCode']
-                            netAmount = child.attrib['netAmount']
-                            gameType = child.attrib['gameType']
-                            result = child.attrib['result']
-
-                            try:
-                                user = CustomUser.objects.get(username=playerName)
-                            except ObjectDoesNotExist:
-                                logger.info("This user is not existed.")
-                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
-
-                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
-                                                    category=Category.objects.get(name='Live Casino'),
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    transaction_id=trans_id,
-                                                    amount_wagered=betAmount,
-                                                    currency=user.currency,
-                                                    amount_won=netAmount,
-                                                    ref_no=billNo,
-                                                    market=ibetCN,
-                                                    resolved_time=timezone.now(),
-                                                    )
-
-                        elif dataType == 'EBR': #电子游戏的下注记录
-                            playerName = child.attrib['playerName']
-                            billNo = child.attrib['billNo']
-                            betAmount = child.attrib['betAmount']
-                            flag = child.attrib['flag']
-                            betTime = child.attrib['betTime']
-                            gameCode = child.attrib['gameCode']
-                            netAmount = child.attrib['netAmount']
-                            gameType = child.attrib['gameType']
-                            result = child.attrib['result']
-
-                            try:
-                                user = CustomUser.objects.get(username=playerName)
-                            except ObjectDoesNotExist:
-                                logger.info("This user is not existed.")
-                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
-
-                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
-                                                    category=Category.objects.get(name='Live Casino'),
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    transaction_id=trans_id,
-                                                    amount_wagered=betAmount,
-                                                    currency=user.currency,
-                                                    amount_won=netAmount,
-                                                    ref_no=billNo,
-                                                    market=ibetCN,
-                                                    resolved_time=timezone.now(),
-                                                    )
-                ftp.cwd('..')
-            ftp.cwd('..')
-        ftp.quit()
-        return HttpResponse(CODE_SUCCESS)
-    except ftplib.error_temp:
-        logger.error("(FETAL_ERROR)Cannot connect with ftp.")
-        return HttpResponse(ERROR_CODE_FAIL)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
@@ -426,8 +253,8 @@ def forwardGame(request):
         
         
     except ObjectDoesNotExist:
-        logger.error("The user is not existed.")
-        return Response({"error":"The  user is not existed."}) 
+        logger.error("The user is not existed in AG.")
+        return Response({"error":"The  user is not existed in AG."}) 
 
 
 def agFundTransfer(user, fund_wallet, credit, agtype): 
@@ -587,6 +414,6 @@ def agService(request):
             else:
                 return HttpResponse("error, invalid invoking api")
         except:
-            logger.error("this user is not existed.")
-            return HttpResponse("error, this user is not existed.")
+            logger.error("this user is not existed in AG.")
+            return HttpResponse("error, this user is not existed in AG.")
 
