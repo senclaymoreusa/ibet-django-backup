@@ -91,7 +91,7 @@ def createMember(username, oddsType):
             elif r.status_code == 204:
                 success = True
                 # Handle error
-                logger.info("Failed to complete a request for createMember...")
+                logger.info("Failed to complete a request for onebook createMember...")
                 logger.error(rdata)
                 return ERROR_CODE_FAIL
             elif r.status_code == 500:
@@ -142,7 +142,7 @@ class CreateMember(APIView):
                 elif r.status_code == 204:
                     success = True
                     # Handle error
-                    logger.info("Failed to complete a request for createMember...")
+                    logger.info("Failed to complete a request for onebook createMember...")
                     logger.error(rdata)
                     return Response(rdata)
                 elif r.status_code == 500:
@@ -153,14 +153,14 @@ class CreateMember(APIView):
                 return Response(rdata)
             logger.info(rdata)
             if rdata['error_code'] == 0:
-                return Response({"success":"The user is created successful."})
+                return Response({"success":"The user is created successful in onebook CreateMember."})
             else:
                 message = rdata['message']
                 return Response({"failed": message})
             
             return Response(rdata)
         except ObjectDoesNotExist as e:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The user is not existed in onebook CreateMember."}) 
 
 def createMember(user,currency,oddsType):
 
@@ -242,7 +242,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
             elif r.status_code == 204:
                 success = True
                 # Handle error
-                logger.info("Failed to complete a request for FundTransfer...")
+                logger.info("Failed to complete a request for onebook FundTransfer...")
                 logger.error(rdata)
                 return ERROR_CODE_FAIL
             elif r.status_code == 500:
@@ -372,7 +372,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                         return  ERROR_CODE_FAIL         
                 elif rr.status_code == 204:
                     # Handle error
-                    logger.info("Failed to complete a request for check fund transfer...")
+                    logger.info("Failed to complete a request for onebook check fund transfer...")
                     logger.error(rrdata)
                     return ERROR_CODE_FAIL
         else:    
@@ -406,7 +406,7 @@ class FundTransfer(APIView):
             trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
             if direction == '1' and user.main_wallet - Decimal(amount.replace(',','')) < 0:
                 #deposit
-                return Response({"error":"Your balance is not enough."})
+                return Response({"error":"Your balance is not enough for onebook."})
             else:
                 headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
                 delay = kwargs.get("delay", 5)
@@ -430,7 +430,7 @@ class FundTransfer(APIView):
                     elif r.status_code == 204:
                         success = True
                         # Handle error
-                        logger.info("Failed to complete a request for FundTransfer...")
+                        logger.info("Failed to complete a request for onebook FundTransfer...")
                         logger.error(rdata)
                         return Response(rdata)
                     elif r.status_code == 500:
@@ -483,13 +483,13 @@ class FundTransfer(APIView):
                                 logger.error(error)          
                         elif rr.status_code == 204:
                             # Handle error
-                            logger.info("Failed to complete a request for check fund transfer...")
+                            logger.info("Failed to complete a request for onebook check fund transfer...")
                             logger.error(rrdata)
                             return Response(rrdata)
                 else:    
-                    return Response({"error":"Request failed"})      
+                    return Response({"error":"Request failed for onebook FundTransfer"})      
         except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The user is not existed onebook FundTransfer."}) 
 
 
 
@@ -601,14 +601,14 @@ def getBetDetail(request):
                         break
                 else:
                     redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
-                    logger.info("There was something wrong with the result")
-                    return Response({'status': 'There was something wrong with the result'}, status=status.HTTP_400_BAD_REQUEST)
+                    logger.info("There was something wrong with the onebook getBetDetail result")
+                    return Response({'status': 'There was something wrong with the onebook getBetDetail result'}, status=status.HTTP_400_BAD_REQUEST)
             redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
             #print(redis.check_onebook_bet_details(onebook_run))        
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
         else:
-            logger.info("skip running this time.")
-            return Response({'status': 'skip running this time.'}, status=status.HTTP_200_OK)
+            logger.info("skip running this time for onebook getBetDetail.")
+            return Response({'status': 'skip running this time onebook getBetDetail.'}, status=status.HTTP_200_OK)
     
 
     
@@ -717,7 +717,7 @@ class Login(APIView):
                 elif r.status_code == 204:
                     success = True
                     # Handle error
-                    logger.info("Failed to complete a request for createMember...")
+                    logger.info("Failed to complete a request for onebook createMember...")
                     logger.error(rdata)
                     return Response(rdata)
                 elif r.status_code == 500:
@@ -741,11 +741,11 @@ class Login(APIView):
                 return Response({"login_url":loginUrl})
             except NameError as e:
                 logger.error(e)
-                return Response({"error": "Cannot find the code."})
+                return Response({"error": "Cannot find the code for onebook login data."})
 
         except ObjectDoesNotExist as e:
             logger.error(e)
-            return Response({"error": "Cannot find the user."})
+            return Response({"error": "Cannot find the user for onebook login."})
 
 def CheckMemberOnline(request):
     if request.method == "POST":
@@ -782,7 +782,7 @@ def CheckMemberOnline(request):
             tr1 = ET.SubElement(root, "StatusCode")
             tr1.text = '2'
             tr2 = ET.SubElement(root, "message")
-            tr2.text = 'User is not exist.'
+            tr2.text = 'User is not exist for onebook.'
             return HttpResponse(ET.tostring(root), content_type="text/xml")
         return HttpResponse(ET.tostring(root), content_type="text/xml")
 
