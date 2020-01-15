@@ -508,6 +508,7 @@ def getBetDetail(request):
         delay = 2
         success = False
         version_key = PROVIDER.notes
+        print(version_key)
         onebook_run = "run"
         try:
             r = RedisClient().connect()
@@ -527,7 +528,7 @@ def getBetDetail(request):
                 rdata = r.json()
                 if r.status_code == 200:
                     logger.info(rdata)
-                    # print(rdata)
+                    print(rdata)
                     version_key = rdata["Data"]["last_version_key"]        
                     
                     updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
@@ -545,12 +546,18 @@ def getBetDetail(request):
                             cate = Category.objects.get(name='Sports')
                             
                             trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
-                            user = CustomUser.objects.get(username=username)
+
+                            try:
+                                user = CustomUser.objects.get(username=username)
+                                
+                            except ObjectDoesNotExist:     
+                                redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
+                                logger.error("The user does not exist.")
+                                return Response({'error': 'The user does not exist.'})
+
                             transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                             outcome = rdata["Data"]["BetDetails"][i]["ticket_status"]
                             if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
-                                
-                                if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
                                     
                                     GameBet.objects.create(provider=PROVIDER,
                                                         category=cate,
@@ -562,12 +569,11 @@ def getBetDetail(request):
                                                         currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
                                                         bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
                                                         amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                        outcome=outcomeConversion[outcome],
                                                         ref_no=trans_id,
                                                         market=ibetCN,
                                                         other_data=rdata
                                                         )
-
+                                
                             else:
                                 if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
                                     resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
@@ -588,7 +594,6 @@ def getBetDetail(request):
                                                         market=ibetCN,
                                                         other_data=rdata,
                                                         )
-                        
                         # sleep(delay)  
                         # print("sleep")  
                     else:
