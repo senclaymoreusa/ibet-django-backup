@@ -179,9 +179,8 @@ class GameLaunch(APIView):
                             "mode": 'real',
                             "device": "desktop", 
                         }
-                        print(body)
+                        
                     except Exception as e: 
-                        print("Failed in getting user/session " + str(e))
                         logger.error("Failed in getting user/session " + str(e))
                         
                 else: 
