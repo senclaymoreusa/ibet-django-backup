@@ -586,7 +586,7 @@ class GenerateGameURL(APIView):
 
             create_user_data = create_user_data.json()
 
-            GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
+            GBSN = create_user_data['GB']['Result']['ReturnSet']['GBSN']
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
@@ -656,7 +656,7 @@ class GenerateFakeUserGameURL(APIView):
 
             create_user_data = create_user_data.json()
 
-            GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
+            GBSN = create_user_data['GB']['Result']['ReturnSet']['GBSN']
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
