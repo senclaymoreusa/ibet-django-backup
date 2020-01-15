@@ -360,11 +360,11 @@ class WalletSettleAPIURL(APIView):
                     elif TicketResult == '2':
                         TicketResult = 2 #tie
                     elif TicketResult == '4':
-                        TicketResult = 8 #cancel
+                        TicketResult = 3 #cancel
                     elif TicketResult == '5':
-                        TicketResult = 9 #兑现
+                        TicketResult = 3 #兑现
                     elif TicketResult == 'R':
-                        TicketResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                        TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
                     with transaction.atomic():    
                         GameBet.objects.create(
                             provider=PROVIDER,
@@ -465,11 +465,11 @@ class WalletSettleAPIURL(APIView):
                         elif TicketResult == '2':
                             TicketResult = 2 #tie
                         elif TicketResult == '4':
-                            TicketResult = 8 #cancel
+                            TicketResult = 3 #cancel
                         elif TicketResult == '5':
-                            TicketResult = 9 #兑现
+                            TicketResult = 3 #兑现
                         elif TicketResult == 'R':
-                            TicketResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                            TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
                         with transaction.atomic():
                             GameBet.objects.create(
                                 provider=PROVIDER,
