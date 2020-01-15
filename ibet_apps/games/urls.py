@@ -67,7 +67,7 @@ urlpatterns = [
 
     # Play n Go
     path('api/playngo', csrf_exempt(playngogameviews.RootView.as_view()), name="png_root"),
-    path('api/playngo/launch', csrf_exempt(playngogameviews.GameLaunchView.as_view()), name="png_launch"),
+    path('api/playngo/get_png_ticket', csrf_exempt(playngogameviews.GetPNGTicket.as_view()), name="png_launch"),
 
     # AllBet
     path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
@@ -105,7 +105,7 @@ urlpatterns = [
     path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
-    # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+    path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
     # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),

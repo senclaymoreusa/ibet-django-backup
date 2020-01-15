@@ -141,7 +141,7 @@ STATE_CHOICES = (
     (TRAN_FAIL_TYPE, 'Failed'),
     (TRAN_CREATE_TYPE, 'Created'),
     (TRAN_PENDING_TYPE, 'Pending'),
-    (TRAN_APPROVED_TYPE, 'Approved'),
+    (TRAN_APPROVED_TYPE, 'Approved'),    # not being used 
     (TRAN_CANCEL_TYPE, 'Canceled'),
     (TRAN_COMPLETED_TYPE, 'Completed'),
     (TRAN_RESEND_TYPE, 'Resent'),
@@ -223,6 +223,7 @@ GAME_TYPE_GAMES = 1
 GAME_TYPE_LIVE_CASINO = 2
 GAME_TYPE_TABLE_GAMES = 3
 GAME_TYPE_GENERAL = 4
+GAME_TYPE_LOTTORY = 5
 
 GAME_TYPE_CHOICES = (
     (GAME_TYPE_SPORTS, 'Sports'),
@@ -230,6 +231,7 @@ GAME_TYPE_CHOICES = (
     (GAME_TYPE_LIVE_CASINO, 'Live Casino'),
     (GAME_TYPE_TABLE_GAMES, 'Table Games'),
     (GAME_TYPE_GENERAL, 'General'),
+    (GAME_TYPE_LOTTORY, 'Lottory'),
 )
 
 SPREAD = 'SPREAD'
@@ -732,6 +734,8 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     qt = keys["QTGAMES"]["PRODUCTION"]
     H2P_PAYOUT_URL_THB = "https://app.racethewind.net/merchantpayout/M0513"
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
+    BackURI = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -739,6 +743,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["PRODUCTION"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["PRODUCTION"]["NAMESPACE"]
+    
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -757,6 +762,8 @@ elif "dev" in os.getenv("ENV"):
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -764,8 +771,9 @@ elif "dev" in os.getenv("ENV"):
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
+    
 else:
-    API_DOMAIN = "http://3fb2738f.ngrok.io/"
+    API_DOMAIN = "http://cf61d044.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -782,6 +790,8 @@ else:
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
+    BackURI = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
@@ -789,9 +799,9 @@ else:
     ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
+    
 
-BackURI = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_result"
-REDIRECTURL = "http://3fb2738f.ngrok.io/accounting/api/help2pay/deposit_success"
+
 
 HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
 
@@ -1546,9 +1556,10 @@ ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
 ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
 ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
 ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
+ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
 ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
-ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
+
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
 
