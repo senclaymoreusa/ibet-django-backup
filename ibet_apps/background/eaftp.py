@@ -62,11 +62,11 @@ class GetEaBetHistory(View):
 
             s3client = boto3.client("s3")
             try:
-                s3client.upload_file(local_file_name, AWS_S3_ADMIN_BUCKET, 'EA-game-history/{}'.format(local_file_name))
+                s3client.upload_file(local_file_name, AWS_BET_S3_BUCKET, 'EA-game-history/{}'.format(local_file_name))
             except Exception as e:
                 logger.warning("Uploading to S3 error", e)
             
-            logger.info('Uploading to S3 to bucket ' + AWS_S3_ADMIN_BUCKET + ' with file name ' + local_file_name)
+            logger.info('Uploading to S3 to bucket ' + AWS_BET_S3_BUCKET + ' with file name ' + local_file_name)
 
             with open(local_file_name, 'r') as f:
                 data = xmltodict.parse(f.read())

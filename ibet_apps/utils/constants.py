@@ -22,12 +22,14 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
+    AWS_BET_S3_BUCKET = 'game-bet-history-apdev'
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
     PTKEY= utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
     PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
     
    
 else:
+    AWS_BET_S3_BUCKET = 'game-bet-history-dev'
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
     PTKEY = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
