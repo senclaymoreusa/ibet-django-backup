@@ -1578,9 +1578,9 @@ SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 # GB_GeneralKey = keys["GB"]["GeneralKey"]
 # GB_SecretKey = keys["GB"]["SecretKey"]
 GB_URL =  "http://api.gbb2b.com/GBGameAPI/API.aspx"
-GB_API_URL = keys["GB"]["API_URL"]
-GB_SPORT_URL = "http://163.claymoreasia.com/sports/asia/index.aspx"
-GB_OTHER_URL = "http://163.claymoreusa.com"
+GB_API_URL = "http://ibetapiscsharp-env-mod.us-west-2.elasticbeanstalk.com/api/values/"
+GB_SPORT_URL = "https://sports.claymoreasia.com/sports/asia/index.aspx"
+GB_OTHER_URL = "https://keno.claymoreusa.com"
 GB_GeneralKey = "7rk2wN"
 GB_SecretKey = "BWtn3U"
 

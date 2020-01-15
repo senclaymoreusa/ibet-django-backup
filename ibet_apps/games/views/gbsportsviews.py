@@ -661,10 +661,11 @@ class GenerateFakeUserGameURL(APIView):
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
-
+        print(GBSN)
+        print(TPUniqueID)
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
-        
+        print(res)
         res = res[2:-2]
         
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
@@ -677,5 +678,8 @@ class GenerateFakeUserGameURL(APIView):
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
         return Response({'game_url': url})
+
+
+
 
 
